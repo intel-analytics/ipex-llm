@@ -38,9 +38,15 @@ sudo apt install xpu-smi
             bash env-check.sh
             ```
     * On Windows,
-        ```bash
-        env-check.bat
-        ```
+        1. activate oneapi
+            ```bash
+            call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+            ```
+
+        2. run the env check
+            ```bash
+            env-check.bat
+            ```
 
 ### Sample outputs
 
@@ -127,3 +133,108 @@ GPU0 Memory size=16G
         Kernel modules: i915
 -----------------------------------------------------------------
 ```
+
+* An example output on a Windows Desktop equipped with i9 13900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU looks like below.
+
+```
+Python 3.11.8
+-----------------------------------------------------------------
+transformers=4.37.2
+-----------------------------------------------------------------
+torch=2.1.0a0+cxx11.abi
+-----------------------------------------------------------------
+Name: ipex-llm
+Version: 2.1.0b20240410
+Summary: Large Language Model Develop Toolkit
+Home-page: https://github.com/intel-analytics/BigDLy
+Author: BigDL Authors
+Author-email: bigdl-user-group@googlegroups.com
+License: Apache License, Version 2.0
+Location: C:\Users\arda\miniconda3\envs\ipex-llm-langchain-chatchat\Lib\site-packages
+Requires:
+Required-by:
+-----------------------------------------------------------------
+ipex=2.1.10+xpu
+-----------------------------------------------------------------
+Total Memory: 63.747 GB
+
+Chip 0 Memory: 32 GB | Speed: 5600 MHz
+Chip 1 Memory: 32 GB | Speed: 5600 MHz
+-----------------------------------------------------------------
+CPU Manufacturer: GenuineIntel
+CPU MaxClockSpeed: 3000
+CPU Name: 13th Gen Intel(R) Core(TM) i9-13900K
+CPU NumberOfCores: 24
+CPU NumberOfLogicalProcessors: 32
+-----------------------------------------------------------------
+GPU 0: Intel(R) Arc(TM) A770 Graphics    Driver Version: 31.0.101.5084
+-----------------------------------------------------------------
+System Information
+
+Host Name:                 DESKTOP-ORSLCSS
+OS Name:                   Microsoft Windows 11 Enterprise
+OS Version:                10.0.22631 N/A Build 22631
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Workstation
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Intel User
+Registered Organization:   Intel Corporation
+Product ID:                00330-80000-00000-AA989
+Original Install Date:     4/9/2024, 1:40:07 PM
+System Boot Time:          4/12/2024, 12:50:50 PM
+System Manufacturer:       HP
+System Model:              HP EliteBook 840 G8 Notebook PC
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 140 Stepping 1 GenuineIntel ~2995 Mhz
+BIOS Version:              HP T37 Ver. 01.16.00, 1/18/2024
+Windows Directory:         C:\WINDOWS
+System Directory:          C:\WINDOWS\system32
+Boot Device:               \Device\HarddiskVolume1
+System Locale:             en-us;English (United States)
+Input Locale:              en-us;English (United States)
+Time Zone:                 (UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi
+Total Physical Memory:     16,112 MB
+Available Physical Memory: 3,723 MB
+Virtual Memory: Max Size:  23,792 MB
+Virtual Memory: Available: 9,035 MB
+Virtual Memory: In Use:    14,757 MB
+Page File Location(s):     C:\pagefile.sys
+Domain:                    ccr.corp.intel.com
+Logon Server:              \\PGSCCR601
+Hotfix(s):                 5 Hotfix(s) Installed.
+                           [01]: KB5034467
+                           [02]: KB5027397
+                           [03]: KB5036893
+                           [04]: KB5035967
+                           [05]: KB5037020
+Network Card(s):           4 NIC(s) Installed.
+                           [01]: Cisco AnyConnect Secure Mobility Client Virtual Miniport Adapter for Windows x64
+                                 Connection Name: Ethernet 3
+                                 Status:          Hardware not present
+                           [02]: Intel(R) Wi-Fi 6 AX201 160MHz
+                                 Connection Name: Wi-Fi
+                                 DHCP Enabled:    Yes
+                                 DHCP Server:     10.239.27.228
+                                 IP address(es)
+                                 [01]: 10.239.44.96
+                                 [02]: fe80::95ba:2f4c:c5bf:74c
+                           [03]: Bluetooth Device (Personal Area Network)
+                                 Connection Name: Bluetooth Network Connection
+                                 Status:          Media disconnected
+                           [04]: PANGP Virtual Ethernet Adapter Secure
+                                 Connection Name: Ethernet
+                                 DHCP Enabled:    No
+                                 IP address(es)
+                                 [01]: 10.247.2.67
+Hyper-V Requirements:      A hypervisor has been detected. Features required for Hyper-V will not be displayed.
+-----------------------------------------------------------------
++-----------+--------------------------------------------------------------------------------------+
+| Device ID | Device Information                                                                   |
++-----------+--------------------------------------------------------------------------------------+
+| 0         | Device Name: Intel(R) Arc(TM) A770 Graphics                                          |
+|           | Vendor Name: Intel(R) Corporation                                                    |
+|           | UUID: 00000000-0000-0003-0000-000856a08086                                           |
+|           | PCI BDF Address: 0000:03:00.0                                                        |
++-----------+--------------------------------------------------------------------------------------+
+``` 
