@@ -98,22 +98,44 @@ Keep the Ollama service on and open another terminal and run `./ollama pull <mod
 
 #### Using Curl 
 
-Using `curl` is the easiest way to verify the API service and model. Execute the following commands in a terminal. **Replace the <model_name> with your pulled model**, e.g. `dolphin-phi`.
+Using `curl` is the easiest way to verify the API service and model. Execute the following commands in a terminal. **Replace the <model_name> with your pulled 
+model**, e.g. `dolphin-phi`.
 
-```shell
-curl http://localhost:11434/api/generate -d '
-{ 
-  "model": "<model_name>", 
-  "prompt": "Why is the sky blue?", 
-  "stream": false,
-  "options":{"num_gpu": 999}
-}'
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         curl http://localhost:11434/api/generate -d '
+         { 
+            "model": "<model_name>", 
+            "prompt": "Why is the sky blue?", 
+            "stream": false,
+            "options":{"num_gpu": 999}
+         }'
+
+   .. tab:: Windows
+
+      Please run the following command in Anaconda Prompt.
+
+      .. code-block:: bash
+
+         curl http://localhost:11434/api/generate -d "
+         {
+            \"model\": \"<model_name>\",
+            \"prompt\": \"Why is the sky blue?\",
+            \"stream\": false,
+            \"options\":{\"num_gpu\": 999}
+         }"
+
 ```
+
 
 ```eval_rst
 .. note::
 
-  Please don't forget to set `"options":{"num_gpu": 999}` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+  Please don't forget to set ``"options":{"num_gpu": 999}`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
 ```
 
 #### Using Ollama Run GGUF models
@@ -130,7 +152,7 @@ PARAMETER num_predict 64
 ```eval_rst
 .. note::
 
-  Please don't forget to set `PARAMETER num_gpu 999` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+  Please don't forget to set ``PARAMETER num_gpu 999`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
 ```
 
 Then you can create the model in Ollama by `ollama create example -f Modelfile` and use `ollama run` to run the model directly on console.
