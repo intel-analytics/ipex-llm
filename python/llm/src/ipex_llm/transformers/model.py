@@ -330,7 +330,8 @@ class _BaseAutoModelClass:
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
 
             if speculative:
-                from .speculative import speculative_generate, clear_benchmarks, _crop_past_key_values
+                from .speculative import speculative_generate, clear_benchmarks,\
+                    _crop_past_key_values
                 # load a sym_int4 model as draft model
                 draft_model = cls.load_convert('sym_int4', optimize_model, *args, **kwargs)
                 model.draft_model = draft_model
@@ -339,7 +340,7 @@ class _BaseAutoModelClass:
                 model.clear_benchmarks = types.MethodType(clear_benchmarks, model)
                 model.speculative_generate = types.MethodType(speculative_generate, model)
                 model._crop_past_key_values = types.MethodType(_crop_past_key_values, model)
-        
+
             # add lookup_generate to pretrained model
             from .lookup import lookup_generate
             import types

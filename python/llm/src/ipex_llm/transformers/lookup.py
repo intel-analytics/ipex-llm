@@ -63,7 +63,7 @@ def generate(
                                         prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
                                         **kwargs)
         else:
-            logger.warning("Prompt lookup is currently not supported on CPU, fallback to " \
+            logger.warning("Prompt lookup is currently not supported on CPU, fallback to "
                            "original generate.")
             kwargs.pop("max_matching_ngram_size")
     return original_generate(self,
@@ -84,10 +84,12 @@ GenerationMixin.generate = generate
 # /transformers/generation/candidate_generator.py
 class PromptLookupCandidateGenerator():
     """
-    `CandidateGenerator` class to be used for prompt lookup generation. This class generates candidates
+    `CandidateGenerator` class to be used for prompt lookup generation.
+    This class generates candidates
     by looking up
     likely continuations in the provided prompt (input_ids) itself.
-    Read the following blog post for more information: https://github.com/apoorvumang/prompt-lookup-decoding
+    Read the following blog post for more information:
+    https://github.com/apoorvumang/prompt-lookup-decoding
 
     Args:
         max_matching_ngram_size (`int`):
@@ -104,20 +106,23 @@ class PromptLookupCandidateGenerator():
         self.num_output_tokens = num_output_tokens
         self.max_matching_ngram_size = max_matching_ngram_size if max_matching_ngram_size else 2
 
-        if self.max_matching_ngram_size <= 0 or self.num_output_tokens <= 0:
-            raise ValueError("Invalid max_matching_ngram_size or num_output_tokens")
+        invalidInputError(self.max_matching_ngram_size > 0 and self.num_output_tokens > 0,
+                          "Invalid max_matching_ngram_size or num_output_tokens")
 
-    def get_candidates(self, input_ids: torch.LongTensor)-> Tuple[torch.LongTensor,
-                                                                  Optional[torch.FloatTensor]]:
+    def get_candidates(self,
+                       input_ids: torch.LongTensor)-> Tuple[torch.LongTensor,
+                                                            Optional[torch.FloatTensor]]:
         """
         Fetches the candidates to be tried for the current input.
 
         Args:
             input_ids (`torch.LongTensor` of shape `(batch_size, sequence_length)`):
-                Indices of input sequence tokens in the vocabulary. [What are input IDs?](../glossary#input-ids)
+                Indices of input sequence tokens in the vocabulary.
+                [What are input IDs?](../glossary#input-ids)
 
         Return:
-            `torch.LongTensor` of shape `(num_candidates, candidate_length)`: The candidate sequences to be tried.
+            `torch.LongTensor` of shape `(num_candidates, candidate_length)`:
+            The candidate sequences to be tried.
         """
         input_length = input_ids.size(1)
 
@@ -150,31 +155,37 @@ class PromptLookupCandidateGenerator():
                 break
 
         if chosen_ids is None or len(chosen_ids) == 0:
-            # In case we didn't find a match return the input sequence unchanged, reverts back to autoregressive decoding
+            # In case we didn't find a match return the input sequence unchanged,
+            # reverts back to autoregressive decoding
             return input_ids, None
 
         # Now need extend input_ids with chosen_ids
         chosen_ids = chosen_ids.unsqueeze(0)
         candidate_input_ids = torch.cat((input_ids, chosen_ids), dim=1)
-        # assisted_generation expects logits as well, but we don't have those here, so returning None
+        # assisted_generation expects logits as well, but we don't have those here,
+        # so returning None
         return candidate_input_ids, None
 
-    def update_candidate_strategy(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, num_matches: int):
+    def update_candidate_strategy(self, input_ids: torch.LongTensor,
+                                  scores: torch.FloatTensor, num_matches: int):
         """
         Updates the candidate generation strategy based on the outcomes.
 
         Args:
             input_ids (`torch.LongTensor` of shape `(batch_size, sequence_length)`):
-                Indices of input sequence tokens in the vocabulary. [What are input IDs?](../glossary#input-ids)
-            scores (`torch.FloatTensor` of shape `(batch_size, candidate_length, config.vocab_size)`):
-                Prediction scores of a language modeling head. These can be logits for each vocabulary when not using
-                beam search or log softmax for each vocabulary token when using beam search
+                Indices of input sequence tokens in the vocabulary.
+                [What are input IDs?](../glossary#input-ids)
+            scores (`torch.FloatTensor` of shape `(batch_size, candidate_length,
+                config.vocab_size)`):
+                Prediction scores of a language modeling head. These can be logits for each
+                vocabulary when not using beam search or log softmax for each vocabulary
+                token when using beam search
             num_matches (`int`):
                 The number of matches between the candidate sequences and the model predictions.
         """
         # Currently does nothing
         return
-    
+
 
 def clear_benchmarks(self):
     self.first_token_time = 0
@@ -204,7 +215,6 @@ def lookup_generate(self,
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               **sampling_kwargs)
 
-    print(f"max_matching_ngram_size: {max_matching_ngram_size}, num_output_tokens: {num_output_tokens}, ")
     candidates_generator = PromptLookupCandidateGenerator(
         num_output_tokens=num_output_tokens,
         max_matching_ngram_size=max_matching_ngram_size)
@@ -213,7 +223,7 @@ def lookup_generate(self,
     step_verify = 0
 
     clear_benchmarks(self)
-    
+
     past_key_values = None
     input_len = input_ids.shape[1]
 
@@ -252,7 +262,7 @@ def lookup_generate(self,
             toc = time.time()
             candidate_input_ids, _ = candidates_generator.get_candidates(input_ids=input_ids)
             candidate_length = candidate_input_ids.shape[1] - input_ids.shape[1]
-            verify_input_ids = candidate_input_ids[:, -candidate_length - 1: ]
+            verify_input_ids = candidate_input_ids[:, -candidate_length - 1:]
             self.draft_num.append(candidate_length)
             tic = time.time()
             self.draft_time.append(tic - toc)
@@ -261,10 +271,11 @@ def lookup_generate(self,
             if isinstance(output, dict):
                 logits = output['logits']
                 past_key_values = output['past_key_values']
-        
+
             if len(logits_processor) > 0:
                 for i in range(candidate_length + 1):
-                    logits[:, i, :] = logits_processor(candidate_input_ids[:, : cur_len + i], logits[:, i, :])
+                    logits[:, i, :] = logits_processor(candidate_input_ids[:, : cur_len + i],
+                                                       logits[:, i, :])
 
             if generation_config.do_sample:
                 output_ids, prob_list = deepmind_sample(logits,
@@ -285,14 +296,12 @@ def lookup_generate(self,
             # including the one generated by the base model
             max_matched = ((output_ids[:, :-1] != verify_input_ids[:, 1:]).cumsum(-1) == 0)
             max_matched = max_matched.sum(-1).item() + 1
-            
+
             max_of_max_matched = output_ids.size(1)
             # Accept number is max_matched, min is 1
             self.accept_num.append(max_matched)
             self.n_matched += max_matched - 1
             self.n_drafted += candidate_length
-            
-            # print(f"verify time: {(toc - tic) * 1000} ms, candidate_length: {candidate_length}, max_matched: {max_matched}")
 
             # Clean up target model KV cache
             if max_of_max_matched != max_matched:

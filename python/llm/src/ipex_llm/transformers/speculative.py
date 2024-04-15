@@ -444,10 +444,9 @@ def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=Fa
         cur_len = past_key_values[0][0].size(1)
         delta = new_cache_size
         tmp = torch.empty(1, (cur_len - delta), (cur_len - delta), 1,
-                            dtype=torch.long,
-                            ).contiguous()
+                          dtype=torch.long).contiguous()
         past_key_values = [[tmp, key_cache, value_cache, beam_idx]
-                            for _, key_cache, value_cache, beam_idx in past_key_values]
+                           for _, key_cache, value_cache, beam_idx in past_key_values]
     else:
         if self.config.model_type in ["qwen"]:
             past_key_values = [
@@ -611,7 +610,7 @@ def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_
                                     dtype=torch.long, device=verify_input_ids.device)
         position_ids = position_ids.unsqueeze(0).view(-1, input_len)
         forward_args["position_ids"] = position_ids
-    
+
     return self(**forward_args)
 
 
@@ -1017,8 +1016,9 @@ def speculative_generate(self,
             if max_of_max_matched != max_matched:
                 output_ids = output_ids[:, :max_matched]
                 new_cache_size = max_of_max_matched - max_matched
-                past_key_values = self._crop_past_key_values(past_key_values, new_cache_size, _enable_ipex)
-                
+                past_key_values = self._crop_past_key_values(past_key_values,
+                                                             new_cache_size,
+                                                             _enable_ipex)
 
             # Each iter assign new_matched kv_cache to past_key_values1
             if self.device.type == 'cpu' and (not _enable_ipex):
