@@ -67,7 +67,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
     ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
 
 * Install drivers
 
@@ -89,7 +89,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo reboot
     ```
 
-  > <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
 
 
 * Configure permissions
