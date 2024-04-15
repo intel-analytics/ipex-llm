@@ -17,7 +17,7 @@ pip install accelerate==0.23.0
 pip install bitsandbytes==0.43.0
 pip install datasets==2.18.0
 pip install --upgrade transformers==4.36.0
-pip install scipy, fire
+pip install scipy fire
 ```
 
 ### 2. LISA Finetune
