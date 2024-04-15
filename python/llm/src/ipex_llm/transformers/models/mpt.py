@@ -27,7 +27,7 @@ from ipex_llm.transformers.models.utils import extend_kv_cache, init_kv_cache, a
 
 import os
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
 def mpt_multihead_attention_forward(self, x, past_key_value=None, attn_bias=None,
