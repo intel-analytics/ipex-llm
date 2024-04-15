@@ -117,7 +117,9 @@ You can verify if `ipex-llm` is successfully installed following below steps.
   
      .. tab:: Intel Arc™ A770
   
-        There is no need to set further environment variables.
+        .. code-block:: cmd
+  
+           set SYCL_CACHE_PERSISTENT=1
   ```
   
   ```eval_rst
