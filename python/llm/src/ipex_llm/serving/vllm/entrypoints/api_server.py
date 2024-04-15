@@ -116,11 +116,18 @@ if __name__ == "__main__":
         type=str,
         default=None,
         help="FastAPI root_path when app is behind a path based routing proxy")
+    parser.add_argument(
+        "--ipex-llm-optimize-mode",
+        type=str,
+        default=None,
+        help="IPEX-LLM vLLM optimize mode. Defalut is native vLLM."
+    )
     parser = AsyncEngineArgs.add_cli_args(parser)
     args = parser.parse_args()
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = IPEXLLMAsyncLLMEngine.from_engine_args(
-        engine_args, usage_context=UsageContext.API_SERVER)
+        engine_args, usage_context=UsageContext.API_SERVER,
+        ipex_llm_optimize_mode=args.ipex_llm_optimize_mode)
 
     app.root_path = args.root_path
     uvicorn.run(app,

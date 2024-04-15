@@ -41,6 +41,7 @@ class LLM(_LLM):
         enforce_eager: bool = False,
         max_context_len_to_capture: int = 8192,
         disable_custom_all_reduce: bool = False,
+        ipex_llm_optimize_mode: str = 'NATIVE',
         **kwargs,
     ) -> None:
         if "disable_log_stats" not in kwargs:
@@ -64,5 +65,6 @@ class LLM(_LLM):
             **kwargs,
         )
         self.llm_engine = IPEXLLMLLMEngine.from_engine_args(
-            engine_args, usage_context=UsageContext.LLM_CLASS)
+            engine_args, usage_context=UsageContext.LLM_CLASS,
+            ipex_llm_optimize_mode=ipex_llm_optimize_mode)
         self.request_counter = Counter()

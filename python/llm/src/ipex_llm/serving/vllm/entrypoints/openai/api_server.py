@@ -50,6 +50,12 @@ app = fastapi.FastAPI(lifespan=lifespan)
 
 def parse_args():
     parser = make_arg_parser()
+    parser.add_argument(
+        "--ipex-llm-optimize-mode",
+        type=str,
+        default=None,
+        help="IPEX-LLM vLLM optimize mode. Defalut is native vLLM."
+    )
     return parser.parse_args()
 
 
@@ -155,7 +161,8 @@ if __name__ == "__main__":
         served_model = args.model
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = IPEXLLMAsyncLLMEngine.from_engine_args(
-        engine_args, usage_context=UsageContext.OPENAI_API_SERVER)
+        engine_args, usage_context=UsageContext.OPENAI_API_SERVER,
+        ipex_llm_optimize_mode=args.ipex_llm_optimize_mode)
     openai_serving_chat = OpenAIServingChat(engine, served_model,
                                             args.response_role,
                                             args.lora_modules,

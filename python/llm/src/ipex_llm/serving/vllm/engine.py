@@ -16,20 +16,17 @@
 
 from vllm.engine.llm_engine import LLMEngine
 from vllm.engine.async_llm_engine import AsyncLLMEngine
-from vllm.engine.arg_utils import AsyncEngineArgs
+from vllm.engine.arg_utils import AsyncEngineArgs, EngineArgs
 from vllm.engine.ray_utils import initialize_ray_cluster
 from vllm.usage.usage_lib import UsageContext
 
 from .ipex_llm_convert import _ipex_llm_convert
 from .ipex_convert import _ipex_convert
+from ipex_llm.utils.common import invalidInputError
 
 
 class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     def __init__(self, *args, **kwargs):
-        from vllm.worker.cpu_worker import CPUModelRunner
-        # _ipex_llm_convert(CPUModelRunner)
-        _ipex_convert(CPUModelRunner)
-
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -38,8 +35,10 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         engine_args: AsyncEngineArgs,
         start_engine_loop: bool = True,
         usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
+        ipex_llm_optimize_mode: str = 'NATIVE',
     ) -> "AsyncLLMEngine":
         """Creates an async LLM engine from the engine arguments."""
+        _ipex_llm_optimize(ipex_llm_optimize_mode)
         # Create the engine configs.
         engine_config = engine_args.create_engine_config()
 
@@ -76,8 +75,53 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
 
 class IPEXLLMLLMEngine(LLMEngine):
     def __init__(self, *args, **kwargs):
-        from vllm.worker.cpu_worker import CPUModelRunner
-        # _ipex_llm_convert(CPUModelRunner)
-        _ipex_convert(CPUModelRunner)
-
         super().__init__(*args, **kwargs)
+
+    @classmethod
+    def from_engine_args(
+        cls,
+        engine_args: EngineArgs,
+        usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
+        ipex_llm_optimize_mode: str = 'NATIVE',
+    ) -> "LLMEngine":
+        """Creates an LLM engine from the engine arguments."""
+        _ipex_llm_optimize(ipex_llm_optimize_mode)
+        # Create the engine configs.
+        engine_config = engine_args.create_engine_config()
+
+        # Initialize the cluster and specify the executor class.
+        if engine_config.device_config.device_type == "neuron":
+            from vllm.executor.neuron_executor import NeuronExecutor
+            executor_class = NeuronExecutor
+        elif engine_config.device_config.device_type == "cpu":
+            from vllm.executor.cpu_executor import CPUExecutor
+            executor_class = CPUExecutor
+        elif engine_config.parallel_config.worker_use_ray:
+            initialize_ray_cluster(engine_config.parallel_config)
+            from vllm.executor.ray_gpu_executor import RayGPUExecutor
+            executor_class = RayGPUExecutor
+        else:
+            assert engine_config.parallel_config.world_size == 1, (  # noqa
+                "Ray is required if parallel_config.world_size > 1.")
+            from vllm.executor.gpu_executor import GPUExecutor
+            executor_class = GPUExecutor
+
+        # Create the LLM engine.
+        engine = cls(
+            **engine_config.to_dict(),
+            executor_class=executor_class,
+            log_stats=not engine_args.disable_log_stats,
+            usage_context=usage_context,
+        )
+        return engine
+
+
+def _ipex_llm_optimize(ipex_llm_optimize_mode):
+    from vllm.worker.cpu_worker import CPUModelRunner
+    if ipex_llm_optimize_mode == 'NATIVE':
+        return
+    elif ipex_llm_optimize_mode == 'IPEX_INT4':
+        _ipex_convert(CPUModelRunner)
+    else:
+        invalidInputError(False, "ipex_llm.serving.vllm: Optimize_model "
+                          f"{ipex_llm_optimize_mode} is not supported yet.")
