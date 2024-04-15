@@ -50,7 +50,7 @@ sudo apt install xpu-smi
 
 ### Sample outputs
 
-* An example output on a Linux Desktop equipped with i9 13900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU looks like below.
+* Linux Desktop equipped with i9 13900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU example output:
 
 ```
 -----------------------------------------------------------------
@@ -134,7 +134,8 @@ GPU0 Memory size=16G
 -----------------------------------------------------------------
 ```
 
-* An example output on a Windows Desktop equipped with i9 13900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU looks like below.
+
+* Windows Desktop equipped with i9 13900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU example output:
 
 ```
 Python 3.11.8
