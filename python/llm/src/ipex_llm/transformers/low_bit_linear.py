@@ -58,6 +58,7 @@ T = TypeVar("T", bound="torch.nn.Module")
 import ipex_llm.ggml.model.llama.llama_cpp as ggml
 import ctypes
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
+from ipex_llm.transformers.convert import is_deepspeed_available, is_vllm_available
 
 TORCH_LINEAR_THRESHOLD = int(os.getenv("BIGDL_LLM_LINEAR_THRESHOLD", "512"))
 SYM_INT4 = ggml_tensor_qtype["sym_int4"]
@@ -758,21 +759,26 @@ class FP16Linear(nn.Linear):
         if self.weight is not None and self.weight.dtype != x.dtype:
             self.weight.data = self.weight.data.to(x.dtype)
 
-        if not self.use_esimd_kernel(x):
+        # FIXME: it seems that error will occur if esimd kernel get used
+        # if not self.use_esimd_kernel(x):
+        if True:
             if get_ipex_version() < "2.1.10+xpu":
                 if self.weight_type == 2:
                     self.weight = self.weight.transpose(0, 1).contiguous()
                     self.weight_type = 1
-                result = F.linear(x, self.weight, self.bias)
+                output = F.linear(x, self.weight, self.bias)
             else:
                 if self.weight_type == 1:
                     self.weight = self.weight.transpose(0, 1).contiguous()
                     self.weight_type = 2
-                result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
+                output = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
             if self.mp_group is not None:
-                from deepspeed import comm as dist
-                dist.inference_all_reduce(result, group=self.mp_group)
-            return result
+                if is_deepspeed_available():
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(output, group=self.mp_group)
+                elif is_vllm_available():
+                    torch.distributed.all_reduce(output, group=self.mp_group)
+            return output
         else:
             if self.in_len == 4096 and self.weight_type != 3 or \
                     self.in_len == 11008 and self.weight_type != 1:
@@ -807,8 +813,12 @@ class FP16Linear(nn.Linear):
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.mp_group is not None:
-                from deepspeed import comm as dist
-                dist.inference_all_reduce(result, group=self.mp_group)
+                if is_deepspeed_available():
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
+                elif is_vllm_available():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+
             if self.bias is not None:
                 result += self.bias
 

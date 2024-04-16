@@ -37,6 +37,7 @@
 
 import platform
 import torch
+import torch.distributed
 import torch.nn as nn
 from accelerate import init_empty_weights
 import warnings
@@ -58,6 +59,8 @@ def is_auto_gptq_available():
 def is_auto_awq_available():
     return importlib.util.find_spec("awq") is not None
 
+def is_vllm_available():
+    return importlib.util.find_spec("vllm") is not None
 
 def is_deepspeed_available():
     spec = importlib.util.find_spec("deepspeed")
@@ -80,6 +83,10 @@ if is_auto_awq_available():
     from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 
+def is_torch_distributed_initialized():
+    return torch.distributed.is_initialized()
+
+
 def is_linear_module(module):
 
     in_features = None
@@ -87,8 +94,28 @@ def is_linear_module(module):
     mp_group = None
 
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
+    from vllm.model_executor.layers.linear import ColumnParallelLinear, RowParallelLinear,  QKVParallelLinear, MergedColumnParallelLinear
+    from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
+    from vllm.model_executor.parallel_utils.parallel_state import get_tensor_model_parallel_group, get_tensor_model_parallel_world_size
 
-    if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
+    # Currently, we do not use ColumnParallelLinear directly
+    if isinstance(module, RowParallelLinear):
+        in_features = module.input_size
+        out_features = module.output_size
+        result = True
+        # Set mp_group does not 100% indicate need to do all_reduce operations
+        if is_torch_distributed_initialized() and get_tensor_model_parallel_world_size() >= 2:
+            mp_group = get_tensor_model_parallel_group()
+        else:
+            mp_group = None
+    elif isinstance(module, MergedColumnParallelLinear) or isinstance(module, QKVParallelLinear):
+        # This step does the all_gather op, however, it won't do it.
+        # TODO: may need to change to adapt other models
+        result = True
+        in_features = module.input_size
+        out_features = module.output_size
+        mp_group = None
+    elif is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
