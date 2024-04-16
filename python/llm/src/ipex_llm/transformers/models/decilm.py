@@ -43,7 +43,7 @@ from ipex_llm.utils.common import invalidInputError
 
 import os
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
 def decilm_attention_forward_4_35_2(

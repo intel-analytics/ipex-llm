@@ -40,7 +40,7 @@ from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 
 import os
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256)
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
 def gptneox_attention_forward(
