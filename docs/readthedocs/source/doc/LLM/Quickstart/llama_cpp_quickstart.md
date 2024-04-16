@@ -262,3 +262,8 @@ Log end
 #### Fail to quantize model
 If you encounter `main: failed to quantize model from xxx`, please make sure you have created related output directory.
 
+#### Program hang during model loading
+If your program hang after `llm_load_tensors:  SYCL_Host buffer size =    xx.xx MiB`, you can add `--no-mmap` in your command.
+
+#### How to set `-ngl` parameter
+`-ngl` means the number of layers to store in VRAM. If your VRAM is enough, we recommend putting all layers on GPU, you can just set `-ngl` to a large number like 999 to achieve this goal.
