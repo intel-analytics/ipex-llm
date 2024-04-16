@@ -14,20 +14,20 @@ This folder contains examples of running long-context generation with IPEX-LLM o
 
 - **INT4**
 
-    | Model Name | Low Memory Mode | Maximum Input Length |
-    | -- | -- | -- |
-    | LLaMA2-7B-32K | Disable | 10K |
-    |  | Enable | 12K |
-    | ChatGLM3-6B-32K | Disable | 9K |
-    |  | Enable | 10K |
+    | Model Name | Low Memory Mode | Maximum Input Length | Output Length |
+    | -- | -- | -- | -- |
+    | LLaMA2-7B-32K | Disable | 10K | 512 |
+    |  | Enable | 12K | 512 |
+    | ChatGLM3-6B-32K | Disable | 9K | 512 |
+    |  | Enable | 10K | 512 |
 
 - **FP8**
 
-    | Model Name | Low Memory Mode | Maximum Input Length |
-    | -- | -- | -- |
-    | LLaMA2-7B-32K | Disable | 7K |
-    |  | Enable | 9K |
-    | ChatGLM3-6B-32K | Disable | 8K |
-    |  | Enable | 9K |
+    | Model Name | Low Memory Mode | Maximum Input Length | Output Length |
+    | -- | -- | -- | -- |
+    | LLaMA2-7B-32K | Disable | 7K | 512 |
+    |  | Enable | 9K | 512 |
+    | ChatGLM3-6B-32K | Disable | 8K | 512|
+    |  | Enable | 9K | 512 |
 
 > Note: If you need to run longer input or use less memory, please set `IPEX_LLM_LOW_MEM=1` to enable **low memory mode**, which will enable memory optimization and may slightly affect the latency performance.
