@@ -27,7 +27,7 @@ import copy
 import logging
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
 from ipex_llm.transformers.speculative import greedy, deepmind_sample, logits_to_probs,\
-    _crop_past_key_values, _prepare_generate_args, _non_cpu_ipex_verify
+    _crop_past_key_values, _prepare_generate_args, _non_cpu_ipex_verify, clear_benchmarks
 from ipex_llm.utils.common import invalidInputError
 
 logger = logging.getLogger("ipex_llm.lookup")
@@ -185,17 +185,6 @@ class PromptLookupCandidateGenerator():
         """
         # Currently does nothing
         return
-
-
-def clear_benchmarks(self):
-    self.first_token_time = 0
-    self.generate_time = []
-    self.draft_time = []
-    self.verify_time = []
-    self.draft_num = []
-    self.accept_num = []
-    self.n_drafted = 0
-    self.n_matched = 0
 
 
 @torch.no_grad()
