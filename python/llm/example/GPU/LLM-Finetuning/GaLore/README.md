@@ -1,6 +1,6 @@
 # GaLore Finetuning with IPEX-LLM
 
-This example ports [GaLore on Llama2 7B](https://github.com/geronimi73/3090_shorts/blob/main/nb_galore_llama2-7b.ipynb) to IPEX-LLM on [Intel GPU](../../../README.md).
+This is an example of IPEX-LLM GaLore fine-tuning on [Intel GPU](../../../README.md), which refers [Huggingface GaLore blog](https://huggingface.co/blog/galore) and changes model to [openlm-research/open_llama_3b_v2](https://huggingface.co/openlm-research/open_llama_3b_v2) and dataset to [HuggingFaceH4/helpful_instructions](https://huggingface.co/datasets/HuggingFaceH4/helpful_instructions).
 
 ### 0. Requirements
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -32,7 +32,7 @@ python galore_finetuning.py # optional parameters as below
 
 Optional parameters for `galore_finetuning.py`:
 
-**--repo-id-or-model-path** : default to `meta-llama/Llama-2-7b-hf`, and you can also specify your local model path.
+**--repo-id-or-model-path** : default to `openlm-research/open_llama_3b_v2`, and you can also specify your local model path.
 
 **--data-path** : default to `HuggingFaceH4/helpful_instructions`, and you can also specify your local datal path, while note that changing to the other datasets will introduce code modification effort for yourself.
 
@@ -41,16 +41,14 @@ Optional parameters for `galore_finetuning.py`:
 ### 3. Sample Output
 ```log
 ......
-{'loss': 0.7624, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.12}
-{'loss': 0.7557, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.12}
-{'loss': 0.7079, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
-{'loss': 1.4144, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
-{'loss': 0.7582, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
-{'loss': 0.4273, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
-{'loss': 0.7137, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.13}
-{'loss': 0.9176, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.14}
-{'loss': 0.7178, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.14}
-{'loss': 0.8935, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.14}
+{'loss': 2.0989, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.0}
+{'loss': 1.9064, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.0}
+{'loss': 1.7483, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
+{'loss': 1.9551, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
+{'loss': 1.783, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
+{'loss': 1.3328, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
+{'loss': 1.4622, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
+{'loss': 1.9094, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.02}
   5%|████▏                                                                                      | 70/1500 [xx:xx<x:xx:xx, xx.xxs/it]
 ......
 ```
