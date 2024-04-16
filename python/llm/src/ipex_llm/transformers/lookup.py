@@ -51,21 +51,27 @@ def generate(
     streamer: Optional["BaseStreamer"] = None,
     **kwargs,
 ):
-    prompt_lookup_num_tokens = kwargs.pop("prompt_lookup_num_tokens", None)
-    if prompt_lookup_num_tokens:
-        if self.device.type == "xpu":
+    lookahead = kwargs.pop("lookahead", None)
+    if lookahead:
+        from ipex_llm.transformers.convert import get_enable_ipex
+        _enable_ipex = get_enable_ipex()
+
+        if self.device.type == "cpu" and _enable_ipex:
+
+            logger.warning("Prompt lookup is currently not supported on CPU with IPEX, "
+                           "fallback to original generate.")
+            kwargs.pop("max_matching_ngram_size")
+
+        else:
             # Do prompt lookup generation
             return self.lookup_generate(inputs=inputs,
-                                        num_output_tokens=prompt_lookup_num_tokens,
+                                        num_output_tokens=lookahead,
                                         generation_config=generation_config,
                                         logits_processor=logits_processor,
                                         stopping_criteria=stopping_criteria,
                                         prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
                                         **kwargs)
-        else:
-            logger.warning("Prompt lookup is currently not supported on CPU, fallback to "
-                           "original generate.")
-            kwargs.pop("max_matching_ngram_size")
+            
     return original_generate(self,
                              inputs=inputs,
                              generation_config=generation_config,
@@ -196,10 +202,6 @@ def lookup_generate(self,
                     generation_config: Optional[GenerationConfig] = None,
                     attention_mask=None,
                     **sampling_kwargs):
-
-    invalidInputError(self.device.type == "xpu", "Prompt lookup is currently not"
-                      " supported on CPU")
-
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               **sampling_kwargs)
