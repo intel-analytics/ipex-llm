@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # This file is copied from
-# https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/scripts/finetune.py
+# https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/src/axolotl/cli/train.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,56 +30,53 @@
 
 from ipex_llm import llm_patch
 llm_patch(train=True)
-# The following is the original axolotl finetune code (without IPEX-LLM)
+# The following is the original axolotl train code (without IPEX-LLM)
 
-"""Prepare and train a model on a dataset. Can also infer from a model or merge lora"""
+"""
+CLI to run training on a model
+"""
 import logging
 from pathlib import Path
+from typing import Tuple
 
 import fire
 import transformers
+from transformers import PreTrainedModel, PreTrainedTokenizer
 
 from axolotl.cli import (
     check_accelerate_default_config,
     check_user_token,
-    do_inference,
-    do_merge_lora,
     load_cfg,
     load_datasets,
+    load_rl_datasets,
     print_axolotl_text_art,
 )
-from axolotl.cli.shard import shard
 from axolotl.common.cli import TrainerCliArgs
 from axolotl.train import train
 
-LOG = logging.getLogger("axolotl.scripts.finetune")
+LOG = logging.getLogger("axolotl.cli.train")
 
 
 def do_cli(config: Path = Path("examples/"), **kwargs):
-    print_axolotl_text_art()
-    LOG.warning(
-        str(
-            PendingDeprecationWarning(
-                "scripts/finetune.py will be replaced with calling axolotl.cli.train"
-            )
-        )
-    )
+    # pylint: disable=duplicate-code
     parsed_cfg = load_cfg(config, **kwargs)
-    check_accelerate_default_config()
-    check_user_token()
     parser = transformers.HfArgumentParser((TrainerCliArgs))
     parsed_cli_args, _ = parser.parse_args_into_dataclasses(
         return_remaining_strings=True
     )
-    if parsed_cli_args.inference:
-        do_inference(cfg=parsed_cfg, cli_args=parsed_cli_args)
-    elif parsed_cli_args.merge_lora:
-        do_merge_lora(cfg=parsed_cfg, cli_args=parsed_cli_args)
-    elif parsed_cli_args.shard:
-        shard(cfg=parsed_cfg, cli_args=parsed_cli_args)
+    return do_train(parsed_cfg, parsed_cli_args)
+
+
+def do_train(cfg, cli_args) -> Tuple[PreTrainedModel, PreTrainedTokenizer]:
+    print_axolotl_text_art()
+    check_accelerate_default_config()
+    check_user_token()
+    if cfg.rl:
+        dataset_meta = load_rl_datasets(cfg=cfg, cli_args=cli_args)
     else:
-        dataset_meta = load_datasets(cfg=parsed_cfg, cli_args=parsed_cli_args)
-        train(cfg=parsed_cfg, cli_args=parsed_cli_args, dataset_meta=dataset_meta)
+        dataset_meta = load_datasets(cfg=cfg, cli_args=cli_args)
+
+    return train(cfg=cfg, cli_args=cli_args, dataset_meta=dataset_meta)
 
 
 if __name__ == "__main__":

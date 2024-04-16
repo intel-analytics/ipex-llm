@@ -1,6 +1,4 @@
-# This file is copied from https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.3.0/examples/llama-2/qlora.yml
-base_model: meta-llama/Llama-2-7b-hf
-base_model_config: meta-llama/Llama-2-7b-hf
+base_model: /mnt/disk1/models/Llama-2-7b-hf
 model_type: LlamaForCausalLM
 tokenizer_type: LlamaTokenizer
 is_llama_derived_model: true
@@ -10,10 +8,10 @@ load_in_4bit: true
 strict: false
 
 datasets:
-  - path: mhenrichsen/alpaca_2k_test
+  - path: /mnt/disk1/datasets/alpaca_2k_test
     type: alpaca
-dataset_prepared_path: last_run_prepared
-val_set_size: 0.01
+dataset_prepared_path:
+val_set_size: 0.05
 output_dir: ./qlora-out
 
 adapter: qlora
@@ -23,7 +21,7 @@ sequence_len: 4096
 sample_packing: true
 pad_to_sequence_len: true
 
-lora_r: 16
+lora_r: 8
 lora_alpha: 16
 lora_dropout: 0.05
 lora_target_modules:
@@ -33,15 +31,12 @@ lora_fan_in_fan_out:
 wandb_project:
 wandb_entity:
 wandb_watch:
-wandb_run_id:
+wandb_name:
 wandb_log_model:
 
-gradient_accumulation_steps: 2
+gradient_accumulation_steps: 4
 micro_batch_size: 1
-num_epochs: 3
-# paged_adamw_32bit is not supported
-# due to bitsandbytes issue https://github.com/TimDettmers/bitsandbytes/issues/1180
-# optimizer: paged_adamw_32bit
+num_epochs: 4
 optimizer: adamw_torch
 lr_scheduler: cosine
 learning_rate: 0.0002
@@ -61,8 +56,9 @@ xformers_attention:
 flash_attention: false
 
 warmup_steps: 10
-eval_steps: 20
-save_steps:
+evals_per_epoch: 4
+eval_table_size:
+saves_per_epoch: 1
 debug:
 deepspeed:
 weight_decay: 0.0
