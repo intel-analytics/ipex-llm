@@ -439,26 +439,49 @@ def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_l
     return past_key_values, not enough_kv_room
 
 
-@torch.no_grad()
-def speculative_generate(self,
-                         inputs: Optional[torch.Tensor] = None,
-                         draft_model=None,
-                         max_new_tokens=10,
-                         max_step_draft=8,
-                         th_stop_draft=0.8,
-                         auto_th_stop_draft=True,
-                         auto_parameters=[1, 0.5, 0.9, 1e-2, 0.9],
-                         hf_adjust=False,
-                         min_step_draft=3,
-                         generation_config: Optional[GenerationConfig] = None,
-                         attention_mask=None,
-                         **sampling_kwargs):
-    invalidInputError(draft_model is not None,
-                      "Draft model should be provided.")
-    # min_step_draft >= 1. Since the max_step_draft may adjust,
-    # min_step_draft can > max_step_draft
-    min_step_draft = min_step_draft if min_step_draft >= 1 else 1
+def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=False):
+    if _enable_ipex:
+        cur_len = past_key_values[0][0].size(1)
+        delta = new_cache_size
+        tmp = torch.empty(1, (cur_len - delta), (cur_len - delta), 1,
+                          dtype=torch.long).contiguous()
+        past_key_values = [[tmp, key_cache, value_cache, beam_idx]
+                           for _, key_cache, value_cache, beam_idx in past_key_values]
+    else:
+        if self.config.model_type in ["qwen"]:
+            past_key_values = [
+                (k[:, :-(new_cache_size), :],
+                    v[:, :-(new_cache_size), :])
+                for k, v in past_key_values
+            ]
+        elif self.config.model_type == "chatglm":
+            # for chatglm, cache shape is [sl, bs, nh, hn]
+            past_key_values = [
+                (k[:-(new_cache_size), :, :, :],
+                    v[:-(new_cache_size), :, :, :])
+                for k, v in past_key_values
+            ]
+        elif self.config.model_type in ["baichuan", "gptj"]:
+            past_key_values = [
+                (k[:, :, :-(new_cache_size), :],
+                    v[:, :, :-(new_cache_size), :])
+                for k, v in past_key_values
+            ]
+        elif self.config.model_type == "gpt_bigcode":
+            past_key_values = [
+                kv[:, :-(new_cache_size)]
+                for kv in past_key_values
+            ]
+        else:
+            past_key_values = [
+                (k[:, :, :-(new_cache_size)],
+                    v[:, :, :-(new_cache_size)])
+                for k, v in past_key_values
+            ]
+    return past_key_values
 
+
+def _prepare_generate_args(self, inputs, generation_config, **sampling_kwargs):
     if generation_config is None:
         generation_config = self.generation_config
 
@@ -494,10 +517,27 @@ def speculative_generate(self,
     inputs_tensor, model_input_name, model_kwargs = self._prepare_model_inputs(
         inputs, generation_config.bos_token_id, model_kwargs
     )
-    batch_size = inputs_tensor.shape[0]
 
     # 4. Define other model kwargs
-    # Removed not used
+    # model_kwargs["output_attentions"] = generation_config.output_attentions
+    # model_kwargs["output_hidden_states"] = generation_config.output_hidden_states
+    # # decoder-only models with inputs_embeds forwarding must use caching
+    # # (otherwise we can't detect whether we are generating the first new token or not,
+    # # and we only want to use the embeddings for the first new token)
+    # if not self.config.is_encoder_decoder and model_input_name == "inputs_embeds":
+    #     model_kwargs["use_cache"] = True
+    # else:
+    #     model_kwargs["use_cache"] = generation_config.use_cache
+
+    # accepts_attention_mask = "attention_mask" in set(
+    #     inspect.signature(self.forward).parameters.keys())
+    # requires_attention_mask = "encoder_outputs" not in model_kwargs
+
+    # if model_kwargs.get("attention_mask", None) is None and \
+    #         requires_attention_mask and accepts_attention_mask:
+    #     model_kwargs["attention_mask"] = self._prepare_attention_mask_for_generation(
+    #         inputs_tensor, generation_config.pad_token_id, generation_config.eos_token_id
+    #     )
 
     # decoder-only models should use left-padding for generation
     if not self.config.is_encoder_decoder:
@@ -542,6 +582,61 @@ def speculative_generate(self,
         is_encoder_decoder=self.config.is_encoder_decoder,
         **model_kwargs,
     )
+
+    return input_ids, generation_config, logits_processor, stopping_criteria, model_kwargs
+
+
+def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_mask=None,
+                         return_dict=True, use_cache=True):
+    forward_args = {
+        "input_ids": verify_input_ids,
+        "past_key_values": past_key_values,
+        "return_dict": return_dict,
+        "use_cache": use_cache,
+    }
+    if cur_attention_mask:
+        forward_args["attention_mask"] = cur_attention_mask
+
+    if self.config.model_type == "chatglm":
+        past_key_value_len = past_key_values[0][0].shape[0]
+        position_ids = torch.arange(verify_input_ids.shape[1], dtype=torch.long,
+                                    device=verify_input_ids.device)
+        position_ids = position_ids.unsqueeze(0).repeat(1, 1) + past_key_value_len
+        forward_args["position_ids"] = position_ids
+    elif self.config.model_type == "gptj":
+        past_length = past_key_values[0][0].size(2)
+        input_len = verify_input_ids.shape[1]
+        position_ids = torch.arange(past_length, input_len + past_length,
+                                    dtype=torch.long, device=verify_input_ids.device)
+        position_ids = position_ids.unsqueeze(0).view(-1, input_len)
+        forward_args["position_ids"] = position_ids
+
+    return self(**forward_args)
+
+
+@torch.no_grad()
+def speculative_generate(self,
+                         inputs: Optional[torch.Tensor] = None,
+                         draft_model=None,
+                         max_new_tokens=10,
+                         max_step_draft=8,
+                         th_stop_draft=0.8,
+                         auto_th_stop_draft=True,
+                         auto_parameters=[1, 0.5, 0.9, 1e-2, 0.9],
+                         hf_adjust=False,
+                         min_step_draft=3,
+                         generation_config: Optional[GenerationConfig] = None,
+                         attention_mask=None,
+                         **sampling_kwargs):
+    invalidInputError(draft_model is not None,
+                      "Draft model should be provided.")
+    # min_step_draft >= 1. Since the max_step_draft may adjust,
+    # min_step_draft can > max_step_draft
+    min_step_draft = min_step_draft if min_step_draft >= 1 else 1
+
+    input_ids, generation_config, logits_processor, stopping_criteria, \
+        model_kwargs = _prepare_generate_args(self, inputs, generation_config,
+                                              **sampling_kwargs)
 
     step = 0
     step_draft = 0
@@ -851,27 +946,8 @@ def speculative_generate(self,
                 logits = output[0]
                 past_key_values = output[1]
             else:
-                forward_args = {
-                    "input_ids": drafted_input_ids,
-                    "past_key_values": past_key_values,
-                    "attention_mask": cur_attention_mask,
-                    "return_dict": True,
-                    "use_cache": True,
-                }
-                if self.config.model_type == "chatglm":
-                    past_key_value_len = past_key_values[0][0].shape[0]
-                    position_ids = torch.arange(drafted_input_ids.shape[1], dtype=torch.long,
-                                                device=drafted_input_ids.device)
-                    position_ids = position_ids.unsqueeze(0).repeat(1, 1) + past_key_value_len
-                    forward_args["position_ids"] = position_ids
-                elif self.config.model_type == "gptj":
-                    past_length = past_key_values[0][0].size(2)
-                    input_len = drafted_input_ids.shape[1]
-                    position_ids = torch.arange(past_length, input_len + past_length,
-                                                dtype=torch.long, device=drafted_input_ids.device)
-                    position_ids = position_ids.unsqueeze(0).view(-1, input_len)
-                    forward_args["position_ids"] = position_ids
-                output = self(**forward_args)
+                output = _non_cpu_ipex_verify(self, drafted_input_ids, past_key_values,
+                                              cur_attention_mask, return_dict=True, use_cache=True)
             if isinstance(output, dict):
                 logits = output['logits']
                 past_key_values = output['past_key_values']
@@ -939,45 +1015,10 @@ def speculative_generate(self,
             # Clean up target model KV cache
             if max_of_max_matched != max_matched:
                 output_ids = output_ids[:, :max_matched]
-                if _enable_ipex:
-                    cur_len = past_key_values[0][0].size(1)
-                    delta = max_of_max_matched - max_matched
-                    tmp = torch.empty(1, (cur_len - delta), (cur_len - delta), 1,
-                                      dtype=torch.long,
-                                      ).contiguous()
-                    past_key_values = [[tmp, key_cache, value_cache, beam_idx]
-                                       for _, key_cache, value_cache, beam_idx in past_key_values]
-                else:
-                    if self.config.model_type in ["qwen"]:
-                        past_key_values = [
-                            (k[:, :-(max_of_max_matched - max_matched), :],
-                             v[:, :-(max_of_max_matched - max_matched), :])
-                            for k, v in past_key_values
-                        ]
-                    elif self.config.model_type == "chatglm":
-                        # for chatglm, cache shape is [sl, bs, nh, hn]
-                        past_key_values = [
-                            (k[:-(max_of_max_matched - max_matched), :, :, :],
-                             v[:-(max_of_max_matched - max_matched), :, :, :])
-                            for k, v in past_key_values
-                        ]
-                    elif self.config.model_type in ["baichuan", "gptj"]:
-                        past_key_values = [
-                            (k[:, :, :-(max_of_max_matched - max_matched), :],
-                             v[:, :, :-(max_of_max_matched - max_matched), :])
-                            for k, v in past_key_values
-                        ]
-                    elif self.config.model_type == "gpt_bigcode":
-                        past_key_values = [
-                            kv[:, :-(max_of_max_matched - max_matched)]
-                            for kv in past_key_values
-                        ]
-                    else:
-                        past_key_values = [
-                            (k[:, :, :-(max_of_max_matched - max_matched)],
-                             v[:, :, :-(max_of_max_matched - max_matched)])
-                            for k, v in past_key_values
-                        ]
+                new_cache_size = max_of_max_matched - max_matched
+                past_key_values = self._crop_past_key_values(past_key_values,
+                                                             new_cache_size,
+                                                             _enable_ipex)
 
             # Each iter assign new_matched kv_cache to past_key_values1
             if self.device.type == 'cpu' and (not _enable_ipex):
