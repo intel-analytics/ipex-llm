@@ -19,6 +19,7 @@ This section includes efficient guide to show you how to:
 * `Run Coding Copilot (Continue) in VSCode with Intel GPU <./continue_quickstart.html>`_
 * `Run llama.cpp with IPEX-LLM on Intel GPU <./llama_cpp_quickstart.html>`_
 * `Run Ollama with IPEX-LLM on Intel GPU <./ollama_quickstart.html>`_
+* `Run IPEX-LLM Serving with FastChat <./fastchat_quickstart.html>`_
 
 .. |bigdl_llm_migration_guide| replace:: ``bigdl-llm`` Migration Guide
 .. _bigdl_llm_migration_guide: bigdl_llm_migration.html
