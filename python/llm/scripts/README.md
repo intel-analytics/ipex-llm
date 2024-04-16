@@ -24,29 +24,38 @@ sudo apt install xpu-smi
   > If you do not know how to install `ipex-llm`, refer to [IPEX-LLM installation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) for more details.
 *  Within the activated python environment, run below command:
     *  On Linux
-        1. install clinfo 
+        1. Install clinfo 
           ```sudo apt install clinfo```
 
-        2. activate oneapi
-        
-            For IPEX 2.0, run `source /home/arda/intel/oneapi/setvars.sh`
+        2. Activate oneapi
+            Activate the `setvars.sh` file in the folder where you installed the oneapi
+            
+            ```
+            source /opt/intel/oneapi/setvars.sh
+            ```
 
-            For IPEX 2.0, run `source /opt/intel/oneapi/setvars.sh`
-
-        3. run the env check
+        3. Run the env check
             ```bash
             bash env-check.sh
             ```
+
     * On Windows,
-        1. activate oneapi
+        1. Activate oneapi
+            Activate the `setvars.bat` file in the folder where you installed the oneapi
+
             ```bash
             call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
             ```
 
-        2. run the env check
+        2. Run the env check
             ```bash
             env-check.bat
             ```
+        
+        4. Additional Information
+            If you want to know the GPU memory information, you can use `ctrl+shift+esc` to open the task manager.
+            Then enter the performance section on the left navigation bar and go to the GPU section,
+            you can check GPU memory under the `GPU Memory`.
 
 ### Sample outputs
 
