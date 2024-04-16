@@ -1,3 +1,37 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# This file is copied from
+# https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.3.0/scripts/finetune.py
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from ipex_llm import llm_patch
+llm_patch(train=True)
+# The following is the original axolotl finetune code (without IPEX-LLM)
+
 """Prepare and train a model on a dataset. Can also infer from a model or merge lora"""
 
 import importlib
@@ -8,8 +42,6 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from ipex_llm import llm_patch
-llm_patch(train=True)
 import fire
 import torch
 import transformers
