@@ -69,7 +69,7 @@ Launch the Ollama service:
          set ZES_ENABLE_SYSMAN=1
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 
-         ollama.exe serve
+         ollama serve
 
 ```
 
@@ -174,8 +174,8 @@ Then you can create the model in Ollama by `ollama create example -f Modelfile` 
       .. code-block:: bash
 
          set no_proxy=localhost,127.0.0.1
-         ollama.exe create example -f Modelfile
-         ollama.exe run example
+         ollama create example -f Modelfile
+         ollama run example
 
 ```
 
