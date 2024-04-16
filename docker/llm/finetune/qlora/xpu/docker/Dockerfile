@@ -17,17 +17,18 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     # install basic dependencies
     apt-get install -y curl wget git gnupg gpg-agent software-properties-common libunwind8-dev vim less && \
     # install Intel GPU driver
-    apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
+    apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero level-zero-dev --allow-downgrades && \
     # install python 3.9
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 && \
+    apt-get install -y python3.11 && \
     rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.9 /usr/bin/python3 && \
+    ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.9-dev python3-wheel python3.9-distutils && \
+    apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3 get-pip.py && \
     # install XPU ipex-llm
     pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # install huggingface dependencies

@@ -19,28 +19,38 @@ COPY --from=key-getter /root/intel-oneapi-archive-keyring.gpg /usr/share/keyring
 RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list
 
 RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
-    # install pytorch 2.1.0
-    apt-get update && \
-    apt-get install -y --no-install-recommends python3-pip python3.9-dev python3-wheel python3.9-distutils git software-properties-common && \
+    # Install python 3.11.1
+    apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common git gcc g++ make libunwind8-dev zlib1g-dev libssl-dev libffi-dev && \
+    mkdir -p /opt/python && \
+    cd /opt/python && \
+    wget https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tar.xz && \
+    tar -xf Python-3.11.1.tar.xz && \
+    cd Python-3.11.1 && \
+    ./configure --enable-optimizations --with-zlib && \
+    make altinstall && \
+    rm /usr/bin/python3 && \
+    # Create a symbolic link pointing to Python 3.11 at /usr/bin/python3
+    ln -s /opt/python/Python-3.11.1/python /usr/bin/python3 && \
+    # Create a symbolic link pointing to /usr/bin/python3 at /usr/bin/python
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3 get-pip.py && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    pip3 install --upgrade pip && \
+    pip install --upgrade pip && \
     export PIP_DEFAULT_TIMEOUT=100 && \
     pip install --upgrade torch==2.1.0 && \
     # install CPU ipex-llm
-    pip3 install --pre --upgrade ipex-llm[all] && \
+    pip install --pre --upgrade ipex-llm[all] && \
     # install ipex and oneccl
-    pip install https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/intel_extension_for_pytorch-2.1.0%2Bcpu-cp39-cp39-linux_x86_64.whl && \
+    pip install https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/cpu/intel_extension_for_pytorch-2.1.0%2Bcpu-cp311-cp311-linux_x86_64.whl && \
     pip install oneccl_bind_pt -f https://developer.intel.com/ipex-whl-stable && \
     # install huggingface dependencies
     pip install datasets transformers==4.35.0 && \
     pip install fire peft==0.5.0 && \
     pip install accelerate==0.23.0 && \
     pip install bitsandbytes && \
-    # install basic dependencies
-    apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common libunwind8-dev && \
     # get qlora example code
-    ln -s /usr/bin/python3 /usr/bin/python && \
     cd /ipex_llm && \
     git clone https://github.com/intel-analytics/IPEX-LLM.git && \
     mv IPEX-LLM/python/llm/example/CPU/QLoRA-FineTuning/* . && \
