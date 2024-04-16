@@ -61,7 +61,6 @@ def generate(
             logger.warning("Prompt lookup is currently not supported on CPU with IPEX, "
                            "fallback to original generate.")
             kwargs.pop("max_matching_ngram_size")
-
         else:
             # Do prompt lookup generation
             return self.lookup_generate(inputs=inputs,
@@ -71,7 +70,7 @@ def generate(
                                         stopping_criteria=stopping_criteria,
                                         prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
                                         **kwargs)
-            
+
     return original_generate(self,
                              inputs=inputs,
                              generation_config=generation_config,
