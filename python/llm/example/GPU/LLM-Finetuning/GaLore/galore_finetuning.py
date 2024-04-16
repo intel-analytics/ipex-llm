@@ -20,8 +20,8 @@ scale = 2
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Fine-tune transformers with IPEX-LLM GaLore')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
-                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`)')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="openlm-research/open_llama_3b_v2",
+                        help='The huggingface repo id for the Llama2 (e.g. `openlm-research/open_llama_3b_v2` or `meta-llama/Llama-2-7b-chat-hf`)')
     parser.add_argument('--data-path', type=str, default="HuggingFaceH4/helpful_instructions",
                         help='Dataset path for fine-tuning')
     parser.add_argument('--output-dir', type=str, default="./ipex-llm-galore",
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
         torch_dtype = torch.bfloat16,
-        optimize_model=True,
+        optimize_model=False,
         use_cache = False,
         trust_remote_code=True,
     )
