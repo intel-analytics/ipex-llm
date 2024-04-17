@@ -113,6 +113,8 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
+        else:
+            result = False
     elif is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
         in_features = module.infeatures
         out_features = module.outfeatures
