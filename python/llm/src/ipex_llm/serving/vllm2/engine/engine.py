@@ -35,11 +35,12 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         cls,
         engine_args: AsyncEngineArgs,
         start_engine_loop: bool = True,
+        load_in_low_bit: str = "sym_int4",
         # ipex_llm_optimize_mode: str = 'NATIVE',
     ) -> "AsyncLLMEngine":
         """Creates an async LLM engine from the engine arguments."""
         # Enable ipex-llm optimizations
-        _ipex_llm_convert()
+        _ipex_llm_convert(load_in_low_bit)
         engine_configs = engine_args.create_engine_configs()
         parallel_config = engine_configs[2]
         if parallel_config.worker_use_ray or engine_args.engine_use_ray:
@@ -81,6 +82,7 @@ class IPEXLLMClass(LLM):
         enforce_eager: bool = False,
         max_context_len_to_capture: int = 8192,
         disable_custom_all_reduce: bool = False,
+        load_in_low_bit: str = "sym_int4",
         **kwargs,
     ) -> None:
         if "disable_log_stats" not in kwargs:
@@ -103,7 +105,8 @@ class IPEXLLMClass(LLM):
             disable_custom_all_reduce=disable_custom_all_reduce,
             **kwargs,
         )
-        self.llm_engine = IPEXLLMLLMEngine.from_engine_args(engine_args)
+        self.llm_engine = IPEXLLMLLMEngine.from_engine_args(engine_args,
+                                                            load_in_low_bit=load_in_low_bit)
         self.request_counter = Counter()
 
 
@@ -115,11 +118,12 @@ class IPEXLLMLLMEngine(LLMEngine):
     def from_engine_args(
         cls,
         engine_args: EngineArgs,
+        load_in_low_bit: str = "sym_int4",
         # ipex_llm_optimize_mode: str = 'NATIVE',
     ) -> "LLMEngine":
         """Creates an LLM engine from the engine arguments."""
         # Create the engine configs.
-        _ipex_llm_convert()
+        _ipex_llm_convert(load_in_low_bit)
         engine_configs = engine_args.create_engine_configs()
         parallel_config = engine_configs[2]
 

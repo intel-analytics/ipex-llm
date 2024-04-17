@@ -1,5 +1,5 @@
 from vllm import SamplingParams
-from ipex_llm.serving.vllm.engine.engine import IPEXLLMClass as LLM
+from ipex_llm.serving.vllm2.engine.engine import IPEXLLMClass as LLM
 
 # Sample prompts.
 prompts = [
@@ -12,7 +12,11 @@ prompts = [
 sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
 
 # Create an LLM.
-llm = LLM(model="YOUR_MODEL", device="xpu", dtype="float16", enforce_eager=True)
+llm = LLM(model="YOUR_MODEL",
+          device="xpu",
+          dtype="float16",
+          enforce_eager=True,
+          load_in_low_bit="sym_int4")
 # Generate texts from the prompts. The output is a list of RequestOutput objects
 # that contain the prompt, generated text, and other information.
 outputs = llm.generate(prompts, sampling_params)
