@@ -44,13 +44,13 @@ def _Attention_forward(
     kv_cache: torch.Tensor,
     input_metadata: InputMetadata,
 ) -> torch.Tensor:
-        qkv = self.qkv_proj(hidden_states)
-        q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
-        q, k = self.rotary_emb(positions, q, k)
-        k_cache, v_cache = kv_cache
-        attn_output = self.attn(q, k, v, k_cache, v_cache, input_metadata)
-        output = self.o_proj(attn_output)
-        return output
+    qkv = self.qkv_proj(hidden_states)
+    q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+    q, k = self.rotary_emb(positions, q, k)
+    k_cache, v_cache = kv_cache
+    attn_output = self.attn(q, k, v, k_cache, v_cache, input_metadata)
+    output = self.o_proj(attn_output)
+    return output
 
 
 def _QWen_Attention_forward(
