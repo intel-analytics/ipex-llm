@@ -16,6 +16,7 @@
 
 import torch
 from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
+
 from transformers import LlamaTokenizer, AutoTokenizer
 import argparse
 import time
@@ -105,6 +106,12 @@ if __name__ == '__main__':
         end = time.perf_counter()
 
         print(output_str)
-        print(f"Tokens generated {model.n_token_generated}")
-        print(f"E2E Generation time {(end - st):.4f}s")
-        print(f"First token latency {model.first_token_time:.4f}s")
+
+        # When the IPEX_CPU optimized models recive short prompts(length < 256)
+        # it will use normal generate() and has not these attr
+        from ipex_llm.transformers.convert import get_enable_ipex
+        _enable_ipex = get_enable_ipex()
+        if not _enable_ipex or actual_in_len >= 256:
+            print(f"Tokens generated {model.n_token_generated}")
+            print(f"E2E Generation time {(end - st):.4f}s")
+            print(f"First token latency {model.first_token_time:.4f}s")
