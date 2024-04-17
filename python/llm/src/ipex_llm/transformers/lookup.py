@@ -57,12 +57,24 @@ def generate(
         _enable_ipex = get_enable_ipex()
 
         if self.device.type == "cpu" and _enable_ipex:
-
             logger.warning("Prompt lookup is currently not supported on CPU with IPEX, "
                            "fallback to original generate.")
             kwargs.pop("max_matching_ngram_size")
         else:
             # Do prompt lookup generation
+            # If lookahead is provided, we will use lookup_generate instead of 
+            # spec_generate, remove vars for spec_generate and warn the user
+            spec_params = []
+            for var in ['max_step_draft', 'th_stop_draft', 'hf_adjust',
+                        'auto_th_stop_draft', 'auto_parameters', 'min_step_draft',
+                        'th_batch_num']:
+                value = kwargs.pop(var, None)
+                if value is not None:
+                    spec_params.append(var)
+            if len(spec_params) > 0:
+                logger.warning("Since you call the generate with lookahead parameter, "
+                               f"Speculative decoding parameters {spec_params} are "
+                               "removed in the generation.")
             return self.lookup_generate(inputs=inputs,
                                         num_output_tokens=lookahead,
                                         generation_config=generation_config,
