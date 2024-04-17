@@ -628,7 +628,6 @@ def speculative_generate(self,
                          generation_config: Optional[GenerationConfig] = None,
                          attention_mask=None,
                          **sampling_kwargs):
-    print("***************** aaa")
     invalidInputError(draft_model is not None,
                       "Draft model should be provided.")
     # min_step_draft >= 1. Since the max_step_draft may adjust,
