@@ -43,7 +43,6 @@ from ipex_llm.transformers.models.utils import rotate_half, SILU
 from ipex_llm.transformers.models.utils import mlp_fusion_check
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
-from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.utils.common import invalidInputError, invalidOperationError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
