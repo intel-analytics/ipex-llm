@@ -378,7 +378,7 @@ class _BaseAutoModelClass:
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
                           f"fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
-                          f"gguf_iq2_xs, gguf_iq1_s, mixed_fp4 or mixed_fp8.")
+                          f"gguf_iq2_xs, gguf_iq1_s, q2k, q6k, mixed_fp4 or mixed_fp8.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,

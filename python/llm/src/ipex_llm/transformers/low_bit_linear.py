@@ -74,7 +74,7 @@ IQ2_XXS = ggml_tensor_qtype["gguf_iq2_xxs"]
 IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
 Q2_K = ggml_tensor_qtype["q2_k"]
 IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
-
+Q6_K = ggml_tensor_qtype["q6_k"]
 
 # For sym_int4
 # The ggml_weight is col major and packs two rows at a stride of Q4_0//2.
@@ -214,7 +214,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
-        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S]:
+        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q6_K]:
             ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
         else:
             if imatrix is not None:
