@@ -25,13 +25,13 @@ pip install -e .
 
 ### 2. Configures OneAPI environment variables and accelerate
 
-Configures OneAPI environment variables 
+#### 2.1 Configures OneAPI environment variables 
 
 ```bash
 source /opt/intel/oneapi/setvars.sh
 ```
 
-Configures `accelerate` in command line interactively. 
+#### 2.2 Configures `accelerate` in command line interactively. 
 
 ```bash
 accelerate config
@@ -40,6 +40,14 @@ accelerate config
 Please answer `NO` in option `Do you want to run your training on CPU only (even if a GPU / Apple Silicon device is available)? [yes/NO]:`.
 
 After finish accelerate config, check if `use_cpu` is disable (i.e., ` use_cpu: false`) in accelerate config file (`~/.cache/huggingface/accelerate/default_config.yaml`).
+
+#### 2.3 (Optional) Set ` HF_HUB_OFFLINE=1` to avoid huggingface signing.
+
+```bash
+export  HF_HUB_OFFLINE=1
+```
+
+For more details, please refer [hfhuboffline](https://huggingface.co/docs/huggingface_hub/en/package_reference/environment_variables#hfhuboffline).
 
 ### 3. Finetune Llama-2-7B
 
