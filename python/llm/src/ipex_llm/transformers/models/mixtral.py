@@ -53,7 +53,8 @@ from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_cache_freq_xpu, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.models.mistral import should_use_fuse_rope, use_decoding_fast_path
+from ipex_llm.transformers.models.mistral import should_use_fuse_rope
+from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
 from ipex_llm.transformers.low_bit_linear import IQ2_XXS
@@ -177,9 +178,8 @@ def mixtral_attention_forward(
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
 
-    if decoding_fast_path and self.q_proj.qtype != IQ2_XXS:
+    if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]

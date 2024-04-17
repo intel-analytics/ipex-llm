@@ -48,7 +48,7 @@ from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_no_cache_xpu, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.models.mistral import should_use_fuse_rope, use_decoding_fast_path
+from ipex_llm.transformers.models.mistral import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import use_flash_attention
 from ipex_llm.transformers.models.utils import mlp_fusion_check
 

@@ -41,7 +41,7 @@ from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_x
 from ipex_llm.transformers.models.utils import mlp_fusion_check, GELU
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36, rotate_half
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5
-from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
+from ipex_llm.transformers.models.utils import use_decoding_fast_path
 
 import os
 
@@ -75,11 +75,6 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
     use_fuse_rope = use_fuse_rope and not (self.training and hidden_states.requires_grad)
     use_fuse_rope = use_fuse_rope and position_ids is not None
     return use_fuse_rope
-
-
-def use_decoding_fast_path(proj, use_fuse_rope, enough_kv_room, bs):
-    return decoding_fast_path_qtype_check(proj) and \
-        use_fuse_rope and enough_kv_room and bs == 1
 
 
 def gemma_rms_norm_forward(self, hidden_states):

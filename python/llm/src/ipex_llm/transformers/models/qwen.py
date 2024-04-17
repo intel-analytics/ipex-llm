@@ -44,6 +44,7 @@ from ipex_llm.transformers.models.utils import mlp_fusion_check
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
+from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.utils.common import invalidInputError, invalidOperationError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from transformers.modeling_outputs import BaseModelOutputWithPast
@@ -142,9 +143,10 @@ def qwen_attention_forward_original(
     rotary_pos_emb_list = rotary_pos_emb_list[:-1]
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
-    qtype_check = decoding_fast_path_qtype_check(self.q_proj)
-    decoding_fast_path = (qtype_check and use_fuse_rope and bsz * q_len == 1)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
+    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+                                                use_fuse_rope,
+                                                True,
+                                                bsz * q_len)
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         cache_k, cache_v = layer_past[0], layer_past[1]
