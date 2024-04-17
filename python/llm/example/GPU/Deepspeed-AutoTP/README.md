@@ -47,6 +47,8 @@ bash run_llama2_70b_pvc_1550_1_card.sh
 bash run_vicuna_33b_arc_2_card.sh
 ```
 
+> **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
+
 - Run Mistral-7B-Instruct on two cards of Intel Data Center GPU Flex
 
 ```bash
