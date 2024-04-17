@@ -34,28 +34,28 @@ Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quick
 
         Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
 
-      .. code-block:: bash
-        
-         sudo apt update 
-         sudo apt install nodejs 
-         sudo apt install npm 
+        .. code-block:: bash
+          
+          sudo apt update 
+          sudo apt install nodejs 
+          sudo apt install npm 
       
       2. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`. 
 
       3. Run below commands to install Open WebUI.  
 
-      .. code-block:: bash
+        .. code-block:: bash
 
-        cd ~/open-webui/
-        cp -RPp .env.example .env  # Copy required .env file
+          cd ~/open-webui/
+          cp -RPp .env.example .env  # Copy required .env file
 
-        # Build frontend
-        npm i
-        npm run build
+          # Build frontend
+          npm i
+          npm run build
 
-        # Install Dependencies
-        cd ./backend
-        pip install -r requirements.txt -U
+          # Install Dependencies
+          cd ./backend
+          pip install -r requirements.txt -U
       
   
    .. tab:: Windows
