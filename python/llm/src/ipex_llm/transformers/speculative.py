@@ -759,7 +759,8 @@ def speculative_generate(self,
                     draft_attention_mask = None
                 else:
                     appended_len = step_draft + step
-                    ones_to_append = torch.ones(attention_mask.size(0), appended_len)
+                    ones_to_append = torch.ones(attention_mask.size(0), appended_len,
+                                                device=self.device)
                     draft_attention_mask = torch.cat((attention_mask, ones_to_append), dim=1)
                 forward_args = {
                     "input_ids": draft_current_input_ids,
@@ -883,7 +884,8 @@ def speculative_generate(self,
                 cur_attention_mask = None
             else:
                 appended_len = drafted_input_ids.size(1) + step - 1
-                ones_to_append = torch.ones(attention_mask.size(0), appended_len)
+                ones_to_append = torch.ones(attention_mask.size(0), appended_len,
+                                            device=self.device)
                 cur_attention_mask = torch.cat((attention_mask, ones_to_append), dim=1)
             if _enable_ipex and hasattr(self, "trace_graph"):
                 if self.config.model_type == "baichuan":

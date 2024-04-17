@@ -57,12 +57,24 @@ def generate(
         _enable_ipex = get_enable_ipex()
 
         if self.device.type == "cpu" and _enable_ipex:
-
             logger.warning("Prompt lookup is currently not supported on CPU with IPEX, "
                            "fallback to original generate.")
             kwargs.pop("max_matching_ngram_size")
         else:
             # Do prompt lookup generation
+            # If lookahead is provided, we will use lookup_generate instead of
+            #  spec_generate, remove vars for spec_generate and warn the user
+            spec_params = []
+            for var in ['max_step_draft', 'th_stop_draft', 'hf_adjust',
+                        'auto_th_stop_draft', 'auto_parameters', 'min_step_draft',
+                        'th_batch_num']:
+                value = kwargs.pop(var, None)
+                if value is not None:
+                    spec_params.append(var)
+            if len(spec_params) > 0:
+                logger.warning("Since you call the generate with lookahead parameter, "
+                               f"Speculative decoding parameters {spec_params} are "
+                               "removed in the generation.")
             return self.lookup_generate(inputs=inputs,
                                         num_output_tokens=lookahead,
                                         generation_config=generation_config,
@@ -256,8 +268,15 @@ def lookup_generate(self,
             self.draft_num.append(candidate_length)
             tic = time.time()
             self.draft_time.append(tic - toc)
+            if attention_mask is None:
+                cur_attention_mask = None
+            else:
+                appended_len = verify_input_ids.size(1) + step - 1
+                ones_to_append = torch.ones(attention_mask.size(0), appended_len,
+                                            device=self.device)
+                cur_attention_mask = torch.cat((attention_mask, ones_to_append), dim=1)
             output = _non_cpu_ipex_verify(self, verify_input_ids, past_key_values,
-                                          attention_mask, return_dict=True, use_cache=True)
+                                          cur_attention_mask, return_dict=True, use_cache=True)
             if isinstance(output, dict):
                 logits = output['logits']
                 past_key_values = output['past_key_values']
