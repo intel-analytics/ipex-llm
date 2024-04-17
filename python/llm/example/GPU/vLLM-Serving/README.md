@@ -2,7 +2,9 @@
 
 This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous batching on Intel GPU (with IPEX-LLM low-bits optimizations).
 
-The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.2.1.post1).
+Currently, we provide two different versions of vLLM, which are vLLM-v1 and vLLM-v2.  vLLM-v1 is an experimental version and will be deprecated soon.
+
+The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.3.3).
 
 ## Example: Serving LLaMA2-7B using Intel GPU
 
@@ -26,8 +28,9 @@ sycl-ls
 ```
 
 ### 1. Install
-
 To run vLLM continuous batching on Intel GPUs, install the dependencies as follows:
+
+#### vLLM-v1
 
 ```bash
 # First create an conda environment
@@ -44,6 +47,24 @@ pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
 ```
 
+#### vLLM-v2
+```bash
+# First create an conda environment
+conda create -n ipex-vllm python=3.11
+conda activate ipex-vllm
+# Install dependencies
+pip install --pre --upgrade "ipex-llm[xpu]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+# cd to your workdir
+git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git
+cd vllm
+pip install -r requirements-xpu.txt
+pip install --no-deps xformers
+VLLM_BUILD_XPU_OPS=1 pip install --no-build-isolation -v -e .
+pip install outlines==0.0.34 --no-deps
+pip install interegular cloudpickle diskcache joblib lark nest-asyncio numba scipy
+# For Qwen model support
+pip install transformers_stream_generator einops tiktoken
+```
 ### 2. Configure recommended environment variables
 
 ```bash
@@ -63,22 +84,36 @@ To run offline inference using vLLM for a quick impression, use the following ex
 # Please first modify the MODEL_PATH in offline_inference.py
 # Modify load_in_low_bit to use different quantization dtype
 python offline_inference.py
+
+# For vLLM v2
+python offline_inference_v2.py
 ```
 
 #### Service
 
 To fully utilize the continuous batching feature of the `vLLM`, you can send requests to the service using curl or other similar methods.  The requests sent to the engine will be batched at token level. Queries will be executed in the same `forward` step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
+For vLLM-v1, you can start the service using the following command:
 ```bash
 #!/bin/bash
 # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
 # of batched prompt length the server will accept
 python -m ipex_llm.vllm.entrypoints.openai.api_server \
         --model /MODEL_PATH/Llama-2-7b-chat-hf/ --port 8000  \
-        --load-format 'auto' --device xpu --dtype bfloat16 \
+        --load-format 'auto' --device xpu --dtype float16 \
         --load-in-low-bit sym_int4 \
         --max-num-batched-tokens 4096
 ```
+
+For v2, use the following command:
+```bash
+python -m ipex_llm.serving.vllm2.entrypoints.openai.api_server \
+        --model /MODEL_PATH/Llama-2-7b-chat-hf/ --port 8000  \
+        --device xpu --dtype float16 \
+        --load-in-low-bit sym_int4 \
+        --max-num-batched-tokens 4096
+```
+
 
 Then you can access the api server as follows:
 
@@ -94,7 +129,7 @@ Then you can access the api server as follows:
  }' &
 ```
 
-### 4. (Optional) Add a new model
+### 4. (Optional) Add a new model for vLLM-v1
 
 Currently we have only supported LLaMA family model (including `llama`, `vicuna`, `llama-2`, etc.). To use aother model, you may need add some adaptions.
 
