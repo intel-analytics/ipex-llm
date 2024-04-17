@@ -336,6 +336,7 @@ def get_modelscope_hf_config(model_id_or_path: str,
         local_path = model_id_or_path
     return Config._file2dict(local_path)
 
+
 def is_torch_bf16_gpu_available():
     # always true for XPU and CPU
     return True
