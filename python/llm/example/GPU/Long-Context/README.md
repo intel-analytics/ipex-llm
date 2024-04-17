@@ -30,4 +30,4 @@ This folder contains examples of running long-context generation with IPEX-LLM o
     | ChatGLM3-6B-32K | Disable | 8K | 512|
     |  | Enable | 9K | 512 |
 
-> Note: If you need to run longer input or use less memory, please set `IPEX_LLM_LOW_MEM=1` to enable **low memory mode**, which will enable memory optimization and may slightly affect the latency performance.
+> Note: If you need to run longer input or use less memory, please set `IPEX_LLM_LOW_MEM=1` to enable **low memory mode**, which will enable memory optimization and may slightly affect the performance.
