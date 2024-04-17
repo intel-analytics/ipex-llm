@@ -26,23 +26,22 @@ Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quick
   Package version requirements for running Open WebUI: Node.js (>= 20.10) or Bun (>= 1.0.21), Python (>= 3.11)
 ```
 
-1. Please install Node.js & npm as below:
-
+Please install Node.js & npm as below:
 ```eval_rst
 .. tabs::
    .. tab:: Linux
 
-  Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
+      Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
 
       .. code-block:: bash
         
-        sudo apt update 
-        sudo apt install nodejs 
-        sudo apt install npm 
+         sudo apt update 
+         sudo apt install nodejs 
+         sudo apt install npm 
   
    .. tab:: Windows
 
-  You may download and install Node.js installation package from [Node.js] https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi, which will install both Node.js & npm on your system. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
+      You may download and install Node.js installation package from [Node.js] https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi, which will install both Node.js & npm on your system. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
 ```
 
 2. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`.  
