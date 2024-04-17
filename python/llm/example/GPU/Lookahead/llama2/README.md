@@ -1,5 +1,5 @@
 # LLaMA2
-In this directory, you will find examples on how you could run LLaMA2 sym-int4 inference with lookahead optimization using IPEX-LLM on [Intel GPUs](../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf) as reference Llama2 models.
+In this directory, you will find examples on how you could run LLaMA2 inference with lookahead optimization using IPEX-LLM on [Intel GPUs](../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf) as reference Llama2 models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -21,12 +21,30 @@ source /opt/intel/oneapi/setvars.sh
 
 ### 3. Run
 
-For optimal performance on Intel Data Center GPU Max Series, it is recommended to set several environment variables.
+<details>
+
+<summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
+
+```bash
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
+```
+
+</details>
+
+<details>
+
+<summary>For Intel Data Center GPU Max Series</summary>
+
 ```bash
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
 export ENABLE_SDP_FUSION=1
 ```
+> Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
+</details>
 
 ```
 python ./lookahead.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT --n-lookahead-tokens N_LOOKAHEAD
