@@ -42,7 +42,7 @@ Please answer `NO` in option `Do you want to run your training on CPU only (even
 
 After finish accelerate config, check if `use_cpu` is disable (i.e., ` use_cpu: false`) in accelerate config file (`~/.cache/huggingface/accelerate/default_config.yaml`).
 
-#### 2.3 (Optional) Set ` HF_HUB_OFFLINE=1` to avoid huggingface signing.
+#### 2.3 (Optional) Set ` HF_HUB_OFFLINE=1` to avoid huggingface hug signing.
 
 ```bash
 export  HF_HUB_OFFLINE=1
@@ -54,10 +54,16 @@ For more details, please refer [hfhuboffline](https://huggingface.co/docs/huggin
 
 This example shows how to run [Alpaca QLoRA finetune on Llama-2](https://github.com/artidoro/qlora) directly on Intel GPU, based on [axolotl Llama-2 qlora example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/examples/llama-2/qlora.yml). Note that only Llama-2-7B QLora example is verified on Intel ARC 770 with 16GB memory.
 
-Modify parameters in `qlora.yml` based on your requirements.
+Modify parameters in `qlora.yml` based on your requirements. Then, launch finetuning with the following command.
 
 ```
 accelerate launch finetune.py qlora.yml
+```
+
+In v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
+
+```
+accelerate launch train.py qlora.yml
 ```
 
 Output in console

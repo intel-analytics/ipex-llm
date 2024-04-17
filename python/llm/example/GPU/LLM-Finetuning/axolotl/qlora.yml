@@ -1,4 +1,4 @@
-base_model: /mnt/disk1/models/Llama-2-7b-hf
+base_model: NousResearch/Llama-2-7b-hf
 model_type: LlamaForCausalLM
 tokenizer_type: LlamaTokenizer
 is_llama_derived_model: true
@@ -8,7 +8,7 @@ load_in_4bit: true
 strict: false
 
 datasets:
-  - path: /mnt/disk1/datasets/alpaca_2k_test
+  - path: mhenrichsen/alpaca_2k_test
     type: alpaca
 dataset_prepared_path:
 val_set_size: 0.05
@@ -21,7 +21,7 @@ sequence_len: 4096
 sample_packing: true
 pad_to_sequence_len: true
 
-lora_r: 8
+lora_r: 16
 lora_alpha: 16
 lora_dropout: 0.05
 lora_target_modules:
