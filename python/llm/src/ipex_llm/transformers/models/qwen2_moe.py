@@ -56,7 +56,9 @@ from transformers.models.qwen2_moe.modeling_qwen2_moe import Qwen2MoeModel, appl
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
 from ipex_llm.transformers.kv import DynamicFp8Cache
 
-KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+import os
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
 def should_use_fuse_rope(self, query_states, position_ids):
