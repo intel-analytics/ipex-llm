@@ -594,7 +594,7 @@ def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_
         "return_dict": return_dict,
         "use_cache": use_cache,
     }
-    if cur_attention_mask:
+    if cur_attention_mask is not None:
         forward_args["attention_mask"] = cur_attention_mask
 
     if self.config.model_type == "chatglm":
