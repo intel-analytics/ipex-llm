@@ -47,6 +47,8 @@ def llm_patch(train=False):
         replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
         replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
         replace_attr(transformers, "AutoModel", AutoModel)
+        from ipex_llm.transformers.utils import is_torch_bf16_gpu_available
+        replace_attr(transformers.utils, "is_torch_bf16_gpu_available", is_torch_bf16_gpu_available)
 
         import_peft_check = 'peft' in sys.modules or 'peft.utils' in sys.modules or \
             'peft.tuners' in sys.modules or 'peft.mapping' in sys.modules
