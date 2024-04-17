@@ -26,59 +26,62 @@ Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quick
   Package version requirements for running Open WebUI: Node.js (>= 20.10) or Bun (>= 1.0.21), Python (>= 3.11)
 ```
 
-1. Please install Node.js & npm as below:
 ```eval_rst
 .. tabs::
    .. tab:: Linux
 
-      Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
+      1. Please install Node.js & npm as below:
+
+        Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
 
       .. code-block:: bash
         
          sudo apt update 
          sudo apt install nodejs 
          sudo apt install npm 
+      
+      2. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`. 
+
+      3. Run below commands to install Open WebUI.  
+
+      .. code-block:: bash
+
+        cd ~/open-webui/
+        cp -RPp .env.example .env  # Copy required .env file
+
+        # Build frontend
+        npm i
+        npm run build
+
+        # Install Dependencies
+        cd ./backend
+        pip install -r requirements.txt -U
+      
   
    .. tab:: Windows
 
-      You may download Node.js installation package from [Node.js](https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi), which will install both Node.js & npm on your system.
-      Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
-```
+      1. Please install Node.js & npm as below:
 
-2. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`.  
+        You may download Node.js installation package from [Node.js](https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi), which will install both Node.js & npm on your system.
+        Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
+      
+      2. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`. 
 
-3. Run below commands to install Open WebUI.  
-```eval_rst
-.. tabs::
-  .. tab:: Linux
+      3. Run below commands to install Open WebUI. 
 
-    .. code-block:: bash
+      .. code-block:: bash
 
-      cd ~/open-webui/
-      cp -RPp .env.example .env  # Copy required .env file
+        cd ~/open-webui/
+        copy .env.example .env
 
-      # Build frontend
-      npm i
-      npm run build
+        # Build frontend
+        npm install
+        npm run build
 
-      # Install Dependencies
-      cd ./backend
-      pip install -r requirements.txt -U
+        # Install Dependencies
+        cd ./backend
+        pip install -r requirements.txt -U
 
-  .. tab:: Windows
-
-    .. code-block:: bash
-
-      cd ~/open-webui/
-      copy .env.example .env
-
-      # Build frontend
-      npm install
-      npm run build
-
-      # Install Dependencies
-      cd ./backend
-      pip install -r requirements.txt -U
 ```
 
 #### Start the service
