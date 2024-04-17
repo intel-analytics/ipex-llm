@@ -25,7 +25,7 @@ Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quick
   Package version requirements for running Open WebUI: Node.js (>= 20.10) or Bun (>= 1.0.21), Python (>= 3.11)
 ```
 
-You may install Node.js & npm as below:
+Please install Node.js & npm as below:
 
 ```eval_rst
 .. tabs::
@@ -42,6 +42,7 @@ You may install Node.js & npm as below:
    .. tab:: Windows
 
       You may download Node.js installation package from https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi, which will install both Node.js & npm on your system.
+
       Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
 ```
 
@@ -75,7 +76,7 @@ You may run below commands to install Open WebUI dependencies:
       
       .. code-block:: bash
 
-         cd ~/open-webui/
+         cd ~\open-webui\
          copy .env.example .env
 
          # Build frontend
@@ -83,7 +84,7 @@ You may run below commands to install Open WebUI dependencies:
          npm run build
 
          # Install Dependencies
-         cd ./backend
+         cd .\backend
          pip install -r requirements.txt -U
 ```
 
@@ -112,11 +113,11 @@ Run below commands to start the service:
     .. code-block:: bash
        
        set no_proxy=localhost,127.0.0.1
-       start-windows.bat
+       start_windows.bat
     
     .. note:
     
-    If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `set HF_ENDPOINT=https://hf-mirror.com` before running `start-windows.bat`.
+    If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `set HF_ENDPOINT=https://hf-mirror.com` before running `start_windows.bat`.
 ```
 
 
@@ -175,6 +176,16 @@ Go to **Settings -> Models** in the menu, choose a model under **Pull a model fr
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_pull_models.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_pull_models.png" width="100%" />
 </a>
+
+To run the model on GPU, please set `PARAMETER num_gpu 999` in the Ollama Modelfile.For example, suppose you have downloaded a `llama2:latest`, then you can create a file named Modelfile:
+
+```bash
+FROM llama2:latest
+PARAMETER num_gpu 999
+PARAMETER num_predict 64
+```
+
+Then you can create the model in Ollama by `ollama create llama2:latest -f Modelfile` and run it on GPU. For more details, please see [using-ollama](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#using-ollama).
 
 #### Chat with the Model
 
