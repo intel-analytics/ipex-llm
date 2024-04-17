@@ -369,6 +369,27 @@ def mlp_fusion_check(x, qtype, training):
     return True
 
 
+def use_decoding_fast_path(proj,
+                           use_fuse_rope,
+                           enough_kv_room,
+                           bs,
+                           qtype_check=decoding_fast_path_qtype_check):
+    device = get_xpu_device_type(proj.weight)
+    if not qtype_check(proj):
+        return False
+    if not use_fuse_rope:
+        return False
+    if not enough_kv_room:
+        return False
+    if bs != 1:
+        return False
+    if proj.enable_xetla:
+        return False
+    if device in ["uhd"]:
+        return False
+    return True
+
+
 def use_xmx(x: torch.Tensor, qtype: int):
     device = get_xpu_device_type(x)
     return (

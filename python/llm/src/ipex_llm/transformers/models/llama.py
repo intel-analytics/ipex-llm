@@ -48,6 +48,7 @@ from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
+from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from transformers.models.llama.modeling_llama import LlamaModel
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4
@@ -362,11 +363,12 @@ def llama_attention_forward_4_31_quantized(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
-    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
-                          and enough_kv_room and bsz * q_len == 1)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
+    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+                                                use_fuse_rope,
+                                                enough_kv_room,
+                                                bsz * q_len,
+                                                llama_decoding_fast_path_qtype_check) and no_tp
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -496,11 +498,12 @@ def llama_attention_forward_4_31_original(
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
-    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
-                          enough_kv_room and bsz * q_len == 1)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
+    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+                                                use_fuse_rope,
+                                                enough_kv_room,
+                                                bsz * q_len,
+                                                llama_decoding_fast_path_qtype_check) and no_tp
 
     # single batch decoding fast path
     # forward_qkv takes will perform QKV projection, rotary position embedding
@@ -728,11 +731,12 @@ def llama_attention_selective_batching_forward_4_31(
     # TODO: decoding fast path
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = past_key_value is not None and is_enough_kv_cache_room_4_31(past_key_value[0])
-    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope and
-                          bsz * q_len == 1)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
+    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+                                                use_fuse_rope,
+                                                enough_kv_room,
+                                                bsz * q_len,
+                                                llama_decoding_fast_path_qtype_check) and no_tp
 
     updated_past_key_values = []
     # single batch decoding fast path
@@ -948,11 +952,12 @@ def llama_attention_forward_4_36_quantized(
     device = hidden_states.device
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
-    qtype_check = llama_decoding_fast_path_qtype_check(self.q_proj)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = (no_tp and qtype_check and use_fuse_rope
-                          and enough_kv_room and bsz * q_len == 1)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
+    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+                                                use_fuse_rope,
+                                                enough_kv_room,
+                                                bsz * q_len,
+                                                llama_decoding_fast_path_qtype_check) and no_tp
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         tmp_cache_k, tmp_cache_v = init_kv_cache(
