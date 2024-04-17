@@ -13,7 +13,7 @@ This quickstart guide walks you through setting up and using [Open WebUI](https:
 
 ### 1 Run Ollama on Linux with Intel GPU
 
-Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.html) to install and run "Ollam Serve". Please ensure that the Ollama server continues to run while you're using the Open WebUI.
+Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.html) to install and run "Ollama Serve". Please ensure that the Ollama server continues to run while you're using the Open WebUI.
 
 ### 2 Install and Run Open-Webui
 
@@ -26,44 +26,91 @@ Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quick
   Package version requirements for running Open WebUI: Node.js (>= 20.10) or Bun (>= 1.0.21), Python (>= 3.11)
 ```
 
-1. Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
-   ```sh
-   sudo apt update 
-   sudo apt install nodejs 
-   sudo apt install npm 
-   ```
+1. Install Node.js & npm as steps below:
+
+```eval_rst
+..tabs::
+  ..tab:: Linux
+
+  Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
+
+    .. code-block:: bash
+       
+       sudo apt update 
+       sudo apt install nodejs 
+       sudo apt install npm 
+  
+  ..tab:: Windows
+
+  Download and install Node.js from [Node.js] https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi.
+```
 
 2. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`.  
 
 3. Run below commands to install Open WebUI.  
-    ```sh
-    cd ~/open-webui/
-    cp -RPp .env.example .env  # Copy required .env file
+```eval_rst
+.. tabs::
+  .. tab:: Linux
 
-    # Build frontend
-    npm i
-    npm run build
+    .. code-block:: bash
 
-    # Install Dependencies
-    cd ./backend
-    pip install -r requirements.txt -U
-    ```
+      cd ~/open-webui/
+      cp -RPp .env.example .env  # Copy required .env file
+
+      # Build frontend
+      npm i
+      npm run build
+
+      # Install Dependencies
+      cd ./backend
+      pip install -r requirements.txt -U
+
+  .. tab:: Windows
+
+    .. code-block:: bash
+
+      cd ~/open-webui/
+      copy .env.example .env
+
+      # Build frontend
+      npm i
+      npm run build
+
+      # Install Dependencies
+      cd ./backend
+      pip install -r requirements.txt -U
+```
 
 #### Start the service
 
 Run below commands to start the service:
 
-```sh
-export no_proxy=localhost,127.0.0.1
-bash start.sh
-```
-
-
 ```eval_rst
-.. note::
-   
-  If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `export HF_ENDPOINT=https://hf-mirror.com` before running `bash start.sh`.
+.. tabs::
+  .. tab:: Linux
+
+    .. code-block:: bash
+
+       export no_proxy=localhost,127.0.0.1
+       bash start.sh
+    
+    .. note:
+    
+    If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `export HF_ENDPOINT=https://hf-mirror.com` before running `bash start.sh`.
+
+
+  .. tab:: Windows
+    
+    .. code-block:: bash
+       
+       set no_proxy=localhost,127.0.0.1
+       start-windows.bat
+    
+    .. note:
+    
+    If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `set HF_ENDPOINT=https://hf-mirror.com` before running `start-windows.bat`.
 ```
+
 
 #### Access the WebUI
 Upon successful launch, URLs to access the WebUI will be displayed in the terminal. Open the provided local URL in your browser to interact with the WebUI, e.g. http://localhost:8080/.
