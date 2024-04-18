@@ -76,6 +76,7 @@ Q2_K = ggml_tensor_qtype["q2_k"]
 IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 Q6_K = ggml_tensor_qtype["q6_k"]
 
+
 # For sym_int4
 # The ggml_weight is col major and packs two rows at a stride of Q4_0//2.
 #
