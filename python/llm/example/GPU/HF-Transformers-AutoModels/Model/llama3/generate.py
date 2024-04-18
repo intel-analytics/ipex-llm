@@ -28,7 +28,10 @@ DEFAULT_SYSTEM_PROMPT = """\
 
 def get_prompt(user_input: str, chat_history: list[tuple[str, str]],
                system_prompt: str) -> str:
-    prompt_texts = [f'<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n{system_prompt}<|eot_id|>']
+    prompt_texts = [f'<|begin_of_text|>']
+
+    if system_prompt != '':
+        prompt_texts.append(f'<|start_header_id|>system<|end_header_id|>\n{system_prompt}<|eot_id|>')
 
     for history_input, history_response in chat_history:
         prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n{history_input.strip()}<|eot_id|>')
