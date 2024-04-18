@@ -180,6 +180,8 @@ def get_xpu_device_type(x):
         return "flex"
     elif name.startswith("Intel(R) Data Center GPU Max"):
         return "pvc"
+    elif name.startswith("Intel(R) UHD"):
+        return "uhd"
     else:
         return "others"
 

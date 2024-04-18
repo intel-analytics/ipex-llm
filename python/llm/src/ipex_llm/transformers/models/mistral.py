@@ -53,6 +53,7 @@ from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
 from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
 from ipex_llm.transformers.models.llama import should_use_xetla_mm_qkv
 from ipex_llm.transformers.models.llama import fuse_qkv_weight_xetla
@@ -85,12 +86,6 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
     use_fuse_rope = use_fuse_rope and not (self.training and hidden_states.requires_grad)
     use_fuse_rope = use_fuse_rope and position_ids is not None
     return use_fuse_rope
-
-
-def use_decoding_fast_path(proj, use_fuse_rope, enough_kv_room, bs):
-    return llama_decoding_fast_path_qtype_check(proj) and \
-        use_fuse_rope and enough_kv_room and bs == 1 and \
-        not proj.enable_xetla
 
 
 def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_len, kv_seq_len,

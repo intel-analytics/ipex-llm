@@ -33,7 +33,7 @@ from transformers.utils import logging
 from ipex_llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import rotate_half
 from ipex_llm.transformers.models.utils import use_esimd_sdp
-from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
+from ipex_llm.transformers.models.utils import use_decoding_fast_path
 
 import os
 
@@ -91,9 +91,10 @@ def qwen_attention_forward_vl(
     device = hidden_states.device
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states)
-    qtype_check = decoding_fast_path_qtype_check(self.q_proj)
-    decoding_fast_path = (qtype_check and use_fuse_rope and bsz * q_len == 1)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
+    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+                                                use_fuse_rope,
+                                                True,
+                                                bsz * q_len)
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         cache_k, cache_v = layer_past[0], layer_past[1]
