@@ -52,7 +52,7 @@ For more details, please refer [hfhuboffline](https://huggingface.co/docs/huggin
 
 ### 3. Finetune Llama-2-7B
 
-This example shows how to run [Alpaca QLoRA finetune on Llama-2](https://github.com/artidoro/qlora) and [Alpaca LoRA training](https://github.com/tloen/alpaca-lora/tree/main) directly on Intel GPU. Note that only Llama-2-7B QLoRA and LoRA examples are verified on Intel ARC 770 with 16GB memory.
+This example shows how to run [Alpaca LoRA training](https://github.com/tloen/alpaca-lora/tree/main) and [Alpaca QLoRA finetune](https://github.com/artidoro/qlora) directly on Intel GPU. Note that only Llama-2-7B LoRA and QLoRA examples are verified on Intel ARC 770 with 16GB memory.
 
 #### 3.1 Alpaca LoRA
 
