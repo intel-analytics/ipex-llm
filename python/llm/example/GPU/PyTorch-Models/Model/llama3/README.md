@@ -1,7 +1,7 @@
 # Llama3
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Llama-3-8b-instruction-hf](https://huggingface.co/meta-llama/Llama-3-8b-instruction-hf) as a reference Llama3 models.
+In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate Llama3 models. For illustration purposes, we utilize the [meta-llama/Llama-3-8b-instruction-hf](https://huggingface.co/meta-llama/Llama-3-8b-instruction-hf) as a reference Llama3 models.
 
-## 0. Requirements
+## Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
@@ -110,11 +110,12 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ### 4. Running examples
 
-```
-python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+```bash
+python ./generate.py --prompt 'What is AI?'
 ```
 
-Arguments info:
+In the example, several arguments can be passed to satisfy your requirements:
+
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama3 model (e.g. `meta-llama/Llama-3-8b-instruction-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-3-8b-instruction-hf'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.

@@ -18,8 +18,8 @@ import torch
 import time
 import argparse
 
-from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from ipex_llm import optimize_model
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to [CHANGE REFERENCE URL HERE]
@@ -50,20 +50,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+    # Load model
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 optimize_model=True,
                                                  trust_remote_code=True,
+                                                 torch_dtype='auto',
+                                                 low_cpu_mem_usage=True,
                                                  use_cache=True)
+
+    # With only one line to enable IPEX-LLM optimization on model
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+    model = optimize_model(model)
+
     model = model.half().to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
+    
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
