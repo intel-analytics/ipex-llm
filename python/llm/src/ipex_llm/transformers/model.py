@@ -140,6 +140,9 @@ class _BaseAutoModelClass:
             specify the model hub. Default to be ``'huggingface'``.
         :param embedding_qtype: str value, options are ``'q2_k'`` now. Default to be None.
             Relevant low bit optimizations will be applied to nn.Embedding layer.
+        :param mixed_precision: boolean value, Whether to use mixed precision quantization.
+            Default to be False. If set to True, we will use sym_int8 for lm_head when
+            load_in_low_bit is sym_int4 or asym_int4.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
@@ -394,6 +397,7 @@ class _BaseAutoModelClass:
         quant_config = kwargs.pop("quantization_config", None)
         imatrix_data = kwargs.pop("imatrix_data", None)
         embedding_qtype = kwargs.pop("embedding_qtype", None)
+        mixed_precision = kwargs.pop("mixed_precision", False)
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
         enable_xetla = kwargs.pop("enable_xetla", False)
@@ -463,7 +467,8 @@ class _BaseAutoModelClass:
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
                                      imatrix_data=imatrix_data,
                                      embedding_qtype=embedding_qtype,
-                                     enable_xetla=enable_xetla,)
+                                     enable_xetla=enable_xetla,
+                                     mixed_precision=mixed_precision)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
         # enable tie_word_embeddings for MPT

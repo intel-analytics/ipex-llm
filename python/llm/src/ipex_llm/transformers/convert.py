@@ -92,6 +92,13 @@ if is_auto_awq_available():
     from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 
+def is_lm_head(name, model_config, out_features):
+    if name == "lm_head" or getattr(model_config, "vocab_size", None) == out_features:
+        return True
+    else:
+        return False
+
+
 def is_linear_module(module):
 
     in_features = None
@@ -220,7 +227,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  cpu_embedding=False, prefix_name='',
                                  imatrix_data=None, embedding_qtype=None,
                                  model_config=None, torch_dtype=torch.float32,
-                                 enable_xetla=False):
+                                 enable_xetla=False,
+                                 mixed_precision=False):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from ipex_llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
@@ -237,7 +245,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if is_linear and not isinstance(module, LowBitLinear):
             in_features, out_features, mp_group = linear_args
             optimize_lm_head = False
-            if name == "lm_head":
+            if is_lm_head(name, model_config, out_features):
                 model_type = getattr(model_config, "model_type", None)
                 if model_type in ["gptj", "llama"] and os.environ.get("BIGDL_OPTIMIZE_LM_HEAD",
                                                                       None) == "1":
@@ -291,6 +299,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                                        full_module_name,
                                                                        imatrix_data,
                                                                        model_config)
+                    # mixed precison for lm_head
+                    if mixed_precision and is_lm_head(name, model_config, out_features):
+                        if cur_qtype in [ggml_tensor_qtype["sym_int4"],
+                                         ggml_tensor_qtype["asym_int4"]]:
+                            cur_qtype = ggml_tensor_qtype["sym_int8"]
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
@@ -409,6 +422,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 model_config=model_config,
                 torch_dtype=torch_dtype,
                 enable_xetla=enable_xetla,
+                mixed_precision=mixed_precision
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -684,7 +698,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          lightweight_bmm=False, torch_dtype="auto",
                          imatrix_data=None,
                          embedding_qtype=None,
-                         enable_xetla=False):
+                         enable_xetla=False,
+                         mixed_precision=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -709,6 +724,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         model_config=getattr(model, "config", None),
         torch_dtype=torch_dtype,
         enable_xetla=enable_xetla,
+        mixed_precision=mixed_precision,
     )
     if not has_been_replaced:
         warnings.warn(
