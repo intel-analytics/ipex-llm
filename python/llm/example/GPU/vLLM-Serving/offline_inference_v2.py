@@ -32,7 +32,7 @@
 # limitations under the License.
 
 from vllm import SamplingParams
-from ipex_llm.serving.vllm2.engine.engine import IPEXLLMClass as LLM
+from ipex_llm.vllm2.engine import IPEXLLMClass as LLM
 
 # Sample prompts.
 prompts = [

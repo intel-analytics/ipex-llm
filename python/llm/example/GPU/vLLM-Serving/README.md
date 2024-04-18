@@ -176,9 +176,9 @@ python offline_inference_v2.py
 
 To fully utilize the continuous batching feature of the `vLLM`, you can send requests to the service using curl or other similar methods.  The requests sent to the engine will be batched at token level. Queries will be executed in the same `forward` step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
-For vLLM-v1, you can start the service using the following command:
+For vLLM-v2, you can start the service using the following command:
 ```bash
-python -m ipex_llm.serving.vllm2.entrypoints.openai.api_server \
+python -m ipex_llm.vllm2.entrypoints.openai.api_server \
         --model /MODEL_PATH/Llama-2-7b-chat-hf/ --port 8000  \
         --device xpu --dtype float16 \
         --load-in-low-bit sym_int4 \
