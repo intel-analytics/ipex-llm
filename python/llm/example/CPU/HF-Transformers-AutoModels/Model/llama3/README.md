@@ -1,5 +1,5 @@
 # Llama3
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3 models. For illustration purposes, we utilize the [meta-llama/Llama-3-8b-instruction-hf](https://huggingface.co/meta-llama/Llama-3-8b-instruction-hf) as a reference Llama3 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3 models. For illustration purposes, we utilize the [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) as a reference Llama3 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -24,7 +24,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama3 model (e.g. `meta-llama/Llama-3-8b-instruction-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-3-8b-instruction-hf'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama3 model (e.g. `meta-llama/Meta-Llama-3-8B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Meta-Llama-3-8B-Instruct'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -52,7 +52,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```
 
 #### 2.3 Sample Output
-#### [meta-llama/Llama-3-8b-instruction-hf](https://huggingface.co/meta-llama/Llama-3-8b-instruction-hf)
+#### [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
