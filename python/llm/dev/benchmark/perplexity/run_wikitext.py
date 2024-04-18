@@ -14,6 +14,7 @@ parser.add_argument("--model_path", required=True, type=str)
 parser.add_argument("--dataset", type=str, default='path=wikitext,name=wikitext-2-raw-v1')
 parser.add_argument("--device", type=str, default="xpu")
 parser.add_argument("--precision", type=str, default="sym_int4")
+parser.add_argument("--use-cache", action="store_true")
 parser.add_argument("--limit", type=int, default=None, help="Limit the number of examples per task. For debug only")
 args = parser.parse_args()
 
@@ -21,12 +22,12 @@ if args.precision == "fp16":  # ipex fp16
     from transformers import AutoModelForCausalLM
     if "xpu" in args.device:
         import intel_extension_for_pytorch as ipex
-    model = AutoModelForCausalLM.from_pretrained(args.model_path, use_cache=True, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(args.model_path, use_cache=args.use_cache, trust_remote_code=True)
     model = model.half()
 else:  # ipex-llm
     from ipex_llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(args.model_path, load_in_low_bit=args.precision,
-                                                 use_cache=True, trust_remote_code=True)
+                                                 use_cache=args.use_cache, trust_remote_code=True)
     model = model.half()
 model = model.to(args.device)
 
@@ -60,6 +61,8 @@ for begin_loc in tqdm(range(0, seq_len, stride)):
         neg_log_likelihood = outputs.loss
 
     nlls.append(neg_log_likelihood)
+    if "xpu" in args.device:
+        torch.xpu.empty_cache()
 
     prev_end_loc = end_loc
     if end_loc == seq_len:
