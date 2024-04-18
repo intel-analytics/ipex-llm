@@ -210,6 +210,7 @@ jobs:
       - name: Run LLM inference test
         shell: bash
         run: |
+          python -m pip uninstall sentence-transformers
           python -m pip install einops datasets librosa openai-whisper
           bash python/llm/test/run-llm-inference-tests.sh
       - name: Run LLM langchain test
