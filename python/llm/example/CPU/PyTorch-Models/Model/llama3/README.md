@@ -64,5 +64,7 @@ What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 <|begin_of_text|><|start_header_id|>system<|end_header_id|>
 <|eot_id|><|start_header_id|>user<|end_header_id|>
 What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-AI, or Artificial Intelligence, refers to the development of computer systems that can perform tasks that would typically require human intelligence, such as learning, problem-solving, decision
+AI, or Artificial Intelligence, refers to the development of computer systems that can perform tasks that would typically require human intelligence.
+
+AI systems can be trained to perform specific
 ```
