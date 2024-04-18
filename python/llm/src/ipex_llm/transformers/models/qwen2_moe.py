@@ -567,7 +567,7 @@ def qwen2moe_moeblock_forward(self, hidden_states: torch.Tensor):
                 final_hidden_states = expert_layer(hidden_states) * weight
             else:
                 final_hidden_states = final_hidden_states + expert_layer(hidden_states) * weight
-    elif bs < 256:
+    elif bs < 256 and hidden_states.device.type == 'xpu':
         final_hidden_states = torch.zeros((batch_size * sequence_length, hidden_dim),
                                           dtype=hidden_states.dtype, device=hidden_states.device)
         import linear_q4_0
