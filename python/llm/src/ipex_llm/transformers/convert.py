@@ -91,11 +91,13 @@ if is_auto_awq_available():
     from ipex_llm.transformers.awq.linear import WQLinear_GEMM
     from transformers.utils.quantization_config import AwqBackendPackingMethod
 
+
 def is_lm_head(name, model_config, out_features):
     if name == "lm_head" or getattr(model_config, "vocab_size", None) == out_features:
         return True
     else:
         return False
+
 
 def is_linear_module(module):
 
