@@ -2,7 +2,7 @@
 
 This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous batching on Intel GPU (with IPEX-LLM low-bits optimizations).
 
-Currently, we provide two different versions of vLLM, which are vLLM-v1 and vLLM-v2.   vLLM-v1 will be deprecated soon and we recommend you to try vLLM-v2 directly.
+Currently, we provide two different versions of vLLM, which are vLLM-v1 and vLLM-v2. vLLM-v1 will be deprecated soon and we recommend you to try vLLM-v2 directly.
 
 The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.3.3).
 
@@ -120,7 +120,7 @@ Finally, register your `*ForCausalLM` class to the _MODEL_REGISTRY in `IPEX/pyth
 
 
 
-### vLLM-v2
+### vLLM-v2 (experimental support)
 
 Currently, for vLLM-v2, we support the following models:
 
