@@ -57,6 +57,7 @@ resume_from_checkpoint:
 local_rank:
 logging_steps: 1
 xformers_attention:
+# flash_attention is not supported
 flash_attention: false
 
 warmup_steps: 10
