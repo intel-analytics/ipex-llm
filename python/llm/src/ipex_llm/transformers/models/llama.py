@@ -46,7 +46,7 @@ from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
-from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp, use_sdp_fp8
 from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from transformers.modeling_outputs import BaseModelOutputWithPast
@@ -446,7 +446,7 @@ def llama_attention_forward_4_31_quantized(
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
 
-        if query_states.device.type != 'xpu':
+        if use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             # repeat k/v heads if n_kv_heads < n_heads
@@ -1059,7 +1059,7 @@ def llama_attention_forward_4_36_quantized(
                                                          self.layer_idx, cache_kwargs,
                                                          new_layout=True)
         kv_seq_len = key_states.shape[-2]
-        if query_states.device.type != 'xpu':
+        if use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             key_states = repeat_kv(key_states, self.num_key_value_groups)\

@@ -355,6 +355,15 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
     return True
 
 
+def use_sdp_fp8(q_len, k_len, query_states):
+    if query_states.device.type != "xpu":
+        return False
+    if q_len == k_len:
+        # sdp_fp8 only support rest token now
+        return False
+    return True
+
+
 def mlp_fusion_check(x, qtype, training):
     invalidInputError(x.dim() == 2,
                       "Here input x's dim should be 2.")
