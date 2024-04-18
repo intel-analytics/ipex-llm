@@ -446,7 +446,7 @@ def llama_attention_forward_4_31_quantized(
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
 
-        if use_sdp_fp8(q_len, key_states.shape[2], query_states):
+        if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             # repeat k/v heads if n_kv_heads < n_heads
@@ -1059,7 +1059,7 @@ def llama_attention_forward_4_36_quantized(
                                                          self.layer_idx, cache_kwargs,
                                                          new_layout=True)
         kv_seq_len = key_states.shape[-2]
-        if use_sdp_fp8(q_len, key_states.shape[2], query_states):
+        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             key_states = repeat_kv(key_states, self.num_key_value_groups)\
