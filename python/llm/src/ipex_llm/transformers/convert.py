@@ -91,6 +91,11 @@ if is_auto_awq_available():
     from ipex_llm.transformers.awq.linear import WQLinear_GEMM
     from transformers.utils.quantization_config import AwqBackendPackingMethod
 
+def is_lm_head(name, model_config, out_features):
+    if name == "lm_head" or getattr(model_config, "vocab_size", None) == out_features:
+        return True
+    else:
+        return False
 
 def is_linear_module(module):
 
@@ -238,7 +243,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if is_linear and not isinstance(module, LowBitLinear):
             in_features, out_features, mp_group = linear_args
             optimize_lm_head = False
-            if name == "lm_head" or getattr(model_config, "vocab_size", None) == out_features:
+            if is_lm_head(name, model_config, out_features):
                 model_type = getattr(model_config, "model_type", None)
                 if model_type in ["gptj", "llama"] and os.environ.get("BIGDL_OPTIMIZE_LM_HEAD",
                                                                       None) == "1":
@@ -294,11 +299,10 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                                        model_config,
                                                                        mixed_precision)
                     # mixed precison for lm_head
-                    if mixed_precision and \
-                        (name == "lm_head" or getattr(model_config, "vocab_size", None) == out_features):
-                        if cur_qtype in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["asym_int4"]]:
+                    if mixed_precision and is_lm_head(name, model_config, out_features):
+                        if cur_qtype in [ggml_tensor_qtype["sym_int4"],
+                                         ggml_tensor_qtype["asym_int4"]]:
                             cur_qtype = ggml_tensor_qtype["sym_int8"]
-                    print(name, cur_qtype)
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
