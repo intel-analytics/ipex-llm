@@ -40,7 +40,7 @@ def get_prompt(user_input: str, chat_history: list[tuple[str, str]],
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama3 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-3-8b-instruction-hf",
-                        help='The huggingface repo id for the Llama3 (e.g. `meta-llama/Llama-3-8b-instruction-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
+                        help='The huggingface repo id for the Llama3 (e.g. `meta-llama/Llama-3-8b-instruction-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
