@@ -221,7 +221,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  imatrix_data=None, embedding_qtype=None,
                                  model_config=None, torch_dtype=torch.float32,
                                  enable_xetla=False,
-                                 mixed_quantization=False):
+                                 mixed_precision=False):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from ipex_llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
@@ -291,9 +291,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                        full_module_name,
                                                                        imatrix_data,
-                                                                       model_config)
+                                                                       model_config,
+                                                                       mixed_precision)
                     # mixed precison for lm_head
-                    if name == "lm_head" or getattr(model_config, "vocab_size", None) == out_features:
+                    if mixed_precision and \
+                        (name == "lm_head" or getattr(model_config, "vocab_size", None) == out_features):
                         if cur_qtype in [ggml_tensor_qtype["sym_int4"], ggml_tensor_qtype["asym_int4"]]:
                             cur_qtype = ggml_tensor_qtype["sym_int8"]
                     print(name, cur_qtype)
@@ -415,7 +417,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 model_config=model_config,
                 torch_dtype=torch_dtype,
                 enable_xetla=enable_xetla,
-                mixed_quantization=mixed_quantization
+                mixed_precision=mixed_precision
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -692,7 +694,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          imatrix_data=None,
                          embedding_qtype=None,
                          enable_xetla=False,
-                         mixed_quantization=False):
+                         mixed_precision=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -717,7 +719,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         model_config=getattr(model, "config", None),
         torch_dtype=torch_dtype,
         enable_xetla=enable_xetla,
-        mixed_quantization=mixed_quantization,
+        mixed_precision=mixed_precision,
     )
     if not has_been_replaced:
         warnings.warn(
