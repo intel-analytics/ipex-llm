@@ -230,7 +230,7 @@ jobs:
         if: ${{ always() }}
         shell: bash
         run: |
-          pip uninstall sentence-transformers
+          pip uninstall sentence-transformers -y || true
   llm-unit-test-on-arc:
     needs: [setup-python-version, llm-cpp-build]
     strategy:
@@ -411,4 +411,4 @@ jobs:
         if: ${{ always() }}
         shell: bash
         run: |
-          pip uninstall sentence-transformers
+          pip uninstall sentence-transformers -y || true
