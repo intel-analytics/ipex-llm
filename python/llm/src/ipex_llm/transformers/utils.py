@@ -269,8 +269,7 @@ def module_name_process(full_module_name):
     return new_module_name, layer, cur_module
 
 
-def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_config=None,
-                              mixed_precision=False):
+def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_config=None):
     cur_qtype = qtype
     if model_config is not None:
         model_type = getattr(model_config, "model_type", None)

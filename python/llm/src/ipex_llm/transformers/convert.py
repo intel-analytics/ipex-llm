@@ -298,8 +298,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                        full_module_name,
                                                                        imatrix_data,
-                                                                       model_config,
-                                                                       mixed_precision)
+                                                                       model_config)
                     # mixed precison for lm_head
                     if mixed_precision and is_lm_head(name, model_config, out_features):
                         if cur_qtype in [ggml_tensor_qtype["sym_int4"],
