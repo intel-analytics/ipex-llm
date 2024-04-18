@@ -17,7 +17,7 @@
 # https://github.com/huggingface/transformers/blob/main/src/transformers/models/mixtral/modeling_mixtral.py
 
 # coding=utf-8
-# Copyright 2023 Mistral AI and the HuggingFace Inc. team. All rights reserved.
+# Copyright 2024 The Qwen team, Alibaba Group and the HuggingFace Inc. team. All rights reserved.
 #
 # This code is based on EleutherAI's GPT-NeoX library and the GPT-NeoX
 # and OPT implementations in this library. It has been modified from its
@@ -45,6 +45,7 @@ import torch.utils.checkpoint
 import warnings
 from typing import TYPE_CHECKING, Optional, Tuple, Union, Callable, List
 from ipex_llm.transformers.models.llama import repeat_kv
+from ipex_llm.transformers.models.qwen2 import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
@@ -59,13 +60,6 @@ from ipex_llm.transformers.kv import DynamicFp8Cache
 import os
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
-
-
-def should_use_fuse_rope(self, query_states, position_ids):
-    use_fuse_rope = query_states.device.type == "xpu"
-    use_fuse_rope = use_fuse_rope and not (self.training and query_states.requires_grad)
-    use_fuse_rope = use_fuse_rope and position_ids is not None
-    return use_fuse_rope
 
 
 def qwen2moe_model_forward(
