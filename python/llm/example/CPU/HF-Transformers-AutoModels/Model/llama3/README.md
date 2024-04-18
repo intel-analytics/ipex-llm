@@ -1,11 +1,11 @@
 # Llama3
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3 models. For illustration purposes, we utilize the [meta-llama/Llama-3-8b-instruction-hf](https://huggingface.co/meta-llama/Llama-3-8b-instruction-hf) as a reference Llama2 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3 models. For illustration purposes, we utilize the [meta-llama/Llama-3-8b-instruction-hf](https://huggingface.co/meta-llama/Llama-3-8b-instruction-hf) as a reference Llama3 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a Llama3 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
