@@ -119,7 +119,7 @@ class _BaseAutoModelClass:
                                 ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
                                 ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
                                 ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``, gguf_iq1_s'``,
-                                ``'fp16'`` or ``'bf16'``,
+                                ``'fp16'``, ``'bf16'``, or ``'q6_k'``,
                                 ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
                                 asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
                                 Relevant low bit optimizations will be applied to the model.
@@ -378,7 +378,7 @@ class _BaseAutoModelClass:
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
                           f"fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
-                          f"gguf_iq2_xs, gguf_iq1_s, mixed_fp4 or mixed_fp8.")
+                          f"gguf_iq2_xs, gguf_iq1_s, q2_k, q6_k, mixed_fp4 or mixed_fp8.")
         qtype = ggml_tensor_qtype[q_k]
 
         # In case it needs a second try,

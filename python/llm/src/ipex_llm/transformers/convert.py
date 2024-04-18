@@ -59,6 +59,18 @@ def is_auto_awq_available():
     return importlib.util.find_spec("awq") is not None
 
 
+def is_vllm_available():
+    return importlib.util.find_spec("vllm") is not None
+
+
+def is_torch_distributed_initialized():
+    return torch.distributed.is_initialized()
+
+
+def is_module_in_classes(module, classes):
+    return any(isinstance(module, cls) for cls in classes)
+
+
 def is_deepspeed_available():
     spec = importlib.util.find_spec("deepspeed")
     if spec is not None:
@@ -88,7 +100,22 @@ def is_linear_module(module):
 
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
 
-    if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
+    if is_vllm_available():
+        # TODO: add tensor parallel feature later
+        from vllm.model_executor.layers.linear import (
+            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
+        )
+        VLLM_LINEAR_LIST = [
+            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
+        ]
+        if is_module_in_classes(module, VLLM_LINEAR_LIST):
+            in_features = module.input_size
+            out_features = module.output_size
+            result = True
+            mp_group = None
+        else:
+            result = False
+    elif is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
@@ -1154,6 +1181,28 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2Attention,
                         qwen2_attention_forward)
+    elif model.config.model_type == "qwen2_moe":
+        # for Qwen1.5-MOE-A2.7B
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_moeblock_forward
+        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_attention_forward
+        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_model_forward
+        convert_forward(model,
+                        module.Qwen2MoeModel,
+                        qwen2moe_model_forward)
+        convert_forward(model,
+                        module.Qwen2MoeRMSNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        module.Qwen2MoeSparseMoeBlock,
+                        qwen2moe_moeblock_forward)
+        convert_forward(model,
+                        module.Qwen2MoeMLP,
+                        llama_mlp_forward)
+        convert_forward(model,
+                        module.Qwen2MoeAttention,
+                        qwen2moe_attention_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
