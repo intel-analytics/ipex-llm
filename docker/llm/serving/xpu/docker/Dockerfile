@@ -13,11 +13,10 @@ RUN cd /llm &&\
     # Install ipex-llm[serving] only will update ipex_llm source code without updating
     # bigdl-core-xe, which will lead to problems
     pip install --pre --upgrade ipex-llm[xpu,serving] && \
-    pip install transformers==4.36.2 gradio==4.19.2 && \
-    chmod +x /opt/entrypoint.sh
-
+    pip install transformers==4.37.0 gradio==4.19.2 && \
+    chmod +x /opt/entrypoint.sh && \
 # Install vLLM-v2 dependencies
-RUN cd /llm && \
+    cd /llm && \
     git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git && \
     cd vllm && \
     pip install -r requirements-xpu.txt && \
