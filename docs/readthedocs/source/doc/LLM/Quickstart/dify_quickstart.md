@@ -1,0 +1,83 @@
+# Run Dify on Intel GPU
+
+We recommend start the project following [Dify docs](https://docs.dify.ai/getting-started/install-self-hosted/local-source-code)
+## Server Deployment
+### Clone code
+```bash
+git clone https://github.com/langgenius/dify.git
+```
+### Installation of the basic environment
+Server startup requires Python 3.10.x. Anaconda is recommended to create and manage python environment.  
+```bash
+conda create -n dify python=3.10
+conda activate dify
+cd api
+cp .env.example .env
+openssl rand -base64 42
+sed -i 's/SECRET_KEY=.*/SECRET_KEY=<your_value>/' .env
+pip install -r requirements.txt
+```
+### Prepare for redis, postgres, node and npm. 
+* Install Redis by `sudo apt-get install redis-server`. Refer to [page](https://www.hostinger.com/tutorials/how-to-install-and-setup-redis-on-ubuntu/) to setup the Redis environment, including password, demon, etc. 
+* install postgres by `sudo apt-get install postgres` and `sudo apt-get install postgres-client`. Setup username, create a database and grant previlidge according to [page](https://www.ruanyifeng.com/blog/2013/12/getting_started_with_postgresql.html)
+* install npm and node by  `brew install node@20` according to [nodejs page](https://nodejs.org/en/download/package-manager)
+> Note that set redis and postgres related environment in .env under dify/api/ and set web related environment variable in .env.local under dify/web
+
+### Install Ollama
+Please install ollama refer to [ollama quick start](./ollama_quickstart.md). Ensure that ollama could run successfully on Intel GPU. 
+
+### Start service
+1. Open the terminal and set `export no_proxy=localhost,127.0.0.1`
+```bash
+flask db upgrade
+flask run --host 0.0.0.0 --port=5001 --debug
+```
+You will see log like below if successfully start the service. 
+```
+INFO:werkzeug:
+* Running on all addresses (0.0.0.0)
+* Running on http://127.0.0.1:5001
+* Running on http://10.239.44.83:5001
+INFO:werkzeug:Press CTRL+C to quit
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 227-697-894
+```
+2. Open another terminal and also set `export no_proxy=localhost,127.0.0.1`. 
+If Linux system, use the command below. 
+```bash
+celery -A app.celery worker -P gevent -c 1 -Q dataset,generation,mail --loglevel INFO 
+```
+If windows system, use the command below. 
+```bash
+celery -A app.celery worker -P solo --without-gossip --without-mingle -Q dataset,generation,mail --loglevel INFO
+```
+3. Open another terminal and also set `export no_proxy=localhost,127.0.0.1`. Run the commands below to start the front-end service. 
+```bash
+cd web
+npm install
+npm run build
+npm run start
+```
+
+## Example: RAG
+See the demo of running dify with Ollama on an Intel Core Ultra laptop below.
+
+
+1. Set up the environment `export no_proxy=localhost,127.0.0.1` and start Ollama locally by `ollama serve`. 
+2. Open http://localhost:3000 to view dify and change the model provider in setting including both LLM and embedding. For example, choose ollama. 
+![dify-model-provider](https://github.com/analytics-zoo/nano/assets/59141989/1bc72bae-e0ef-4e10-9fff-188b7592a092)
+3. Use text summarization workflow template from studio. 
+![屏幕截图 2024-04-19 140508](https://github.com/analytics-zoo/nano/assets/59141989/3a686dff-cdb4-46a4-b054-f7955c556d67)
+
+4. Add knowledge and specify which type of embedding model to use. 
+![屏幕截图 2024-04-19 140355](https://github.com/analytics-zoo/nano/assets/59141989/c205e02e-5b8b-42f0-b3b4-058fc15fb7eb)
+
+5. Enter input and start to generate. You could find retrieval results and answers generated on the right. 
+![屏幕截图 2024-04-19 103948](https://github.com/analytics-zoo/nano/assets/59141989/6437413e-4491-4331-895d-abf5d0bc0f64)
+
+![屏幕截图 2024-04-19 104131](https://github.com/analytics-zoo/nano/assets/59141989/a5950929-81c5-463f-8e68-dbc947daeb45)
+
+
+
+
