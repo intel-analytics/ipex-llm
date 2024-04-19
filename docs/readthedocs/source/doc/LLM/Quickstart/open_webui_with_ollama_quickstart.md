@@ -178,8 +178,6 @@ Go to **Settings -> Models** in the menu, choose a model under **Pull a model fr
 </a>
 
 
-Then you can create the model in Ollama by `ollama create llama2:latest -f Modelfile` and run it on GPU. For more details, please see [using-ollama](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#using-ollama).
-
 #### Chat with the Model
 
 Start new conversations with **New chat** in the left-side menu. 
