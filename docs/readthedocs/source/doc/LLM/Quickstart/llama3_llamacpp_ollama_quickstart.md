@@ -4,7 +4,7 @@
 
 Now, you can easily run Llama 3 on Intel GPU using `llama.cpp` and `Ollama` with IPEX-LLM.
 
-See the demo of running Llama-3-8B-Instruct on Intel Arc GPU using ollama below.
+See the demo of running Llama-3-8B-Instruct on Intel Arc GPU using `Ollama` below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-llama3-linux-arc.mp4" width="100%" controls></video>
 
@@ -19,13 +19,13 @@ Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthed
 
 **After above steps, you should have created a conda environment, named `llm-cpp` for instance and have llama.cpp binaries in your current directory.**
 
-**Now you can use these executable file by standard llama.cpp usage.**
+**Now you can use these executable files by standard llama.cpp usage.**
 
 #### 1.2 Download Llama3
 
 There already are some GGUF models of Llama3 in community, here we take [Meta-Llama-3-8B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF) for example.
 
-Suppose you have downloaded a [Meta-Llama-3-8B-Instruct-Q4_K_M.gguf] model from [Meta-Llama-3-8B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF) and put it under <model_dir>.
+Suppose you have downloaded a [Meta-Llama-3-8B-Instruct-Q4_K_M.gguf](https://huggingface.co/lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF/resolve/main/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf) model from [Meta-Llama-3-8B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF) and put it under `<model_dir>`.
 
 #### 1.3 Run Llama3 on Intel GPU using llama.cpp
 
@@ -77,9 +77,9 @@ Below is a sample output on Intel Arc GPU:
 
 Visit [Run Ollama with IPEX-LLM on Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html), and follow the instructions in section [Install IPEX-LLM for llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with Ollama binary, then follow the instructions in section [Initialize Ollama](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#initialize-ollama) to initialize.
 
-**After above steps, you should have created a conda environment, named `llm-cpp` for instance and have ollama binary in your current directory.**
+**After above steps, you should have created a conda environment, named `llm-cpp` for instance and have ollama binary file in your current directory.**
 
-**Now you can use these executable file by standard Ollama usage.**
+**Now you can use this executable file by standard Ollama usage.**
 
 #### 2.2 Run Llama3 on Intel GPU using Ollama
 
