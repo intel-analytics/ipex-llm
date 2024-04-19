@@ -6,9 +6,9 @@
 
 Now, you can easily run Llama 3 GGUF models on Intel GPU using `llama.cpp` and `Ollama` with IPEX-LLM.
 
-See the demo of running Llama-3-8B-Instruct-Q4_K_M.gguf on Intel Arc GPU below.
+See the demo of running Llama-3-8B-Instruct on Intel Arc GPU using ollama below.
 
-[ollama linux arc demo to be recorded]
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-llama3-linux-arc.mp4" width="100%" controls></video>
 
 ## Quick Start
 This quickstart guide walks you through how to run Llama 3 on Intel GPU using `llama.cpp` / `Ollama` with IPEX-LLM.
@@ -118,6 +118,7 @@ Launch the Ollama service:
 
          export no_proxy=localhost,127.0.0.1
          export ZES_ENABLE_SYSMAN=1
+         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export OLLAMA_NUM_GPU=999
          source /opt/intel/oneapi/setvars.sh
 
