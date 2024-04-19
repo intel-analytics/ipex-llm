@@ -1,5 +1,7 @@
 repo_id:
   - 'Qwen/Qwen1.5-7B-Chat'
+  - 'meta-llama/Meta-Llama-3-8B-Instruct'
+  - '01-ai/Yi-6B-Chat'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3
