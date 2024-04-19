@@ -18,6 +18,7 @@ This quickstart guide walks you through how to run Llama 3 on Intel GPU using `l
 Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), and follow the instructions in section [Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#prerequisites) to setup and section [Install IPEX-LLM for llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with llama.cpp binaries, then follow the instructions in section [Initialize llama.cpp with IPEX-LLM](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#prerequisites) to initialize.
 
 **After above steps, you should have created a conda environment, named `llm-cpp` for instance and have llama.cpp binaries in your current directory.**
+
 **Now you can use these executable file by standard llama.cpp usage.**
 
 #### 1.2 Download Llama3
@@ -29,7 +30,6 @@ Suppose you have downloaded a [Meta-Llama-3-8B-Instruct-Q4_K_M.gguf] model from 
 #### 1.3 Run Llama3 on Intel GPU using llama.cpp
 
 Under your current directory, exceuting below command to do inference with Llama3:
-
 
 ```eval_rst
 .. tabs::
@@ -47,8 +47,6 @@ Under your current directory, exceuting below command to do inference with Llama
 
         main -ngl 33 -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -e -ngl 33 --color --no-mmap
 ```
-
-[Put a screenshot or video demo here, or just paste a sample output text]
 
 Under your current directory, you can also exceute below command to have interative chat with Llama3:
 
@@ -69,7 +67,8 @@ Under your current directory, you can also exceute below command to have interat
         main -ngl 33 -c 0 --interactive-first --color -e --in-prefix '<|start_header_id|>user<|end_header_id|>\n\n' --in-suffix '<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n' -r '<|eot_id|>' -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
 ```
 
-[Put a screenshot or video demo here]
+Below is a sample output on Intel Arc GPU:
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/llama3-cpp-arc-demo.png" width=100%; />
 
 
 ### 2. Run Llama3 using Ollama
@@ -79,6 +78,7 @@ Under your current directory, you can also exceute below command to have interat
 Visit [Run Ollama with IPEX-LLM on Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html), and follow the instructions in section [Install IPEX-LLM for llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with Ollama binary, then follow the instructions in section [Initialize Ollama](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#initialize-ollama) to initialize.
 
 **After above steps, you should have created a conda environment, named `llm-cpp` for instance and have ollama binary in your current directory.**
+
 **Now you can use these executable file by standard Ollama usage.**
 
 #### 2.2 Run Llama3 on Intel GPU using Ollama
@@ -152,3 +152,6 @@ Keep the Ollama service on and open another terminal and run llama3 with `ollama
 
   Here we just take `llama3:8b-instruct-q4_K_M` for example, you can replace it with any other Llama3 model you want.
 ```
+
+Below is a sample output on Intel Arc GPU :
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-llama3-arc-demo.png" width=100%; />
