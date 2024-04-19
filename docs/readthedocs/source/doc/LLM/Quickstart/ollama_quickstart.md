@@ -44,8 +44,23 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
 ### 3 Run Ollama Serve
 
+To run all layers of your model on Intel GPU, please set the environment variable first by running the following command:
+```eval_rst
+.. tabs::
+   .. tab:: Linux
 
-Launch the Ollama service:
+      .. code-block:: bash
+         
+         export OLLAMA_NUM_GPU=999
+
+   .. tab:: Windows
+
+      .. code-block:: bash
+         
+         set OLLAMA_NUM_GPU=999
+```
+
+Then launch the Ollama service:
 
 ```eval_rst
 .. tabs::
@@ -96,20 +111,6 @@ Keep the Ollama service on and open another terminal and run `./ollama pull <mod
 
 ### 5 Using Ollama
 
-To make sure all layers of your model are runnng on Intel GPU, please set the environment variable by running the following command:
-```eval_rst
-.. tabs::
-   .. tab:: Linux
-
-      .. code-block:: bash
-         export OLLAMA_NUM_GPU=999
-
-   .. tab:: Windows
-
-      .. code-block:: bash
-         set OLLAMA_NUM_GPU=999
-```
-
 #### Using Curl 
 
 Using `curl` is the easiest way to verify the API service and model. Execute the following commands in a terminal. **Replace the <model_name> with your pulled 
@@ -144,12 +145,6 @@ model**, e.g. `dolphin-phi`.
 ```
 
 
-```eval_rst
-.. note::
-
-  Please don't forget to set environment variable ``OLLAMA_NUM_GPU``, otherwise, some layers may run on CPU.
-```
-
 #### Using Ollama Run GGUF models
 
 Ollama supports importing GGUF models in the Modelfile, for example, suppose you have downloaded a `mistral-7b-instruct-v0.1.Q4_K_M.gguf` from [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main), then you can create a file named `Modelfile`:
@@ -158,12 +153,6 @@ Ollama supports importing GGUF models in the Modelfile, for example, suppose you
 FROM ./mistral-7b-instruct-v0.1.Q4_K_M.gguf
 TEMPLATE [INST] {{ .Prompt }} [/INST]
 PARAMETER num_predict 64
-```
-
-```eval_rst
-.. note::
-
-  Please don't forget to set environment variable ``OLLAMA_NUM_GPU``, otherwise, some layers may run on CPU.
 ```
 
 Then you can create the model in Ollama by `ollama create example -f Modelfile` and use `ollama run` to run the model directly on console.
