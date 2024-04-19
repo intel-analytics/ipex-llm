@@ -53,11 +53,54 @@ There already are some GGUF models of Llama3 in community, here we take [Meta-Ll
 
 Suppose you have downloaded a [Meta-Llama-3-8B-Instruct-Q4_K_M.gguf] model from [Meta-Llama-3-8B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF) and put it under <model_dir>.
 
-#### 3.1 Continuation
+#### 3.1 Inference with Llama3 
+
+Under your current directory, exceuting below command to do inference with Llama3:
 
 
-#### 3.2 Interative chat
+```eval_rst
+.. tabs::
+   .. tab:: Linux
 
+      .. code-block:: bash
+
+         ./main -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -t 8 -e -ngl 33 --color --no-mmap
+
+   .. tab:: Windows
+
+      Please run the following command in Anaconda Prompt.
+
+      .. code-block:: bash
+
+        main -ngl 33 -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -e -ngl 33 --color --no-mmap
+```
+
+[Put a screenshot or video demo here, or just paste a sample output text]
+
+#### 3.2 Interative chat with Llama3
+
+Under your current directory, exceuting below command to have interative chat with Llama3:
+
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         ./main -ngl 33 -c 0 --interactive-first --color -e --in-prefix '<|start_header_id|>user<|end_header_id|>\n\n' --in-suffix '<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n' -r '<|eot_id|>' -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
+
+   .. tab:: Windows
+
+      Please run the following command in Anaconda Prompt.
+
+      .. code-block:: bash
+
+        main -ngl 33 -c 0 --interactive-first --color -e --in-prefix '<|start_header_id|>user<|end_header_id|>\n\n' --in-suffix '<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n' -r '<|eot_id|>' -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
+```
+
+[Put a screenshot or video demo here]
+
+For more usage, you can refer to this [Run llama.cpp with IPEX-LLM on Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#) QuickStart.
 
 ### 4. Run Llama3 on Intel GPU using ollama
 
@@ -124,6 +167,6 @@ Keep the Ollama service on and open another terminal and run llama3 with `ollama
          ollama run llama3:8b-instruct-q4_K_M
 ```
 
-[Put a screenshot or demo on MTL here]
+[Put a screenshot or video demo on MTL here]
 
 For more usage, you can refer to this [Run Ollama with IPEX-LLM on Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#) QuickStart.
