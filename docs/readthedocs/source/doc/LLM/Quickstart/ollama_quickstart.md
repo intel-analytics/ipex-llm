@@ -44,30 +44,15 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
 ### 3 Run Ollama Serve
 
-To run all layers of your model on Intel GPU, please set the environment variable first by running the following command:
+You may launch the Ollama service as below:
+
 ```eval_rst
 .. tabs::
    .. tab:: Linux
 
       .. code-block:: bash
-         
+
          export OLLAMA_NUM_GPU=999
-
-   .. tab:: Windows
-
-      .. code-block:: bash
-         
-         set OLLAMA_NUM_GPU=999
-```
-
-Then launch the Ollama service:
-
-```eval_rst
-.. tabs::
-   .. tab:: Linux
-
-      .. code-block:: bash
-
          export no_proxy=localhost,127.0.0.1
          export ZES_ENABLE_SYSMAN=1
          source /opt/intel/oneapi/setvars.sh
@@ -80,6 +65,7 @@ Then launch the Ollama service:
 
       .. code-block:: bash
 
+         set OLLAMA_NUM_GPU=999
          set no_proxy=localhost,127.0.0.1
          set ZES_ENABLE_SYSMAN=1
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -89,6 +75,11 @@ Then launch the Ollama service:
 ```
 
 ```eval_rst
+.. note::
+
+  Please set environment variable ``OLLAMA_NUM_GPU`` to ``999`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+```
+
 .. note::
 
   To allow the service to accept connections from all IP addresses, use `OLLAMA_HOST=0.0.0.0 ./ollama serve` instead of just `./ollama serve`.
