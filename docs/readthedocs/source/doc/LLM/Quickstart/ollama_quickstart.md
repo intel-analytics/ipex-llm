@@ -69,7 +69,7 @@ Launch the Ollama service:
          set ZES_ENABLE_SYSMAN=1
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 
-         ollama serve
+         ollama.exe serve
 
 ```
 
@@ -96,6 +96,20 @@ Keep the Ollama service on and open another terminal and run `./ollama pull <mod
 
 ### 5 Using Ollama
 
+To make sure all layers of your model are runnng on Intel GPU, please set the environment variable by running the following command:
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+         export OLLAMA_NUM_GPU=999
+
+   .. tab:: Windows
+
+      .. code-block:: bash
+         set OLLAMA_NUM_GPU=999
+```
+
 #### Using Curl 
 
 Using `curl` is the easiest way to verify the API service and model. Execute the following commands in a terminal. **Replace the <model_name> with your pulled 
@@ -111,8 +125,7 @@ model**, e.g. `dolphin-phi`.
          { 
             "model": "<model_name>", 
             "prompt": "Why is the sky blue?", 
-            "stream": false,
-            "options":{"num_gpu": 999}
+            "stream": false
          }'
 
    .. tab:: Windows
@@ -125,8 +138,7 @@ model**, e.g. `dolphin-phi`.
          {
             \"model\": \"<model_name>\",
             \"prompt\": \"Why is the sky blue?\",
-            \"stream\": false,
-            \"options\":{\"num_gpu\": 999}
+            \"stream\": false
          }"
 
 ```
@@ -135,7 +147,7 @@ model**, e.g. `dolphin-phi`.
 ```eval_rst
 .. note::
 
-  Please don't forget to set ``"options":{"num_gpu": 999}`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+  Please don't forget to set environment variable ``OLLAMA_NUM_GPU``, otherwise, some layers may run on CPU.
 ```
 
 #### Using Ollama Run GGUF models
@@ -152,7 +164,7 @@ PARAMETER num_predict 64
 ```eval_rst
 .. note::
 
-  Please don't forget to set ``PARAMETER num_gpu 999`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+  Please don't forget to set environment variable ``OLLAMA_NUM_GPU``, otherwise, some layers may run on CPU.
 ```
 
 Then you can create the model in Ollama by `ollama create example -f Modelfile` and use `ollama run` to run the model directly on console.
@@ -174,8 +186,8 @@ Then you can create the model in Ollama by `ollama create example -f Modelfile` 
       .. code-block:: bash
 
          set no_proxy=localhost,127.0.0.1
-         ollama create example -f Modelfile
-         ollama run example
+         ollama.exe create example -f Modelfile
+         ollama.exe run example
 
 ```
 
