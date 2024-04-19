@@ -157,7 +157,6 @@ Ollama supports importing GGUF models in the Modelfile, for example, suppose you
 ```bash
 FROM ./mistral-7b-instruct-v0.1.Q4_K_M.gguf
 TEMPLATE [INST] {{ .Prompt }} [/INST]
-PARAMETER num_gpu 999
 PARAMETER num_predict 64
 ```
 
