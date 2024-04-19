@@ -36,10 +36,10 @@ if version.parse(trans_version) >= version.parse("4.39.0"):
     try:
         from trl.core import top_k_top_p_filtering
     except ModuleNotFoundError:
-        log4Error.invalidInputError(False, "For transformers version >=4.39.0, please pip install trl")
+        log4Error.invalidInputError(False, "For transformers version >= 4.39.0, pip install trl")
 else:
     from transformers import top_k_top_p_filtering
-    
+
 from ipex_llm.utils.common import invalidInputError
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
