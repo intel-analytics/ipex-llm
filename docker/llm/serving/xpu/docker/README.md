@@ -43,4 +43,8 @@ root@arda-arc12:/# sycl-ls
 ```
 After the container is booted, you could get into the container through `docker exec`.
 
-To run model-serving using `IPEX-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/IPEX-LLM/tree/main/python/llm/src/ipex_llm/serving).
+Currently, we provide two different serving engines in the image, which are FastChat serving engine and vLLM serving engine.
+
+To run model-serving using `IPEX-LLM` as backend using FastChat, you can refer to this [document](https://github.com/intel-analytics/IPEX-LLM/tree/main/python/llm/src/ipex_llm/serving).
+
+To run vLLM engine using `IPEX-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving#vllm-v2-experimental-support).
