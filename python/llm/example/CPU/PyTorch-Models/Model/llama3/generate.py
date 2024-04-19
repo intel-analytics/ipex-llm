@@ -13,12 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Some parts of this file is adapted from
-# https://github.com/meta-llama/llama3
-# You may obtain a copy of the META LLAMA 3 COMMUNITY LICENSE AGREEMENT at
-#
-#     https://github.com/meta-llama/llama3?tab=License-1-ov-file
-#
 
 import torch
 import time
