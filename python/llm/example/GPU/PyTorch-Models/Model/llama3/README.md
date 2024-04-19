@@ -126,12 +126,16 @@ In the example, several arguments can be passed to satisfy your requirements:
 Inference time: xxxx s
 -------------------- Prompt --------------------
 <|begin_of_text|><|start_header_id|>user<|end_header_id|>
+
 What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
 
 -------------------- Output (skip_special_tokens=False) --------------------
 <|begin_of_text|><|start_header_id|>user<|end_header_id|>
-What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-A question that gets to the heart of the 21st century!
 
-Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that
+What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that would typically require human intelligence.
+
+AI systems use algorithms, data structures,
 ```

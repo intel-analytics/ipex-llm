@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Some parts of this file is adapted from
+# https://github.com/meta-llama/llama3
+# You may obtain a copy of the META LLAMA 3 COMMUNITY LICENSE AGREEMENT at
+#
+#     https://github.com/meta-llama/llama3?tab=License-1-ov-file
+#
 
 import torch
 import time
@@ -22,7 +28,7 @@ from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3
+# here the prompt tuning refers to https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3/
 DEFAULT_SYSTEM_PROMPT = """\
 """
 
@@ -31,13 +37,13 @@ def get_prompt(user_input: str, chat_history: list[tuple[str, str]],
     prompt_texts = [f'<|begin_of_text|>']
 
     if system_prompt != '':
-        prompt_texts.append(f'<|start_header_id|>system<|end_header_id|>\n{system_prompt}<|eot_id|>')
+        prompt_texts.append(f'<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>')
 
     for history_input, history_response in chat_history:
-        prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n{history_input.strip()}<|eot_id|>')
-        prompt_texts.append(f'<|start_header_id|>assistant<|end_header_id|>\n{history_response.strip()}<|eot_id|>')
+        prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n\n{history_input.strip()}<|eot_id|>')
+        prompt_texts.append(f'<|start_header_id|>assistant<|end_header_id|>\n\n{history_response.strip()}<|eot_id|>')
 
-    prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n{user_input.strip()}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n')
+    prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n\n{user_input.strip()}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n')
     return ''.join(prompt_texts)
 
 if __name__ == '__main__':
