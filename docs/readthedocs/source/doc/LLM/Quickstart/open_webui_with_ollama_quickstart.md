@@ -1,4 +1,4 @@
-# Run Open WebUI on Linux with Intel GPU
+# Run Open WebUI with Intel GPU
 
 [Open WebUI](https://github.com/open-webui/open-webui) is a user friendly GUI for running LLM locally; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily run LLM in [Open WebUI](https://github.com/open-webui/open-webui) on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
@@ -11,9 +11,9 @@ See the demo of running Mistral:7B on Intel Arc A770 below.
 This quickstart guide walks you through setting up and using [Open WebUI](https://github.com/open-webui/open-webui) with Ollama (using the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend).
 
 
-### 1 Run Ollama on Linux with Intel GPU
+### 1 Run Ollama with Intel GPU
 
-Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.html) to install and run "Ollama Serve". Please ensure that the Ollama server continues to run while you're using the Open WebUI.
+Follow the instructions on the [Run Ollama with Intel GPU](ollama_quickstart.html) to install and run "Ollama Serve". Please ensure that the Ollama server continues to run while you're using the Open WebUI.
 
 ### 2 Install the Open-Webui
 
@@ -177,13 +177,6 @@ Go to **Settings -> Models** in the menu, choose a model under **Pull a model fr
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_pull_models.png" width="100%" />
 </a>
 
-To run the model on GPU, please set `PARAMETER num_gpu 999` in the Ollama Modelfile.For example, suppose you have downloaded a `llama2:latest`, then you can create a file named Modelfile:
-
-```bash
-FROM llama2:latest
-PARAMETER num_gpu 999
-PARAMETER num_predict 64
-```
 
 Then you can create the model in Ollama by `ollama create llama2:latest -f Modelfile` and run it on GPU. For more details, please see [using-ollama](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#using-ollama).
 
