@@ -46,6 +46,7 @@ from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from transformers.modeling_outputs import BaseModelOutputWithPast
