@@ -14,6 +14,13 @@
 # limitations under the License.
 #
 
+from ipex_llm.transformers import AutoModelForCausalLM
+from transformers import AutoTokenizer
+from trl import setup_chat_format
+from datasets import load_dataset
+import torch
+import argparse
+
 rank = 1024
 update_proj_gap = 200
 scale = 2
