@@ -74,9 +74,8 @@ See the demo of running dify with Ollama on an Intel Core Ultra laptop below.
 ![屏幕截图 2024-04-19 140355](https://github.com/analytics-zoo/nano/assets/59141989/c205e02e-5b8b-42f0-b3b4-058fc15fb7eb)
 
 5. Enter input and start to generate. You could find retrieval results and answers generated on the right. 
-![屏幕截图 2024-04-19 103948](https://github.com/analytics-zoo/nano/assets/59141989/6437413e-4491-4331-895d-abf5d0bc0f64)
 
-![屏幕截图 2024-04-19 104131](https://github.com/analytics-zoo/nano/assets/59141989/a5950929-81c5-463f-8e68-dbc947daeb45)
+![屏幕截图 2024-04-19 104131](https://github.com/analytics-zoo/nano/assets/59141989/6d3ecb4f-58b3-4919-b9c7-b6c5b0006feb)
 
 
 
