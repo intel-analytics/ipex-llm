@@ -66,16 +66,16 @@ See the demo of running dify with Ollama on an Intel Core Ultra laptop below.
 
 1. Set up the environment `export no_proxy=localhost,127.0.0.1` and start Ollama locally by `ollama serve`. 
 2. Open http://localhost:3000 to view dify and change the model provider in setting including both LLM and embedding. For example, choose ollama. 
-![dify-model-provider](https://github.com/analytics-zoo/nano/assets/59141989/1bc72bae-e0ef-4e10-9fff-188b7592a092)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p1.png" alt="image-20240221102252560" width=100%; />
 3. Use text summarization workflow template from studio. 
-![屏幕截图 2024-04-19 140508](https://github.com/analytics-zoo/nano/assets/59141989/3a686dff-cdb4-46a4-b054-f7955c556d67)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p2.png" alt="image-20240221102252560" width=100%; />
 
 4. Add knowledge base and specify which type of embedding model to use. 
-![屏幕截图 2024-04-19 140355](https://github.com/analytics-zoo/nano/assets/59141989/c205e02e-5b8b-42f0-b3b4-058fc15fb7eb)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p3.png" alt="image-20240221102252560" width=100%; />
 
 5. Enter input and start to generate. You could find retrieval results and answers generated on the right. 
 
-![屏幕截图 2024-04-19 104131](https://github.com/analytics-zoo/nano/assets/59141989/6d3ecb4f-58b3-4919-b9c7-b6c5b0006feb)
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p5.png" alt="image-20240221102252560" width=100%; />
 
 
 
