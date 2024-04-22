@@ -22,7 +22,7 @@ from vllm.engine.ray_utils import initialize_ray_cluster
 from vllm.entrypoints.llm import LLM
 from vllm.utils import Counter
 
-from ipex_llm.vllm2.model_convert import _ipex_llm_convert
+from ipex_llm.vllm.model_convert import _ipex_llm_convert
 from ipex_llm.utils.common import invalidInputError
 
 
