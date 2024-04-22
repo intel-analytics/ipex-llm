@@ -59,7 +59,6 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  torch_dtype=torch.bfloat16,
                                                  load_in_low_bit="bf16",
-                                                 torchscript=True,
                                                  speculative=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
