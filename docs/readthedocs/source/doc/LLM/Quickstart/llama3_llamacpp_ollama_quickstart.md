@@ -15,7 +15,7 @@ This quickstart guide walks you through how to run Llama 3 on Intel GPU using `l
 
 #### 1.1 Install IPEX-LLM for llama.cpp and Initialize
 
-Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), and follow the instructions in section [Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#prerequisites) to setup and section [Install IPEX-LLM for llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with llama.cpp binaries, then follow the instructions in section [Initialize llama.cpp with IPEX-LLM](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#prerequisites) to initialize.
+Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), and follow the instructions in section [Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#prerequisites) to setup and section [Install IPEX-LLM for llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with llama.cpp binaries, then follow the instructions in section [Initialize llama.cpp with IPEX-LLM](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#initialize-llama-cpp-with-ipex-llm) to initialize.
 
 **After above steps, you should have created a conda environment, named `llm-cpp` for instance and have llama.cpp binaries in your current directory.**
 
@@ -28,6 +28,33 @@ There already are some GGUF models of Llama3 in community, here we take [Meta-Ll
 Suppose you have downloaded a [Meta-Llama-3-8B-Instruct-Q4_K_M.gguf](https://huggingface.co/lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF/resolve/main/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf) model from [Meta-Llama-3-8B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF) and put it under `<model_dir>`.
 
 #### 1.3 Run Llama3 on Intel GPU using llama.cpp
+
+##### Set Environment Variables（optional）
+
+```eval_rst
+.. note::
+
+   This is a required step on for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
+```
+
+Configure oneAPI variables by running the following command:
+
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         source /opt/intel/oneapi/setvars.sh
+
+   .. tab:: Windows
+
+      .. code-block:: bash
+
+         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+```
+
+##### Run llama3
 
 Under your current directory, exceuting below command to do inference with Llama3:
 
@@ -99,6 +126,7 @@ Launch the Ollama service:
          export ZES_ENABLE_SYSMAN=1
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export OLLAMA_NUM_GPU=999
+         # Below is a required step for APT or offline installed oneAPI. Skip below step for PIP-installed oneAPI.
          source /opt/intel/oneapi/setvars.sh
 
          ./ollama serve
@@ -112,6 +140,7 @@ Launch the Ollama service:
          set no_proxy=localhost,127.0.0.1
          set ZES_ENABLE_SYSMAN=1
          set OLLAMA_NUM_GPU=999
+         # Below is a required step for APT or offline installed oneAPI. Skip below step for PIP-installed oneAPI.
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 
          ollama serve
@@ -124,7 +153,7 @@ Launch the Ollama service:
   To allow the service to accept connections from all IP addresses, use `OLLAMA_HOST=0.0.0.0 ./ollama serve` instead of just `./ollama serve`.
 ```
 
-#### 2.2.2 Using Ollama Run Llama3
+##### 2.2.2 Using Ollama Run Llama3
 
 Keep the Ollama service on and open another terminal and run llama3 with `ollama run`:
 
