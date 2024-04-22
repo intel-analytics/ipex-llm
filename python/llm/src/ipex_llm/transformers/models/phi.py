@@ -105,11 +105,11 @@ def attention_forward(
     # Partial rotary embedding
     query_rot, query_pass = (
         query_states[..., : self.rotary_emb.dim],
-        query_states[..., self.rotary_emb.dim :],
+        query_states[..., self.rotary_emb.dim:],
     )
     key_rot, key_pass = (
         key_states[..., : self.rotary_emb.dim],
-        key_states[..., self.rotary_emb.dim :],
+        key_states[..., self.rotary_emb.dim:],
     )
 
     # IPEX-LLM OPT: fuse rope
@@ -117,7 +117,8 @@ def attention_forward(
 
     # [batch_size, seq_length, num_heads, head_dim // config.partial_rotary_factor]
     if use_fuse_rope:
-        query_rot, key_rot = apply_rotary_pos_emb_cache_freq_xpu(query_rot, key_rot, sin, cos, "stablelm", position_ids)
+        query_rot, key_rot = apply_rotary_pos_emb_cache_freq_xpu(query_rot, key_rot, sin,
+                                                                 cos, "stablelm", position_ids)
     else:
         query_rot, key_rot = apply_rotary_pos_emb(query_rot, key_rot, cos, sin, position_ids)
 
@@ -126,9 +127,9 @@ def attention_forward(
     key_states = torch.cat((key_rot, key_pass), dim=-1)
 
     invalidInputError(past_key_value is not None,
-                    "`past_key_value` cannot be None")
+                      "`past_key_value` cannot be None")
     key_states, value_states = past_key_value.update(key_states, value_states,
-                                                    self.layer_idx, None, new_layout=True)
+                                                     self.layer_idx, None, new_layout=True)
 
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
@@ -142,8 +143,10 @@ def attention_forward(
         attn_weights = attn_weights + attention_mask
 
     # upcast attention to fp32
-    attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(value_states.dtype)
-    attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout, training=self.training)
+    attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                               dtype=torch.float32).to(value_states.dtype)
+    attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                               training=self.training)
 
     attn_output = torch.matmul(attn_weights, value_states)
 
