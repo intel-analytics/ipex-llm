@@ -45,7 +45,7 @@ Configure oneAPI variables by running the following command:
 
       .. note::
 
-      This is a required step on for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
+      This is a required step for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
 
       .. code-block:: bash
 
