@@ -59,6 +59,18 @@ def is_auto_awq_available():
     return importlib.util.find_spec("awq") is not None
 
 
+def is_vllm_available():
+    return importlib.util.find_spec("vllm") is not None
+
+
+def is_torch_distributed_initialized():
+    return torch.distributed.is_initialized()
+
+
+def is_module_in_classes(module, classes):
+    return any(isinstance(module, cls) for cls in classes)
+
+
 def is_deepspeed_available():
     spec = importlib.util.find_spec("deepspeed")
     if spec is not None:
@@ -80,6 +92,13 @@ if is_auto_awq_available():
     from transformers.utils.quantization_config import AwqBackendPackingMethod
 
 
+def is_lm_head(name, model_config, out_features):
+    if name == "lm_head" or getattr(model_config, "vocab_size", None) == out_features:
+        return True
+    else:
+        return False
+
+
 def is_linear_module(module):
 
     in_features = None
@@ -88,7 +107,22 @@ def is_linear_module(module):
 
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
 
-    if is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
+    if is_vllm_available():
+        # TODO: add tensor parallel feature later
+        from vllm.model_executor.layers.linear import (
+            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
+        )
+        VLLM_LINEAR_LIST = [
+            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
+        ]
+        if is_module_in_classes(module, VLLM_LINEAR_LIST):
+            in_features = module.input_size
+            out_features = module.output_size
+            result = True
+            mp_group = None
+        else:
+            result = False
+    elif is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
@@ -193,7 +227,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  cpu_embedding=False, prefix_name='',
                                  imatrix_data=None, embedding_qtype=None,
                                  model_config=None, torch_dtype=torch.float32,
-                                 enable_xetla=False):
+                                 enable_xetla=False,
+                                 mixed_precision=False):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from ipex_llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
@@ -210,7 +245,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if is_linear and not isinstance(module, LowBitLinear):
             in_features, out_features, mp_group = linear_args
             optimize_lm_head = False
-            if name == "lm_head":
+            if is_lm_head(name, model_config, out_features):
                 model_type = getattr(model_config, "model_type", None)
                 if model_type in ["gptj", "llama"] and os.environ.get("BIGDL_OPTIMIZE_LM_HEAD",
                                                                       None) == "1":
@@ -264,6 +299,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                                        full_module_name,
                                                                        imatrix_data,
                                                                        model_config)
+                    # mixed precison for lm_head
+                    if mixed_precision and is_lm_head(name, model_config, out_features):
+                        if cur_qtype in [ggml_tensor_qtype["sym_int4"],
+                                         ggml_tensor_qtype["asym_int4"]]:
+                            cur_qtype = ggml_tensor_qtype["sym_int8"]
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
@@ -382,6 +422,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 model_config=model_config,
                 torch_dtype=torch_dtype,
                 enable_xetla=enable_xetla,
+                mixed_precision=mixed_precision
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -657,7 +698,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          lightweight_bmm=False, torch_dtype="auto",
                          imatrix_data=None,
                          embedding_qtype=None,
-                         enable_xetla=False):
+                         enable_xetla=False,
+                         mixed_precision=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -682,6 +724,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         model_config=getattr(model, "config", None),
         torch_dtype=torch_dtype,
         enable_xetla=enable_xetla,
+        mixed_precision=mixed_precision,
     )
     if not has_been_replaced:
         warnings.warn(
@@ -1154,6 +1197,28 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2Attention,
                         qwen2_attention_forward)
+    elif model.config.model_type == "qwen2_moe":
+        # for Qwen1.5-MOE-A2.7B
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_moeblock_forward
+        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_attention_forward
+        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_model_forward
+        convert_forward(model,
+                        module.Qwen2MoeModel,
+                        qwen2moe_model_forward)
+        convert_forward(model,
+                        module.Qwen2MoeRMSNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        module.Qwen2MoeSparseMoeBlock,
+                        qwen2moe_moeblock_forward)
+        convert_forward(model,
+                        module.Qwen2MoeMLP,
+                        llama_mlp_forward)
+        convert_forward(model,
+                        module.Qwen2MoeAttention,
+                        qwen2moe_attention_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

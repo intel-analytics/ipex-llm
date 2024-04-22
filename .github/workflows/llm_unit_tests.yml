@@ -122,6 +122,9 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
+          # May remove later
+          pip uninstall sentence-transformers -y || true
+
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
 
@@ -223,9 +226,14 @@ jobs:
         shell: bash
         run: |
           pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
-          pip install transformers==4.31.0
+          pip install transformers==4.36.0
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests.sh
+      - name: Run sentence-transformers uninstallation
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          pip uninstall sentence-transformers -y || true
   llm-unit-test-on-arc:
     needs: [setup-python-version, llm-cpp-build]
     strategy:
@@ -270,6 +278,9 @@ jobs:
           python -m pip install --upgrade setuptools
           python -m pip install --upgrade wheel
           python -m pip install --upgrade notebook
+
+          # May remove later
+          pip uninstall sentence-transformers -y || true
 
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
@@ -399,5 +410,11 @@ jobs:
             pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             source /home/arda/intel/oneapi/setvars.sh
           fi
+          pip install transformers==4.36.0
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests-gpu.sh
+      - name: Run sentence-transformers uninstallation
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          pip uninstall sentence-transformers -y || true

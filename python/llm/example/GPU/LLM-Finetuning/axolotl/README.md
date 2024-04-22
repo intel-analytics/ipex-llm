@@ -52,7 +52,25 @@ For more details, please refer [hfhuboffline](https://huggingface.co/docs/huggin
 
 ### 3. Finetune Llama-2-7B
 
-This example shows how to run [Alpaca QLoRA finetune on Llama-2](https://github.com/artidoro/qlora) directly on Intel GPU, based on [axolotl Llama-2 qlora example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/examples/llama-2/qlora.yml). Note that only Llama-2-7B QLora example is verified on Intel ARC 770 with 16GB memory.
+This example shows how to run [Alpaca LoRA training](https://github.com/tloen/alpaca-lora/tree/main) and [Alpaca QLoRA finetune](https://github.com/artidoro/qlora) directly on Intel GPU. Note that only Llama-2-7B LoRA and QLoRA examples are verified on Intel ARC 770 with 16GB memory.
+
+#### 3.1 Alpaca LoRA
+
+Based on [axolotl Llama-2 LoRA example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/examples/llama-2/lora.yml).
+
+```
+accelerate launch finetune.py lora.yml
+```
+
+In v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
+
+```
+accelerate launch train.py lora.yml
+```
+
+#### 3.2 Alpaca QLoRA
+
+Based on [axolotl Llama-2 QLoRA example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/examples/llama-2/qlora.yml).
 
 Modify parameters in `qlora.yml` based on your requirements. Then, launch finetuning with the following command.
 
@@ -65,6 +83,8 @@ In v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train` or `fin
 ```
 accelerate launch train.py qlora.yml
 ```
+
+#### 3.3 Expected Output
 
 Output in console
 

@@ -82,7 +82,14 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 
 Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 
-#### Set Environment Variables
+#### Set Environment Variables（optional）
+
+```eval_rst
+.. note::
+
+   This is a required step on for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
+```
+
 Configure oneAPI variables by running the following command:
 
 ```eval_rst

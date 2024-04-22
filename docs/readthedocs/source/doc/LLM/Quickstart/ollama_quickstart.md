@@ -44,8 +44,7 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
 ### 3 Run Ollama Serve
 
-
-Launch the Ollama service:
+You may launch the Ollama service as below:
 
 ```eval_rst
 .. tabs::
@@ -53,8 +52,10 @@ Launch the Ollama service:
 
       .. code-block:: bash
 
+         export OLLAMA_NUM_GPU=999
          export no_proxy=localhost,127.0.0.1
          export ZES_ENABLE_SYSMAN=1
+         # Below is a required step for APT or offline installed oneAPI. Skip below step for PIP-installed oneAPI.
          source /opt/intel/oneapi/setvars.sh
 
          ./ollama serve
@@ -65,8 +66,10 @@ Launch the Ollama service:
 
       .. code-block:: bash
 
+         set OLLAMA_NUM_GPU=999
          set no_proxy=localhost,127.0.0.1
          set ZES_ENABLE_SYSMAN=1
+         # Below is a required step for APT or offline installed oneAPI. Skip below step for PIP-installed oneAPI.
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 
          ollama serve
@@ -74,6 +77,11 @@ Launch the Ollama service:
 ```
 
 ```eval_rst
+.. note::
+
+  Please set environment variable ``OLLAMA_NUM_GPU`` to ``999`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+```
+
 .. note::
 
   To allow the service to accept connections from all IP addresses, use `OLLAMA_HOST=0.0.0.0 ./ollama serve` instead of just `./ollama serve`.
@@ -111,8 +119,7 @@ model**, e.g. `dolphin-phi`.
          { 
             "model": "<model_name>", 
             "prompt": "Why is the sky blue?", 
-            "stream": false,
-            "options":{"num_gpu": 999}
+            "stream": false
          }'
 
    .. tab:: Windows
@@ -125,18 +132,11 @@ model**, e.g. `dolphin-phi`.
          {
             \"model\": \"<model_name>\",
             \"prompt\": \"Why is the sky blue?\",
-            \"stream\": false,
-            \"options\":{\"num_gpu\": 999}
+            \"stream\": false
          }"
 
 ```
 
-
-```eval_rst
-.. note::
-
-  Please don't forget to set ``"options":{"num_gpu": 999}`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
-```
 
 #### Using Ollama Run GGUF models
 
@@ -145,14 +145,7 @@ Ollama supports importing GGUF models in the Modelfile, for example, suppose you
 ```bash
 FROM ./mistral-7b-instruct-v0.1.Q4_K_M.gguf
 TEMPLATE [INST] {{ .Prompt }} [/INST]
-PARAMETER num_gpu 999
 PARAMETER num_predict 64
-```
-
-```eval_rst
-.. note::
-
-  Please don't forget to set ``PARAMETER num_gpu 999`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
 ```
 
 Then you can create the model in Ollama by `ollama create example -f Modelfile` and use `ollama run` to run the model directly on console.

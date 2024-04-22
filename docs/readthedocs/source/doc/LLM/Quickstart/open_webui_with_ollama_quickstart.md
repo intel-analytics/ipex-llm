@@ -1,4 +1,4 @@
-# Run Open WebUI on Linux with Intel GPU
+# Run Open WebUI with Intel GPU
 
 [Open WebUI](https://github.com/open-webui/open-webui) is a user friendly GUI for running LLM locally; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily run LLM in [Open WebUI](https://github.com/open-webui/open-webui) on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
@@ -11,14 +11,13 @@ See the demo of running Mistral:7B on Intel Arc A770 below.
 This quickstart guide walks you through setting up and using [Open WebUI](https://github.com/open-webui/open-webui) with Ollama (using the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend).
 
 
-### 1 Run Ollama on Linux with Intel GPU
+### 1 Run Ollama with Intel GPU
 
-Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quickstart.html) to install and run "Ollam Serve". Please ensure that the Ollama server continues to run while you're using the Open WebUI.
+Follow the instructions on the [Run Ollama with Intel GPU](ollama_quickstart.html) to install and run "Ollama Serve". Please ensure that the Ollama server continues to run while you're using the Open WebUI.
 
-### 2 Install and Run Open-Webui
+### 2 Install the Open-Webui
 
-
-#### Installation
+#### Install Node.js & npm
 
 ```eval_rst
 .. note::
@@ -26,51 +25,108 @@ Follow the instructions on the [Run Ollama on Linux with Intel GPU](ollama_quick
   Package version requirements for running Open WebUI: Node.js (>= 20.10) or Bun (>= 1.0.21), Python (>= 3.11)
 ```
 
-1. Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
-   ```sh
-   sudo apt update 
-   sudo apt install nodejs 
-   sudo apt install npm 
-   ```
+Please install Node.js & npm as below:
 
-2. Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`.  
+```eval_rst
+.. tabs::
+   .. tab:: Linux
 
-3. Run below commands to install Open WebUI.  
-    ```sh
-    cd ~/open-webui/
-    cp -RPp .env.example .env  # Copy required .env file
+      Run below commands to install Node.js & npm. Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
 
-    # Build frontend
-    npm i
-    npm run build
+      .. code-block:: bash
 
-    # Install Dependencies
-    cd ./backend
-    pip install -r requirements.txt -U
-    ```
+        sudo apt update 
+        sudo apt install nodejs 
+        sudo apt install npm
+   
+   .. tab:: Windows
+
+      You may download Node.js installation package from https://nodejs.org/dist/v20.12.2/node-v20.12.2-x64.msi, which will install both Node.js & npm on your system.
+
+      Once the installation is complete, verify the installation by running ```node -v``` and ```npm -v``` to check the versions of Node.js and npm, respectively.
+```
+
+
+#### Download the Open-Webui
+
+Use `git` to clone the [open-webui repo](https://github.com/open-webui/open-webui.git), or download the open-webui source code zip from [this link](https://github.com/open-webui/open-webui/archive/refs/heads/main.zip) and unzip it to a directory, e.g. `~/open-webui`. 
+
+
+#### Install Dependencies
+
+You may run below commands to install Open WebUI dependencies:
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         cd ~/open-webui/
+         cp -RPp .env.example .env  # Copy required .env file
+
+         # Build frontend
+         npm i
+         npm run build
+
+         # Install Dependencies
+         cd ./backend
+         pip install -r requirements.txt -U
+
+   .. tab:: Windows
+      
+      .. code-block:: bash
+
+         cd ~\open-webui\
+         copy .env.example .env
+
+         # Build frontend
+         npm install
+         npm run build
+
+         # Install Dependencies
+         cd .\backend
+         pip install -r requirements.txt -U
+```
+
+### 3. Start the Open-WebUI 
 
 #### Start the service
 
 Run below commands to start the service:
 
-```sh
-export no_proxy=localhost,127.0.0.1
-bash start.sh
-```
-
-
 ```eval_rst
-.. note::
-   
-  If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `export HF_ENDPOINT=https://hf-mirror.com` before running `bash start.sh`.
+.. tabs::
+  .. tab:: Linux
+
+    .. code-block:: bash
+
+       export no_proxy=localhost,127.0.0.1
+       bash start.sh
+    
+    .. note:
+    
+    If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `export HF_ENDPOINT=https://hf-mirror.com` before running `bash start.sh`.
+
+
+  .. tab:: Windows
+    
+    .. code-block:: bash
+       
+       set no_proxy=localhost,127.0.0.1
+       start_windows.bat
+    
+    .. note:
+    
+    If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `set HF_ENDPOINT=https://hf-mirror.com` before running `start_windows.bat`.
 ```
+
 
 #### Access the WebUI
 Upon successful launch, URLs to access the WebUI will be displayed in the terminal. Open the provided local URL in your browser to interact with the WebUI, e.g. http://localhost:8080/.
 
 
 
-### 3. Using Open-Webui
+### 4. Using the Open-Webui
 
 ```eval_rst
 .. note::
@@ -121,6 +177,7 @@ Go to **Settings -> Models** in the menu, choose a model under **Pull a model fr
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_pull_models.png" width="100%" />
 </a>
 
+
 #### Chat with the Model
 
 Start new conversations with **New chat** in the left-side menu. 
@@ -144,7 +201,7 @@ Additionally, you can drag and drop a document into the textbox, allowing the LL
 To shut down the open-webui server, use **Ctrl+C** in the terminal where the open-webui server is runing, then close your browser tab.
 
 
-### 4. Troubleshooting
+### 5. Troubleshooting
 
 ##### Error `No module named 'torch._C`
 

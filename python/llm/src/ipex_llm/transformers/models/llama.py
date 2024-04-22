@@ -138,8 +138,6 @@ def llama_rms_norm_forward(self, hidden_states):
         import linear_q4_0
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
         output = linear_q4_0.rms_norm(self.weight, x_2d, self.variance_epsilon)
-        if 1 < x_2d.size(0) <= 64:   # may use XMX, need copy
-            output = output.clone()
         return output.reshape(hidden_states.shape)
 
     input_dtype = hidden_states.dtype
@@ -313,7 +311,10 @@ def should_use_xetla_mm_qkv(self, device):
     full_attn = self.q_proj.out_len == self.k_proj.out_len == self.v_proj.out_len
     supported_qtype = self.q_proj.qtype == SYM_INT4 and full_attn
     supported_qtype = supported_qtype or self.q_proj.qtype == FP8E5
-    enable_xetla = self.q_proj.enable_xetla
+    if self.q_proj.qtype == SYM_INT4 or self.q_proj.qtype == FP8E5:
+        enable_xetla = self.q_proj.enable_xetla
+    else:
+        enable_xetla = False
     return device.type == "xpu" and enable_xetla and supported_qtype
 
 
@@ -414,10 +415,12 @@ def llama_attention_forward_4_31_quantized(
             kv_seq_len += past_key_value[0].shape[-2]
 
         if use_fuse_rope:
+            rope_theta = self.rotary_emb.base
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
-                                                                         "llama")
+                                                                         "llama",
+                                                                         rope_theta=rope_theta)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -603,10 +606,12 @@ def llama_attention_forward_4_31_original(
             kv_seq_len += past_key_value[0].shape[-2]
 
         if use_fuse_rope:
+            rope_theta = self.rotary_emb.base
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
-                                                                         "llama")
+                                                                         "llama",
+                                                                         rope_theta=rope_theta)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -795,10 +800,12 @@ def llama_attention_selective_batching_forward_4_31(
             kv_seq_len += max(kv_pair[0].shape[-2] for kv_pair in past_key_value)
 
         if use_fuse_rope:
+            rope_theta = self.rotary_emb.base
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
-                                                                         "llama")
+                                                                         "llama",
+                                                                         rope_theta=rope_theta)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -1006,10 +1013,12 @@ def llama_attention_forward_4_36_quantized(
                 )
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
         if use_fuse_rope:
+            rope_theta = self.rotary_emb.base
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
-                                                                         "llama")
+                                                                         "llama",
+                                                                         rope_theta=rope_theta)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -1266,10 +1275,12 @@ def llama_attention_forward_4_36_original(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
+            rope_theta = self.rotary_emb.base
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                          key_states,
                                                                          position_ids,
-                                                                         "llama")
+                                                                         "llama",
+                                                                         rope_theta=rope_theta)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -1762,6 +1773,9 @@ def llama_model_forward_4_36_internal(
     if inputs_embeds is None:
         inputs_embeds = self.embed_tokens(input_ids)
 
+    # IPEX-LLM modifications:
+    # Disable sdpa for CPU
+    self._use_sdpa = False
     if self._use_flash_attention_2:
         # 2d mask is passed through the layers
         attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) \

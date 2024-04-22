@@ -6,7 +6,7 @@ repo_id:
   - 'internlm/internlm-chat-7b-8k'
   - 'Qwen/Qwen-7B-Chat'
   - 'BAAI/AquilaChat2-7B'
-  - '01-ai/Yi-6B'
+  # - '01-ai/Yi-6B'
   - 'meta-llama/Llama-2-7b-chat-hf'
   - 'meta-llama/Llama-2-13b-chat-hf'
   - 'WisdomShell/CodeShell-7B-Chat'

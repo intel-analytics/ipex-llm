@@ -27,8 +27,19 @@ import logging
 import transformers
 from packaging import version
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
-from transformers import top_k_top_p_filtering, GenerationConfig, \
+from transformers import GenerationConfig, \
     LogitsProcessorList, StoppingCriteriaList
+from ipex_llm.utils.common import log4Error
+
+trans_version = transformers.__version__
+if version.parse(trans_version) >= version.parse("4.39.0"):
+    try:
+        from trl.core import top_k_top_p_filtering
+    except ModuleNotFoundError:
+        log4Error.invalidInputError(False, "For transformers version >= 4.39.0, pip install trl")
+else:
+    from transformers import top_k_top_p_filtering
+
 from ipex_llm.utils.common import invalidInputError
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
@@ -440,6 +451,20 @@ def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_l
 
 
 def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=False):
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
+    if isinstance(past_key_values, (DynamicFp8Cache, DynamicNormalCache)):
+        if hasattr(past_key_values, "_seen_tokens"):
+            past_key_values._seen_tokens -= new_cache_size
+        else:
+            past_key_values.seen_tokens -= new_cache_size
+
+        for i, k in enumerate(past_key_values.key_cache):
+            past_key_values.key_cache[i] = k[:, :, :-new_cache_size, :]
+        for i, v in enumerate(past_key_values.value_cache):
+            past_key_values.value_cache[i] = v[:, :, :-new_cache_size, :]
+
+        return past_key_values
+
     if _enable_ipex:
         cur_len = past_key_values[0][0].size(1)
         delta = new_cache_size

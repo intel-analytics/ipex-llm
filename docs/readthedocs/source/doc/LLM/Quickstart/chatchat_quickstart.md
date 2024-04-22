@@ -1,6 +1,6 @@
-# Run Local RAG using Langchain-Chatchat on Intel GPU
+# Run Local RAG using Langchain-Chatchat on Intel CPU and GPU
 
-[chatchat-space/Langchain-Chatchat](https://github.com/chatchat-space/Langchain-Chatchat) is a Knowledge Base QA application using RAG pipeline; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily ***local RAG pipelines*** using [Langchain-Chatchat](https://github.com/intel-analytics/Langchain-Chatchat) with LLMs and Embedding models on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max); 
+[chatchat-space/Langchain-Chatchat](https://github.com/chatchat-space/Langchain-Chatchat) is a Knowledge Base QA application using RAG pipeline; by porting it to [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily run ***local RAG pipelines*** using [Langchain-Chatchat](https://github.com/intel-analytics/Langchain-Chatchat) with LLMs and Embedding models on Intel CPU and GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max); 
 
 *See the demos of running LLaMA2-7B (English) and ChatGLM-3-6B (Chinese) on an Intel Core Ultra laptop below.*
 
@@ -30,12 +30,12 @@ See the Langchain-Chatchat architecture below ([source](https://github.com/chatc
   
 ### Install and Run
 
- Follow the guide that corresponds to your specific system and GPU type from the links provided below:
+Follow the guide that corresponds to your specific system and device from the links provided below:
 
 - For systems with Intel Core Ultra integrated GPU: [Windows Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_win_mtl.md#)
 - For systems with Intel Arc A-Series GPU: [Windows Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_win_arc.md#) | [Linux Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_linux_arc.md#)
 - For systems with Intel Data Center Max Series GPU: [Linux Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_linux_max.md#)
-
+- For systems with Xeon-Series CPU: [Linux Guide](https://github.com/intel-analytics/Langchain-Chatchat/blob/ipex-llm/INSTALL_linux_xeon.md#)
 
 ### How to use RAG
 

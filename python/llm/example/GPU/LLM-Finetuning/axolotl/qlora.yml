@@ -38,6 +38,9 @@ wandb_log_model:
 gradient_accumulation_steps: 4
 micro_batch_size: 1
 num_epochs: 4
+# paged_adamw_32bit is not supported
+# due to bitsandbytes issue https://github.com/TimDettmers/bitsandbytes/issues/1180
+# optimizer: paged_adamw_32bit
 optimizer: adamw_torch
 lr_scheduler: cosine
 learning_rate: 0.0002
@@ -54,6 +57,7 @@ resume_from_checkpoint:
 local_rank:
 logging_steps: 1
 xformers_attention:
+# flash_attention is not supported
 flash_attention: false
 
 warmup_steps: 10
