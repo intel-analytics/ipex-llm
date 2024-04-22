@@ -81,6 +81,7 @@ You may launch the Ollama service as below:
   Please set environment variable ``OLLAMA_NUM_GPU`` to ``999`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
 ```
 
+```eval_rst
 .. note::
 
   To allow the service to accept connections from all IP addresses, use `OLLAMA_HOST=0.0.0.0 ./ollama serve` instead of just `./ollama serve`.
