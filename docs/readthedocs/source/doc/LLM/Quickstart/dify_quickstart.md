@@ -62,9 +62,9 @@ npm run start
 
 ## Example: RAG
 See the demo of running dify with Ollama on an Intel Core Ultra laptop below.
-<div align="center">
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.mp4" width="100%" controls></video>
-</div>
+
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.mp4" width="50%" controls></video>
+
 
 1. Set up the environment `export no_proxy=localhost,127.0.0.1` and start Ollama locally by `ollama serve`. 
 2. Open http://localhost:3000 to view dify and change the model provider in setting including both LLM and embedding. For example, choose ollama. 
