@@ -16,6 +16,7 @@ on:
     paths:
       - "python/llm/**"
       - ".github/workflows/llm_unit_tests.yml"
+      - ".github/workflows/llm_unit_tests_4.36.yml"
       - ".github/workflows/llm-binary-build.yml"
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
@@ -27,6 +28,7 @@ on:
     paths:
       - "python/llm/**"
       - ".github/workflows/llm_unit_tests.yml"
+      - ".github/workflows/llm_unit_tests_4.36.yml"
       - ".github/workflows/llm-binary-build.yml"
       - ".github/actions/llm/setup-llm-env/action.yml"
       - ".github/actions/llm/remove-llm-env/action.yml"
