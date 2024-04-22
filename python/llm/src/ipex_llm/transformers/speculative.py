@@ -450,9 +450,8 @@ def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_l
     return past_key_values, not enough_kv_room
 
 
-def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=False,
-                          transformers_436=False):
-    if transformers_436:
+def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=False):
+    if version.parse(trans_version) >= version.parse("4.36.0"):
         from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
         if isinstance(past_key_values, (DynamicFp8Cache, DynamicNormalCache)):
             if hasattr(past_key_values, "_seen_tokens"):
@@ -660,8 +659,6 @@ def speculative_generate(self,
     # min_step_draft >= 1. Since the max_step_draft may adjust,
     # min_step_draft can > max_step_draft
     min_step_draft = min_step_draft if min_step_draft >= 1 else 1
-
-    transformers_436 = version.parse(trans_version) >= version.parse("4.36.0")
 
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
@@ -1049,8 +1046,7 @@ def speculative_generate(self,
                 new_cache_size = max_of_max_matched - max_matched
                 past_key_values = self._crop_past_key_values(past_key_values,
                                                              new_cache_size,
-                                                             _enable_ipex,
-                                                             transformers_436=transformers_436)
+                                                             _enable_ipex)
 
             # Each iter assign new_matched kv_cache to past_key_values1
             if self.device.type == 'cpu' and (not _enable_ipex):
