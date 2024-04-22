@@ -1,9 +1,9 @@
 # Reward Modeling Finetuning for Sequence Classfication with IPEX-LLM
 
-This is an example of IPEX-LLM [reward modeling](https://huggingface.co/docs/trl/main/en/reward_trainer) (a kind of RLHF) on [Intel GPU](../../../README.md), which refers [TRL example](https://github.com/huggingface/trl/blob/main/examples/scripts/reward_modeling.py) to tune model [facebook/opt-350m](https://huggingface.co/facebook/opt-350m) on a sequence classfication task.
+This is an example of IPEX-LLM [reward modeling](https://huggingface.co/docs/trl/main/en/reward_trainer) (a kind of RLHF) on [Intel MAX GPU](../../../README.md), which refers [TRL example](https://github.com/huggingface/trl/blob/main/examples/scripts/reward_modeling.py) to tune model [facebook/opt-350m](https://huggingface.co/facebook/opt-350m) on a sequence classfication task.
 
 ### 0. Requirements
-To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run this example with IPEX-LLM on Intel MAX GPU, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ### 1. Install
 
@@ -29,6 +29,22 @@ Here is how to fine-tune opt-350m on an Intel Max GPU server:
 bash start-reward-modeling-finetuning.sh
 ```
 After starting, you can configure where wanda report or directly disable it by select no-visualization option.
+
+Default values of the arguments in the script:
+```bash
+--model_name_or_path=facebook/opt-350m
+--output_dir="reward_modeling_ipex_llm"
+--per_device_train_batch_size=8
+--num_train_epochs=1
+--gradient_accumulation_steps=16
+--gradient_checkpointing=True
+--learning_rate=1.41e-5
+--remove_unused_columns=False
+--optim="adamw_torch"
+--logging_steps=10
+--evaluation_strategy="steps"
+--max_length=512
+```
 
 ### 3. Sample Output
 ```log
