@@ -61,7 +61,11 @@ if __name__ == "__main__":
     model = AutoModelForSequenceClassification.from_pretrained(
         model_config.model_name_or_path, num_labels=1, **model_kwargs
     )
+    
+    # Apply IPEX-LLM FP4 low-bit optimization for memory-efficient fine-tuning of LLM
+    # This can support larger model with limited GPU memory resource
     model = optimize_model(model, low_bit="fp4")
+
     print(model)
     model = model.to("xpu")
 
