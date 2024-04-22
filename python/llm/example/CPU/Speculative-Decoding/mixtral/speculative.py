@@ -57,9 +57,9 @@ You are a helpful assistant. Please continue writing the below story.
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mistral model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="mistralai/Mistral-7B-Instruct-v0.1",
-                        help='The huggingface repo id for the Mistral (e.g. `mistralai/Mistral-7B-Instruct-v0.1` and `mistralai/Mistral-7B-v0.1`) to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mixtral model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="mistralai/Mixtral-8x7B-Instruct-v0.1",
+                        help='The huggingface repo id for the Mixtral (e.g. `mistralai/Mixtral-8x7B-Instruct-v0.1` and `mistralai/Mixtral-8x7B-v0.1`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default=long_input,
                         help='Prompt to infer')
