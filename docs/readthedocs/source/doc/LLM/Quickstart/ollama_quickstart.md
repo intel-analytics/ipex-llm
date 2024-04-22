@@ -55,7 +55,6 @@ You may launch the Ollama service as below:
          export OLLAMA_NUM_GPU=999
          export no_proxy=localhost,127.0.0.1
          export ZES_ENABLE_SYSMAN=1
-         # Below is a required step for APT or offline installed oneAPI. Skip below step for PIP-installed oneAPI.
          source /opt/intel/oneapi/setvars.sh
 
          ./ollama serve
