@@ -957,6 +957,7 @@ def llama_attention_forward_4_36_quantized(
 
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
+    original_dtype = hidden_states.dtype
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
@@ -1028,35 +1029,41 @@ def llama_attention_forward_4_36_quantized(
     if len(past_key_value.key_cache) <= self.layer_idx:
         repeated_key_states = repeat_kv(key_states, self.num_key_value_groups)
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
-        attn_weights = torch.matmul(query_states,
-                                    repeated_key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        if should_split_qkv_tensor(query_states, output_attentions):
+            attn_output, _ = native_sdp_split_qkv_tensor(query_states, repeated_key_states, 
+                                                         repeated_value_states, attention_mask,
+                                                         bsz, q_len, kv_seq_len,self.head_dim,
+                                                         self.num_heads)
+        else:
+            attn_weights = torch.matmul(query_states,
+                                        repeated_key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-        if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-            invalidInputError(
-                False,
-                f"Attention weights should be of size "
-                f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
-                f" {attn_weights.size()}"
-            )
-
-        if attention_mask is not None:
-            if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+            if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
                 invalidInputError(
                     False,
-                    f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                    f" but is {attention_mask.size()}"
+                    f"Attention weights should be of size "
+                    f"{(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+                    f" {attn_weights.size()}"
                 )
-            attn_weights = attn_weights + attention_mask
 
-        if kv_seq_len >= 2048 or bsz >= 64:
-            # for memory considerations, do not upcast attention to fp32
-            # for long sequences or large batches
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1)
-        else:
-            # upcast attention to fp32
-            attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                                 dtype=torch.float32).to(query_states.dtype)
-        attn_output = torch.matmul(attn_weights, repeated_value_states)
+            if attention_mask is not None:
+                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
+                    invalidInputError(
+                        False,
+                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
+                        f" but is {attention_mask.size()}"
+                    )
+                attn_weights = attn_weights + attention_mask
+
+            if kv_seq_len >= 2048 or bsz >= 64:
+                # for memory considerations, do not upcast attention to fp32
+                # for long sequences or large batches
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+            else:
+                # upcast attention to fp32
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                    dtype=torch.float32).to(query_states.dtype)
+            attn_output = torch.matmul(attn_weights, repeated_value_states)
         if use_cache:
             cache_kwargs = None
             key_states, value_states = past_key_value.update(key_states, value_states,
@@ -1132,7 +1139,7 @@ def llama_attention_forward_4_36_quantized(
     if not output_attentions:
         attn_weights = None
 
-    return attn_output, attn_weights, past_key_value
+    return attn_output.to(original_dtype), attn_weights, past_key_value
 
 
 def llama_attention_forward_4_36_original(
