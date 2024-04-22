@@ -70,7 +70,8 @@ class VLLMWorker(BaseModelWorker):
         )
 
         logger.info(
-            f"Loading the model {self.model_names} on worker {worker_id}, worker type: vLLM worker..."
+            f"Loading the model {self.model_names} on worker {worker_id}, "
+            f"worker type: vLLM worker..."
         )
         self.tokenizer = llm_engine.engine.tokenizer
         # This is to support vllm >= 0.2.7 where TokenizerGroup was introduced
@@ -178,7 +179,8 @@ class VLLMWorker(BaseModelWorker):
                 if len(request_output.outputs) == 1
                 else [output.finish_reason for output in request_output.outputs],
             }
-            # Emit twice here to ensure a 'finish_reason' with empty content in the OpenAI API response.
+            # Emit twice here to ensure a 'finish_reason' with empty
+            # content in the OpenAI API response.
             # This aligns with the behavior of model_worker.
             if request_output.finished:
                 yield (json.dumps({**ret, **{"finish_reason": None}}) + "\0").encode()
