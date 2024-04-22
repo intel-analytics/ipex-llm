@@ -125,7 +125,6 @@ Launch the Ollama service:
          export ZES_ENABLE_SYSMAN=1
          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export OLLAMA_NUM_GPU=999
-         # Below is a required step for APT or offline installed oneAPI. Skip below step for PIP-installed oneAPI.
          source /opt/intel/oneapi/setvars.sh
 
          ./ollama serve
