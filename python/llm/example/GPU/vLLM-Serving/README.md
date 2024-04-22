@@ -34,6 +34,8 @@ sycl-ls
 To run vLLM continuous batching on Intel GPUs, install the dependencies as follows:
 
 ```bash
+# This directory may change depends on where you install oneAPI-basekit
+source /opt/intel/oneapi/setvars.sh
 # First create an conda environment
 conda create -n ipex-vllm python=3.11
 conda activate ipex-vllm
