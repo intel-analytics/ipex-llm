@@ -136,6 +136,8 @@ Currently, for vLLM-v2, we support the following models:
 Install the dependencies for vLLM-v2 as follows:
 
 ```bash
+# This directory may change depends on where you install oneAPI-basekit
+source /opt/intel/oneapi/setvars.sh
 # First create an conda environment
 conda create -n ipex-vllm python=3.11
 conda activate ipex-vllm
