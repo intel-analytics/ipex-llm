@@ -38,7 +38,7 @@ Arguments info:
 #### Sample Output
 #### [mistralai/Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1)
 ```log
-In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
+[INST] In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
 In many ways, the year 2048 represented the culmination of a long and tumultuous journey that humanity had been on since the dawn of civilization. The great leaps forward in science and technology that had occurred over the course of the previous century had laid the groundwork for a future that was beyond anything anyone could have imagined.
 One of the most striking aspects of life in 2048 was the degree to which technology had become an integral part of nearly every aspect of daily existence. From the moment people woke up in the morning until they went to bed at night, they were surrounded by devices and systems that were powered by advanced artificial intelligence and machine learning algorithms.
 In fact, it was hard to find anything in people's lives that wasn't touched by technology in some way. Every aspect of society had been transformed, from the way people communicated with one another to the way they worked, played, and even socialized. And as the years went on, it seemed as though there was no limit to what technology could achieve.
@@ -52,15 +52,20 @@ When the day of the conference arrived, Maya was filled with a mixture of excite
 As she stepped up to the podium, Maya could feel the energy of the crowd surging around her. She took a deep breath and began to speak, her voice strong and clear as she outlined the challenges and opportunities facing society in the age of technology. She spoke passionately about the need for responsible innovation and the importance of considering the ethical implications of our actions, and she inspired many people in the audience to take up this cause and make a difference in their own lives.
 Overall, Maya's speech was a resounding success, and she received countless messages of gratitude and appreciation from those who had heard her speak. She knew that there was still much work to be done, but she felt hopeful about the future and the role that technology could play in creating a better world for all.
 As Maya left the stage and made her way back to her seat, she couldn't help but feel a sense of pride and accomplishment at what she had just accomplished. She knew that her words had the power to inspire others and make a real difference in the world, and she was grateful for the opportunity to have played a part in this important work.
-In the years that followed, Maya continued to work tirelessly to promote responsible innovation and ensure that technology was used in ways that were safe, ethical, and beneficial for everyone. She became a leading voice in the field of technology and ethics, and her ideas and insights were sought out by people from all over the world.
-Maya's legacy lived on long after she passed away, and her work continued to inspire and influence people for generations to come. She was a true visionary and a pioneer in the field of technology and ethics, and her contributions to society will be remembered for many years to come.
-Tokens generated 128
+  Please continue writing the above story
+[/INST] The conference continued for several more days, with speakers and attendees from all over the world coming together to discuss the latest developments in technology and ethics. Maya was busy throughout, attending panel discussions, leading workshops, and meeting with other experts in the field.
+
+One of the highlights of the conference was a roundtable discussion on the future of artificial intelligence. Maya was joined by a panel of experts from academia, industry, and government, and together they explored the potential benefits and risks of AI, as well as the steps that needed to be taken to ensure that this powerful technology was developed and deployed in a responsible
 E2E Generation time xx.xxxxs
+Tokens generated 128
 First token latency xx.xxxxs
 ```
 
 #### [mistralai/Mixtral-8x7B-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1)
 ```
+[INST] <<SYS>>
+You are a helpful assistant. Please continue writing the below story.
+<</SYS>>
 In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
 In many ways, the year 2048 represented the culmination of a long and tumultuous journey that humanity had been on since the dawn of civilization. The great leaps forward in science and technology that had occurred over the course of the previous century had laid the groundwork for a future that was beyond anything anyone could have imagined.
 One of the most striking aspects of life in 2048 was the degree to which technology had become an integral part of nearly every aspect of daily existence. From the moment people woke up in the morning until they went to bed at night, they were surrounded by devices and systems that were powered by advanced artificial intelligence and machine learning algorithms.
@@ -74,10 +79,15 @@ As she prepared for her speech, Maya knew that she had a big responsibility on h
 When the day of the conference arrived, Maya was filled with a mixture of excitement and nerves. She spent hours rehearsing her speech and fine-tuning her ideas, making sure that she had everything just right. Finally, after what felt like an eternity, it was time for her to take the stage.
 As she stepped up to the podium, Maya could feel the energy of the crowd surging around her. She took a deep breath and began to speak, her voice strong and clear as she outlined the challenges and opportunities facing society in the age of technology. She spoke passionately about the need for responsible innovation and the importance of considering the ethical implications of our actions, and she inspired many people in the audience to take up this cause and make a difference in their own lives.
 Overall, Maya's speech was a resounding success, and she received countless messages of gratitude and appreciation from those who had heard her speak. She knew that there was still much work to be done, but she felt hopeful about the future and the role that technology could play in creating a better world for all.
-As Maya left the stage and made her way back to her seat, she couldn't help but feel a sense of pride and accomplishment at what she had just accomplished. She knew that her words had the power to inspire others and make a real difference in the world, and she was grateful for the opportunity to have played a part in this important work.
-As she reflected on the day's events, Maya felt a deep sense of satisfaction and purpose. She knew that she had a long and challenging road ahead of her, but she was determined to continue working towards a better future for all. She was confident that, with the help of others who shared her vision and values, she would be able to make a real difference in the world and leave a lasting legacy for generations to come.
-Tokens generated 128
+As Maya left the stage and made her way back to her seat, she couldn't help but feel a sense of pride and accomplishment at what she had just accomplished. She knew that her words had the power to inspire others and make a real difference in the world, and she was grateful for the opportunity to have played a part in this important work.[/INST]
+
+[INST] <<SYS>>
+You are a helpful assistant. Please continue writing the below story.
+<</SYS>>
+As Maya made her way back to her seat, she couldn't help but feel a sense of pride and accomplishment at what she had just accomplished. She knew that her words had the power to inspire others and make a real difference in the world, and she was grateful for the opportunity to have played a part in this important work.
+As she sat down, she noticed a man sitting a few rows behind her. He was tall and handsome, with dark hair and piercing blue eyes.
 E2E Generation time xx.xxxxs
+Tokens generated 128
 First token latency xx.xxxxs
 ```
 
