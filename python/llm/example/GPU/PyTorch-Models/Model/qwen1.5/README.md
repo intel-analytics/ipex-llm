@@ -30,6 +30,10 @@ pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers==4.37.0 # install transformers which supports Qwen2
+
+# only for Qwen1.5-MoE-A2.7B
+pip install transformers==4.40.0
+pip install trl==0.8.1
 ```
 
 ### 2. Configures OneAPI environment variables for Linux

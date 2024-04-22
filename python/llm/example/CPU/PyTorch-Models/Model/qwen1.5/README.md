@@ -16,6 +16,10 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 pip install transformers==4.37.0 # install transformers which supports Qwen2
+
+# only for Qwen1.5-MoE-A2.7B
+pip install transformers==4.40.0
+pip install trl==0.8.1
 ```
 
 ### 2. Run
