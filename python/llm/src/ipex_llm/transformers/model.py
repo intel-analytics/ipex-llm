@@ -49,6 +49,7 @@ import torch
 import warnings
 import copy
 from .utils import logger
+import trl
 
 patched_training_mode = None
 
@@ -744,3 +745,7 @@ class AutoModelForMultipleChoice(_BaseAutoModelClass):
 
 class AutoModelForTokenClassification(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForTokenClassification
+
+
+class AutoModelForCausalLMWithValueHead(_BaseAutoModelClass):
+    HF_Model = trl.AutoModelForCausalLMWithValueHead

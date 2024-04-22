@@ -35,9 +35,7 @@ class ScriptArguments:
     # NOTE: gpt2 models use Conv1D instead of Linear layers which are not yet supported in 8 bit mode
     # models like gpt-neo* models are more suitable.
     model_name: Optional[str] = field(default="", metadata={"help": "the model name"})
-    tokenizer_name: Optional[str] = field(default="", metadata={"help": "the tokenizer name"})
-    reward_model_name: Optional[str] = field(default="", metadata={"help": "the reward model name"})
-    dataset_name: Optional[str] = field(default="", metadata={"help": "the dataset name"})
+    dataset_name: Optional[str] = field(default="HuggingFaceH4/helpful_instructions", metadata={"help": "the dataset name"})
     learning_rate: Optional[float] = field(default=1.41e-5, metadata={"help": "the learning rate"})
     max_length: Optional[int] = field(default=512, metadata={"help": "maximum length for input"})
     output_max_length: Optional[int] = field(default=128, metadata={"help": "maximum length for generation"})
@@ -47,14 +45,13 @@ class ScriptArguments:
     gradient_accumulation_steps: Optional[int] = field(
         default=4, metadata={"help": "the number of gradient accumulation steps"}
     )
-    adafactor: Optional[bool] = field(default=False, metadata={"help": "whether to use the adafactor optimizer"})
+
     early_stopping: Optional[bool] = field(default=False, metadata={"help": "whether to early stop"})
     target_kl: Optional[float] = field(default=0.1, metadata={"help": "kl target for early stopping"})
     reward_baseline: Optional[float] = field(
         default=0.0,
         metadata={"help": "a baseline value that is subtracted from the reward"},
     )
-    batched_gen: Optional[bool] = field(default=False, metadata={"help": "whether to use the batched text gen"})
     save_freq: Optional[int] = field(default=None, metadata={"help": "n steps to save the model"})
     output_dir: Optional[str] = field(default="./checkpoints/tuning_llama_rl/",
                                       metadata={"help": "where to save the model checkpoints"})
@@ -114,8 +111,6 @@ def build_dataset(tokenizer, dataset_name):
 def collator(data):
     return dict((key, [d[key] for d in data]) for key in data[0])
 
-
-reward_model_name = script_args.reward_model_name
 config = PPOConfig(
     model_name=script_args.model_name,
     learning_rate=script_args.learning_rate,
@@ -178,14 +173,6 @@ model.to("xpu")
 # model = optimize_model(model, low_bit="bf16")
 
 optimizer = None
-# if script_args.adafactor:
-#     optimizer = Adafactor(
-#         filter(lambda p: p.requires_grad, model.parameters()),
-#         scale_parameter=False,
-#         relative_step=False,
-#         warmup_init=False,
-#         lr=config.learning_rate,
-#     )
 
 # We then build the PPOTrainer, passing the model, the reference model, the tokenizer
 ppo_trainer = PPOTrainer(
