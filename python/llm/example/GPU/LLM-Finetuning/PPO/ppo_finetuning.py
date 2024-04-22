@@ -56,7 +56,7 @@ class ScriptArguments:
     output_dir: Optional[str] = field(default="./checkpoints/tuning_llama_rl/",
                                       metadata={"help": "where to save the model checkpoints"})
     seed: Optional[int] = field(default=0, metadata={"help": "the seed"})
-    saved_path: Optional[str] = field(default="finetuned_model", metadata={"help": "where to save the finetuned model"})
+    save_path: Optional[str] = field(default="finetuned_model", metadata={"help": "where to save the finetuned model"})
 
 
 parser = HfArgumentParser(ScriptArguments)
@@ -232,4 +232,4 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     if script_args.save_freq and epoch and epoch % script_args.save_freq == 0:
         ppo_trainer.save_pretrained(script_args.output_dir + f"step_{epoch}")
 
-ppo_trainer.save_pretrained("./finetuned_model")
+ppo_trainer.save_pretrained(script_args.save_path)
