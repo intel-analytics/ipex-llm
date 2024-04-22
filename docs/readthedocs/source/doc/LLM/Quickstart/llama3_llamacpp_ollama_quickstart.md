@@ -29,13 +29,7 @@ Suppose you have downloaded a [Meta-Llama-3-8B-Instruct-Q4_K_M.gguf](https://hug
 
 #### 1.3 Run Llama3 on Intel GPU using llama.cpp
 
-##### Set Environment Variables（optional）
-
-```eval_rst
-.. note::
-
-   This is a required step on for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
-```
+##### Set Environment Variables
 
 Configure oneAPI variables by running the following command:
 
@@ -49,9 +43,14 @@ Configure oneAPI variables by running the following command:
 
    .. tab:: Windows
 
+      .. note::
+
+      This is a required step on for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
+
       .. code-block:: bash
 
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+
 ```
 
 ##### Run llama3
