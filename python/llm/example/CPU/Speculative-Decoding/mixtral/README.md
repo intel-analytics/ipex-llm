@@ -1,5 +1,5 @@
-# Mistral
-In this directory, you will find examples on how you could run Mistral BF16 inference with self-speculative decoding using IPEX-LLM on [Intel CPUs](../README.md). For illustration purposes,we utilize the [mistralai/Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1) and [mistralai/Mistral-7B-v0.1](https://huggingface.co/mistralai/Mistral-7B-v0.1) as reference Mistral models.
+# Mixtral
+In this directory, you will find examples on how you could run Mixtral BF16 inference with self-speculative decoding using IPEX-LLM on [Intel CPUs](../README.md). For illustration purposes,we utilize the [mistralai/Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1) and [mistralai/Mixtral-8x7B-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1) as reference Mixtral models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel CPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -12,8 +12,7 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.11
 conda activate llm
 pip install --pre --upgrade ipex-llm[all]
-pip install intel_extension_for_pytorch==2.1.0
-pip install transformers==4.35.2
+pip install transformers==4.36.0
 ```
 ### 2. Configures high-performing processor environment variables
 ```bash
@@ -32,12 +31,12 @@ For example, 0-47 means bind the python program to core list 0-47 for a 48-core 
 
 Arguments info:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Mistral model (e.g. `mistralai/Mistral-7B-Instruct-v0.1` and `mistralai/Mistral-7B-v0.1`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mistralai/Mistral-7B-Instruct-v0.1'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Mixtral model (e.g. `mistralai/Mixtral-8x7B-Instruct-v0.1` and `mistralai/Mixtral-8x7B-v0.1`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mistralai/Mixtral-8x7B-Instruct-v0.1'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). A default prompt is provided.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `128`.
 
 #### Sample Output
-#### [mistralai/Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1)
+#### [mistralai/Mixtral-8x7B-Instruct-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1)
 ```log
 In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
 In many ways, the year 2048 represented the culmination of a long and tumultuous journey that humanity had been on since the dawn of civilization. The great leaps forward in science and technology that had occurred over the course of the previous century had laid the groundwork for a future that was beyond anything anyone could have imagined.
@@ -60,7 +59,7 @@ E2E Generation time xx.xxxxs
 First token latency xx.xxxxs
 ```
 
-#### [mistralai/Mistral-7B-v0.1](https://huggingface.co/mistralai/Mistral-7B-v0.1)
+#### [mistralai/Mixtral-8x7B-v0.1](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1)
 ```
 In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
 In many ways, the year 2048 represented the culmination of a long and tumultuous journey that humanity had been on since the dawn of civilization. The great leaps forward in science and technology that had occurred over the course of the previous century had laid the groundwork for a future that was beyond anything anyone could have imagined.
@@ -82,26 +81,3 @@ E2E Generation time xx.xxxxs
 First token latency xx.xxxxs
 ```
 
-### 4. Accelerate with BIGDL_OPT_IPEX
-
-To accelerate speculative decoding on CPU, you can install our validated version of [IPEX 2.2.0+cpu](https://github.com/intel/intel-extension-for-pytorch/tree/v2.2.0%2Bcpu) refering to [IPEX's installation guide](https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=cpu&version=v2.2.0%2Bcpu), or by the following commands: (Other versions of IPEX may have some conflicts and can not accelerate speculative decoding correctly.)
-
-```bash
-# Install IPEX 2.2.0+cpu
-python -m pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pip install intel-extension-for-pytorch==2.2.0
-python -m pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/
-# if there is any installation problem for oneccl_binding, you can also find suitable index url at "https://pytorch-extension.intel.com/release-whl/stable/cpu/cn/" or "https://developer.intel.com/ipex-whl-stable-cpu" according to your environment.
-
-# Update transformers
-pip install transformers==4.35.2
-```
-
-After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently `Mistral-7B-Instruct-v0.1 and Mistral-7B-v0.1` are supported.
-
-```bash
-source ipex-llm-init -t
-export BIGDL_OPT_IPEX=true
-export OMP_NUM_THREADS=48 # you can change 48 here to #cores of one processor socket
-numactl -C 0-47 -m 0 python ./speculative.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
-```
