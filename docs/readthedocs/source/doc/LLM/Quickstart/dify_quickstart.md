@@ -70,7 +70,7 @@ See the demo of running dify with Ollama on an Intel Core Ultra laptop below.
 3. Use text summarization workflow template from studio. 
 ![屏幕截图 2024-04-19 140508](https://github.com/analytics-zoo/nano/assets/59141989/3a686dff-cdb4-46a4-b054-f7955c556d67)
 
-4. Add knowledge and specify which type of embedding model to use. 
+4. Add knowledge base and specify which type of embedding model to use. 
 ![屏幕截图 2024-04-19 140355](https://github.com/analytics-zoo/nano/assets/59141989/c205e02e-5b8b-42f0-b3b4-058fc15fb7eb)
 
 5. Enter input and start to generate. You could find retrieval results and answers generated on the right. 
