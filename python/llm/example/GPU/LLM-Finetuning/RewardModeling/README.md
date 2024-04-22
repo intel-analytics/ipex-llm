@@ -1,6 +1,6 @@
-# Reward Modeling Finetuning with IPEX-LLM
+# Reward Modeling Finetuning for Sequence Classfication with IPEX-LLM
 
-This is an example of IPEX-LLM [reward modeling](https://huggingface.co/docs/trl/main/en/reward_trainer) (a kind of RLHF) on [Intel GPU](../../../README.md), which refers [TRL example](https://github.com/huggingface/trl/blob/main/examples/scripts/reward_modeling.py) to tune model [facebook/opt-350m](https://huggingface.co/facebook/opt-350m).
+This is an example of IPEX-LLM [reward modeling](https://huggingface.co/docs/trl/main/en/reward_trainer) (a kind of RLHF) on [Intel GPU](../../../README.md), which refers [TRL example](https://github.com/huggingface/trl/blob/main/examples/scripts/reward_modeling.py) to tune model [facebook/opt-350m](https://huggingface.co/facebook/opt-350m) on a sequence classfication task.
 
 ### 0. Requirements
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
