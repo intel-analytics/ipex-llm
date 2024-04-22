@@ -316,7 +316,8 @@ def lookup_generate(self,
             if max_of_max_matched != max_matched:
                 output_ids = output_ids[:, :max_matched]
                 new_cache_size = max_of_max_matched - max_matched
-                past_key_values = _crop_past_key_values(self, past_key_values, new_cache_size)
+                past_key_values = _crop_past_key_values(self, past_key_values,
+                                                        new_cache_size)
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
 
