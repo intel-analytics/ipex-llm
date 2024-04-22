@@ -312,12 +312,16 @@ def use_flash_attention(query, key, attention_mask=None):
     return True
 
 
-def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
+def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None,
+                  legacy_sdp=True):
     if head_dim != 128:
         # esimd_sdp only support head_dim = 128 now
         return False
-    elif q_len != 1:
-        # esimd_sdp only support rest token now
+    elif legacy_sdp and q_len != 1:
+        # esimd_sdp only support rest token and q_len == 1 now
+        return False
+    elif not legacy_sdp and q_len == k_len:
+        # new sdp_fp16 only support rest token now
         return False
     elif k_len < 8:
         # esimd_sdp will cause wrong output when k_len < 8
