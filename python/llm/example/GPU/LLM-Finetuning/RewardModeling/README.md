@@ -28,18 +28,13 @@ Here is how to fine-tune opt-350m on an Intel Max GPU server:
 # arguments can be reset in the script e.g. model_name_or_path, per_device_train_batch_size and other hyperparameters
 bash start-reward-modeling-finetuning.sh
 ```
+After starting, you can configure where wanda report or directly disable it by select no-visualization option.
 
 ### 3. Sample Output
 ```log
 ......
-{'loss': 2.0989, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.0}
-{'loss': 1.9064, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.0}
-{'loss': 1.7483, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
-{'loss': 1.9551, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
-{'loss': 1.783, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
-{'loss': 1.3328, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
-{'loss': 1.4622, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.01}
-{'loss': 1.9094, 'grad_norm': 0.0, 'learning_rate': 0.001, 'epoch': 0.02}
-  5%|████▏                                                                                      | 70/1500 [xx:xx<x:xx:xx, xx.xxs/it]
+{'loss': 0.8613, 'grad_norm': 2.837268590927124, 'learning_rate': 1.3854569190600522e-05, 'epoch': 0.02}
+{'eval_loss': 0.8356835246086121, 'eval_accuracy': 0.4996802660186725, 'eval_runtime': xxxx, 'eval_samples_per_second': xxxx, 'eval_steps_per_second': xxxx, 'epoch': 0.03}
+  4%|██▊                                                                          | 42/1149 [xx:xx<xx:xx:xx, xx.xx s/it]
 ......
 ```
