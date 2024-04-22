@@ -407,7 +407,7 @@ def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_l
         extend_kv_cache
     enough_kv_room = True
     if model_type not in ["chatglm", "qwen", "baichuan", "llama", "mistral",
-                          "gptj", "opt"]:
+                          "gptj", "opt", "mixtral"]:
         return past_key_values, False
     cache_k = past_key_values[0][0]
     if model_type == "chatglm":
@@ -808,7 +808,7 @@ def speculative_generate(self,
 
                 if _enable_ipex:
                     if any(keyword in self.config.model_type
-                            for keyword in ["llama", "chatglm", "mistral"]):
+                            for keyword in ["llama", "chatglm", "mistral", "mixtral"]):
                         past_key_value_len = draft_past_key_values[0][0].shape[2]
                         position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
                         position_ids = position_ids[:, :-draft_current_input_ids.size(0)]
