@@ -342,7 +342,7 @@ def mixtral_attention_forward(
         attn_weights = None
     else:
         attn_weights = torch.matmul(
-            query_states,
+            query_states.to(key_states.dtype),
             key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
         if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
@@ -364,7 +364,7 @@ def mixtral_attention_forward(
 
         # upcast attention to fp32
         attn_weights = nn.functional.\
-            softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+            softmax(attn_weights, dim=-1, dtype=torch.float32).to(value_states.dtype)
         attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
