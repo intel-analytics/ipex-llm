@@ -66,19 +66,25 @@ See the demo of running dify with Ollama on an Intel Core Ultra laptop below.
 
 1. Set up the environment `export no_proxy=localhost,127.0.0.1` and start Ollama locally by `ollama serve`. 
 2. Open http://localhost:3000 to view dify and change the model provider in setting including both LLM and embedding. For example, choose ollama. 
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p1.png" alt="image-p1" width=100%; />
+<div align="center">
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p1.png" alt="image-p1" width=50%; />
+</div>
+
 3. Use text summarization workflow template from studio. 
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p2.png" alt="image-p2" width=100%; />
+<div align="center">
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p2.png" alt="image-p2" width=50%; />
+</div>
 
 4. Add knowledge base and specify which type of embedding model to use. 
 <div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p3.png" alt="image-p3" width=100%; />
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p3.png" alt="image-p3" width=50%; />
 </div>
 
 5. Enter input and start to generate. You could find retrieval results and answers generated on the right. 
-
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p5.png" alt="image-20240221102252560" width=100%; />
-
+4. Add knowledge base and specify which type of embedding model to use. 
+<div align="center">
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p5.png" alt="image-20240221102252560" width=50%; />
+</div>
 
 
 
