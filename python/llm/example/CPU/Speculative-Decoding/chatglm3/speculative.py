@@ -57,7 +57,6 @@ if __name__ == '__main__':
                                       load_in_low_bit="bf16",
                                       speculative=True,
                                       trust_remote_code=True,
-                                      torchscript=True,
                                       use_cache=True)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
