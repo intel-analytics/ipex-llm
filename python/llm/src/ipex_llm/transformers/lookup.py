@@ -29,6 +29,8 @@ from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteria
 from ipex_llm.transformers.speculative import greedy, deepmind_sample, logits_to_probs,\
     _crop_past_key_values, _prepare_generate_args, _non_cpu_ipex_verify, clear_benchmarks
 from ipex_llm.utils.common import invalidInputError
+import transformers
+from packaging import version
 
 logger = logging.getLogger("ipex_llm.lookup")
 
@@ -37,6 +39,7 @@ from transformers import GenerationMixin
 original_generate = GenerationMixin.generate
 query_group_size = 16
 
+trans_version = transformers.__version__
 
 @torch.no_grad()
 def generate(
@@ -213,6 +216,7 @@ def lookup_generate(self,
                     generation_config: Optional[GenerationConfig] = None,
                     attention_mask=None,
                     **sampling_kwargs):
+    transformers_436 = version.parse(trans_version) >= version.parse("4.36.0")
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               **sampling_kwargs)
@@ -316,7 +320,9 @@ def lookup_generate(self,
             if max_of_max_matched != max_matched:
                 output_ids = output_ids[:, :max_matched]
                 new_cache_size = max_of_max_matched - max_matched
-                past_key_values = _crop_past_key_values(self, past_key_values, new_cache_size)
+                past_key_values = _crop_past_key_values(self, past_key_values,
+                                                        new_cache_size,
+                                                        transformers_436=transformers_436)
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
 
