@@ -41,6 +41,7 @@ query_group_size = 16
 
 trans_version = transformers.__version__
 
+
 @torch.no_grad()
 def generate(
     self,
