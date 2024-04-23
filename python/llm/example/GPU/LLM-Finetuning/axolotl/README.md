@@ -22,6 +22,8 @@ git checkout v0.4.0
 cp ../requirements-xpu.txt requirements.txt
 pip install -e .
 pip install transformers==4.36.0
+# to avoid https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544
+pip install datasets==2.15.0
 ```
 
 ### 2. Configures OneAPI environment variables and accelerate
