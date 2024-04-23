@@ -128,12 +128,11 @@ Inference time: xxxx s
 
 What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
+
 -------------------- Output (skip_special_tokens=False) --------------------
 <|begin_of_text|><|start_header_id|>user<|end_header_id|>
 
 What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
-A question that gets to the heart of what I am!
-
-Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that would typically
+Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that would typically require human intelligence, such as learning, problem-solving, decision
 ```
