@@ -1422,7 +1422,7 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
     query_split = torch.split(query.to(key.dtype), block_size, dim=1)
     key_split = torch.split(key.transpose(2, 3), block_size, dim=1)
     value_split = torch.split(value, block_size, dim=1)
-    attn_output = torch.empty(bsz, num_heads, q_len, head_dim, dtype=key.dtype).to(query.device)
+    attn_output = torch.empty(bsz, num_heads, q_len, head_dim).to(query.device)
     idx = 0
     for q, k, v in zip(query_split, key_split, value_split):
         attn_weights_split = torch.matmul(q, k) / math.sqrt(head_dim)
@@ -1444,7 +1444,7 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
         attn_weights_split = torch.matmul(attn_weights_split, v)
         attn_output[:, idx:idx+block_actual_size, :, :] = attn_weights_split
         idx = idx + block_actual_size
-    return attn_output, None
+    return attn_output.to(key.dtype), None
 
 
 def llama_model_selective_batching_forward_4_31(
