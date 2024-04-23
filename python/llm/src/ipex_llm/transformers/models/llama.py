@@ -1337,7 +1337,8 @@ def llama_attention_forward_4_36_original(
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states, legacy_sdp=False):
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states,
+                          legacy_sdp=False):
         import linear_q4_0
         attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
