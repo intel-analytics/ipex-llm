@@ -161,7 +161,7 @@ jobs:
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR"
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436"
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436
           fi
           if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
