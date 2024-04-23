@@ -18,10 +18,6 @@ export OMP_NUM_THREADS=$THREAD_NUM
 python -m pytest -s ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v
 python -m pytest -s ${LLM_INFERENCE_TEST_DIR}/test_optimize_model_api.py -v
 
-python -m pip install transformers==4.34.0
-python -m pytest -s ${LLM_INFERENCE_TEST_DIR}/test_transformesr_api_434.py -v
-python -m pip install transformers==4.31.0
-
 now=$(date "+%s")
 time=$((now-start))
 

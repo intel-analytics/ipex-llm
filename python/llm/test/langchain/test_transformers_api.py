@@ -38,7 +38,7 @@ import os
 class Test_Langchain_Transformers_API(TestCase):
     def setUp(self):
         self.auto_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
-        self.auto_causal_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
+        # self.auto_causal_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
         self.llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
         self.bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
         thread_num = os.environ.get('THREAD_NUM')

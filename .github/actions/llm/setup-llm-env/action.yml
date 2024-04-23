@@ -42,3 +42,4 @@ runs:
           pip install pytest
           bash python/llm/test/run-llm-install-tests.sh
         fi
+        pip install transformers==4.36.2
