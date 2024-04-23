@@ -8,13 +8,13 @@ See the demo of finetuning LLaMA2-7B on Intel Arc GPU below.
 
 ### 0 Prerequisites
 
-IPEX-LLM's support for [Axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) now is available only for Linux system. For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
+IPEX-LLM's support for [Axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) is only available for Linux system. We recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
 Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
 
 ### 1. Install IPEX-LLM for Axolotl
 
-Create new conda env, and install `ipex-llm[xpu]`.
+Create a new conda env, and install `ipex-llm[xpu]`.
 
 ```bash
 conda create -n axolotl python=3.11
@@ -42,7 +42,7 @@ wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GP
 
 ### 2. Example: Finetune Llama-2-7B with Axolotl
 
-In the following example, we will introduce finetune [Llama-2-7B](https://huggingface.co/meta-llama/Llama-2-7b) with [alpaca_2k_test](https://huggingface.co/datasets/mhenrichsen/alpaca_2k_test) dataset using LoRA and QLoRA.
+The following example will introduce finetuning [Llama-2-7B](https://huggingface.co/meta-llama/Llama-2-7b) with [alpaca_2k_test](https://huggingface.co/datasets/mhenrichsen/alpaca_2k_test) dataset using LoRA and QLoRA.
 
 Note that you don't need to write any code in this example.
 
@@ -61,7 +61,7 @@ By default, Axolotl will automatically download models and datasets from Hugging
 huggingface-cli login
 ```
 
-If you prefer to use offline model and datasets, please download [Llama-2-7B](https://huggingface.co/meta-llama/Llama-2-7b) and [alpaca_2k_test](https://huggingface.co/datasets/mhenrichsen/alpaca_2k_test). Then, set `HF_HUB_OFFLINE=1` to avoid connecting to Huggingface.
+If you prefer offline models and datasets, please download [Llama-2-7B](https://huggingface.co/meta-llama/Llama-2-7b) and [alpaca_2k_test](https://huggingface.co/datasets/mhenrichsen/alpaca_2k_test). Then, set `HF_HUB_OFFLINE=1` to avoid connecting to Huggingface.
 
 ```bash
 export HF_HUB_OFFLINE=1
@@ -95,17 +95,17 @@ accelerate config
 
 Please answer `NO` in option `Do you want to run your training on CPU only (even if a GPU / Apple Silicon device is available)? [yes/NO]:`.
 
-After finish accelerate config, check if `use_cpu` is disable (i.e., `use_cpu: false`) in accelerate config file (`~/.cache/huggingface/accelerate/default_config.yaml`).
+After finishing accelerate config, check if `use_cpu` is disabled (i.e., `use_cpu: false`) in accelerate config file (`~/.cache/huggingface/accelerate/default_config.yaml`).
 
 #### 2.3 LoRA finetune
 
-Prepare `lora.yml` for Axolotl finetuning. You can download a template from github.
+Prepare `lora.yml` for Axolotl LoRA finetune. You can download a template from github.
 
 ```bash
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
 ```
 
-If you are using model and dataset in local env, please modify model path and dataset path in `lora.yml` or `qlora.yml` to ensure Axolotl can access offline model and data.
+If you use the model and dataset in local env, please modify the model path and dataset path in `lora.yml` to ensure Axolotl can access the offline model and data.
 
 ```yaml
 # Please change to local path if model is offline
@@ -116,7 +116,7 @@ datasets:
     type: alpaca
 ```
 
-Modify key parameters, such as `lora_r` and `lora_alpha` etc.
+Modify LoRA parameters, such as `lora_r` and `lora_alpha`, etc.
 
 ```yaml
 adapter: lora
@@ -129,12 +129,13 @@ lora_target_linear: true
 lora_fan_in_fan_out:
 ```
 
-Launch LoRA training with following command,
+Launch LoRA training with the following command,
+
 ```bash
 accelerate launch finetune.py lora.yml
 ```
 
-In Axolotl v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
+In Axolotl v0.4.0, you can use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
 ```bash
 accelerate launch train.py lora.yml
@@ -142,13 +143,13 @@ accelerate launch train.py lora.yml
 
 #### 2.4 QLoRA finetune
 
-Prepare `lora.yml` for finetuning. You can download a template from github.
+Prepare `lora.yml` for QLoRA finetune. You can download a template from github.
 
 ```bash
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
 ```
 
-If you are using model and dataset in local env, please modify model path and dataset path in `lora.yml` or `qlora.yml` to ensure Axolotl can access offline model and data.
+If you use the model and dataset in local env, please modify the model path and dataset path in `qlora.yml` to ensure Axolotl can access the offline model and data.
 
 ```yaml
 # Please change to local path if model is offline
@@ -159,7 +160,7 @@ datasets:
     type: alpaca
 ```
 
-Modify key parameters, such as `lora_r` and `lora_alpha` etc.
+Modify QLoRA parameters, such as `lora_r` and `lora_alpha`, etc.
 
 ```yaml
 adapter: qlora
@@ -173,12 +174,13 @@ lora_target_linear: true
 lora_fan_in_fan_out:
 ```
 
-Launch LoRA training with following command,
+Launch LoRA training with the following command,
+
 ```bash
 accelerate launch finetune.py qlora.yml
 ```
 
-In Axolotl v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
+In Axolotl v0.4.0, you can use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
 ```bash
 accelerate launch train.py qlora.yml
@@ -200,4 +202,4 @@ This issue is caused by running out of GPU memory. Please reduce `lora_r` or `mi
 
 #### `OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or directory`
 
-This issue is caused by oneAPI env not correctly set. Please refer to [2.2 Set Environment Variables](#22-set-environment-variables)
+oneAPI environment is not correctly set. Please refer to [2.2 Set Environment Variables](#22-set-environment-variables)
