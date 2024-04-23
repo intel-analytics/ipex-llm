@@ -100,6 +100,12 @@ def generate(
                                          draft_model=self.draft_model,
                                          **new_speculative_kwargs)
     else:
+        # When `draft_model` is false, these attributes
+        # ralted to speculative decoding should be removed
+        for var in ['max_step_draft', 'th_stop_draft', 'hf_adjust',
+                    'auto_th_stop_draft', 'auto_parameters', 'min_step_draft',
+                    'th_batch_num']:
+            value = kwargs.pop(var, None)
         return original_generate(self,
                                  inputs=inputs,
                                  generation_config=generation_config,
