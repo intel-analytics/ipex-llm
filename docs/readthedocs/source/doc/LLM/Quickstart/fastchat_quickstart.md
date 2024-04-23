@@ -8,7 +8,7 @@ IPEX-LLM can be easily integrated into FastChat so that user can use `IPEX-LLM` 
 
 This quickstart guide walks you through installing and running `FastChat` with `ipex-llm`.
 
-## 1. Install IPEX-LLM with FastChat
+### 1. Install IPEX-LLM with FastChat
 
 To run on CPU, you can install ipex-llm as follows:
 
@@ -23,9 +23,9 @@ pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pyto
 
 ```
 
-## 2. Start the service
+### 2. Start the service
 
-### Launch controller
+#### Launch controller
 
 You need first run the fastchat controller
 
@@ -39,11 +39,11 @@ If the controller run successfully, you can see the output like this:
 Uvicorn running on http://localhost:21001
 ```
 
-### Launch model worker(s) and load models
+#### Launch model worker(s) and load models
 
 Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
-#### IPEX-LLM worker
+##### IPEX-LLM worker
 
 To integrate IPEX-LLM with `FastChat` efficiently, we have provided a new model_worker implementation named `ipex_llm_worker.py`.
 
@@ -74,7 +74,7 @@ You can get output like this:
 
 For a full list of accepted arguments, you can refer to the main method of the `ipex_llm_worker.py`
 
-#### IPEX-LLM vLLM worker
+##### IPEX-LLM vLLM worker
 
 We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/vLLM-Serving) engine for better hardware utilization.
 
@@ -91,7 +91,7 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
 ```
 
-### Launch Gradio web server
+#### Launch Gradio web server
 
 When you have started the controller and the worker, you can start web server as follows:
 
@@ -107,7 +107,7 @@ This is the user interface that users will interact with.
 
 By following these steps, you will be able to serve your models using the web UI with IPEX-LLM as the backend. You can open your browser and chat with a model now.
 
-### Launch RESTful API server
+#### Launch RESTful API server
 
 To start an OpenAI API server that provides compatible APIs using IPEX-LLM backend, you can launch the `openai_api_server` and follow this [doc](https://github.com/lm-sys/FastChat/blob/main/docs/openai_api.md) to use it.
 
@@ -121,7 +121,7 @@ You can use `curl` for observing the output of the api
 
 You can format the output using `jq`
 
-#### List Models
+##### List Models
 
 ```bash
 curl http://localhost:8000/v1/models | jq
@@ -162,7 +162,7 @@ Example output
 }
 ```
 
-#### Chat Completions
+##### Chat Completions
 
 ```bash
 curl http://localhost:8000/v1/chat/completions \
@@ -200,7 +200,7 @@ Example output
 
 ```
 
-#### Text Completions
+##### Text Completions
 
 ```bash
 curl http://localhost:8000/v1/completions \

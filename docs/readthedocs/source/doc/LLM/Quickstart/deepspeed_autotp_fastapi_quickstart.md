@@ -1,0 +1,53 @@
+# Run IPEX-LLM serving on Multiple Intel GPUs using DeepSpeed AutoTP and FastApi
+
+[AutoTP](https://www.deepspeed.ai/tutorials/automatic-tensor-parallelism/) is a automatic tensor parallelism feature for inference by using [DeepSpeed](https://github.com/microsoft/DeepSpeed)
+
+We can easyily run IPEX-LLM serving on multiple Intel GPUs by leveraging DeepSpeed AutoTP.
+
+## Quick Start
+
+This quickstart guide walks you through installing and running Multiple Intel GPUs inference with `ipex-llm` and DeepSpeed AutoTp.
+
+
+### 1. Install IPEX-LLM and DeepSpeed
+
+```bash
+conda create -n llm python=3.11
+conda activate llm
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+# configures OneAPI environment variables
+source /opt/intel/oneapi/setvars.sh
+pip install git+https://github.com/microsoft/DeepSpeed.git@ed8aed5
+pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@0eb734b
+pip install mpi4py fastapi uvicorn
+conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
+
+```
+> **Important**: IPEX 2.1.10+xpu requires Intel® oneAPI Base Toolkit's version == 2024.0. Please make sure you have installed the correct version.
+
+### 2. Run tensor parallel inference on multiple GPUs
+
+When we run the model in a distributed manner across two GPUs, the memory consumption of each GPU is only half of what it was originally, and the GPUs can work simultaneously during inference computation.
+
+We provide example usage for `Llama-2-7b-chat-hf` model running on Arc A770
+
+Run Llama-2-7b-chat-hf on two Intel Arc A770:
+
+```bash
+
+# Before run this script, you should adjust the YOUR_REPO_ID_OR_MODEL_PATH in last line
+# If you want to change server port, you can set port parameter in last line
+bash run_llama2_7b_chat_hf_arc_2_card.sh
+```
+
+If you successfully run the serving, you can get output like this:
+
+```bash
+[0] INFO:     Started server process [120071]
+[0] INFO:     Waiting for application startup.
+[0] INFO:     Application startup complete.
+[0] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```
+> **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
