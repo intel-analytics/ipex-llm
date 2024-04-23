@@ -4,26 +4,32 @@
 
 See the demo of finetuning LLaMA2-7B on Intel Arc GPU below.
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
-
 ## Quickstart
 
-IPEX-LLM's support for [Axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) now is available for Linux system. For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
+### 0 Prerequisites
 
-### 1 Install IPEX-LLM for Axolotl
+IPEX-LLM's support for [Axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) now is available only for Linux system. For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
 Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
- 
-Create new conda env, and install `ipex-llm[xpu]` and [axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0).
 
-```cmd
+### 1. Install IPEX-LLM for Axolotl
+
+Create new conda env, and install `ipex-llm[xpu]`.
+
+```bash
 conda create -n axolotl python=3.11
 conda activate axolotl
 # install ipex-llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+```
+
+Install [axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) from git.
+
+```bash
 # install axolotl v0.4.0
 git clone https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0
 cd axolotl
+# replace requirements.txt
 remove requirements.txt
 wget -O requirements.txt https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/requirements-xpu.txt
 pip install -e .
@@ -34,16 +40,18 @@ wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GP
 
 **After the installation, you should have created a conda environment, named `axolotl` for instance, for running `Axolotl` commands with IPEX-LLM.**
 
-### 2. Finetune Llama-2-7B with Axolotl
+### 2. Example: Finetune Llama-2-7B with Axolotl
 
-In following example, we will introduce finetune [Llama-2-7B](https://huggingface.co/meta-llama/Llama-2-7b) with [alpaca_2k_test](https://huggingface.co/datasets/mhenrichsen/alpaca_2k_test) dataset using LoRA and QLoRA.
+In the following example, we will introduce finetune [Llama-2-7B](https://huggingface.co/meta-llama/Llama-2-7b) with [alpaca_2k_test](https://huggingface.co/datasets/mhenrichsen/alpaca_2k_test) dataset using LoRA and QLoRA.
 
-For more details, please refer to [Llama 2](https://arxiv.org/abs/2307.09288), [LoRA](https://arxiv.org/abs/2307.09288) and [QLoRA](https://arxiv.org/abs/2305.14314).
+Note that you don't need to write any code in this example.
 
 | Model | Dataset | Finetune method |
 |-------|-------|-------|
 | Llama-2-7B | alpaca_2k_test | LoRA (Low-Rank Adaptation)  |
 | Llama-2-7B | alpaca_2k_test | QLoRA (Quantized Low-Rank Adaptation) |
+
+For more technical details, please refer to [Llama 2](https://arxiv.org/abs/2307.09288), [LoRA](https://arxiv.org/abs/2307.09288) and [QLoRA](https://arxiv.org/abs/2305.14314).
 
 #### 2.1 Download Llama-2-7B and alpaca_2k_test
 
@@ -57,17 +65,6 @@ If you prefer to use offline model and datasets, please download [Llama-2-7B](ht
 
 ```bash
 export HF_HUB_OFFLINE=1
-```
-
-Modify model path and dataset path in `lora.yml` or `qlora.yml` to ensure Axolotl can access offline model and data.
-
-```yaml
-# Please change to local path if model is offline
-base_model: /path/to/model/Llama-2-7b-hf
-datasets:
-  # Please change to local path if dataset is offline
-  - path: /path/to/dataset/alpaca_2k_test
-    type: alpaca
 ```
 
 #### 2.2 Set Environment Variables
@@ -100,12 +97,23 @@ Please answer `NO` in option `Do you want to run your training on CPU only (even
 
 After finish accelerate config, check if `use_cpu` is disable (i.e., `use_cpu: false`) in accelerate config file (`~/.cache/huggingface/accelerate/default_config.yaml`).
 
-#### 3.1 LoRA finetune
+#### 2.3 LoRA finetune
 
-Prepare `lora.yml` for finetuning. You can download a template from github.
+Prepare `lora.yml` for Axolotl finetuning. You can download a template from github.
 
 ```bash
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
+```
+
+If you are using model and dataset in local env, please modify model path and dataset path in `lora.yml` or `qlora.yml` to ensure Axolotl can access offline model and data.
+
+```yaml
+# Please change to local path if model is offline
+base_model: /path/to/model/Llama-2-7b-hf
+datasets:
+  # Please change to local path if dataset is offline
+  - path: /path/to/dataset/alpaca_2k_test
+    type: alpaca
 ```
 
 Modify key parameters, such as `lora_r` and `lora_alpha` etc.
@@ -132,12 +140,23 @@ In Axolotl v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train`
 accelerate launch train.py lora.yml
 ```
 
-#### 3.2 QLoRA finetune
+#### 2.4 QLoRA finetune
 
 Prepare `lora.yml` for finetuning. You can download a template from github.
 
 ```bash
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
+```
+
+If you are using model and dataset in local env, please modify model path and dataset path in `lora.yml` or `qlora.yml` to ensure Axolotl can access offline model and data.
+
+```yaml
+# Please change to local path if model is offline
+base_model: /path/to/model/Llama-2-7b-hf
+datasets:
+  # Please change to local path if dataset is offline
+  - path: /path/to/dataset/alpaca_2k_test
+    type: alpaca
 ```
 
 Modify key parameters, such as `lora_r` and `lora_alpha` etc.
@@ -165,11 +184,11 @@ In Axolotl v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train`
 accelerate launch train.py qlora.yml
 ```
 
-### Troubleshooting
+## Troubleshooting
 
-#### prepare_dataset fails
+#### `TypeError: argument of type 'PosixPath' is not iterable`
 
-This issue is related to special character in dataset, i.e., [axolotl #1544](https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544). It can be fixed by downgrading datasets to 2.15.0.
+This issue is related to [axolotl #1544](https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544). It can be fixed by downgrading datasets to 2.15.0.
 
 ```bash
 pip install datasets==2.15.0
