@@ -1227,6 +1227,10 @@ def _optimize_post(model, lightweight_bmm=False):
         # for CohereForAI/c4ai-command-r-v01
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.cohere import cohere_attention_forward
+        convert_forward(model,
+                        module.CohereAttention,
+                        cohere_attention_forward)
         convert_forward(model,
                         module.CohereLayerNorm,
                         llama_rms_norm_forward)
