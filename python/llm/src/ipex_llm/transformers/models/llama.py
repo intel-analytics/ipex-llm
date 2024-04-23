@@ -1029,13 +1029,15 @@ def llama_attention_forward_4_36_quantized(
         repeated_key_states = repeat_kv(key_states, self.num_key_value_groups)
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
         if should_split_qkv_tensor(query_states, output_attentions):
-            attn_output, _ = native_sdp_split_qkv_tensor(query_states, repeated_key_states, 
+            attn_output, _ = native_sdp_split_qkv_tensor(query_states, repeated_key_states,
                                                          repeated_value_states, attention_mask,
-                                                         bsz, q_len, kv_seq_len,self.head_dim,
+                                                         bsz, q_len, kv_seq_len, self.head_dim,
                                                          self.num_heads)
         else:
-            attn_weights = torch.matmul(query_states,
-                                        repeated_key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+            attn_weights = torch.matmul(
+                query_states,
+                repeated_key_states.transpose(2, 3)
+                ) / math.sqrt(self.head_dim)
 
             if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
                 invalidInputError(
@@ -1061,7 +1063,7 @@ def llama_attention_forward_4_36_quantized(
             else:
                 # upcast attention to fp32
                 attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                                    dtype=torch.float32).to(query_states.dtype)
+                                                     dtype=torch.float32).to(query_states.dtype)
             attn_output = torch.matmul(attn_weights, repeated_value_states)
         if use_cache:
             cache_kwargs = None
