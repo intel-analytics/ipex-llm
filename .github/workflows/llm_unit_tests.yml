@@ -214,11 +214,11 @@ jobs:
       - name: Run LLM cli test (Windows)
         if: runner.os == 'Windows' 
         uses: ./.github/actions/llm/cli-test-windows
-#      - name: Run LLM inference test
-#        shell: bash
-#        run: |
-#          python -m pip install einops datasets librosa openai-whisper
-#          bash python/llm/test/run-llm-inference-tests.sh
+      # - name: Run LLM inference test
+        # shell: bash
+        # run: |
+          # python -m pip install einops datasets librosa openai-whisper
+          # bash python/llm/test/run-llm-inference-tests.sh
       - name: Run LLM inference test for 4.36
         shell: bash
         run: |
