@@ -1,6 +1,6 @@
-#  Run Llama 3 on Intel GPU using llama.cpp and ollama with IPEX-LLM
+# Run Llama 3 on Intel GPU using llama.cpp and ollama with IPEX-LLM
 
-[Llama 3](https://llama.meta.com/llama3/) is the latest Large Language Models released by [Meta](https://llama.meta.com/) which provides state-of-the-art performance and excels at language nuances, contextual understanding, and complex tasks like translation and dialogue generation. 
+[Llama 3](https://llama.meta.com/llama3/) is the latest Large Language Models released by [Meta](https://llama.meta.com/) which provides state-of-the-art performance and excels at language nuances, contextual understanding, and complex tasks like translation and dialogue generation.
 
 Now, you can easily run Llama 3 on Intel GPU using `llama.cpp` and `Ollama` with IPEX-LLM.
 
@@ -75,7 +75,7 @@ Under your current directory, exceuting below command to do inference with Llama
         main -ngl 33 -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -e -ngl 33 --color --no-mmap
 ```
 
-Under your current directory, you can also exceute below command to have interative chat with Llama3:
+Under your current directory, you can also execute below command to have interactive chat with Llama3:
 
 ```eval_rst
 .. tabs::
@@ -96,7 +96,6 @@ Under your current directory, you can also exceute below command to have interat
 
 Below is a sample output on Intel Arc GPU:
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/llama3-cpp-arc-demo.png" width=100%; />
-
 
 ### 2. Run Llama3 using Ollama
 
