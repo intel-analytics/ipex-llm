@@ -21,7 +21,7 @@ import time
 import argparse
 
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import LlamaTokenizer
+from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     )
 
     # Load tokenizer
-    tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     # Generate predicted tokens
     with torch.inference_mode():
@@ -93,8 +93,10 @@ if __name__ == '__main__':
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu:0')
         # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
+                                do_sample=False,
                                 max_new_tokens=args.n_predict)
         output = model.generate(input_ids,
+                                do_sample=False,
                                 max_new_tokens=args.n_predict)
 
         # start inference
@@ -104,6 +106,7 @@ if __name__ == '__main__':
         # it is important to set `use_cache=True` explicitly in the `generate` function
         # to obtain optimal performance with IPEX-LLM INT4 optimizations
         output = model.generate(input_ids,
+                                do_sample=False,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()

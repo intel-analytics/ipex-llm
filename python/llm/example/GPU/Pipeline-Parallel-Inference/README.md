@@ -38,7 +38,7 @@ python setup.py install
 
 > **Important**: IPEX 2.1.10+xpu requires Intel® oneAPI Base Toolkit's version == 2024.0. Please make sure you have installed the correct version.
 
-### 2. Run tensor parallel inference on multiple GPUs
+### 2. Run pipeline parallel inference on multiple GPUs
 Here, we provide example usages on different models and different hardwares. Please refer to the appropriate script based on your model and device:
 
 ### 3. Run
