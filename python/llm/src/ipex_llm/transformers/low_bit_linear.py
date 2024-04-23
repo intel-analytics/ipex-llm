@@ -45,6 +45,7 @@ from typing import Optional, TypeVar, Union, overload
 from ipex_llm.utils.common import invalidInputError
 import os
 import torch
+import torch.distributed
 import torch.nn.functional as F
 from torch import Tensor, device, dtype, nn
 from operator import mul
@@ -52,6 +53,7 @@ from functools import reduce
 from ipex_llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_type, \
     get_ipex_version
+from ipex_llm.transformers.convert import is_deepspeed_available, is_vllm_available
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -694,8 +696,12 @@ class LowBitLinear(nn.Linear):
                     torch.xpu.empty_cache()
             result = result.view(new_shape)
             if self.mp_group is not None:
-                from deepspeed import comm as dist
-                dist.inference_all_reduce(result, group=self.mp_group)
+                # FIXME: the user may install both vllm and deepspeed
+                if is_deepspeed_available():
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
+                elif is_vllm_available():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
             if self.bias is not None:
                 result += self.bias
         else:
@@ -721,6 +727,7 @@ class LowBitLinear(nn.Linear):
                     result = result.view(new_shape)
             # allreduce to combine partial results and add bias if necessary
             if self.mp_group is not None:
+                # TODO: implement for CPU logic for vLLM tp
                 # deepspeed distibuted mode
                 from deepspeed import comm as dist
                 dist.inference_all_reduce(result, group=self.mp_group)
