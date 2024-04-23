@@ -16,7 +16,7 @@ Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedoc
 
 Create a new conda env, and install `ipex-llm[xpu]`.
 
-```bash
+```cmd
 conda create -n axolotl python=3.11
 conda activate axolotl
 # install ipex-llm
@@ -25,7 +25,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 Install [axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) from git.
 
-```bash
+```cmd
 # install axolotl v0.4.0
 git clone https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0
 cd axolotl
@@ -33,6 +33,9 @@ cd axolotl
 remove requirements.txt
 wget -O requirements.txt https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/requirements-xpu.txt
 pip install -e .
+pip install transformers==4.36.0
+# to avoid https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544
+pip install datasets==2.15.0
 # prepare axolotl entrypoints
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/finetune.py
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/train.py
@@ -57,13 +60,13 @@ For more technical details, please refer to [Llama 2](https://arxiv.org/abs/2307
 
 By default, Axolotl will automatically download models and datasets from Huggingface. Please ensure you have login to Huggingface.
 
-```bash
+```cmd
 huggingface-cli login
 ```
 
 If you prefer offline models and datasets, please download [Llama-2-7B](https://huggingface.co/meta-llama/Llama-2-7b) and [alpaca_2k_test](https://huggingface.co/datasets/mhenrichsen/alpaca_2k_test). Then, set `HF_HUB_OFFLINE=1` to avoid connecting to Huggingface.
 
-```bash
+```cmd
 export HF_HUB_OFFLINE=1
 ```
 
@@ -89,7 +92,7 @@ Configure oneAPI variables by running the following command:
 
 Configure accelerate to avoid training with CPU
 
-```bash
+```cmd
 accelerate config
 ```
 
@@ -101,7 +104,7 @@ After finishing accelerate config, check if `use_cpu` is disabled (i.e., `use_cp
 
 Prepare `lora.yml` for Axolotl LoRA finetune. You can download a template from github.
 
-```bash
+```cmd
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
 ```
 
@@ -131,13 +134,13 @@ lora_fan_in_fan_out:
 
 Launch LoRA training with the following command,
 
-```bash
+```cmd
 accelerate launch finetune.py lora.yml
 ```
 
 In Axolotl v0.4.0, you can use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
-```bash
+```cmd
 accelerate launch train.py lora.yml
 ```
 
@@ -145,7 +148,7 @@ accelerate launch train.py lora.yml
 
 Prepare `lora.yml` for QLoRA finetune. You can download a template from github.
 
-```bash
+```cmd
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
 ```
 
@@ -176,30 +179,36 @@ lora_fan_in_fan_out:
 
 Launch LoRA training with the following command,
 
-```bash
+```cmd
 accelerate launch finetune.py qlora.yml
 ```
 
 In Axolotl v0.4.0, you can use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
-```bash
+```cmd
 accelerate launch train.py qlora.yml
 ```
 
 ## Troubleshooting
 
-#### `TypeError: argument of type 'PosixPath' is not iterable`
+#### TypeError: PosixPath
+
+Error message: `TypeError: argument of type 'PosixPath' is not iterable`
 
 This issue is related to [axolotl #1544](https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544). It can be fixed by downgrading datasets to 2.15.0.
 
-```bash
+```cmd
 pip install datasets==2.15.0
 ```
 
-#### `RuntimeError: Allocation is out of device memory on current platform.`
+#### RuntimeError: out of device memory
+
+Error message: `RuntimeError: Allocation is out of device memory on current platform.`
 
 This issue is caused by running out of GPU memory. Please reduce `lora_r` or `micro_batch_size` in `qlora.yml` or `lora.yml`, or reduce data using in training.
 
-#### `OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or directory`
+#### OSError: libmkl_intel_lp64.so.2
+
+Error message: `OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or directory`
 
 oneAPI environment is not correctly set. Please refer to [2.2 Set Environment Variables](#22-set-environment-variables)
