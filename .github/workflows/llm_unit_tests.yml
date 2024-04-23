@@ -161,8 +161,8 @@ jobs:
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436"
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436
+            echo "wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436"
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436
           fi
           if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
             echo "Directory $ORIGINAL_REPLIT_CODE_PATH not found. Downloading from FTP server..."
@@ -256,6 +256,16 @@ jobs:
       # THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
+      - name: Set model directories for 4.36
+        shell: bash
+        run: |
+          echo "ORIGIN_DIR_436=${{ github.workspace }}/../llm/origin-models-4.36" >> "$GITHUB_ENV"
+      - name: Create model directories
+        shell: bash
+        run: |
+          if [ ! -d ORIGIN_DIR_436 ]; then
+            mkdir -p ORIGIN_DIR_436
+          fi
       - name: Set environment variables
         shell: bash
         run: |
@@ -319,7 +329,7 @@ jobs:
           fi
           if [ ! -d $CHATGLM2_6B_ORIGIN_PATH ]; then
             echo "Directory $CHATGLM2_6B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36//chatglm2-6b -P $ORIGIN_DIR_436
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436
           fi
           if [ ! -d $FALCON_7B_ORIGIN_PATH ]; then
             echo "Directory $FALCON_7B_ORIGIN_PATH not found. Downloading from FTP server..."
@@ -327,7 +337,7 @@ jobs:
           fi
           if [ ! -d $MPT_7B_ORIGIN_PATH ]; then
             echo "Directory $MPT_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36//mpt-7b-chat -P $ORIGIN_DIR_436
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/mpt-7b-chat -P $ORIGIN_DIR_436
           fi
           if [ ! -d $WHISPER_TINY_ORIGIN_PATH ]; then
             echo "Directory $WHISPER_TINY_ORIGIN_PATH not found. Downloading from FTP server..."
@@ -354,7 +364,7 @@ jobs:
           fi
           if [ ! -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
             echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36//Baichuan2-7B-Chat -P $ORIGIN_DIR_436
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/Baichuan2-7B-Chat -P $ORIGIN_DIR_436
           fi
           if [ ! -d $VICUNA_7B_1_3_ORIGIN_PATH ]; then
             echo "Directory $VICUNA_7B_1_3_ORIGIN_PATH not found. Downloading from FTP server..."
