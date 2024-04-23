@@ -161,6 +161,7 @@ lora_config = LoraConfig(
 
 model = AutoModelForCausalLMWithValueHead.from_pretrained(
     config.model_name,
+    load_in_low_bit="nf4",
     torch_dtype = torch.bfloat16,
     optimize_model = False,
     use_cache = False,
@@ -172,8 +173,6 @@ model.to("xpu")
 # from ipex_llm import optimize_model
 # model = optimize_model(model, low_bit="bf16")
 
-optimizer = None
-
 # We then build the PPOTrainer, passing the model, the reference model, the tokenizer
 ppo_trainer = PPOTrainer(
     config,
@@ -182,7 +181,6 @@ ppo_trainer = PPOTrainer(
     tokenizer=tokenizer,
     dataset=dataset,
     data_collator=collator,
-    optimizer=optimizer,
 )
 
 # We then build the sentiment analysis pipeline, passing the model name and the
