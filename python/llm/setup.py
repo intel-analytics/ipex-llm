@@ -277,8 +277,8 @@ def setup_package():
 
     # Add internal requires for llama-index
     llama_index_requires = copy.deepcopy(all_requires)
-    for re in ['torch', 'transformers == 4.31.0']:
-        llama_index_requires.remove(re)
+    for exclude_require in ['torch', 'transformers == 4.31.0']:
+        llama_index_requires.remove(exclude_require)
     llama_index_requires += ["torch<2.2.0",
                              "transformers>=4.34.0,<4.39.0",
                              "sentence-transformers~=2.6.1"]
