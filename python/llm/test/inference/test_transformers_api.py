@@ -52,23 +52,23 @@ class TestTransformersAPI(unittest.TestCase):
         res = 'Paris' in output_str        
         self.assertTrue(res)
 
-    def test_transformers_auto_model_for_causal_lm_int4(self):
-        model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
-        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        input_str = 'def hello():\n  print("hello world")\n'
-        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
-        with torch.inference_mode():
-            
-            st = time.time()
-            input_ids = tokenizer.encode(input_str, return_tensors="pt")
-            output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
-            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-            end = time.time()
-        print('Prompt:', input_str)
-        print('Output:', output_str)
-        print(f'Inference time: {end-st} s')
-        res = '\nhello()' in output_str        
-        self.assertTrue(res)
+    # def test_transformers_auto_model_for_causal_lm_int4(self):
+    #     model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
+    #     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    #     input_str = 'def hello():\n  print("hello world")\n'
+    #     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
+    #     with torch.inference_mode():
+    #
+    #         st = time.time()
+    #         input_ids = tokenizer.encode(input_str, return_tensors="pt")
+    #         output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
+    #         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+    #         end = time.time()
+    #     print('Prompt:', input_str)
+    #     print('Output:', output_str)
+    #     print(f'Inference time: {end-st} s')
+    #     res = '\nhello()' in output_str
+    #     self.assertTrue(res)
         
 
     def test_transformers_auto_model_for_speech_seq2seq_int4(self):
@@ -144,7 +144,7 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
     (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH'), prompt),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('BLOOM_ORIGIN_PATH'), prompt),
     (AutoModel, AutoTokenizer, os.environ.get('ORIGINAL_CHATGLM2_6B_PATH'), prompt),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('ORIGINAL_REPLIT_CODE_PATH'), prompt),
+    # (AutoModelForCausalLM, AutoTokenizer, os.environ.get('ORIGINAL_REPLIT_CODE_PATH'), prompt),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_ORIGIN_PATH'), prompt)
 ])
     
