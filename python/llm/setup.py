@@ -275,6 +275,15 @@ def setup_package():
                     ]
     all_requires += CONVERT_DEP
 
+    # Add internal requires for llama-index
+    llama_index_requires = copy.deepcopy(all_requires)
+    for re in ['torch', 'transformers == 4.31.0']:
+        llama_index_requires.remove(re)
+    llama_index_requires += ["torch<2.2.0",
+                             "transformers>=4.34.0,<4.39.0",
+                             "sentence-transformers~=2.6.1"]
+
+
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_20_requires = copy.deepcopy(all_requires)
     xpu_20_requires.remove('torch')
@@ -324,7 +333,8 @@ def setup_package():
                         "xpu-2-0": xpu_20_requires,
                         "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires,
-                        "cpp": ["bigdl-core-cpp==" + CORE_XE_VERSION]},
+                        "cpp": ["bigdl-core-cpp==" + CORE_XE_VERSION],
+                        "llama-index": llama_index_requires}, # for internal usage when upstreaming for llama-index
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
