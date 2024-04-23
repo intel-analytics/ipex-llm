@@ -224,18 +224,18 @@ jobs:
         run: |
           python -m pip install einops datasets librosa openai-whisper
           bash python/llm/test/run-llm-inference-tests.sh
-#      - name: Run LLM langchain test
-#        shell: bash
-#        run: |
-#          pip install -U langchain==0.0.184
-#          pip install -U chromadb==0.3.25
-#          pip install -U pandas==2.0.3
-#          bash python/llm/test/run-llm-langchain-tests.sh
+      # - name: Run LLM langchain test
+        # shell: bash
+        # run: |
+          # pip install -U langchain==0.0.184
+          # pip install -U chromadb==0.3.25
+          # pip install -U pandas==2.0.3
+          # bash python/llm/test/run-llm-langchain-tests.sh
       - name: Run LLM llamaindex test
         shell: bash
         run: |
           pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
-#          pip install transformers==4.36.0
+          # pip install transformers==4.36.0
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests.sh
       - name: Run sentence-transformers uninstallation
@@ -372,8 +372,8 @@ jobs:
           fi
           python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
           bash python/llm/test/run-llm-inference-tests-gpu.sh
-#          python -m pip install transformers==4.34.0
-#          bash python/llm/test/run-llm-inference-tests-gpu-434.sh
+          # python -m pip install transformers==4.34.0
+          # bash python/llm/test/run-llm-inference-tests-gpu-434.sh
 
       - name: Run LLM example tests
         shell: bash
@@ -419,7 +419,7 @@ jobs:
             pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             source /home/arda/intel/oneapi/setvars.sh
           fi
-#          pip install transformers==4.36.0
+          # pip install transformers==4.36.0
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests-gpu.sh
       - name: Run sentence-transformers uninstallation
