@@ -6,7 +6,7 @@ See the demo of finetuning LLaMA2-7B on Intel Arc GPU below.
 
 ## Quickstart
 
-### 0 Prerequisites
+### 0. Prerequisites
 
 IPEX-LLM's support for [Axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) is only available for Linux system. We recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
@@ -132,7 +132,7 @@ lora_target_linear: true
 lora_fan_in_fan_out:
 ```
 
-Launch LoRA training with the following command,
+Launch LoRA training with the following command.
 
 ```cmd
 accelerate launch finetune.py lora.yml
@@ -177,7 +177,7 @@ lora_target_linear: true
 lora_fan_in_fan_out:
 ```
 
-Launch LoRA training with the following command,
+Launch LoRA training with the following command.
 
 ```cmd
 accelerate launch finetune.py qlora.yml
@@ -211,4 +211,4 @@ This issue is caused by running out of GPU memory. Please reduce `lora_r` or `mi
 
 Error message: `OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or directory`
 
-oneAPI environment is not correctly set. Please refer to [2.2 Set Environment Variables](#22-set-environment-variables)
+oneAPI environment is not correctly set. Please refer to [Set Environment Variables](#set-environment-variables).
