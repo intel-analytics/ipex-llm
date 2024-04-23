@@ -1222,6 +1222,17 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MoeAttention,
                         qwen2moe_attention_forward)
+    elif model.config.model_type == "cohere":
+        print("converting cohere model")
+        # for CohereForAI/c4ai-command-r-v01
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        convert_forward(model,
+                        module.CohereLayerNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        module.CohereMLP,
+                        llama_mlp_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
