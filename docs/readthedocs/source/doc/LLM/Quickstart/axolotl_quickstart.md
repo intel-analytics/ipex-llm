@@ -169,7 +169,7 @@ accelerate launch train.py qlora.yml
 
 #### prepare_dataset fails
 
-This issue is related to special character in dataset, i.e., [axolotl #1544](https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544). It can be fixed by downgrading datasets to 2.15.0 or [patching Axolotl](https://github.com/OpenAccess-AI-Collective/axolotl/pull/1548).
+This issue is related to special character in dataset, i.e., [axolotl #1544](https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544). It can be fixed by downgrading datasets to 2.15.0.
 
 ```bash
 pip install datasets==2.15.0
