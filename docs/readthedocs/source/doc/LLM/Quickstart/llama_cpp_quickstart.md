@@ -10,7 +10,7 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
 
 ### 0 Prerequisites
-IPEX-LLM's support for `llama.cpp` now is avaliable for Linux system and Windows system.
+IPEX-LLM's support for `llama.cpp` now is available for Linux system and Windows system.
 
 #### Linux
 For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
