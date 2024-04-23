@@ -40,7 +40,7 @@ For example, 0-47 means bind the python program to core list 0-47 for a 48-core 
 
 Arguments info:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Meta-Llama-3-8B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Meta-Llama-3-8B-Instruct'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). A default prompt is provided.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `128`.
 
@@ -87,7 +87,7 @@ python -m pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-ex
 pip install transformers==4.36.2
 ```
 
-After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently `Llama2 7b and 13b` are supported.
+After installed IPEX, you can set `BIGDL_OPT_IPEX=true` to get target model acceleration. Currently `Llama-3-8B-Instruct` are supported.
 
 ```bash
 source ipex-llm-init -t
