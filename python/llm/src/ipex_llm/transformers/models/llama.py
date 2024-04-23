@@ -1034,7 +1034,7 @@ def llama_attention_forward_4_36_quantized(
                                                          bsz, q_len, kv_seq_len, self.head_dim,
                                                          self.num_heads)
         else:
-            attn_weights = torch.matmul(query_states, repeated_key_states\
+            attn_weights = torch.matmul(query_states, repeated_key_states
                                         .transpose(2, 3)) / math.sqrt(self.head_dim)
 
             if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
