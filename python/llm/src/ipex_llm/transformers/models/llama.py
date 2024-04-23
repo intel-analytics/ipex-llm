@@ -957,7 +957,6 @@ def llama_attention_forward_4_36_quantized(
 
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
-    original_dtype = hidden_states.dtype
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
@@ -1139,7 +1138,7 @@ def llama_attention_forward_4_36_quantized(
     if not output_attentions:
         attn_weights = None
 
-    return attn_output.to(original_dtype), attn_weights, past_key_value
+    return attn_output, attn_weights, past_key_value
 
 
 def llama_attention_forward_4_36_original(
@@ -1423,7 +1422,7 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
     query_split = torch.split(query.to(key.dtype), block_size, dim=1)
     key_split = torch.split(key.transpose(2, 3), block_size, dim=1)
     value_split = torch.split(value, block_size, dim=1)
-    attn_output = torch.empty(bsz, num_heads, q_len, head_dim).to(query.device)
+    attn_output = torch.empty(bsz, num_heads, q_len, head_dim, dtype=key.dtype).to(query.device)
     idx = 0
     for q, k, v in zip(query_split, key_split, value_split):
         attn_weights_split = torch.matmul(q, k) / math.sqrt(head_dim)
