@@ -54,7 +54,7 @@ Note that you don't need to write any code in this example.
 | Llama-2-7B | alpaca_2k_test | LoRA (Low-Rank Adaptation)  |
 | Llama-2-7B | alpaca_2k_test | QLoRA (Quantized Low-Rank Adaptation) |
 
-For more technical details, please refer to [Llama 2](https://arxiv.org/abs/2307.09288), [LoRA](https://arxiv.org/abs/2307.09288) and [QLoRA](https://arxiv.org/abs/2305.14314).
+For more technical details, please refer to [Llama 2](https://arxiv.org/abs/2307.09288), [LoRA](https://arxiv.org/abs/2106.09685) and [QLoRA](https://arxiv.org/abs/2305.14314).
 
 #### 2.1 Download Llama-2-7B and alpaca_2k_test
 
@@ -108,14 +108,14 @@ Prepare `lora.yml` for Axolotl LoRA finetune. You can download a template from g
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
 ```
 
-If you use the model and dataset in local env, please modify the model path and dataset path in `lora.yml` to ensure Axolotl can access the offline model and data.
+**If you are using the offline model and dataset in local env**, please modify the model path and dataset path in `lora.yml`. Otherwise, keep them unchanged.
 
 ```yaml
-# Please change to local path if model is offline
-base_model: /path/to/model/Llama-2-7b-hf
+# Please change to local path if model is offline, e.g., /path/to/model/Llama-2-7b-hf
+base_model: NousResearch/Llama-2-7b-hf
 datasets:
-  # Please change to local path if dataset is offline
-  - path: /path/to/dataset/alpaca_2k_test
+  # Please change to local path if dataset is offline, e.g., /path/to/dataset/alpaca_2k_test
+  - path: mhenrichsen/alpaca_2k_test
     type: alpaca
 ```
 
@@ -152,14 +152,14 @@ Prepare `lora.yml` for QLoRA finetune. You can download a template from github.
 wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
 ```
 
-If you use the model and dataset in local env, please modify the model path and dataset path in `qlora.yml` to ensure Axolotl can access the offline model and data.
+**If you are using the offline model and dataset in local env**, please modify the model path and dataset path in `qlora.yml`. Otherwise, keep them unchanged.
 
 ```yaml
-# Please change to local path if model is offline
-base_model: /path/to/model/Llama-2-7b-hf
+# Please change to local path if model is offline, e.g., /path/to/model/Llama-2-7b-hf
+base_model: NousResearch/Llama-2-7b-hf
 datasets:
-  # Please change to local path if dataset is offline
-  - path: /path/to/dataset/alpaca_2k_test
+  # Please change to local path if dataset is offline, e.g., /path/to/dataset/alpaca_2k_test
+  - path: mhenrichsen/alpaca_2k_test
     type: alpaca
 ```
 
