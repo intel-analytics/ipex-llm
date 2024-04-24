@@ -362,10 +362,6 @@ jobs:
             echo "Directory $QWEN_7B_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Qwen-7B-Chat -P $ORIGIN_DIR
           fi
-          if [ -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
-            echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            rm -rf $BAICHUAN2_7B_ORIGIN_PATH
-          fi
           if [ ! -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
             echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/Baichuan2-7B-Chat -P $ORIGIN_DIR_436
