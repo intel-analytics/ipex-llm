@@ -8,7 +8,7 @@ This guide helps you migrate your `bigdl-llm` application to use `ipex-llm`.
 .. note::
    This step assumes you have already installed `bigdl-llm`.
 ```
-You need to uninstall `bigdl-llm` and install `ipex-llm`With your `bigdl-llm` conda envionment activated, exeucte the folloiwng command according to your device type and location: 
+You need to uninstall `bigdl-llm` and install `ipex-llm`With your `bigdl-llm` conda environment activated, execute the following command according to your device type and location:
 
 ### For CPU
 
@@ -37,7 +37,6 @@ Choose either US or CN website for `extra-index-url`:
          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 ```
 
-
 ## Migrate `bigdl-llm` code to `ipex-llm`
 There are two options to migrate `bigdl-llm` code to `ipex-llm`.
 
@@ -62,4 +61,3 @@ model = AutoModelForCausalLM.from_pretrained(model_path,
                                              load_in_4bit=True,
                                              trust_remote_code=True)
 ```
-

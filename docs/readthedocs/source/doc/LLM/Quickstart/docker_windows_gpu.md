@@ -1,13 +1,12 @@
 # Install IPEX-LLM in Docker on Windows with Intel GPU
 
-This guide demonstrates how to install IPEX-LLM in Docker on Windows with Intel GPUs. 
+This guide demonstrates how to install IPEX-LLM in Docker on Windows with Intel GPUs.
 
 It applies to Intel Core Core 12 - 14 gen integrated GPUs (iGPUs) and Intel Arc Series GPU.
 
-> Note: 
+> Note:
 > - WSL2 support is required during the installation process.
 > - This installation method requires at least 35GB of free disk space on C drive.
-
 
 ## Install Docker on Windows
 **Getting Started with Docker:**
@@ -16,7 +15,7 @@ It applies to Intel Core Core 12 - 14 gen integrated GPUs (iGPUs) and Intel Arc 
    - Detailed installation instructions for Windows, including steps for enabling WSL2, can be found on the [Docker Desktop for Windows installation page](https://docs.docker.com/desktop/install/windows-install/).
 
 2. **Detailed installation Steps for Windows Users:**
-   - **Download and install [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)**: The installation could take around 5 minutes, and a reboot will be required after installation. 
+   - **Download and install [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)**: The installation could take around 5 minutes, and a reboot will be required after installation.
      <a href="https://llm-assets.readthedocs.io/en/latest/_images/docker_desktop_install.png">
        <img src="https://llm-assets.readthedocs.io/en/latest/_images/docker_desktop_install.png" width=100%; />
      </a>
@@ -25,7 +24,7 @@ It applies to Intel Core Core 12 - 14 gen integrated GPUs (iGPUs) and Intel Arc 
      </a>
   
 
-   - **Install WSL2**: Open PowerShell or Windows Command Prompt in administrator mode by right-clicking and selecting "Run as administrator", enter: 
+   - **Install WSL2**: Open PowerShell or Windows Command Prompt in administrator mode by right-clicking and selecting "Run as administrator", enter:
      ```bash
      wsl --install
      ```
@@ -117,7 +116,7 @@ root@docker-desktop:/# sycl-ls
 Human: What is AI?
 IPEX-LLM:
 AI, or Artificial Intelligence, refers to the development of computer systems or machines that can perform tasks that typically require human intelligence. These systems are designed to learn from data and make decisions, or take actions, based on that data.
-``` 
+```
 
 If your machine has both an integrated GPU (iGPU) and a dedicated GPU (dGPU) like ARC, you may encounter the following issue:
 ```bash

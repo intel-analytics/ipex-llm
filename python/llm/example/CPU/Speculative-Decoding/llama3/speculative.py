@@ -15,18 +15,22 @@
 #
 
 import torch
-from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer
+from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
+
+from transformers import LlamaTokenizer, AutoTokenizer
 import argparse
 import time
 import numpy as np
-
 
 torch.nn.Linear.reset_parameters = lambda x: None
 seed=42
 torch.manual_seed(seed)
 np.random.seed(seed)
 
+# you could tune the prompt based on your own model,
+# here the prompt tuning refers to https://llama.meta.com/docs/model-cards-and-prompt-formats/meta-llama-3
+DEFAULT_SYSTEM_PROMPT = """\
+"""
 
 long_input = """In the year 2048, the world was a very different place from what it had been just two decades before. The pace of technological progress had quickened to an almost unimaginable degree, and the changes that had swept through society as a result were nothing short of revolutionary.
 In many ways, the year 2048 represented the culmination of a long and tumultuous journey that humanity had been on since the dawn of civilization. The great leaps forward in science and technology that had occurred over the course of the previous century had laid the groundwork for a future that was beyond anything anyone could have imagined.
@@ -41,17 +45,32 @@ As she prepared for her speech, Maya knew that she had a big responsibility on h
 When the day of the conference arrived, Maya was filled with a mixture of excitement and nerves. She spent hours rehearsing her speech and fine-tuning her ideas, making sure that she had everything just right. Finally, after what felt like an eternity, it was time for her to take the stage.
 As she stepped up to the podium, Maya could feel the energy of the crowd surging around her. She took a deep breath and began to speak, her voice strong and clear as she outlined the challenges and opportunities facing society in the age of technology. She spoke passionately about the need for responsible innovation and the importance of considering the ethical implications of our actions, and she inspired many people in the audience to take up this cause and make a difference in their own lives.
 Overall, Maya's speech was a resounding success, and she received countless messages of gratitude and appreciation from those who had heard her speak. She knew that there was still much work to be done, but she felt hopeful about the future and the role that technology could play in creating a better world for all. 
-As Maya left the stage and made her way back to her seat, she couldn't help but feel a sense of pride and accomplishment at what she had just accomplished. She knew that her words had the power to inspire others and make a real difference in the world, and she was grateful for the opportunity to have played a part in this important work."""
+As Maya left the stage and made her way back to her seat, she couldn't help but feel a sense of pride and accomplishment at what she had just accomplished. She knew that her words had the power to inspire others and make a real difference in the world, and she was grateful for the opportunity to have played a part in this important work. 
+For Maya, the future was full of promise and possibility, and she was determined to continue doing everything in her power to help create a brighter, more ethical world for everyone.
+As she """
 
+def get_prompt(user_input: str, chat_history: list[tuple[str, str]],
+               system_prompt: str) -> str:
+    prompt_texts = [f'<|begin_of_text|>']
+
+    if system_prompt != '':
+        prompt_texts.append(f'<|start_header_id|>system<|end_header_id|>\n{system_prompt}<|eot_id|>')
+
+    for history_input, history_response in chat_history:
+        prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n{history_input.strip()}<|eot_id|>')
+        prompt_texts.append(f'<|start_header_id|>assistant<|end_header_id|>\n{history_response.strip()}<|eot_id|>')
+
+    prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n{user_input.strip()}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n')
+    return ''.join(prompt_texts)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mistral model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="mistralai/Mistral-7B-Instruct-v0.1",
-                        help='The huggingface repo id for the Mistral (e.g. `mistralai/Mistral-7B-Instruct-v0.1` and `mistralai/Mistral-7B-v0.1`) to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama3 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Meta-Llama-3-8B-Instruct",
+                        help='The huggingface repo id for the Llama3 (e.g. `meta-llama/Meta-Llama-3-8B-Instruct`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default=long_input,
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=128,
+    parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
@@ -68,31 +87,31 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,
                                                  use_cache=True)
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    
+    # Generate predicted tokens
     with torch.inference_mode():
-        prompt = args.prompt
+        prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
         inputs = tokenizer(prompt, return_tensors='pt')
         input_ids = inputs.input_ids.to(model.device)
         actual_in_len = input_ids.shape[1]
         print("actual input_ids length:" + str(actual_in_len))
         attention_mask = inputs.attention_mask.to(model.device)
-
+        
         # warmup
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 attention_mask=attention_mask,
-                                do_sample=False,
-                                th_stop_draft=0.6)
+                                do_sample=False)
         output_str = tokenizer.decode(output[0])
-
+        
         # speculative decoding
         st = time.perf_counter()
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
                                 attention_mask=attention_mask,
-                                do_sample=False,
-                                th_stop_draft=0.6)
+                                do_sample=False)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         end = time.perf_counter()
 
@@ -106,4 +125,3 @@ if __name__ == '__main__':
         if not _enable_ipex or actual_in_len >= 256:
             print(f"Tokens generated {model.n_token_generated}")
             print(f"First token latency {model.first_token_time:.4f}s")
-

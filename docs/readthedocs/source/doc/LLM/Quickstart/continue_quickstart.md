@@ -16,13 +16,9 @@ See the demos of using Continue with [Mistral-7B-Instruct-v0.1](https://huggingf
 </tr>
 </table>
 
-
-
-
 ## Quickstart
 
-This guide walks you through setting up and running **Continue** within _Visual Studio Code_, empowered by local large language models served via [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui/) with `ipex-llm` optimizations. 
-
+This guide walks you through setting up and running **Continue** within _Visual Studio Code_, empowered by local large language models served via [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui/) with `ipex-llm` optimizations.
 
 ### 1. Install and Run Text Generation WebUI
 
@@ -34,36 +30,31 @@ Visit [Run Text Generation WebUI Quickstart Guide](webui_quickstart.html), and f
   ```
 - Remember to launch the server **with API service** as specified in [Launch the Server](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#launch-the-server)
 
-
-
 ### 2. Use WebUI to Load Model
 
 #### Access the WebUI
-Upon successful launch, URLs to access the WebUI will be displayed in the terminal as shown below. Open the provided local URL in your browser to interact with the WebUI. 
+Upon successful launch, URLs to access the WebUI will be displayed in the terminal as shown below. Open the provided local URL in your browser to interact with the WebUI.
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_launch_server.jpeg" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_launch_server.jpeg" width=100%; />
 </a>
 
-
 #### Model Download and Loading
 
-Here's a list of models that can be used for coding copilot on local PC. 
+Here's a list of models that can be used for coding copilot on local PC.
 - Code Llama: 
 - WizardCoder
 - Mistral
 - StarCoder
 - DeepSeek Coder
 
-Follow the steps in [Model Download](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#model-download) and [Load Model](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#load-model) to download and load your coding model. 
+Follow the steps in [Model Download](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#model-download) and [Load Model](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#load-model) to download and load your coding model.
 
 ```eval_rst
 .. note::
 
   If you don't need to use the API service anymore, you can follow the instructions in refer to `Exit WebUI <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html#exit-the-webui>`_  to stop the service.  
 ```
-
-
 
 ### 3. Install `Continue` Extension
 1. Click `Install` on the [Continue extension in the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Continue.continue)
@@ -79,8 +70,6 @@ Follow the steps in [Model Download](https://ipex-llm.readthedocs.io/en/latest/d
 
    Note: We strongly recommend moving Continue to VS Code's right sidebar. This helps keep the file explorer open while using Continue, and the sidebar can be toggled with a simple keyboard shortcut.
 ```
-
-
 
 ### 4. Configure `Continue`
 
@@ -122,13 +111,8 @@ You can ask Continue to edit your highlighted code with the command `/edit`.
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/continue_quickstart_sample_usage2.png" width=100%; />
 </a>
 
-
 ### Troubleshooting
 
 #### Failed to load the extension `openai`
 
 If you encounter `TypeError: unsupported operand type(s) for |: 'type' and 'NoneType'` when you run `python server.py --load-in-4bit --api`, please make sure you are using `Python 3.11` instead of lower versions.
-
-
-
-

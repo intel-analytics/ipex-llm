@@ -43,7 +43,7 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--precision', type=str, default='bf16',
                         help='Main model Precision')
-    parser.add_argument('--n_predict', type=int, default=128,
+    parser.add_argument('--n-predict', type=int, default=128,
                         help='Max tokens to predict')
     parser.add_argument('--max-draft', type=int, default=8,
                         help='Max draft')
@@ -59,7 +59,6 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  torch_dtype=torch.bfloat16,
                                                  load_in_low_bit="bf16",
-                                                 torchscript=True,
                                                  speculative=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
