@@ -25,6 +25,10 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
 
+import asyncio, uuid
+from typing import Dict, List, Optional
+
+
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
     for e in env_keys:
@@ -97,10 +101,19 @@ def load_model(model_path, low_bit):
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
 
-def generate_text(prompt: str, n_predict: int = 32):
-    input_ids = tokenizer.encode(prompt, return_tensors="pt").to(f'xpu:{local_rank}')
+def generate_text(prompt: List[str], n_predict = 32):
+    if isinstance(n_predict, list):
+        n_predict = max(n_predict)
+        
+    inputs = tokenizer(prompt, return_tensors="pt", padding=True)
+    input_ids = inputs.input_ids.to(f'xpu:{local_rank}')
+    print(input_ids)
+    # attention_mask = inputs.attention_mask.to(f'xpu:{local_rank}')
     output = model.generate(input_ids,
+                            # attention_mask=attention_mask,
                             max_new_tokens=n_predict,
                             use_cache=True)
     torch.xpu.synchronize()
@@ -111,19 +124,71 @@ class PromptRequest(BaseModel):
     prompt: str
     n_predict: int = 32  
 
+empty_req = PromptRequest(prompt="", n_predict=0)
+
 app = FastAPI()
+
+request_queue: asyncio.Queue = asyncio.Queue()
+result_dict: Dict[str, str] = {}
 
 @app.post("/generate/")
 async def generate(prompt_request: PromptRequest):
-    if local_rank == 0:
-        object_list = [prompt_request]
-        dist.broadcast_object_list(object_list, src=0)
-        start_time = time.time()
-        output = generate_text(object_list[0].prompt, object_list[0].n_predict)
-        generate_time = time.time() - start_time
-        output = output.cpu()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        return {"generated_text": output_str, "generate_time": f'{generate_time:.3f}s'}
+    request_id = str(uuid.uuid4())
+    await request_queue.put((request_id, prompt_request))
+    while True:  # 轮询获取结果
+        await asyncio.sleep(0.1)
+        if request_id in result_dict:
+            output_str = result_dict.pop(request_id)
+            return {"generated_text": output_str}
+
+
+async def process_requests():
+    while True:
+        request_ids, prompt_requests = [], []
+        for _ in range(world_size):
+            if request_queue.empty():
+                break
+            request_id, prompt_request = await request_queue.get()
+            request_ids.append(request_id)
+            prompt_requests.append(prompt_request)
+
+        if local_rank == 0 and prompt_requests:
+            # import pdb
+            # pdb.set_trace()
+            object_list = prompt_requests
+            if len(object_list) < world_size:
+                object_list = object_list + [empty_req] * (world_size - len(object_list))
+            dist.broadcast_object_list(object_list, src=0)
+            start_time = time.time()
+            outputs = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
+            print(outputs)
+            generate_time = time.time() - start_time
+            outputs = outputs.cpu()
+            output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            output_strs = output_strs[:len(prompt_requests)]
+
+            for request_id, output_str in zip(request_ids, output_strs):
+                result_dict[request_id] = output_str
+            print(result_dict)
+
+        await asyncio.sleep(0.1)
+
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(process_requests())
+
+# @app.post("/generate/")
+# async def generate(prompt_request: PromptRequest):
+#     if local_rank == 0:
+#         object_list = [prompt_request]
+#         dist.broadcast_object_list(object_list, src=0)
+#         start_time = time.time()
+#         output = generate_text(object_list[0].prompt, object_list[0].n_predict)
+#         generate_time = time.time() - start_time
+#         output = output.cpu()
+#         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+#         return {"generated_text": output_str, "generate_time": f'{generate_time:.3f}s'}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP')
@@ -143,7 +208,6 @@ if __name__ == "__main__":
         uvicorn.run(app, host="0.0.0.0", port=args.port)
     else:
         while True:
-            object_list = [None]
+            object_list = [None] * world_size
             dist.broadcast_object_list(object_list, src=0)
-            output = generate_text(object_list[0].prompt, object_list[0].n_predict)
-
+            output = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
