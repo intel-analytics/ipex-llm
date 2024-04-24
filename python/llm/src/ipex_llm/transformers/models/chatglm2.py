@@ -96,12 +96,15 @@ def repeat_kv(key: torch.Tensor, value: torch.Tensor, n_head: int) -> (torch.Ten
     return key, value
 
 
-def should_split_qkv_tensor(query_layer):
+def should_split_qkv_tensor(query_layer, bsz, n_head, seq_len):
     if os.environ.get("IPEX_LLM_LOW_MEM", None) == "1":
         return True
     if query_layer.dtype == torch.float16 and query_layer.shape[2] >= 5000:
         # split tensor for memory block limitation
         # support fp16 and set input length threshold at 5000 for now
+        return True
+    if query_layer.element_size()*bsz*n_head*seq_len*seq_len >= 4*1024*1024*1024:
+        # attn_weight size larger than memory block limitation 4GB
         return True
     return False
 
@@ -260,7 +263,7 @@ def chatglm2_quantized_attention_forward_8eb45c(
         else:
             key, value = key_layer, value_layer
 
-        if should_split_qkv_tensor(query_layer):
+        if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
             # split second dim to block size = 8
             block_size = 8
             query_split = torch.split(query_layer, block_size, dim=1)
@@ -543,13 +546,13 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
         if attention_mask is None and L == S:
             # split tensor for memory block limitation
             # support fp16 and set input length threshold at 5000 for now
-            if should_split_qkv_tensor(query_layer):
+            batch_size, n_head, seq_len, head_dim = query_layer.shape
+            if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
                 # split second dim to block size = 8
                 block_size = 8
                 query_split = torch.split(query_layer.to(key_layer.dtype), block_size, dim=1)
                 key_split = torch.split(key_layer, block_size, dim=1)
                 value_split = torch.split(value_layer, block_size, dim=1)
-                batch_size, n_head, seq_len, head_dim = query_layer.shape
                 context_layer = torch.empty(batch_size, n_head, seq_len,
                                             head_dim, dtype=key_layer.dtype).to(query_layer.device)
                 idx = 0
