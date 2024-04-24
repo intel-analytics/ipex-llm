@@ -4,7 +4,7 @@
 
 See the demo of finetuning LLaMA2-7B on Intel Arc GPU below.
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/axolotl-arc.mp4" width="100%" controls></video>
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/axolotl-lora-arc.mp4" width="100%" controls></video>
 
 ## Quickstart
 
@@ -39,8 +39,8 @@ pip install transformers==4.36.0
 # to avoid https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544
 pip install datasets==2.15.0
 # prepare axolotl entrypoints
-wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/finetune.py
-wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/train.py
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/finetune.py
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/train.py
 ```
 
 **After the installation, you should have created a conda environment, named `axolotl` for instance, for running `Axolotl` commands with IPEX-LLM.**
