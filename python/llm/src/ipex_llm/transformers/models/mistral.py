@@ -52,7 +52,8 @@ from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
-from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_flash_attention, use_new_esimd_sdp_fp16, \
+    use_sdp_fp8
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
 from ipex_llm.transformers.models.llama import should_use_xetla_mm_qkv
@@ -310,7 +311,7 @@ def mistral_attention_forward_quantized(
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
 
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+        if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
@@ -503,7 +504,7 @@ def mistral_attention_forward_original(
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+    elif use_new_esimd_sdp_fp16(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import linear_q4_0
         attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
@@ -687,7 +688,7 @@ def mistral_attention_forward_4_36_quantized(
                                                          self.layer_idx, cache_kwargs,
                                                          new_layout=True)
         kv_seq_len = key_states.shape[-2]
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+        if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
@@ -896,7 +897,7 @@ def mistral_attention_forward_4_36_original(
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-    elif use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+    elif use_new_esimd_sdp_fp16(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import linear_q4_0
         attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)

@@ -325,7 +325,7 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
         # esimd_sdp only support head_dim = 128 now
         return False
     elif q_len != 1:
-        # esimd_sdp only support rest token now
+        # esimd_sdp only support rest token and q_len == 1 now
         return False
     elif k_len < 8:
         # esimd_sdp will cause wrong output when k_len < 8
@@ -360,6 +360,42 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
         if not torch.all(attention_mask.eq(0)):
             return False
 
+    return True
+
+
+def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
+    if query_states.device.type != "xpu":
+        # esimd_sdp only support GPU now
+        return False
+    elif query_states.dtype != torch.float16:
+        # esimd_sdp only has optimization for FP16 now
+        return False
+    elif head_dim != 128 and head_dim != 64:
+        # esimd_sdp only support head_dim = 128 and 64 now
+        return False
+    elif q_len == k_len:
+        # new sdp_fp16 only support rest token now
+        return False
+    elif q_len > 32:
+        # Use new sdp_fp16 only when q_len <= 32
+        return False
+
+    device_name = torch.xpu.get_device_name(query_states.device.index)
+    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A") \
+            and is_deepspeed_available:
+        # It seems there is an issue in DeepSpeed AutoTP when multi-card inference,
+        # Disable new sdp_fp16 for now
+        return False
+
+    return True
+
+
+def use_sdp_fp8(q_len, k_len, query_states):
+    if query_states.device.type != "xpu":
+        return False
+    if q_len == k_len:
+        # sdp_fp8 only support rest token now
+        return False
     return True
 
 
