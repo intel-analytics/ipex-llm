@@ -215,6 +215,8 @@ def should_use_fast_rope(self, query_states, position_ids):
 
 
 def should_split_qkv_tensor(query_states, output_attentions):
+    if os.environ.get("IPEX_LLM_LOW_MEM", None) == "1":
+        return True
     if not output_attentions and query_states.dtype == torch.float16 and \
             query_states.shape[2] >= 6800:
         # split tensor for memory block limitation
