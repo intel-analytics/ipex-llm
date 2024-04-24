@@ -86,14 +86,15 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
 
         qk_size = get_qk_size(kwargs.get("qtype"))
         lora_in_features = in_features // qk_size if qa_lora else in_features
-        LoraLayer.__init__(self, in_features=lora_in_features, out_features=out_features)
+
+        base_layer = torch.nn.Linear(lora_in_features, out_features)
+        LoraLayer.__init__(self, base_layer, **kwargs)
 
         # Freezing the pre-trained weight matrix
         self.weight.requires_grad = False
 
         init_lora_weights = kwargs.pop("init_lora_weights", True)
         self.update_layer(adapter_name, r, lora_alpha, lora_dropout, init_lora_weights)
-        self.active_adapter = adapter_name
         if qa_lora:
             self.qa_pool = torch.nn.AvgPool1d(qk_size)
         else:
@@ -108,29 +109,30 @@ class LoraLowBitLinear(LowBitLinear, LoraLayer):
             x = x.to(autocast_dtype)
         result = super().forward(x)
 
-        if self.disable_adapters or self.active_adapter not in self.lora_A.keys():
+        if self.disable_adapters or self.merged:
             return result
-        elif self.r[self.active_adapter] > 0:
+        else:
             result = result.clone()
             if autocast_dtype is None and x.device.type == "cpu":
                 expected_dtype = result.dtype
                 x = x.to(self.lora_A[self.active_adapter].weight.dtype)
-                output = (
-                    self.lora_B[self.active_adapter](
-                        self.lora_A[self.active_adapter](
-                            self.lora_dropout[self.active_adapter](self.qa_pool(x)))
-                    ).to(expected_dtype)
-                    * self.scaling[self.active_adapter]
-                )
+                for active_adapter in self.active_adapters:
+                    if active_adapter not in self.lora_A.keys():
+                        continue
+                    lora_A = self.lora_A[active_adapter]
+                    lora_B = self.lora_B[active_adapter]
+                    dropout = self.lora_dropout[active_adapter]
+                    scaling = self.scaling[active_adapter]
+                    result += lora_B(lora_A(dropout(self.qa_pool(x)))).to(expected_dtype) * scaling
             else:
-                output = (
-                    self.lora_B[self.active_adapter](
-                        self.lora_A[self.active_adapter](
-                            self.lora_dropout[self.active_adapter](self.qa_pool(x)))
-                    )
-                    * self.scaling[self.active_adapter]
-                )
-            result += output
+                for active_adapter in self.active_adapters:
+                    if active_adapter not in self.lora_A.keys():
+                        continue
+                    lora_A = self.lora_A[active_adapter]
+                    lora_B = self.lora_B[active_adapter]
+                    dropout = self.lora_dropout[active_adapter]
+                    scaling = self.scaling[active_adapter]
+                    result += lora_B(lora_A(dropout(self.qa_pool(x)))) * scaling
         return result
 
 
