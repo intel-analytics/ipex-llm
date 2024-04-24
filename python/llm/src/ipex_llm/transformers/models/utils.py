@@ -372,11 +372,6 @@ def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
         # Use new sdp_fp16 only when q_len <= 32
         return False
 
-    device_name = torch.xpu.get_device_name(query_states.device.index)
-    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Data Center GPU Max"):
-        # no server to test, disable for now
-        return False
-
     return True
 
 
