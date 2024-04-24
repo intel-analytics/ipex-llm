@@ -740,6 +740,10 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_pre(model)
 
+    act_order = False
+    if getattr(model, "quantization_method", None) == "gptq":
+        act_order = model.config.quantization_config.desc_act
+
     # mixed quantization needs model_config to choose custom quantization strategy
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
@@ -750,7 +754,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         torch_dtype=torch_dtype,
         enable_xetla=enable_xetla,
         mixed_precision=mixed_precision,
-        act_order=model.config.quantization_config.desc_act,
+        act_order=act_order,
     )
     if not has_been_replaced:
         warnings.warn(
