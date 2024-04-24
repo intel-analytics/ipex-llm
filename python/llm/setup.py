@@ -50,8 +50,10 @@ CORE_XE_VERSION = VERSION.replace("2.1.0", "2.5.0")
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
+
+all_torch_version = 'torch == 2.0.1+cpu'
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
-               'torch',
+               all_torch_version,
                'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
                # TODO: Support accelerate 0.22.0
                'accelerate == 0.21.0', 'tabulate']
@@ -277,7 +279,7 @@ def setup_package():
 
     # Add internal requires for llama-index
     llama_index_requires = copy.deepcopy(all_requires)
-    for exclude_require in ['torch', 'transformers == 4.31.0', 'tokenizers == 0.13.3']:
+    for exclude_require in [all_torch_version, 'transformers == 4.31.0', 'tokenizers == 0.13.3']:
         llama_index_requires.remove(exclude_require)
     llama_index_requires += ["torch<2.2.0",
                              "transformers>=4.34.0,<4.39.0",
@@ -286,7 +288,7 @@ def setup_package():
 
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_20_requires = copy.deepcopy(all_requires)
-    xpu_20_requires.remove('torch')
+    xpu_20_requires.remove(all_torch_version)
     # xpu_20 only works for linux now
     xpu_20_requires += ["torch==2.0.1a0;platform_system=='Linux'",
                         "torchvision==0.15.2a0;platform_system=='Linux'",
@@ -295,7 +297,7 @@ def setup_package():
                         "bigdl-core-xe-esimd==" + CORE_XE_VERSION + ";platform_system=='Linux'"]
 
     xpu_21_requires = copy.deepcopy(all_requires)
-    xpu_21_requires.remove('torch')
+    xpu_21_requires.remove(all_torch_version)
     xpu_21_requires += ["torch==2.1.0a0",
                         "torchvision==0.16.0a0",
                         "intel_extension_for_pytorch==2.1.10+xpu",
