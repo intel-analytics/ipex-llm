@@ -312,16 +312,12 @@ def use_flash_attention(query, key, attention_mask=None):
     return True
 
 
-def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None,
-                  legacy_sdp=True):
+def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
     if head_dim != 128:
         # esimd_sdp only support head_dim = 128 now
         return False
-    elif legacy_sdp and q_len != 1:
+    elif q_len != 1:
         # esimd_sdp only support rest token and q_len == 1 now
-        return False
-    elif not legacy_sdp and q_len == k_len:
-        # new sdp_fp16 only support rest token now
         return False
     elif k_len < 8:
         # esimd_sdp will cause wrong output when k_len < 8
@@ -356,6 +352,31 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None,
         if not torch.all(attention_mask.eq(0)):
             return False
 
+    return True
+
+
+def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
+    if query_states.device.type != "xpu":
+        # esimd_sdp only support GPU now
+        return False
+    elif query_states.dtype != torch.float16:
+        # esimd_sdp only has optimization for FP16 now
+        return False
+    elif head_dim != 128 and head_dim != 64:
+        # esimd_sdp only support head_dim = 128 and 64 now
+        return False
+    elif q_len == k_len:
+        # new sdp_fp16 only support rest token now
+        return False
+    elif q_len > 32:
+        # Use new sdp_fp16 only when q_len <= 32
+        return False
+    
+    device_name = torch.xpu.get_device_name(query_states.device.index)
+    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Data Center GPU Max"):
+        # no server to test, disable for now
+        return False
+    
     return True
 
 
