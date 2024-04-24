@@ -52,6 +52,7 @@ from transformers.models.cohere.modeling_cohere import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu,  is_enough_kv_cache_room_4_36
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
+from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
 
@@ -163,16 +164,30 @@ def cohere_attention_forward(
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+    if not self.training and not hidden_states.requires_grad and \
+            use_flash_attention(query_states, key_states, attention_mask):
+        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                     key_states.to(device, dtype=torch.float16),
+                                                     value_states.to(device, dtype=torch.float16),
+                                                     is_causal=True)
+        attn_weights = None
+    elif not self.training and not hidden_states.requires_grad and \
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+        attn_output = attn_output.view(query_states.shape)
+        attn_weights = None
+    else:
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    if attention_mask is not None:  # no matter the length, we just slice it
-        causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
-        attn_weights = attn_weights + causal_mask
+        if attention_mask is not None:  # no matter the length, we just slice it
+            causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
+            attn_weights = attn_weights + causal_mask
 
-    # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout, training=self.training)
-    attn_output = torch.matmul(attn_weights, value_states)
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+        attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout, training=self.training)
+        attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         raise ValueError(
