@@ -33,6 +33,7 @@
 
 import math
 import torch
+import warnings
 
 from ipex_llm.transformers.models.utils import (
     rotate_half, should_use_fuse_rope,
@@ -40,15 +41,11 @@ from ipex_llm.transformers.models.utils import (
 )
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
 from ipex_llm.transformers.kv import DynamicNormalCache
-from ipex_llm.utils.common.log4Error import invalidInputError
 
 from typing import Optional, Tuple, List
 from transformers.models.phi.modeling_phi import repeat_kv
 from transformers.cache_utils import Cache
 from transformers.utils import logging
-
-
-logger = logging.get_logger(__name__)
 
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
@@ -68,8 +65,8 @@ def attention_forward(
     output_attentions: bool = False,
     use_cache: bool = False,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    logger.warning_once("You are not running the flash-attention implementation, "
-                        "expect numerical differences.")
+    warnings.warn("You are not running the flash-attention implementation, "
+                  "expect numerical differences.")
 
     bsz, q_len, _ = hidden_states.size()
 
