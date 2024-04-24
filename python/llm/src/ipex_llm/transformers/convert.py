@@ -99,6 +99,11 @@ def is_lm_head(name, model_config, out_features):
         return False
 
 
+def is_gptq_linear(module):
+    return is_auto_gptq_available() and \
+        (isinstance(module, QuantLinearCuda) or isinstance(module, QuantLinearCudaOld))
+
+
 def is_linear_module(module):
 
     in_features = None
@@ -122,7 +127,7 @@ def is_linear_module(module):
             mp_group = None
         else:
             result = False
-    elif is_auto_gptq_available() and (isinstance(module, QuantLinearCudaOld) or isinstance(module, QuantLinearCuda)):
+    elif is_gptq_linear(module):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
@@ -186,7 +191,8 @@ def convert_gptq(module, awq=False, llm_awq=False, act_order=False):
         weight = weight.reshape(weight.shape[0] * weight.shape[1], weight.shape[2])
 
         if act_order:
-            assert module.g_idx.shape[0] == weight.shape[0]
+            invalidInputError(module.g_idx.shape[0] == weight.shape[0],
+                              "g_idx and weight shape mismatch")
             _, g_id_map = torch.sort(module.g_idx)
             weight = weight[g_id_map, :]
 
@@ -261,7 +267,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     optimize_lm_head = True
             with init_empty_weights():
                 new_linear = None
-                is_gptq = is_auto_gptq_available() and (isinstance(module, QuantLinearCuda) or isinstance(module, QuantLinearCudaOld))
+                is_gptq = is_gptq_linear(module)
                 is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
                 is_llm_awq = is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ
                 if is_gptq or is_awq:
@@ -279,7 +285,10 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     device = module.qweight.data.device
                     invalidInputError(device.type != "meta",
                                       "converting from meta device is not supported")
-                    weight, g_idx_map = convert_gptq(module, awq=is_awq, llm_awq=is_llm_awq, act_order=act_order)
+                    weight, g_idx_map = convert_gptq(module,
+                                                     awq=is_awq,
+                                                     llm_awq=is_llm_awq,
+                                                     act_order=act_order)
                     if act_order:
                         new_linear.g_idx_map = g_idx_map
                     # Copy the weights
@@ -477,7 +486,7 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
             in_features, out_features, mp_group = linear_args
             with init_empty_weights():
                 new_linear = None
-                is_gptq = is_auto_gptq_available() and (isinstance(module, QuantLinearCudaOld) or isinstance(module, QuantLinearCuda))
+                is_gptq = is_gptq_linear(module)
                 is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
                 is_llm_awq = is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ
                 if is_gptq or is_awq:

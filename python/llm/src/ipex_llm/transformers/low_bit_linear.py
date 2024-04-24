@@ -607,8 +607,7 @@ class LowBitLinear(nn.Linear):
         if act_order:
             self.register_buffer(
                 "g_idx_map",
-                torch.tensor([i for i in range(self.in_len)], dtype=torch.int64)
-                )
+                torch.tensor([i for i in range(self.in_len)], dtype=torch.int64))
 
     def forward(self, x: torch.Tensor):
         # empty cache before and after lm_head at first token when input > 1024
