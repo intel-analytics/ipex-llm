@@ -135,7 +135,7 @@ result_dict: Dict[str, str] = {}
 async def generate(prompt_request: PromptRequest):
     request_id = str(uuid.uuid4())
     await request_queue.put((request_id, prompt_request))
-    while True:  # 轮询获取结果
+    while True:
         await asyncio.sleep(0.1)
         if request_id in result_dict:
             output_str = result_dict.pop(request_id)
