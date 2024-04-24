@@ -107,7 +107,7 @@ After finishing accelerate config, check if `use_cpu` is disabled (i.e., `use_cp
 Prepare `lora.yml` for Axolotl LoRA finetune. You can download a template from github.
 
 ```cmd
-wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
 ```
 
 **If you are using the offline model and dataset in local env**, please modify the model path and dataset path in `lora.yml`. Otherwise, keep them unchanged.
@@ -151,7 +151,7 @@ accelerate launch train.py lora.yml
 Prepare `lora.yml` for QLoRA finetune. You can download a template from github.
 
 ```cmd
-wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
 ```
 
 **If you are using the offline model and dataset in local env**, please modify the model path and dataset path in `qlora.yml`. Otherwise, keep them unchanged.
