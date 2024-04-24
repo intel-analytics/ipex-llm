@@ -50,7 +50,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                    num_beams=num_beams)
+                                    min_new_tokens=out_len, num_beams=num_beams)
         torch.xpu.synchronize()
         end = time.perf_counter()
         output_ids = output_ids.cpu()
