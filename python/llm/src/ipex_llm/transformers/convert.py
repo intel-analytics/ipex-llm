@@ -653,6 +653,9 @@ def _optimize_pre(model):
     if model.config.model_type == "phi":
         from ipex_llm.transformers.models.phi import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "phi3":
+        from ipex_llm.transformers.models.phi3 import split_mlp
+        model.apply(split_mlp)
     if model.config.model_type == "qwen":
         rope_base = model.config.rotary_emb_base
         from accelerate.big_modeling import init_empty_weights
@@ -1426,6 +1429,17 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi import model_forward
         convert_forward(model, module.PhiAttention, attention_forward)
         convert_forward(model, module.PhiModel, model_forward)
+    elif model.config.model_type == "phi3":
+        # for phi-3
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.phi3 import attention_forward
+        convert_forward(model, module.Phi3Attention, attention_forward)
+        from ipex_llm.transformers.models.phi3 import mlp_forward
+        convert_forward(model, module.Phi3MLP, mlp_forward)
+        from ipex_llm.transformers.models.phi3 import model_forward_wrapper
+        model_forward = model_forward_wrapper(module.Phi3Model.forward)
+        convert_forward(model, module.Phi3Model, model_forward)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

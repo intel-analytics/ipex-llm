@@ -167,6 +167,14 @@ def rotate_every_two(x):
     return x.flatten(-2)  # in einsum notation: rearrange(x, '... d j -> ... (d j)')
 
 
+def should_use_fuse_rope(hidden_states, position_ids, training):
+    return (
+        hidden_states.device.type == "xpu"
+        and not training and not hidden_states.requires_grad
+        and position_ids is not None
+    )
+
+
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
                         "mixtral", "qwen2", "yuan", "stablelm", "qwen2_moe"]:
@@ -234,7 +242,7 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
         cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
-    elif model_family in ["gemma"]:
+    elif model_family in ["gemma", "phi3"]:
         cos = cos.unsqueeze(1)
         sin = sin.unsqueeze(1)
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
