@@ -45,7 +45,6 @@ from ipex_llm.transformers.kv import DynamicNormalCache
 from typing import Optional, Tuple, List
 from transformers.models.phi.modeling_phi import repeat_kv
 from transformers.cache_utils import Cache
-from transformers.utils import logging
 
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
