@@ -49,6 +49,7 @@ import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+import ray
 
 
 def is_auto_gptq_available():
@@ -113,7 +114,7 @@ def is_linear_module(module):
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
         from vllm.model_executor.parallel_utils.parallel_state import (
-            get_tensor_model_parallel_group, 
+            get_tensor_model_parallel_group,
             get_tensor_model_parallel_world_size
         )
         VLLM_LINEAR_LIST = [
@@ -124,8 +125,11 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
-            if isinstance(moduel, RowParallelLinear) and get_tensor_model_parallel_world_size() >= 2:
+            if isinstance(module, RowParallelLinear) and get_tensor_model_parallel_world_size() >= 2:
                 mp_group = get_tensor_model_parallel_group()
+                in_features = module.input_size_per_partition
+            elif isinstance(module, ColumnParallelLinear) and get_tensor_model_parallel_world_size() >= 2:
+                out_features = module.output_size_per_partition
         else:
             result = False
     elif is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):

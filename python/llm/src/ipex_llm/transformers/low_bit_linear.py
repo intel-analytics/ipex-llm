@@ -702,6 +702,8 @@ class LowBitLinear(nn.Linear):
                     dist.inference_all_reduce(result, group=self.mp_group)
                 elif is_vllm_available():
                     torch.distributed.all_reduce(result, group=self.mp_group)
+                else:
+                    invalidInputError(False, "mp_group is not None, but no supported backend found")
             if self.bias is not None:
                 result += self.bias
         else:
@@ -779,8 +781,13 @@ class FP16Linear(nn.Linear):
                     self.weight_type = 2
                 result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
             if self.mp_group is not None:
-                from deepspeed import comm as dist
-                dist.inference_all_reduce(result, group=self.mp_group)
+                if is_deepspeed_available():
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
+                elif is_vllm_available():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                else:
+                    invalidInputError(False, "mp_group is not None, but no supported backend found")
             return result
         else:
             if self.in_len == 4096 and self.weight_type != 3 or \
@@ -816,8 +823,13 @@ class FP16Linear(nn.Linear):
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.mp_group is not None:
-                from deepspeed import comm as dist
-                dist.inference_all_reduce(result, group=self.mp_group)
+                if is_deepspeed_available():
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
+                elif is_vllm_available():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                else:
+                    invalidInputError(False, "mp_group is not None, but no supported backend found")
             if self.bias is not None:
                 result += self.bias
 
