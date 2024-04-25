@@ -77,7 +77,7 @@ def load_model(model_path, low_bit):
 
     model = deepspeed.init_inference(
         model,
-        mp_size=world_size,
+        mp_size=1,
         dtype=torch.bfloat16,
         replace_method="auto",
     )
