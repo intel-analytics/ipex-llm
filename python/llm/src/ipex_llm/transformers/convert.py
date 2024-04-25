@@ -1228,6 +1228,10 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.cohere import cohere_attention_forward
+        from ipex_llm.transformers.models.cohere import cohere_model_forward
+        convert_forward(model,
+                        module.CohereModel,
+                        cohere_model_forward)
         convert_forward(model,
                         module.CohereAttention,
                         cohere_attention_forward)
