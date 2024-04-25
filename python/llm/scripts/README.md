@@ -48,7 +48,7 @@ sudo apt install xpu-smi
             ```
 
         2. Download the XPU manager
-            Go to the [xpu manager download webpage](https://github.com/intel/xpumanager/releases) to download the latest `xpu-smi` zip file (e.g. xpu-smi-1.2.34-20240417.060819.a50c0371_win.zip). Unzip it and copy the `env-check.bat` file into this folder.
+            Go to the [xpu manager download webpage](https://github.com/intel/xpumanager/releases) to download the latest `xpu-smi` zip file (e.g. xpu-smi-1.2.34-20240417.060819.a50c0371_win.zip). Unzip it and copy the `env-check.bat` and `check.py` files into the unzipped folder.
 
         3. Run the env check
             In your terminal, enter the unzipped folder and run:
