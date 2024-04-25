@@ -380,13 +380,6 @@ def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
         # Use new sdp_fp16 only when q_len <= 32
         return False
 
-    device_name = torch.xpu.get_device_name(query_states.device.index)
-    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A") \
-            and is_deepspeed_available:
-        # It seems there is an issue in DeepSpeed AutoTP when multi-card inference,
-        # Disable new sdp_fp16 for now
-        return False
-
     return True
 
 
