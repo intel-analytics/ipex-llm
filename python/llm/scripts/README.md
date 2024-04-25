@@ -39,7 +39,7 @@ sudo apt install xpu-smi
             bash env-check.sh
             ```
 
-    * On Windows,
+    * On Windows
         1. Activate oneapi
             Activate the `setvars.bat` file in the folder where you installed the oneapi
 
@@ -47,7 +47,11 @@ sudo apt install xpu-smi
             call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
             ```
 
-        2. Run the env check
+        2. Download the XPU manager
+            Go to the [xpu manager download webpage](https://github.com/intel/xpumanager/releases) to download the latest `xpu-smi` zip file (e.g. xpu-smi-1.2.34-20240417.060819.a50c0371_win.zip). Unzip it and copy the `env-check.bat` file into this folder.
+
+        3. Run the env check
+            In your terminal, enter the unzipped folder and run:
             ```bash
             env-check.bat
             ```
@@ -59,7 +63,7 @@ sudo apt install xpu-smi
 
 ### Sample outputs
 
-* Linux Desktop equipped with i9 13900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU example output:
+* Linux Desktop equipped with i9 12900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU example output:
 
 ```
 -----------------------------------------------------------------
