@@ -768,12 +768,14 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          enable_xetla=False,
                          mixed_precision=False):
     if qtype in ggml_tensor_qtype.values():
+        index = list(ggml_tensor_qtype.values()).index(qtype)
         logger.info(f"Converting the current model to "
-                    f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
+                    f"{list(ggml_tensor_qtype.keys())[index]} "
                     f"format......")
     else:
+        index = list(gguf_mixed_qtype.values()).index(qtype)
         logger.info(f"Converting the current model to "
-                    f"{list(gguf_mixed_qtype.keys())[list(gguf_mixed_qtype.values()).index(qtype)]} "
+                    f"{list(gguf_mixed_qtype.keys())[index]} "
                     f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 

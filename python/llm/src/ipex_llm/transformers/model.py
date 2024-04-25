@@ -323,7 +323,7 @@ class _BaseAutoModelClass:
             cpu_embedding = kwargs.get("cpu_embedding", False)
             # for iq2/k-quants, default use embedding_quantization
             if not cpu_embedding and embedding_qtype is None:
-                if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "gguf_iq1_s", "q2_k"]:  
+                if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "gguf_iq1_s", "q2_k"]:
                     embedding_qtype = "q2_k"
                 elif q_k in ["gguf_q4k_s", "gguf_q4k_m"]:
                     embedding_qtype = "q4_k"
