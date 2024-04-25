@@ -579,7 +579,7 @@ class MatMulLowBitCPU(torch.autograd.Function):
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
                  conver_to_half=True, mp_group=None, enable_xetla=False,
-                 optimize_lm_head=False):
+                 optimize_lm_head=False, act_order=False):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
@@ -603,6 +603,11 @@ class LowBitLinear(nn.Linear):
         # since performance isn't impacted.
         self.is_lm_head = self.in_len * self.out_len >= 32000 * 4096 and self.bias is None
         self.low_memory_mode = self.is_lm_head
+        self.act_order = act_order
+        if act_order:
+            self.register_buffer(
+                "g_idx_map",
+                torch.tensor([i for i in range(self.in_len)], dtype=torch.int64))
 
     def forward(self, x: torch.Tensor):
         # empty cache before and after lm_head at first token when input > 1024
@@ -640,6 +645,9 @@ class LowBitLinear(nn.Linear):
             return torch.empty(new_shape, dtype=x.dtype, device=x.device)
 
         x_2d = x.view(-1, x_shape[-1])
+
+        if self.act_order:
+            x_2d = x_2d[:, self.g_idx_map]
         # x0 for weight
         x0 = self.weight.data
 

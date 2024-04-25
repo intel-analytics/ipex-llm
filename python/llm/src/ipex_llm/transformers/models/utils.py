@@ -167,6 +167,14 @@ def rotate_every_two(x):
     return x.flatten(-2)  # in einsum notation: rearrange(x, '... d j -> ... (d j)')
 
 
+def should_use_fuse_rope(hidden_states, position_ids, training):
+    return (
+        hidden_states.device.type == "xpu"
+        and not training and not hidden_states.requires_grad
+        and position_ids is not None
+    )
+
+
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
                         "mixtral", "qwen2", "yuan", "stablelm", "qwen2_moe"]:
@@ -234,7 +242,7 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
         cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
-    elif model_family in ["gemma"]:
+    elif model_family in ["gemma", "phi3"]:
         cos = cos.unsqueeze(1)
         sin = sin.unsqueeze(1)
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
@@ -317,7 +325,7 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
         # esimd_sdp only support head_dim = 128 now
         return False
     elif q_len != 1:
-        # esimd_sdp only support rest token now
+        # esimd_sdp only support rest token and q_len == 1 now
         return False
     elif k_len < 8:
         # esimd_sdp will cause wrong output when k_len < 8
@@ -352,6 +360,42 @@ def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
         if not torch.all(attention_mask.eq(0)):
             return False
 
+    return True
+
+
+def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
+    if query_states.device.type != "xpu":
+        # esimd_sdp only support GPU now
+        return False
+    elif query_states.dtype != torch.float16:
+        # esimd_sdp only has optimization for FP16 now
+        return False
+    elif head_dim != 128 and head_dim != 64:
+        # esimd_sdp only support head_dim = 128 and 64 now
+        return False
+    elif q_len == k_len:
+        # new sdp_fp16 only support rest token now
+        return False
+    elif q_len > 32:
+        # Use new sdp_fp16 only when q_len <= 32
+        return False
+
+    device_name = torch.xpu.get_device_name(query_states.device.index)
+    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A") \
+            and is_deepspeed_available:
+        # It seems there is an issue in DeepSpeed AutoTP when multi-card inference,
+        # Disable new sdp_fp16 for now
+        return False
+
+    return True
+
+
+def use_sdp_fp8(q_len, k_len, query_states):
+    if query_states.device.type != "xpu":
+        return False
+    if q_len == k_len:
+        # sdp_fp8 only support rest token now
+        return False
     return True
 
 
