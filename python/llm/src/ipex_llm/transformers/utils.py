@@ -269,7 +269,6 @@ def module_name_process(full_module_name):
     return new_module_name, layer, cur_module
 
 
-
 def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_config=None):
     cur_qtype = qtype
     cur_imatrix = None

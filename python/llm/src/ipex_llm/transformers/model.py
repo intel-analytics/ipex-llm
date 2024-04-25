@@ -556,17 +556,24 @@ class _BaseAutoModelClass:
                           " with load_in_4bit or load_in_low_bit to get a low-bit model , and "
                           " serialize the model using save_low_bit first.")
 
-        invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
+        invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype or \
+                          bigdl_transformers_low_bit in gguf_mixed_qtype,
                           f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
                           f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
 
         # set default optimize_model=True
         optimize_model = kwargs.pop("optimize_model", True)
 
-        qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
+        if bigdl_transformers_low_bit in ggml_tensor_qtype:
+            qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
+        else:
+            qtype = gguf_mixed_qtype[bigdl_transformers_low_bit]
         if bigdl_transformers_low_bit in ["gguf_iq2_xxs", "gguf_iq2_xs", "gguf_iq1_s", "q2_k"] and \
                 not cpu_embedding:
             embedding_qtype = "q2_k"
+        elif bigdl_transformers_low_bit in ["gguf_q4k_s", "gguf_q4k_m"] and \
+                not cpu_embedding:
+            embedding_qtype = "q4_k"
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
 
