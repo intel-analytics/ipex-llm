@@ -196,4 +196,3 @@ Accelerator._prepare_ipex = patch_prepare_ipex
 # patch transformer for xpu DDP traing
 from transformers import TrainingArguments
 TrainingArguments._setup_devices = _setup_devices
-
