@@ -49,6 +49,10 @@ ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
                      "q4_k": 27,
                      "fp6": 29}
 
+# mixed precison from llama.cpp
+gguf_mixed_qtype = {"gguf_q4k_s": 101,
+                    "gguf_q4k_m": 102}
+
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,
                         "q5_0": 8,
