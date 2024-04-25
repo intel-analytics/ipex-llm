@@ -28,6 +28,8 @@ import uvicorn
 import asyncio, uuid
 from typing import Dict, List, Optional
 
+from transformers.utils import logging
+logger = logging.get_logger(__name__)
 
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
@@ -74,7 +76,7 @@ def load_model(model_path, low_bit):
 
     model = deepspeed.init_inference(
         model,
-        mp_size=world_size,
+        mp_size=1,
         dtype=torch.bfloat16,
         replace_method="auto",
     )
@@ -105,15 +107,17 @@ def load_model(model_path, low_bit):
         tokenizer.pad_token = tokenizer.eos_token
 
 def generate_text(prompt: List[str], n_predict = 32):
+    while prompt[-1] is None:
+        prompt = prompt[:-1]
     if isinstance(n_predict, list):
         n_predict = max(n_predict)
         
     inputs = tokenizer(prompt, return_tensors="pt", padding=True)
     input_ids = inputs.input_ids.to(f'xpu:{local_rank}')
-    print(input_ids)
-    # attention_mask = inputs.attention_mask.to(f'xpu:{local_rank}')
+    # print(input_ids)
+    attention_mask = inputs.attention_mask.to(f'xpu:{local_rank}')
     output = model.generate(input_ids,
-                            # attention_mask=attention_mask,
+                            attention_mask=attention_mask,
                             max_new_tokens=n_predict,
                             use_cache=True)
     torch.xpu.synchronize()
@@ -158,10 +162,10 @@ async def process_requests():
             object_list = prompt_requests
             if len(object_list) < world_size:
                 object_list = object_list + [empty_req] * (world_size - len(object_list))
+            logger.info(f"Running: {len(prompt_requests)}, Pending: {request_queue.qsize()}")
             dist.broadcast_object_list(object_list, src=0)
             start_time = time.time()
             outputs = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
-            print(outputs)
             generate_time = time.time() - start_time
             outputs = outputs.cpu()
             output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
@@ -169,7 +173,6 @@ async def process_requests():
 
             for request_id, output_str in zip(request_ids, output_strs):
                 result_dict[request_id] = output_str
-            print(result_dict)
 
         await asyncio.sleep(0.1)
 
