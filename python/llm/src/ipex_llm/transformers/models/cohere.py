@@ -252,7 +252,6 @@ def cohere_attention_forward_quantized(
         cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
         key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx,
                                                          cache_kwargs, new_layout=True)
-        print(past_key_value)
     if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
             and not hidden_states.requires_grad:
         import linear_q4_0

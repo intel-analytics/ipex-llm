@@ -1223,7 +1223,6 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.Qwen2MoeAttention,
                         qwen2moe_attention_forward)
     elif model.config.model_type == "cohere":
-        print("converting cohere model")
         # for CohereForAI/c4ai-command-r-v01
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
