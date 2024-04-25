@@ -102,7 +102,7 @@ def load_model(model_path, low_bit):
     init_distributed()
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -181,17 +181,6 @@ async def process_requests():
 async def startup_event():
     asyncio.create_task(process_requests())
 
-# @app.post("/generate/")
-# async def generate(prompt_request: PromptRequest):
-#     if local_rank == 0:
-#         object_list = [prompt_request]
-#         dist.broadcast_object_list(object_list, src=0)
-#         start_time = time.time()
-#         output = generate_text(object_list[0].prompt, object_list[0].n_predict)
-#         generate_time = time.time() - start_time
-#         output = output.cpu()
-#         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-#         return {"generated_text": output_str, "generate_time": f'{generate_time:.3f}s'}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP')
