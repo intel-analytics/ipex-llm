@@ -1,7 +1,7 @@
 # CodeGemma
 In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate CodeGemma models. For illustration purposes, we utilize the [google/codegemma-7b-it](https://huggingface.co/google/codegemma-7b-it) as reference CodeGemma models.
 
-## Requirements
+## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 **Important: According to CodeGemma's requirement, please make sure you have installed `transformers==4.38.1` to run the example.**
@@ -10,9 +10,11 @@ To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requ
 In the example [generate.py](./generate.py), we show a basic use case for a CodeGemma model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
-We suggest using conda to manage environment:
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+
+After installing conda, create a Python environment for IPEX-LLM:
 ```bash
-conda create -n llm python=3.11
+conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
@@ -137,4 +139,7 @@ Write a hello world program<end_of_turn>
 <start_of_turn>model
 ```python
 print("Hello, world!")
+```
+
+This program will print the message "Hello, world!" to the console.
 ```

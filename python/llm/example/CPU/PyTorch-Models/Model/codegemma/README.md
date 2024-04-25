@@ -1,7 +1,7 @@
 # CodeGemma
 In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate CodeGemma models. For illustration purposes, we utilize the [google/codegemma-7b-it](https://huggingface.co/google/codegemma-7b-it) as reference CodeGemma models.
 
-## Requirements
+## 0. Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API

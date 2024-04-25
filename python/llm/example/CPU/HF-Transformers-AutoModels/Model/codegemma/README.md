@@ -7,9 +7,11 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a CodeGemma model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
-We suggest using conda to manage environment:
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+
+After installing conda, create a Python environment for IPEX-LLM:
 ```bash
-conda create -n llm python=3.11
+conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
 # install ipex-llm with 'all' option
@@ -67,4 +69,7 @@ Write a hello world program<end_of_turn>
 <start_of_turn>model
 ```python
 print("Hello, world!")
+```
+
+This program will print the message "Hello, world!" to the console.
 ```
