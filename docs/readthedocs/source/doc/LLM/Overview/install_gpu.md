@@ -243,7 +243,7 @@ IPEX-LLM GPU support on Linux has been verified on:
                You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
             
             .. note::
-               If you are using ``zsh`` instead of ``bash``, remember to replace ``~`` by ``${HOME}`` 
+               If you are using ``zsh`` instead of ``bash``, remember to replace ``~`` by ``${HOME}`` when setting environment variables.
 
             .. note::
 
@@ -341,7 +341,10 @@ IPEX-LLM GPU support on Linux has been verified on:
             .. note::
                You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
                You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
-
+            
+            .. note::
+               If you are using ``zsh`` instead of ``bash``, remember to replace ``~`` by ``${HOME}`` when setting environment variables.
+               
             .. note::
 
                You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
