@@ -197,6 +197,3 @@ Accelerator._prepare_ipex = patch_prepare_ipex
 from transformers import TrainingArguments
 TrainingArguments._setup_devices = _setup_devices
 
-# to avoid RecursionError
-from peft.tuners.tuners_utils import BaseTunerLayer
-delattr(BaseTunerLayer, "weight")
