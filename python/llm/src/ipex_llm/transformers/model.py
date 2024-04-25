@@ -321,7 +321,7 @@ class _BaseAutoModelClass:
                                   "For gguf_iq2 and gguf_iq1 quantization,"
                                   "imatrix is needed.")
             cpu_embedding = kwargs.get("cpu_embedding", False)
-            # for 2bit, default use embedding_quantization
+            # for iq2/k-quants, default use embedding_quantization
             if not cpu_embedding and embedding_qtype is None:
                 if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "gguf_iq1_s", "q2_k"]:  
                     embedding_qtype = "q2_k"
@@ -556,7 +556,7 @@ class _BaseAutoModelClass:
                           " with load_in_4bit or load_in_low_bit to get a low-bit model , and "
                           " serialize the model using save_low_bit first.")
 
-        invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype or \
+        invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype or
                           bigdl_transformers_low_bit in gguf_mixed_qtype,
                           f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
                           f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
