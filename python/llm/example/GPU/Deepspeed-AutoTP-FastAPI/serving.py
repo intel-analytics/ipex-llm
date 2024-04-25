@@ -41,6 +41,7 @@ def get_int_from_env(env_keys, default):
 
 local_rank = get_int_from_env(["LOCAL_RANK","PMI_RANK"], "0")
 world_size = get_int_from_env(["WORLD_SIZE","PMI_SIZE"], "1")
+max_num_seqs = get_int_from_env(["MAX_NUM_SEQS"], "16")
 os.environ["RANK"] = str(local_rank)
 os.environ["WORLD_SIZE"] = str(world_size)
 os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
@@ -149,7 +150,7 @@ async def generate(prompt_request: PromptRequest):
 async def process_requests():
     while True:
         request_ids, prompt_requests = [], []
-        for _ in range(world_size):
+        for _ in range(max_num_seqs):
             if request_queue.empty():
                 break
             request_id, prompt_request = await request_queue.get()
@@ -160,8 +161,8 @@ async def process_requests():
             # import pdb
             # pdb.set_trace()
             object_list = prompt_requests
-            if len(object_list) < world_size:
-                object_list = object_list + [empty_req] * (world_size - len(object_list))
+            if len(object_list) < max_num_seqs:
+                object_list = object_list + [empty_req] * (max_num_seqs - len(object_list))
             logger.info(f"Running: {len(prompt_requests)}, Pending: {request_queue.qsize()}")
             dist.broadcast_object_list(object_list, src=0)
             start_time = time.time()
@@ -200,6 +201,6 @@ if __name__ == "__main__":
         uvicorn.run(app, host="0.0.0.0", port=args.port)
     else:
         while True:
-            object_list = [None] * world_size
+            object_list = [None] * max_num_seqs
             dist.broadcast_object_list(object_list, src=0)
             output = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
