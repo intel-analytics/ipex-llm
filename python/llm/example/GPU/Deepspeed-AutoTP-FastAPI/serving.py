@@ -107,7 +107,7 @@ def load_model(model_path, low_bit):
         tokenizer.pad_token = tokenizer.eos_token
 
 def generate_text(prompt: List[str], n_predict = 32):
-    while prompt[-1] is None:
+    while prompt[-1] == "":
         prompt = prompt[:-1]
     if isinstance(n_predict, list):
         n_predict = max(n_predict)
