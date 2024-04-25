@@ -2443,7 +2443,7 @@ class BenchmarkWrapper:
 
             if self.device.type == "xpu":
                 torch.xpu.synchronize()
-                memory_every_token.append(torch.xpu.memory.memory_reserved() / (1024**3))
+                memory_every_token.append(torch.xpu.memory.memory_reserved(self.device) / (1024**3))
                 self.peak_memory = np.max(memory_every_token)
             end = time.perf_counter()
             if first_token_time is None:
@@ -2758,7 +2758,7 @@ class BenchmarkWrapper:
 
             if self.device.type == "xpu":
                 torch.xpu.synchronize()
-                memory_every_token.append(torch.xpu.memory.memory_reserved() / (1024 ** 3))
+                memory_every_token.append(torch.xpu.memory.memory_reserved(self.device) / (1024 ** 3))
                 self.peak_memory = np.max(memory_every_token)
             end = time.perf_counter()
             if first_token_time is None:
@@ -3099,7 +3099,7 @@ class BenchmarkWrapper:
 
             if self.device.type == "xpu":
                 torch.xpu.synchronize()
-                memory_every_token.append(torch.xpu.memory.memory_reserved() / (1024 ** 3))
+                memory_every_token.append(torch.xpu.memory.memory_reserved(self.device) / (1024 ** 3))
                 self.peak_memory = np.max(memory_every_token)
             end = time.perf_counter()
             if first_token_time is None:
@@ -3471,7 +3471,7 @@ class BenchmarkWrapper:
 
             if self.device.type == "xpu":
                 torch.xpu.synchronize()
-                memory_every_token.append(torch.xpu.memory.memory_reserved() / (1024 ** 3))
+                memory_every_token.append(torch.xpu.memory.memory_reserved(self.device) / (1024 ** 3))
                 self.peak_memory = np.max(memory_every_token)
             end = time.perf_counter()
             if first_token_time is None:

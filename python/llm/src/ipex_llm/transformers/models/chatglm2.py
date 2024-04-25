@@ -258,8 +258,8 @@ def chatglm2_quantized_attention_forward_8eb45c(
             query_split = torch.split(query_layer, block_size, dim=1)
             key_split = torch.split(key, block_size, dim=1)
             value_split = torch.split(value, block_size, dim=1)
-            context_layer = torch.empty(batch_size, n_head,
-                                        seq_len, head_dim).to(query_layer.device)
+            context_layer = torch.empty(batch_size, n_head, seq_len,
+                                        head_dim, dtype=key.dtype).to(query_layer.device)
             idx = 0
             for q, k, v in zip(query_split, key_split, value_split):
                 if attention_mask is None:
@@ -543,7 +543,7 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
                 value_split = torch.split(value_layer, block_size, dim=1)
                 batch_size, n_head, seq_len, head_dim = query_layer.shape
                 context_layer = torch.empty(batch_size, n_head, seq_len,
-                                            head_dim).to(query_layer.device).to(key_layer.dtype)
+                                            head_dim, dtype=key_layer.dtype).to(query_layer.device)
                 idx = 0
                 for q, k, v in zip(query_split, key_split, value_split):
                     result = F.scaled_dot_product_attention(q, k, v, is_causal=True).to(k.dtype)
