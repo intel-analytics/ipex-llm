@@ -332,6 +332,11 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_confi
                 cur_qtype = ggml_tensor_qtype['q6_k']
             else:
                 cur_qtype = ggml_tensor_qtype['q4_k']
+        elif qtype == gguf_mixed_qtype["gguf_q4k_s"]:
+            if int(layer) < int(num_hidden_layers/8) and cur_module in ['v', 'down']:
+                cur_qtype = ggml_tensor_qtype['q5_k']
+            else:
+                cur_qtype = ggml_tensor_qtype['q4_k']
     else:
         pass
     return cur_qtype, cur_imatrix
