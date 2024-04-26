@@ -117,6 +117,10 @@ def is_linear_module(module):
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
+        from vllm.model_executor.parallel_utils.parallel_state import (
+            get_tensor_model_parallel_group,
+            get_tensor_model_parallel_world_size
+        )
         VLLM_LINEAR_LIST = [
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         ]
@@ -125,6 +129,12 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
+            tp_size = get_tensor_model_parallel_world_size()
+            if isinstance(module, RowParallelLinear) and tp_size >= 2:
+                mp_group = get_tensor_model_parallel_group()
+                in_features = module.input_size_per_partition
+            elif isinstance(module, ColumnParallelLinear) and tp_size >= 2:
+                out_features = module.output_size_per_partition
         else:
             result = False
     elif is_gptq_linear(module):
