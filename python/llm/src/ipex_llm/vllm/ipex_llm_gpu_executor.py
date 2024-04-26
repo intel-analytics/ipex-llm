@@ -60,7 +60,7 @@ class IPEXLLMGPUExecutor(ExecutorBase):
         self.device_config = device_config
         self.load_in_low_bit = load_in_low_bit
 
-        invalidInputError(self.parallel_config.worker_use_ray is False,
+        invalidInputError(self.parallel_config.worker_use_ray,
                           "worker_use_ray is False, but use ray worker")
         placement_group = self.parallel_config.placement_group
 
