@@ -116,6 +116,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
     intel-oneapi-dpcpp-ct=2024.0.0-49381 \
     intel-oneapi-mkl=2024.0.0-49656 \
+    intel-oneapi-mkl-devel=2024.0.0-49656 \
     intel-oneapi-mpi=2021.11.0-49493 \
     intel-oneapi-mpi-devel=2021.11.0-49493 \
     intel-oneapi-dal=2024.0.1-25 \
