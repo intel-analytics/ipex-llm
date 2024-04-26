@@ -68,7 +68,7 @@ fi
 export ORIGINAL_CHATGLM2_PATH=./llm/chatglm2-6b/
 if [ ! -d $ORIGINAL_CHATGLM2_PATH ]; then
     echo "Directory $ORIGINAL_CHATGLM2_PATH not found. Downloading from FTP server..."
-    wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/${ORIGINAL_CHATGLM2_PATH:5} -P $LLM_DIR
+    wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/${ORIGINAL_CHATGLM2_PATH:6} -P $LLM_DIR
 fi
 
 echo ">>> Testing ChatGLM2 transformers API"
