@@ -15,7 +15,6 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-# transformers>=4.37.0 is required for phi-3 with IPEX-LLM optimizations
 pip install transformers==4.37.0
 ```
 
@@ -30,7 +29,6 @@ pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-# transformers>=4.37.0 is required for phi-3 with IPEX-LLM optimizations
 pip install transformers==4.37.0
 ```
 

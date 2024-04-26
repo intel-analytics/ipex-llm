@@ -22,7 +22,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from ipex_llm import optimize_model
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/microsoft/Phi-3-mini-4k-instruct
+# here the prompt tuning refers to https://huggingface.co/microsoft/Phi-3-mini-4k-instruct#chat-format
 PHI3_PROMPT_FORMAT = "<|user|>\n{prompt}<|end|>\n<|assistant|>"
 
 if __name__ == '__main__':
