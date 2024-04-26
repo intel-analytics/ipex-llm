@@ -125,10 +125,11 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
-            if isinstance(module, RowParallelLinear) and get_tensor_model_parallel_world_size() >= 2:
+            tp_size = get_tensor_model_parallel_world_size()
+            if isinstance(module, RowParallelLinear) and tp_size >= 2:
                 mp_group = get_tensor_model_parallel_group()
                 in_features = module.input_size_per_partition
-            elif isinstance(module, ColumnParallelLinear) and get_tensor_model_parallel_world_size() >= 2:
+            elif isinstance(module, ColumnParallelLinear) and tp_size >= 2:
                 out_features = module.output_size_per_partition
         else:
             result = False
