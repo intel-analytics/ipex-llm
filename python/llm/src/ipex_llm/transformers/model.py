@@ -118,8 +118,9 @@ class _BaseAutoModelClass:
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
                                 ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
                                 ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
-                                ``'fp6'``, ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``, 
-                                ``'gguf_iq1_s'``, ``'gguf_q4k_m'``, ``'fp16'``, ``'bf16'``,
+                                ``'fp6'``, ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``,
+                                ``'gguf_iq1_s'``, ``'gguf_q4k_m'``, ``'gguf_q4k_s'``,
+                                ``'fp16'``, ``'bf16'``,
                                 ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
                                 asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
                                 Relevant low bit optimizations will be applied to the model.
@@ -381,9 +382,15 @@ class _BaseAutoModelClass:
         invalidInputError(q_k in ggml_tensor_qtype or q_k in gguf_mixed_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
+<<<<<<< HEAD
                           f"fp4, fp6, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
                           f"gguf_iq2_xs, gguf_iq1_s, q2_k, q4_k, q6_k, gguf_q4k_m, "
                           f"mixed_fp4 or mixed_fp8.")
+=======
+                          f"fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
+                          f"gguf_iq2_xs, gguf_iq1_s, q2_k, q4_k, q5_k, q6_k, "
+                          f"gguf_q4k_s, gguf_q4k_m, mixed_fp4 or mixed_fp8.")
+>>>>>>> dfdd719a (update comment)
         if q_k in ggml_tensor_qtype:
             qtype = ggml_tensor_qtype[q_k]
         else:
