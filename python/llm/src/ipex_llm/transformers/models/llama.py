@@ -1423,8 +1423,7 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
     query_split = torch.split(query.to(key.dtype), block_size, dim=1)
     key_split = torch.split(key.transpose(2, 3), block_size, dim=1)
     value_split = torch.split(value, block_size, dim=1)
-    attn_output = torch.empty(bsz, num_heads, q_len, head_dim).to(query.device)
-    idx = 0
+    attn_outputs = []
     for q, k, v in zip(query_split, key_split, value_split):
         attn_weights_split = torch.matmul(q, k) / math.sqrt(head_dim)
         block_actual_size = attn_weights_split.size(1)
@@ -1442,9 +1441,8 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                                   f"but is {attention_mask.size()}")
             attn_weights_split = attn_weights_split + attention_mask
         attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
-        attn_weights_split = torch.matmul(attn_weights_split, v)
-        attn_output[:, idx:idx+block_actual_size, :, :] = attn_weights_split
-        idx = idx + block_actual_size
+        attn_outputs.append(torch.matmul(attn_weights_split, v))
+    attn_output = torch.cat(attn_outputs, dim=1)
     return attn_output.to(key.dtype), None
 
 
