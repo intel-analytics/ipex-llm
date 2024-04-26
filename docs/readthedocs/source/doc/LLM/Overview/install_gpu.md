@@ -240,8 +240,11 @@ IPEX-LLM GPU support on Linux has been verified on:
                   intel-oneapi-mpi=2021.11.0-49493 \
                   intel-oneapi-mpi-devel=2021.11.0-49493 \
                   intel-oneapi-dal=2024.0.1-25 \
+                  intel-oneapi-dal-devel=2024.0.1-25 \
                   intel-oneapi-ippcp=2021.9.1-5 \
+                  intel-oneapi-ippcp-devel=2021.9.1-5 \
                   intel-oneapi-ipp=2021.10.1-13 \
+                  intel-oneapi-ipp-devel=2021.10.1-13 \
                   intel-oneapi-tlt=2024.0.0-352 \
                   intel-oneapi-ccl=2021.11.2-5 \
                   intel-oneapi-ccl-devel=2021.11.2-5 \
