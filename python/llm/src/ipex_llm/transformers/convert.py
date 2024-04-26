@@ -49,7 +49,6 @@ import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
-import ray
 
 
 def is_auto_gptq_available():
