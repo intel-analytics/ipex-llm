@@ -543,7 +543,7 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
                 for q, k, v in zip(query_split, key_split, value_split):
                     result = F.scaled_dot_product_attention(q, k, v, is_causal=True).to(k.dtype)
                     results.append(result)
-                context_layer = torch.cat(results)
+                context_layer = torch.cat(results, dim=1)
             else:
                 context_layer = F.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
                                                                key_layer,
