@@ -10,7 +10,7 @@ uvicorn
 sse-starlette
 openai
 fastapi==0.109.1
-pydantic==1.10.8
+pydantic
 
 ### document qa
 langchain
