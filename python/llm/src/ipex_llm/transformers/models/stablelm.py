@@ -447,8 +447,7 @@ def stablelm_attention_forward_quantized(
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                            value_states.transpose(-1, -2))
+            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     invalidInputError(attn_output.size() == attn_output_size,
