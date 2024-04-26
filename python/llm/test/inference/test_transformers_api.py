@@ -35,7 +35,7 @@ class TestTransformersAPI(unittest.TestCase):
             self.n_threads = 2
 
     def test_transformers_auto_model_int4(self):
-        model_path = os.environ.get('ORIGINAL_CODESHELL_7B_PATH')
+        model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         input_str = "Tell me the capital of France.\n\n"
