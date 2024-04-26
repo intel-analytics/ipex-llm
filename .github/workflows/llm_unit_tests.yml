@@ -103,7 +103,7 @@ jobs:
           echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/llama-7b-hf" >> "$GITHUB_ENV"
           echo "BLOOM_ORIGIN_PATH=${ORIGIN_DIR}/bloom-7b1" >> "$GITHUB_ENV"
           echo "ORIGINAL_CHATGLM2_6B_PATH=${ORIGIN_DIR_436}/chatglm2-6b" >> "$GITHUB_ENV"
-          echo "ORIGINAL_REPLIT_CODE_PATH=${ORIGIN_DIR}/replit-code-v1-3b" >> "$GITHUB_ENV"
+          echo "ORIGINAL_CODESHELL_7B_PATH=${ORIGIN_DIR}/CodeShell-7B-Chat" >> "$GITHUB_ENV"
           echo "ORIGINAL_WHISPER_TINY_PATH=${ORIGIN_DIR}/whisper-tiny" >> "$GITHUB_ENV"
           echo "MISTRAL_ORIGIN_PATH=${ORIGIN_DIR}/Mistral-7B-v0.1" >> "$GITHUB_ENV"
           echo "LLAMA2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-7b-chat-hf" >> "$GITHUB_ENV"
@@ -164,10 +164,10 @@ jobs:
             echo "wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436"
             wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR_436
           fi
-          if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
-            echo "Directory $ORIGINAL_REPLIT_CODE_PATH not found. Downloading from FTP server..."
-            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGIN_DIR"
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGIN_DIR
+          if [ ! -d $ORIGINAL_CODESHELL_7B_PATH ]; then
+            echo "Directory $ORIGINAL_CODESHELL_7B_PATH not found. Downloading from FTP server..."
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/CodeShell-7B-Chat -P $ORIGIN_DIR"
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/CodeShell-7B-Chat -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_WHISPER_TINY_PATH ]; then
             echo "Directory $ORIGINAL_WHISPER_TINY_PATH not found. Downloading from FTP server..."
@@ -224,13 +224,13 @@ jobs:
         run: |
           python -m pip install einops datasets librosa openai-whisper
           bash python/llm/test/run-llm-inference-tests.sh
-      # - name: Run LLM langchain test
-        # shell: bash
-        # run: |
-          # pip install -U langchain==0.0.184
-          # pip install -U chromadb==0.3.25
-          # pip install -U pandas==2.0.3
-          # bash python/llm/test/run-llm-langchain-tests.sh
+       - name: Run LLM langchain test
+         shell: bash
+         run: |
+           pip install -U langchain==0.0.184
+           pip install -U chromadb==0.3.25
+           pip install -U pandas==2.0.3
+           bash python/llm/test/run-llm-langchain-tests.sh
       - name: Run LLM llamaindex test
         shell: bash
         run: |

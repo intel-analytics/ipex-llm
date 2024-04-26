@@ -38,7 +38,7 @@ import os
 class Test_Langchain_Transformers_API(TestCase):
     def setUp(self):
         self.auto_model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
-        # self.auto_causal_model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
+        self.auto_causal_model_path = os.environ.get('ORIGINAL_CODESHELL_7B_PATH')
         self.llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
         self.bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
         thread_num = os.environ.get('THREAD_NUM')
@@ -79,12 +79,12 @@ class Test_Langchain_Transformers_API(TestCase):
 
     def test_qa_chain(self):
         texts = '''
-            AI is a machine’s ability to perform the cognitive functions 
-            we associate with human minds, such as perceiving, reasoning, 
+            AI is a machine’s ability to perform the cognitive functions
+            we associate with human minds, such as perceiving, reasoning,
             learning, interacting with an environment, problem solving,
-            and even exercising creativity. You’ve probably interacted 
-            with AI even if you didn’t realize it—voice assistants like Siri 
-            and Alexa are founded on AI technology, as are some customer 
+            and even exercising creativity. You’ve probably interacted
+            with AI even if you didn’t realize it—voice assistants like Siri
+            and Alexa are founded on AI technology, as are some customer
             service chatbots that pop up to help you navigate websites.
             '''
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
@@ -102,16 +102,16 @@ class Test_Langchain_Transformers_API(TestCase):
         res = "AI" in output
         self.assertTrue(res)
 
-    
+
     """
     def test_qa_chain_causalLM(self):
         texts = '''
-            AI is a machine’s ability to perform the cognitive functions 
-            we associate with human minds, such as perceiving, reasoning, 
+            AI is a machine’s ability to perform the cognitive functions
+            we associate with human minds, such as perceiving, reasoning,
             learning, interacting with an environment, problem solving,
-            and even exercising creativity. You’ve probably interacted 
-            with AI even if you didn’t realize it—voice assistants like Siri 
-            and Alexa are founded on AI technology, as are some customer 
+            and even exercising creativity. You’ve probably interacted
+            with AI even if you didn’t realize it—voice assistants like Siri
+            and Alexa are founded on AI technology, as are some customer
             service chatbots that pop up to help you navigate websites.
             '''
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
@@ -129,7 +129,7 @@ class Test_Langchain_Transformers_API(TestCase):
         res = "AI" in output
         self.assertTrue(res)
     """
-    
+
     def test_embed_kwargs(self):
         embeddings = TransformersEmbeddings.from_model_id(model_id=self.llama_model_path)
         encode_kwargs =  {"truncation": True, "max_length": 512}

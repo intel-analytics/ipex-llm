@@ -35,7 +35,7 @@ class TestTransformersAPI(unittest.TestCase):
             self.n_threads = 2
 
     def test_transformers_auto_model_int4(self):
-        model_path = os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')
+        model_path = os.environ.get('ORIGINAL_CODESHELL_7B_PATH')
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         input_str = "Tell me the capital of France.\n\n"
@@ -49,26 +49,26 @@ class TestTransformersAPI(unittest.TestCase):
         print('Prompt:', input_str)
         print('Output:', output_str)
         print(f'Inference time: {end-st} s')
-        res = 'Paris' in output_str        
+        res = 'Paris' in output_str
         self.assertTrue(res)
 
-    # def test_transformers_auto_model_for_causal_lm_int4(self):
-    #     model_path = os.environ.get('ORIGINAL_REPLIT_CODE_PATH')
-    #     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    #     input_str = 'def hello():\n  print("hello world")\n'
-    #     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
-    #     with torch.inference_mode():
-    #
-    #         st = time.time()
-    #         input_ids = tokenizer.encode(input_str, return_tensors="pt")
-    #         output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
-    #         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-    #         end = time.time()
-    #     print('Prompt:', input_str)
-    #     print('Output:', output_str)
-    #     print(f'Inference time: {end-st} s')
-    #     res = '\nhello()' in output_str
-    #     self.assertTrue(res)
+    def test_transformers_auto_model_for_causal_lm_int4(self):
+        model_path = os.environ.get('ORIGINAL_CODESHELL_7B_PATH')
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        input_str = 'def hello():\n  print("hello world")\n'
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
+        with torch.inference_mode():
+
+            st = time.time()
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
+            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+            end = time.time()
+        print('Prompt:', input_str)
+        print('Output:', output_str)
+        print(f'Inference time: {end-st} s')
+        res = '\nhello()' in output_str
+        self.assertTrue(res)
         
 
     def test_transformers_auto_model_for_speech_seq2seq_int4(self):
@@ -86,7 +86,7 @@ class TestTransformersAPI(unittest.TestCase):
             predicted_ids = model.generate(input_features)
             # decode token ids to text
             transcription = processor.batch_decode(predicted_ids, skip_special_tokens=False)
-            end = time.time()        
+            end = time.time()
         print('Output:', transcription)
         print(f'Inference time: {end-st} s')
         res = 'Mr. Quilter is the apostle of the middle classes and we are glad to welcome his gospel.' in transcription[0]
@@ -108,7 +108,7 @@ class TestTransformersAPI(unittest.TestCase):
         print('Prompt:', input_str)
         print('Output:', output_str)
         print(f'Inference time: {end-st} s')
-        res = 'Paris' in output_str        
+        res = 'Paris' in output_str
         self.assertTrue(res)
 
 @pytest.mark.parametrize('prompt, answer', [
@@ -124,7 +124,7 @@ def test_load_low_bit_completion(Model, Tokenizer, model_path, prompt, answer):
                                   load_in_4bit=True,
                                   optimize_model=True,
                                   trust_remote_code=True)
-    
+
     with tempfile.TemporaryDirectory() as tempdir:
         model.save_low_bit(tempdir)
         loaded_model = Model.load_low_bit(tempdir,
@@ -144,10 +144,10 @@ prompt = "Once upon a time, there existed a little girl who liked to have advent
     # (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH'), prompt),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('BLOOM_ORIGIN_PATH'), prompt),
     (AutoModel, AutoTokenizer, os.environ.get('ORIGINAL_CHATGLM2_6B_PATH'), prompt),
-    # (AutoModelForCausalLM, AutoTokenizer, os.environ.get('ORIGINAL_REPLIT_CODE_PATH'), prompt),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('ORIGINAL_CODESHELL_7B_PATH'), prompt),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_ORIGIN_PATH'), prompt)
 ])
-    
+
 def test_optimize_model(Model, Tokenizer, model_path, prompt):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
     input_ids = tokenizer.encode(prompt, return_tensors="pt")
