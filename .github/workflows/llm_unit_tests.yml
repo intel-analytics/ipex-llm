@@ -224,13 +224,13 @@ jobs:
         run: |
           python -m pip install einops datasets librosa openai-whisper
           bash python/llm/test/run-llm-inference-tests.sh
-       - name: Run LLM langchain test
-         shell: bash
-         run: |
-           pip install -U langchain==0.0.184
-           pip install -U chromadb==0.3.25
-           pip install -U pandas==2.0.3
-           bash python/llm/test/run-llm-langchain-tests.sh
+      - name: Run LLM langchain test
+        shell: bash
+        run: |
+          pip install -U langchain==0.0.184
+          pip install -U chromadb==0.3.25
+          pip install -U pandas==2.0.3
+          bash python/llm/test/run-llm-langchain-tests.sh
       - name: Run LLM llamaindex test
         shell: bash
         run: |
