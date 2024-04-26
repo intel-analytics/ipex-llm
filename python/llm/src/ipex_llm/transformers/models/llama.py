@@ -1360,7 +1360,8 @@ def llama_attention_forward_4_36_original(
                     value_states,
                     attn_mask=attention_mask,
                     dropout_p=self.attention_dropout if self.training else 0.0,
-                    # The q_len > 1 is necessary to match with AttentionMaskConverter.to_causal_4d that
+                    # The q_len > 1 is necessary to match with
+                    # AttentionMaskConverter.to_causal_4d that
                     # does not create a causal mask in case q_len == 1.
                     is_causal=self.is_causal and attention_mask is None and q_len > 1,
                 )
