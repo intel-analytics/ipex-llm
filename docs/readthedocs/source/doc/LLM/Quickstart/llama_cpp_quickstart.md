@@ -10,7 +10,7 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
 
 ### 0 Prerequisites
-IPEX-LLM's support for `llama.cpp` now is avaliable for Linux system and Windows system.
+IPEX-LLM's support for `llama.cpp` now is available for Linux system and Windows system.
 
 #### Linux
 For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
@@ -83,6 +83,7 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 
 #### Set Environment Variables
+
 Configure oneAPI variables by running the following command:
 
 ```eval_rst
@@ -95,9 +96,14 @@ Configure oneAPI variables by running the following command:
 
    .. tab:: Windows
 
+      .. note::
+
+      This is a required step for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
+
       .. code-block:: bash
 
          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+
 ```
 
 #### Model Download

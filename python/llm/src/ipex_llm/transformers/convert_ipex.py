@@ -138,7 +138,7 @@ def _ipex_optimize_model(model, rms_classes, qtype):
         }
         qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
             weight_dtype=torch.qint8,  # INT8
-            lowp_mode=ipex.quantization.WoqLowpMode.INT8,
+            lowp_mode=ipex.quantization.WoqLowpMode.BF16,
             act_quant_mode=act_quant_mode_dict["PER_IC_BLOCK"],
             group_size=-1,
         )
@@ -150,7 +150,8 @@ def _ipex_optimize_model(model, rms_classes, qtype):
     _ipex_optimize_attention(model, is_tpp=is_tpp, is_woq=is_woq)
     _ipex_optimize_decoder(model, is_tpp=is_tpp, is_woq=is_woq)
 
-    model.register_forward_hook(output_hook, with_kwargs=True)
+    # need to register_forward_hook after torch.jit.trace
+    # model.register_forward_hook(output_hook, with_kwargs=True)
     return model
 
 

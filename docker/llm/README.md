@@ -152,14 +152,14 @@ Additionally, for examples related to Inference with Speculative Decoding, you c
 
 ## IPEX-LLM Inference on XPU
 
-### 1. Prepare ipex-llm-cpu Docker Image
+### 1. Prepare ipex-llm-xpu Docker Image
 
 Run the following command to pull image from dockerhub:
 ```bash
 docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 ```
 
-### 2. Start bigdl-llm-cpu Docker Container
+### 2. Start ipex-llm-xpu Docker Container
 
 To map the xpu into the container, you need to specify --device=/dev/dri when booting the container.
 ```bash

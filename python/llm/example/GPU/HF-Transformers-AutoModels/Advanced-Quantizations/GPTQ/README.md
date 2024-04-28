@@ -13,9 +13,9 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-pip install transformers==4.34.0
-BUILD_CUDA_EXT=0 pip install git+https://github.com/PanQiWei/AutoGPTQ.git@1de9ab6
-pip install optimum==0.14.0
+pip install transformers==4.37.0
+pip install auto_gptq==0.7.1
+pip install optimum==1.14.0
 ```
 
 ### 2. Configures OneAPI environment variables

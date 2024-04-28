@@ -43,11 +43,23 @@ As she stepped up to the podium, Maya could feel the energy of the crowd surging
 Overall, Maya's speech was a resounding success, and she received countless messages of gratitude and appreciation from those who had heard her speak. She knew that there was still much work to be done, but she felt hopeful about the future and the role that technology could play in creating a better world for all. 
 As Maya left the stage and made her way back to her seat, she couldn't help but feel a sense of pride and accomplishment at what she had just accomplished. She knew that her words had the power to inspire others and make a real difference in the world, and she was grateful for the opportunity to have played a part in this important work."""
 
+MIXTRAL_INST_PROMPT_FORMAT = """<s>[INST] {prompt} 
+  Please continue writing the above story
+[/INST]"""
+
+MIXTRAL_PROMPT_FORMAT = """
+[INST] <<SYS>>
+You are a helpful assistant. Please continue writing the below story.
+<</SYS>>
+{prompt}[/INST]
+"""
+
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mistral model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="mistralai/Mistral-7B-Instruct-v0.1",
-                        help='The huggingface repo id for the Mistral (e.g. `mistralai/Mistral-7B-Instruct-v0.1` and `mistralai/Mistral-7B-v0.1`) to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Mixtral model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="mistralai/Mixtral-8x7B-Instruct-v0.1",
+                        help='The huggingface repo id for the Mixtral (e.g. `mistralai/Mixtral-8x7B-Instruct-v0.1` and `mistralai/Mixtral-8x7B-v0.1`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default=long_input,
                         help='Prompt to infer')
@@ -71,7 +83,11 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(model_path)
 
     with torch.inference_mode():
-        prompt = args.prompt
+        # for accuracy
+        if "Instruct" in model_path:
+            prompt = MIXTRAL_INST_PROMPT_FORMAT.format(prompt=args.prompt)
+        else:
+            prompt = MIXTRAL_PROMPT_FORMAT.format(prompt=args.prompt)
         inputs = tokenizer(prompt, return_tensors='pt')
         input_ids = inputs.input_ids.to(model.device)
         actual_in_len = input_ids.shape[1]
@@ -96,14 +112,9 @@ if __name__ == '__main__':
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         end = time.perf_counter()
 
-        print(f"E2E Generation time {(end - st):.4f}s")
         print(output_str)
 
-        # When the IPEX_CPU optimized models recive short prompts(length < 256)
-        # it will use normal generate() and has not these attr
-        from ipex_llm.transformers.convert import get_enable_ipex
-        _enable_ipex = get_enable_ipex()
-        if not _enable_ipex or actual_in_len >= 256:
-            print(f"Tokens generated {model.n_token_generated}")
-            print(f"First token latency {model.first_token_time:.4f}s")
+        print(f"E2E Generation time {(end - st):.4f}s")
+        print(f"Tokens generated {model.n_token_generated}")
+        print(f"First token latency {model.first_token_time:.4f}s")
 

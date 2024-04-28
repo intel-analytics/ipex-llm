@@ -30,7 +30,9 @@ subtrees:
                 - file: doc/LLM/Quickstart/benchmark_quickstart
                 - file: doc/LLM/Quickstart/llama_cpp_quickstart
                 - file: doc/LLM/Quickstart/ollama_quickstart
+                - file: doc/LLM/Quickstart/llama3_llamacpp_ollama_quickstart
                 - file: doc/LLM/Quickstart/fastchat_quickstart
+                - file: doc/LLM/Quickstart/axolotl_quickstart
           - file: doc/LLM/Overview/KeyFeatures/index
             title: "Key Features"
             subtrees:

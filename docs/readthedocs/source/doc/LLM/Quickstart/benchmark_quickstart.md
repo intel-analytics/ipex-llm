@@ -1,6 +1,6 @@
 # Run Performance Benchmarking with IPEX-LLM
 
-We can do benchmarking for IPEX-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
+We can perform benchmarking for IPEX-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
 
 ## Prepare The Environment
 
@@ -13,7 +13,7 @@ pip install omegaconf
 
 ## Prepare The Scripts
 
-Navigate to your local workspace and then download IPEX-LLM from GitHub. Modify the `config.yaml` under `all-in-one` folder for your own benchmark configurations.
+Navigate to your local workspace and then download IPEX-LLM from GitHub. Modify the `config.yaml` under `all-in-one` folder for your benchmark configurations.
 
 ```
 cd your/local/workspace
@@ -47,15 +47,15 @@ Some parameters in the yaml file that you can configure:
 - warm_up: The number of runs as warmup trials, executed before performance benchmarking.
 - num_trials: The number of runs for performance benchmarking. The final benchmark result would be the average of all the trials.
 - low_bit: The low_bit precision you want to convert to for benchmarking.
-- batch_size: The number of samples on which the models makes predictions in one forward pass.
+- batch_size: The number of samples on which the models make predictions in one forward pass.
 - in_out_pairs: Input sequence length and output sequence length combined by '-'.
 - test_api: Use different test functions on different machines.
   - `transformer_int4_gpu` on Intel GPU for Linux
   - `transformer_int4_gpu_win` on Intel GPU for Windows
   - `transformer_int4` on Intel CPU
-- cpu_embedding: Whether to put embedding on CPU (only avaiable now for windows gpu related test_api).
+- cpu_embedding: Whether to put embedding on CPU (only available now for windows gpu related test_api).
 
-Remark: If you want to benchmark the performance without warmup, you can set `warm_up: 0` as well as `num_trials: 1` in `config.yaml`, and run each single model and in_out_pair separately.
+Remark: If you want to benchmark the performance without warmup, you can set `warm_up: 0` and `num_trials: 1` in `config.yaml`, and run each single model and in_out_pair separately.
 
 ## Run on Windows
 
@@ -148,4 +148,4 @@ Please refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overvie
 
 ## Result
 
-After the benchmarking completes, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in `config.yaml` have been successfully applied in the benchmarking.
+After the benchmarking is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in `config.yaml` have been successfully applied in the benchmarking.

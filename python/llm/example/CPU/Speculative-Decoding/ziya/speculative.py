@@ -51,7 +51,6 @@ if __name__ == '__main__':
                                                  torch_dtype=torch.bfloat16,
                                                  load_in_low_bit="bf16",
                                                  speculative=True,
-                                                 torchscript=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
 
