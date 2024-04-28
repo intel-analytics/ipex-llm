@@ -219,8 +219,6 @@ def lookup_generate(self,
 
     device_name = get_xpu_device_type(input_ids)
 
-    print(device_name, generation_config)
-
     candidates_generator = PromptLookupCandidateGenerator(
         num_output_tokens=num_output_tokens,
         max_matching_ngram_size=max_matching_ngram_size,
