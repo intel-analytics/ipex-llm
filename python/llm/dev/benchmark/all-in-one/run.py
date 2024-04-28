@@ -127,7 +127,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             round(result[in_out_pair][-1][5], 2),
                             result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) else 'N/A',
                             streaming if 'win' in test_api else 'N/A',
-                            use_fp16_torch_dtype],
+                            use_fp16_torch_dtype if 'pipeline_parallel_gpu' in test_api else 'N/A'],
                             ) 
 
 
@@ -1805,7 +1805,10 @@ if __name__ == '__main__':
     streaming = False
     if 'streaming' in conf:
         streaming = conf['streaming']
-
+    if 'use_fp16_torch_dtype' in conf:
+        use_fp16_torch_dtype = conf['use_fp16_torch_dtype']
+    if 'n_gpu' in conf:
+        n_gpu = conf['n_gpu']
     
     import pandas as pd
     for api in conf.test_api:
@@ -1820,7 +1823,7 @@ if __name__ == '__main__':
                     if model_id_input in excludes or model_id_input_batch_size in excludes:
                         in_out_pairs.remove(in_out)
             run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], streaming, conf['use_fp16_torch_dtype'], conf['n_gpu'])
+                      conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], streaming, use_fp16_torch_dtype, n_gpu)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
