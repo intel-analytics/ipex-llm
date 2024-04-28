@@ -148,6 +148,13 @@ def cohere_model_forward(
                 cache_position,
             )
         else:
+            # ipex-llm changes
+            curr_device = decoder_layer.input_layernorm.weight.device
+            if causal_mask is not None:
+                causal_mask = causal_mask.to(curr_device)
+            if position_ids is not None:
+                position_ids = position_ids.to(curr_device)
+            # ipex-llm changes end
             layer_outputs = decoder_layer(
                 hidden_states,
                 attention_mask=causal_mask,
@@ -447,4 +454,4 @@ def cohere_attention_forward_origin(
     if not output_attentions:
         attn_weights = None
 
-    return attn_output, attn_weights, past_key_value
+    return attn_output.to(hidden_states.dtype), attn_weights, past_key_value
