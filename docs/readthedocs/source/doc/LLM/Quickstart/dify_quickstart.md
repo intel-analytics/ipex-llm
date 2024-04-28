@@ -17,10 +17,11 @@ openssl rand -base64 42
 sed -i 's/SECRET_KEY=.*/SECRET_KEY=<your_value>/' .env
 pip install -r requirements.txt
 ```
+> openssl is pre-installed with Ubuntu 22.04. 
 ### Prepare for redis, postgres, node and npm. 
 * Install Redis by `sudo apt-get install redis-server`. Refer to [page](https://www.hostinger.com/tutorials/how-to-install-and-setup-redis-on-ubuntu/) to setup the Redis environment, including password, demon, etc. 
 * install postgres by `sudo apt-get install postgres` and `sudo apt-get install postgres-client`. Setup username, create a database and grant previlidge according to [page](https://www.ruanyifeng.com/blog/2013/12/getting_started_with_postgresql.html)
-* install npm and node by  `brew install node@20` according to [nodejs page](https://nodejs.org/en/download/package-manager)
+* install npm and node by prebuilt installer, binaries or packet manager according to [nodejs page](https://nodejs.org/en/download/package-manager)
 > Note that set redis and postgres related environment in .env under dify/api/ and set web related environment variable in .env.local under dify/web
 
 ### Install Ollama
