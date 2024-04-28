@@ -1803,6 +1803,8 @@ if __name__ == '__main__':
     if 'exclude' in conf:
         excludes = conf['exclude']
     streaming = False
+    use_fp16_torch_dtype = False
+    n_gpu = 2
     if 'streaming' in conf:
         streaming = conf['streaming']
     if 'use_fp16_torch_dtype' in conf:
