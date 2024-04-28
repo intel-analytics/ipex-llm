@@ -45,8 +45,9 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         parallel_config = engine_configs[2]
         if parallel_config.worker_use_ray or engine_args.engine_use_ray:
             initialize_ray_cluster(parallel_config)
-            from vllm.executor.ray_gpu_executor import RayGPUExecutorAsync
-            executor_class = RayGPUExecutorAsync
+            # from vllm.executor.ray_gpu_executor import RayGPUExecutorAsync
+            from ipex_llm.vllm.ipex_llm_gpu_executor import get_gpu_executor_class_async
+            executor_class = get_gpu_executor_class_async(load_in_low_bit)
         else:
             invalidInputError(parallel_config.world_size == 1, (
                 "Ray is required if parallel_config.world_size > 1."))
@@ -130,8 +131,9 @@ class IPEXLLMLLMEngine(LLMEngine):
         # Initialize the cluster and specify the executor class.
         if parallel_config.worker_use_ray:
             initialize_ray_cluster(parallel_config)
-            from vllm.executor.ray_gpu_executor import RayGPUExecutor
-            executor_class = RayGPUExecutor
+            # from vllm.executor.ray_gpu_executor import RayGPUExecutor
+            from ipex_llm.vllm.ipex_llm_gpu_executor import get_gpu_executor_class
+            executor_class = get_gpu_executor_class(load_in_low_bit)
         else:
             invalidInputError(parallel_config.world_size == 1,
                               "Ray is required if parallel_config.world_size > 1.")
