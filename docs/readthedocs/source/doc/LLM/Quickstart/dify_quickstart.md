@@ -23,6 +23,29 @@ pip install -r requirements.txt
 * install postgres by `sudo apt-get install postgres` and `sudo apt-get install postgres-client`. Setup username, create a database and grant previlidge according to [page](https://www.ruanyifeng.com/blog/2013/12/getting_started_with_postgresql.html)
 * install npm and node by prebuilt installer, binaries or packet manager according to [nodejs page](https://nodejs.org/en/download/package-manager)
 > Note that set redis and postgres related environment in .env under dify/api/ and set web related environment variable in .env.local under dify/web
+> Example in dify/api/.env and modify settings in redis and postgres. 
+> ```bash
+> REDIS_HOST=localhost
+> REDIS_PORT=6379
+> REDIS_USERNAME=
+> REDIS_PASSWORD=xxxx
+> REDIS_DB=0
+> DB_USERNAME=xxxx
+> DB_PASSWORD=xxxx
+> DB_HOST=localhost
+> DB_PORT=5432
+> DB_DATABASE=dify
+>
+>```
+> Example .env.local
+> ```bash
+> # For production release, change this to PRODUCTION
+> NEXT_PUBLIC_DEPLOY_ENV=DEVELOPMENT
+> NEXT_PUBLIC_EDITION=SELF_HOSTED
+> NEXT_PUBLIC_API_PREFIX=http://localhost:5001/console/api
+> NEXT_PUBLIC_PUBLIC_API_PREFIX=http://localhost:5001/api
+> NEXT_PUBLIC_SENTRY_DSN=
+> ```
 
 ### Install Ollama
 Please install ollama refer to [ollama quick start](./ollama_quickstart.md). Ensure that ollama could run successfully on Intel GPU. 
