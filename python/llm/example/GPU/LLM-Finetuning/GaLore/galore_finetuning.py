@@ -36,9 +36,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    output_dir = args.output_dir
 
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
+        load_in_low_bit = 'sym_int8',
         torch_dtype = torch.bfloat16,
         optimize_model=False,
         use_cache = False,
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     from transformers import TrainingArguments
 
     training_arguments = TrainingArguments(
-        output_dir = f"out",
+        output_dir = output_dir,
         evaluation_strategy = "steps",
         label_names = ["data"],
         per_device_train_batch_size = 16,
