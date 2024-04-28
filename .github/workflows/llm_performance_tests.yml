@@ -391,7 +391,7 @@ jobs:
       - name: Set directory envs & and fix generated csv date name
         shell: bash
         run: |
-          if [ ${{ github.event_name }} == 'schedule' || ${{ github.event_name }} == "workflow_dispatch" ]; then
+          if [ ${{ github.event_name }} == "schedule" || ${{ github.event_name }} == "workflow_dispatch" ]; then
             echo "CSV_SAVE_PATH=${CSV_NIGHTLY_PATH}" >> "$GITHUB_ENV"
           else
             echo "CSV_SAVE_PATH=${CSV_PR_PATH}" >> "$GITHUB_ENV"
