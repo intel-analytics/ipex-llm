@@ -198,14 +198,10 @@ class PromptLookupCandidateGenerator():
             num_matches (`int`):
                 The number of matches between the candidate sequences and the model predictions.
         """
-        # old_num_output_tokens = self.num_output_tokens
         if num_matches == self.num_output_tokens:
             self.num_output_tokens = min(self.num_output_tokens + 1, self.max_candidates)
         elif candidate_num > num_matches:
             self.num_output_tokens = max(self.num_output_tokens - 1, 1)
-        # print(f"num_matches: {num_matches}, candidate_num: {candidate_num}, "
-        #       f"old_num_output_tokens: {old_num_output_tokens}, num_output_tokens: "
-        #       f"{self.num_output_tokens}")
 
 
 @torch.no_grad()
@@ -220,7 +216,7 @@ def lookup_generate(self,
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               **sampling_kwargs)
-    
+
     device_name = get_xpu_device_type(input_ids)
 
     print(device_name, generation_config)
