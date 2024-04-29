@@ -49,7 +49,8 @@ llm = LLM(model="YOUR_MODEL",
           device="xpu",
           dtype="float16",
           enforce_eager=True,
-          load_in_low_bit="sym_int4")
+          load_in_low_bit="sym_int4",
+          tensor_parallel_size=1)
 # Generate texts from the prompts. The output is a list of RequestOutput objects
 # that contain the prompt, generated text, and other information.
 outputs = llm.generate(prompts, sampling_params)

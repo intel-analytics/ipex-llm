@@ -15,7 +15,6 @@ RUN cd /llm &&\
     apt-get install -y libfabric-dev wrk && \
     pip install --pre --upgrade ipex-llm[xpu,serving] && \
     pip install transformers==4.37.0 gradio==4.19.2 && \
-    chmod +x /opt/entrypoint.sh && \
     # Install vLLM-v2 dependencies
     cd /llm && \
     git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git && \
