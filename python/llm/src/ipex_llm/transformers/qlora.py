@@ -76,7 +76,7 @@ class LoraLowBitLinear(Module, LoraLayer):
         # Set this to True if the layer to replace stores weight like (fan_in, fan_out)
         fan_in_fan_out: bool = False,
         is_target_conv_1d_layer: bool = False,
-        init_lora_weights: Union[bool, str] = True,
+        init_lora_weights: Union[bool, str]=True,
         use_rslora: bool = False,
         use_dora: bool = False,
         **kwargs,
@@ -151,7 +151,7 @@ class LoraBF16Linear(Module, LoraLayer):
         # Set this to True if the layer to replace stores weight like (fan_in, fan_out)
         fan_in_fan_out: bool = False,
         is_target_conv_1d_layer: bool = False,
-        init_lora_weights: Union[bool, str] = True,
+        init_lora_weights: Union[bool, str]=True,
         use_rslora: bool = False,
         use_dora: bool = False,
         **kwargs,
