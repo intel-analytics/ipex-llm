@@ -29,7 +29,7 @@ RUN cd /llm &&\
 
 ADD ./offline_inference.py    /llm/vllm-examples/
 ADD ./payload-1024.lua        /llm/vllm-examples/
-ADD ./start_service.sh        /llm/vllm-examples/
+ADD ./start-vllm-service.sh   /llm/vllm-examples/
 ADD ./benchmark_throughput.py /llm/vllm-examples/
 
 WORKDIR /llm/
