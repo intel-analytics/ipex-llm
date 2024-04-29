@@ -280,8 +280,7 @@ def chatglm2_quantized_attention_forward_8eb45c(
                                                  n_kv_head,
                                                  seq_len,
                                                  head_dim,
-                                                 query_layer.device,
-                                                 new_layout=True)
+                                                 query_layer.device)
             k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_layer, value_layer)
     else:
         k_cache, v_cache = kv_cache
@@ -289,8 +288,7 @@ def chatglm2_quantized_attention_forward_8eb45c(
         v_cache = v_cache.permute(1, 2, 0, 3)
         # k_cache, v_cache's shape: [bs, n_kv_head, seq_len, head_dim]
 
-        k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_layer, value_layer,
-                                               new_layout=True)
+        k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_layer, value_layer)
 
         if attention_mask is not None:
             attention_mask = ~attention_mask
