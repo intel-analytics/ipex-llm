@@ -63,6 +63,7 @@ class BigDLLLMWorker(BaseModelWorker):
         device: str = "cpu",
         no_register: bool = False,
         trust_remote_code: bool = False,
+        speculative: bool = False,
         stream_interval: int = 4,
     ):
         super().__init__(
@@ -82,11 +83,13 @@ class BigDLLLMWorker(BaseModelWorker):
         )
 
         logger.info(f"Using low bit format: {self.load_in_low_bit}, device: {device}")
+        if speculative:
+            logger.info(f"Using Self-Speculative decoding to generate")
 
         self.device = device
-
+        self.speculative = speculative
         self.model, self.tokenizer = load_model(
-            model_path, device, self.load_in_low_bit, trust_remote_code
+            model_path, device, self.load_in_low_bit, trust_remote_code, speculative
         )
         self.stream_interval = stream_interval
         self.context_len = get_context_length(self.model.config)
@@ -98,6 +101,7 @@ class BigDLLLMWorker(BaseModelWorker):
         # context length is self.context_length
         prompt = params["prompt"]
         temperature = float(params.get("temperature", 1.0))
+        do_sample = bool(params.get("do_sample", False))
         repetition_penalty = float(params.get("repetition_penalty", 1.0))
         top_p = float(params.get("top_p", 1.0))
         top_k = int(params.get("top_k", 1))
@@ -165,81 +169,102 @@ class BigDLLLMWorker(BaseModelWorker):
             streamer=streamer,
             temperature=temperature,
             repetition_penalty=repetition_penalty,
+            do_sample=do_sample,
             top_p=top_p,
             top_k=top_k,
         )
-
-        def model_generate():
-            self.model.generate(input_ids, **generated_kwargs)
-
-        t1 = Thread(target=model_generate)
-        t1.start()
-
-        stopped = False
-        finish_reason = None
-        if echo:
-            partial_output = prompt
-            rfind_start = len(prompt)
+        if self.speculative:
+            output = self.model.generate(input_ids, **generated_kwargs)
+            output_str = self.tokenizer.decode(output[0][input_echo_len:], skip_special_tokens=True)
+            completion_tokens = output.shape[1] - input_echo_len
+            total_tokens = output.shape[1]
+            if max_new_tokens == completion_tokens:
+                finish_reason = "length"
+            else:
+                finish_reason = "stop"
+            json_output = {
+                "text": output_str,
+                "error_code": 0,
+                "usage": {
+                    "prompt_tokens": input_echo_len,
+                    "completion_tokens": completion_tokens,
+                    "total_tokens": total_tokens,
+                },
+                "finish_reason": "length",
+            }
+            yield json.dumps(json_output).encode() + b"\0"
         else:
-            partial_output = ""
-            rfind_start = 0
+            def model_generate():
+                self.model.generate(input_ids, **generated_kwargs)
 
-        for i in range(max_new_tokens):
-            try:
-                output_token = next(streamer)
-            except StopIteration:
-                # Stop early
-                stopped = True
-                break
-            partial_output += output_token
+            t1 = Thread(target=model_generate)
+            t1.start()
 
-            if i % self.stream_interval == 0 or i == max_new_tokens - 1 or stopped:
-                for each_stop in stop:
-                    pos = partial_output.rfind(each_stop, rfind_start)
-                if pos != -1:
-                    partial_output = partial_output[:pos]
+            stopped = False
+            finish_reason = None
+            if echo:
+                partial_output = prompt
+                rfind_start = len(prompt)
+            else:
+                partial_output = ""
+                rfind_start = 0
+
+            for i in range(max_new_tokens):
+                try:
+                    output_token = next(streamer)
+                except StopIteration:
+                    # Stop early
                     stopped = True
                     break
-                else:
-                    partially_stopped = is_partial_stop(partial_output, each_stop)
-                    if partially_stopped:
+                partial_output += output_token
+
+                if i % self.stream_interval == 0 or i == max_new_tokens - 1 or stopped:
+                    for each_stop in stop:
+                        pos = partial_output.rfind(each_stop, rfind_start)
+                    if pos != -1:
+                        partial_output = partial_output[:pos]
+                        stopped = True
                         break
-                if not partially_stopped:
-                    json_output = {
-                        "text": partial_output,
-                        "usage": {
-                            "prompt_tokens": input_echo_len,
-                            "completion_tokens": i,
-                            "total_tokens": input_echo_len + i,
-                        },
-                        "finish_reason": None,
-                    }
-                    ret = {
-                        "text": json_output["text"],
-                        "error_code": 0,
-                    }
-                    ret["usage"] = json_output["usage"]
-                    ret["finish_reason"] = json_output["finish_reason"]
-                    yield json.dumps(ret).encode() + b"\0"
+                    else:
+                        partially_stopped = is_partial_stop(partial_output, each_stop)
+                        if partially_stopped:
+                            break
+                    if not partially_stopped:
+                        json_output = {
+                            "text": partial_output,
+                            "usage": {
+                                "prompt_tokens": input_echo_len,
+                                "completion_tokens": i,
+                                "total_tokens": input_echo_len + i,
+                            },
+                            "finish_reason": None,
+                        }
+                        ret = {
+                            "text": json_output["text"],
+                            "error_code": 0,
+                        }
+                        ret["usage"] = json_output["usage"]
+                        ret["finish_reason"] = json_output["finish_reason"]
+                        yield json.dumps(ret).encode() + b"\0"
+
+                if stopped:
+                    break
+            else:
+                finish_reason = "length"
 
             if stopped:
-                break
-        else:
-            finish_reason = "length"
-
-        if stopped:
-            finish_reason = "stop"
-        json_output = {
-            "text": partial_output,
-            "error_code": 0,
-            "usage": {
-                "prompt_tokens": input_echo_len,
-                "completion_tokens": i,
-                "total_tokens": input_echo_len + i,
-            },
-            "finish_reason": finish_reason,
-        }
-        yield json.dumps(json_output).encode() + b"\0"
+                finish_reason = "stop"
+            json_output = {
+                "text": partial_output,
+                "error_code": 0,
+                "usage": {
+                    "prompt_tokens": input_echo_len,
+                    "completion_tokens": i,
+                    "total_tokens": input_echo_len + i,
+                },
+                "finish_reason": finish_reason,
+            }
+            yield json.dumps(json_output).encode() + b"\0"
 
     def generate_gate(self, params):
         for x in self.generate_stream_gate(params):
@@ -315,6 +340,12 @@ if __name__ == "__main__":
         "--device", type=str, default="cpu", help="Device for executing model, cpu/xpu"
     )
     parser.add_argument(
+        "--speculative",
+        action="store_true",
+        default=False,
+        help="To use self-speculative or not",
+    )
+    parser.add_argument(
         "--trust-remote-code",
         action="store_true",
         default=False,
@@ -335,5 +366,6 @@ if __name__ == "__main__":
         args.device,
         args.no_register,
         args.trust_remote_code,
+        args.speculative,
     )
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
