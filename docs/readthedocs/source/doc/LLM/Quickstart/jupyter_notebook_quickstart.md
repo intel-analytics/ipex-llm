@@ -151,24 +151,20 @@ This should launch Jupyter Notebook and open a new tab in our default web browse
 
 ### Runtime Configurations
 Open the notebook(e.g., llama2_generate.ipynb) in the browser and execute the cell as **Runtime Configurations** of VS Code.
-</a>
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/configurations_for_browser.png">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/configurations_for_browser.png" width=100%; />
 </a>   
 
 ### Load a pretrained Model and Tokenizer
 Continue execute the cell as **Load a pretrained Model and Tokenizer** of VS Code.
-</a>
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/load_model_for_browser.png">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/load_model_for_browser.png" width=100%; />
 </a>
 
 ### Start inference
 Continue execute the cell as **Start inference** of VS Code.
-</a>
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/prompt_for_browser.png">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/prompt_for_browser.png" width=100%; />
-</a>
 </a>
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/inference_browser.png">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/inference_browser.png" width=100%; />
