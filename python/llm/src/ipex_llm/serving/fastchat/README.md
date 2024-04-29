@@ -53,9 +53,7 @@ python3 -m fastchat.serve.controller
 
 Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
-#### OLD LLM model worker (deprecated)
-
-> Warning: This method has been deprecated, please change to use `IPEX-LLM` [worker](#ipex-llm-worker) instead.
+#### modify model_name
 
 FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using IPEX-LLM, you need to make some modifications to the model's name.
 
@@ -66,25 +64,6 @@ Then we will use `ipex-llm-7b` as model-path.
 > note: This is caused by the priority of name matching list. The new added `IPEX-LLM` adapter is at the tail of the name-matching list so that it has the lowest priority. If model path contains other keywords like `vicuna` which matches to another adapter with higher priority, then the `IPEX-LLM` adapter will not work.
 
 A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `IPEX-LLM` backend will be used automatically.
-
-Then we can run model workers
-
-```bash
-# On CPU
-python3 -m ipex_llm.serving.fastchat.model_worker --model-path PATH/TO/ipex-llm-7b --device cpu
-
-# On GPU
-python3 -m ipex_llm.serving.fastchat.model_worker --model-path PATH/TO/ipex-llm-7b --device xpu
-```
-
-If you run successfully using `ipex_llm` backend, you can see the output in log like this:
-
-```bash
-INFO - Converting the current model to sym_int4 format......
-```
-
-> note: We currently only support int4 quantization for this method.
-</details>
 
 #### IPEX-LLM worker
 
