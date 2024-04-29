@@ -11,10 +11,10 @@ visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.re
 
 # 1. Use Jupyter Notebook to run model inference examples
 
-## 1.1 Use VsCode
+## 1.1 Use VS Code
 
-### Install VsCode and dependency
-- Download and install [VsCode for Windows](https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user).
+### Install VS Code and dependency
+- Download and install [VS Code for Windows](https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user).
 - Install **Python** plugin.
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/python_extension.png">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/python_extension.png" width=100%; />
@@ -150,21 +150,21 @@ This should launch Jupyter Notebook and open a new tab in our default web browse
 </a>
 
 ### Runtime Configurations
-Open the notebook(e.g., llama2_generate.ipynb) in the browser and execute the cell as **Runtime Configurations** of VsCode.
+Open the notebook(e.g., llama2_generate.ipynb) in the browser and execute the cell as **Runtime Configurations** of VS Code.
 </a>
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/configurations_for_browser.png">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/configurations_for_browser.png" width=100%; />
 </a>   
 
 ### Load a pretrained Model and Tokenizer
-Continue execute the cell as **Load a pretrained Model and Tokenizer** of VsCode.
+Continue execute the cell as **Load a pretrained Model and Tokenizer** of VS Code.
 </a>
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/load_model_for_browser.png">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/load_model_for_browser.png" width=100%; />
 </a>
 
 ### Start inference
-Continue execute the cell as **Start inference** of VsCode.
+Continue execute the cell as **Start inference** of VS Code.
 </a>
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/prompt_for_browser.png">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/prompt_for_browser.png" width=100%; />
