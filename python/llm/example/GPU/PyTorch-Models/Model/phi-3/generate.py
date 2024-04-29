@@ -38,7 +38,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-        # Load model
+    # Load model
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True,
                                                  torch_dtype='auto',
