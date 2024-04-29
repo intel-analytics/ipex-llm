@@ -27,9 +27,10 @@ RUN cd /llm &&\
     # For Qwen series models support
     pip install transformers_stream_generator einops tiktoken
 
-ADD ./offline_inference.py    /llm/vllm-examples/
-ADD ./payload-1024.lua        /llm/vllm-examples/
-ADD ./start-vllm-service.sh   /llm/vllm-examples/
-ADD ./benchmark_throughput.py /llm/vllm-examples/
+ADD ./offline_inference.py      /llm/vllm-examples/
+ADD ./payload-1024.lua          /llm/vllm-examples/
+ADD ./start-vllm-service.sh     /llm/vllm-examples/
+ADD ./benchmark_throughput.py   /llm/vllm-examples/
+ADD ./start-fastchat-service.sh /llm/fastchat-examples/
 
 WORKDIR /llm/

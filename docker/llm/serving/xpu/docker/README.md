@@ -49,6 +49,10 @@ Currently, we provide two different serving engines in the image, which are Fast
 
 To run model-serving using `IPEX-LLM` as backend using FastChat, you can refer to this [quickstart](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#).
 
+For convenience, we have included a file `/llm/fastchat-examples/start-fastchat-service.sh` in the image.
+
+You can modify this script to using fastchat with either `ipex_llm_worker` or `vllm_worker`.
+
 #### vLLM serving engine
 
 To run vLLM engine using `IPEX-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md).
