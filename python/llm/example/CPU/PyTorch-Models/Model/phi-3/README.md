@@ -1,6 +1,6 @@
 # phi-3
 
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on phi-3 models. For illustration purposes, we utilize the [microsoft/Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct as a reference phi-3 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on phi-3 models. For illustration purposes, we utilize the [microsoft/Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) as a reference phi-3 model.
 
 > **Note**: If you want to download the Hugging Face *Transformers* model, please refer to [here](https://huggingface.co/docs/hub/models-downloading#using-git).
 >
