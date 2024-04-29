@@ -173,98 +173,78 @@ class BigDLLLMWorker(BaseModelWorker):
             top_p=top_p,
             top_k=top_k,
         )
-        if self.speculative and False:
-            output = self.model.generate(input_ids, **generated_kwargs)
-            output_str = self.tokenizer.decode(output[0][input_echo_len:], skip_special_tokens=True)
-            completion_tokens = output.shape[1] - input_echo_len
-            total_tokens = output.shape[1]
-            if max_new_tokens == completion_tokens:
-                finish_reason = "length"
-            else:
-                finish_reason = "stop"
-            json_output = {
-                "text": output_str,
-                "error_code": 0,
-                "usage": {
-                    "prompt_tokens": input_echo_len,
-                    "completion_tokens": completion_tokens,
-                    "total_tokens": total_tokens,
-                },
-                "finish_reason": "length",
-            }
-            yield json.dumps(json_output).encode() + b"\0"
+
+        def model_generate():
+            self.model.generate(input_ids, **generated_kwargs)
+
+        t1 = Thread(target=model_generate)
+        t1.start()
+
+        stopped = False
+        finish_reason = None
+        if echo:
+            partial_output = prompt
+            rfind_start = len(prompt)
         else:
-            def model_generate():
-                self.model.generate(input_ids, **generated_kwargs)
+            partial_output = ""
+            rfind_start = 0
 
-            t1 = Thread(target=model_generate)
-            t1.start()
+        for i in range(max_new_tokens):
+            try:
+                output_token = next(streamer)
+            except StopIteration:
+                # Stop early
+                stopped = True
+                break
+            partial_output += output_token
 
-            stopped = False
-            finish_reason = None
-            if echo:
-                partial_output = prompt
-                rfind_start = len(prompt)
-            else:
-                partial_output = ""
-                rfind_start = 0
-
-            for i in range(max_new_tokens):
-                try:
-                    output_token = next(streamer)
-                except StopIteration:
-                    # Stop early
+            if i % self.stream_interval == 0 or i == max_new_tokens - 1 or stopped:
+                for each_stop in stop:
+                    pos = partial_output.rfind(each_stop, rfind_start)
+                if pos != -1:
+                    partial_output = partial_output[:pos]
                     stopped = True
                     break
-                partial_output += output_token
-
-                if i % self.stream_interval == 0 or i == max_new_tokens - 1 or stopped:
-                    for each_stop in stop:
-                        pos = partial_output.rfind(each_stop, rfind_start)
-                    if pos != -1:
-                        partial_output = partial_output[:pos]
-                        stopped = True
+                else:
+                    partially_stopped = is_partial_stop(partial_output, each_stop)
+                    if partially_stopped:
                         break
-                    else:
-                        partially_stopped = is_partial_stop(partial_output, each_stop)
-                        if partially_stopped:
-                            break
-                    if not partially_stopped:
-                        json_output = {
-                            "text": partial_output,
-                            "usage": {
-                                "prompt_tokens": input_echo_len,
-                                "completion_tokens": i,
-                                "total_tokens": input_echo_len + i,
-                            },
-                            "finish_reason": None,
-                        }
-                        ret = {
-                            "text": json_output["text"],
-                            "error_code": 0,
-                        }
-                        ret["usage"] = json_output["usage"]
-                        ret["finish_reason"] = json_output["finish_reason"]
-                        yield json.dumps(ret).encode() + b"\0"
-
-                if stopped:
-                    break
-            else:
-                finish_reason = "length"
+                if not partially_stopped:
+                    json_output = {
+                        "text": partial_output,
+                        "usage": {
+                            "prompt_tokens": input_echo_len,
+                            "completion_tokens": i,
+                            "total_tokens": input_echo_len + i,
+                        },
+                        "finish_reason": None,
+                    }
+                    ret = {
+                        "text": json_output["text"],
+                        "error_code": 0,
+                    }
+                    ret["usage"] = json_output["usage"]
+                    ret["finish_reason"] = json_output["finish_reason"]
+                    yield json.dumps(ret).encode() + b"\0"
 
             if stopped:
-                finish_reason = "stop"
-            json_output = {
-                "text": partial_output,
-                "error_code": 0,
-                "usage": {
-                    "prompt_tokens": input_echo_len,
-                    "completion_tokens": i,
-                    "total_tokens": input_echo_len + i,
-                },
-                "finish_reason": finish_reason,
-            }
-            yield json.dumps(json_output).encode() + b"\0"
+                break
+        else:
+            finish_reason = "length"
+
+        if stopped:
+            finish_reason = "stop"
+        json_output = {
+            "text": partial_output,
+            "error_code": 0,
+            "usage": {
+                "prompt_tokens": input_echo_len,
+                "completion_tokens": i,
+                "total_tokens": input_echo_len + i,
+            },
+            "finish_reason": finish_reason,
+        }
+        yield json.dumps(json_output).encode() + b"\0"
 
     def generate_gate(self, params):
         for x in self.generate_stream_gate(params):
