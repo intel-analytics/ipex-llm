@@ -173,7 +173,7 @@ class BigDLLLMWorker(BaseModelWorker):
             top_p=top_p,
             top_k=top_k,
         )
-        if self.speculative:
+        if self.speculative and False:
             output = self.model.generate(input_ids, **generated_kwargs)
             output_str = self.tokenizer.decode(output[0][input_echo_len:], skip_special_tokens=True)
             completion_tokens = output.shape[1] - input_echo_len
