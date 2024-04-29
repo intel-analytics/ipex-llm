@@ -55,10 +55,6 @@ if __name__ == '__main__':
         prompt = PHI3_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with IPEX-LLM INT4 optimizations
 
         output = model.generate(input_ids,
                                 do_sample=False,
