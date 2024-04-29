@@ -153,7 +153,7 @@ jobs:
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
           python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           find . -name "*test*.csv" -delete
-          if [ ${{ github.event.schedule}} || ${{ github.event_name }} == "workflow_dispatch" ]; then
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
           
@@ -297,7 +297,7 @@ jobs:
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
-          if [ ${{ github.event.schedule}} || ${{ github.event_name }} == "workflow_dispatch" ]; then
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/core_${{ matrix.platform }}/
           fi
 
@@ -391,7 +391,7 @@ jobs:
       - name: Set directory envs & and fix generated csv date name
         shell: bash
         run: |
-          if [ ${{ github.event_name }} == "schedule" || ${{ github.event_name }} == "workflow_dispatch" ]; then
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             echo "CSV_SAVE_PATH=${CSV_NIGHTLY_PATH}" >> "$GITHUB_ENV"
           else
             echo "CSV_SAVE_PATH=${CSV_PR_PATH}" >> "$GITHUB_ENV"
@@ -863,17 +863,22 @@ jobs:
 
           call conda deactivate
 
+      # TODO: avoid duplicated code
       - name: Upload results to ftp
         if: ${{ always() }}
         shell: cmd
         run: |
           cd %CSV_SAVE_PATH%
-          IF "${{ github.event_name }}"=="schedule" OR "${{ github.event_name }}"=="workflow_dispatch" (
+          IF "${{ github.event_name }}"=="schedule" (
             for %%f in (*.html) do (
                 curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
             )
           )
-
+          IF "${{ github.event_name }}"=="workflow_dispatch" (
+            for %%f in (*.html) do (
+                curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
+            )
+          )
       # for test on machine when encountering error
       # - name: Remove conda env
       #   if: ${{ always() }}
