@@ -25,9 +25,11 @@ You may install **`ipex-llm`** with `FastChat` as follows:
 
 ```bash
 pip install --pre --upgrade ipex-llm[serving]
+pip install transformers==4.36.0
 
 # Or
 pip install --pre --upgrade ipex-llm[all]
+
 ```
 
 To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
@@ -51,7 +53,7 @@ python3 -m fastchat.serve.controller
 
 Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
 
-#### IPEX-LLM model worker (deprecated)
+#### OLD LLM model worker (deprecated)
 
 > Warning: This method has been deprecated, please change to use `IPEX-LLM` [worker](#ipex-llm-worker) instead.
 
@@ -103,6 +105,8 @@ For GPU example:
 # Available low_bit format including sym_int4, sym_int8, fp16 etc.
 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
 ```
+
+`--speculative` is supported now. You can use IPEX-LLM to run `self-speculative decoding` example.`fp16` on GPU and 'bg16 on CPU. 'Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel max GPUs. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel CPUs.
 
 For a full list of accepted arguments, you can refer to the main method of the `ipex_llm_worker.py`
 

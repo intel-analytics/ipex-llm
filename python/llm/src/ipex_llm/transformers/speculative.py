@@ -97,7 +97,7 @@ def generate(
                 new_speculative_kwargs[var] = value
         return self.speculative_generate(inputs=inputs,
                                          draft_model=self.draft_model,
-                                         streamer = streamer,
+                                         streamer=streamer,
                                          **new_speculative_kwargs)
     else:
         # When `draft_model` is false, these attributes
@@ -513,7 +513,7 @@ def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=Fa
     return past_key_values
 
 
-def _prepare_generate_args(self, inputs, generation_config, streamer = None, **sampling_kwargs):
+def _prepare_generate_args(self, inputs, generation_config, streamer=None, **sampling_kwargs):
     if generation_config is None:
         generation_config = self.generation_config
 
