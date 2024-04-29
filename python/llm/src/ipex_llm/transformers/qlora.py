@@ -73,7 +73,8 @@ class LoraLowBitLinear(Module, LoraLayer):
         lora_alpha: int = 1,
         lora_dropout: float = 0.0,
         qa_lora: bool = True,
-        fan_in_fan_out: bool = False,  # Set this to True if the layer to replace stores weight like (fan_in, fan_out)
+        # Set this to True if the layer to replace stores weight like (fan_in, fan_out)
+        fan_in_fan_out: bool = False,
         is_target_conv_1d_layer: bool = False,
         init_lora_weights: Union[bool, str] = True,
         use_rslora: bool = False,
@@ -147,7 +148,8 @@ class LoraBF16Linear(Module, LoraLayer):
         lora_alpha: int = 1,
         lora_dropout: float = 0.0,
         qa_lora: bool = True,
-        fan_in_fan_out: bool = False,  # Set this to True if the layer to replace stores weight like (fan_in, fan_out)
+        # Set this to True if the layer to replace stores weight like (fan_in, fan_out)
+        fan_in_fan_out: bool = False,
         is_target_conv_1d_layer: bool = False,
         init_lora_weights: Union[bool, str] = True,
         use_rslora: bool = False,
@@ -203,6 +205,7 @@ class LoraBF16Linear(Module, LoraLayer):
                     scaling = self.scaling[active_adapter]
                     result += lora_B(lora_A(dropout(self.qa_pool(x)))) * scaling
         return result
+
 
 def _create_new_module(create_new_module_func, lora_config, adapter_name, target, **kwargs):
 
