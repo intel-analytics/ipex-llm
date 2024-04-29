@@ -6,16 +6,17 @@ ARG https_proxy
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-COPY ./entrypoint.sh /opt/entrypoint.sh
 
 # Install Serving Dependencies
 RUN cd /llm &&\
     # Install ipex-llm[serving] only will update ipex_llm source code without updating
     # bigdl-core-xe, which will lead to problems
+    apt-get update && \
+    apt-get install -y libfabric-dev wrk && \
     pip install --pre --upgrade ipex-llm[xpu,serving] && \
     pip install transformers==4.37.0 gradio==4.19.2 && \
     chmod +x /opt/entrypoint.sh && \
-# Install vLLM-v2 dependencies
+    # Install vLLM-v2 dependencies
     cd /llm && \
     git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git && \
     cd vllm && \
@@ -27,5 +28,9 @@ RUN cd /llm &&\
     # For Qwen series models support
     pip install transformers_stream_generator einops tiktoken
 
+ADD ./offline_inference.py    /llm/vllm-examples/
+ADD ./payload-1024.lua        /llm/vllm-examples/
+ADD ./start_service.sh        /llm/vllm-examples/
+ADD ./benchmark_throughput.py /llm/vllm-examples/
+
 WORKDIR /llm/
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
