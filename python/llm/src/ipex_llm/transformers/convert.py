@@ -136,7 +136,14 @@ def is_linear_module(module):
             elif isinstance(module, ColumnParallelLinear) and tp_size >= 2:
                 out_features = module.output_size_per_partition
         else:
-            result = False
+            # Also check for Linear module
+            if isinstance(module, nn.Linear) or is_awq:
+                in_features = module.in_features
+                out_features = module.out_features
+                mp_group = None
+                result = True
+            else:
+                result = False
     elif is_gptq_linear(module):
         in_features = module.infeatures
         out_features = module.outfeatures
