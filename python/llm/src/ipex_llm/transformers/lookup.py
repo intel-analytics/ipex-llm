@@ -24,6 +24,7 @@ from typing import Callable, List, Optional, Tuple
 import torch
 import time
 import copy
+import random
 import logging
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
 from ipex_llm.transformers.speculative import greedy, deepmind_sample, logits_to_probs,\
@@ -194,7 +195,7 @@ class PromptLookupCandidateGenerator():
         # so returning None
         return candidate_input_ids, None
 
-    def update_candidate_strategy(self, candidate_num: int, num_matches: int):
+    def update_candidate_strategy(self, candidate_num: int, num_matches: int, accept_rate: float):
         """
         Updates the candidate generation strategy based on the outcomes.
 
@@ -203,11 +204,17 @@ class PromptLookupCandidateGenerator():
                 The number of matches between the candidate sequences and the model predictions.
         """
         if self.num_output_tokens == 0:
-            self.num_output_tokens = 1
+            ran = random.random() - 0.1
+            if ran <= accept_rate:
+                # print(f"random: {ran}, accept_rate: {accept_rate}")
+                self.num_output_tokens = 1
         elif num_matches == self.num_output_tokens:
             self.num_output_tokens = min(self.num_output_tokens + 1, self.max_candidates)
         elif candidate_num > num_matches:
-            self.num_output_tokens = max(self.num_output_tokens - 1, self.min_candidates)
+            ran = random.random() + 0.1 * (candidate_num - num_matches)
+            if ran > accept_rate:
+                self.num_output_tokens = max(self.num_output_tokens - 1, self.min_candidates)
+
 
 
 @torch.no_grad()
@@ -332,8 +339,10 @@ def lookup_generate(self,
                 past_key_values = _crop_past_key_values(self, past_key_values,
                                                         new_cache_size)
 
+            accept_rate = self.n_matched/self.n_drafted if self.n_drafted > 0 else 1
             # Update the candidate generation strategy if needed
-            candidates_generator.update_candidate_strategy(candidate_length, n_matches)
+            candidates_generator.update_candidate_strategy(candidate_length, n_matches,
+                                                           accept_rate)
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
 
