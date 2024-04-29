@@ -204,7 +204,7 @@ class PromptLookupCandidateGenerator():
                 The number of matches between the candidate sequences and the model predictions.
         """
         if self.num_output_tokens == 0:
-            ran = random.random() - 0.1
+            ran = random.random() - 0.15
             if ran <= accept_rate:
                 # print(f"random: {ran}, accept_rate: {accept_rate}")
                 self.num_output_tokens = 1
