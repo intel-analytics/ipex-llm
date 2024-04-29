@@ -24,5 +24,6 @@ This section includes efficient guide to show you how to:
 * `Finetune LLM with Axolotl on Intel GPU without coding <./axolotl_quickstart.html>`_
 * `Run IPEX-LLM serving on Multiple Intel GPUs using DeepSpeed AutoTP and FastApi <./deepspeed_autotp_fastapi_quickstart.html>`
 
+
 .. |bigdl_llm_migration_guide| replace:: ``bigdl-llm`` Migration Guide
 .. _bigdl_llm_migration_guide: bigdl_llm_migration.html

@@ -129,7 +129,7 @@ def attention_forward(
     invalidInputError(past_key_value is not None,
                       "`past_key_value` cannot be None")
     key_states, value_states = past_key_value.update(key_states, value_states,
-                                                     self.layer_idx, None, new_layout=True)
+                                                     self.layer_idx, None)
 
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)

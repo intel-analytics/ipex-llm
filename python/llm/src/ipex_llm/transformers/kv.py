@@ -32,7 +32,6 @@ class DynamicFp8Cache(DynamicCache):
         value_states: torch.Tensor,
         layer_idx: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
-        new_layout=False,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
@@ -50,18 +49,15 @@ class DynamicFp8Cache(DynamicCache):
             k_cache, v_cache = init_fp8_kv_cache(
                 batch_size, num_heads, seq_len, head_dim,
                 device=key_states.device,
-                new_layout=new_layout,
             )
-            k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states,
-                                                   new_layout=new_layout)
+            k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states)
 
             self.key_cache.append(k_cache)
             self.value_cache.append(v_cache)
         else:
             k_cache = self.key_cache[layer_idx]
             v_cache = self.value_cache[layer_idx]
-            k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states,
-                                                   new_layout=new_layout)
+            k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache, key_states, value_states)
             self.key_cache[layer_idx] = k_cache
             self.value_cache[layer_idx] = v_cache
 
@@ -77,7 +73,6 @@ class DynamicNormalCache(DynamicCache):
         value_states: torch.Tensor,
         layer_idx: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
-        new_layout=False,   # useless, just keep same as DynamicFp8Cache
     ) -> Tuple[torch.Tensor, torch.Tensor]:
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
