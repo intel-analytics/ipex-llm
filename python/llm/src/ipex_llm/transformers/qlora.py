@@ -211,7 +211,8 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
         bias = low_bit_kwargs.pop("bias", False)
 
         if hasattr(lora_config, "training_mode") and lora_config.training_mode == "lora":
-            new_module = LoraBF16Linear(target, adapter_name,
+            new_module = LoraBF16Linear(target,
+                                        adapter_name,
                                         bias=bias,
                                         **low_bit_kwargs)
         else:
@@ -225,7 +226,8 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
                     "qa_lora": qa_lora
                 }
             )
-            new_module = LoraLowBitLinear(target, adapter_name,
+            new_module = LoraLowBitLinear(target,
+                                          adapter_name,
                                           bias=bias,
                                           **low_bit_kwargs)
     else:
