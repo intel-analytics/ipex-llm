@@ -44,7 +44,9 @@ if __name__ == '__main__':
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 trust_remote_code=True)
+                                                 trust_remote_code=True,
+                                                 optimize_model=True,
+                                                 use_cache=True)
 
     model = model.to('xpu')
 

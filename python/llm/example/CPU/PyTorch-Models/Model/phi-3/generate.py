@@ -39,7 +39,11 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     # Load model
-    model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                 trust_remote_code=True,
+                                                 torch_dtype='auto',
+                                                 low_cpu_mem_usage=True,
+                                                 use_cache=True)
 
     # With only one line to enable IPEX-LLM optimization on model
     model = optimize_model(model)

@@ -39,7 +39,11 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
         # Load model
-    model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                 trust_remote_code=True,
+                                                 torch_dtype='auto',
+                                                 low_cpu_mem_usage=True,
+                                                 use_cache=True)
 
     # With only one line to enable IPEX-LLM optimization on model
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
