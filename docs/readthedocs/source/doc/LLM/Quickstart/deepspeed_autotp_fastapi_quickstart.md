@@ -51,3 +51,35 @@ If you successfully run the serving, you can get output like this:
 [0] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 > **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
+
+
+### 3. Sample Input and Output
+
+We can use `curl` to test serving api
+
+```bash
+# Set http_proxy and https_proxy to null to ensure that requests are not forwarded by a proxy.
+export http_proxy=
+export https_proxy=
+
+curl -X 'POST' \
+  'http://127.0.0.1:8000/generate/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "prompt": "What is AI?",
+  "n_predict": 32
+}'
+```
+
+And you should get output like this:
+
+```json
+{
+  "generated_text": "What is AI? Artificial intelligence (AI) refers to the development of computer systems able to perform tasks that would normally require human intelligence, such as visual perception, speech",
+  "generate_time": "0.45149803161621094s"
+}
+
+```
+
+**Important**: The first token latency is much larger than rest token latency, you could use [our benchmark tool](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/dev/benchmark/README.md) to obtain more details about first and rest token latency.
