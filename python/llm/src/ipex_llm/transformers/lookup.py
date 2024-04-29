@@ -127,8 +127,10 @@ class PromptLookupCandidateGenerator():
 
         if device == "mtl":
             self.max_candidates = 3
+            self.min_candidates = 0
         else:
             self.max_candidates = 9
+            self.min_candidates = 1
 
         invalidInputError(self.max_matching_ngram_size > 0 and self.num_output_tokens > 0,
                           "Invalid max_matching_ngram_size or num_output_tokens")
@@ -148,6 +150,8 @@ class PromptLookupCandidateGenerator():
             `torch.LongTensor` of shape `(num_candidates, candidate_length)`:
             The candidate sequences to be tried.
         """
+        if self.num_output_tokens == 0:
+            return input_ids, None
         input_length = input_ids.size(1)
 
         chosen_ids = None
@@ -198,10 +202,12 @@ class PromptLookupCandidateGenerator():
             num_matches (`int`):
                 The number of matches between the candidate sequences and the model predictions.
         """
-        if num_matches == self.num_output_tokens:
+        if self.num_output_tokens == 0:
+            self.num_output_tokens = 1
+        elif num_matches == self.num_output_tokens:
             self.num_output_tokens = min(self.num_output_tokens + 1, self.max_candidates)
         elif candidate_num > num_matches:
-            self.num_output_tokens = max(self.num_output_tokens - 1, 1)
+            self.num_output_tokens = max(self.num_output_tokens - 1, self.min_candidates)
 
 
 @torch.no_grad()
@@ -218,6 +224,8 @@ def lookup_generate(self,
                                               **sampling_kwargs)
 
     device_name = get_xpu_device_type(input_ids)
+
+    print(device_name, generation_config)
 
     candidates_generator = PromptLookupCandidateGenerator(
         num_output_tokens=num_output_tokens,
