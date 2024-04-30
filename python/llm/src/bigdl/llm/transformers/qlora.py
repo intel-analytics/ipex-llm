@@ -47,6 +47,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Some parts of this file is adapted from
+# https://github.com/catid/dora/blob/main/dora.py
+#
+# Copyright (c) 2024 Chris Taylor
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 import torch
 import logging
@@ -58,6 +81,7 @@ from bigdl.llm.transformers.utils import get_autocast_dtype
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 import functools
 from bigdl.llm.transformers import training_patch
+import torch.nn.functional as F
 
 LOG = logging.getLogger("bigdl.llm.qlora")
 
@@ -198,6 +222,76 @@ class LoraBF16Linear(BF16Linear, LoraLayer):
         return result
 
 
+class DoraBF16Linear(BF16Linear, LoraLayer):
+    # Lora implemented in a dense layer
+    def __init__(
+        self,
+        adapter_name,
+        in_features,
+        out_features,
+        r: int = 0,
+        lora_alpha: int = 1,
+        lora_dropout: float = 0.0,
+        **kwargs,
+    ):
+        BF16Linear.__init__(
+            self,
+            in_features,
+            out_features,
+            bias=kwargs.get("bias", True),
+            compute_dtype=torch.bfloat16,
+        )
+
+        LoraLayer.__init__(self, in_features=in_features, out_features=out_features)
+
+        # Freezing the pre-trained weight matrix
+        self.weight.requires_grad = False
+
+        init_lora_weights = kwargs.pop("init_lora_weights", True)
+        self.update_layer(adapter_name, r, lora_alpha, lora_dropout, init_lora_weights)
+        self.active_adapter = adapter_name
+
+        # Magnitude column-wise across output dimension
+        self.m = self.weight.norm(p=2, dim=0, keepdim=True)
+        self.fan_in_fan_out = kwargs.get("fan_in_fan_out", False)
+
+    def forward(self, x: torch.Tensor):
+        self.m = self.m.to(self.weight.device)
+        from peft.utils import transpose
+        delta_weight = (transpose(
+            self.lora_B[self.active_adapter].weight @ self.lora_A[self.active_adapter].weight,
+            self.fan_in_fan_out,
+        ) * self.scaling[self.active_adapter])
+        adapted_weight = self.weight + delta_weight
+        column_norm = adapted_weight.norm(p=2, dim=0, keepdim=True)
+        norm_adapted = adapted_weight / column_norm
+        calc_weights = self.m * norm_adapted
+
+        autocast_dtype = get_autocast_dtype(x)
+        if x.device.type == "xpu":
+            # force to use bf16 on gpu
+            x = x.to(torch.bfloat16)
+        elif autocast_dtype is not None:
+            x = x.to(autocast_dtype)
+
+        if calc_weights.dtype != x.dtype:
+            calc_weights.data = calc_weights.data.to(x.dtype)
+        if self.bias is not None and self.bias.dtype != x.dtype:
+            self.bias.data = self.bias.data.to(x.dtype)
+
+        # If x.shape>3, F.linear will use bmm, accounting for performance degradation.
+        original_shape = x.shape
+        # Convert to 2D shape
+        if len(original_shape) > 2:
+            x = x.reshape(-1, original_shape[-1])
+        result = F.linear(x, self.weight, self.bias)
+        # Convert to original shape
+        if len(original_shape) > 2:
+            result = result.reshape(*original_shape[:-1], result.shape[-1])
+
+        return result.to(x.dtype)
+
+
 def _create_new_module(create_new_module_func, lora_config, adapter_name, target, **kwargs):
 
     if isinstance(target, LowBitLinear) or isinstance(target, BF16Linear):
@@ -206,6 +300,12 @@ def _create_new_module(create_new_module_func, lora_config, adapter_name, target
 
         if hasattr(lora_config, "training_mode") and lora_config.training_mode == "lora":
             new_module = LoraBF16Linear(adapter_name,
+                                        target.in_features,
+                                        target.out_features,
+                                        bias=bias,
+                                        **low_bit_kwargs)
+        elif hasattr(lora_config, "training_mode") and lora_config.training_mode == "dora":
+            new_module = DoraBF16Linear(adapter_name,
                                         target.in_features,
                                         target.out_features,
                                         bias=bias,
