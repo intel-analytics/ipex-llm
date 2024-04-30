@@ -2,10 +2,10 @@ SGX_SIGNER_KEY ?= /root/.config/gramine/enclave-key.pem
 ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 
 G_JAVA_XMX ?= "2G"
-G_SGX_SIZE ?= "16G"
+G_SGX_SIZE ?= "1024G"
 G_LOG_LEVEL ?= all
 G_SGX_THREAD_NUM ?= 1024
-
+G_EDMM_ENABLE ?= false
 THIS_DIR ?= /ppml
 WORK_DIR ?= $(THIS_DIR)
 JDK_HOME ?= /opt/jdk8
@@ -35,6 +35,7 @@ bash.manifest: bash.manifest.template
                 -Djdk_home=$(JDK_HOME) \
 		-Dg_sgx_size=$(G_SGX_SIZE) \
 		-Dg_sgx_thread_num=$(G_SGX_THREAD_NUM) \
+		-Dg_edmm_enable=$(G_EDMM_ENABLE) \
 		-Dspark_home=$(SPARK_HOME) \
 		-Dspark_user=$(SPARK_USER) \
 		-Dspark_local_ip=$(SPARK_LOCAL_IP) \
@@ -48,7 +49,6 @@ bash.manifest.sgx: bash.manifest
 bash.sig: bash.manifest.sgx
 
 bash.token: bash.sig
-	gramine-sgx-get-token --output bash.token --sig bash.sig
 
 ifeq ($(SGX),)
 GRAMINE = gramine-direct
