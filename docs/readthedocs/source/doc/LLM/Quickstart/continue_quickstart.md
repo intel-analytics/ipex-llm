@@ -42,7 +42,7 @@ Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.html), and fol
 
 #### Pull [`codeqwen:latest`](https://ollama.com/library/codeqwen)
 
-In a new terminal Windows:
+In a new terminal window:
 
 ```eval_rst
 .. tabs::
