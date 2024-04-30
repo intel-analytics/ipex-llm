@@ -96,6 +96,19 @@ def repeat_kv(key: torch.Tensor, value: torch.Tensor, n_head: int) -> (torch.Ten
     return key, value
 
 
+def should_split_qkv_tensor(query_layer, bsz, n_head, seq_len):
+    if os.environ.get("IPEX_LLM_SPLIT_QKV", None) is not None:
+        return os.environ.get("IPEX_LLM_SPLIT_QKV", None) == "1"
+    elif query_layer.dtype == torch.float16 and query_layer.shape[2] >= 5000:
+        # split tensor for memory block limitation
+        # support fp16 and set input length threshold at 5000 for now
+        return True
+    elif query_layer.element_size()*bsz*n_head*seq_len*seq_len >= 4*1024**3:
+        # attn_weight size larger than memory block limitation 4GB
+        return True
+    return False
+
+
 def chatglm_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         import linear_q4_0
@@ -250,9 +263,7 @@ def chatglm2_quantized_attention_forward_8eb45c(
         else:
             key, value = key_layer, value_layer
 
-        # split tensor for memory block limitation
-        # support fp16 and set input length threshold at 5000 for now
-        if query_layer.dtype == torch.float16 and query_layer.shape[2] >= 5000:
+        if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
             # split second dim to block size = 8
             block_size = 8
             query_split = torch.split(query_layer, block_size, dim=1)
@@ -529,9 +540,8 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
         query_layer = query_layer.permute(1, 2, 0, 3)
         L, S = query_layer.shape[2], key_layer.shape[2]
         if attention_mask is None and L == S:
-            # split tensor for memory block limitation
-            # support fp16 and set input length threshold at 5000 for now
-            if query_layer.dtype == torch.float16 and L >= 5000:
+            batch_size, n_head, seq_len, head_dim = query_layer.shape
+            if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
                 # split second dim to block size = 8
                 block_size = 8
                 query_split = torch.split(query_layer.to(key_layer.dtype), block_size, dim=1)

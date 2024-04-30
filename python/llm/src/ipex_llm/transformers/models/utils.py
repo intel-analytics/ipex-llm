@@ -74,9 +74,7 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
 
 
 def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
-    if os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
-        return os.environ["IPEX_LLM_LOW_MEM"] == "1"
-    elif os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
+    if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         warnings.warn(
             "`BIGDL_QUANTIZE_KV_CACHE` is deprecated and will be removed in future releases. "
             "Please use `IPEX_LLM_QUANTIZE_KV_CACHE` instead."
@@ -84,6 +82,8 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
         return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     elif os.environ.get("IPEX_LLM_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] == "1"
+    elif os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
+        return os.environ["IPEX_LLM_LOW_MEM"] == "1"
     else:
         return x.device.type == 'xpu' and kv_cache_device_check(x) \
             and hasattr(linear, "qtype") and \
