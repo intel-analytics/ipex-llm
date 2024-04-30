@@ -217,14 +217,14 @@ def should_use_fast_rope(self, query_states, position_ids):
 
 def should_split_qkv_tensor(query_states, bsz, num_heads, q_len, kv_seq_len, output_attentions):
     if not output_attentions:
-        if os.environ.get("IPEX_LLM_LOW_MEM", None) == "1":
-            return True
-        if query_states.dtype == torch.float16 and \
+        if os.environ.get("IPEX_LLM_SPLIT_QKV", None) is not None:
+            return os.environ.get("IPEX_LLM_SPLIT_QKV", None) == "1"
+        elif query_states.dtype == torch.float16 and \
                 query_states.shape[2] >= 6800:
             # split tensor for memory block limitation
             # support fp16 and set input length threshold at 6800 for now
             return True
-        if query_states.element_size()*bsz*num_heads*q_len*kv_seq_len >= 4*1024**3:
+        elif query_states.element_size()*bsz*num_heads*q_len*kv_seq_len >= 4*1024**3:
             # attn_weight size larger than memory block limitation 4GB
             return True
     return False

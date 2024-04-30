@@ -97,13 +97,13 @@ def repeat_kv(key: torch.Tensor, value: torch.Tensor, n_head: int) -> (torch.Ten
 
 
 def should_split_qkv_tensor(query_layer, bsz, n_head, seq_len):
-    if os.environ.get("IPEX_LLM_LOW_MEM", None) == "1":
-        return True
-    if query_layer.dtype == torch.float16 and query_layer.shape[2] >= 5000:
+    if os.environ.get("IPEX_LLM_SPLIT_QKV", None) is not None:
+        return os.environ.get("IPEX_LLM_SPLIT_QKV", None) == "1"
+    elif query_layer.dtype == torch.float16 and query_layer.shape[2] >= 5000:
         # split tensor for memory block limitation
         # support fp16 and set input length threshold at 5000 for now
         return True
-    if query_layer.element_size()*bsz*n_head*seq_len*seq_len >= 4*1024**3:
+    elif query_layer.element_size()*bsz*n_head*seq_len*seq_len >= 4*1024**3:
         # attn_weight size larger than memory block limitation 4GB
         return True
     return False
