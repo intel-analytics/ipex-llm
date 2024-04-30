@@ -3,7 +3,7 @@ export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
 export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/langchain_gpu
 export VICUNA_7B_1_3_ORIGIN_PATH=${VICUNA_7B_1_3_ORIGIN_PATH}
 
-langchain_version=$(conda list | grep '^langchain\s' | awk '{print "v"$2}')
+langchain_version=$(pip list | grep '^langchain\s' | awk '{print "v"$2}')
 
 set -e
 
