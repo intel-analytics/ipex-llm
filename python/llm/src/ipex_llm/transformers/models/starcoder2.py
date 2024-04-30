@@ -132,7 +132,7 @@ def attention_forward(
     use_quantize_kv = use_quantize_kv_cache(self.o_proj, hidden_states)
 
     key_states, value_states = past_key_value.update(key_states, value_states,
-                                                     self.layer_idx, None, new_layout=True)
+                                                     self.layer_idx, None)
 
     if use_quantize_kv and q_len == 1:
         import linear_q4_0

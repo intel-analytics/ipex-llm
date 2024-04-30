@@ -446,7 +446,7 @@ def qwen_attention_forward_quantized(
             max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
             k_cache, v_cache = init_fp8_kv_cache(
                 query.size(0), self.num_heads, kv_seq_len, self.head_dim,
-                device=query.device, new_layout=True
+                device=query.device
             )
             key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
     else:
@@ -461,7 +461,7 @@ def qwen_attention_forward_quantized(
         v_cache = v_cache.transpose(1, 2)
         # k_cache and v_cache's shape: [bs, num_heads, context_length, head_dim]
 
-        key, value = append_fp8_kv_cache(k_cache, v_cache, key, value, new_layout=True)
+        key, value = append_fp8_kv_cache(k_cache, v_cache, key, value)
 
         attn_output, attn_weight = core_attn(
             self, query, key, value, causal_mask, attention_mask, head_mask

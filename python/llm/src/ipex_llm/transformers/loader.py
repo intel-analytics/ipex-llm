@@ -59,6 +59,8 @@ def load_model(
         model_kwargs["trust_remote_code"] = True
     if low_bit == "bf16":
         model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.bfloat16})
+    elif low_bit == "fp16":
+        model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.float16})
     else:
         model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": 'auto'})
 
