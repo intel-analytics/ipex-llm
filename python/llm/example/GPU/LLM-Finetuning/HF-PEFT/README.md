@@ -17,7 +17,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install transformers==4.36.0 datasets
 pip install fire peft==0.10.0
 pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ # necessary to run distributed finetuning
-pip install accelerate==0.26.0
+pip install accelerate==0.23.0
 pip install bitsandbytes scipy
 ```
 
