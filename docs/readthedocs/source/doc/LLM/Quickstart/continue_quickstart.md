@@ -31,11 +31,11 @@ Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.html), and fol
 
 .. tip::
 
-  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS, it is recommended to additionaly set the following environment variable for optimal performance:
+  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS, it is recommended to additionaly set the following environment variable for optimal performance before the Ollama service is started:
 
   .. code-block:: bash
 
-      set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
 
 ### 2. Prepare and Run Model
