@@ -16,6 +16,7 @@ repo_id:
   - 'RWKV/rwkv-4-world-7b'
   - 'RWKV/rwkv-5-world-7b'
   - 'IEITYuan/Yuan2-2B-hf'
+  - 'mistralai/Mistral-7B-Instruct-v0.1'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3

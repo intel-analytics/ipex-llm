@@ -1,12 +1,9 @@
 repo_id:
-  - 'meta-llama/Llama-2-7b-chat-hf'
-  - 'meta-llama/Llama-2-13b-chat-hf'
-#  - 'THUDM/chatglm2-6b'
-#  - 'THUDM/chatglm3-6b_for_4.36'
-#  - 'baichuan-inc/Baichuan2-7B-Chat'
-#  - 'baichuan-inc/Baichuan2-13B-Chat'
-  - 'Qwen/Qwen-14B-Chat'
-local_model_hub: '/mnt/disk1/models'
+  - 'THUDM/chatglm2-6b'
+  - 'THUDM/chatglm3-6b'
+  - 'baichuan-inc/Baichuan2-7B-Chat'
+  - 'baichuan-inc/Baichuan2-13B-Chat'
+local_model_hub: '/mnt/disk1/models/updated_for_4.36'
 warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
