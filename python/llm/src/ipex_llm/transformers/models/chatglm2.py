@@ -103,7 +103,7 @@ def should_split_qkv_tensor(query_layer, bsz, n_head, seq_len):
         # split tensor for memory block limitation
         # support fp16 and set input length threshold at 5000 for now
         return True
-    if query_layer.element_size()*bsz*n_head*seq_len*seq_len >= 4*1024*1024*1024:
+    if query_layer.element_size()*bsz*n_head*seq_len*seq_len >= 4*1024**3:
         # attn_weight size larger than memory block limitation 4GB
         return True
     return False
