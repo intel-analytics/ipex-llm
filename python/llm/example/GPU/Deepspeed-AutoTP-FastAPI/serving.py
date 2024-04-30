@@ -31,6 +31,9 @@ from typing import Dict, List, Optional
 from transformers.utils import logging
 logger = logging.get_logger(__name__)
 
+from benchmark_util import BenchmarkWrapper
+
+
 def get_int_from_env(env_keys, default):
     """Returns the first positive env value found in the `env_keys` list or the default."""
     for e in env_keys:
@@ -92,6 +95,7 @@ def load_model(model_path, low_bit):
 
     # Move model back to xpu
     model = model.to(f'xpu:{local_rank}')
+    model = BenchmarkWrapper(model)
 
     # Modify backend related settings 
     if world_size > 1:
@@ -158,8 +162,6 @@ async def process_requests():
             prompt_requests.append(prompt_request)
 
         if local_rank == 0 and prompt_requests:
-            # import pdb
-            # pdb.set_trace()
             object_list = prompt_requests
             if len(object_list) < max_num_seqs:
                 object_list = object_list + [empty_req] * (max_num_seqs - len(object_list))
@@ -174,13 +176,15 @@ async def process_requests():
 
             for request_id, output_str in zip(request_ids, output_strs):
                 result_dict[request_id] = output_str
+            logger.info(f"First token latency: {model.first_cost}, next token latency: {model.rest_cost_mean}, generate time: {generate_time}")
 
         await asyncio.sleep(0.1)
 
 
 @app.on_event("startup")
 async def startup_event():
-    asyncio.create_task(process_requests())
+    if local_rank == 0:
+        asyncio.create_task(process_requests())
 
 
 if __name__ == "__main__":
@@ -192,7 +196,7 @@ if __name__ == "__main__":
                     help='The quantization type the model will convert to.')
     parser.add_argument('--port', type=int, default=8000,
                     help='The port number on which the server will run.')
-    
+
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     low_bit = args.low_bit
