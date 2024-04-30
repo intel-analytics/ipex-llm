@@ -38,29 +38,43 @@ function enable_gpu {
 
 function disable_gpu {
     ENABLE_GPU=0
+    unset_gpu_envs
+}
+
+function unset_gpu_envs {
+    unset USE_XETLA
+    unset ENABLE_SDP_FUSION
+    unset SYCL_CACHE_PERSISTENT
+    unset BIGDL_LLM_XMX_DISABLED
+    unset SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
+    export LD_PRELOAD=$(echo $LD_PRELOAD | sed 's|'"${CONDA_PREFIX}/lib/libtcmalloc.so"'||g')
 }
 
 function display-var {
+    echo "+++++ Env Variables +++++"
     echo "Internal:"
     echo "    ENABLE_IOMP     = ${ENABLE_IOMP}"
+    echo "    ENABLE_GPU      = ${ENABLE_GPU}"
     echo "    ENABLE_JEMALLOC = ${ENABLE_JEMALLOC}"
     echo "    ENABLE_TCMALLOC = ${ENABLE_TCMALLOC}"
-    echo "    ENABLE_GPU = ${ENABLE_GPU}"
     echo "    LIB_DIR    = ${LIB_DIR}"
     echo "    BIN_DIR    = ${BIN_DIR}"
     echo "    LLM_DIR    = ${LLM_DIR}"
     echo ""
     echo "Exported:"
-    echo "    LD_PRELOAD        = ${LD_PRELOAD}"
-    echo "    OMP_NUM_THREADS   = ${OMP_NUM_THREADS}"
-    echo "    MALLOC_CONF       = ${MALLOC_CONF}"
-    echo "    USE_XETLA         = ${USE_XETLA}"
-    echo "    ENABLE_SDP_FUSION = ${ENABLE_SDP_FUSION}"
+    echo "    LD_PRELOAD             = ${LD_PRELOAD}"
+    echo "    OMP_NUM_THREADS        = ${OMP_NUM_THREADS}"
+    echo "    MALLOC_CONF            = ${MALLOC_CONF}"
+    echo "    USE_XETLA              = ${USE_XETLA}"
+    echo "    ENABLE_SDP_FUSION      = ${ENABLE_SDP_FUSION}"
+    echo "    SYCL_CACHE_PERSISTENT  = ${SYCL_CACHE_PERSISTENT}"
+    echo "    BIGDL_LLM_XMX_DISABLED = ${BIGDL_LLM_XMX_DISABLED}"
     echo "    SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS = ${SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS}"
+    echo "+++++++++++++++++++++++++"
 }
 
 function display-help {
-    echo "Usage: source ipex-llm-init [-o] [--option]"
+    echo "Usage: source ipex-llm-init [--option]"
     echo ""
     echo "ipex-llm-init is a tool to automatically configure and run the subcommand under"
     echo "environment variables for accelerating IPEX-LLM."
@@ -73,6 +87,7 @@ function display-help {
     echo "    -c, --disable-allocator   Use the system default allocator"
     echo "    -g, --gpu                 Enable OneAPI and other settings for GPU support"
     echo "    -d, --debug               Print all internal and exported variables (for debug)"
+    echo "    --device <device_type>    Specify the device type (Max, Flex, Arc, iGPU)"
 }
 
 function display-error {
@@ -88,94 +103,68 @@ disable_tcmalloc
 LD_PRELOAD=""
 
 OPTIND=1
+DEVICE=""
 
-while getopts "hojtcgd:-:" opt; do
-    case ${opt} in
-        - )
-            case "${OPTARG}" in
-                help)
-                    display-help
-                    return 0
-                    ;;
-                gomp)
-                    disable_iomp
-                    ;;
-                jemalloc)
-                    enable_jemalloc
-                    ;;
-                tcmalloc)
-                    enable_tcmalloc
-                    ;;
-                disable-allocator)
-                    disable_jemalloc
-                    disable_tcmalloc
-                    ;;
-                gpu)
-                    enable_gpu
-                    ;;
-                debug)
-                    display-var
-                    return 0
-                    ;;
-                *)
-                    display-error $OPTARG
-                    return 1
-                    ;;
-            esac
-            ;;
-
-        h )
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
             display-help
             return 0
             ;;
-        o )
+        -o|--gomp)
             disable_iomp
+            shift
             ;;
-        j )
+        -j|--jemalloc)
             enable_jemalloc
+            shift
             ;;
-        t )
+        -t|--tcmalloc)
             enable_tcmalloc
+            shift
             ;;
-        c )
+        -c|--disable-allocator)
             disable_jemalloc
             disable_tcmalloc
+            shift
             ;;
-        g )
+        -g|--gpu)
             enable_gpu
+            shift
             ;;
-        d )
+        -d|--debug)
             display-var
             return 0
             ;;
-        \? )
-            display-error $OPTARG
+        --device)
+            DEVICE="$2"
+            shift 2
+            ;;
+        *)
+            display-error "$1"
             return 1
             ;;
     esac
 done
-
-shift $((OPTIND -1))
 
 # Find ipex-llm-init dir
 if [ ! -z $BASH_SOURCE ]; then
     # using bash
     if [ "$BASH_SOURCE" = "$0" ]; then
         echo "Error: Incorrect usage: ipex-llm-init must be sourced."
-        exit 1
+        return 1
     fi
     BIN_DIR="$(dirname $BASH_SOURCE)"
 else
     # using zsh
     if [ "$zsh_eval_context" = "toplevel" ]; then
         echo "Error: Incorrect usage: ipex-llm-init must be sourced."
-        exit 1
+        return 1
     fi
     BIN_DIR="$(dirname ${(%):-%N})"
 fi
 
 LIB_DIR=$(dirname ${BIN_DIR})/lib
-LLM_DIR=$(dirname $(python3 -c "import ipex_llm; print(ipex_llm.__file__)"))
 
 if [ "${ENABLE_IOMP}" -eq 1 ]; then
     file="${LIB_DIR}/libiomp5.so"
@@ -187,6 +176,47 @@ if [ "${ENABLE_IOMP}" -eq 1 ]; then
 else
     unset OMP_NUM_THREADS
 fi
+
+if [ "${ENABLE_GPU}" -eq 1 ]; then
+    file="/opt/intel/oneapi/setvars.sh"
+    if [ -f "${file}" ]; then
+        echo "found oneapi in ${file}"
+        # set +xv
+        source "${file}" --force
+        # set -xv
+        case "${DEVICE}" in
+            Max|MAX)
+                export LD_PRELOAD=$(echo ${LD_PRELOAD} ${CONDA_PREFIX}/lib/libtcmalloc.so)
+                export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+                export SYCL_CACHE_PERSISTENT=1
+                export ENABLE_SDP_FUSION=1
+                ;;
+            Flex|FLEX|Arc|ARC)
+                export USE_XETLA=OFF
+                export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+                export SYCL_CACHE_PERSISTENT=1
+                ;;
+            iGPU|IGPU|MTL)
+                export SYCL_CACHE_PERSISTENT=1
+                export BIGDL_LLM_XMX_DISABLED=1
+                ;;
+            *)
+                echo "Error: Invalid device type specified for GPU."
+                echo ""
+                display-help
+                return 1
+                ;;
+        esac
+    else
+        echo "Error: ${file} not found"
+        return 1
+    fi
+else
+    unset_gpu_envs
+fi
+
+
+LLM_DIR=$(dirname $(python3 -c "import ipex_llm; print(ipex_llm.__file__)"))
 
 if [ "${ENABLE_JEMALLOC}" -eq 1 ]; then
     file="${LLM_DIR}/libs/libjemalloc.so"
@@ -207,37 +237,7 @@ if [ "${ENABLE_TCMALLOC}" -eq 1 ]; then
     fi
 fi
 
-if [ "${ENABLE_GPU}" -eq 1 ]; then
-    for file in {"~","/opt"}"/intel/oneapi/setvars.sh"; do
-        if [ -f ${file} ]; then
-            echo "found oneapi in ${file}"
-            source ${file}
-            export USE_XETLA=OFF
-            export ENABLE_SDP_FUSION=1
-            export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-            break
-        fi
-    done
-else
-    unset USE_XETLA
-    unset ENABLE_SDP_FUSION
-    unset SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
-fi
-
 export LD_PRELOAD=${LD_PRELOAD}
 
-echo "+++++ Env Variables +++++"
-echo "LD_PRELOAD            = ${LD_PRELOAD}"
-if [ "${ENABLE_IOMP}" -eq 1 ]; then
-    echo "OMP_NUM_THREADS       = ${OMP_NUM_THREADS}"
-fi
-if [ "${ENABLE_JEMALLOC}" -eq 1 ]; then
-    echo "MALLOC_CONF           = ${MALLOC_CONF}"
-fi
-if [ "${ENABLE_GPU}" -eq 1 ]; then
-    echo "USE_XETLA             = ${USE_XETLA}"
-    echo "ENABLE_SDP_FUSION     = ${ENABLE_SDP_FUSION}"
-    echo "SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS = ${SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS}"
-fi
-echo "+++++++++++++++++++++++++"
+display-var
 echo "Complete."
