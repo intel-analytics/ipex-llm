@@ -17,21 +17,18 @@
 import torch
 import time
 import argparse
+
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer, GPTQConfig
+from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
-LLAMA2_PROMPT_FORMAT = """### HUMAN:
-{prompt}
-
-### RESPONSE:
-"""
+# here the prompt tuning refers to https://huggingface.co/microsoft/Phi-3-mini-4k-instruct#chat-format
+PHI3_PROMPT_FORMAT = "<|user|>\n{prompt}<|end|>\n<|assistant|>"
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="TheBloke/TinyLlama-1.1B-Chat-v1.0-GPTQ",
-                        help='The huggingface repo id'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for phi-3 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="microsoft/Phi-3-mini-4k-instruct",
+                        help='The huggingface repo id for the phi-3 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -43,28 +40,37 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 torch_dtype=torch.float,
-                                                 trust_remote_code=True,).to("xpu")
-    
-    print(model)
+                                                 trust_remote_code=True,
+                                                 optimize_model=True,
+                                                 use_cache=True)
+
+    model = model.to('xpu')
+
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path,
+                                              trust_remote_code=True)
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to("xpu")
-        st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with IPEX-LLM INT4 optimizations
+        prompt = PHI3_PROMPT_FORMAT.format(prompt=args.prompt)
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+
+        # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
+        # start inference
+        st = time.time()
+
+        output = model.generate(input_ids,
+                                do_sample=False,
+                                max_new_tokens=args.n_predict)
+        torch.xpu.synchronize()
         end = time.time()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=False)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
         print(prompt)

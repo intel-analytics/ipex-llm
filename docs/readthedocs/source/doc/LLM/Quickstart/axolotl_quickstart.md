@@ -1,8 +1,10 @@
-# Finetune LLM with Axolotl on Intel GPU without coding
+# Finetune LLM with Axolotl on Intel GPU
 
 [Axolotl](https://github.com/OpenAccess-AI-Collective/axolotl) is a popular tool designed to streamline the fine-tuning of various AI models, offering support for multiple configurations and architectures. You can now use [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `Axolotl` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
 See the demo of finetuning LLaMA2-7B on Intel Arc GPU below.
+
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/axolotl-qlora-linux-arc.mp4" width="100%" controls></video>
 
 ## Quickstart
 
@@ -37,8 +39,8 @@ pip install transformers==4.36.0
 # to avoid https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544
 pip install datasets==2.15.0
 # prepare axolotl entrypoints
-wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/finetune.py
-wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/train.py
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/finetune.py
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/train.py
 ```
 
 **After the installation, you should have created a conda environment, named `axolotl` for instance, for running `Axolotl` commands with IPEX-LLM.**
@@ -105,7 +107,7 @@ After finishing accelerate config, check if `use_cpu` is disabled (i.e., `use_cp
 Prepare `lora.yml` for Axolotl LoRA finetune. You can download a template from github.
 
 ```cmd
-wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
 ```
 
 **If you are using the offline model and dataset in local env**, please modify the model path and dataset path in `lora.yml`. Otherwise, keep them unchanged.
@@ -149,7 +151,7 @@ accelerate launch train.py lora.yml
 Prepare `lora.yml` for QLoRA finetune. You can download a template from github.
 
 ```cmd
-wget https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
 ```
 
 **If you are using the offline model and dataset in local env**, please modify the model path and dataset path in `qlora.yml`. Otherwise, keep them unchanged.

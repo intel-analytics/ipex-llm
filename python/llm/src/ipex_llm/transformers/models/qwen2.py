@@ -358,8 +358,7 @@ def qwen2_attention_forward_quantized(
     if past_key_value is not None:
         cache_kwargs = {"sin": sin, "cos": cos}  # Specific to RoPE models
         key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs,
-                                                         new_layout=True)
+                                                         self.layer_idx, cache_kwargs)
 
     if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
             and not hidden_states.requires_grad:

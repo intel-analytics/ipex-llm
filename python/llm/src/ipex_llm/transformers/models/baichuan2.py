@@ -142,12 +142,12 @@ def baichuan_attention_forward_7b_quantized(
         kv_seq_len = key_states.shape[-2]
         k_cache, v_cache = init_fp8_kv_cache(
             bsz, self.num_heads, kv_seq_len, self.head_dim,
-            device=device, new_layout=True
+            device=device
         )
     else:
         k_cache, v_cache = past_key_value
     key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                   key_states, value_states, new_layout=True)
+                                                   key_states, value_states)
 
     past_key_value = (key_states, value_states) if use_cache else None
 
@@ -395,8 +395,7 @@ def baichuan_attention_forward_13b_quantized(
         attn_output = torch.matmul(attn_weights, value_states)
     else:
         import linear_q4_0
-        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                        value_states.transpose(-1, -2))
+        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

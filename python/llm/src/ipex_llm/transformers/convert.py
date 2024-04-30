@@ -99,6 +99,11 @@ def is_lm_head(name, model_config, out_features):
         return False
 
 
+def is_gptq_linear(module):
+    return is_auto_gptq_available() and \
+        (isinstance(module, QuantLinearCuda) or isinstance(module, QuantLinearCudaOld))
+
+
 def is_linear_module(module):
 
     in_features = None
@@ -112,6 +117,10 @@ def is_linear_module(module):
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
+        from vllm.model_executor.parallel_utils.parallel_state import (
+            get_tensor_model_parallel_group,
+            get_tensor_model_parallel_world_size
+        )
         VLLM_LINEAR_LIST = [
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         ]
@@ -120,9 +129,22 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
+            tp_size = get_tensor_model_parallel_world_size()
+            if isinstance(module, RowParallelLinear) and tp_size >= 2:
+                mp_group = get_tensor_model_parallel_group()
+                in_features = module.input_size_per_partition
+            elif isinstance(module, ColumnParallelLinear) and tp_size >= 2:
+                out_features = module.output_size_per_partition
         else:
-            result = False
-    elif is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld):
+            # Also check for Linear module
+            if isinstance(module, nn.Linear) or is_awq:
+                in_features = module.in_features
+                out_features = module.out_features
+                mp_group = None
+                result = True
+            else:
+                result = False
+    elif is_gptq_linear(module):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
@@ -153,7 +175,7 @@ def is_linear_module(module):
     return result, (in_features, out_features, mp_group)
 
 
-def convert_gptq(module, awq=False, llm_awq=False):
+def convert_gptq(module, awq=False, llm_awq=False, act_order=False):
     from ipex_llm.transformers.low_bit_linear import get_block_size
     Q4_1 = get_block_size("asym_int4")
 
@@ -163,6 +185,8 @@ def convert_gptq(module, awq=False, llm_awq=False):
         torch.unsqueeze(module.qzeros, 2).expand(-1, -1, 32 // module.bits),
         module.wf.unsqueeze(0)).to(torch.int16 if module.bits == 8 else torch.int8)
     zeros = torch.bitwise_and(zeros, (2 ** module.bits) - 1)
+
+    g_id_map = None
 
     if not awq:
         zeros = zeros + 1
@@ -182,6 +206,12 @@ def convert_gptq(module, awq=False, llm_awq=False):
             module.wf.unsqueeze(-1)).to(torch.int8)
         weight = torch.bitwise_and(weight, (2 ** module.bits) - 1)
         weight = weight.reshape(weight.shape[0] * weight.shape[1], weight.shape[2])
+
+        if act_order:
+            invalidInputError(module.g_idx.shape[0] == weight.shape[0],
+                              "g_idx and weight shape mismatch")
+            _, g_id_map = torch.sort(module.g_idx)
+            weight = weight[g_id_map, :]
 
     # convert weight to ggml format
     weight = weight.reshape(weight.shape[0]//module.group_size, module.group_size, weight.shape[1])
@@ -219,7 +249,7 @@ def convert_gptq(module, awq=False, llm_awq=False):
                              weight.view(torch.uint8)], dim=-1)
     ggml_weight = ggml_weight.reshape([-1])
 
-    return ggml_weight
+    return ggml_weight, g_id_map
 
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
@@ -228,7 +258,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  imatrix_data=None, embedding_qtype=None,
                                  model_config=None, torch_dtype=torch.float32,
                                  enable_xetla=False,
-                                 mixed_precision=False):
+                                 mixed_precision=False,
+                                 act_order=False,
+                                 ):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     from ipex_llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
@@ -252,7 +284,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     optimize_lm_head = True
             with init_empty_weights():
                 new_linear = None
-                is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
+                is_gptq = is_gptq_linear(module)
                 is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
                 is_llm_awq = is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ
                 if is_gptq or is_awq:
@@ -264,14 +296,20 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         bias=has_bias,
                         mp_group=mp_group,
                         enable_xetla=enable_xetla,
-                        optimize_lm_head=optimize_lm_head
+                        optimize_lm_head=optimize_lm_head,
+                        act_order=act_order,
                     )
                     device = module.qweight.data.device
                     invalidInputError(device.type != "meta",
                                       "converting from meta device is not supported")
+                    weight, g_idx_map = convert_gptq(module,
+                                                     awq=is_awq,
+                                                     llm_awq=is_llm_awq,
+                                                     act_order=act_order)
+                    if act_order:
+                        new_linear.g_idx_map = g_idx_map
                     # Copy the weights
-                    paramsLowBit = FP4Params(data=convert_gptq(module, awq=is_awq,
-                                                               llm_awq=is_llm_awq),
+                    paramsLowBit = FP4Params(data=weight,
                                              requires_grad=False,
                                              quantized=True,
                                              _shape=(out_features, in_features),
@@ -422,7 +460,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 model_config=model_config,
                 torch_dtype=torch_dtype,
                 enable_xetla=enable_xetla,
-                mixed_precision=mixed_precision
+                mixed_precision=mixed_precision,
+                act_order=act_order,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
@@ -464,7 +503,7 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
             in_features, out_features, mp_group = linear_args
             with init_empty_weights():
                 new_linear = None
-                is_gptq = is_auto_gptq_available() and isinstance(module, QuantLinearCudaOld)
+                is_gptq = is_gptq_linear(module)
                 is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
                 is_llm_awq = is_awq and module.backend == AwqBackendPackingMethod.LLMAWQ
                 if is_gptq or is_awq:
@@ -653,6 +692,9 @@ def _optimize_pre(model):
     if model.config.model_type == "phi":
         from ipex_llm.transformers.models.phi import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "phi3":
+        from ipex_llm.transformers.models.phi3 import split_mlp
+        model.apply(split_mlp)
     if model.config.model_type == "qwen":
         rope_base = model.config.rotary_emb_base
         from accelerate.big_modeling import init_empty_weights
@@ -718,6 +760,10 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_pre(model)
 
+    act_order = False
+    if getattr(model, "quantization_method", None) == "gptq":
+        act_order = model.config.quantization_config.desc_act
+
     # mixed quantization needs model_config to choose custom quantization strategy
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
@@ -728,6 +774,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         torch_dtype=torch_dtype,
         enable_xetla=enable_xetla,
         mixed_precision=mixed_precision,
+        act_order=act_order,
     )
     if not has_been_replaced:
         warnings.warn(
@@ -1426,6 +1473,17 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi import model_forward
         convert_forward(model, module.PhiAttention, attention_forward)
         convert_forward(model, module.PhiModel, model_forward)
+    elif model.config.model_type == "phi3":
+        # for phi-3
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.phi3 import attention_forward
+        convert_forward(model, module.Phi3Attention, attention_forward)
+        from ipex_llm.transformers.models.phi3 import mlp_forward
+        convert_forward(model, module.Phi3MLP, mlp_forward)
+        from ipex_llm.transformers.models.phi3 import model_forward_wrapper
+        model_forward = model_forward_wrapper(module.Phi3Model.forward)
+        convert_forward(model, module.Phi3Model, model_forward)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
