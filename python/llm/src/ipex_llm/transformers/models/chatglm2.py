@@ -544,8 +544,6 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
         query_layer = query_layer.permute(1, 2, 0, 3)
         L, S = query_layer.shape[2], key_layer.shape[2]
         if attention_mask is None and L == S:
-            # split tensor for memory block limitation
-            # support fp16 and set input length threshold at 5000 for now
             batch_size, n_head, seq_len, head_dim = query_layer.shape
             if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
                 # split second dim to block size = 8
