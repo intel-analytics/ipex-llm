@@ -16,7 +16,7 @@ repo_id:
 #  - 'baichuan-inc/Baichuan2-7B-Chat'
 #  - 'baichuan-inc/Baichuan2-13B-Chat-4bit'
   - 'bigscience/bloomz-7b1'
-  - 'fnlp/moss-moon-003-sft-4bit'
+#  - 'fnlp/moss-moon-003-sft-4bit'
   - 'mistralai/Mistral-7B-v0.1'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
@@ -32,6 +32,6 @@ test_api:
   - "transformer_int4_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 exclude:
-  - 'fnlp/moss-moon-003-sft-4bit:1024'
-  - 'fnlp/moss-moon-003-sft-4bit:2048'
+#  - 'fnlp/moss-moon-003-sft-4bit:1024'
+#  - 'fnlp/moss-moon-003-sft-4bit:2048'
   - 'bigscience/bloomz-7b1:2048'
