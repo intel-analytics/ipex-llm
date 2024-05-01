@@ -344,7 +344,7 @@ jobs:
       - name: Prepare for install ipex-llm from source
         shell: bash
         run: |
-          sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21/g' python/llm/setup.py
+          sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
           sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION/"bigdl-core-xe-esimd-21"/g' python/llm/setup.py
 
       - name: Install ipex-llm and other related packages (install from source)
