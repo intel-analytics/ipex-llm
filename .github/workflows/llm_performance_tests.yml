@@ -158,7 +158,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
           python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-test-436.yaml
-          python ../../../test/benchmark/check_results.py -c test3 -y ../../../test/benchmark/arc-perf-test-transformers-437.yaml
+          python ../../../test/benchmark/check_results.py -c test3 -y ../../../test/benchmark/arc-perf-transformers-437.yaml
           # python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           find . -name "*test*.csv" -delete
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
@@ -338,45 +338,16 @@ jobs:
       # TODO: Put the ipex-llm related install process for win gpu into a action function
 
       # Please uncomment it and commment the install from pypi for PR tests
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      #- name: Download llm binary
+      #  uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Prepare for install ipex-llm from source
-        shell: bash
-        run: |
-          sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
-          sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION/"bigdl-core-xe-esimd-21"/g' python/llm/setup.py
-
-      - name: Install ipex-llm and other related packages (install from source)
-        shell: cmd
-        run: |
-          call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
-          call conda activate igpu-perf
-
-          pip install --upgrade pip
-          pip install --upgrade wheel
-          pip install --upgrade omegaconf pandas
-          pip install --upgrade tiktoken einops transformers_stream_generator
-
-          cd python\llm
-          python setup.py clean --all bdist_wheel --win
-          if not exist dist\ipex_llm*.whl (exit /b 1)
-          for %%i in (dist\ipex_llm*.whl) do set whl_name=%%i
-
-          pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          pip install transformers==4.36.2
-          pip list
-
-          call conda deactivate
-
-      #- name: Determine desired ipex-llm version
+      #- name: Prepare for install ipex-llm from source
       #  shell: bash
       #  run: |
-      #    test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-      #    echo "TEST_VERSION_DATE=${test_version_date}" >> "$GITHUB_ENV"
+      #    sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+      #    sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION/"bigdl-core-xe-esimd-21"/g' python/llm/setup.py
 
-      #- name: Install ipex-llm and other related packages (install from pypi)
+      #- name: Install ipex-llm and other related packages (install from source)
       #  shell: cmd
       #  run: |
       #    call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
@@ -387,15 +358,45 @@ jobs:
       #    pip install --upgrade omegaconf pandas
       #    pip install --upgrade tiktoken einops transformers_stream_generator
 
-      #    pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-      #    pip show ipex-llm | findstr %TEST_VERSION_DATE%
-      #    if %ERRORLEVEL% neq 0 (
-      #      echo "Did not install ipex-llm with excepted version %TEST_VERSION_DATE%"
-      #      exit /b 1
-      #    )
+      #    cd python\llm
+      #    python setup.py clean --all bdist_wheel --win
+      #    if not exist dist\ipex_llm*.whl (exit /b 1)
+      #    for %%i in (dist\ipex_llm*.whl) do set whl_name=%%i
+
+      #    pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      #    if %ERRORLEVEL% neq 0 (exit /b 1)
+      #    pip install transformers==4.36.2
       #    pip list
 
       #    call conda deactivate
+
+      - name: Determine desired ipex-llm version
+        shell: bash
+        run: |
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          echo "TEST_VERSION_DATE=${test_version_date}" >> "$GITHUB_ENV"
+
+      - name: Install ipex-llm and other related packages (install from pypi)
+        shell: cmd
+        run: |
+          call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
+          call conda activate igpu-perf
+
+          pip install --upgrade pip
+          pip install --upgrade wheel
+          pip install --upgrade omegaconf pandas
+          pip install --upgrade tiktoken einops transformers_stream_generator
+
+          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+          pip show ipex-llm | findstr %TEST_VERSION_DATE%
+          if %ERRORLEVEL% neq 0 (
+            echo "Did not install ipex-llm with excepted version %TEST_VERSION_DATE%"
+            exit /b 1
+          )
+          pip install transformers==4.36.2
+          pip list
+
+          call conda deactivate
 
       - name: Create env for html generation
         shell: cmd
