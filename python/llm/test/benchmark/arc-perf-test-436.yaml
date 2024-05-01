@@ -3,6 +3,7 @@ repo_id:
   - 'mosaicml/mpt-7b-chat_for_4.36'
   - 'baichuan-inc/Baichuan2-7B-Chat'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit'
+  - 'internlm/internlm-chat-7b'
 local_model_hub: '/mnt/disk0/models'
 warm_up: 1
 num_trials: 3
