@@ -443,6 +443,7 @@ jobs:
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32.yaml config.yaml
           set PYTHONIOENCODING=utf-8
+          python run.py
           python run.py >> %CSV_SAVE_PATH%\32-32\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
