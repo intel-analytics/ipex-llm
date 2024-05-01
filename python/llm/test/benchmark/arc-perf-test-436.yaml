@@ -1,6 +1,6 @@
 repo_id:
-  - 'THUDM/chatglm2-6b_for_4.36'
-  - 'mosaicml/mpt-7b-chat_for_4.36'
+  - 'THUDM/chatglm2-6b'
+  - 'mosaicml/mpt-7b-chat'
   - 'baichuan-inc/Baichuan2-7B-Chat'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit'
   - 'internlm/internlm-chat-7b'
