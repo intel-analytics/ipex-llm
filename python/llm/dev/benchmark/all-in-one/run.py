@@ -844,7 +844,7 @@ def run_transformer_int4_gpu_win(repo_id,
     elif repo_id in LLAVA_IDS:
         llava_repo_dir = os.environ.get('LLAVA_REPO_DIR')
         sys.path.append(rf"{llava_repo_dir}")
-        from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
+        # from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                           trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
