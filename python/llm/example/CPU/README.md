@@ -12,7 +12,7 @@ This folder contains examples of running IPEX-LLM on Intel CPU:
 - [Native-Models](Native-Models): converting & running LLM in `llama`/`chatglm`/`bloom`/`gptneox`/`starcoder` model family using native (cpp) implementation
 - [Speculative-Decoding](Speculative-Decoding): running any ***Hugging Face Transformers*** model with ***self-speculative decoding*** on Intel CPUs
 - [ModelScope-Models](ModelScope-Models): running ***ModelScope*** model with IPEX-LLM on Intel CPUs
-
+- [EAGLE-MT-bench](EAGLE-MT-bench): running ***EAGLE on MT-bench*** with IPEX-LLM on Intel CPUs
 
 ## System Support
 **Hardware**:
