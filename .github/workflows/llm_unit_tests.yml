@@ -389,7 +389,7 @@ jobs:
         shell: bash
         run: |
           python -m pip uninstall datasets -y
-          python -m pip install datasets peft==0.5.0 accelerate==0.23.0
+          python -m pip install transformers==4.34.0 datasets peft==0.5.0 accelerate==0.23.0
           python -m pip install bitsandbytes scipy
           # Specific oneapi position on arc ut test machines
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
