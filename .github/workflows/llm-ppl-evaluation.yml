@@ -149,11 +149,11 @@ jobs:
         shell: bash
         run: |
           pip install --upgrade datasets==2.14.6 
-          if [ "${{ matrix.model_name }}" = "Mistral-7B-v0.1" ]; then
-            pip install --upgrade transformers==4.36
-          else
-            pip install --upgrade transformers==4.31
-          fi
+          #if [ "${{ matrix.model_name }}" = "Mistral-7B-v0.1" ]; then
+          #  pip install --upgrade transformers==4.36
+          #else
+          #  pip install --upgrade transformers==4.31
+          #fi
 
       - name: Run perplexity
         shell: bash

@@ -17,7 +17,7 @@ repo_id:
 #  - 'baichuan-inc/Baichuan2-13B-Chat-4bit'
   - 'bigscience/bloomz-7b1'
 #  - 'fnlp/moss-moon-003-sft-4bit'
-  - 'mistralai/Mistral-7B-v0.1'
+#  - 'mistralai/Mistral-7B-v0.1'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
