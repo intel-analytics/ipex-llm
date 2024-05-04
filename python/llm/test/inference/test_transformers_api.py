@@ -116,7 +116,7 @@ class TestTransformersAPI(unittest.TestCase):
     ])
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModel, AutoTokenizer, os.environ.get('ORIGINAL_CHATGLM2_6B_PATH')),
-    #(AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_ORIGIN_PATH')),
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_ORIGIN_PATH')),
     ])
 def test_load_low_bit_completion(Model, Tokenizer, model_path, prompt, answer):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -141,11 +141,11 @@ def test_load_low_bit_completion(Model, Tokenizer, model_path, prompt, answer):
 prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 
 @pytest.mark.parametrize("Model, Tokenizer, model_path, prompt", [
-    # (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH'), prompt),
+    (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA_ORIGIN_PATH'), prompt),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('BLOOM_ORIGIN_PATH'), prompt),
     (AutoModel, AutoTokenizer, os.environ.get('ORIGINAL_CHATGLM2_6B_PATH'), prompt),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('ORIGINAL_CODESHELL_7B_PATH'), prompt),
-    # (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_ORIGIN_PATH'), prompt)
+    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_ORIGIN_PATH'), prompt)
 ])
 
 def test_optimize_model(Model, Tokenizer, model_path, prompt):
