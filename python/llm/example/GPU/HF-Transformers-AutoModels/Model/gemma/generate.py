@@ -48,6 +48,7 @@ if __name__ == '__main__':
                                                  load_in_4bit=True,
                                                  optimize_model=True,
                                                  trust_remote_code=True,
+                                                 mixed_precision=True,
                                                  use_cache=True)
     model = model.to('xpu')
 
