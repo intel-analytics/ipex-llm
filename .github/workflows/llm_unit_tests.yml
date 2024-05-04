@@ -155,10 +155,13 @@ jobs:
           #   echo "Directory $CHATGLM_INT4_CKPT_PATH not found. Downloading from FTP server..."
           #   wget --no-verbose $LLM_FTP_URL/llm/ggml-actions/stable/chatglm2-6b-q4_0.bin -P $INT4_CKPT_DIR
           # fi
+          if [ -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
+            rm -rf $ORIGINAL_CHATGLM2_6B_PATH
+          fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
             echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR"
-            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_CODESHELL_7B_PATH ]; then
             echo "Directory $ORIGINAL_CODESHELL_7B_PATH not found. Downloading from FTP server..."
@@ -313,6 +316,9 @@ jobs:
             echo "Directory $LLAMA2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Llama-2-7b-chat-hf -P $ORIGIN_DIR
           fi
+          if [ -d $CHATGLM2_6B_ORIGIN_PATH ]; then
+            rm -rf $CHATGLM2_6B_ORIGIN_PATH
+          fi
           if [ ! -d $CHATGLM2_6B_ORIGIN_PATH ]; then
             echo "Directory $CHATGLM2_6B_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
@@ -320,6 +326,9 @@ jobs:
           if [ ! -d $FALCON_7B_ORIGIN_PATH ]; then
             echo "Directory $FALCON_7B_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/falcon-7b-instruct-with-patch -P $ORIGIN_DIR
+          fi
+          if [ -d $MPT_7B_ORIGIN_PATH ]; then
+            rm -rf $MPT_7B_ORIGIN_PATH
           fi
           if [ ! -d $MPT_7B_ORIGIN_PATH ]; then
             echo "Directory $MPT_7B_ORIGIN_PATH not found. Downloading from FTP server..."
@@ -347,6 +356,9 @@ jobs:
           if [ ! -d $QWEN_7B_ORIGIN_PATH ]; then
             echo "Directory $QWEN_7B_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Qwen-7B-Chat -P $ORIGIN_DIR
+          fi
+          if [ -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
+            rm -rf $BAICHUAN2_7B_ORIGIN_PATH
           fi
           if [ ! -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
             echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
