@@ -87,7 +87,7 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
-      - name: Test on xpu(transformers==4.36.2)
+      - name: Test on xpu(transformers==4.36.0)
         shell: bash
         run: |
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
