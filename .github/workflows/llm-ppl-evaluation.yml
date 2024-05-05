@@ -143,8 +143,7 @@ jobs:
         run: |
           echo "MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/" >> "$GITHUB_ENV"
           MODEL_PATH=${ORIGIN_DIR}/${{ matrix.model_name }}/
-          #wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
-          wget -r -nH --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
+          wget -r -nH -nc --no-verbose --cut-dirs=1 ${LLM_FTP_URL}/llm/${{ matrix.model_name }} -P ${ORIGIN_DIR}
           
       - name: Upgrade packages
         shell: bash
