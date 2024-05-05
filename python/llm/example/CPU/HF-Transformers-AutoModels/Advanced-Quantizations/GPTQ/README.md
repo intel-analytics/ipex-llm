@@ -15,7 +15,7 @@ conda activate llm
 pip install bigdl-llm[all] # install bigdl-llm with 'all' option
 pip install transformers==4.34.0
 BUILD_CUDA_EXT=0 pip install git+https://github.com/PanQiWei/AutoGPTQ.git@1de9ab6
-pip install optimum==0.14.0
+pip install optimum==1.14.0
 ```
 
 ### 2. Run
