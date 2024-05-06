@@ -46,12 +46,13 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt-get update && \
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     # install nodejs and npm and get webui
+    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
     apt install -y nodejs && \
     apt install -y npm && \
     cd ~/ && \
     git clone https://github.com/open-webui/open-webui.git && \
     cd ~/open-webui/ && \
-    cp -RPp .env.example .env  # Copy required .env file && \
+    cp -RPp .env.example .env && \
     # Build frontend
     npm i && \
     npm run build && \
