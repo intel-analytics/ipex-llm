@@ -29,9 +29,9 @@ Suppose you have downloaded a [Meta-Llama-3-8B-Instruct-Q4_K_M.gguf](https://hug
 
 #### 1.3 Run Llama3 on Intel GPU using llama.cpp
 
-##### Set Environment Variables
+#### Runtime Configuration
 
-Configure oneAPI variables by running the following command:
+To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
 
 ```eval_rst
 .. tabs::
@@ -40,16 +40,24 @@ Configure oneAPI variables by running the following command:
       .. code-block:: bash
 
          source /opt/intel/oneapi/setvars.sh
+         export SYCL_CACHE_PERSISTENT=1
 
    .. tab:: Windows
-
-      .. note::
-
-      This is a required step for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
-
+   
       .. code-block:: bash
 
-         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+         set SYCL_CACHE_PERSISTENT=1
+
+```
+
+```eval_rst
+.. tip::
+
+  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance:
+
+  .. code-block:: bash
+
+      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 ```
 
@@ -122,9 +130,9 @@ Launch the Ollama service:
 
          export no_proxy=localhost,127.0.0.1
          export ZES_ENABLE_SYSMAN=1
-         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
          export OLLAMA_NUM_GPU=999
          source /opt/intel/oneapi/setvars.sh
+         export SYCL_CACHE_PERSISTENT=1
 
          ./ollama serve
 
@@ -137,10 +145,20 @@ Launch the Ollama service:
          set no_proxy=localhost,127.0.0.1
          set ZES_ENABLE_SYSMAN=1
          set OLLAMA_NUM_GPU=999
-         # Below is a required step for APT or offline installed oneAPI. Skip below step for PIP-installed oneAPI.
-         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+         set SYCL_CACHE_PERSISTENT=1
 
          ollama serve
+
+```
+
+```eval_rst
+.. tip::
+
+  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
+
+  .. code-block:: bash
+
+      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 ```
 

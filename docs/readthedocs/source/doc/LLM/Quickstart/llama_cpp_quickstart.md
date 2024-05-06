@@ -18,17 +18,37 @@ For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
 Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
 
 #### Windows
-Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition, latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html) and Intel® oneAPI Base Toolkit 2024.0.
+Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition and latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html).
 
 **Note**: IPEX-LLM backend only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output.
 
 ### 1 Install IPEX-LLM for llama.cpp
 
 To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed.
-```cmd
-conda create -n llm-cpp python=3.11
-conda activate llm-cpp
-pip install --pre --upgrade ipex-llm[cpp]
+
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         conda create -n llm-cpp python=3.11
+         conda activate llm-cpp
+         pip install --pre --upgrade ipex-llm[cpp]
+
+   .. tab:: Windows
+
+      .. note::
+
+      for Windows, we use pip to install oneAPI.
+
+      .. code-block:: cmd
+
+         conda create -n llm-cpp python=3.11
+         conda activate llm-cpp
+         pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 # install oneapi
+         pip install --pre --upgrade ipex-llm[cpp]
+
 ```
 
 **After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
@@ -78,13 +98,9 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 
 **Now you can use these executable files by standard llama.cpp's usage.**
 
-### 3 Example: Running community GGUF models with IPEX-LLM
+#### Runtime Configuration
 
-Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
-
-#### Set Environment Variables
-
-Configure oneAPI variables by running the following command:
+To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
 
 ```eval_rst
 .. tabs::
@@ -93,18 +109,30 @@ Configure oneAPI variables by running the following command:
       .. code-block:: bash
 
          source /opt/intel/oneapi/setvars.sh
+         export SYCL_CACHE_PERSISTENT=1
 
    .. tab:: Windows
-
-      .. note::
-
-      This is a required step for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
-
+   
       .. code-block:: bash
 
-         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+         set SYCL_CACHE_PERSISTENT=1
 
 ```
+
+```eval_rst
+.. tip::
+
+  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance:
+
+  .. code-block:: bash
+
+      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+
+```
+
+### 3 Example: Running community GGUF models with IPEX-LLM
+
+Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 
 #### Model Download
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main).
@@ -273,3 +301,6 @@ If your program hang after `llm_load_tensors:  SYCL_Host buffer size =    xx.xx 
 
 #### How to set `-ngl` parameter
 `-ngl` means the number of layers to store in VRAM. If your VRAM is enough, we recommend putting all layers on GPU, you can just set `-ngl` to a large number like 999 to achieve this goal.
+
+#### How to specificy GPU
+If your machine has multi GPUs, `llama.cpp` will default use all GPUs which may slow down your inference for model which can run on single GPU. You can add `-sm none` in your command to use one GPU only. Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device before excuting your command, more details can refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/multi_gpus_selection.html#oneapi-device-selector).
