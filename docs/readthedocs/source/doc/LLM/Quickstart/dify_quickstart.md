@@ -1,64 +1,72 @@
 # Run Dify on Intel GPU
 
-We recommend start the project following [Dify docs](https://docs.dify.ai/getting-started/install-self-hosted/local-source-code)
-## Server Deployment
-### Clone code
+
+[**Dify**](https://dify.ai/) is an open-source production-ready LLM app development platform; by integrating it with [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily leverage local LLMs running on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max) for building complex AI workflows (e.g. RAG).  
+
+
+*See the demo of a RAG workflow in Dify running LLaMA2-7B on Intel A770 GPU below.*
+
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.mp4" width="100%" controls></video>
+
+
+## Quickstart
+
+### 1. Install and Start `Ollama` Service on Intel GPU 
+
+Follow the steps in [Run Ollama on Intel GPU Guide](./ollama_quickstart.md) to install and run Ollama on Intel GPU. Ensure that `ollama serve` is running correctly and can be accessed through a local URL (e.g., `https://127.0.0.1:11434`) or a remote URL (e.g., `http://your_ip:11434`).
+
+
+
+### 2. Install and Start `Dify`
+
+#### Download `Dify`
+
+You can either clone the repository or download the source zip from [github](https://github.com/langgenius/dify/archive/refs/heads/main.zip):
 ```bash
 git clone https://github.com/langgenius/dify.git
 ```
-### Installation of the basic environment
-Server startup requires Python 3.10.x. Anaconda is recommended to create and manage python environment.  
-```bash
-conda create -n dify python=3.10
-conda activate dify
-cd api
-cp .env.example .env
-openssl rand -base64 42
-sed -i 's/SECRET_KEY=.*/SECRET_KEY=<your_value>/' .env
-pip install -r requirements.txt
-```
-> openssl is pre-installed with Ubuntu 22.04. 
-### Prepare for redis, postgres, node and npm. 
-* Install Redis by `sudo apt-get install redis-server`. Refer to [page](https://www.hostinger.com/tutorials/how-to-install-and-setup-redis-on-ubuntu/) to setup the Redis environment, including password, demon, etc. 
-* install postgres by `sudo apt-get install postgres` and `sudo apt-get install postgres-client`. Setup username, create a database and grant previlidge according to [page](https://www.ruanyifeng.com/blog/2013/12/getting_started_with_postgresql.html)
-* install npm and node by prebuilt installer, binaries or packet manager according to [nodejs page](https://nodejs.org/en/download/package-manager)
-> Note that set redis and postgres related environment in .env under dify/api/ and set web related environment variable in .env.local under dify/web.
-> 
-> Example in dify/api/.env and modify settings in redis and postgres. 
-> ```bash
-> REDIS_HOST=localhost
-> REDIS_PORT=6379
-> REDIS_USERNAME=
-> REDIS_PASSWORD=xxxx
-> REDIS_DB=0
-> DB_USERNAME=xxxx
-> DB_PASSWORD=xxxx
-> DB_HOST=localhost
-> DB_PORT=5432
-> DB_DATABASE=dify
->
->```
-> Example .env.local
-> ```bash
-> # For production release, change this to PRODUCTION
-> NEXT_PUBLIC_DEPLOY_ENV=DEVELOPMENT
-> NEXT_PUBLIC_EDITION=SELF_HOSTED
-> NEXT_PUBLIC_API_PREFIX=http://localhost:5001/console/api
-> NEXT_PUBLIC_PUBLIC_API_PREFIX=http://localhost:5001/api
-> NEXT_PUBLIC_SENTRY_DSN=
-> ```
 
-### Install Ollama
-Please install ollama refer to [ollama quick start](./ollama_quickstart.md). Ensure that ollama could run successfully on Intel GPU. 
+#### Setup Redis and PostgreSQL
 
-### Start service
-1. Open the terminal and set `export no_proxy=localhost,127.0.0.1`
+Next, deploy PostgreSQL and Redis. You can choose to utilize Docker, following the steps in the [Local Source Code Start Guide](https://docs.dify.ai/getting-started/install-self-hosted/local-source-code#clone-dify), or proceed without Docker using the following instructions:
+
+
+- Install Redis by executing `sudo apt-get install redis-server`. Refer to [this guide](https://www.hostinger.com/tutorials/how-to-install-and-setup-redis-on-ubuntu/) for Redis environment setup, including password configuration and daemon settings.
+
+- Install PostgreSQL by following either [the Official PostgreSQL Tutorial](https://www.postgresql.org/docs/current/tutorial.html) or [a PostgreSQL Quickstart Guide](https://www.digitalocean.com/community/tutorials/how-to-install-postgresql-on-ubuntu-20-04-quickstart). After installation, proceed with the following PostgreSQL commands for setting up Dify. These commands create a username/password for Dify (e.g., `dify_user`, change `'your_password'` as desired), create a new database named `dify`, and grant privileges:
+    ```sql
+    CREATE USER dify_user WITH PASSWORD 'your_password';
+    CREATE DATABASE dify;
+    GRANT ALL PRIVILEGES ON DATABASE dify TO dify_user;
+    ```
+
+Configure Redis and PostgreSQL settings in the `.env` file located under dify source folder `dify/api/`:
+
+```bash dify/api/.env
+### Example dify/api/.env
+## Redis settings
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_USERNAME=your_redis_user_name # change if needed
+REDIS_PASSWORD=your_redis_password # change if needed
+REDIS_DB=0
+
+## postgreSQL settings
+DB_USERNAME=dify_user # change if needed
+DB_PASSWORD=your_dify_password # change if needed
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=dify # change if needed
+```
+
+#### Server Deployment
+
+Follow the steps in the [`Server Deployment` section in Local Source Code Start Guide](https://docs.dify.ai/getting-started/install-self-hosted/local-source-code#server-deployment) to deploy and start the Dify Server.
+
+Upon successful deployment, you will see logs in the terminal similar to the following:
+
+
 ```bash
-flask db upgrade
-flask run --host 0.0.0.0 --port=5001 --debug
-```
-You will see log like below if successfully start the service. 
-```
 INFO:werkzeug:
 * Running on all addresses (0.0.0.0)
 * Running on http://127.0.0.1:5001
@@ -68,50 +76,70 @@ INFO:werkzeug: * Restarting with stat
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 227-697-894
 ```
-2. Open another terminal and also set `export no_proxy=localhost,127.0.0.1`. 
-If Linux system, use the command below. 
+
+
+#### Deploy the frontend page
+
+Refer to the instructions provided in the [`Deploy the frontend page` section in Local Source Code Start Guide](https://docs.dify.ai/getting-started/install-self-hosted/local-source-code#deploy-the-frontend-page) to deploy the frontend page.
+
+Below is an example of environment variable configuration found in `dify/web/.env.local`:
+
+
 ```bash
-celery -A app.celery worker -P gevent -c 1 -Q dataset,generation,mail --loglevel INFO 
-```
-If windows system, use the command below. 
-```bash
-celery -A app.celery worker -P solo --without-gossip --without-mingle -Q dataset,generation,mail --loglevel INFO
-```
-3. Open another terminal and also set `export no_proxy=localhost,127.0.0.1`. Run the commands below to start the front-end service. 
-```bash
-cd web
-npm install
-npm run build
-npm run start
+# For production release, change this to PRODUCTION
+NEXT_PUBLIC_DEPLOY_ENV=DEVELOPMENT
+NEXT_PUBLIC_EDITION=SELF_HOSTED
+NEXT_PUBLIC_API_PREFIX=http://localhost:5001/console/api
+NEXT_PUBLIC_PUBLIC_API_PREFIX=http://localhost:5001/api
+NEXT_PUBLIC_SENTRY_DSN=
 ```
 
-## Example: RAG
-See the demo of running dify with Ollama on an Intel Core Ultra laptop below.
+```eval_rst
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.mp4" width="100%" controls></video>
+.. note::
+
+  If you encounter connection problems, you may run `export no_proxy=localhost,127.0.0.1` before starting API servcie, Worker service and frontend. 
+```
 
 
+### How to Use `Dify`
 
-1. Set up the environment `export no_proxy=localhost,127.0.0.1` and start Ollama locally by `ollama serve`. 
-2. Open http://localhost:3000 to view dify and change the model provider in setting including both LLM and embedding. For example, choose ollama. 
+For comprehensive usage instructions of Dify, please refer to the [Dify Documentation](https://docs.dify.ai/). In this section, we'll only highlight a few key steps for local LLM setup.
+
+
+#### Setup Ollama
+
+Open your browser and access the Dify UI at `http://localhost:3000`.
+
+
+Configure the Ollama URL in `Settings > Model Providers > Ollama`. For detailed instructions on how to do this, see the [Ollama Guide in the Dify Documentation](https://docs.dify.ai/tutorials/model-configuration/ollama).
+
+
+<p align="center"><img src="https://docs.dify.ai/~gitbook/image?url=https%3A%2F%2F3866086014-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FRncMhlfeYTrpujwzDIqw%252Fuploads%252Fgit-blob-351b275c8b6420ff85c77e67bf39a11aaf899b7b%252Follama-config-en.png%3Falt%3Dmedia&width=768&dpr=2&quality=100&sign=1ec95e72d9d0459384cce28665eb84ffd8ed59c906ab0fdb3f47fa67f61275dc" alt="rag-menu" width="80%" align="center"></p>
+
+Once Ollama is successfully connected, you will see a list of Ollama models similar to the following: 
+
 <div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p1.png" alt="image-p1" width=50%; />
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p1.png" alt="image-p1" width=80%; />
 </div>
 
-3. Use text summarization workflow template from studio. 
+
+#### Run a simple RAG 
+
+1. Select the text summarization workflow template from the studio.
 <div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p2.png" alt="image-p2" width=50%; />
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p2.png" alt="image-p2" width=80%; />
 </div>
 
-4. Add knowledge base and specify which type of embedding model to use. 
+2. Add a knowledge base and specify the LLM or embedding model to use. 
 <div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p3.png" alt="image-p3" width=50%; />
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p3.png" alt="image-p3" width=80%; />
 </div>
 
-5. Enter input and start to generate. You could find retrieval results and answers generated on the right. 
-4. Add knowledge base and specify which type of embedding model to use. 
+3. Enter your input in the workflow and execute it. You'll find retrieval results and generated answers on the right.
+
 <div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p5.png" alt="image-20240221102252560" width=50%; />
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p5.png" alt="image-20240221102252560" width=80%; />
 </div>
 
 
