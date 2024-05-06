@@ -49,6 +49,21 @@ import os
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
+def should_split_qkv_tensor(query_states, bsz, num_heads, q_len, kv_seq_len, output_attentions):
+    if not output_attentions:
+        if os.environ.get("IPEX_LLM_SPLIT_QKV", None) is not None:
+            return os.environ.get("IPEX_LLM_SPLIT_QKV", None) == "1"
+        elif query_states.dtype == torch.float16 and \
+                query_states.shape[2] >= 6800:
+            # split tensor for memory block limitation
+            # support fp16 and set input length threshold at 6800 for now
+            return True
+        elif query_states.element_size()*bsz*num_heads*q_len*kv_seq_len >= 4*1024**3:
+            # attn_weight size larger than memory block limitation 4GB
+            return True
+    return False
+
+
 def baichuan_13b_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         import linear_q4_0
@@ -159,13 +174,18 @@ def baichuan_attention_forward_7b_quantized(
     if query_states.size(2) != 1 or device.type != 'xpu':
         key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                         query_states.dtype)
-        attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
+        if should_split_qkv_tensor(query_states, bsz, self.num_heads,
+                                       q_len, kv_seq_len, output_attentions):
+            attn_output, attn_weights = native_sdp_split_qkv_tensor(query_states, key_states,
+                                                                    value_states, attention_mask)
+        else:
+            attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
 
-        if attention_mask is not None:
-            attn_output += attention_mask
-        attn_output = torch.softmax(attn_output, -1)
-        attn_output = attn_output.to(hidden_states.dtype)
-        attn_output = torch.matmul(attn_output, value_states)
+            if attention_mask is not None:
+                attn_output += attention_mask
+            attn_output = torch.softmax(attn_output, -1)
+            attn_output = attn_output.to(hidden_states.dtype)
+            attn_output = torch.matmul(attn_output, value_states)
     else:
         import linear_q4_0
         attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
@@ -287,13 +307,17 @@ def baichuan_attention_forward_7b_origin(
             if attention_mask is not None:
                 if attention_mask.dtype == torch.bool:
                     attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
-
-            scaling_factor = 1 / math.sqrt(query_states.size(-1))
-            attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
-            if attention_mask is not None:
-                attn_output += attention_mask
-            attn_output = torch.softmax(attn_output, -1)
-            attn_output = torch.matmul(attn_output, value_states)
+            if should_split_qkv_tensor(query_states, bsz, self.num_heads,
+                                       q_len, kv_seq_len, output_attentions):
+                attn_output, attn_weights = native_sdp_split_qkv_tensor(query_states, key_states,
+                                                                        value_states, attention_mask)
+            else:
+                scaling_factor = 1 / math.sqrt(query_states.size(-1))
+                attn_output = torch.matmul(query_states * scaling_factor, key_states.transpose(-2, -1))
+                if attention_mask is not None:
+                    attn_output += attention_mask
+                attn_output = torch.softmax(attn_output, -1)
+                attn_output = torch.matmul(attn_output, value_states)
 
         attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.num_heads * self.head_dim)
@@ -622,3 +646,21 @@ def baichuan_13b_get_alibi_mask(self, tensor, seq_length_with_past):
             : self.n_head, :seq_length_with_past, :seq_length_with_past
         ]
     return mask
+
+
+def native_sdp_split_qkv_tensor(query, key, value, attention_mask):
+    block_size = 8
+    query_split = torch.split(query, block_size, dim=1)
+    key_split = torch.split(key.transpose(-2, -1), block_size, dim=1)
+    value_split = torch.split(value, block_size, dim=1)
+    attn_outputs = []
+    scaling_factor = 1 / math.sqrt(query.size(-1))
+    for q, k, v in zip(query_split, key_split, value_split):
+        attn_output_split = torch.matmul(q * scaling_factor, k)
+        if attention_mask is not None:
+            attn_output_split += attention_mask
+        attn_output_split = torch.softmax(attn_output_split, -1)
+        attn_output_split = torch.matmul(attn_output_split, v)
+        attn_outputs.append(attn_output_split)
+    attn_output = torch.cat(attn_outputs, dim=1)
+    return attn_output, None
