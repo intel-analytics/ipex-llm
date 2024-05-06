@@ -52,7 +52,6 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt clean -y && \
     curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
     apt install -y nodejs && \
-    apt install -y npm && \
     cd ~/ && \
     git clone https://github.com/open-webui/open-webui.git && \
     cd ~/open-webui/ && \
