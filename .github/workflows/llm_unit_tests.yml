@@ -396,6 +396,7 @@ jobs:
           
           pip install -U langchain
           pip install -U langchain-community
+          pip install --pre --upgrade bigdl-llm[all]
           bash python/llm/test/run-langchain-upstream-tests.sh
 
       - name: Run LLM llamaindex GPU test
