@@ -125,32 +125,30 @@ Open your browser and access the Dify UI at `http://localhost:3000`.
 Configure the Ollama URL in `Settings > Model Providers > Ollama`. For detailed instructions on how to do this, see the [Ollama Guide in the Dify Documentation](https://docs.dify.ai/tutorials/model-configuration/ollama).
 
 
-<p align="center"><img src="https://docs.dify.ai/~gitbook/image?url=https%3A%2F%2F3866086014-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FRncMhlfeYTrpujwzDIqw%252Fuploads%252Fgit-blob-351b275c8b6420ff85c77e67bf39a11aaf899b7b%252Follama-config-en.png%3Falt%3Dmedia&width=768&dpr=2&quality=100&sign=1ec95e72d9d0459384cce28665eb84ffd8ed59c906ab0fdb3f47fa67f61275dc" alt="rag-menu" width="80%" align="center"></p>
+<p align="center"><a href="https://docs.dify.ai/~gitbook/image?url=https%3A%2F%2F3866086014-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FRncMhlfeYTrpujwzDIqw%252Fuploads%252Fgit-blob-351b275c8b6420ff85c77e67bf39a11aaf899b7b%252Follama-config-en.png%3Falt%3Dmedia&width=768&dpr=2&quality=100&sign=1ec95e72d9d0459384cce28665eb84ffd8ed59c906ab0fdb3f47fa67f61275dc"  target="_blank" align="center"><img src="https://docs.dify.ai/~gitbook/image?url=https%3A%2F%2F3866086014-files.gitbook.io%2F%7E%2Ffiles%2Fv0%2Fb%2Fgitbook-x-prod.appspot.com%2Fo%2Fspaces%252FRncMhlfeYTrpujwzDIqw%252Fuploads%252Fgit-blob-351b275c8b6420ff85c77e67bf39a11aaf899b7b%252Follama-config-en.png%3Falt%3Dmedia&width=768&dpr=2&quality=100&sign=1ec95e72d9d0459384cce28665eb84ffd8ed59c906ab0fdb3f47fa67f61275dc" alt="rag-menu" width="80%" align="center"></a></p>
 
 Once Ollama is successfully connected, you will see a list of Ollama models similar to the following: 
+<p align="center"><a href="https://llm-assets.readthedocs.io/en/latest/_images/dify-p1.png" target="_blank" align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p1.png" alt="image-p1" width=100%; />
+</a></p>
 
-<div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p1.png" alt="image-p1" width=80%; />
-</div>
 
 
 #### Run a simple RAG 
 
-1. Select the text summarization workflow template from the studio.
-<div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p2.png" alt="image-p2" width=80%; />
-</div>
+- Select the text summarization workflow template from the studio.
+<p><a href="https://llm-assets.readthedocs.io/en/latest/_images/dify-p2.png" target="_blank" align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p2.png" alt="image-p2" width=100%; align="center" />
+</a></p>
 
-2. Add a knowledge base and specify the LLM or embedding model to use. 
-<div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p3.png" alt="image-p3" width=80%; />
-</div>
+- Add a knowledge base and specify the LLM or embedding model to use. 
+<p><a href="https://llm-assets.readthedocs.io/en/latest/_images/dify-p3.png" target="_blank" align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p3.png" alt="image-p3" width=100%; />
+</a></p>
 
-3. Enter your input in the workflow and execute it. You'll find retrieval results and generated answers on the right.
-
-<div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p5.png" alt="image-20240221102252560" width=80%; />
-</div>
-
+- Enter your input in the workflow and execute it. You'll find retrieval results and generated answers on the right.
+<p align="center"><a href="https://llm-assets.readthedocs.io/en/latest/_images/dify-p5.png" target="_blank" align="center">
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/dify-p5.png" alt="image-20240221102252560" width=100%; align="center"/>
+</a></p>
 
 
