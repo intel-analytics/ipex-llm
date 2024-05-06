@@ -75,7 +75,7 @@ jobs:
             echo "runner=$runner" >> $GITHUB_OUTPUT
 
   llm-whisper-evaluation:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-whisper-evaluation' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-whisper-evaluation' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     needs: [llm-cpp-build, set-matrix] # please uncomment it for PR tests
     # needs: [set-matrix] # please comment it for PR tests
     strategy:
