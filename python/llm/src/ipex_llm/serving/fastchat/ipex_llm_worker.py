@@ -63,6 +63,7 @@ class BigDLLLMWorker(BaseModelWorker):
         device: str = "cpu",
         no_register: bool = False,
         trust_remote_code: bool = False,
+        speculative: bool = False,
         stream_interval: int = 4,
     ):
         super().__init__(
@@ -82,11 +83,13 @@ class BigDLLLMWorker(BaseModelWorker):
         )
 
         logger.info(f"Using low bit format: {self.load_in_low_bit}, device: {device}")
+        if speculative:
+            logger.info(f"Using Self-Speculative decoding to generate")
 
         self.device = device
-
+        self.speculative = speculative
         self.model, self.tokenizer = load_model(
-            model_path, device, self.load_in_low_bit, trust_remote_code
+            model_path, device, self.load_in_low_bit, trust_remote_code, speculative
         )
         self.stream_interval = stream_interval
         self.context_len = get_context_length(self.model.config)
@@ -98,6 +101,7 @@ class BigDLLLMWorker(BaseModelWorker):
         # context length is self.context_length
         prompt = params["prompt"]
         temperature = float(params.get("temperature", 1.0))
+        do_sample = bool(params.get("do_sample", False))
         repetition_penalty = float(params.get("repetition_penalty", 1.0))
         top_p = float(params.get("top_p", 1.0))
         top_k = int(params.get("top_k", 1))
@@ -165,6 +169,7 @@ class BigDLLLMWorker(BaseModelWorker):
             streamer=streamer,
             temperature=temperature,
             repetition_penalty=repetition_penalty,
+            do_sample=do_sample,
             top_p=top_p,
             top_k=top_k,
         )
@@ -315,6 +320,12 @@ if __name__ == "__main__":
         "--device", type=str, default="cpu", help="Device for executing model, cpu/xpu"
     )
     parser.add_argument(
+        "--speculative",
+        action="store_true",
+        default=False,
+        help="To use self-speculative or not",
+    )
+    parser.add_argument(
         "--trust-remote-code",
         action="store_true",
         default=False,
@@ -335,5 +346,6 @@ if __name__ == "__main__":
         args.device,
         args.no_register,
         args.trust_remote_code,
+        args.speculative,
     )
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
