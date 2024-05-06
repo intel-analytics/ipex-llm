@@ -61,5 +61,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     npm run build && \
     # Install Dependencies
     cd ./backend && \
+    # remove blinker to avoid error
+    find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
     pip install -r requirements.txt -U
 
