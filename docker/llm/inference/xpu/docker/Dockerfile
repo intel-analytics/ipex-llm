@@ -48,6 +48,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     # install nodejs and npm and get webui
     apt install -y nodejs && \
     apt install -y npm && \
+    cd ~/ && \
     git clone https://github.com/open-webui/open-webui.git && \
     cd ~/open-webui/ && \
     cp -RPp .env.example .env  # Copy required .env file && \
