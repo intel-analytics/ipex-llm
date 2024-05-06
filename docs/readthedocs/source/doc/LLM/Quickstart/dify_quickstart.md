@@ -19,6 +19,15 @@ Follow the steps in [Run Ollama on Intel GPU Guide](./ollama_quickstart.md) to i
 
 ### 2. Install and Start `Dify`
 
+```eval_rst
+
+.. note::
+
+  The following steps are verified on Linux. 
+
+```
+
+
 #### Download `Dify`
 
 You can either clone the repository or download the source zip from [github](https://github.com/langgenius/dify/archive/refs/heads/main.zip):
@@ -99,6 +108,7 @@ NEXT_PUBLIC_SENTRY_DSN=
 .. note::
 
   If you encounter connection problems, you may run `export no_proxy=localhost,127.0.0.1` before starting API servcie, Worker service and frontend. 
+
 ```
 
 
