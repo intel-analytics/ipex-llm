@@ -1,10 +1,8 @@
 repo_id:
-  - 'meta-llama/Llama-2-7b-chat-hf'
-#  - 'THUDM/chatglm2-6b'
-#  - 'THUDM/chatglm3-6b'
-#  - 'baichuan-inc/Baichuan2-7B-Chat'
-  - 'Qwen/Qwen-7B-Chat'
-local_model_hub: '/mnt/disk1/models'
+  - 'THUDM/chatglm2-6b'
+  - 'THUDM/chatglm3-6b'
+  - 'baichuan-inc/Baichuan2-7B-Chat'
+  local_model_hub: '/mnt/disk0/models'
 warm_up: 10
 num_trials: 100
 num_beams: 1 # default to greedy search
@@ -16,5 +14,3 @@ in_out_pairs:
 test_api:
   - "transformer_int4_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
-exclude:
-  - 'Qwen/Qwen-7B-Chat:2048'
