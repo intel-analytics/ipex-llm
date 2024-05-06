@@ -46,6 +46,10 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt-get update && \
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     # install nodejs and npm and get webui
+    apt purge nodejs -y && \
+    apt purge libnode-dev -y && \
+    apt autoremove -y && \
+    apt clean -y && \
     curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
     apt install -y nodejs && \
     apt install -y npm && \
