@@ -8,9 +8,12 @@ ENV PYTHONUNBUFFERED=1
 ENV USE_XETLA=OFF
 ENV SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
+<<<<<<< HEAD
 COPY chat.py /llm/chat.py
 COPY benchmark.sh /llm/benchmark.sh
 
+=======
+>>>>>>> 391ae7965d (test_cpp_docker)
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
@@ -32,33 +35,26 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    # Install FastChat from source requires PEP 660 support
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install --pre --upgrade ipex-llm[cpp] && \
     # Fix Trivy CVE Issues
     pip install transformers==4.36.2 && \
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
-    # Install related libary of chat.py
-    pip install --upgrade colorama && \
-    # Download all-in-one benchmark and examples
-    git clone https://github.com/intel-analytics/ipex-llm && \
-    cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
-    cp -r ./ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model ./examples && \
-    # Install vllm dependencies
-    pip install --upgrade fastapi && \
-    pip install --upgrade "uvicorn[standard]" && \
-    # Download vLLM-Serving
-    git clone https://github.com/intel-analytics/IPEX-LLM && \
-    cp -r ./IPEX-LLM/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
-    rm -rf ./IPEX-LLM && \
-    # Install related library of benchmarking
-    pip install pandas && \
-    pip install omegaconf && \
-    chmod +x /llm/benchmark.sh
+    # install nodejs and npm and get webui
+    apt install -y nodejs && \
+    apt install -y npm && \
+    git clone https://github.com/open-webui/open-webui.git && \
+    cd ~/open-webui/ && \
+    cp -RPp .env.example .env  # Copy required .env file && \
+    # Build frontend
+    npm i && \
+    npm run build && \
+    # Install Dependencies
+    cd ./backend && \
+    pip install -r requirements.txt -U
 
-WORKDIR /llm/
