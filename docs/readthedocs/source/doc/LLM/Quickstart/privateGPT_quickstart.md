@@ -4,7 +4,7 @@
 
 See the demo of running Mistral-7B on Intel iGPU below:
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
+<video src="https://github.com/bigdl-project/bigdl-project.github.io/raw/2ca10e374da99310f7b8f5b01bbd69242eab4d3a/assets/quickstart/privateGPT_quickstart/privateGPT-windows-MTL.mp4" width="100%" controls></video>
 
 ## Quickstart
 
@@ -36,17 +36,13 @@ Change PrivateGPT settings by modifying `settings.yaml` and `settings-ollama.yam
 * `settings.yaml` is always loaded and contains the default configuration. In order to run PrivateGPT locally, you need to replace the tokenizer path under the `llm` option with your local path.
 * `settings-ollama.yaml` is loaded if the ollama profile is specified in the PGPT_PROFILES environment variable. It can override configuration from the default `settings.yaml`. You can modify the settings in this file according to your preference. It is worth noting that to use the options `llm_model: <Model Name>` and `embedding_model: <Embedding Model Name>`, you need to first use `ollama pull` to fetch the models locally.
 
+To learn more about the configuration of PrivatePGT, please refer to [PrivateGPT Main Concepts](https://docs.privategpt.dev/installation/getting-started/main-concepts)
 
-
-```eval_rst
-.. note::
-
-  To learn more about the configuration of PrivatePGT, please refer to [PrivateGPT Main Concepts](https://docs.privategpt.dev/installation/getting-started/main-concepts)
-
-```
 
 #### Start the service
-Run below commands to start the service:
+Please ensure that the Ollama server continues to run in a terminal while you're using the PrivateGPT. 
+
+Run below commands to start the service in another terminal:
 
 ```eval_rst
 .. tabs::
@@ -78,8 +74,17 @@ Run below commands to start the service:
 
 #### Chat with the Model
 
+Select the "LLM Chat" option in the upper left corner of the page to chat with LLM.
+
+<a href="https://raw.githubusercontent.com/bigdl-project/bigdl-project.github.io/2ca10e374da99310f7b8f5b01bbd69242eab4d3a/assets/quickstart/privateGPT_quickstart/privateGPT-LLM-Chat.png" target="_blank">
+  <img src="https://raw.githubusercontent.com/bigdl-project/bigdl-project.github.io/2ca10e374da99310f7b8f5b01bbd69242eab4d3a/assets/quickstart/privateGPT_quickstart/privateGPT-LLM-Chat.png" width=100%; />
+</a>
 
 
 #### Using RAG
 
+Select the "Query Files" option in the upper left corner of the page, then click the "Upload File(s)" button to upload documents. Once the document vectorization is completed, you can proceed with document-based QA.
 
+<a href="https://raw.githubusercontent.com/bigdl-project/bigdl-project.github.io/2ca10e374da99310f7b8f5b01bbd69242eab4d3a/assets/quickstart/privateGPT_quickstart/privateGPT-Query-Files.png" target="_blank">
+  <img src="https://raw.githubusercontent.com/bigdl-project/bigdl-project.github.io/2ca10e374da99310f7b8f5b01bbd69242eab4d3a/assets/quickstart/privateGPT_quickstart/privateGPT-Query-Files.png" width=100%; />
+</a>
