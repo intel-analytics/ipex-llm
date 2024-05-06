@@ -9,56 +9,16 @@ from typing import List, Optional, Tuple, Union, Iterator
 from transformers.utils import logging
 logger = logging.get_logger(__name__)
 import numpy as np
+import time
+from transformers import AutoTokenizer, AutoConfig
+import torch.distributed as dist
+from pipeline_models import (
+    _make_causal_mask, _expand_mask, DummyLayer, PPConfig,
+    PipelineBaseModel,
+)
 
 
-
-class PPConfig:
-    """Configuration for ModelSlices."""
-
-    def __init__(self, pp_rank: int, pp_world_size: int) -> None:
-        self.pp_rank = pp_rank
-        self.pp_world_size = pp_world_size
-        self.is_head = self.pp_rank == 0
-        self.is_tail = self.pp_rank == self.pp_world_size - 1
-
-
-# Copied from transformers.models.bart.modeling_bart._make_causal_mask
-def _make_causal_mask(
-    input_ids_shape: torch.Size, dtype: torch.dtype, device: torch.device, past_key_values_length: int = 0
-):
-    """
-    Make causal mask used for bi-directional self-attention.
-    """
-    bsz, tgt_len = input_ids_shape
-    mask = torch.full((tgt_len, tgt_len), torch.finfo(dtype).min, device=device)
-    mask_cond = torch.arange(mask.size(-1), device=device)
-    mask.masked_fill_(mask_cond < (mask_cond + 1).view(mask.size(-1), 1), 0)
-    mask = mask.to(dtype)
-
-    if past_key_values_length > 0:
-        mask = torch.cat([torch.zeros(tgt_len, past_key_values_length, dtype=dtype, device=device), mask], dim=-1)
-    return mask[None, None, :, :].expand(bsz, 1, tgt_len, tgt_len + past_key_values_length)
-
-
-# Copied from transformers.models.bart.modeling_bart._expand_mask
-def _expand_mask(mask: torch.Tensor, dtype: torch.dtype, tgt_len: Optional[int] = None):
-    """
-    Expands attention_mask from `[bsz, seq_len]` to `[bsz, 1, tgt_seq_len, src_seq_len]`.
-    """
-    bsz, src_len = mask.size()
-    tgt_len = tgt_len if tgt_len is not None else src_len
-
-    expanded_mask = mask[:, None, None, :].expand(bsz, 1, tgt_len, src_len).to(dtype)
-
-    inverted_mask = 1.0 - expanded_mask
-
-    return inverted_mask.masked_fill(inverted_mask.to(torch.bool), torch.finfo(dtype).min)
-
-
-class DummyLayer(nn.Module):
-    pass
-
-class LlamaModel(LlamaPreTrainedModel):
+class LlamaModel(LlamaPreTrainedModel, PipelineBaseModel):
     """
     Transformer decoder consisting of *config.num_hidden_layers* layers. Each layer is a [`LlamaDecoderLayer`]
 
@@ -366,86 +326,3 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
                 tuple(past_state.index_select(0, beam_idx.to(past_state.device)) for past_state in layer_past),
             )
         return reordered_past
-
-import ray
-
-import time
-from transformers import AutoTokenizer, AutoConfig
-import torch.distributed as dist
-
-# @ray.remote
-class ModelRunner:
-    
-    def __init__(self, checkpoint, rank, world_size):
-        import torch
-        import intel_extension_for_pytorch as ipex
-        import sys
-        self.pp_config = PPConfig(rank, world_size)
-        
-        start = time.perf_counter()
-        model = LlamaForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
-        end = time.perf_counter()
-        logger.info(f"Time to load weights: {end - start:.2f}s")
-        from ipex_llm import optimize_model
-
-        model = optimize_model(model, low_bit="fp8")
-        
-        model = model.to(torch.float32).to(f'xpu:{rank}')
-        self.model = model
-        self.rank = rank
-        self.world_size = world_size
-        self.pre_rank = (self.rank - 1) % self.world_size
-        self.next_rank = (self.rank + 1) % self.world_size
-        self.hidden_size = self.model.config.hidden_size
-                
-    def generate(self, input_ids=None, max_tokens=5):
-        times = []
-        with torch.no_grad():
-            _input_ids = None
-            _past_key_values = None
-            bs = input_ids.shape[0]
-            output_ids = input_ids.clone()
-            for i in range(max_tokens):
-                start = time.perf_counter()
-                if _input_ids is None:
-                    _input_ids = input_ids
-                if self.rank == 0:
-                    outputs = self.model(input_ids=_input_ids, past_key_values=_past_key_values, use_cache=True)
-                else:
-                    inputs_embeds = torch.empty(_input_ids.shape + (self.hidden_size,) , device=f'xpu:{self.rank}', dtype=torch.float32)
-                    dist.recv(inputs_embeds, src=self.pre_rank)
-                    outputs = self.model(inputs_embeds=inputs_embeds, past_key_values=_past_key_values, use_cache=True)
-                     
-                
-                if self.rank == self.world_size - 1:
-                    logits = outputs.logits
-                    next_ids = torch.argmax(logits[:, -1:, :], dim=-1)
-                    assert next_ids.shape == (bs, 1)
-                    dist.broadcast(next_ids, src=self.rank)
-                else:
-                    dist.send(outputs.last_hidden_state, dst=self.next_rank)
-                    next_ids = torch.empty((bs, 1), device=f'xpu:{self.rank}', dtype=torch.int64)
-                    dist.broadcast(next_ids, src=self.world_size - 1)
-                
-                _input_ids = next_ids
-                output_ids = torch.cat([output_ids, next_ids], dim=-1)
-                _past_key_values = outputs.past_key_values
-                end = time.perf_counter()
-                times.append(end - start)
-        
-        if self.rank == 0:
-            logger.info(f"first token latency: {times[0]}, rest token avg latecy: {np.mean(times[1:])}")
-        return output_ids
-
-
-        
-    def step(self, input_ids=None, inputs_embeds=None):
-        output = self.model(input_ids=input_ids, inputs_embeds=inputs_embeds)
-        if not self.pp_config.is_tail:
-            return output.last_hidden_state
-        else:
-            return output.logits
-        
-    
-    def is_initialized(self):
-        return True
