@@ -52,6 +52,29 @@ def _expand_mask(mask: torch.Tensor, dtype: torch.dtype, tgt_len: Optional[int] 
     return inverted_mask.masked_fill(inverted_mask.to(torch.bool), torch.finfo(dtype).min)
 
 
+def _prepare_decoder_attention_mask(self, attention_mask, input_shape, inputs_embeds, past_key_values_length):
+    # create causal mask
+    # [bsz, seq_len] -> [bsz, 1, tgt_seq_len, src_seq_len]
+    combined_attention_mask = None
+    if input_shape[-1] > 1:
+        combined_attention_mask = _make_causal_mask(
+            input_shape,
+            inputs_embeds.dtype,
+            device=inputs_embeds.device,
+            past_key_values_length=past_key_values_length,
+        )
+
+    if attention_mask is not None:
+        # [bsz, seq_len] -> [bsz, 1, tgt_seq_len, src_seq_len]
+        expanded_attn_mask = _expand_mask(attention_mask, inputs_embeds.dtype, tgt_len=input_shape[-1]).to(
+            inputs_embeds.device
+        )
+        combined_attention_mask = (
+            expanded_attn_mask if combined_attention_mask is None else expanded_attn_mask + combined_attention_mask
+        )
+
+    return combined_attention_mask
+
 class DummyLayer(nn.Module):
     pass
 
@@ -230,7 +253,7 @@ class ModelRunner:
         self.hidden_size = self.model.config.hidden_size
     
                 
-    def generate(self, input_ids=None, max_tokens=5):
+    def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
         times = []
         with torch.no_grad():
             _input_ids = None
@@ -242,11 +265,11 @@ class ModelRunner:
                 if _input_ids is None:
                     _input_ids = input_ids
                 if self.rank == 0:
-                    outputs = self.model(input_ids=_input_ids, past_key_values=_past_key_values, use_cache=True)
+                    outputs = self.model(input_ids=_input_ids, attention_mask=attention_mask, past_key_values=_past_key_values, use_cache=True)
                 else:
                     inputs_embeds = torch.empty(_input_ids.shape + (self.hidden_size,) , device=f'xpu:{self.rank}', dtype=torch.float32)
                     dist.recv(inputs_embeds, src=self.pre_rank)
-                    outputs = self.model(inputs_embeds=inputs_embeds, past_key_values=_past_key_values, use_cache=True)
+                    outputs = self.model(inputs_embeds=inputs_embeds, attention_mask=attention_mask, past_key_values=_past_key_values, use_cache=True)
                 
                 if self.rank == self.world_size - 1:
                     logits = outputs.logits
