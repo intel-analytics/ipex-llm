@@ -152,14 +152,14 @@ if [ ! -z $BASH_SOURCE ]; then
     # using bash
     if [ "$BASH_SOURCE" = "$0" ]; then
         echo "Error: Incorrect usage: ipex-llm-init must be sourced."
-        return 1
+        exit 1
     fi
     BIN_DIR="$(dirname $BASH_SOURCE)"
 else
     # using zsh
     if [ "$zsh_eval_context" = "toplevel" ]; then
         echo "Error: Incorrect usage: ipex-llm-init must be sourced."
-        return 1
+        exit 1
     fi
     BIN_DIR="$(dirname ${(%):-%N})"
 fi
