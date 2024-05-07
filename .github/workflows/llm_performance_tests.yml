@@ -102,13 +102,6 @@ jobs:
           # change csv name
           sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
-          # run updated models for 4.36
-          cd -
-          cp python/llm/test/benchmark/arc-perf-test-436.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-          cd python/llm/dev/benchmark/all-in-one
-          # change csv name
-          sed -i 's/test1/test2/g' run.py
-          python run.py
 
       #- name: Test on xpu(transformers==4.34.0)
       #  shell: bash
@@ -135,7 +128,7 @@ jobs:
           cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # change csv name
-          sed -i 's/test2/test3/g' run.py
+          sed -i 's/test1/test2/g' run.py
           python run.py
 
       - name: Concat csv and generate html
@@ -157,8 +150,7 @@ jobs:
         run: |
           cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
-          python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-test-436.yaml
-          python ../../../test/benchmark/check_results.py -c test3 -y ../../../test/benchmark/arc-perf-transformers-437.yaml
+          python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-437.yaml
           # python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           find . -name "*test*.csv" -delete
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
@@ -227,18 +219,7 @@ jobs:
           export OMP_NUM_THREADS=48
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
-          # change csv name
-          sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
-          # run updated models for 4.36
-          cd -
-          cp python/llm/test/benchmark/cpu-perf-test-436.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-          cd python/llm/dev/benchmark/all-in-one
-          # change csv name
-          sed -i 's/test1/test2/g' run.py
-          python run.py
-          python ../../../test/benchmark/concat_csv.py
-          find . -name "*test*.csv" -delete
           cp ./*.csv /mnt/disk1/models/nightly_perf_cpu
           cd ../../../test/benchmark
           python -m pip install pandas==1.5.3
