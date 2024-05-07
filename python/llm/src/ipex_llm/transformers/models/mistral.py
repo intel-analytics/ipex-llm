@@ -299,7 +299,7 @@ def mistral_attention_forward_quantized(
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(
                 bsz, self.num_heads, kv_seq_len, self.head_dim,
-                device=query_states.device, new_layout=True
+                device=query_states.device
             )
             key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
                                                            key_states, value_states)
@@ -307,7 +307,7 @@ def mistral_attention_forward_quantized(
     else:
         k_cache, v_cache = past_key_value
         key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                       key_states, value_states, new_layout=True)
+                                                       key_states, value_states)
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
 
@@ -680,13 +680,11 @@ def mistral_attention_forward_4_36_quantized(
         if use_cache:
             cache_kwargs = None
             key_states, value_states = past_key_value.update(key_states, value_states,
-                                                             self.layer_idx, cache_kwargs,
-                                                             new_layout=True)
+                                                             self.layer_idx, cache_kwargs)
     else:
         cache_kwargs = None  # Specific to RoPE models
         key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs,
-                                                         new_layout=True)
+                                                         self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
         if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,

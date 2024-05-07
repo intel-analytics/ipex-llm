@@ -3,6 +3,7 @@ repo_id:
   - 'meta-llama/Meta-Llama-3-8B-Instruct'
   - '01-ai/Yi-6B-Chat'
   - 'microsoft/phi-2'
+  - 'microsoft/Phi-3-mini-4k-instruct'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3

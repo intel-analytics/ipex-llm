@@ -49,6 +49,10 @@ import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+import subprocess
+import sys
+
+_IS_VLLM_AVAILABLE = None
 
 
 def is_auto_gptq_available():
@@ -60,7 +64,16 @@ def is_auto_awq_available():
 
 
 def is_vllm_available():
-    return importlib.util.find_spec("vllm") is not None
+    global _IS_VLLM_AVAILABLE
+    if _IS_VLLM_AVAILABLE is not None:
+        return _IS_VLLM_AVAILABLE
+    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'list'])
+    installed_packages = [r.decode().split('  ')[0] for r in reqs.split()]
+    if 'vllm' in installed_packages:
+        _IS_VLLM_AVAILABLE = True
+    else:
+        _IS_VLLM_AVAILABLE = False
+    return _IS_VLLM_AVAILABLE
 
 
 def is_torch_distributed_initialized():
@@ -117,6 +130,10 @@ def is_linear_module(module):
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
+        from vllm.model_executor.parallel_utils.parallel_state import (
+            get_tensor_model_parallel_group,
+            get_tensor_model_parallel_world_size
+        )
         VLLM_LINEAR_LIST = [
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         ]
@@ -125,8 +142,21 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
+            tp_size = get_tensor_model_parallel_world_size()
+            if isinstance(module, RowParallelLinear) and tp_size >= 2:
+                mp_group = get_tensor_model_parallel_group()
+                in_features = module.input_size_per_partition
+            elif isinstance(module, ColumnParallelLinear) and tp_size >= 2:
+                out_features = module.output_size_per_partition
         else:
-            result = False
+            # Also check for Linear module
+            if isinstance(module, nn.Linear) or is_awq:
+                in_features = module.in_features
+                out_features = module.out_features
+                mp_group = None
+                result = True
+            else:
+                result = False
     elif is_gptq_linear(module):
         in_features = module.infeatures
         out_features = module.outfeatures
@@ -1252,6 +1282,24 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MoeAttention,
                         qwen2moe_attention_forward)
+    elif model.config.model_type == "cohere":
+        # for CohereForAI/c4ai-command-r-v01
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.cohere import cohere_attention_forward
+        from ipex_llm.transformers.models.cohere import cohere_model_forward
+        convert_forward(model,
+                        module.CohereModel,
+                        cohere_model_forward)
+        convert_forward(model,
+                        module.CohereAttention,
+                        cohere_attention_forward)
+        convert_forward(model,
+                        module.CohereLayerNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        module.CohereMLP,
+                        llama_mlp_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
