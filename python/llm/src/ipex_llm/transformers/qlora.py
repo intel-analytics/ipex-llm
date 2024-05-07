@@ -87,7 +87,7 @@ class LoraLowBitLinear(Module, LoraLayer):
             # qa_lora need to change the in_features of the base_layer
             in_features = base_layer.in_features
             base_layer.in_features = in_features // qk_size
-        
+
         LoraLayer.__init__(self, base_layer, **kwargs)
 
         self.fan_in_fan_out = fan_in_fan_out
