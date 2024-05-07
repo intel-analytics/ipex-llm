@@ -45,6 +45,7 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
 
     # With only one line to enable IPEX-LLM optimization on model
+    # To fix the issue that the output of codegemma-7b-it is abnormal, skip the 'lm_head' module during optimization
     model = optimize_model(model, modules_to_not_convert=["lm_head"])
 
     # Load tokenizer

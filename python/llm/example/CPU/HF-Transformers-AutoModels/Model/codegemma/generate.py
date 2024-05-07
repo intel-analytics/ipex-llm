@@ -42,6 +42,7 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
+    # To fix the issue that the output of codegemma-7b-it is abnormal, skip the 'lm_head' module during optimization
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  trust_remote_code=True,
