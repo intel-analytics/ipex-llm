@@ -47,7 +47,6 @@ function unset_gpu_envs {
     unset SYCL_CACHE_PERSISTENT
     unset BIGDL_LLM_XMX_DISABLED
     unset SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
-    export LD_PRELOAD=$(echo $LD_PRELOAD | sed 's|'"${CONDA_PREFIX}/lib/libtcmalloc.so"'||g')
 }
 
 function display-var {
