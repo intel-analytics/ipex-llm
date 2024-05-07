@@ -19,8 +19,8 @@ This example is ported from [bnb-4bit-training](https://colab.research.google.co
 conda create -n llm python=3.11
 conda activate llm
 pip install --pre --upgrade ipex-llm[all]
-pip install transformers==4.34.0
-pip install peft==0.5.0
+pip install transformers==4.36.0
+pip install peft==0.10.0
 pip install datasets
 pip install accelerate==0.23.0
 pip install bitsandbytes scipy
