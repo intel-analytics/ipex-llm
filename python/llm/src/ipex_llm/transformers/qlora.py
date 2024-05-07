@@ -82,6 +82,12 @@ class LoraLowBitLinear(Module, LoraLayer):
         **kwargs,
     ):
         super().__init__()
+        qk_size = get_qk_size(kwargs.get("qtype"))
+        if qa_lora:
+            # qa_lora need to change the in_features of the base_layer
+            in_features = base_layer.in_features
+            base_layer.in_features = in_features // qk_size
+        
         LoraLayer.__init__(self, base_layer, **kwargs)
 
         self.fan_in_fan_out = fan_in_fan_out
@@ -97,7 +103,6 @@ class LoraLowBitLinear(Module, LoraLayer):
         )
         self.is_target_conv_1d_layer = is_target_conv_1d_layer
 
-        qk_size = get_qk_size(kwargs.get("qtype"))
         if qa_lora:
             self.qa_pool = torch.nn.AvgPool1d(qk_size)
         else:
@@ -147,7 +152,6 @@ class LoraBF16Linear(Module, LoraLayer):
         r: int = 0,
         lora_alpha: int = 1,
         lora_dropout: float = 0.0,
-        qa_lora: bool = True,
         # Set this to True if the layer to replace stores weight like (fan_in, fan_out)
         fan_in_fan_out: bool = False,
         is_target_conv_1d_layer: bool = False,
@@ -194,7 +198,7 @@ class LoraBF16Linear(Module, LoraLayer):
                     lora_B = self.lora_B[active_adapter]
                     dropout = self.lora_dropout[active_adapter]
                     scaling = self.scaling[active_adapter]
-                    result += lora_B(lora_A(dropout(self.qa_pool(x)))).to(expected_dtype) * scaling
+                    result += lora_B(lora_A(dropout(x))).to(expected_dtype) * scaling
             else:
                 for active_adapter in self.active_adapters:
                     if active_adapter not in self.lora_A.keys():
@@ -203,7 +207,7 @@ class LoraBF16Linear(Module, LoraLayer):
                     lora_B = self.lora_B[active_adapter]
                     dropout = self.lora_dropout[active_adapter]
                     scaling = self.scaling[active_adapter]
-                    result += lora_B(lora_A(dropout(self.qa_pool(x)))) * scaling
+                    result += lora_B(lora_A(dropout(x))) * scaling
         return result
 
 
