@@ -49,6 +49,10 @@ import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+import subprocess
+import sys
+
+_IS_VLLM_AVAILABLE = None
 
 
 def is_auto_gptq_available():
@@ -60,7 +64,16 @@ def is_auto_awq_available():
 
 
 def is_vllm_available():
-    return importlib.util.find_spec("vllm") is not None
+    global _IS_VLLM_AVAILABLE
+    if _IS_VLLM_AVAILABLE is not None:
+        return _IS_VLLM_AVAILABLE
+    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'list'])
+    installed_packages = [r.decode().split('  ')[0] for r in reqs.split()]
+    if 'vllm' in installed_packages:
+        _IS_VLLM_AVAILABLE = True
+    else:
+        _IS_VLLM_AVAILABLE = False
+    return _IS_VLLM_AVAILABLE
 
 
 def is_torch_distributed_initialized():
