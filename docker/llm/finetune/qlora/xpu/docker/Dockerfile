@@ -3,7 +3,7 @@ ARG http_proxy
 ARG https_proxy
 ENV TZ=Asia/Shanghai
 ARG PIP_NO_CACHE_DIR=false
-ENV TRANSFORMERS_COMMIT_ID=95fe0f5
+ENV TRANSFORMERS_COMMIT_ID=1466677
 
 # retrive oneapi repo public key
 RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
@@ -33,7 +33,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # install huggingface dependencies
     pip install git+https://github.com/huggingface/transformers.git@${TRANSFORMERS_COMMIT_ID} && \
-    pip install peft==0.5.0 datasets accelerate==0.23.0 && \
+    pip install peft==0.6.0 datasets accelerate==0.23.0 && \
     pip install bitsandbytes scipy && \
     git clone https://github.com/intel-analytics/IPEX-LLM.git && \
     mv IPEX-LLM/python/llm/example/GPU/LLM-Finetuning/common /common && \

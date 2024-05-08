@@ -1,7 +1,7 @@
 # This file is copied from https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/requirements.txt
 --extra-index-url https://huggingface.github.io/autogptq-index/whl/cu118/
 packaging==23.2
-peft==0.5.0
+peft==0.10.0
 tokenizers
 bitsandbytes>=0.41.1
 accelerate==0.23.0

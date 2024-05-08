@@ -28,7 +28,7 @@ This guide provides step-by-step instructions for installing and using IPEX-LLM 
 
 ### 1. Prepare ipex-llm-cpu Docker Image
 
-Run the following command to pull image from dockerhub:
+Run the following command to pull image:
 ```bash
 docker pull intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT
 ```

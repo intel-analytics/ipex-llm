@@ -580,6 +580,20 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/stablelm">link</a></td>
        </tr>
+       <tr>
+         <td>CodeGemma</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegemma">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/codegemma">link</a></td>
+       </tr>
+       <tr>
+         <td>Command-R/cohere</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/cohere">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/cohere">link</a></td>
+       </tr>
      </tbody>
    </table>
 
