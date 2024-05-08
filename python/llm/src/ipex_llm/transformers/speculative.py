@@ -73,7 +73,7 @@ def generate(
             )
             for var in ['max_step_draft', 'th_stop_draft', 'hf_adjust',
                         'auto_th_stop_draft', 'auto_parameters', 'min_step_draft',
-                        'th_batch_num', 'eos_token_id']:
+                        'th_batch_num']:
                 kwargs.pop(var, None)
             return original_generate(self,
                                      inputs=inputs,
@@ -1103,7 +1103,7 @@ def speculative_generate(self,
             if eos_token_id in output_ids_list:
                 idx = output_ids_list.index(eos_token_id)
                 step -= (len(output_ids_list) - idx - 1)
-                this_peer_finished=True
+                this_peer_finished = True
                 break
         if this_peer_finished:
             break
