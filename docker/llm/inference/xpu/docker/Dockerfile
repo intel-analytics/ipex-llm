@@ -9,6 +9,7 @@ ENV USE_XETLA=OFF
 ENV SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 COPY chat.py /llm/chat.py
+COPY ./entrypoint.sh /opt/entrypoint.sh
 
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
@@ -44,10 +45,14 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     # Install related libary of chat.py
     pip install --upgrade colorama && \
+    # Download all-in-one benchmark
+    git clone https://github.com/intel-analytics/ipex-llm && \
+    cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     # Install vllm dependencies
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
     # Download vLLM-Serving
     git clone https://github.com/intel-analytics/IPEX-LLM && \
     cp -r ./IPEX-LLM/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
-    rm -rf ./IPEX-LLM
+    rm -rf ./IPEX-LLM && \
+    chmod +x /opt/entrypoint.sh
