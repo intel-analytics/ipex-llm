@@ -48,6 +48,7 @@ jobs:
       - name: setup-python-version
         id: setup-python-version
         run: |
+          ls
           if [ ${{ github.event_name }} == 'schedule' ]; then
             python_version='["3.9", "3.10", "3.11"]'
           else
