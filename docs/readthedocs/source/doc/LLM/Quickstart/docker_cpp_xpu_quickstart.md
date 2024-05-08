@@ -1,57 +1,59 @@
-## Build/Use IPEX-LLM cpp xpu image
+## RUN llama.cpp and ollama and open-webui with IPEX-LLM CPP docker image on Intel GPUs
+
+## Quick Start
 
 ### Setting Docker on windows
-If you want to run this image on windows, please refer to (this document)[https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows] to set up Docker on windows.
+If you want to run this image on windows, please refer to (this document)[https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows] to set up Docker on windows. And run below steps on wls ubuntu.
 
-### Build Image or pull image
+### Get the latest Image
 ```bash
-# build
-docker build \
-  --build-arg http_proxy=.. \
-  --build-arg https_proxy=.. \
-  --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/ipex-llm-cpp-xpu:latest .
-
-# pull
 docker pull intelanalytics/ipex-llm-cpp-xpu:latest
 ```
 
 ### Start Image
 
-To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. And change the `/path/to/models` to mount the models.
+```eval_rst
+.. tabs::
+   .. tab:: Linux
 
-An Linux example could be:
-```bash
-#/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-cpp-xpu:latest
-export CONTAINER_NAME=ipex-llm-cpp-xpu-container
-sudo docker run -itd \
-        --net=host \
-        --device=/dev/dri \
-        -v /path/to/models:/models \
-        -e no_proxy=localhost,127.0.0.1 \
-        --memory="32G" \
-        --name=$CONTAINER_NAME \
-        --shm-size="16g" \
-        $DOCKER_IMAGE
-```
+      To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. And change the `/path/to/models` to mount the models.
 
-An Windows example could be:
-```bash
-#/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-cpp-xpu:latest
-export CONTAINER_NAME=ipex-llm-cpp-xpu-container
-sudo docker run -itd \
-        --net=host \
-        --device=/dev/dri \
-        --privileged \
-        -v /path/to/models:/models \
-        -v /usr/lib/wsl:/usr/lib/wsl \
-        -e no_proxy=localhost,127.0.0.1 \
-        --memory="32G" \
-        --name=$CONTAINER_NAME \
-        --shm-size="16g" \
-        $DOCKER_IMAGE
+      .. code-block:: bash
+
+        #/bin/bash
+        export DOCKER_IMAGE=intelanalytics/ipex-llm-cpp-xpu:latest
+        export CONTAINER_NAME=ipex-llm-cpp-xpu-container
+        sudo docker run -itd \
+                --net=host \
+                --device=/dev/dri \
+                -v /path/to/models:/models \
+                -e no_proxy=localhost,127.0.0.1 \
+                --memory="32G" \
+                --name=$CONTAINER_NAME \
+                --shm-size="16g" \
+                $DOCKER_IMAGE
+   
+   .. tab:: Windows
+
+      To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. And change the `/path/to/models` to mount the models. Then add `--privileged ` and map the `/usr/lib/wsl` to the docker.
+
+      .. code-block:: bash
+
+        #/bin/bash
+        export DOCKER_IMAGE=intelanalytics/ipex-llm-cpp-xpu:latest
+        export CONTAINER_NAME=ipex-llm-cpp-xpu-container
+        sudo docker run -itd \
+                --net=host \
+                --device=/dev/dri \
+                --privileged \
+                -v /path/to/models:/models \
+                -v /usr/lib/wsl:/usr/lib/wsl \
+                -e no_proxy=localhost,127.0.0.1 \
+                --memory="32G" \
+                --name=$CONTAINER_NAME \
+                --shm-size="16g" \
+                $DOCKER_IMAGE
+
 ```
 
 

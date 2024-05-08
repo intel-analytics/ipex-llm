@@ -36,6 +36,7 @@ subtrees:
                 - file: doc/LLM/Quickstart/fastchat_quickstart
                 - file: doc/LLM/Quickstart/axolotl_quickstart
                 - file: doc/LLM/Quickstart/deepspeed_autotp_fastapi_quickstart
+                - file: doc/LLM/Quickstart/docker_cpp_xpu_quickstart
           - file: doc/LLM/Overview/KeyFeatures/index
             title: "Key Features"
             subtrees:
