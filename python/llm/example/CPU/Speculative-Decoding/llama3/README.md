@@ -18,7 +18,8 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.11
 conda activate llm
 pip install --pre --upgrade ipex-llm[all]
-pip install intel_extension_for_pytorch==2.1.0
+# transformers>=4.33.0 is required for Llama3 with IPEX-LLM optimizations
+pip install transformers==4.37.0 
 ```
 
 ### 2. Configures high-performing processor environment variables

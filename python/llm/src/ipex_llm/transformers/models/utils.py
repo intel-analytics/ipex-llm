@@ -74,9 +74,7 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
 
 
 def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
-    if os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
-        return os.environ["IPEX_LLM_LOW_MEM"] == "1"
-    elif os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
+    if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         warnings.warn(
             "`BIGDL_QUANTIZE_KV_CACHE` is deprecated and will be removed in future releases. "
             "Please use `IPEX_LLM_QUANTIZE_KV_CACHE` instead."
@@ -84,6 +82,8 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
         return os.environ["BIGDL_QUANTIZE_KV_CACHE"] == "1"
     elif os.environ.get("IPEX_LLM_QUANTIZE_KV_CACHE", None) is not None:
         return os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] == "1"
+    elif os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
+        return os.environ["IPEX_LLM_LOW_MEM"] == "1"
     else:
         return x.device.type == 'xpu' and kv_cache_device_check(x) \
             and hasattr(linear, "qtype") and \
@@ -96,7 +96,7 @@ def kv_cache_device_check(x: torch.Tensor) -> bool:
             1 < x.size(0) and x.size(0) <= 8)
 
 
-def init_fp8_kv_cache(batch_size, num_heads, current_length, head_dim, device, new_layout=False):
+def init_fp8_kv_cache(batch_size, num_heads, current_length, head_dim, device):
     max_length = current_length + FP8_KV_ALLOC_LENGTH
 
     k_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
@@ -104,28 +104,21 @@ def init_fp8_kv_cache(batch_size, num_heads, current_length, head_dim, device, n
     k_cache = k_cache_storage.as_strided((batch_size, num_heads, 0, head_dim),
                                          k_cache_storage.stride(), storage_offset=0)
 
-    if new_layout:
-        v_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
-                                      dtype=torch.uint8, device=device)
-        v_cache = v_cache_storage.as_strided((batch_size, num_heads, 0, head_dim),
-                                             v_cache_storage.stride(), storage_offset=0)
-        return k_cache, v_cache
-    else:
-        v_cache_storage = torch.empty(batch_size, num_heads, head_dim, max_length,
-                                      dtype=torch.uint8, device=device)
-        v_cache = v_cache_storage.as_strided((batch_size, num_heads, head_dim, 0),
-                                             v_cache_storage.stride(), storage_offset=0)
-        return k_cache, v_cache.transpose(-1, -2)
+    v_cache_storage = torch.empty(batch_size, num_heads, max_length, head_dim,
+                                  dtype=torch.uint8, device=device)
+    v_cache = v_cache_storage.as_strided((batch_size, num_heads, 0, head_dim),
+                                         v_cache_storage.stride(), storage_offset=0)
+    return k_cache, v_cache
 
 
-def append_fp8_kv_cache(k_cache, v_cache, key, value, new_layout=False):
+def append_fp8_kv_cache(k_cache, v_cache, key, value):
     batch_size, num_heads, cur_length, head_dim = k_cache.shape
     new_length = cur_length + key.size(2)
     new_size = (batch_size, num_heads, new_length, head_dim)
 
     if k_cache.stride(1) < new_length * k_cache.size(3):
         new_k_cache, new_v_cache = init_fp8_kv_cache(batch_size, num_heads, new_length,
-                                                     head_dim, key.device, new_layout)
+                                                     head_dim, key.device)
         new_k_cache = new_k_cache.as_strided(new_size, new_k_cache.stride(), storage_offset=0)
         new_v_cache = new_v_cache.as_strided(new_size, new_v_cache.stride(), storage_offset=0)
         new_k_cache[:, :, :cur_length, :] = k_cache
@@ -134,23 +127,22 @@ def append_fp8_kv_cache(k_cache, v_cache, key, value, new_layout=False):
         new_k_cache = k_cache.as_strided(new_size, k_cache.stride(), storage_offset=0)
         new_v_cache = v_cache.as_strided(new_size, v_cache.stride(), storage_offset=0)
 
-    fp8_key = key.half().view(torch.uint8)[:, :, :, 1::2]
-    new_k_cache[:, :, cur_length:new_length, :] = fp8_key
-    fp8_value = value.half().view(torch.uint8)[:, :, :, 1::2]
-    new_v_cache[:, :, cur_length:new_length, :] = fp8_value
+    import linear_q4_0
+    linear_q4_0.quantize_key_value(key, value,
+                                   new_k_cache[:, :, cur_length:new_length, :],
+                                   new_v_cache[:, :, cur_length:new_length, :])
 
     return new_k_cache, new_v_cache
 
 
 def restore_fp8_kv_cache(k_cache, v_cache, dtype):
-    new_k_cache = torch.full(k_cache.shape, 128, dtype=torch.int16, device=k_cache.device)
-    new_k_cache.view(torch.uint8)[:, :, :, 1::2] = k_cache
-    new_k_cache = new_k_cache.view(torch.half)
-    new_v_cache = torch.full(v_cache.shape, 128, dtype=torch.int16, device=v_cache.device)
-    new_v_cache.view(torch.uint8)[:, :, :, 1::2] = v_cache
-    new_v_cache = new_v_cache.view(torch.half)
+    key_states = torch.empty(k_cache.shape, device=k_cache.device, dtype=dtype)
+    value_states = torch.empty(v_cache.shape, device=v_cache.device, dtype=dtype)
 
-    return new_k_cache.to(dtype=dtype), new_v_cache.to(dtype=dtype)
+    import linear_q4_0
+    linear_q4_0.dequantize_key_value(k_cache, v_cache, key_states, value_states)
+
+    return key_states, value_states
 
 
 def rotate_half(x):
@@ -378,13 +370,6 @@ def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
         return False
     elif q_len > 32:
         # Use new sdp_fp16 only when q_len <= 32
-        return False
-
-    device_name = torch.xpu.get_device_name(query_states.device.index)
-    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A") \
-            and is_deepspeed_available:
-        # It seems there is an issue in DeepSpeed AutoTP when multi-card inference,
-        # Disable new sdp_fp16 for now
         return False
 
     return True

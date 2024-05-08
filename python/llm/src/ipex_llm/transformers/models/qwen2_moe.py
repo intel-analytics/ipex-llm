@@ -405,8 +405,7 @@ def qwen2moe_attention_forward_quantized(
     if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
             and not hidden_states.requires_grad:
         import linear_q4_0
-        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                        value_states.transpose(-1, -2))
+        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
     else:
         attn_output = torch.matmul(attn_weights, value_states)
 

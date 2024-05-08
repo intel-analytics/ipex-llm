@@ -54,13 +54,13 @@ def get_prompt(user_input: str, chat_history: list[tuple[str, str]],
     prompt_texts = [f'<|begin_of_text|>']
 
     if system_prompt != '':
-        prompt_texts.append(f'<|start_header_id|>system<|end_header_id|>\n{system_prompt}<|eot_id|>')
+        prompt_texts.append(f'<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>')
 
     for history_input, history_response in chat_history:
-        prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n{history_input.strip()}<|eot_id|>')
-        prompt_texts.append(f'<|start_header_id|>assistant<|end_header_id|>\n{history_response.strip()}<|eot_id|>')
+        prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n\n{history_input.strip()}<|eot_id|>')
+        prompt_texts.append(f'<|start_header_id|>assistant<|end_header_id|>\n\n{history_response.strip()}<|eot_id|>')
 
-    prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n{user_input.strip()}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n')
+    prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n\n{user_input.strip()}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n')
     return ''.join(prompt_texts)
 
 if __name__ == '__main__':
@@ -89,7 +89,13 @@ if __name__ == '__main__':
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    
+
+     # here the terminators refer to https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct#transformers-automodelforcausallm
+    terminators = [
+        tokenizer.eos_token_id,
+        tokenizer.convert_tokens_to_ids("<|eot_id|>"),
+    ]
+   
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
@@ -102,6 +108,7 @@ if __name__ == '__main__':
         # warmup
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
+                                eos_token_id=terminators,
                                 attention_mask=attention_mask,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0])
@@ -110,6 +117,7 @@ if __name__ == '__main__':
         st = time.perf_counter()
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict,
+                                eos_token_id=terminators,
                                 attention_mask=attention_mask,
                                 do_sample=False)
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)

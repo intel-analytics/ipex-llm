@@ -40,7 +40,9 @@ from ipex_llm.transformers.models.utils import (
     apply_rotary_pos_emb_cache_freq_xpu
 )
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
-from ipex_llm.transformers.kv import DynamicNormalCache
+from ipex_llm.transformers.models.utils import use_new_esimd_sdp_fp16, use_quantize_kv_cache
+from ipex_llm.transformers.models.utils import use_sdp_fp8, restore_fp8_kv_cache
+from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache
 
 from typing import Optional, Tuple, List
 from transformers.models.phi.modeling_phi import repeat_kv
@@ -53,6 +55,47 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     q_embed = (q * cos) + (rotate_half(q) * sin)
     k_embed = (k * cos) + (rotate_half(k) * sin)
     return q_embed, k_embed
+
+
+def su_scaled_rope_forward(self, x: torch.Tensor, position_ids: torch.Tensor, seq_len=None):
+    if self.inv_freq is None:
+        short_ext_factors = torch.tensor(self.short_factor, dtype=torch.float32, device=x.device)
+        inv_freq_shape = torch.arange(0, self.dim, 2,
+                                      dtype=torch.int64, device=x.device).float() / self.dim
+        self.inv_freq = 1.0 / (short_ext_factors * self.base**inv_freq_shape)
+
+        long_ext_factors = torch.tensor(self.long_factor, dtype=torch.float32, device=x.device)
+        self.register_buffer("long_inv_freq", None, persistent=False)
+        self.long_inv_freq = 1.0 / (long_ext_factors * self.base**inv_freq_shape)
+
+    seq_len = seq_len if seq_len is not None else torch.max(position_ids) + 1
+    if seq_len > self.original_max_position_embeddings:
+        inv_freq = self.long_inv_freq
+    else:
+        inv_freq = self.inv_freq
+
+    inv_freq_expanded = inv_freq[None, :, None].float().expand(position_ids.shape[0], -1, 1)
+    position_ids_expanded = position_ids[:, None, :].float()
+
+    # Force float32 since bfloat16 loses precision on long contexts
+    # See https://github.com/huggingface/transformers/pull/29285
+    device_type = x.device.type
+    device_type = device_type if isinstance(device_type, str) and device_type != "mps" else "cpu"
+    with torch.autocast(device_type=device_type, enabled=False):
+        freqs = (inv_freq_expanded.float() @ position_ids_expanded.float()).transpose(1, 2)
+        emb = torch.cat((freqs, freqs), dim=-1)
+
+        scale = self.max_position_embeddings / self.original_max_position_embeddings
+        if scale <= 1.0:
+            scaling_factor = 1.0
+        else:
+            scaling_factor = math.sqrt(
+                1 + math.log(scale) / math.log(self.original_max_position_embeddings)
+            )
+
+        cos = emb.cos() * scaling_factor
+        sin = emb.sin() * scaling_factor
+    return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)
 
 
 def attention_forward(
@@ -93,22 +136,34 @@ def attention_forward(
         key_states, value_states = past_key_value.update(key_states, value_states,
                                                          self.layer_idx, None)
 
-    # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
+    if (isinstance(past_key_value, DynamicFp8Cache) and
+            use_sdp_fp8(q_len, kv_seq_len, query_states)):
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states, attention_mask)
+    elif (isinstance(past_key_value, DynamicNormalCache) and
+            use_new_esimd_sdp_fp16(q_len, kv_seq_len, self.head_dim, query_states)):
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+    else:
+        if isinstance(past_key_value, DynamicFp8Cache):
+            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
+                                                            query_states.dtype)
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    attn_weights = torch.matmul(query_states,
-                                key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(query_states,
+                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    if attention_mask is not None:
-        attn_weights = attn_weights + attention_mask
+        if attention_mask is not None:
+            attn_weights = attn_weights + attention_mask
 
-    # upcast attention to fp32
-    attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                               dtype=torch.float32).to(value_states.dtype)
-    attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
-                                               training=self.training)
-    attn_output = torch.matmul(attn_weights, value_states)
+        # upcast attention to fp32
+        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                   dtype=torch.float32).to(value_states.dtype)
+        attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                                   training=self.training)
+        attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
@@ -175,8 +230,12 @@ def model_forward_wrapper(origin_model_forward):
     ):
         # IPEX-LLM OPT: kv cache but no sdp (its head_dim 96, cannot use sdp)
         use_cache = use_cache if use_cache is not None else self.config.use_cache
+        use_quantize_kv = (use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids) and
+                           self.config.hidden_size // self.config.num_attention_heads in [64, 128])
         if use_cache:
-            if not isinstance(past_key_values, DynamicNormalCache):
+            if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+                past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+            if not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
         return origin_model_forward(
             self=self,

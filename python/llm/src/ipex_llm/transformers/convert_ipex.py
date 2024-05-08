@@ -138,7 +138,7 @@ def _ipex_optimize_model(model, rms_classes, qtype):
         }
         qconfig = ipex.quantization.get_weight_only_quant_qconfig_mapping(
             weight_dtype=torch.qint8,  # INT8
-            lowp_mode=ipex.quantization.WoqLowpMode.INT8,
+            lowp_mode=ipex.quantization.WoqLowpMode.BF16,
             act_quant_mode=act_quant_mode_dict["PER_IC_BLOCK"],
             group_size=-1,
         )

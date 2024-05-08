@@ -45,6 +45,7 @@ def load_model(
     device: str = "cpu",
     low_bit: str = 'sym_int4',
     trust_remote_code: bool = True,
+    speculative: bool = False,
 ):
     """Load a model using BigDL LLM backend."""
 
@@ -59,8 +60,15 @@ def load_model(
         model_kwargs["trust_remote_code"] = True
     if low_bit == "bf16":
         model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.bfloat16})
+    elif low_bit == "fp16":
+        model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.float16})
     else:
         model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": 'auto'})
+
+    if speculative:
+        invalidInputError(low_bit == "fp16" or low_bit == "bf16",
+                          "Self-Speculative only supports low_bit fp16 or bf16")
+        model_kwargs["speculative"] = True
 
     # Load tokenizer
     tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
