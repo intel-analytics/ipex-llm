@@ -243,6 +243,7 @@ def lookup_generate(self,
     step_verify = 0
 
     clear_benchmarks(self)
+    self.accept_rate = []
 
     past_key_values = None
     input_len = input_ids.shape[1]
@@ -340,6 +341,7 @@ def lookup_generate(self,
                                                         new_cache_size)
 
             accept_rate = self.n_matched/self.n_drafted if self.n_drafted > 0 else 1
+            self.accept_rate.append(accept_rate)
             # Update the candidate generation strategy if needed
             candidates_generator.update_candidate_strategy(candidate_length, n_matches,
                                                            accept_rate)
