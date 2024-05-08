@@ -363,7 +363,7 @@ jobs:
             source /home/arda/intel/oneapi/setvars.sh
           fi
           python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
-          bash python/llm/test/run-llm-inference-tests-gpu.sh4.sh
+          bash python/llm/test/run-llm-inference-tests-gpu.sh
 
       - name: Run LLM example tests
         shell: bash
