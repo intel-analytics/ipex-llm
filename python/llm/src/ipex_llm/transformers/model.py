@@ -673,7 +673,7 @@ class _BaseAutoModelClass:
             resolved_archive_file,
             pretrained_model_name_or_path,
             sharded_metadata=sharded_metadata,
-            _fast_init=_fast_init,
+            _fast_init=False,  # always false to avoid pre-init behaviors
             low_cpu_mem_usage=bigdl_lcmu_enabled,
             offload_folder=offload_folder,
             offload_state_dict=offload_state_dict,
