@@ -18,21 +18,22 @@ import torch
 import time
 import argparse
 
-from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from ipex_llm import optimize_model
 
 # The instruction-tuned models use a chat template that must be adhered to for conversational use.
-# see https://huggingface.co/google/gemma-7b-it#chat-template.
+# see https://huggingface.co/google/codegemma-7b-it#chat-template.
 chat = [
-    { "role": "user", "content": "What is AI?" },
+    { "role": "user", "content": "Write a hello world program" },
 ]
 
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Gemma model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="google/gemma-7b-it",
-                        help='The huggingface repo id for the Gemma (e.g. `google/gemma-7b-it` and `google/gemma-7b-it`) to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for CodeGemma model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="google/codegemma-7b-it",
+                        help='The huggingface repo id for the CodeGemma model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="Write a hello world program",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
@@ -40,16 +41,18 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+    # Load model
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 optimize_model=True,
                                                  trust_remote_code=True,
-                                                 mixed_precision=True,
-                                                 use_cache=True)
+                                                 torch_dtype='auto',
+                                                 low_cpu_mem_usage=True)
+
+    # With only one line to enable IPEX-LLM optimization on model
+    # To fix the issue that the output of codegemma-7b-it is abnormal, skip the 'lm_head' module during optimization
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the optimize_model function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+    model = optimize_model(model, modules_to_not_convert=["lm_head"])
+
     model = model.to('xpu')
 
     # Load tokenizer
@@ -66,10 +69,6 @@ if __name__ == '__main__':
 
         # start inference
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with IPEX-LLM INT4 optimizations
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
@@ -77,5 +76,7 @@ if __name__ == '__main__':
         output = output.cpu()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
+        print('-'*20, 'Prompt', '-'*20)
+        print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)

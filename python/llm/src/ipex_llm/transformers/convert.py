@@ -49,6 +49,10 @@ import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+import subprocess
+import sys
+
+_IS_VLLM_AVAILABLE = None
 
 
 def is_auto_gptq_available():
@@ -60,7 +64,16 @@ def is_auto_awq_available():
 
 
 def is_vllm_available():
-    return importlib.util.find_spec("vllm") is not None
+    global _IS_VLLM_AVAILABLE
+    if _IS_VLLM_AVAILABLE is not None:
+        return _IS_VLLM_AVAILABLE
+    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'list'])
+    installed_packages = [r.decode().split('  ')[0] for r in reqs.split()]
+    if 'vllm' in installed_packages:
+        _IS_VLLM_AVAILABLE = True
+    else:
+        _IS_VLLM_AVAILABLE = False
+    return _IS_VLLM_AVAILABLE
 
 
 def is_torch_distributed_initialized():
@@ -1269,6 +1282,24 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MoeAttention,
                         qwen2moe_attention_forward)
+    elif model.config.model_type == "cohere":
+        # for CohereForAI/c4ai-command-r-v01
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.cohere import cohere_attention_forward
+        from ipex_llm.transformers.models.cohere import cohere_model_forward
+        convert_forward(model,
+                        module.CohereModel,
+                        cohere_model_forward)
+        convert_forward(model,
+                        module.CohereAttention,
+                        cohere_attention_forward)
+        convert_forward(model,
+                        module.CohereLayerNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        module.CohereMLP,
+                        llama_mlp_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
