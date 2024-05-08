@@ -1508,6 +1508,8 @@ def _optimize_post(model, lightweight_bmm=False):
         # for phi-3
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.phi3 import su_scaled_rope_forward
+        convert_forward(model, module.Phi3SuScaledRotaryEmbedding, su_scaled_rope_forward)
         from ipex_llm.transformers.models.phi3 import attention_forward
         convert_forward(model, module.Phi3Attention, attention_forward)
         from ipex_llm.transformers.models.phi3 import mlp_forward
