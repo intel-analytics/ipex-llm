@@ -87,7 +87,7 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
 
-      - name: Test on xpu(transformers==4.36.0)
+      - name: Test on xpu(transformers==4.36.2)
         shell: bash
         run: |
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
@@ -102,20 +102,6 @@ jobs:
           # change csv name
           sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
-
-      #- name: Test on xpu(transformers==4.34.0)
-      #  shell: bash
-       # run: |
-      #   source /opt/intel/oneapi/setvars.sh
-      #    export USE_XETLA=OFF
-      #    export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          # upgrade transformers for model Mistral-7B-v0.1
-      #    python -m pip install transformers==4.34.0
-      #    cp python/llm/test/benchmark/arc-perf-transformers-434.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-      #    cd python/llm/dev/benchmark/all-in-one
-          # change csv name
-      #    sed -i 's/test1/test2/g' run.py
-      #    python run.py
 
       - name: Test on xpu(transformers==4.37.0)
         shell: bash
@@ -151,7 +137,6 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
           python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-437.yaml
-          # python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           find . -name "*test*.csv" -delete
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
@@ -429,30 +414,6 @@ jobs:
 
           call conda deactivate
 
-      #- name: Prepare igpu perf test for Mistral (32-32)
-      #  shell: bash
-      #  run: |
-      #    sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-      #    sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32_434.yaml
-
-      #- name: Test on igpu for Mistral (32-32)
-      #  shell: cmd
-      #  run: |
-      #    call conda activate igpu-perf
-      #    pip install transformers==4.34.0
-
-      #    call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-      #    set SYCL_CACHE_PERSISTENT=1
-      #    set BIGDL_LLM_XMX_DISABLED=1
-
-      #    cd python\llm\dev\benchmark\all-in-one
-      #    move ..\..\..\test\benchmark\igpu-perf\32-32_434.yaml config.yaml
-      #    set PYTHONIOENCODING=utf-8
-      #    python run.py >> %CSV_SAVE_PATH%\32-32\log\%LOG_FILE% 2>&1
-      #    if %ERRORLEVEL% neq 0 (exit /b 1)
-
-      #    call conda deactivate
-
       - name: Prepare igpu perf test for Qwen1.5 (32-32)
         shell: bash
         run: |
@@ -523,30 +484,6 @@ jobs:
 
           call conda deactivate
 
-      #- name: Prepare igpu perf test for Mistral (1024-128)
-      #  shell: bash
-      #  run: |
-      #    sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-      #    sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_434.yaml
-
-      #- name: Test on igpu for Mistral (1024-128)
-      #  shell: cmd
-      #  run: |
-      #    call conda activate igpu-perf
-      #    pip install transformers==4.34.0
-
-      #    call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-      #    set SYCL_CACHE_PERSISTENT=1
-      #    set BIGDL_LLM_XMX_DISABLED=1
-
-      #    cd python\llm\dev\benchmark\all-in-one
-      #    move ..\..\..\test\benchmark\igpu-perf\1024-128_434.yaml config.yaml
-      #    set PYTHONIOENCODING=utf-8
-      #    python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
-      #    if %ERRORLEVEL% neq 0 (exit /b 1)
-
-      #    call conda deactivate
-
       - name: Prepare igpu perf test for Qwen 1.5 (1024-128)
         shell: bash
         run: |
@@ -615,30 +552,6 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
-
-      #- name: Prepare igpu perf test for Mistral (2048-256)
-      #  shell: bash
-      #  run: |
-      #    sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-      #    sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_434.yaml
-
-      #- name: Test on igpu for Mistral (2048-256)
-      #  shell: cmd
-      #  run: |
-      #    call conda activate igpu-perf
-      #    pip install transformers==4.34.0
-
-      #    call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-      #    set SYCL_CACHE_PERSISTENT=1
-      #    set BIGDL_LLM_XMX_DISABLED=1
-
-      #    cd python\llm\dev\benchmark\all-in-one
-      #    move ..\..\..\test\benchmark\igpu-perf\2048-256_434.yaml config.yaml
-      #    set PYTHONIOENCODING=utf-8
-      #    python run.py >> %CSV_SAVE_PATH%\2048-256\log\%LOG_FILE% 2>&1
-      #    if %ERRORLEVEL% neq 0 (exit /b 1)
-
-      #    call conda deactivate
 
       - name: Prepare igpu perf test for Qwen 1.5 (2048-256)
         shell: bash
@@ -709,30 +622,6 @@ jobs:
 
           call conda deactivate
 
-      #- name: Prepare igpu perf test for Mistral (load_low_bit 1024-128)
-      #  shell: bash
-      #  run: |
-      #    sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-      #    sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_loadlowbit_434.yaml
-
-      #- name: Test on igpu for Mistral (load_low_bit 1024-128)
-      #  shell: cmd
-      #  run: |
-      #    call conda activate igpu-perf
-      #    pip install transformers==4.34.0
-
-      #    call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-      #    set SYCL_CACHE_PERSISTENT=1
-      #    set BIGDL_LLM_XMX_DISABLED=1
-
-      #    cd python\llm\dev\benchmark\all-in-one
-      #    move ..\..\..\test\benchmark\igpu-perf\1024-128_loadlowbit_434.yaml config.yaml
-      #    set PYTHONIOENCODING=utf-8
-      #    python run.py >> %CSV_SAVE_PATH%\1024-128_loadlowbit\log\%LOG_FILE% 2>&1
-      #    if %ERRORLEVEL% neq 0 (exit /b 1)
-
-      #    call conda deactivate
-
       - name: Prepare igpu perf test for Qwen 1.5 (load_low_bit 1024-128)
         shell: bash
         run: |
@@ -799,30 +688,6 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
-
-      #- name: Prepare igpu perf test for Mistral (int4+fp16 1024-128)
-      #  shell: bash
-      #  run: |
-      #    sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
-      #    sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_434.yaml
-
-      #- name: Test on igpu for Mistral (int4+fp16 1024-128)
-      #  shell: cmd
-      #  run: |
-      #    call conda activate igpu-perf
-      #    pip install transformers==4.34.0
-
-      #    call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-      #    set SYCL_CACHE_PERSISTENT=1
-      #    set BIGDL_LLM_XMX_DISABLED=1
-
-      #    cd python\llm\dev\benchmark\all-in-one
-      #    move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_434.yaml config.yaml
-      #    set PYTHONIOENCODING=utf-8
-      #    python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16\log\%LOG_FILE% 2>&1
-      #    if %ERRORLEVEL% neq 0 (exit /b 1)
-
-      #    call conda deactivate
 
       - name: Prepare igpu perf test for Qwen 1.5 (int4+fp16 1024-128)
         shell: bash
