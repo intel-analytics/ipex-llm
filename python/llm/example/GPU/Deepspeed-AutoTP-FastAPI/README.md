@@ -38,6 +38,8 @@ Run Llama-2-7b-chat-hf on two Intel Arc A770:
 
 # Before run this script, you should adjust the YOUR_REPO_ID_OR_MODEL_PATH in last line
 # If you want to change server port, you can set port parameter in last line
+
+# To avoid GPU OOM, you could adjust --max-num-seqs and --max-num-batched-tokens parameters in below script
 bash run_llama2_7b_chat_hf_arc_2_card.sh
 ```
 
