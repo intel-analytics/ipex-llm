@@ -36,7 +36,7 @@ source /opt/intel/oneapi/setvars.sh
 
 #### 2.2 Configures `accelerate` in command line interactively. 
 
-You can download a default accelerate setting with `use_cpu: false`.
+You can download a default `default_config.yaml` with `use_cpu: false`.
 
 ```bash
 mkdir -p  ~/.cache/huggingface/accelerate/

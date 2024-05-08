@@ -92,7 +92,7 @@ Configure oneAPI variables by running the following command:
 
 ```
 
-Configure accelerate to avoid training with CPU. You can download a default accelerate setting with `use_cpu: false`.
+Configure accelerate to avoid training with CPU. You can download a default `default_config.yaml` with `use_cpu: false`.
 
 ```cmd
 mkdir -p  ~/.cache/huggingface/accelerate/
