@@ -331,7 +331,7 @@ jobs:
 
           pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          pip install transformers==4.36.2
+          # pip install transformers==4.36.2
           pip list
 
           call conda deactivate
@@ -359,7 +359,6 @@ jobs:
       #      echo "Did not install ipex-llm with excepted version %TEST_VERSION_DATE%"
       #      exit /b 1
       #    )
-      #    pip install transformers==4.36.2
       #    pip list
 
       #    call conda deactivate
