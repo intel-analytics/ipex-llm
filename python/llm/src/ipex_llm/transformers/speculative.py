@@ -91,7 +91,7 @@ def generate(
         for var in ['max_new_tokens', 'max_step_draft', 'th_stop_draft', 'do_sample',
                     'top_k', 'top_p', 'temperature', 'hf_adjust',
                     'auto_th_stop_draft', 'auto_parameters', 'repetition_penalty',
-                    'attention_mask', 'min_step_draft']:
+                    'attention_mask', 'min_step_draft', 'eos_token_id']:
             value = kwargs.pop(var, None)
             if value is not None:
                 new_speculative_kwargs[var] = value
@@ -719,6 +719,7 @@ def speculative_generate(self,
     # Step 4. (b, c, e) match (b, c, d) -> b, c
     # Final, f will be the next input, just like a
     # Step 5. Final-> b, c, f
+    this_peer_finished = False
     while True:
         if step >= max_new_tokens:
             break
@@ -1093,10 +1094,20 @@ def speculative_generate(self,
 
         # Stop on eos and remove content after eos
         output_ids_list = output_ids[0].tolist()
-        if generation_config.eos_token_id in output_ids_list:
-            idx = output_ids_list.index(generation_config.eos_token_id)
-            step -= (len(output_ids_list) - idx - 1)
-            break
+        if generation_config.eos_token_id is not None:
+            if isinstance(generation_config.eos_token_id, int):
+                eos_token_ids = [generation_config.eos_token_id]
+            else:
+                eos_token_ids = generation_config.eos_token_id
+
+            for eos_token_id in eos_token_ids:
+                if eos_token_id in output_ids_list:
+                    idx = output_ids_list.index(eos_token_id)
+                    step -= (len(output_ids_list) - idx - 1)
+                    this_peer_finished = True
+                    break
+            if this_peer_finished:
+                break
     if streamer is not None:
         streamer.end()
     step = min(step, max_new_tokens)
