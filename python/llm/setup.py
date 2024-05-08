@@ -52,7 +52,7 @@ github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
                'torch',
-               'transformers == 4.36.2', 'sentencepiece', 'tokenizers == 0.13.3',
+               'transformers == 4.36.2', 'sentencepiece', 'tokenizers == 0.15.2',
                # TODO: Support accelerate 0.22.0
                'accelerate == 0.21.0', 'tabulate']
 SERVING_DEP = ['fschat[model_worker, webui] == 0.2.36', 'protobuf']
@@ -277,7 +277,7 @@ def setup_package():
 
     # Add internal requires for llama-index
     llama_index_requires = copy.deepcopy(all_requires)
-    for exclude_require in ['torch', 'tokenizers == 0.13.3']:
+    for exclude_require in ['torch']:
         llama_index_requires.remove(exclude_require)
     llama_index_requires += ["torch<2.2.0",
                              "sentence-transformers~=2.6.1"]
