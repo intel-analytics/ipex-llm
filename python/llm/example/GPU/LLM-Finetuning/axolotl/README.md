@@ -36,13 +36,22 @@ source /opt/intel/oneapi/setvars.sh
 
 #### 2.2 Configures `accelerate` in command line interactively. 
 
+You can download a default accelerate setting with `use_cpu: false`.
+
+```bash
+mkdir -p  ~/.cache/huggingface/accelerate/
+wget -O ~/.cache/huggingface/accelerate/default_config.yaml https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/default_config.yaml
+```
+
+As an alternative, you can config accelerate based on your requirements.
+
 ```bash
 accelerate config
 ```
 
 Please answer `NO` in option `Do you want to run your training on CPU only (even if a GPU / Apple Silicon device is available)? [yes/NO]:`.
 
-After finish accelerate config, check if `use_cpu` is disable (i.e., ` use_cpu: false`) in accelerate config file (`~/.cache/huggingface/accelerate/default_config.yaml`).
+After finish accelerate config, check if `use_cpu` is disable (i.e., `use_cpu: false`) in accelerate config file (`~/.cache/huggingface/accelerate/default_config.yaml`).
 
 #### 2.3 (Optional) Set ` HF_HUB_OFFLINE=1` to avoid huggingface hug signing.
 

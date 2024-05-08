@@ -33,7 +33,7 @@ git clone https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0
 cd axolotl
 # replace requirements.txt
 remove requirements.txt
-wget -O requirements.txt https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/LLM-Finetuning/axolotl/requirements-xpu.txt
+wget -O requirements.txt https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/requirements-xpu.txt
 pip install -e .
 pip install transformers==4.36.0
 # to avoid https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544
@@ -92,7 +92,14 @@ Configure oneAPI variables by running the following command:
 
 ```
 
-Configure accelerate to avoid training with CPU
+Configure accelerate to avoid training with CPU. You can download a default accelerate setting with `use_cpu: false`.
+
+```cmd
+mkdir -p  ~/.cache/huggingface/accelerate/
+wget -O ~/.cache/huggingface/accelerate/default_config.yaml https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/default_config.yaml
+```
+
+As an alternative, you can config accelerate based on your requirements.
 
 ```cmd
 accelerate config
