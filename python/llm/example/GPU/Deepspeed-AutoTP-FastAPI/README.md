@@ -82,3 +82,19 @@ And you should get output like this:
 ```
 
 **Important**: The first token latency is much larger than rest token latency, you could use [our benchmark tool](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/dev/benchmark/README.md) to obtain more details about first and rest token latency.
+
+### 4. Benchmark with wrk
+
+We use wrk for testing end-to-end throughput, check [here](https://github.com/wg/wrk).
+
+You can install by:
+```bash
+sudo apt install wrk
+```
+
+Please change the test url accordingly.
+
+```bash
+# set t/c to the number of concurrencies to test full throughput.
+wrk -t1 -c1 -d5m -s ./wrk_script_1024.lua http://127.0.0.1:8000/generate/ --timeout 1m
+```
