@@ -1094,19 +1094,20 @@ def speculative_generate(self,
 
         # Stop on eos and remove content after eos
         output_ids_list = output_ids[0].tolist()
-        if isinstance(generation_config.eos_token_id, int):
-            eos_token_ids = [generation_config.eos_token_id]
-        else:
-            eos_token_ids = generation_config.eos_token_id
+        if generation_config.eos_token_id is not None:
+            if isinstance(generation_config.eos_token_id, int):
+                eos_token_ids = [generation_config.eos_token_id]
+            else:
+                eos_token_ids = generation_config.eos_token_id
 
-        for eos_token_id in eos_token_ids:
-            if eos_token_id in output_ids_list:
-                idx = output_ids_list.index(eos_token_id)
-                step -= (len(output_ids_list) - idx - 1)
-                this_peer_finished = True
+            for eos_token_id in eos_token_ids:
+                if eos_token_id in output_ids_list:
+                    idx = output_ids_list.index(eos_token_id)
+                    step -= (len(output_ids_list) - idx - 1)
+                    this_peer_finished = True
+                    break
+            if this_peer_finished:
                 break
-        if this_peer_finished:
-            break
     if streamer is not None:
         streamer.end()
     step = min(step, max_new_tokens)
