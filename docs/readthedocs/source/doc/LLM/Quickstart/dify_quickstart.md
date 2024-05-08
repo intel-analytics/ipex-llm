@@ -19,23 +19,15 @@ Follow the steps in [Run Ollama on Intel GPU Guide](./ollama_quickstart.md) to i
 
 ### 2. Install and Start `Dify`
 
-```eval_rst
 
-.. note::
-
-  The following steps are verified on Linux. 
-
-```
-
-
-#### Download `Dify`
+#### 2.1 Download `Dify`
 
 You can either clone the repository or download the source zip from [github](https://github.com/langgenius/dify/archive/refs/heads/main.zip):
 ```bash
 git clone https://github.com/langgenius/dify.git
 ```
 
-#### Setup Redis and PostgreSQL
+#### 2.2 Setup Redis and PostgreSQL
 
 Next, deploy PostgreSQL and Redis. You can choose to utilize Docker, following the steps in the [Local Source Code Start Guide](https://docs.dify.ai/getting-started/install-self-hosted/local-source-code#clone-dify), or proceed without Docker using the following instructions:
 
@@ -68,7 +60,7 @@ DB_PORT=5432
 DB_DATABASE=dify # change if needed
 ```
 
-#### Server Deployment
+#### 2.3 Server Deployment
 
 Follow the steps in the [`Server Deployment` section in Local Source Code Start Guide](https://docs.dify.ai/getting-started/install-self-hosted/local-source-code#server-deployment) to deploy and start the Dify Server.
 
@@ -87,7 +79,7 @@ INFO:werkzeug: * Debugger PIN: 227-697-894
 ```
 
 
-#### Deploy the frontend page
+#### 2.4 Deploy the frontend page
 
 Refer to the instructions provided in the [`Deploy the frontend page` section in Local Source Code Start Guide](https://docs.dify.ai/getting-started/install-self-hosted/local-source-code#deploy-the-frontend-page) to deploy the frontend page.
 
@@ -112,7 +104,7 @@ NEXT_PUBLIC_SENTRY_DSN=
 ```
 
 
-### How to Use `Dify`
+### 3. How to Use `Dify`
 
 For comprehensive usage instructions of Dify, please refer to the [Dify Documentation](https://docs.dify.ai/). In this section, we'll only highlight a few key steps for local LLM setup.
 
