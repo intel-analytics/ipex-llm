@@ -52,3 +52,10 @@ elif [[ "$DEVICE" == "Max" || "$DEVICE" == "MAX" ]]; then
 else
     echo "Invalid DEVICE specified."
 fi
+
+# print out results
+for file in *.csv; do
+    echo ""
+    echo "filename: $file"
+    cat "$file"
+done
