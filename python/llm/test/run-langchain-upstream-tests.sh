@@ -10,13 +10,22 @@ set -e
 
 echo ">>> Testing LangChain upstream unit test"
 mkdir ${LLM_INFERENCE_TEST_DIR}/langchain_upstream
-git clone -n https://github.com/langchain-ai/langchain.git ${LLM_INFERENCE_TEST_DIR}/langchain_upstream
-full_match_tag=$(git -C ${LLM_INFERENCE_TEST_DIR}/langchain_upstream tag | grep -E "^${langchain_version}$")
+ORIGIN_PWD=$(pwd)
+cd ${LLM_INFERENCE_TEST_DIR}/langchain_upstream
+git init .
+git remote add langchain_remote https://github.com/langchain-ai/langchain.git
+git fetch langchain_remote --tags
+full_match_tag=$(git tag | grep -E "^${langchain_version}$")
 if [ -n "$full_match_tag" ]; then
-    git -C ${LLM_INFERENCE_TEST_DIR}/langchain_upstream checkout $full_match_tag
+    git checkout $full_match_tag
 else
-    git -C ${LLM_INFERENCE_TEST_DIR}/langchain_upstream checkout $(git -C ${LLM_INFERENCE_TEST_DIR}/langchain_upstream tag | grep -E "^${langchain_version}" | head -n 1)
+    latest_tag=$(git tag | grep -E "^${langchain_version}" | head -n 1)
+    if [ -n "$latest_tag" ]; then
+        git checkout $latest_tag
+    fi
 fi
+cd $ORIGIN_PWD
+
 cp ${LLM_INFERENCE_TEST_DIR}/langchain_upstream/libs/community/tests/integration_tests/llms/test_bigdl_llm.py ${LLM_INFERENCE_TEST_DIR}/langchain_upstream
 cp ${LLM_INFERENCE_TEST_DIR}/langchain_upstream/libs/community/tests/integration_tests/llms/test_ipex_llm.py ${LLM_INFERENCE_TEST_DIR}/langchain_upstream
 
