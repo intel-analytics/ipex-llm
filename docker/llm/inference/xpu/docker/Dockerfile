@@ -55,6 +55,9 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     git clone https://github.com/intel-analytics/IPEX-LLM && \
     cp -r ./IPEX-LLM/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
     rm -rf ./IPEX-LLM && \
+    # Install related library of benchmarking
+    pip install pandas && \
+    pip install omegaconf && \
     chmod +x /llm/benchmark.sh
 
 WORKDIR /llm
