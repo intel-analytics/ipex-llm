@@ -17,7 +17,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt-get install -y curl wget git gnupg gpg-agent software-properties-common libunwind8-dev vim less && \
     # install Intel GPU driver
     apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero level-zero-dev --allow-downgrades && \
-    # install python 3.9
+    # install python 3.11
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
@@ -30,13 +30,16 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     python3 get-pip.py && \
     # install XPU ipex-llm
     pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
-    # install huggingface dependencies
+    # install transformers & peft dependencies
     pip install transformers==4.36.0 && \
     pip install peft==0.10.0 datasets accelerate==0.23.0 && \
-    pip install bitsandbytes scipy && \
+    pip install bitsandbytes scipy fire && \
+    # prepare finetune code and scripts
     git clone https://github.com/intel-analytics/IPEX-LLM.git && \
-    mv IPEX-LLM/python/llm/example/GPU/LLM-Finetuning/common /common && \
+    mv IPEX-LLM/python/llm/example/GPU/LLM-Finetuning /LLM-Finetuning && \
     rm -r IPEX-LLM && \
-    wget https://raw.githubusercontent.com/intel-analytics/IPEX-LLM/main/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py
+    # Prepare accelerate config
+    mkdir -p /root/.cache/huggingface/accelerate && \
+    mv /LLM-Finetuning/axolotl/default_config.yaml /root/.cache/huggingface/accelerate/
 
 COPY ./start-qlora-finetuning-on-xpu.sh /start-qlora-finetuning-on-xpu.sh
