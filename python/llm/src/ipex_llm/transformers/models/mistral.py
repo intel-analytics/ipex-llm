@@ -331,7 +331,8 @@ def mistral_attention_forward_quantized(
                                                                          dtype=attention_dtype)
     kv_seq_len = key_states.shape[-2]
     if past_key_value is None:
-        if should_split_qkv_tensor(query_states, bsz, self.num_heads, q_len, kv_seq_len, output_attentions):
+        if should_split_qkv_tensor(query_states, bsz, self.num_heads,
+                                   q_len, kv_seq_len, output_attentions):
             block_size = 8
             query_split = torch.split(query_states.to(key_states.dtype), block_size, dim=1)
             key_split = torch.split(key_states.transpose(2, 3), block_size, dim=1)
@@ -620,9 +621,13 @@ def mistral_attention_forward_original(
             attn_output, attn_weights = compute_attn_outputs_weights(query_states,
                                                                      key_states,
                                                                      value_states,
-                                                                     bsz, q_len, kv_seq_len,
-                                                                     self.num_heads, self.head_dim,
-                                                                     self.hidden_size, attention_mask)
+                                                                     bsz,
+                                                                     q_len,
+                                                                     kv_seq_len,
+                                                                     self.num_heads,
+                                                                     self.head_dim,
+                                                                     self.hidden_size,
+                                                                     attention_mask)
 
     attn_output = self.o_proj(attn_output)
 
@@ -752,7 +757,8 @@ def mistral_attention_forward_4_36_quantized(
                                                                          dtype=attention_dtype)
     kv_seq_len = key_states.shape[-2]
     if len(past_key_value.key_cache) <= self.layer_idx:
-        if should_split_qkv_tensor(query_states, bsz, self.num_heads, q_len, kv_seq_len, output_attentions):
+        if should_split_qkv_tensor(query_states, bsz, self.num_heads,
+                                   q_len, kv_seq_len, output_attentions):
             block_size = 8
             query_split = torch.split(query_states.to(key_states.dtype), block_size, dim=1)
             key_split = torch.split(key_states.transpose(2, 3), block_size, dim=1)
@@ -1056,9 +1062,13 @@ def mistral_attention_forward_4_36_original(
             attn_output, attn_weights = compute_attn_outputs_weights(query_states,
                                                                      key_states,
                                                                      value_states,
-                                                                     bsz, q_len, kv_seq_len,
-                                                                     self.num_heads, self.head_dim,
-                                                                     self.hidden_size, attention_mask)
+                                                                     bsz,
+                                                                     q_len,
+                                                                     kv_seq_len,
+                                                                     self.num_heads,
+                                                                     self.head_dim,
+                                                                     self.hidden_size,
+                                                                     attention_mask)
 
     attn_output = self.o_proj(attn_output)
 
