@@ -228,10 +228,9 @@ def model_forward_wrapper(origin_model_forward):
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
     ):
-        # IPEX-LLM OPT: kv cache but no sdp (its head_dim 96, cannot use sdp)
+        # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
         use_cache = use_cache if use_cache is not None else self.config.use_cache
-        use_quantize_kv = (use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids) and
-                           self.config.hidden_size // self.config.num_attention_heads in [64, 128])
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids)
         if use_cache:
             if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
