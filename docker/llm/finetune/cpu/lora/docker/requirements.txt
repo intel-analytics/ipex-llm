@@ -5,7 +5,7 @@ black
 black[jupyter]
 datasets
 fire
-peft==0.2.0
+peft==0.10.0
 #git+https://github.com/huggingface/peft.git
 #git+https://github.com/huggingface/transformers.git
 gradio

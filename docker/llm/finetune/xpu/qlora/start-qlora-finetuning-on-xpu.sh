@@ -15,4 +15,3 @@ then
 fi
 
 python qlora_finetuning.py $MODEL_PARAM $DATA_PARAM
-
