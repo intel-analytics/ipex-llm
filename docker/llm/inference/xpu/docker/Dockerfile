@@ -9,7 +9,7 @@ ENV USE_XETLA=OFF
 ENV SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 COPY chat.py /llm/chat.py
-COPY ./entrypoint.sh /opt/entrypoint.sh
+COPY benchmark.py /llm/benchmark.py
 
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
@@ -54,5 +54,6 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     # Download vLLM-Serving
     git clone https://github.com/intel-analytics/IPEX-LLM && \
     cp -r ./IPEX-LLM/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
-    rm -rf ./IPEX-LLM && \
-    chmod +x /opt/entrypoint.sh
+    rm -rf ./IPEX-LLM
+
+WORKDIR /llm
