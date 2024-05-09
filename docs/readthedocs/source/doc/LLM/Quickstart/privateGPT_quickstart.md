@@ -14,6 +14,11 @@
 
 Follow the steps in [Run Ollama on Intel GPU Guide](./ollama_quickstart.md) to install and run Ollama on Intel GPU. Ensure that `ollama serve` is running correctly and can be accessed through a local URL (e.g., `https://127.0.0.1:11434`) or a remote URL (e.g., `http://your_ip:11434`).
 
+We recommend pulling the desired model before proceeding with PrivateGPT. For instance, to pull the Mistral:7B model, you can use the following command:
+
+```bash
+ollama pull mistral:7b
+```
 
 ### 2. Install PrivateGPT
 
@@ -41,12 +46,25 @@ For more details, refer to the [PrivateGPT installation Guide](https://docs.priv
 
 #### Configure PrivateGPT
 
-Change PrivateGPT settings by modifying `settings.yaml` and `settings-ollama.yaml`.
+To configure PrivateGPT to use Ollama for running local LLMs, you should edit the `private-gpt/settings-ollama.yaml` file. Modify the `ollama` section by setting the `llm_model` and `embedding_model` you wish to use, and updating the `api_base` and `embedding_api_base` to direct to your Ollama URL.
 
-* `settings.yaml` is always loaded and contains the default configuration. In order to run PrivateGPT locally, you need to replace the tokenizer path under the `llm` option with your local path.
-* `settings-ollama.yaml` is loaded if the ollama profile is specified in the PGPT_PROFILES environment variable. It can override configuration from the default `settings.yaml`. You can modify the settings in this file according to your preference. It is worth noting that to use the options `llm_model: <Model Name>` and `embedding_model: <Embedding Model Name>`, you need to first use `ollama pull` to fetch the models locally.
+Below is an example of how `settings-ollama.yaml` should look.
 
-To learn more about the configuration of PrivatePGT, please refer to [PrivateGPT Main Concepts](https://docs.privategpt.dev/installation/getting-started/main-concepts).
+
+<p align="center"><a href="https://llm-assets.readthedocs.io/en/latest/_images/privateGPT-ollama-setting.png" target="_blank" align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/privateGPT-ollama-setting.png" alt="image-p1" width=100%; />
+</a></p>
+
+
+```eval_rst
+
+.. note::
+
+  `settings-ollama.yaml` is loaded when the Ollama profile is specified in the PGPT_PROFILES environment variable. This can override configurations from the default `settings.yaml`.
+
+```
+
+For more information on configuring PrivateGPT, please visit the [PrivateGPT Main Concepts](https://docs.privategpt.dev/installation/getting-started/main-concepts) page.
 
 
 #### Start the service
@@ -79,6 +97,15 @@ Run below commands to start the service in another terminal:
 
        Setting ``PGPT_PROFILES=ollama`` will load the configuration from ``settings.yaml`` and ``settings-ollama.yaml``.
 ```
+
+Upon successful deployment, you will see logs in the terminal similar to the following:
+
+<p align="center"><a href="https://llm-assets.readthedocs.io/en/latest/_images/privateGPT-service-success.png" target="_blank" align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/privateGPT-service-success.png" alt="image-p1" width=100%; />
+</a></p>
+
+Open a browser (if it doesn't open automatically) and navigate to the URL displayed in the terminal. If it shows http://0.0.0.0:8001, you can access it locally via `http://127.0.0.1:8001` or remotely via `http://your_ip:8001`.
+
 
 ### 4. Using PrivateGPT
 
