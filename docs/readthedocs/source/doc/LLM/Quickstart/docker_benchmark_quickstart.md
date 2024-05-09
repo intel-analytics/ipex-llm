@@ -33,9 +33,8 @@ sudo docker run -itd \
         --name=$CONTAINER_NAME \
         --shm-size="16g" \
         -v $MODEL_PATH:/llm/models \
-        -e REPO_ID=<repo_id_value> \
-        -e TEST_API=<test_api_value> \
-        -e IN_OUT_PAIRS=<in_out_pairs_value> \
+        -e REPO_IDS=<repo_id_value> \
+        -e TEST_APIS=<test_api_value> \
         -e DEVICE=<device_value> \
         $DOCKER_IMAGE benchmark.sh
 ```
@@ -43,7 +42,6 @@ sudo docker run -itd \
 Customize environment variables to specify:
 
 - **REPO_ID:** Specify the model's name and organization, separated by commas if multiple values exist (e.g., "meta-llama/Llama-2-7b-chat-hf,THUDM/chatglm2-6b").
-- **IN_OUT_PAIRS:** Define the combined input and output sequence lengths, separated by commas if multiple values exist (e.g., "32-32,1024-128").
 - **TEST_API:** Utilize different test functions based on the machine, separated by commas if multiple values exist (e.g., "transformer_int4_gpu,transformer_int4_fp16_gp").
 - **DEVICE:** Specify the type of device - Max, Flex, Arc.
 
