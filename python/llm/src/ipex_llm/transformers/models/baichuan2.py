@@ -54,7 +54,7 @@ def should_split_qkv_tensor(query_states, bsz, num_heads, q_len, kv_seq_len, out
         if os.environ.get("IPEX_LLM_SPLIT_QKV", None) is not None:
             return os.environ.get("IPEX_LLM_SPLIT_QKV", None) == "1"
         elif query_states.dtype == torch.float16 and \
-                query_states.shape[2] >= 6800:
+                query_states.shape[2] >= 5400:
             # split tensor for memory block limitation
             # support fp16 and set input length threshold at 6800 for now
             return True
