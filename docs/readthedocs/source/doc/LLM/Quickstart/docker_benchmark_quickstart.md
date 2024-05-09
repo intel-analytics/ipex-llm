@@ -33,16 +33,16 @@ sudo docker run -itd \
         --name=$CONTAINER_NAME \
         --shm-size="16g" \
         -v $MODEL_PATH:/llm/models \
-        -e REPO_IDS=<repo_id_value> \
-        -e TEST_APIS=<test_api_value> \
-        -e DEVICE=<device_value> \
-        $DOCKER_IMAGE benchmark.sh
+        -e REPO_IDS="meta-llama/Llama-2-7b-chat-hf" \
+        -e TEST_APIS="transformer_int4_gpu" \
+        -e DEVICE=Arc \
+        $DOCKER_IMAGE /llm/benchmark.sh
 ```
 
 Customize environment variables to specify:
 
-- **REPO_ID:** Specify the model's name and organization, separated by commas if multiple values exist (e.g., "meta-llama/Llama-2-7b-chat-hf,THUDM/chatglm2-6b").
-- **TEST_API:** Utilize different test functions based on the machine, separated by commas if multiple values exist (e.g., "transformer_int4_gpu,transformer_int4_fp16_gp").
+- **REPO_IDS:** Specify the model's name and organization, separated by commas if multiple values exist (e.g., "meta-llama/Llama-2-7b-chat-hf,THUDM/chatglm2-6b").
+- **TEST_APIS:** Utilize different test functions based on the machine, separated by commas if multiple values exist (e.g., "transformer_int4_gpu,transformer_int4_fp16_gp").
 - **DEVICE:** Specify the type of device - Max, Flex, Arc.
 
 ## Result
