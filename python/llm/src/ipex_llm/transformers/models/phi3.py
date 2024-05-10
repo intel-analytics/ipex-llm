@@ -164,9 +164,9 @@ def attention_forward(
 
             # upcast attention to fp32
             attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                    dtype=torch.float32).to(value_states.dtype)
+                                                       dtype=torch.float32).to(value_states.dtype)
             attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
-                                                    training=self.training)
+                                                       training=self.training)
             attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()
