@@ -113,3 +113,62 @@ Output in console
 {'loss': 0.9651, 'learning_rate': 0.00019189578116202307, 'epoch': 0.54}
 {'loss': 0.9067, 'learning_rate': 0.00019107766703887764, 'epoch': 0.56}
 ```
+
+### 4. Finetune Llama-3-8B (Experimental)
+
+Warning: this section will install axolotl main ([796a085](https://github.com/OpenAccess-AI-Collective/axolotl/tree/796a085b2f688f4a5efe249d95f53ff6833bf009)) for new features, e.g., Llama-3-8B. Due to axolotl development, this document maybe out of date.
+
+#### 4.1 Install Axolotl main in conda
+
+Axolotl main has lots of new dependencies. Please setup a new conda env for this version.
+
+```bash
+conda create -n llm python=3.11
+conda activate llm
+# install axolotl main
+git clone https://github.com/OpenAccess-AI-Collective/axolotl
+cd axolotl
+pip install -e .
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+# install transformers etc
+pip install accelerate==0.23.0
+# to avoid https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544
+pip install datasets==2.15.0
+pip install transformers==4.37.0
+```
+
+Config accelerate and oneAPIs, according to [Configures OneAPI environment variables and accelerate](#2-configures-oneapi-environment-variables-and-accelerate).
+
+#### 4.2 Alpaca QLoRA
+
+Based on [axolotl Llama-3 QLoRA example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/main/examples/llama-3/qlora.yml).
+
+Modify parameters in `llama3-qlora.yml` based on your requirements. Then, launch finetuning with the following command.
+
+```
+accelerate launch finetune.py llama3-qlora.yml
+```
+
+You can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
+
+```
+accelerate launch train.py llama3-qlora.yml
+```
+
+Expected output
+
+```bash
+{'loss': 0.237, 'learning_rate': 1.2254711850265387e-06, 'epoch': 3.77}
+{'loss': 0.6068, 'learning_rate': 1.1692453482951115e-06, 'epoch': 3.77}
+{'loss': 0.2926, 'learning_rate': 1.1143322458989303e-06, 'epoch': 3.78}
+{'loss': 0.2475, 'learning_rate': 1.0607326072295087e-06, 'epoch': 3.78}
+{'loss': 0.1531, 'learning_rate': 1.008447144232094e-06, 'epoch': 3.79}
+{'loss': 0.1799, 'learning_rate': 9.57476551396197e-07, 'epoch': 3.79}
+{'loss': 0.2724, 'learning_rate': 9.078215057463868e-07, 'epoch': 3.79}
+{'loss': 0.2534, 'learning_rate': 8.594826668332445e-07, 'epoch': 3.8}
+{'loss': 0.3388, 'learning_rate': 8.124606767246579e-07, 'epoch': 3.8}
+{'loss': 0.3867, 'learning_rate': 7.667561599972505e-07, 'epoch': 3.81}
+{'loss': 0.2108, 'learning_rate': 7.223697237281668e-07, 'epoch': 3.81}
+{'loss': 0.0792, 'learning_rate': 6.793019574868775e-07, 'epoch': 3.82}
+```
