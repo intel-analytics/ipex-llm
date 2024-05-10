@@ -18,9 +18,9 @@
 # which is licensed under the MIT license:
 #
 # MIT License
-# 
+#
 # Copyright (c) 2023 MIT HAN Lab
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -42,9 +42,10 @@
 import torch
 import argparse
 import sys
+sys.path.append('.')
 
 # todo: support more model class
-from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, AutoConfig
+from transformers import AutoTokenizer, AutoConfig
 from transformers import TextIteratorStreamer
 from transformers.tools.agents import StopSequenceCriteria
 from transformers.generation.stopping_criteria import StoppingCriteriaList
@@ -64,6 +65,9 @@ def get_stop_words_ids(chat_format, tokenizer):
     # https://huggingface.co/01-ai/Yi-6B-Chat/blob/main/tokenizer_config.json#L38
     elif chat_format == "Yi":
         stop_words_ids = [tokenizer.encode("<|im_end|>")]
+    elif chat_format == "Llama3":
+        # stop_words_ids = [tokenizer.encode("<|eot_id|>")]
+        stop_words_ids = [[tokenizer.eos_token_id], [tokenizer.convert_tokens_to_ids("<|eot_id|>")]]
     else:
         raise NotImplementedError(f"Unknown chat format {chat_format!r}")
     return stop_words_ids
@@ -98,7 +102,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len, s
                     break
             if stop:
                 break
-        
+
         generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True,
                                           clean_up_tokenization_spaces=True,
                                           spaces_between_special_tokens=False)
@@ -117,7 +121,7 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len, s
     return past_key_values
 
 @torch.no_grad()
-def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[]):
+def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[], device='cpu'):
     past_key_values = None
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
@@ -126,6 +130,8 @@ def stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[])
             break
         prompt = f"{HUMAN_ID} {user_input}\n{BOT_ID} "
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+        if device == 'gpu':
+            input_ids = input_ids.to('xpu')
         seq_len = input_ids.shape[1]
         if kv_cache is not None:
             space_needed = seq_len + max_gen_len
@@ -172,7 +178,7 @@ def chatglm3_stream_chat(model, tokenizer):
             current_length = len(response)
 
 @torch.no_grad()
-def qwen_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[]):
+def qwen_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[], device='cpu'):
     past_key_values = None
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
@@ -190,6 +196,8 @@ def qwen_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_word
             <|im_start|>assistant
         """
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+        if device == 'gpu':
+            input_ids = input_ids.to('xpu')
         seq_len = input_ids.shape[1]
         if kv_cache is not None:
             space_needed = seq_len + max_gen_len
@@ -200,7 +208,7 @@ def qwen_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_word
         )
 
 @torch.no_grad()
-def llama_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[]):
+def llama2_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[], device='cpu'):
     past_key_values = None
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
@@ -215,6 +223,8 @@ def llama_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_wor
             {user_input}[/INST]
         """
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+        if device == 'gpu':
+            input_ids = input_ids.to('xpu')
         seq_len = input_ids.shape[1]
         if kv_cache is not None:
             space_needed = seq_len + max_gen_len
@@ -224,8 +234,46 @@ def llama_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_wor
             model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len, stop_words=stop_words
         )
 
+
 @torch.no_grad()
-def yi_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[]):
+def llama3_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[], device='cpu'):
+    def get_prompt(user_input: str, chat_history: list[tuple[str, str]],
+                   system_prompt: str) -> str:
+        prompt_texts = [f'<|begin_of_text|>']
+
+        if system_prompt != '':
+            prompt_texts.append(f'<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>')
+
+        for history_input, history_response in chat_history:
+            prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n\n{history_input.strip()}<|eot_id|>')
+            prompt_texts.append(f'<|start_header_id|>assistant<|end_header_id|>\n\n{history_response.strip()}<|eot_id|>')
+
+        prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n\n{user_input.strip()}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n')
+        return ''.join(prompt_texts)
+
+    past_key_values = None
+    while True:
+        user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
+        # let's stop the conversation when user input "stop"
+        if user_input == "stop":
+            break
+        # https://huggingface.co/TheBloke/Llama-2-70B-Chat-GGML#prompt-template-llama-2-chat
+        prompt = get_prompt(user_input, [], system_prompt='')
+        input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+        if device == 'gpu':
+            input_ids = input_ids.to('xpu')
+        seq_len = input_ids.shape[1]
+        if kv_cache is not None:
+            space_needed = seq_len + max_gen_len
+            past_key_values = kv_cache.evict_for_space(past_key_values, space_needed)
+
+        past_key_values = greedy_generate(
+            model, tokenizer, input_ids, past_key_values, max_gen_len=max_gen_len, stop_words=stop_words
+        )
+
+
+@torch.no_grad()
+def yi_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=[], device='cpu'):
     past_key_values = None
     while True:
         user_input = input(Fore.GREEN+"\nHuman: "+Fore.RESET)
@@ -243,6 +291,8 @@ def yi_stream_chat(model, tokenizer, kv_cache=None, max_gen_len=512, stop_words=
             <|im_start|>assistant
         """
         input_ids = tokenizer(prompt, return_tensors="pt").input_ids
+        if device == 'gpu':
+            input_ids = input_ids.to('xpu')
         seq_len = input_ids.shape[1]
         if kv_cache is not None:
             space_needed = seq_len + max_gen_len
@@ -266,7 +316,7 @@ def format_prompt_with_history(input_str,
     return "".join(prompt)
 
 
-def stream_chat_with_history(model, tokenizer):
+def stream_chat_with_history(model, tokenizer, device='cpu'):
     stopping_criteria = StoppingCriteriaList([StopSequenceCriteria(HUMAN_ID, tokenizer)])
 
     chat_history = []
@@ -279,6 +329,8 @@ def stream_chat_with_history(model, tokenizer):
             prompt = format_prompt_with_history(user_input, chat_history)
             # print(prompt)
             input_ids = tokenizer([prompt], return_tensors="pt")
+            if device == 'gpu':
+                input_ids = input_ids.to('xpu')
             streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
             generate_kwargs = dict(input_ids, streamer=streamer, max_new_tokens=512,
                                    stopping_criteria=stopping_criteria)
@@ -298,6 +350,7 @@ def stream_chat_with_history(model, tokenizer):
             chat_history.append((user_input, "".join(output_str).replace(f"{HUMAN_ID}", "").rstrip()))
 
 def auto_select_model(model_name):
+    from transformers import AutoModel, AutoModelForCausalLM
     try:
         try:
             model = AutoModelForCausalLM.from_pretrained(model_path,
@@ -314,22 +367,50 @@ def auto_select_model(model_name):
     except:
         print("Sorry, the model you entered is not supported in installer.")
         sys.exit()
-    
+
     return model
-  
+
+def auto_select_loadlowbit_model(model_name):
+    from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
+    try:
+        try:
+            model = AutoModelForCausalLM.load_low_bit(model_path,
+                                                      trust_remote_code=True,
+                                                      use_cache=True,
+                                                      cpu_embedding=True)
+        except:
+            model = AutoModel.load_low_bit(model_path,
+                                           trust_remote_code=True,
+                                           use_cache=True,
+                                           cpu_embedding=True)
+    except:
+        print("This may not be an IPEX-LLM low-bit model, or the model you entered is not supported in installer.")
+        sys.exit()
+
+    return model
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--device", type=str, help="use cpu or gpu")
     parser.add_argument("--model-path", type=str, help="path to an llm")
     parser.add_argument("--start-size", type=int, default=4, help="start_size of kv_cahce")
     parser.add_argument("--recent-size", type=int, default=2000)
+    parser.add_argument('--low-bit', action='store_true', help='whether low through load_low_bit')
     args = parser.parse_args()
 
+    device = args.device
     model_path = args.model_path
     start_size = args.start_size
     recent_size = args.recent_size
 
-    model = auto_select_model(model_path)
-    model = optimize_model(model)
+    if args.low_bit:
+        model = auto_select_loadlowbit_model(model_path)
+    else:
+        model = auto_select_model(model_path)
+        model = optimize_model(model, cpu_embedding=True)
+
+    if device == 'gpu':
+        model = model.to('xpu')
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
@@ -339,21 +420,25 @@ if __name__ == "__main__":
                                       k_seq_dim=1,
                                       v_seq_dim=1,
                                       recent_size=recent_size)
-        qwen_stream_chat(model=model, tokenizer=tokenizer,kv_cache=kv_cache, stop_words=stop_words)
+        qwen_stream_chat(model=model, tokenizer=tokenizer,kv_cache=kv_cache, stop_words=stop_words, device=device)
     elif model.config.architectures is not None and model.config.architectures[0] == "ChatGLMModel":
         chatglm3_stream_chat(model=model, tokenizer=tokenizer)
     elif model.config.architectures is not None and model.config.architectures[0] == "LlamaForCausalLM":
         kv_cache = StartRecentKVCache(start_size=start_size, recent_size=recent_size)
         if "yi" in model_path.lower():
             stop_words = get_stop_words_ids("Yi", tokenizer=tokenizer)
-            yi_stream_chat(model=model, tokenizer=tokenizer, kv_cache=kv_cache, stop_words=stop_words)
+            yi_stream_chat(model=model, tokenizer=tokenizer, kv_cache=kv_cache, stop_words=stop_words, device=device)
+        elif "Llama-3" in model_path:
+            stop_words = get_stop_words_ids("Llama3", tokenizer=tokenizer)
+            llama3_stream_chat(model=model, tokenizer=tokenizer, kv_cache=kv_cache, stop_words=stop_words, device=device)
         else:
-            llama_stream_chat(model=model, tokenizer=tokenizer, kv_cache=kv_cache)
+            llama2_stream_chat(model=model, tokenizer=tokenizer, kv_cache=kv_cache, device=device)
     elif model.config.architectures[0] == "BaichuanForCausalLM" and model.config.vocab_size == 64000:
         # Baichuan-13B-Chat
-        stream_chat_with_history(model=model, tokenizer=tokenizer)
+        stream_chat_with_history(model=model, tokenizer=tokenizer, device=device)
     else:
         kv_cache = StartRecentKVCache(start_size=start_size, recent_size=recent_size)
         stream_chat(model=model,
                     tokenizer=tokenizer,
-                    kv_cache=kv_cache)
+                    kv_cache=kv_cache,
+                    device=device)
