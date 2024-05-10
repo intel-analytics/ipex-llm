@@ -55,7 +55,7 @@ Customize environment variables to specify:
 Upon completion, you can obtain a CSV result file, the content of CSV results will be printed out. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results.
 
 
-## Running Performance Benchmark with Detailed Configurations
+## Performance Benchmark with Detailed Configurations
 
 For more detailed configurations, you should first create the container, modify the config.yaml, then run the benchmarking scripts to get the results.
 
