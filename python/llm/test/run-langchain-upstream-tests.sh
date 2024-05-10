@@ -4,8 +4,6 @@ export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/langchain_gp
 export TEST_BIGDLLLM_MODEL_IDS=${VICUNA_7B_1_3_ORIGIN_PATH}
 export TEST_IPEXLLM_MODEL_IDS=${VICUNA_7B_1_3_ORIGIN_PATH}
 
-langchain_version="v0.1.17"
-
 set -e
 
 echo ">>> Testing LangChain upstream unit test"
