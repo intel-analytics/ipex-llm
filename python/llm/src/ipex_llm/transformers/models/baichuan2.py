@@ -56,7 +56,7 @@ def should_split_qkv_tensor(query_states, bsz, num_heads, q_len, kv_seq_len, out
         elif query_states.dtype == torch.float16 and \
                 query_states.shape[2] >= 5400:
             # split tensor for memory block limitation
-            # support fp16 and set input length threshold at 6800 for now
+            # support fp16 and set input length threshold at 5400 for now
             return True
         elif query_states.element_size()*bsz*num_heads*q_len*kv_seq_len >= 4*1024**3:
             # attn_weight size larger than memory block limitation 4GB
