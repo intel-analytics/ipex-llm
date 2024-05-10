@@ -21,8 +21,9 @@ docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 
 ## Quick Performance Benchmark
 
-Execute a quick performance benchmark by starting the ipex-llm-xpu container, specifying the model, test API, and device, then running the benchmark.sh script. Upon completion, the results will be printed out.
+Execute a quick performance benchmark by starting the ipex-llm-xpu container, specifying the model, test API, and device, then running the benchmark.sh script. 
 
+### Start ipex-llm-xpu Docker Container
 To map the XPU into the container, specify `--device=/dev/dri` when booting the container.
 ```bash
 #/bin/bash
@@ -49,9 +50,16 @@ Customize environment variables to specify:
 - **TEST_APIS:** Different test functions based on the machine, separated by commas if multiple values exist.
 - **DEVICE:** Type of device - Max, Flex, Arc.
 
+### Result
+
+Upon completion, you can obtain a CSV result file, the content of CSV results will be printed out. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results.
+
+
 ## Running Performance Benchmark with Detailed Configurations
 
-For more detailed configurations, enter the container:
+For more detailed configurations, you should first create the container, modify the config.yaml, then run the benchmarking scripts to get the results.
+
+### Start ipex-llm-xpu Docker Container
 ```bash
 export DOCKER_IMAGE=10.239.45.10/arda/intelanalytics/ipex-llm-xpu:test
 export CONTAINER_NAME=my_container
@@ -69,13 +77,15 @@ docker run -itd \
 docker exec -it $CONTAINER_NAME bash
 ```
 
+### Modify config.yaml
+
 Navigate to benchmark directory, and modify the `config.yaml` under the `all-in-one` folder for benchmark configurations.
 ```bash
 cd /benchmark/all-in-one
 vim config.yaml
 ```
 
-### config.yaml
+#### config.yaml
 
 ```yaml
 repo_id:
@@ -144,7 +154,7 @@ python run.py
 ```
 
 
-## Result
+### Result
 
 After the benchmarking is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in `config.yaml` have been successfully applied in the benchmarking.
 
