@@ -384,6 +384,14 @@ def use_sdp_fp8(q_len, k_len, query_states):
     return True
 
 
+def use_sdp_causal(q_len, kv_len, query_states, training):
+    return (
+        q_len == kv_len     # first token
+        and query_states.device.type == "xpu"   # GPU
+        and not query_states.requires_grad and not training     # no training
+    )
+
+
 def mlp_fusion_check(x, qtype, training):
     invalidInputError(x.dim() == 2,
                       "Here input x's dim should be 2.")
