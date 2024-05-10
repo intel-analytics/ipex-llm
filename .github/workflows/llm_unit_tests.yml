@@ -383,6 +383,7 @@ jobs:
       - name: Get Langchain version
         shell: bash
         run: |
+          pip install langchain
           LANGCHAIN_VERSION=$(pip show langchain | grep Version | cut -d " " -f 2)
           LANGCHAIN_REF="langchain==$LANGCHAIN_VERSION"
 
