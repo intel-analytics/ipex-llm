@@ -148,22 +148,26 @@ def attention_forward(
         if isinstance(past_key_value, DynamicFp8Cache):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, self.num_key_value_groups)
-        value_states = repeat_kv(value_states, self.num_key_value_groups)
+        if q_len == kv_seq_len:     # first token
+            import linear_q4_0
+            attn_output = linear_q4_0.sdp_causal(query_states, key_states, value_states)
+        else:
+            # repeat k/v heads if n_kv_heads < n_heads
+            key_states = repeat_kv(key_states, self.num_key_value_groups)
+            value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+            attn_weights = torch.matmul(query_states,
+                                        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-        if attention_mask is not None:
-            attn_weights = attn_weights + attention_mask
+            if attention_mask is not None:
+                attn_weights = attn_weights + attention_mask
 
-        # upcast attention to fp32
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                   dtype=torch.float32).to(value_states.dtype)
-        attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
-                                                   training=self.training)
-        attn_output = torch.matmul(attn_weights, value_states)
+            # upcast attention to fp32
+            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                    dtype=torch.float32).to(value_states.dtype)
+            attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                                    training=self.training)
+            attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
