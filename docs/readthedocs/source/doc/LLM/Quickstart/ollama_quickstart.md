@@ -9,8 +9,8 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 ```eval_rst
 .. note::
 
-  Our current binary file version is consistent with `v0.1.34 <https://github.com/ollama/ollama/releases/tag/v0.1.34>`_ of ollama.
-```              
+  Our current version is consistent with `v0.1.34 <https://github.com/ollama/ollama/releases/tag/v0.1.34>`_ of ollama.
+```
 
 ## Quickstart
 

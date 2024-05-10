@@ -9,7 +9,7 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 ```eval_rst
 .. note::
 
-  Our current binary file version is consistent with `c780e75 <https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452>`_ of llama.cpp.
+  Our current version is consistent with `c780e75 <https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452>`_ of llama.cpp.
 ```
 
 ## Quick Start
