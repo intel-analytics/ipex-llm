@@ -63,17 +63,17 @@ sudo apt install xpu-smi
 
 ### Sample outputs
 
-* Linux Desktop equipped with i9 12900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU example output:
+* Linux Desktop equipped with i9-13900K Intel Core CPU and Intel(R) Arc(TM) A770 GPU example output:
 
 ```
 -----------------------------------------------------------------
-PYTHON_VERSION=3.9.18
+PYTHON_VERSION=3.11.9
 -----------------------------------------------------------------
 transformers=4.31.0
 -----------------------------------------------------------------
 torch=2.1.0a0+cxx11.abi
 -----------------------------------------------------------------
-ipex-llm Version: 2.1.0b20240325
+ipex-llm Version: 2.1.0b20240506
 -----------------------------------------------------------------
 ipex=2.1.10+xpu
 -----------------------------------------------------------------
@@ -82,42 +82,47 @@ Architecture:                       x86_64
 CPU op-mode(s):                     32-bit, 64-bit
 Address sizes:                      46 bits physical, 48 bits virtual
 Byte Order:                         Little Endian
-CPU(s):                             24
-On-line CPU(s) list:                0-23
+CPU(s):                             32
+On-line CPU(s) list:                0-31
 Vendor ID:                          GenuineIntel
-Model name:                         12th Gen Intel(R) Core(TM) i9-12900K
+Model name:                         13th Gen Intel(R) Core(TM) i9-13900K
 CPU family:                         6
-Model:                              151
+Model:                              183
 Thread(s) per core:                 2
-Core(s) per socket:                 16
+Core(s) per socket:                 24
 Socket(s):                          1
-Stepping:                           2
-CPU max MHz:                        5200.0000
+Stepping:                           1
+CPU max MHz:                        5800.0000
 CPU min MHz:                        800.0000
-BogoMIPS:                           6374.40
+BogoMIPS:                           5990.40
 -----------------------------------------------------------------
-Total CPU Memory: 62.5343 GB
-Memory Type: DDR4 
+Total CPU Memory: 62.5306 GB
 -----------------------------------------------------------------
 Operating System: 
-Ubuntu 22.04.3 LTS \n \l
+Ubuntu 22.04.4 LTS \n \l
 
 -----------------------------------------------------------------
-Linux arda-arc05 6.2.0-39-generic #40~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 16 10:53:04 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+Linux arda-arc09 6.5.0-28-generic #29~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Apr  4 14:39:20 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
 -----------------------------------------------------------------
 CLI:
-    Version: 1.2.22.20231025
+    Version: 1.2.31.20240308
     Build ID: 00000000
 
 Service:
-    Version: 1.2.22.20231025
+    Version: 1.2.31.20240308
     Build ID: 00000000
-    Level Zero Version: 1.14.0
+    Level Zero Version: 1.16.0
 -----------------------------------------------------------------
-  Driver Version                                  2023.16.10.0.17_160000
-  Driver Version                                  2023.16.10.0.17_160000
-  Driver UUID                                     32332e33-352e-3237-3139-312e34320000
-  Driver Version                                  23.35.27191.42
+  Driver Version                                  2023.16.12.0.12_195853.xmain-hotfix
+  Driver Version                                  2023.16.12.0.12_195853.xmain-hotfix
+  Driver UUID                                     32332e35-322e-3238-3230-322e35320000
+  Driver Version                                  23.52.28202.52
+-----------------------------------------------------------------
+Driver related package version:
+ii  intel-fw-gpu                                    2024.04.6-293~22.04                     all          Firmware package for Intel integrated and discrete GPUs
+ii  intel-i915-dkms                                 1.24.1.11.240117.14+i16-1               all          Out of tree i915 driver.
+ii  intel-level-zero-gpu                            1.3.28202.52-821~22.04                  amd64        Intel(R) Graphics Compute Runtime for oneAPI Level Zero.
+ii  level-zero-dev                                  1.16.15-821~22.04                       amd64        Intel(R) Graphics Compute Runtime for oneAPI Level Zero.
 -----------------------------------------------------------------
 igpu not detected
 -----------------------------------------------------------------
@@ -137,7 +142,7 @@ GPU0 Memory size=16G
 -----------------------------------------------------------------
 03:00.0 VGA compatible controller: Intel Corporation Device 56a0 (rev 08) (prog-if 00 [VGA controller])
         Subsystem: Device 1ef7:1307
-        Flags: bus master, fast devsel, latency 0, IRQ 175
+        Flags: bus master, fast devsel, latency 0, IRQ 199
         Memory at 84000000 (64-bit, non-prefetchable) [size=16M]
         Memory at 4000000000 (64-bit, prefetchable) [size=16G]
         Expansion ROM at 85000000 [disabled] [size=2M]

@@ -154,6 +154,13 @@ check_OpenCL_driver()
   clinfo | fgrep Driver
 }
 
+check_driver_package()
+{
+  echo "-----------------------------------------------------------------"
+  echo "Driver related package version:"
+  dpkg -l | grep 'intel-i915-dkms\|intel-fw-gpu\|intel-level-zero-gpu\|level-zero-dev'
+}
+
 check_igpu()
 {
   echo "-----------------------------------------------------------------"
@@ -195,6 +202,7 @@ main()
   check_linux_kernel_version
   check_xpu_driver
   check_OpenCL_driver
+  check_driver_package
   check_igpu
 
   # check if xpu-smi and GPU is available. 
