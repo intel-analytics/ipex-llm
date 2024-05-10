@@ -6,11 +6,11 @@ Benchmarking IPEX-LLM on Intel GPUs within Docker can be efficiently achieved us
 
 1. Linux Installation
 
-Follow the instructions in this [guide](https://www.docker.com/get-started/) to install Docker on Linux.
+    Follow the instructions in this [guide](https://www.docker.com/get-started/) to install Docker on Linux.
 
 2. Windows Installation
 
-For Windows installation, refer to this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows).
+    For Windows installation, refer to this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows).
 
 ## Prepare ipex-llm-xpu Docker Image
 
@@ -19,14 +19,16 @@ Run the following command to pull image from dockerhub:
 docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 ```
 
-## Start ipex-llm-xpu Docker Container to Run Performance Benchmark
+## Quick Performance Benchmark
 
-To map the xpu into the container, you need to specify --device=/dev/dri when booting the container.
+Execute a quick performance benchmark by starting the ipex-llm-xpu container, specifying the model, test API, and device, then running the benchmark.sh script. Upon completion, the results will be printed out.
+
+To map the XPU into the container, specify `--device=/dev/dri` when booting the container.
 ```bash
 #/bin/bash
 export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
-export MODEL_PATH=/llm/models[change to your model path]
+export MODEL_PATH=/llm/models [change to your model path]
 
 sudo docker run -itd \
         --net=host \
@@ -43,14 +45,14 @@ sudo docker run -itd \
 
 Customize environment variables to specify:
 
-- **REPO_IDS:** Specify the model's name and organization, separated by commas if multiple values exist (e.g., "meta-llama/Llama-2-7b-chat-hf,THUDM/chatglm2-6b").
-- **TEST_APIS:** Utilize different test functions based on the machine, separated by commas if multiple values exist (e.g., "transformer_int4_gpu,transformer_int4_fp16_gp").
-- **DEVICE:** Specify the type of device - Max, Flex, Arc.
+- **REPO_IDS:** Model's name and organization, separated by commas if multiple values exist.
+- **TEST_APIS:** Different test functions based on the machine, separated by commas if multiple values exist.
+- **DEVICE:** Type of device - Max, Flex, Arc.
 
-## More detailed configurations
+## Running Performance Benchmark with Detailed Configurations
 
-If you want to modify more detailed configurations, enter the container first:
-```
+For more detailed configurations, enter the container:
+```bash
 export DOCKER_IMAGE=10.239.45.10/arda/intelanalytics/ipex-llm-xpu:test
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/mnt/disk1/models
@@ -67,13 +69,13 @@ docker run -itd \
 docker exec -it $CONTAINER_NAME bash
 ```
 
-Navigate to your local workspace and then download IPEX-LLM from GitHub. Modify the `config.yaml` under `all-in-one` folder for your benchmark configurations.
-
+Navigate to benchmark directory, and modify the `config.yaml` under the `all-in-one` folder for benchmark configurations.
+```bash
+cd /benchmark/all-in-one
+vim config.yaml
 ```
-cd /benchmark/all-in-one/
-```
 
-## config.yaml
+### config.yaml
 
 ```yaml
 repo_id:
@@ -118,30 +120,31 @@ n_gpu: 2 # number of GPUs to use (only avaiable now for "pipeline_parallel_gpu" 
 
 Some parameters in the yaml file that you can configure:
 
-- repo_id: The name of the model and its organization.
-- local_model_hub: The folder path where the models are stored on your machine.
-- warm_up: The number of runs as warmup trials, executed before performance benchmarking.
-- num_trials: The number of runs for performance benchmarking. The final benchmark result would be the average of all the trials.
-- low_bit: The low_bit precision you want to convert to for benchmarking.
-- batch_size: The number of samples on which the models make predictions in one forward pass.
-- in_out_pairs: Input sequence length and output sequence length combined by '-'.
-- test_api: Use different test functions on different machines.
-  - `transformer_int4_gpu` on Intel GPU for Linux
-  - `transformer_int4_gpu_win` on Intel GPU for Windows
-  - `transformer_int4` on Intel CPU
-  - `optimize_model`
-  - `optimize_model_gpu`
-  - `deepspeed_optimize_model_gpu`
-- cpu_embedding: Whether to put embedding on CPU (only available now for windows gpu related test_api).
+
+- `repo_id`: The name of the model and its organization.
+- `local_model_hub`: The folder path where the models are stored on your machine.
+- `warm_up`: The number of warmup trials before performance benchmarking (must set to >= 2 when using "pipeline_parallel_gpu" test_api).
+- `num_trials`: The number of runs for performance benchmarking (the final result is the average of all trials).
+- `low_bit`: The low_bit precision you want to convert to for benchmarking.
+- `batch_size`: The number of samples on which the models make predictions in one forward pass.
+- `in_out_pairs`: Input sequence length and output sequence length combined by '-'.
+- `test_api`: Different test functions for different machines.
+- `cpu_embedding`: Whether to put embedding on CPU (only available for windows GPU-related test_api).
+- `streaming`: Whether to output in a streaming way (only available for GPU Windows-related test_api).
+- `use_fp16_torch_dtype`: Whether to use fp16 for the non-linear layer (only available for "pipeline_parallel_gpu" test_api).
+- `n_gpu`: Number of GPUs to use (only available for "pipeline_parallel_gpu" test_api).
 
 Remark: If you want to benchmark the performance without warmup, you can set `warm_up: 0` and `num_trials: 1` in `config.yaml`, and run each single model and in_out_pair separately.
 
-after configuring the config.yaml, you can run the following scripts:
-```
+
+After configuring the `config.yaml`, run the following scripts:
+```bash
 source ipex-llm-init -g --device <value>
 python run.py
 ```
 
+
 ## Result
 
 After the benchmarking is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in `config.yaml` have been successfully applied in the benchmarking.
+

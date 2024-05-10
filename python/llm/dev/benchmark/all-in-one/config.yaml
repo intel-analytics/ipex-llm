@@ -12,26 +12,26 @@ in_out_pairs:
   - '32-32'
   - '1024-128'
 test_api:
-  # - "transformer_int4_gpu"                # on Intel GPU
-  # - "transformer_int4_gpu_win"            # on Intel GPU for Windows
-  # - "transformer_int4_fp16_gpu"           # on Intel GPU, use fp16 for non-linear layer (dtype=fp16)
-  # - "transformer_int4_fp16_gpu_win"       # on Intel GPU for Windows, use fp16 for non-linear layer (dtype=fp16)
-  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows, use load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
-  # - "ipex_fp16_gpu"                       # on Intel GPU, use native transformers' AutoModelForCausalLM, dtype=fp16
-  # - "bigdl_fp16_gpu"                      # on Intel GPU, use ipex-llm transformers' AutoModelForCausalLM, dtype=fp16, qtype=fp16
-  # - "optimize_model_gpu"                  # on Intel GPU, can load any pytorch models include transformer model
-  # - "deepspeed_optimize_model_gpu"        # on Intel GPU, deepspeed autotp inference, weight
-  # - "pipeline_parallel_gpu"               # on Intel GPU, pipeline parallel inference, layer
-  # - "speculative_gpu"                     # on Intel GPU, inference with self-speculative decoding. CPU/MAX  需要显存大
-  # - "transformer_int4"                    # on Intel CPU
+  # - "transformer_int4_gpu"                # on Intel GPU, transformer-like API, load model in int4 (qtype=int4)
+  # - "transformer_int4_gpu_win"            # on Intel GPU for Windows, transformer-like API, load model in int4 (qtype=int4)
+  # - "transformer_int4_fp16_gpu"           # on Intel GPU, transformer-like API, load model in int4 (qtype=int4), use fp16 for non-linear layer (dtype=fp16)
+  # - "transformer_int4_fp16_gpu_win"       # on Intel GPU for Windows, transformer-like API, load model in int4 (qtype=int4), use fp16 for non-linear layer (dtype=fp16)
+  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows, transformer-like API, load model in int4 (qtype=int4), use load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
+  # - "ipex_fp16_gpu"                       # on Intel GPU, use native transformers API, use fp16 for non-linear layer (dtype=fp16)
+  # - "bigdl_fp16_gpu"                      # on Intel GPU, use ipex-llm transformers API, use fp16 for non-linear layer (dtype=fp16), load model in fp16 (qtype=fp16)
+  # - "optimize_model_gpu"                  # on Intel GPU, can optimize any pytorch models include transformer model
+  # - "deepspeed_optimize_model_gpu"        # on Intel GPU, deepspeed autotp inference
+  # - "pipeline_parallel_gpu"               # on Intel GPU, pipeline parallel inference
+  # - "speculative_gpu"                     # on Intel GPU, inference with self-speculative decoding
+  # - "transformer_int4"                    # on Intel CPU, transformer-like API, load model in int4 (qtype=int4)
   # - "native_int4"                         # on Intel CPU
-  # - "optimize_model"                      # on Intel CPU
+  # - "optimize_model"                      # on Intel CPU, can optimize any pytorch models include transformer model
   # - "pytorch_autocast_bf16"               # on Intel CPU
   # - "transformer_autocast_bf16"           # on Intel CPU
-  # - "bigdl_ipex_bf16"                     # on Intel CPU, load model in bf16, which convert the relevant layers in the model into BF16 format (same as transformer_int4(low_bit='bf16'))
-  # - "bigdl_ipex_int4"                     # on Intel CPU, load model in int4, which convert the relevant layers in the model into INT4 format (same as transformer_int4(low_bit='sym_int4'))
-  # - "bigdl_ipex_int8"                     # on Intel CPU, load model in int8, which convert the relevant layers in the model into INT8 format (same as transformer_int4(low_bit='sym_int8'))
-  # - "speculative_cpu"                     # on Intel CPU, inference with self-speculative decoding.
+  # - "bigdl_ipex_bf16"                     # on Intel CPU, load model in bf16 (qtype=bf16)
+  # - "bigdl_ipex_int4"                     # on Intel CPU, load model in int4 (qtype=int4)
+  # - "bigdl_ipex_int8"                     # on Intel CPU, load model in int8 (qtype=int8)
+  # - "speculative_cpu"                     # on Intel CPU, inference with self-speculative decoding
   # - "deepspeed_transformer_int4_cpu"      # on Intel CPU, deepspeed autotp inference, weight
 cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)

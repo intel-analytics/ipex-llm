@@ -31,14 +31,6 @@ if [ -n "$TEST_APIS" ]; then
   done
 fi
 
-# # Modify config.yaml with in_out_pairs
-# if [ -n "$IN_OUT_PAIRS" ]; then
-#   for IN_OUT_PAIRS in $(echo "$IN_OUT_PAIRS" | tr ',' '\n'); do
-#     # Add the in_out_pairs values as subitems of in_out_pairs list
-#     sed -i -E "/^(in_out_pairs:)/a \  - '$IN_OUT_PAIR'" config.yaml
-#   done
-# fi
-
 
 if [[ "$DEVICE" == "Arc" || "$DEVICE" == "ARC" ]]; then
     source ipex-llm-init -g --device Arc
