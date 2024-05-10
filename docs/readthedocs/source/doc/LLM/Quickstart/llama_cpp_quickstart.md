@@ -6,6 +6,12 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width="100%" controls></video>
 
+```eval_rst
+.. note::
+
+  Our current binary file version is consistent with `c780e75 <https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452>`_ of llama.cpp.
+```
+
 ## Quick Start
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
 
