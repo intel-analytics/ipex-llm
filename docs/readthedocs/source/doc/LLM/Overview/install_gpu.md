@@ -190,7 +190,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 
     .. warning::
 
-       IPEX-LLM support for Pytorch 2.0 is deprecated for ``ipex-llm >= 2.1.0b20240511``.
+       IPEX-LLM support for Pytorch 2.0 is deprecated as of ``ipex-llm >= 2.1.0b20240511``.
 ```
 
 ```eval_rst
@@ -315,7 +315,7 @@ IPEX-LLM GPU support on Linux has been verified on:
                      cd /opt/intel/oneapi/installer
                      sudo ./installer
 
-   .. tab:: PyTorch 2.0 (deprecated for ``ipex-llm >= 2.1.0b20240511``)
+   .. tab:: PyTorch 2.0 (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
 
       To enable IPEX-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
@@ -474,7 +474,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
                   pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             
 
-   .. tab:: PyTorch 2.0 (deprecated for ``ipex-llm >= 2.1.0b20240511``)
+   .. tab:: PyTorch 2.0 (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
       Choose either US or CN website for ``extra-index-url``:
 
       .. tabs::
@@ -525,7 +525,7 @@ If you encounter network issues when installing IPEX, you can also install IPEX-
          # install ipex-llm for Intel GPU
          pip install --pre --upgrade ipex-llm[xpu]
 
-   .. tab:: PyTorch 2.0 (deprecated for ``ipex-llm >= 2.1.0b20240511``)
+   .. tab:: PyTorch 2.0 (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
 
       .. code-block:: bash
 
