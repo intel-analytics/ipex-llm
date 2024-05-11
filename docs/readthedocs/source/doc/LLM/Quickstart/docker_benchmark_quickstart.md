@@ -86,6 +86,14 @@ vim config.yaml
 ```
 
 #### config.yaml
+```eval_rst
+.. note::
+
+  `dtype`: The model is originally loaded in this data type.  After ipex-llm conversion, all the non-linear layers remain to use this data type.
+
+  `qtype`: ipex-llm will convert all the linear-layers' weight to this data type.
+```
+
 
 ```yaml
 repo_id:
@@ -102,25 +110,25 @@ in_out_pairs:
   - '32-32'
   - '1024-128'
 test_api:
-  - "transformer_int4_gpu"                # on Intel GPU, transformer-like API, load model in int4 (qtype=int4)
-  # - "transformer_int4_gpu_win"            # on Intel GPU for Windows, transformer-like API, load model in int4 (qtype=int4)
-  # - "transformer_int4_fp16_gpu"           # on Intel GPU, transformer-like API, load model in int4 (qtype=int4), use fp16 for non-linear layer (dtype=fp16)
-  # - "transformer_int4_fp16_gpu_win"       # on Intel GPU for Windows, transformer-like API, load model in int4 (qtype=int4), use fp16 for non-linear layer (dtype=fp16)
-  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows, transformer-like API, load model in int4 (qtype=int4), use load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
-  # - "ipex_fp16_gpu"                       # on Intel GPU, use native transformers API, use fp16 for non-linear layer (dtype=fp16)
-  # - "bigdl_fp16_gpu"                      # on Intel GPU, use ipex-llm transformers API, use fp16 for non-linear layer (dtype=fp16), load model in fp16 (qtype=fp16)
+  - "transformer_int4_gpu"                # on Intel GPU, transformer-like API, (qtype=int4)
+  # - "transformer_int4_gpu_win"            # on Intel GPU for Windows, transformer-like API, (qtype=int4)
+  # - "transformer_int4_fp16_gpu"           # on Intel GPU, transformer-like API, (qtype=int4), (dtype=fp16)
+  # - "transformer_int4_fp16_gpu_win"       # on Intel GPU for Windows, transformer-like API, (qtype=int4), (dtype=fp16)
+  # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows, transformer-like API, (qtype=int4), use load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
+  # - "ipex_fp16_gpu"                       # on Intel GPU, use native transformers API, (dtype=fp16)
+  # - "bigdl_fp16_gpu"                      # on Intel GPU, use ipex-llm transformers API, (dtype=fp16), (qtype=fp16)
   # - "optimize_model_gpu"                  # on Intel GPU, can optimize any pytorch models include transformer model
   # - "deepspeed_optimize_model_gpu"        # on Intel GPU, deepspeed autotp inference
   # - "pipeline_parallel_gpu"               # on Intel GPU, pipeline parallel inference
   # - "speculative_gpu"                     # on Intel GPU, inference with self-speculative decoding
-  # - "transformer_int4"                    # on Intel CPU, transformer-like API, load model in int4 (qtype=int4)
+  # - "transformer_int4"                    # on Intel CPU, transformer-like API, (qtype=int4)
   # - "native_int4"                         # on Intel CPU
   # - "optimize_model"                      # on Intel CPU, can optimize any pytorch models include transformer model
   # - "pytorch_autocast_bf16"               # on Intel CPU
   # - "transformer_autocast_bf16"           # on Intel CPU
-  # - "bigdl_ipex_bf16"                     # on Intel CPU, load model in bf16 (qtype=bf16)
-  # - "bigdl_ipex_int4"                     # on Intel CPU, load model in int4 (qtype=int4)
-  # - "bigdl_ipex_int8"                     # on Intel CPU, load model in int8 (qtype=int8)
+  # - "bigdl_ipex_bf16"                     # on Intel CPU, (qtype=bf16)
+  # - "bigdl_ipex_int4"                     # on Intel CPU, (qtype=int4)
+  # - "bigdl_ipex_int8"                     # on Intel CPU, (qtype=int8)
   # - "speculative_cpu"                     # on Intel CPU, inference with self-speculative decoding
   # - "deepspeed_transformer_int4_cpu"      # on Intel CPU, deepspeed autotp inference
 cpu_embedding: False # whether put embedding to CPU
@@ -145,7 +153,12 @@ Some parameters in the yaml file that you can configure:
 - `use_fp16_torch_dtype`: Whether to use fp16 for the non-linear layer (only available for "pipeline_parallel_gpu" test_api).
 - `n_gpu`: Number of GPUs to use (only available for "pipeline_parallel_gpu" test_api).
 
-Remark: If you want to benchmark the performance without warmup, you can set `warm_up: 0` and `num_trials: 1` in `config.yaml`, and run each single model and in_out_pair separately.
+
+```eval_rst
+.. note::
+
+  If you want to benchmark the performance without warmup, you can set `warm_up: 0` and `num_trials: 1` in `config.yaml`, and run each single model and in_out_pair separately. 
+```
 
 
 After configuring the `config.yaml`, run the following scripts:
