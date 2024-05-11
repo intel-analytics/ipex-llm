@@ -21,11 +21,13 @@ import time
 import argparse
 import torch.distributed as dist
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, StreamingResponse
 from pydantic import BaseModel
 import uvicorn
+from ipex_llm.transformers.streamer import BatchTextIteratorStreamer
 
 import asyncio, uuid
+from collections import deque
 from typing import Dict, List, Optional
 
 from transformers.utils import logging
@@ -52,6 +54,12 @@ os.environ["WORLD_SIZE"] = str(world_size)
 os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
 
 global model, tokenizer
+
+rest_req_deque = deque(maxlen=128)
+request_queue: asyncio.Queue = asyncio.Queue()
+result_dict: Dict[str, str] = {}
+streamer_dict = {}
+empty_req = PromptRequest(prompt="", n_predict=0)
 
 def load_model(model_path, low_bit):
 
@@ -118,7 +126,7 @@ def generate_text(prompt: List[str], n_predict = 32):
         prompt = prompt[:-1]
     if isinstance(n_predict, list):
         n_predict = max(n_predict)
-        
+
     inputs = tokenizer(prompt, return_tensors="pt", padding=True)
     input_ids = inputs.input_ids.to(f'xpu:{local_rank}')
     # print(input_ids)
@@ -131,18 +139,69 @@ def generate_text(prompt: List[str], n_predict = 32):
     return output
 
 
+async def generate_stream_gate(prompt: List[str], n_predict=32, request_ids=[]):
+    while prompt[-1] == "":
+        prompt = prompt[:-1]
+    if isinstance(n_predict, list):
+        n_predict = max(n_predict)
+
+    logger.error(f"prompt: {prompt}")
+    inputs = tokenizer(prompt, return_tensors="pt", padding=True)
+    input_ids = inputs.input_ids.to(f"xpu:{local_rank}")
+    attention_mask = inputs.attention_mask.to(f"xpu:{local_rank}")
+    logger.error(f"local_rank: {local_rank}")
+
+    for request_id in request_ids:
+        if request_id not in streamer_dict:
+            streamer_dict[request_id] = asyncio.Queue()
+
+    streamer = BatchTextIteratorStreamer(
+        tokenizer=tokenizer,
+        timeout=60,
+        skip_prompt=True,
+        skip_special_tokens=True,
+        batch_size=len(prompt),
+    )
+
+    generated_kwargs = dict(
+        max_new_tokens=n_predict,
+        streamer=streamer,
+        attention_mask=attention_mask,
+    )
+
+    def model_generate():
+        model.generate(input_ids, **generated_kwargs)
+        torch.xpu.synchronize()
+
+    t1 = Thread(target=model_generate)
+    t1.start()
+
+    partial_output = ""
+    rfind_start = 0
+
+    async def put_item(queue, item):
+        logger.error(f"Producer: {item}")
+        await queue.put(item)
+        # await asyncio.sleep(1)
+
+    for i in range(n_predict):
+        tasks = []
+        output_token = next(streamer)
+        for index, request_id in enumerate(request_ids):
+            # logger.error(f"request_id: {request_id}")
+            task = asyncio.create_task(
+                put_item(streamer_dict[request_id], output_token[index])
+            )
+            tasks.append(task)
+        # logger.error(f"output_token: {output_token}")
+        await asyncio.gather(*tasks)
+
+
 class PromptRequest(BaseModel):
     prompt: str
     n_predict: int = 32  
 
-empty_req = PromptRequest(prompt="", n_predict=0)
-
 app = FastAPI()
-
-from collections import deque
-rest_req_deque = deque(maxlen=128)
-request_queue: asyncio.Queue = asyncio.Queue()
-result_dict: Dict[str, str] = {}
 
 @app.post("/generate/")
 async def generate(prompt_request: PromptRequest):
@@ -155,6 +214,35 @@ async def generate(prompt_request: PromptRequest):
             return {"generated_text": output_str}
 
 
+@app.post("/generate_stream/")
+async def generate_stream(prompt_request: PromptRequest):
+    request_id = str(uuid.uuid4())
+    await request_queue.put((request_id, prompt_request))
+    while True:
+        await asyncio.sleep(0.1)
+        if request_id in streamer_dict:
+            token_queue = streamer_dict[request_id]
+            async def output_generator(token_queue):
+                i = 0
+                while i < prompt_request.n_predict:
+                    if not token_queue.empty():
+                        token = await token_queue.get()
+                        logger.error(f"Consumer: {token}")
+                        # yield token
+                        yield json.dumps(
+                            {"request_id": request_id, "text": token}
+                        ) + "\n"
+                    else:
+                        await asyncio.sleep(0.001)
+                        # continue
+                streamer_dict.pop(request_id, None)
+
+            # return StreamingResponse(output_generator(token_queue))
+            return StreamingResponse(
+                output_generator(token_queue), media_type="application/json"
+            )
+
+
 async def process_requests():
     while True:
         request_ids, prompt_requests = [], []
@@ -164,7 +252,9 @@ async def process_requests():
             while rest_req_deque:
                 request_id, rest_request = rest_req_deque.popleft()
                 prompt = rest_request.prompt
-                cur_prompt_len = tokenizer(prompt_request.prompt, return_tensors="pt").input_ids.size(1)
+                cur_prompt_len = tokenizer(
+                    prompt_request.prompt, return_tensors="pt"
+                ).input_ids.size(1)
                 cur_batched_tokens += cur_prompt_len
                 if cur_batched_tokens > max_num_batched_tokens:
                     cur_batched_tokens -= cur_prompt_len
@@ -181,7 +271,9 @@ async def process_requests():
                 request_id, prompt_request = await request_queue.get()
                 # import pdb
                 # pdb.set_trace()
-                cur_prompt_len = tokenizer(prompt_request.prompt, return_tensors="pt").input_ids.size(1)
+                cur_prompt_len = tokenizer(
+                    prompt_request.prompt, return_tensors="pt"
+                ).input_ids.size(1)
                 cur_batched_tokens += cur_prompt_len
                 if cur_batched_tokens > max_num_batched_tokens:
                     cur_batched_tokens -= cur_prompt_len
@@ -193,19 +285,48 @@ async def process_requests():
         if local_rank == 0 and prompt_requests:
             object_list = prompt_requests
             if len(object_list) < max_num_seqs:
-                object_list = object_list + [empty_req] * (max_num_seqs - len(object_list))
-            logger.info(f"Running: {len(prompt_requests)}, Pending: {request_queue.qsize()}")
+                object_list = object_list + [empty_req] * (
+                    max_num_seqs - len(object_list)
+                )
+            logger.info(
+                f"Running: {len(prompt_requests)}, Pending: {request_queue.qsize()}"
+            )
             dist.broadcast_object_list(object_list, src=0)
-            start_time = time.time()
-            outputs = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
-            generate_time = time.time() - start_time
-            outputs = outputs.cpu()
-            output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-            output_strs = output_strs[:len(prompt_requests)]
+            # start_time = time.time()
 
-            for request_id, output_str in zip(request_ids, output_strs):
-                result_dict[request_id] = output_str
-            logger.info(f"First token latency: {model.first_cost}, next token latency: {model.rest_cost_mean}, generate time: {generate_time}")
+            # import pdb
+            # pdb.set_trace()
+
+            await generate_stream_gate(
+                [req.prompt for req in object_list],
+                [req.n_predict for req in object_list],
+                request_ids,
+            )
+            # for request_id in request_ids:
+            #     if request_id not in streamer_dict:
+            #         streamer_dict[request_id] = asyncio.Queue()
+            # async def put_item(queue, item):
+            #     # 向队列中放入一个元素
+            #     await queue.put(item)
+            #     logger.error(f"Put {item} into queue {id(queue)}")
+            # tasks = []
+            # for item in generator:
+            #     for index, request_id in enumerate(request_ids):
+            #         tasks.append(put_item(streamer_dict[request_id], item[index]))
+
+            # await asyncio.gather(*tasks)
+
+            # outputs = generate_stream_gate([req.prompt for req in object_list], [req.n_predict for req in object_list])
+            # generate_time = time.time() - start_time
+            # outputs = outputs.cpu()
+            # output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            # output_strs = output_strs[:len(prompt_requests)]
+
+            # # for request_id, output_str in zip(request_ids, outputs):
+            # #     result_dict[request_id] = output_str
+            # request_id = request_ids[0]
+            # result_dict[request_id] = outputs
+            # logger.info(f"First token latency: {model.first_cost}, next token latency: {model.rest_cost_mean}, generate time: {generate_time}")
 
         await asyncio.sleep(0.1)
 
@@ -216,19 +337,44 @@ async def startup_event():
         asyncio.create_task(process_requests())
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
-                        help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`, `meta-llama/Llama-2-13b-chat-hf` and `meta-llama/Llama-2-70b-chat-hf`) to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--low-bit', type=str, default='sym_int4',
-                    help='The quantization type the model will convert to.')
-    parser.add_argument('--port', type=int, default=8000,
-                    help='The port number on which the server will run.')
-    parser.add_argument('--max-num-batched-tokens', type=int, default=4096,
-                    help='Max tokens can be batched by this service.')
-    parser.add_argument('--max-num-seqs', type=int, default=8,
-                    help='Max requests can be batched by this service.')
+async def main():
+    parser = argparse.ArgumentParser(
+        description="Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP"
+    )
+    parser.add_argument(
+        "--repo-id-or-model-path",
+        type=str,
+        default="meta-llama/Llama-2-7b-chat-hf",
+        help="The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`, `meta-llama/Llama-2-13b-chat-hf` and `meta-llama/Llama-2-70b-chat-hf`) to be downloaded"
+        ", or the path to the huggingface checkpoint folder",
+    )
+    parser.add_argument(
+        "--low-bit",
+        type=str,
+        default="sym_int4",
+        help="The quantization type the model will convert to.",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="The port number on which the server will run.",
+    )
+    parser.add_argument(
+        "--max-num-batched-tokens",
+        type=int,
+        default=4096,
+        help="Max tokens can be batched by this service.",
+    )
+    parser.add_argument(
+        "--max-num-seqs",
+        type=int,
+        default=8,
+        help="Max requests can be batched by this service.",
+    )
+
+    global max_num_seqs
+    global max_num_batched_tokens
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -236,10 +382,21 @@ if __name__ == "__main__":
     max_num_seqs = args.max_num_seqs
     max_num_batched_tokens = args.max_num_batched_tokens
     load_model(model_path, low_bit)
+
+    config = uvicorn.Config(app=app, host="0.0.0.0", port=args.port)
+    server = uvicorn.Server(config)
+
     if local_rank == 0:
-        uvicorn.run(app, host="0.0.0.0", port=args.port)
+        await server.serve()
     else:
         while True:
             object_list = [None] * max_num_seqs
             dist.broadcast_object_list(object_list, src=0)
-            output = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
+            await generate_stream_gate(
+                [req.prompt for req in object_list],
+                [req.n_predict for req in object_list],
+            )
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
