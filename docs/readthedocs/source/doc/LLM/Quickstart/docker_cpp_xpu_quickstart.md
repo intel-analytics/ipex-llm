@@ -16,7 +16,7 @@ docker pull intelanalytics/ipex-llm-cpp-xpu:latest
 .. tabs::
    .. tab:: Linux
 
-      To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. And change the `/path/to/models` to mount the models.
+      To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. Select the device you are running(device type:(Max, Flex, Arc, iGPU)). And change the `/path/to/models` to mount the models. `bench_model` is used to benchmark quickly. If want to benchmark, make sure it on the `/path/to/models`
 
       .. code-block:: bash
 
@@ -30,6 +30,8 @@ docker pull intelanalytics/ipex-llm-cpp-xpu:latest
                 -e no_proxy=localhost,127.0.0.1 \
                 --memory="32G" \
                 --name=$CONTAINER_NAME \
+                -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
+                -e DEVICE=Arc \
                 --shm-size="16g" \
                 $DOCKER_IMAGE
    
@@ -51,6 +53,8 @@ docker pull intelanalytics/ipex-llm-cpp-xpu:latest
                 -e no_proxy=localhost,127.0.0.1 \
                 --memory="32G" \
                 --name=$CONTAINER_NAME \
+                -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
+                -e DEVICE=Arc \
                 --shm-size="16g" \
                 $DOCKER_IMAGE
 
@@ -74,12 +78,26 @@ root@arda-arc12:/# sycl-ls
 ```
 
 
+### Quick benchmark for llama.cpp
+
+```bash
+bash /llm/scripts/benchmark_llama-cpp.sh
+
+# benchmark results
+llama_print_timings:        load time =    xxx ms
+llama_print_timings:      sample time =       xxx ms /    32 runs   (    xxx ms per token, xxx tokens per second)
+llama_print_timings: prompt eval time =     xxx ms /    32 tokens (    xxx ms per token,   xxx tokens per second)
+llama_print_timings:        eval time =     xxx ms /    31 runs   (   xxx ms per token,    xxx tokens per second)
+llama_print_timings:       total time =     xxx ms /    63 tokens
+```
+
+
 ### Use the image for running llama.cpp inference with IPEX-LLM on Intel GPU
 
 ```bash
 cd /llm/scripts/
-# use the right device to set the proper Env, device type:(Max, Flex, Arc, iGPU)
-source ipex-llm-init --gpu --device Arc
+# set the recommended Env
+source ipex-llm-init --gpu --device $DEVICE
 # mount models and change the model_path in `start-llama-cpp.sh`
 bash start-llama-cpp.sh
 ```
@@ -92,8 +110,8 @@ Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/d
 Running the ollama on the background, you can see the ollama.log in `/root/ollama/ollama.log`
 ```bash
 cd /llm/scripts/
-# use the right device to set the proper Env, device type:(Max, Flex, Arc, iGPU)
-source ipex-llm-init --gpu --device Arc
+# set the recommended Env
+source ipex-llm-init --gpu --device $DEVICE
 bash start-ollama.sh # ctrl+c to exit
 # pull model
 cd /llm/ollama && ./ollama pull dolphin-phi:latest
