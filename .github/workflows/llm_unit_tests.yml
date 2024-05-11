@@ -239,7 +239,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pytorch-version: ['2.1', '2.0']
+        # pytorch-version: ['2.1', '2.0']
+        pytorch-version: ['2.1']
         python-version: ${{ fromJson(needs.setup-python-version.outputs.python-version) }}
     runs-on: [self-hosted, llm, arc-ut]
     env:

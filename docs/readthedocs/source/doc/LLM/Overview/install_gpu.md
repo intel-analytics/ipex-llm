@@ -186,7 +186,11 @@ IPEX-LLM GPU support on Linux has been verified on:
 ```eval_rst
 .. important::
 
-    IPEX-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.
+    IPEX-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1. 
+
+    .. warning::
+
+       IPEX-LLM support for Pytorch 2.0 is deprecated as of ``ipex-llm >= 2.1.0b20240511``.
 ```
 
 ```eval_rst
@@ -311,7 +315,7 @@ IPEX-LLM GPU support on Linux has been verified on:
                      cd /opt/intel/oneapi/installer
                      sudo ./installer
 
-   .. tab:: PyTorch 2.0
+   .. tab:: PyTorch 2.0 (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
 
       To enable IPEX-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
@@ -432,7 +436,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
 ```eval_rst
 .. tabs::
    .. tab:: PyTorch 2.1
-      Choose either US or CN website for `extra-index-url`:
+      Choose either US or CN website for ``extra-index-url``:
 
       .. tabs::
          .. tab:: US
@@ -470,8 +474,8 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
                   pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             
 
-   .. tab:: PyTorch 2.0
-      Choose either US or CN website for `extra-index-url`:
+   .. tab:: PyTorch 2.0 (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
+      Choose either US or CN website for ``extra-index-url``:
 
       .. tabs::
          .. tab:: US
@@ -481,7 +485,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
                conda create -n llm python=3.11
                conda activate llm
 
-               pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+               pip install --pre --upgrade ipex-llm[xpu_2.0]==2.1.0b20240510 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
          .. tab:: CN
 
@@ -490,7 +494,7 @@ We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) t
                conda create -n llm python=3.11
                conda activate llm
 
-               pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+               pip install --pre --upgrade ipex-llm[xpu_2.0]==2.1.0b20240510 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 
 ```
 
@@ -521,7 +525,7 @@ If you encounter network issues when installing IPEX, you can also install IPEX-
          # install ipex-llm for Intel GPU
          pip install --pre --upgrade ipex-llm[xpu]
 
-   .. tab:: PyTorch 2.0
+   .. tab:: PyTorch 2.0 (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
 
       .. code-block:: bash
 
@@ -540,7 +544,7 @@ If you encounter network issues when installing IPEX, you can also install IPEX-
          pip install intel_extension_for_pytorch-2.0.110+xpu-cp311-cp311-linux_x86_64.whl
 
          # install ipex-llm for Intel GPU
-         pip install --pre --upgrade ipex-llm[xpu_2.0]
+         pip install --pre --upgrade ipex-llm[xpu_2.0]==2.1.0b20240510
 
 ```
 
