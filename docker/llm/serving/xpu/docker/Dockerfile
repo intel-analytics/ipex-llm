@@ -29,13 +29,16 @@ RUN cd /llm &&\
     # Install text-generation-webui dependencies
     cd /llm && wget https://github.com/intel-analytics/text-generation-webui/archive/refs/heads/ipex-llm.zip && \
     unzip ipex-llm.zip && rm ipex-llm.zip && \
+    cd text-generation-webui-ipex-llm && \
     pip install -r requirements_cpu_only.txt && \
     # Install Langchain-Chatchat dependencies
-    wget https://github.com/intel-analytics/Langchain-Chatchat/archive/refs/heads/ipex-llm.zip && \
+    cd /llm && wget https://github.com/intel-analytics/Langchain-Chatchat/archive/refs/heads/ipex-llm.zip && \
     unzip ipex-llm.zip && rm ipex-llm.zip && \
+    cd Langchain-Chatchat-ipex-llm && \
     pip install -r requirements_ipex_llm.txt && \
     pip install -r requirements_api_ipex_llm.txt && \
-    pip install -r requirements_webui.txt
+    pip install -r requirements_webui.txt && \
+    python copy_config_example.py
 
 ADD ./offline_inference.py      /llm/vllm-examples/
 ADD ./payload-1024.lua          /llm/vllm-examples/
