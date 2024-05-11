@@ -89,9 +89,9 @@ vim config.yaml
 ```eval_rst
 .. note::
 
-  `dtype`: The model is originally loaded in this data type.  After ipex-llm conversion, all the non-linear layers remain to use this data type.
+  ``dtype``: The model is originally loaded in this data type.  After ipex-llm conversion, all the non-linear layers remain to use this data type.
 
-  `qtype`: ipex-llm will convert all the linear-layers' weight to this data type.
+  ``qtype``: ipex-llm will convert all the linear-layers' weight to this data type.
 ```
 
 
@@ -155,9 +155,9 @@ Some parameters in the yaml file that you can configure:
 
 
 ```eval_rst
-.. note::
+.. remark::
 
-  If you want to benchmark the performance without warmup, you can set `warm_up: 0` and `num_trials: 1` in `config.yaml`, and run each single model and in_out_pair separately. 
+  If you want to benchmark the performance without warmup, you can set ``warm_up: 0`` and ``num_trials: 1`` in ``config.yaml``, and run each single model and in_out_pair separately. 
 ```
 
 
