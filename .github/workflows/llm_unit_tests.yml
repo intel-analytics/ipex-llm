@@ -99,5 +99,5 @@ jobs:
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
         with:
           repository: "langchain-ai/langchain"
-          ref: ${{ fromJson(steps.get_langchain_version.outputs.langchain_ver) }}
+          ref: ${{ join(steps.get_langchain_version.outputs.*, '\n') }}
           path: langchain_upstream
