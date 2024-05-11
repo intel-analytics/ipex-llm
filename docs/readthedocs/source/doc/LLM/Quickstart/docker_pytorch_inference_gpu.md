@@ -21,9 +21,9 @@ docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 
 Start ipex-llm-xpu Docker Container:
 ```bash
-export DOCKER_IMAGE=10.239.45.10/arda/intelanalytics/ipex-llm-xpu:test
+export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 export CONTAINER_NAME=my_container
-export MODEL_PATH=/mnt/disk1/models
+export MODEL_PATH=/llm/models[change to your model path]
 
 docker run -itd \
     --net=host \
@@ -114,7 +114,7 @@ Some parameters in the yaml file that you can configure:
 
 
 - `repo_id`: The name of the model and its organization.
-- `local_model_hub`: The folder path where the models are stored on your machine.
+- `local_model_hub`: The folder path where the models are stored on your machine. Replace 'path to your local model hub' with /llm/models.
 - `warm_up`: The number of warmup trials before performance benchmarking (must set to >= 2 when using "pipeline_parallel_gpu" test_api).
 - `num_trials`: The number of runs for performance benchmarking (the final result is the average of all trials).
 - `low_bit`: The low_bit precision you want to convert to for benchmarking.
