@@ -87,17 +87,17 @@ jobs:
 
       - name: Get Langchain version
         shell: bash
-        id: langchain_version
+        id: get_langchain_version
         run: |
           pip uninstall langchain -y
           pip install langchain
           LANGCHAIN_VERSION=$(pip show langchain | grep Version | cut -d " " -f 2)
           LANGCHAIN_REF="langchain==$LANGCHAIN_VERSION"
-          echo "LANGCHAIN_REF=${LANGCHAIN_REF}" >> $GITHUB_OUTPUT
+          echo "langchain_ver=$LANGCHAIN_REF" >> $GITHUB_OUTPUT
 
       - name: Checkout Langchain repo
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
         with:
           repository: "langchain-ai/langchain"
-          ref: ${{ fromJson(steps.langchain_version.outputs.LANGCHAIN_REF) }}
+          ref: ${{ fromJson(steps.get_langchain_version.outputs.langchain_ver) }}
           path: langchain_upstream
