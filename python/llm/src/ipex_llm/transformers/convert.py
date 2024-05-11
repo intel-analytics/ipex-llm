@@ -1524,6 +1524,11 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi3 import model_forward_wrapper
         model_forward = model_forward_wrapper(module.Phi3Model.forward)
         convert_forward(model, module.Phi3Model, model_forward)
+        from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
+        convert_forward(
+            model,
+            module.Phi3RMSNorm,
+            phi3_rms_norm_forward)
         # Empty cache after the first attention to run long context.
         model.model.layers[0].self_attn.register_forward_hook(empty_cache_post)
     elif model.config.model_type == 'yuan':
