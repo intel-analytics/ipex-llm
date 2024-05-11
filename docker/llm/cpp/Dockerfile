@@ -44,9 +44,9 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt clean -y && \
     curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
     apt install -y nodejs && \
-    cd ~/ && \
+    mkdir -p /llm/scripts && cd /llm && \
     git clone https://github.com/open-webui/open-webui.git && \
-    cd ~/open-webui/ && \
+    cd /llm/open-webui/ && \
     cp -RPp .env.example .env && \
     # Build frontend
     npm i && \
@@ -57,6 +57,8 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
     pip install -r requirements.txt -U
 
-COPY ./start-llama-cpp.sh /root/scripts/start-llama-cpp.sh
-COPY ./start-ollama.sh /root/scripts/start-ollama.sh
-COPY ./start-open-webui.sh /root/scripts/start-open-webui.sh
+COPY ./start-llama-cpp.sh /llm/scripts/start-llama-cpp.sh
+COPY ./start-ollama.sh /llm/scripts/start-ollama.sh
+COPY ./start-open-webui.sh /llm/scripts/start-open-webui.sh
+
+WORKDIR /llm/

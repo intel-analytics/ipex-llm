@@ -1,6 +1,6 @@
 # init llama-cpp first
-mkdir -p ~/llama-cpp
-cd ~/llama-cpp
+mkdir -p /llm/llama-cpp
+cd /llm/llama-cpp
 init-llama-cpp
 
 # change the model_path to run

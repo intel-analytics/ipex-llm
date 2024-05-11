@@ -1,2 +1,2 @@
-cd ~/open-webui/backend
+cd /llm/open-webui/backend
 bash start.sh > open-webui.log

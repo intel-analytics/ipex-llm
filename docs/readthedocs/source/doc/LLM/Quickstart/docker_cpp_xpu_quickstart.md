@@ -77,7 +77,7 @@ root@arda-arc12:/# sycl-ls
 ### Use the image for running llama.cpp inference with IPEX-LLM on Intel GPU
 
 ```bash
-cd ~/scripts/
+cd /llm/scripts/
 # use the right device to set the proper Env, device type:(Max, Flex, Arc, iGPU)
 source ipex-llm-init --gpu --device Arc
 # mount models and change the model_path in `start-llama-cpp.sh`
@@ -91,12 +91,12 @@ Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/d
 
 Running the ollama on the background, you can see the ollama.log in `/root/ollama/ollama.log`
 ```bash
-cd ~/scripts/
+cd /llm/scripts/
 # use the right device to set the proper Env, device type:(Max, Flex, Arc, iGPU)
 source ipex-llm-init --gpu --device Arc
 bash start-ollama.sh # ctrl+c to exit
 # pull model
-cd /root/ollama && ./ollama pull dolphin-phi:latest
+cd /llm/ollama && ./ollama pull dolphin-phi:latest
 ```
 
 Use the Curl to Test:
@@ -115,8 +115,9 @@ Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/d
 ### Use the image for running Open WebUI with Intel GPU
 
 Start the ollama and load the model first, then use the open-webui to chat.
+If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add export HF_ENDPOINT=https://hf-mirror.com before running bash start.sh.
 ```bash
-cd ~/scripts/
+cd /llm/scripts/
 bash start-open-webui.sh
 # INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 ```
