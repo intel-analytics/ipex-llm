@@ -155,7 +155,7 @@ Some parameters in the yaml file that you can configure:
 
 
 ```eval_rst
-.. remark::
+.. note::
 
   If you want to benchmark the performance without warmup, you can set ``warm_up: 0`` and ``num_trials: 1`` in ``config.yaml``, and run each single model and in_out_pair separately. 
 ```
