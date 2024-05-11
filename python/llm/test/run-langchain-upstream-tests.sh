@@ -7,7 +7,6 @@ export TEST_IPEXLLM_MODEL_IDS=${VICUNA_7B_1_3_ORIGIN_PATH}
 set -e
 
 echo ">>> Testing LangChain upstream unit test"
-mkdir ${ANALYTICS_ZOO_ROOT}/langchain_upstream
 cp ${ANALYTICS_ZOO_ROOT}/langchain_upstream/libs/community/tests/integration_tests/llms/test_bigdl_llm.py ${ANALYTICS_ZOO_ROOT}/langchain_upstream
 cp ${ANALYTICS_ZOO_ROOT}/langchain_upstream/libs/community/tests/integration_tests/llms/test_ipex_llm.py ${ANALYTICS_ZOO_ROOT}/langchain_upstream
 
