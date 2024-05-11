@@ -45,9 +45,10 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     # Install related libary of chat.py
     pip install --upgrade colorama && \
-    # Download all-in-one benchmark
+    # Download all-in-one benchmark and examples
     git clone https://github.com/intel-analytics/ipex-llm && \
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
+    cp -r ./ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model ./examples && \
     # Install vllm dependencies
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
@@ -59,5 +60,3 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install pandas && \
     pip install omegaconf && \
     chmod +x /llm/benchmark.sh
-
-WORKDIR /llm

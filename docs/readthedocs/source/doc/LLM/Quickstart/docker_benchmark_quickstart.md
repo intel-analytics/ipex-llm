@@ -1,4 +1,4 @@
-# Run Performance Benchmarking in Docker with IPEX-LLM on Intel GPU
+# Running PyTorch inference on GPU using Docker (on Linux or WSL)
 
 Benchmarking IPEX-LLM on Intel GPUs within Docker can be efficiently achieved using provided benchmark scripts. Follow these steps to execute the process smoothly.
 
@@ -12,54 +12,14 @@ Benchmarking IPEX-LLM on Intel GPUs within Docker can be efficiently achieved us
 
     For Windows installation, refer to this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows).
 
-## Prepare ipex-llm-xpu Docker Image
+## Launch Docker
 
-Run the following command to pull image from dockerhub:
+Prepare ipex-llm-xpu Docker Image:
 ```bash
 docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 ```
 
-## Quick Performance Benchmark
-
-Execute a quick performance benchmark by starting the ipex-llm-xpu container, specifying the model, test API, and device, then running the benchmark.sh script. 
-
-### Start ipex-llm-xpu Docker Container
-To map the XPU into the container, specify `--device=/dev/dri` when booting the container.
-```bash
-#/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
-export CONTAINER_NAME=my_container
-export MODEL_PATH=/llm/models [change to your model path]
-
-sudo docker run -itd \
-        --net=host \
-        --device=/dev/dri \
-        --memory="32G" \
-        --name=$CONTAINER_NAME \
-        --shm-size="16g" \
-        -v $MODEL_PATH:/llm/models \
-        -e REPO_IDS="meta-llama/Llama-2-7b-chat-hf" \
-        -e TEST_APIS="transformer_int4_gpu" \
-        -e DEVICE=Arc \
-        $DOCKER_IMAGE /llm/benchmark.sh
-```
-
-Customize environment variables to specify:
-
-- **REPO_IDS:** Model's name and organization, separated by commas if multiple values exist.
-- **TEST_APIS:** Different test functions based on the machine, separated by commas if multiple values exist.
-- **DEVICE:** Type of device - Max, Flex, Arc.
-
-### Result
-
-Upon completion, you can obtain a CSV result file, the content of CSV results will be printed out. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results.
-
-
-## Performance Benchmark with Detailed Configurations
-
-For more detailed configurations, you should first create the container, modify the config.yaml, then run the benchmarking scripts to get the results.
-
-### Start ipex-llm-xpu Docker Container
+Start ipex-llm-xpu Docker Container:
 ```bash
 export DOCKER_IMAGE=10.239.45.10/arda/intelanalytics/ipex-llm-xpu:test
 export CONTAINER_NAME=my_container
@@ -73,11 +33,24 @@ docker run -itd \
     --shm-size="16g" \
     -v $MODEL_PATH:/llm/models \
     $DOCKER_IMAGE
+```
 
+Access the container:
+```
 docker exec -it $CONTAINER_NAME bash
 ```
 
-### Modify config.yaml
+To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
+
+```bash
+root@arda-arc12:/# sycl-ls
+[opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
+[opencl:cpu:1] Intel(R) OpenCL, 13th Gen Intel(R) Core(TM) i9-13900K 3.0 [2023.16.7.0.21_160000]
+[opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
+[ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
+```
+
+## Run Inference Benchmark 
 
 Navigate to benchmark directory, and modify the `config.yaml` under the `all-in-one` folder for benchmark configurations.
 ```bash
@@ -85,7 +58,7 @@ cd /benchmark/all-in-one
 vim config.yaml
 ```
 
-#### config.yaml
+#### Modify config.yaml
 ```eval_rst
 .. note::
 
@@ -172,3 +145,24 @@ python run.py
 
 After the benchmarking is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in `config.yaml` have been successfully applied in the benchmarking.
 
+
+## Run Chat Service
+
+We provide `chat.py` for conversational AI. 
+
+For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can excute the following command to initiate a conversation:
+  ```bash
+  cd /llm
+  python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
+  ```
+
+
+## Run PyTorch Examples
+
+We provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs
+
+For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can navigate to /examples/llama2 directory, excute the following command to run example:
+  ```bash
+  cd /examples/<model_dir>
+  python ./generate.py --repo-id-or-model-path /llm/models/Llama-2-7b-chat-hf --prompt PROMPT --n-predict N_PREDICT
+  ```
