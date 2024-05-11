@@ -150,7 +150,7 @@ After the benchmarking is completed, you can obtain a CSV result file under the 
 
 We provide `chat.py` for conversational AI. 
 
-For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can excute the following command to initiate a conversation:
+For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can execute the following command to initiate a conversation:
   ```bash
   cd /llm
   python chat.py --model-path /llm/models/Llama-2-7b-chat-hf

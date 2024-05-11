@@ -60,3 +60,5 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install pandas && \
     pip install omegaconf && \
     chmod +x /llm/benchmark.sh
+
+WORKDIR /llm/

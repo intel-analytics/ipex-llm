@@ -159,9 +159,12 @@ Run the following command to pull image from dockerhub:
 docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 ```
 
-### 2. Start ipex-llm-xpu Docker Container
+### 2. Start Chat Inference
+
+We provide `chat.py` for conversational AI. If your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can execute the following command to initiate a conversation:
 
 To map the xpu into the container, you need to specify --device=/dev/dri when booting the container.
+
 ```bash
 #/bin/bash
 export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
@@ -175,35 +178,43 @@ sudo docker run -itd \
         --name=$CONTAINER_NAME \
         --shm-size="16g" \
         -v $MODEL_PATH:/llm/models \
-        $DOCKER_IMAGE
+        $DOCKER_IMAGE bash -c "python chat.py --model-path /llm/models/Llama-2-7b-chat-hf"
 ```
 
-Access the container:
-```
-docker exec -it $CONTAINER_NAME bash
-```
 
-To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
+### 3. Quick Performance Benchmark
 
+Execute a quick performance benchmark by starting the ipex-llm-xpu container, specifying the model, test API, and device, then running the benchmark.sh script. 
+
+To map the XPU into the container, specify `--device=/dev/dri` when booting the container.
 ```bash
-root@arda-arc12:/# sycl-ls
-[opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
-[opencl:cpu:1] Intel(R) OpenCL, 13th Gen Intel(R) Core(TM) i9-13900K 3.0 [2023.16.7.0.21_160000]
-[opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
-[ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
+#/bin/bash
+export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+export CONTAINER_NAME=my_container
+export MODEL_PATH=/llm/models [change to your model path]
+
+sudo docker run -itd \
+        --net=host \
+        --device=/dev/dri \
+        --memory="32G" \
+        --name=$CONTAINER_NAME \
+        --shm-size="16g" \
+        -v $MODEL_PATH:/llm/models \
+        -e REPO_IDS="meta-llama/Llama-2-7b-chat-hf" \
+        -e TEST_APIS="transformer_int4_gpu" \
+        -e DEVICE=Arc \
+        $DOCKER_IMAGE /llm/benchmark.sh
 ```
 
-### 3. Start Inference
-**Chat Interface**: Use `chat.py` for conversational AI. 
+Customize environment variables to specify:
 
-For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can excute the following command to initiate a conversation:
-  ```bash
-  cd /llm
-  python chat.py --model-path /llm/models/Llama-2-7b-chat-hf
-  ```
+- **REPO_IDS:** Model's name and organization, separated by commas if multiple values exist.
+- **TEST_APIS:** Different test functions based on the machine, separated by commas if multiple values exist.
+- **DEVICE:** Type of device - Max, Flex, Arc.
 
-To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU).
+**Result**
 
+Upon completion, you can obtain a CSV result file, the content of CSV results will be printed out. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results.
 
 ## IPEX-LLM Serving on CPU
 FastChat is an open platform for training, serving, and evaluating large language model based chatbots. You can find the detailed information at their [homepage](https://github.com/lm-sys/FastChat).
