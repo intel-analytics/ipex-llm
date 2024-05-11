@@ -58,7 +58,7 @@ cd /benchmark/all-in-one
 vim config.yaml
 ```
 
-#### Modify config.yaml
+##### Modify config.yaml
 ```eval_rst
 .. note::
 
@@ -141,7 +141,7 @@ python run.py
 ```
 
 
-### Result
+##### Result
 
 After the benchmarking is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in `config.yaml` have been successfully applied in the benchmarking.
 
@@ -174,12 +174,12 @@ For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you
   ```
 
 
-Arguments info:
+**Arguments info:**
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-#### Sample Output
+**Sample Output**
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
