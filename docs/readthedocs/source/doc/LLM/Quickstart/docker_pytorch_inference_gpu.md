@@ -1,4 +1,4 @@
-# Running PyTorch Inference on GPU using Docker (on Linux or WSL)
+# Run PyTorch Inference on Intel GPU using Docker (on Linux or WSL)
 
 We can run PyTorch Inference Benchmark, Chat Service and PyTorch Examples on Intel GPUs within Docker (on Linux or WSL).
 
