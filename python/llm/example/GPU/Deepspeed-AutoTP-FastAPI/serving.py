@@ -176,13 +176,12 @@ async def generate_stream_gate(prompt: List[str], n_predict=32, request_ids=[]):
 
     def model_generate():
         model.generate(input_ids, **generated_kwargs)
+        torch.xpu.empty_cache()
         torch.xpu.synchronize()
 
     t1 = Thread(target=model_generate)
     t1.start()
 
-    partial_output = ""
-    rfind_start = 0
     stopped = False
 
     async def put_item(queue, item):
@@ -205,7 +204,6 @@ async def generate_stream_gate(prompt: List[str], n_predict=32, request_ids=[]):
         await asyncio.gather(*tasks)
         if stopped:
             break
-    torch.xpu.empty_cache()
 
 
 app = FastAPI()
@@ -259,7 +257,6 @@ async def generate_stream(prompt_request: PromptRequest):
         if request_id in streamer_dict:
             token_queue = streamer_dict[request_id]
 
-            # return StreamingResponse(output_generator(token_queue))
             return StreamingResponse(stream_generator(token_queue, request_id))
 
 
@@ -289,8 +286,6 @@ async def process_requests():
                 if request_queue.empty():
                     break
                 request_id, prompt_request = await request_queue.get()
-                # import pdb
-                # pdb.set_trace()
                 cur_prompt_len = tokenizer(
                     prompt_request.prompt, return_tensors="pt"
                 ).input_ids.size(1)
