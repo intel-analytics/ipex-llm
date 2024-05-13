@@ -161,8 +161,9 @@ if __name__ == '__main__':
                                                  model,
                                                  device,
                                                  low_bit,
-                                                 conf["load_low_bit_model"])
-                results.append([model, device, low_bit, conf["load_low_bit_model"],result])
+                                                 conf["load_low_bit_model"]
+                                                 )
+                results.append([model, device, low_bit, conf["load_low_bit_model"], result])
 
     df = pd.DataFrame(results,
                       columns=['model', 'device', 'low_bit', 'use_low_bit_model', 'result'])
