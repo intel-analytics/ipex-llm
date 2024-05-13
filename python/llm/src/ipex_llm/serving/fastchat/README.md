@@ -78,7 +78,7 @@ We have also provided an option `--load-low-bit-model` to load models that have 
 Check the following examples:
 ```bash
 # Or --device "cpu"
-python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path /Low/Bit/Model/Path --trust-remote-code --device "xpu"
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path /Low/Bit/Model/Path --trust-remote-code --device "xpu" --load-low-bit-model
 ```
 
 #### For self-speculative decoding example:
