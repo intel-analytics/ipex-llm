@@ -50,6 +50,16 @@ root@arda-arc12:/# sycl-ls
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
 
+```eval_rst
+.. tip::
+
+  You can run the Env-Check script to verify your ipex-llm installation and runtime environment.
+  .. code-block:: bash
+
+      bash env-check.sh
+
+```
+
 ## Run Inference Benchmark 
 
 Navigate to benchmark directory, and modify the `config.yaml` under the `all-in-one` folder for benchmark configurations.
