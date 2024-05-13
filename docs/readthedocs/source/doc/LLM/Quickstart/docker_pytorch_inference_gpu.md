@@ -136,7 +136,7 @@ Some parameters in the yaml file that you can configure:
 
 After configuring the `config.yaml`, run the following scripts:
 ```bash
-source ipex-llm-init -g --device <value>
+source ipex-llm-init --gpu --device <value>
 python run.py
 ```
 
