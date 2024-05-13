@@ -1,8 +1,20 @@
-## Finetune LLM with IPEX LLM Container
+# Finetune LLM with IPEX LLM Container
 
-The following shows how to finetune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
+The following shows how to finetune LLM with IPEX-LLM optimizations in a docker environment, which is accelerated by Intel XPU.
 
-### 1. Prepare Docker Image
+
+With this docker image, we can use all [ipex-llm finetune examples on Intel GPU](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning), including:
+
+- [LoRA](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/LoRA): examples of running LoRA finetuning
+- [QLoRA](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA): examples of running QLoRA finetuning
+- [QA-LoRA](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QA-LoRA): examples of running QA-LoRA finetuning
+- [ReLora](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/ReLora): examples of running ReLora finetuning
+- [DPO](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO): examples of running DPO finetuning
+- [HF-PEFT](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/HF-PEFT): run finetuning on Intel GPU using Hugging Face PEFT code without modification
+- [axolotl](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/axolotl): LLM finetuning on Intel GPU using axolotl without writing code
+
+
+## 1. Prepare Docker Image
 
 You can download directly from Dockerhub like:
 
@@ -23,7 +35,7 @@ docker build \
   -f ./Dockerfile .
 ```
 
-### 2. Prepare Base Model, Data and Container
+## 2. Prepare Base Model, Data and Container
 
 Here, we try to fine-tune a [Llama2-7b](https://huggingface.co/meta-llama/Llama-2-7b) with [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) dataset, and please download them and start a docker container with files mounted like below:
 
@@ -65,7 +77,9 @@ docker run -itd \
 
 However, we do recommend you to handle them manually, because the download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
 
-### 3. Start Fine-Tuning
+## 3. Start Fine-Tuning
+
+### 3.1 QLoRA Llama2-7b example
 
 Enter the running container:
 
@@ -96,3 +110,51 @@ After minutes, it is expected to get results like:
 100%|███████████████████████████████████████████████████████████████████████████████████| 200/200 [07:16<00:00,  2.18s/it]
 TrainOutput(global_step=200, training_loss=1.0400420665740966, metrics={'train_runtime': xxxx, 'train_samples_per_second': xxxx, 'train_steps_per_second': xxxx, 'train_loss': 1.0400420665740966, 'epoch': 0.15})
 ```
+
+### 3.2 QA-LoRA Llama2-7b example
+
+Enter the running container:
+
+```bash
+docker exec -it ipex-llm-finetune-xpu bash
+```
+
+Enter QA-LoRA dir.
+
+```bash
+cd /LLM-Finetuning/QA-LoRA
+```
+
+Modify configuration in scripts, e.g., `--base_model` and `--data_path` in `qalora_finetune_llama2_7b_arc_1_card.sh`.
+
+Then, start QA-LoRA fine-tuning:
+
+```bash
+bash qalora_finetune_llama2_7b_arc_1_card.sh
+```
+
+For more details, please refer to [QA-LoRA example](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QA-LoRA).
+
+### 3.3 Axolotl LoRA
+
+Enter the running container:
+
+```bash
+docker exec -it ipex-llm-finetune-xpu bash
+```
+
+Enter QA-LoRA dir.
+
+```bash
+cd /LLM-Finetuning/axolotl
+```
+
+Modify configuration in axolotl config, e.g., `base_model` and `datasets.path` in `lora.yml`.
+
+Then, start QA-LoRA fine-tuning:
+
+```bash
+accelerate launch finetune.py lora.yml
+```
+
+For more details, please refer to [axolotl example](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/axolotl).

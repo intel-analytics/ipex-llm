@@ -32,7 +32,6 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     python3 get-pip.py && \
     # install XPU ipex-llm
     pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
-    # apt-get remove -y python3-blinker && \
     # prepare finetune code and scripts
     git clone https://github.com/intel-analytics/IPEX-LLM.git && \
     mv IPEX-LLM/python/llm/example/GPU/LLM-Finetuning /LLM-Finetuning && \
@@ -42,6 +41,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     cd axolotl && git checkout v0.4.0 && \
     mv /LLM-Finetuning/axolotl/requirements-xpu.txt requirements.txt && \
     pip install -e . --ignore-installed blinker && \
+    rm -rf .git && \
     # install transformers & peft dependencies
     pip install transformers==4.36.0 && \
     pip install peft==0.10.0 datasets accelerate==0.23.0 && \
