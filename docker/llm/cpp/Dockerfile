@@ -60,5 +60,6 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
 COPY ./start-llama-cpp.sh /llm/scripts/start-llama-cpp.sh
 COPY ./start-ollama.sh /llm/scripts/start-ollama.sh
 COPY ./start-open-webui.sh /llm/scripts/start-open-webui.sh
+COPY ./benchmark_llama-cpp.sh /llm/scripts/benchmark_llama-cpp.sh
 
 WORKDIR /llm/

@@ -1,7 +1,7 @@
 ## Build/Use IPEX-LLM cpp xpu image
 
 ### Setting Docker on windows
-If you want to run this image on windows, please refer to (this document)[https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows] to set up Docker on windows.
+If you want to run this image on windows, please refer to (this document)[https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows] to set up Docker on windows. Then run below steps on wls ubuntu. And you need to enable `--net=host`,follow [this guide](https://docs.docker.com/network/drivers/host/#docker-desktop) so that you can easily access the service running on the docker. The [v6.1x kernel version wsl]( https://learn.microsoft.com/en-us/community/content/wsl-user-msft-kernel-v6#1---building-the-microsoft-linux-kernel-v61x) is recommend to use.
 
 ### Build Image or pull image
 ```bash
@@ -77,6 +77,8 @@ root@arda-arc12:/# sycl-ls
 
 
 ### Quick benchmark for llama.cpp
+
+Notice that the performance on windows wsl docker is a little slower than on windows host, ant it's caused by the implementation of wsl kernel.
 
 ```bash
 bash /llm/scripts/benchmark_llama-cpp.sh
