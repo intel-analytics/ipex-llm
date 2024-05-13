@@ -1,0 +1,91 @@
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: ipex-llm-lora-finetuning-job
+  namespace: ipex-llm-lora-finetuning
+spec:
+  slotsPerWorker: 1
+  runPolicy:
+    cleanPodPolicy: Running
+  sshAuthMountPath: /home/mpiuser/.ssh
+  mpiImplementation: Intel
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+         spec:
+           volumes:
+           - name: nfs-storage
+             persistentVolumeClaim:
+               claimName: nfs-pvc
+           containers:
+           - image: {{ .Values.imageName }}
+             name: ipex-llm-lora-finetuning-launcher
+             securityContext:
+              runAsUser: 1000
+             command: ['sh' , '-c', 'bash /ipex_llm/ipex-llm-lora-finetuing-entrypoint.sh']
+             env:
+             - name: WORKER_ROLE
+               value: "launcher"
+             - name: WORLD_SIZE
+               value: "{{ .Values.trainerNum }}"
+             - name: MICRO_BATCH_SIZE
+               value: "{{ .Values.microBatchSize }}"
+             - name: MASTER_PORT
+               value: "42679"
+             - name: MASTER_ADDR
+               value: "ipex-llm-lora-finetuning-job-worker-0.ipex-llm-lora-finetuning-job-worker"
+             - name: DATA_SUB_PATH
+               value: "{{ .Values.dataSubPath }}"
+             - name: OMP_NUM_THREADS
+               value: "{{ .Values.ompNumThreads }}"
+             - name: LOCAL_POD_NAME
+               valueFrom:
+                 fieldRef:
+                   fieldPath: metadata.name
+             volumeMounts:
+             - name: nfs-storage
+               subPath: {{ .Values.modelSubPath }}
+               mountPath: /ipex_llm/model
+             - name: nfs-storage
+               subPath: {{ .Values.dataSubPath }}
+               mountPath: "/ipex_llm/data/{{ .Values.dataSubPath }}"
+    Worker:
+      replicas: {{ .Values.trainerNum }}
+      template:
+        spec:
+          containers:
+          - image: {{ .Values.imageName }}
+            name: ipex-llm-lora-finetuning-worker
+            securityContext:
+              runAsUser: 1000
+            command: ['sh' , '-c', 'bash /ipex_llm/ipex-llm-lora-finetuing-entrypoint.sh']
+            env:
+            - name: WORKER_ROLE
+              value: "trainer"
+            - name: WORLD_SIZE
+              value: "{{ .Values.trainerNum }}"
+            - name: MICRO_BATCH_SIZE
+              value: "{{ .Values.microBatchSize }}"
+            - name: MASTER_PORT
+              value: "42679"
+            - name: MASTER_ADDR
+              value: "ipex-llm-lora-finetuning-job-worker-0.ipex-llm-lora-finetuning-job-worker"
+            - name: LOCAL_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            volumeMounts:
+            - name: nfs-storage
+              subPath: {{ .Values.modelSubPath }}
+              mountPath: /ipex_llm/model
+            - name: nfs-storage
+              subPath: {{ .Values.dataSubPath }}
+              mountPath: "/ipex_llm/data/{{ .Values.dataSubPath }}"
+            resources:
+              requests:
+                cpu: {{ .Values.cpuPerPod }}
+          volumes:
+          - name: nfs-storage
+            persistentVolumeClaim:
+              claimName: nfs-pvc

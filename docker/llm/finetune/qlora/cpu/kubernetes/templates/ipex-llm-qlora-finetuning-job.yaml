@@ -1,0 +1,117 @@
+apiVersion: kubeflow.org/v2beta1
+kind: MPIJob
+metadata:
+  name: ipex-llm-qlora-finetuning-job
+  namespace: ipex-llm-qlora-finetuning
+spec:
+  slotsPerWorker: 1
+  runPolicy:
+    cleanPodPolicy: Running
+  sshAuthMountPath: /home/mpiuser/.ssh
+  mpiImplementation: Intel
+  mpiReplicaSpecs:
+    Launcher:
+      replicas: 1
+      template:
+         spec:
+           volumes:
+           - name: nfs-storage
+             persistentVolumeClaim:
+               claimName: nfs-pvc
+           containers:
+           - image: {{ .Values.imageName }}
+             name: ipex-llm-qlora-finetuning-launcher
+             securityContext:
+              runAsUser: 1000
+             command: ['sh' , '-c', 'bash /ipex_llm/ipex-llm-qlora-finetuing-entrypoint.sh']
+             env:
+             - name: WORKER_ROLE
+               value: "launcher"
+             - name: WORLD_SIZE
+               value: "{{ .Values.trainerNum }}"
+             - name: MICRO_BATCH_SIZE
+               value: "{{ .Values.microBatchSize }}"
+             - name: MASTER_PORT
+               value: "42679"
+             - name: MASTER_ADDR
+               value: "ipex-llm-qlora-finetuning-job-worker-0.ipex-llm-qlora-finetuning-job-worker"
+             - name: DATA_SUB_PATH
+               value: "{{ .Values.dataSubPath }}"
+             - name: ENABLE_GRADIENT_CHECKPOINT
+               value: "{{ .Values.enableGradientCheckpoint }}"
+             - name: http_proxy
+               value: "{{ .Values.httpProxy }}"
+             - name: https_proxy
+               value: "{{ .Values.httpsProxy }}"
+             - name: OMP_NUM_THREADS
+               value: "{{ .Values.omp_num_threads}}"
+             - name: LOCAL_POD_NAME
+               valueFrom:
+                 fieldRef:
+                   fieldPath: metadata.name
+             volumeMounts:
+             - name: nfs-storage
+               subPath: {{ .Values.modelSubPath }}
+               mountPath: /ipex_llm/model
+             - name: nfs-storage
+               subPath: {{ .Values.dataSubPath }}
+               mountPath: "/ipex_llm/data/{{ .Values.dataSubPath }}"
+    Worker:
+      replicas: {{ .Values.trainerNum }}
+      template:
+        spec:
+          affinity:
+             podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                        - key: training.kubeflow.org/job-role
+                          operator: In
+                          values:
+                            - worker
+                    topologyKey: kubernetes.io/hostname
+          containers:
+          - image: {{ .Values.imageName }}
+            name: ipex-llm-qlora-finetuning-worker
+            securityContext:
+              runAsUser: 1000
+            command: ['sh' , '-c', 'bash /ipex_llm/ipex-llm-qlora-finetuing-entrypoint.sh']
+            env:
+            - name: WORKER_ROLE
+              value: "trainer"
+            - name: WORLD_SIZE
+              value: "{{ .Values.trainerNum }}"
+            - name: MICRO_BATCH_SIZE
+              value: "{{ .Values.microBatchSize }}"
+            - name: MASTER_PORT
+              value: "42679"
+            - name: MASTER_ADDR
+              value: "ipex-llm-qlora-finetuning-job-worker-0.ipex-llm-qlora-finetuning-job-worker"
+            - name: ENABLE_GRADIENT_CHECKPOINT
+              value: "{{ .Values.enableGradientCheckpoint }}"
+            - name: http_proxy
+              value: "{{ .Values.httpProxy }}"
+            - name: https_proxy
+              value: "{{ .Values.httpsProxy }}"
+            - name: LOCAL_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            volumeMounts:
+            - name: nfs-storage
+              subPath: {{ .Values.modelSubPath }}
+              mountPath: /ipex_llm/model
+            - name: nfs-storage
+              subPath: {{ .Values.dataSubPath }}
+              mountPath: "/ipex_llm/data/{{ .Values.dataSubPath }}"
+            resources:
+              requests:
+                cpu: 48
+              limits:
+                cpu: 48
+          volumes:
+          - name: nfs-storage
+            persistentVolumeClaim:
+              claimName: nfs-pvc

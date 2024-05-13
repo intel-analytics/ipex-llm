@@ -1,0 +1,9 @@
+imageName: intelanalytics/ipex-llm-finetune-lora-cpu:2.1.0-SNAPSHOT
+trainerNum: 8
+microBatchSize: 8
+nfsServerIp: your_nfs_server_ip
+nfsPath: a_nfs_shared_folder_path_on_the_server
+dataSubPath: alpaca_data_cleaned_archive.json # a subpath of the data file under nfs directory
+modelSubPath: Llama-2-7b-chat-hf # a subpath of the model file (dir) under nfs directory
+ompNumThreads: 14
+cpuPerPod: 42
