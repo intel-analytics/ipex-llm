@@ -152,7 +152,7 @@ Before running, you should download or copy community GGUF model to your current
       .. code-block:: bash
       
          ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
-      
+
       .. note::
 
       For more details about meaning of each parameter, you can use ``./main -h``.
@@ -161,11 +161,11 @@ Before running, you should download or copy community GGUF model to your current
 
       .. code-block:: bash
 
-         main.exe -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+         main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
 
       .. note::
 
-      For more details about meaning of each parameter, you can use ``main.exe -h``.
+      For more details about meaning of each parameter, you can use ``main -h``.
 ```
 
 #### Sample Output
@@ -308,5 +308,20 @@ If your program hang after `llm_load_tensors:  SYCL_Host buffer size =    xx.xx 
 #### How to set `-ngl` parameter
 `-ngl` means the number of layers to store in VRAM. If your VRAM is enough, we recommend putting all layers on GPU, you can just set `-ngl` to a large number like 999 to achieve this goal.
 
+If `-ngl` is set to 0, it means that the entire model will run on CPU. If `-ngl` is set to greater than 0 and less than model layers, then it's mixed GPU + CPU scenario.
+
+```eval_rst
+.. note::
+
+  Now Q4_0 /Q4_1 /Q8_0 precisons are not allowed to run on CPU or run with mixed CPU and GPU.
+```
+
 #### How to specificy GPU
-If your machine has multi GPUs, `llama.cpp` will default use all GPUs which may slow down your inference for model which can run on single GPU. You can add `-sm none` in your command to use one GPU only. Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device before excuting your command, more details can refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/multi_gpus_selection.html#oneapi-device-selector).
+If your machine has multi GPUs, `llama.cpp` will default use all GPUs which may slow down your inference for model which can run on single GPU. You can add `-sm none` in your command to use one GPU only.
+
+Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device before excuting your command, more details can refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/multi_gpus_selection.html#oneapi-device-selector).
+
+#### Program crash with Chinese prompt
+If you run the llama.cpp program on Windows and find that your program crashes or outputs abnormally when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
+
+For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).
