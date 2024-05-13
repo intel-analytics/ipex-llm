@@ -54,9 +54,11 @@ root@arda-arc12:/# sycl-ls
 .. tip::
 
   You can run the Env-Check script to verify your ipex-llm installation and runtime environment.
+
   .. code-block:: bash
 
-      bash env-check.sh
+     bash env-check.sh
+
 
 ```
 
