@@ -54,10 +54,10 @@ def load_model(
     invalidInputError(device == 'cpu' or device == 'xpu',
                       "BigDL-LLM only supports device cpu or xpu")
 
-    tokenizer_cls = get_tokenizer_cls(model_path)
     model_cls = get_model_cls(model_path, low_bit)
     # Load tokenizer
-    tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer_cls = get_tokenizer_cls(model_path)
+
     model_kwargs = {"use_cache": True}
     if speculative:
         invalidInputError(load_low_bit_model is not True,
@@ -70,8 +70,14 @@ def load_model(
         model_kwargs["trust_remote_code"] = True
 
     if load_low_bit_model:
+        # After save_low_bit, the from_pretrained interface does not accept trust_remote_code=True
+        tokenizer = tokenizer_cls.from_pretrained(model_path)
         model = model_cls.load_low_bit(model_path, **model_kwargs)
     else:
+        if trust_remote_code:
+            tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
+        else:
+            tokenizer = tokenizer_cls.from_pretrained(model_path)
         if low_bit == "bf16":
             model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.bfloat16})
         elif low_bit == "fp16":
