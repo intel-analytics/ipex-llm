@@ -83,6 +83,7 @@ class BigDLLLMWorker(BaseModelWorker):
         )
 
         self.load_in_low_bit = load_in_low_bit
+        self.load_low_bit_model = load_low_bit_model
         logger.info(
             f"Loading the model {self.model_names} on worker {worker_id},"
             f" worker type: BigDLLLM worker..."
@@ -95,7 +96,12 @@ class BigDLLLMWorker(BaseModelWorker):
         self.device = device
         self.speculative = speculative
         self.model, self.tokenizer = load_model(
-            model_path, device, self.load_in_low_bit, trust_remote_code, speculative
+            model_path,
+            device,
+            self.load_in_low_bit,
+            trust_remote_code,
+            speculative,
+            load_low_bit_model,
         )
         self.stream_interval = stream_interval
         self.context_len = get_context_length(self.model.config)
