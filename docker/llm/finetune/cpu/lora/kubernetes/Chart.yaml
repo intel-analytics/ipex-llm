@@ -1,6 +1,0 @@
-apiVersion: v2
-name: trusted-fintune-service
-description: A Helm chart for IPEX-LLM Finetuning Service on Kubernetes
-type: application
-version: 1.1.27
-appVersion: "1.16.0"
