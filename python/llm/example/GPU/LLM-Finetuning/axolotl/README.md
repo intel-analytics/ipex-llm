@@ -69,13 +69,13 @@ This example shows how to run [Alpaca LoRA training](https://github.com/tloen/al
 
 Based on [axolotl Llama-2 LoRA example](https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/examples/llama-2/lora.yml).
 
-```
+```bash
 accelerate launch finetune.py lora.yml
 ```
 
 In v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
-```
+```bash
 accelerate launch train.py lora.yml
 ```
 
@@ -85,13 +85,13 @@ Based on [axolotl Llama-2 QLoRA example](https://github.com/OpenAccess-AI-Collec
 
 Modify parameters in `qlora.yml` based on your requirements. Then, launch finetuning with the following command.
 
-```
+```bash
 accelerate launch finetune.py qlora.yml
 ```
 
 In v0.4.0, you can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
-```
+```bash
 accelerate launch train.py qlora.yml
 ```
 
@@ -116,7 +116,7 @@ Output in console
 
 ### 4. Finetune Llama-3-8B (Experimental)
 
-Warning: this section will install axolotl main ([796a085](https://github.com/OpenAccess-AI-Collective/axolotl/tree/796a085b2f688f4a5efe249d95f53ff6833bf009)) for new features, e.g., Llama-3-8B. Due to axolotl development, this document maybe out of date.
+Warning: this section will install axolotl main ([796a085](https://github.com/OpenAccess-AI-Collective/axolotl/tree/796a085b2f688f4a5efe249d95f53ff6833bf009)) for new features, e.g., Llama-3-8B.
 
 #### 4.1 Install Axolotl main in conda
 
@@ -127,7 +127,7 @@ conda create -n llm python=3.11
 conda activate llm
 # install axolotl main
 git clone https://github.com/OpenAccess-AI-Collective/axolotl
-cd axolotl
+cd axolotl && git checkout 796a085
 pip install -e .
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
@@ -146,13 +146,13 @@ Based on [axolotl Llama-3 QLoRA example](https://github.com/OpenAccess-AI-Collec
 
 Modify parameters in `llama3-qlora.yml` based on your requirements. Then, launch finetuning with the following command.
 
-```
+```bash
 accelerate launch finetune.py llama3-qlora.yml
 ```
 
 You can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
-```
+```bash
 accelerate launch train.py llama3-qlora.yml
 ```
 
