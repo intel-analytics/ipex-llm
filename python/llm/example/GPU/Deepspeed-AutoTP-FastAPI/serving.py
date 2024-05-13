@@ -160,7 +160,7 @@ async def generate_stream_gate(prompt: List[str], n_predict=32, request_ids=[]):
 
     streamer = BatchTextIteratorStreamer(
         tokenizer=tokenizer,
-        timeout=60,
+        timeout=600,
         skip_prompt=True,
         skip_special_tokens=True,
         batch_size=len(prompt),
@@ -168,8 +168,10 @@ async def generate_stream_gate(prompt: List[str], n_predict=32, request_ids=[]):
 
     generated_kwargs = dict(
         max_new_tokens=n_predict,
+        min_new_tokens=n_predict,
         streamer=streamer,
         attention_mask=attention_mask,
+        do_sample=False,
     )
 
     def model_generate():
@@ -181,21 +183,29 @@ async def generate_stream_gate(prompt: List[str], n_predict=32, request_ids=[]):
 
     partial_output = ""
     rfind_start = 0
+    stopped = False
 
     async def put_item(queue, item):
         await queue.put(item)
 
     for i in range(n_predict):
         tasks = []
-        output_token = next(streamer)
+        try:
+            output_token = next(streamer)
+        except StopIteration:
+            stopped = True
         for index, request_id in enumerate(request_ids):
             task = asyncio.create_task(
                 put_item(
-                    streamer_dict[request_id], (n_predict - 1 - i, output_token[index])
+                    streamer_dict[request_id],
+                    (0 if stopped else n_predict - 1 - i, output_token[index]),
                 )
             )
             tasks.append(task)
         await asyncio.gather(*tasks)
+        if stopped:
+            break
+    torch.xpu.empty_cache()
 
 
 app = FastAPI()
@@ -242,7 +252,7 @@ async def generate(prompt_request: PromptRequest):
 
 @app.post("/generate_stream/")
 async def generate_stream(prompt_request: PromptRequest):
-    request_id = str(uuid.uuid4())
+    request_id = str(uuid.uuid4()) + "stream"
     await request_queue.put((request_id, prompt_request))
     while True:
         await asyncio.sleep(0.1)
@@ -250,9 +260,7 @@ async def generate_stream(prompt_request: PromptRequest):
             token_queue = streamer_dict[request_id]
 
             # return StreamingResponse(output_generator(token_queue))
-            return StreamingResponse(
-                stream_generator(token_queue, request_id)
-            )
+            return StreamingResponse(stream_generator(token_queue, request_id))
 
 
 async def process_requests():
@@ -311,6 +319,7 @@ async def process_requests():
                 [req.n_predict for req in object_list],
                 request_ids,
             )
+
             generate_time = time.time() - start_time
 
             logger.info(
