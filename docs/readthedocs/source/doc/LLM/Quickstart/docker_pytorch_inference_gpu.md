@@ -57,6 +57,7 @@ root@arda-arc12:/# sycl-ls
 
   .. code-block:: bash
 
+     cd /ipex-llm/python/llm/scripts
      bash env-check.sh
 
 
