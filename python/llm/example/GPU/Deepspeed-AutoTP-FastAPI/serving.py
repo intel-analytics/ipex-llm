@@ -231,7 +231,7 @@ async def generate(prompt_request: PromptRequest):
     await request_queue.put((request_id, prompt_request))
     while True:
         await asyncio.sleep(0.1)
-        if request_id in streamer_dict and not request_id.endswith("stream"):
+        if request_id in streamer_dict:
             output_str = []
             token_queue = streamer_dict[request_id]
             async for item in generator(token_queue, request_id):
@@ -242,11 +242,11 @@ async def generate(prompt_request: PromptRequest):
 
 @app.post("/generate_stream/")
 async def generate_stream(prompt_request: PromptRequest):
-    request_id = str(uuid.uuid4()) + "stream"
+    request_id = str(uuid.uuid4())
     await request_queue.put((request_id, prompt_request))
     while True:
         await asyncio.sleep(0.1)
-        if request_id in streamer_dict and request_id.endswith("stream"):
+        if request_id in streamer_dict:
             token_queue = streamer_dict[request_id]
 
             # return StreamingResponse(output_generator(token_queue))
