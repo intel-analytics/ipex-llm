@@ -23,7 +23,7 @@ To apply Intel GPU acceleration, please first verify your GPU driver version.
 For the following cases, it is recommended to [**update your GPU driver to the latest**](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html):
 
 * If you have driver version lower than `31.0.101.5122` for `Intel(R) Arc(TM) Graphics`
-* If you have driver version lower than `31.0.101.5085` for `Intel(R) Arc(TM) A770 Graphics`, `Intel(R) UHD Graphics 770`, and `Intel(R) Iris(R) Graphics`
+* If you have driver version lower than `31.0.101.5085` for `Intel(R) Arc(TM) A770 Graphics`, and `Intel(R) UHD Graphics 770`
 * If you have other GPU device type
 
 

@@ -2,24 +2,17 @@
 
 This guide demonstrates how to install IPEX-LLM on Windows with Intel GPUs. 
 
-It applies to Intel Core Ultra and Core 12 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
+It applies to Intel Core Ultra and Core 11 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
 ## Install Prerequisites
 
-### Install Visual Studio 2022
+### (Optional) Update GPU Driver
 
-Download and Install Visual Studio 2022 Community Edition from the [official Microsoft Visual Studio website](https://visualstudio.microsoft.com/downloads/). Ensure you select the **Desktop development with C++ workload** during the installation process.
-   
 ```eval_rst
 .. tip::
 
-   The installation could take around 15 minutes, and requires at least 7GB of free disk space.
-   If you accidentally skip adding the **Desktop development with C++ workload** during the initial setup, you can add it afterward by navigating to **Tools > Get Tools and Features...**. Follow the instructions on `this Microsoft guide <https://learn.microsoft.com/en-us/cpp/build/vscpp-step-0-installation?view=msvc-170#step-4---choose-workloads>`_  to update your installation.
+   It is recommended to update your GPU driver version for the cases mentioned `here <../Overview/install_gpu.html#prerequisites:~:text=For%20the%20following%20cases%2C%20it%20is%20recommended%20to%20update%20your%20GPU%20driver%20to%20the%20latest%3A>`_.
 ```
-
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_1.png" alt="image-20240221102252560" width=100%; />
-
-### Install GPU Driver
 
 Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
 
@@ -44,7 +37,7 @@ Download and install the latest GPU driver from the [official Intel download pag
    If the oneAPI installation hangs at the finalization step for more than 10 minutes, the error might be due to a problematic install of Visual Studio. Please reboot your computer and then launch the Visual Studio installer. If you see installation error messages, please repair your Visual Studio installation. After the repair is done, oneAPI installation is completed successfully.
 ``` -->
 
-### Install Miniconda
+### Setup Python Environment
 
 Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
 
@@ -52,24 +45,18 @@ Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=70%/>
 </div>
 
-
-### Install oneAPI
-
-Open the **Anaconda Prompt**. Then create a new python environment `llm` and activate it:
+After installation, open the **Anaconda Prompt**, create a new python environment `llm`:
 ```cmd
-conda create -n llm python=3.11 libuv
-conda activate llm
+conda create -n llm python=3.9 libuv
 ```
-
-Use `pip` to install the **Intel oneAPI Base Toolkit 2024.0**:
+Activate the newly created environment `llm`:
 ```cmd
-pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
+conda activate llm
 ```
   
 ## Install `ipex-llm`
 
-With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
-Choose either US or CN website for `extra-index-url`:
+With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
 
 ```eval_rst
 .. tabs::
