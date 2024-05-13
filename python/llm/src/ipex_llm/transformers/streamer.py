@@ -15,10 +15,13 @@
 #
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/main/src/transformers/generation/streamers.py
-# /utils.py
 #
 
+from typing import Optional, List
+
+import torch
 from transformers import TextIteratorStreamer
+
 
 class BatchTextIteratorStreamer(TextIteratorStreamer):
     """
@@ -27,22 +30,29 @@ class BatchTextIteratorStreamer(TextIteratorStreamer):
     ideal for applications that need to perform batch operations on streamed text data, such as bulk text processing or
     machine learning model inference in an interactive environment.
 
-	Parameters:
-		tokenizer (`AutoTokenizer`):
-			The tokenized used to decode the tokens.
-		skip_prompt (`bool`, *optional*, defaults to `False`):
-			Whether to skip the prompt to `.generate()` or not. Useful e.g. for chatbots.
-		timeout (`float`, *optional*):
-			The timeout for the text queue. If `None`, the queue will block indefinitely. Useful to handle exceptions
-			in `.generate()`, when it is called in a separate thread.
-		decode_kwargs (`dict`, *optional*):
-			Additional keyword arguments to pass to the tokenizer's `decode` method.
-		batch_size(`int`)
-			The size of the batches to process. This parameter must be specified and determines how many texts are processed
-			together as a single batch. Larger batch sizes can improve processing efficiency but may require more memory.
+        Parameters:
+                tokenizer (`AutoTokenizer`):
+                        The tokenized used to decode the tokens.
+                skip_prompt (`bool`, *optional*, defaults to `False`):
+                        Whether to skip the prompt to `.generate()` or not. Useful e.g. for chatbots.
+                timeout (`float`, *optional*):
+                        The timeout for the text queue. If `None`, the queue will block indefinitely. Useful to handle exceptions
+                        in `.generate()`, when it is called in a separate thread.
+                decode_kwargs (`dict`, *optional*):
+                        Additional keyword arguments to pass to the tokenizer's `decode` method.
+                batch_size(`int`)
+                        The size of the batches to process. This parameter must be specified and determines how many texts are processed
+                        together as a single batch. Larger batch sizes can improve processing efficiency but may require more memory.
     """
 
-    def __init__(self, batch_size:int, tokenizer: "AutoTokenizer", skip_prompt: bool = False, timeout: Optional[float] = None, **decode_kwargs):
+    def __init__(
+        self,
+        batch_size: int,
+        tokenizer: "AutoTokenizer",
+        skip_prompt: bool = False,
+        timeout: Optional[float] = None,
+        **decode_kwargs
+    ):
         super().__init__(tokenizer, skip_prompt, timeout, **decode_kwargs)
         self.batch_size = batch_size
         self.token_cache = [[] for _ in range(batch_size)]
@@ -51,7 +61,9 @@ class BatchTextIteratorStreamer(TextIteratorStreamer):
 
     def put(self, value):
         if len(value.shape) != 2:
-            value = torch.reshape(value, (self.batch_size, value.shape[0] // self.batch_size))
+            value = torch.reshape(
+                value, (self.batch_size, value.shape[0] // self.batch_size)
+            )
 
         if self.skip_prompt and self.next_tokens_are_prompt:
             self.next_tokens_are_prompt = False
@@ -81,7 +93,9 @@ class BatchTextIteratorStreamer(TextIteratorStreamer):
         printable_texts = list()
         for idx in range(self.batch_size):
             if len(self.token_cache[idx]) > 0:
-                text = self.tokenizer.decode(self.token_cache[idx], **self.decode_kwargs)
+                text = self.tokenizer.decode(
+                    self.token_cache[idx], **self.decode_kwargs
+                )
                 printable_text = text[self.print_len[idx] :]
                 self.token_cache[idx] = []
                 self.print_len[idx] = 0
