@@ -217,7 +217,7 @@ async def stream_generator(token_queue, request_id):
             if remain == 0:
                 break
         else:
-            await asyncio.sleep(0.001)
+            await asyncio.sleep(0)
     streamer_dict.pop(request_id, None)
 
 
@@ -229,7 +229,7 @@ async def generator(token_queue, request_id):
             if remain == 0:
                 break
         else:
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0)
     streamer_dict.pop(request_id, None)
 
 
@@ -238,7 +238,7 @@ async def generate(prompt_request: PromptRequest):
     request_id = str(uuid.uuid4())
     await request_queue.put((request_id, prompt_request))
     while True:
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
         if request_id in streamer_dict:
             output_str = []
             token_queue = streamer_dict[request_id]
@@ -253,7 +253,7 @@ async def generate_stream(prompt_request: PromptRequest):
     request_id = str(uuid.uuid4()) + "stream"
     await request_queue.put((request_id, prompt_request))
     while True:
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
         if request_id in streamer_dict:
             token_queue = streamer_dict[request_id]
 
@@ -321,7 +321,7 @@ async def process_requests():
                 f"First token latency: {model.first_cost}, next token latency: {model.rest_cost_mean}, generate time: {generate_time}"
             )
 
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
 
 
 @app.on_event("startup")
