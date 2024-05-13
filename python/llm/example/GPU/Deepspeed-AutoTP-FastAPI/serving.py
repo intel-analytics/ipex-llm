@@ -251,7 +251,7 @@ async def generate_stream(prompt_request: PromptRequest):
 
             # return StreamingResponse(output_generator(token_queue))
             return StreamingResponse(
-                stream_generator(token_queue, request_id), media_type="application/json"
+                stream_generator(token_queue, request_id)
             )
 
 
