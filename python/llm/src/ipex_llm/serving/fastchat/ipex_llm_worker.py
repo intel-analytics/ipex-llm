@@ -69,6 +69,7 @@ class BigDLLLMWorker(BaseModelWorker):
         trust_remote_code: bool = False,
         embed_in_truncate: bool = False,
         speculative: bool = False,
+        load_low_bit_model: bool = False,
         stream_interval: int = 4,
     ):
         super().__init__(
@@ -495,6 +496,12 @@ if __name__ == "__main__":
         help="Trust remote code (e.g., from HuggingFace) when"
         "downloading the model and tokenizer.",
     )
+    parser.add_argument(
+        "--load-low-bit-model",
+        action="store_true",
+        default=False,
+        help="Load models that have been converted/saved using ipex-llm's save_low_bit interface",
+    )
     parser.add_argument("--embed-in-truncate", action="store_true")
 
     args = parser.parse_args()
@@ -512,5 +519,7 @@ if __name__ == "__main__":
         args.trust_remote_code,
         args.embed_in_truncate,
         args.speculative,
+        args.load_low_bit_model,
+        args.stream_interval,
     )
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
