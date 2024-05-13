@@ -25,24 +25,26 @@ from transformers import TextIteratorStreamer
 
 class BatchTextIteratorStreamer(TextIteratorStreamer):
     """
-    A specialized version of TextIteratorStreamer that handles text streams in batches, providing an efficient way to process
-    large volumes of text data asynchronously. This class is designed to aggregate multiple texts into batches, making it
-    ideal for applications that need to perform batch operations on streamed text data, such as bulk text processing or
-    machine learning model inference in an interactive environment.
+    A specialized version of TextIteratorStreamer that handles text streams in batches, providing 
+    an efficient way to process large volumes of text data asynchronously. This class is designed
+    to aggregate multiple texts into batches, making it ideal for applications that need to 
+    perform batch operations on streamed text data, such as bulk text processing or machine 
+    learning model inference in an interactive environment.
 
         Parameters:
                 tokenizer (`AutoTokenizer`):
                         The tokenized used to decode the tokens.
                 skip_prompt (`bool`, *optional*, defaults to `False`):
-                        Whether to skip the prompt to `.generate()` or not. Useful e.g. for chatbots.
+                        Whether to skip the prompt to `.generate()` or not.
                 timeout (`float`, *optional*):
-                        The timeout for the text queue. If `None`, the queue will block indefinitely. Useful to handle exceptions
+                        The timeout for the text queue. If `None`, the queue will 
+                        block indefinitely. Useful to handle exceptions
                         in `.generate()`, when it is called in a separate thread.
                 decode_kwargs (`dict`, *optional*):
                         Additional keyword arguments to pass to the tokenizer's `decode` method.
                 batch_size(`int`)
-                        The size of the batches to process. This parameter must be specified and determines how many texts are processed
-                        together as a single batch. Larger batch sizes can improve processing efficiency but may require more memory.
+                        The size of the batches to process. This parameter must be specified and 
+                        determines how many texts are processed together as a single batch. 
     """
 
     def __init__(
