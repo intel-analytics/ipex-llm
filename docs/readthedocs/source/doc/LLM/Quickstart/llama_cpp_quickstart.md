@@ -47,7 +47,7 @@ To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed
 
       .. note::
 
-      for Windows, we use pip to install oneAPI.
+      Please run the following command in Anaconda Prompt.
 
       .. code-block:: cmd
 
@@ -118,7 +118,9 @@ To use GPU acceleration, several environment variables are required or recommend
          export SYCL_CACHE_PERSISTENT=1
 
    .. tab:: Windows
-   
+
+      Please run the following command in Anaconda Prompt.
+
       .. code-block:: bash
 
          set SYCL_CACHE_PERSISTENT=1
@@ -158,6 +160,8 @@ Before running, you should download or copy community GGUF model to your current
       For more details about meaning of each parameter, you can use ``./main -h``.
 
    .. tab:: Windows
+
+      Please run the following command in Anaconda Prompt.
 
       .. code-block:: bash
 
