@@ -222,7 +222,7 @@ pip install datasets==2.15.0
 pip install transformers==4.37.0
 ```
 
-Config accelerate and oneAPIs, according to [Configures OneAPI environment variables and accelerate](#2-configures-oneapi-environment-variables-and-accelerate).
+Config accelerate and oneAPIs, according to [Set Environment Variables](#22-set-environment-variables).
 
 #### 3.2 Alpaca QLoRA
 
@@ -275,7 +275,7 @@ accelerate launch train.py llama3-qlora.yml
 
 Expected output
 
-```bash
+```cmd
 {'loss': 0.237, 'learning_rate': 1.2254711850265387e-06, 'epoch': 3.77}
 {'loss': 0.6068, 'learning_rate': 1.1692453482951115e-06, 'epoch': 3.77}
 {'loss': 0.2926, 'learning_rate': 1.1143322458989303e-06, 'epoch': 3.78}
@@ -289,7 +289,6 @@ Expected output
 {'loss': 0.2108, 'learning_rate': 7.223697237281668e-07, 'epoch': 3.81}
 {'loss': 0.0792, 'learning_rate': 6.793019574868775e-07, 'epoch': 3.82}
 ```
-
 
 ## Troubleshooting
 
