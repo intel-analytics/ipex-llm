@@ -804,10 +804,23 @@ class TorchRunner(BaseRunner):
             if self.models:
                 return self.models[0]
 
+    @model.setter
+    def model(self, value):
+        if self._model == 'train':
+            if self.training_models:
+                self.training_models[0] = value
+        else:
+            if self.models:
+                self.models[0] = value
+
     @property
     def optimizer(self):
         """First or only optimizer(s) created by the ``optimizer_creator``."""
         return self.optimizers[0]
+
+    @optimizer.setter
+    def optimizer(self, value):
+        self.optimizers[0] = value
 
     @property
     def scheduler(self):
