@@ -15,6 +15,7 @@
 #
 
 import transformers
+import torch
 import importlib
 import sys
 from packaging import version
@@ -26,29 +27,65 @@ bigdl_patched = None  # None or 'Train' or 'Inference'
 attrs = []
 
 
+def _parse_pretrained(am_fn, map={'device_map': None}):
+    def mocked_am(self, *args, **kwargs):
+        kwargs['device_map'] = map.pop('device_map', None)
+        kwargs.update(map)
+        return am_fn(self, *args, **kwargs)
+    return mocked_am
+
+
+def _parse_to(to_fn, map={'device': 'xpu'}):
+    def mocked_to(self, *args, **kwargs):
+        device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
+        if device and 'cuda' in device.type:
+            if kwargs.get('device', None):
+                kwargs['device'] = map['device']
+            else:
+                args = list(args)
+                args[0] = map['device']
+        return to_fn(self, *args, **kwargs)
+    return mocked_to
+
+
 def replace_attr(obj, name: str, value):
     original_attr = getattr(obj, name)
     setattr(obj, name, value)
     attrs.append((obj, name, original_attr))
 
 
-def llm_patch(train=False):
+def llm_patch(train=False, device='xpu', load_in_low_bit='sym_int4'):
     '''
-    llm_patch is used to make users' LLM application benefit from BigDL-LLM optimization
+    llm_patch is used to make users' LLM application benefit from IPEX-LLM optimization
     with only one-line code patch.
 
-    :param train: Whether to apply bigdl-llm patch for training code, default to be `False`.
+    :param train: Boolen, IPEX-LLM patch for training code is applied when set to `True`,
+                  otherwise patch for inference code is applied. Default to be `False`.
+    :param device: 'cpu' or 'xpu', default to be `'xpu'`.
+    :param load_in_low_bit: str, specify which low-bit optimization is applied.
+                            Default to be `'sym_int4'`.
     '''
     global bigdl_patched
     if bigdl_patched:
         return
 
-    # Initial version of patch for llm finetuning, inference support TBD
+    from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
+    am_map = dict(device_map=None, load_in_low_bit=load_in_low_bit)
+    replace_attr(AutoModelForCausalLM, "from_pretrained",
+                 _parse_pretrained(AutoModelForCausalLM.from_pretrained, am_map))
+    replace_attr(AutoModel, "from_pretrained",
+                 _parse_pretrained(AutoModel.from_pretrained, am_map))
+
+    replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
+    replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
+    replace_attr(transformers, "AutoModel", AutoModel)
+
+    if device == 'xpu':
+        replace_attr(torch, "cuda", getattr(torch, "xpu"))
+        replace_attr(torch.nn.Module, "cuda", getattr(torch.nn.Module, "xpu"))
+        replace_attr(torch.nn.Module, "to", _parse_to(torch.nn.Module.to, map={'device': 'xpu'}))
+
     if train:
-        from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
-        replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
-        replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
-        replace_attr(transformers, "AutoModel", AutoModel)
         from ipex_llm.transformers.utils import is_torch_bf16_gpu_available
         replace_attr(transformers.utils, "is_torch_bf16_gpu_available", is_torch_bf16_gpu_available)
 
@@ -69,6 +106,8 @@ def llm_patch(train=False):
             replace_attr(peft, "prepare_model_for_int8_training", prepare_model_for_kbit_training)
         replace_attr(peft, "LoraConfig", LoraConfig)
         bigdl_patched = 'Train'
+    else:
+        bigdl_patched = 'Inference'
 
 
 def llm_unpatch():

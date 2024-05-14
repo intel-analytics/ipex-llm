@@ -13,6 +13,7 @@ This folder contains examples of running IPEX-LLM on Intel GPU:
 - [Speculative-Decoding](Speculative-Decoding): running any ***Hugging Face Transformers*** model with ***self-speculative decoding*** on Intel GPUs
 - [ModelScope-Models](ModelScope-Models): running ***ModelScope*** model with IPEX-LLM on Intel GPUs
 - [Long-Context](Long-Context): running **long-context** generation with IPEX-LLM on Intel Arc™ A770 Graphics.
+- [LLM-Patch-Inference](LLM-Patch-Inference): running inference on Intel GPU using Hugging Face code without modification
 
 
 ## System Support
