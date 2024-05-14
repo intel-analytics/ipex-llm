@@ -15,6 +15,12 @@ subtrees:
                   title: "CPU"
                 - file: doc/LLM/Overview/install_gpu
                   title: "GPU"
+          - file: doc/LLM/Docker/index
+            title: "Docker Guides"
+            subtrees:
+              - entries:
+                - file: doc/LLM/Docker/docker_windows_gpu
+                - file: doc/LLM/Docker/docker_pytorch_inference_gpu
           - file: doc/LLM/Quickstart/index
             title: "Quickstart"
             subtrees:
@@ -22,7 +28,6 @@ subtrees:
                 - file: doc/LLM/Quickstart/bigdl_llm_migration
                 - file: doc/LLM/Quickstart/install_linux_gpu
                 - file: doc/LLM/Quickstart/install_windows_gpu
-                - file: doc/LLM/Quickstart/docker_windows_gpu
                 - file: doc/LLM/Quickstart/chatchat_quickstart
                 - file: doc/LLM/Quickstart/webui_quickstart
                 - file: doc/LLM/Quickstart/open_webui_with_ollama_quickstart
