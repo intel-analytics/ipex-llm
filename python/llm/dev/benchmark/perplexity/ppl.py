@@ -74,8 +74,9 @@ class BigDLPPL:
 
             ppl_mean = np.mean(np.array(ppls)[~np.isnan(np.array(ppls))])
         finally:
-            torch.xpu.synchronize()
-            torch.xpu.empty_cache()
+            if self.device == "xpu":
+                torch.xpu.synchronize()
+                torch.xpu.empty_cache()
             del self.model
             gc.collect()
         

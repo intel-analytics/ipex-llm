@@ -284,6 +284,9 @@ def setup_package():
                              "sentence-transformers~=2.6.1"]
 
 
+    oneapi_2024_0_requires = ["dpcpp-cpp-rt==2024.0.2;platform_system=='Windows'",
+                              "mkl-dpcpp==2024.0.0;platform_system=='Windows'",
+                              "onednn==2024.0.0;platform_system=='Windows'"]
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_21_requires = copy.deepcopy(all_requires)
     xpu_21_requires.remove('torch')
@@ -292,8 +295,13 @@ def setup_package():
                         "intel_extension_for_pytorch==2.1.10+xpu",
                         "bigdl-core-xe-21==" + CORE_XE_VERSION,
                         "bigdl-core-xe-esimd-21==" + CORE_XE_VERSION]
+    xpu_21_requires += oneapi_2024_0_requires
     # default to ipex 2.1 for linux and windows
     xpu_requires = copy.deepcopy(xpu_21_requires)
+
+
+    cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION]
+    cpp_requires += oneapi_2024_0_requires
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
@@ -323,7 +331,7 @@ def setup_package():
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
                         "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires,
-                        "cpp": ["bigdl-core-cpp==" + CORE_XE_VERSION],
+                        "cpp": cpp_requires,
                         "llama-index": llama_index_requires}, # for internal usage when upstreaming for llama-index
         classifiers=[
             'License :: OSI Approved :: Apache Software License',

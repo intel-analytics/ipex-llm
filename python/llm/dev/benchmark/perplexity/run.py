@@ -100,7 +100,7 @@ def main():
         dumped = json.dumps(results, indent=2)
         print(dumped)
 
-        if args.output_path:
+        if output_path:
             with open(f"{log_dir}/result.json", "w") as f:
                 f.write(dumped)
     

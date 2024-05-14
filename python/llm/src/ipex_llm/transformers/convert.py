@@ -188,13 +188,6 @@ def is_linear_module(module):
     return result, (in_features, out_features, mp_group)
 
 
-def empty_cache_post(module, input, output):
-    try:
-        torch.xpu.empty_cache()
-    except:  # cpu
-        pass
-
-
 def convert_gptq(module, awq=False, llm_awq=False, act_order=False):
     from ipex_llm.transformers.low_bit_linear import get_block_size
     Q4_1 = get_block_size("asym_int4")

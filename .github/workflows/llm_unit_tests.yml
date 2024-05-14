@@ -380,7 +380,23 @@ jobs:
             source /home/arda/intel/oneapi/setvars.sh
           fi
           bash python/llm/test/run-llm-example-tests-gpu.sh
+          
+      - name: Get Langchain version
+        shell: bash
+        id: get_langchain_version
+        run: |
+          pip install langchain
+          LANGCHAIN_VERSION=$(pip show langchain | grep Version | cut -d " " -f 2)
+          LANGCHAIN_REF="langchain==$LANGCHAIN_VERSION"
+          echo "langchain_ver=$LANGCHAIN_REF" >> $GITHUB_OUTPUT
 
+      - name: Checkout Langchain repo
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+        with:
+          repository: "langchain-ai/langchain"
+          ref: ${{ join(steps.get_langchain_version.outputs.*, '\n') }}
+          path: langchain_upstream
+            
       - name: Run LLM langchain GPU test
         shell: bash
         run: |
@@ -397,6 +413,7 @@ jobs:
           
           pip install -U langchain
           pip install -U langchain-community
+          pip install --pre --upgrade bigdl-llm[all]
           bash python/llm/test/run-langchain-upstream-tests.sh
 
       - name: Run LLM llamaindex GPU test

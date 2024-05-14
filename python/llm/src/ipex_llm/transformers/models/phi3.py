@@ -40,9 +40,8 @@ from ipex_llm.transformers.models.utils import (
     apply_rotary_pos_emb_cache_freq_xpu
 )
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
-from ipex_llm.transformers.models.utils import use_new_esimd_sdp_fp16, use_quantize_kv_cache
+from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal, use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import use_sdp_fp8, restore_fp8_kv_cache
-from ipex_llm.transformers.models.utils import use_sdp_causal
 from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache
 
 from typing import Optional, Tuple, List
@@ -142,9 +141,9 @@ def attention_forward(
         import linear_q4_0
         attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states, attention_mask)
     elif (isinstance(past_key_value, DynamicNormalCache) and
-            use_new_esimd_sdp_fp16(q_len, kv_seq_len, self.head_dim, query_states)):
+            use_sdp(q_len, kv_seq_len, self.head_dim, query_states)):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
     else:
         if isinstance(past_key_value, DynamicFp8Cache):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
