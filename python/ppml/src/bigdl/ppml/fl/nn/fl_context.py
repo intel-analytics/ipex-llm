@@ -17,7 +17,7 @@
 from ..nn.fl_client import FLClient
 
 
-def init_fl_context(client_id: int, server_addr="localhost:8980"):
+def init_fl_context(client_id: int, server_addr: str="localhost:8980") -> None:
     """Initialize FL Context. Need to be called before calling any FL Client algorithms.
     
     :param client_id: An integer, should be in range of [1, total_party_number].
