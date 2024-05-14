@@ -18,11 +18,10 @@ from pyspark.sql.types import ArrayType, DoubleType
 from pyspark.sql import SparkSession
 
 
-@pytest.fixture(autouse=True, scope='package')
+@pytest.fixture(autouse=True, scope='function')
 def orca_context_fixture():
     from bigdl.orca import init_orca_context, stop_orca_context
-    conf = {"spark.python.worker.reuse": "false"}
-    sc = init_orca_context(cores=8, conf=conf)
+    sc = init_orca_context(cores=8)
 
     def to_array_(v):
         return v.toArray().tolist()

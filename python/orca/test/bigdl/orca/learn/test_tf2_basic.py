@@ -78,7 +78,7 @@ class TestTFEstimatorBasic(TestCase):
         class.  setup_method is invoked for every test method of a class.
         """
         conf = {"spark.python.worker.reuse": "false"}
-        sc = init_orca_context(cores=8, conf=conf)
+        sc = init_orca_context(cores=8)
 
     def teardown_class(self):
         """ teardown any state that was previously setup with a setup_method
@@ -92,8 +92,9 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -119,6 +120,7 @@ class TestTFEstimatorBasic(TestCase):
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            df = spark.createDataFrame(data=data, schema=["feature", "label"])
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             assert isinstance(res, dict), "evaluate should return a dict"
@@ -135,8 +137,9 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -181,12 +184,14 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         val_rdd = sc.range(0, 20, numSlices=6)
-        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        val_data = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                               int(np.random.randint(0, 2, size=())))).collect()
+        val_df = spark.createDataFrame(data=val_data, schema=["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -204,7 +209,17 @@ class TestTFEstimatorBasic(TestCase):
                             validation_steps=2,
                             feature_cols=["feature"],
                             label_cols=["label"])
+        
+        trainer.shutdown()
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2,
+            backend="spark")
 
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
+        val_df = spark.createDataFrame(data=val_data, schema=["feature", "label"])
         res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                             feature_cols=["feature"],
                             label_cols=["label"])
@@ -228,7 +243,7 @@ class TestTFEstimatorBasic(TestCase):
 
         val_rdd = sc.range(0, 20, numSlices=6)
         val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+                             int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -261,8 +276,9 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -321,8 +337,9 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -403,6 +420,8 @@ class TestTFEstimatorBasic(TestCase):
 
         df = df.withColumn("input_1", reshape_udf(df.input_1))
         df = df.withColumn("input_2", reshape_udf(df.input_2))
+
+        df = spark.createDataFrame(data=df.collect(), schema=["index", "input_1", "input_2"])
 
         def model_creator(config):
             model = multi_output_model(config)
