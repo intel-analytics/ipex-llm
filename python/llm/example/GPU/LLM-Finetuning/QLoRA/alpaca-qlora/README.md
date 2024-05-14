@@ -5,6 +5,7 @@ This example ports [Alpaca-LoRA](https://github.com/tloen/alpaca-lora/tree/main)
 > Note: You could also refer to [simple QLoRA example](../simple-example/) to try related usage.
 
 ### 0. Requirements
+
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ### 1. Install
@@ -26,6 +27,7 @@ pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@ec332
 ```
 
 ### 2. Configures OneAPI environment variables
+
 ```bash
 source /opt/intel/oneapi/setvars.sh
 ```
@@ -129,8 +131,21 @@ bash qlora_finetune_llama2_70b_pvc_1550_4_card.sh
 
 </details>
 
+<details>
+  <summary> Show LLaMA3-8B examples </summary>
+
+##### Finetuning LLaMA3-8B on single Arc A770
+
+```bash
+bash qlora_finetune_llama3_8b_arc_1_card.sh
+```
+
+</details>
+
 ### 4. (Optional) Resume Training
+
 If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
+
 ```bash
 python ./alpaca_qlora_finetuning.py \
     --base_model "meta-llama/Llama-2-7b-hf" \
@@ -140,19 +155,21 @@ python ./alpaca_qlora_finetuning.py \
 ```
 
 ### 5. Sample Output
+
 ```log
-{'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                            
-{'loss': 1.8622, 'learning_rate': 2.9999781468531096e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.9043, 'learning_rate': 2.9999508305687345e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.8967, 'learning_rate': 2.999912588049185e-05, 'epoch': 0.01}                                                                                                                            
-{'loss': 1.9658, 'learning_rate': 2.9998634195730358e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.8386, 'learning_rate': 2.9998033254984483e-05, 'epoch': 0.02}                                                                                                                           
-{'loss': 1.809, 'learning_rate': 2.999732306263172e-05, 'epoch': 0.02}                                                                                                                             
-{'loss': 1.8552, 'learning_rate': 2.9996503623845395e-05, 'epoch': 0.02}                                                                                                                           
+{'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                          
+{'loss': 1.8622, 'learning_rate': 2.9999781468531096e-05, 'epoch': 0.01}                                                                                                                         
+{'loss': 1.9043, 'learning_rate': 2.9999508305687345e-05, 'epoch': 0.01}                                                                                                                         
+{'loss': 1.8967, 'learning_rate': 2.999912588049185e-05, 'epoch': 0.01}                                                                                                                          
+{'loss': 1.9658, 'learning_rate': 2.9998634195730358e-05, 'epoch': 0.01}                                                                                                                         
+{'loss': 1.8386, 'learning_rate': 2.9998033254984483e-05, 'epoch': 0.02}                                                                                                                         
+{'loss': 1.809, 'learning_rate': 2.999732306263172e-05, 'epoch': 0.02}                                                                                                                           
+{'loss': 1.8552, 'learning_rate': 2.9996503623845395e-05, 'epoch': 0.02}                                                                                                                         
   1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
 ```
 
 ### 6. Merge the adapter into the original model
+
 ```
 python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --adapter_path ./outputs/checkpoint-200 --output_path ./outputs/checkpoint-200-merged
 ```
@@ -160,4 +177,5 @@ python ./export_merged_model.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --
 Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface transformer model to do inference.
 
 ### 7. Troubleshooting
+
 Please refer to [here](../../README.md#troubleshooting) for solutions of common issues during finetuning.
