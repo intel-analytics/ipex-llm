@@ -18,7 +18,7 @@ docker build \
   --rm --no-cache -t intelanalytics/ipex-llm-cpp-xpu:latest .
 ```
 
-### Start Image
+### Start Docker Container
 
 ```eval_rst
 .. tabs::
@@ -143,14 +143,14 @@ PARAMETER num_predict 64
 
 ```bash
 cd /llm/ollama
-./ollama pull dolphin-phi:latest
+./ollama pull llama2
 ```
 
 Use the Curl to Test:
 ```bash
 curl http://localhost:11434/api/generate -d '
 { 
-   "model": "dolphin-phi", 
+   "model": "llama2", 
    "prompt": "What is AI?", 
    "stream": false
 }'

@@ -16,7 +16,7 @@ docker build \
 docker pull intelanalytics/ipex-llm-cpp-xpu:latest
 ```
 
-### Start Image
+### Start Docker Container
 
 To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. Select the device you are running(device type:(Max, Flex, Arc, iGPU)). And change the `/path/to/models` to mount the models. `bench_model` is used to benchmark quickly. If want to benchmark, make sure it on the `/path/to/models`.
 
@@ -133,14 +133,14 @@ PARAMETER num_predict 64
 
 ```bash
 cd /llm/ollama
-./ollama pull dolphin-phi:latest
+./ollama pull llama2
 ```
 
 Use the Curl to Test:
 ```bash
 curl http://localhost:11434/api/generate -d '
 { 
-   "model": "dolphin-phi", 
+   "model": "llama2", 
    "prompt": "What is AI?", 
    "stream": false
 }'
