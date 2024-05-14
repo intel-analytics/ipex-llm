@@ -70,6 +70,7 @@ The easiest ways to install `ipex-llm` is the following commands, choosing eithe
 
       .. code-block:: cmd
 
+         conda create -n llm python=3.11 libuv
          conda activate llm
 
          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
