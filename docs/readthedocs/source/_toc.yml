@@ -15,12 +15,12 @@ subtrees:
                   title: "CPU"
                 - file: doc/LLM/Overview/install_gpu
                   title: "GPU"
-          - file: doc/LLM/Docker/index
+          - file: doc/LLM/DockerGuides/index
             title: "Docker Guides"
             subtrees:
               - entries:
-                - file: doc/LLM/Docker/docker_windows_gpu
-                - file: doc/LLM/Docker/docker_pytorch_inference_gpu
+                - file: doc/LLM/DockerGuides/docker_windows_gpu
+                - file: doc/LLM/DockerGuides/docker_pytorch_inference_gpu
           - file: doc/LLM/Quickstart/index
             title: "Quickstart"
             subtrees:
