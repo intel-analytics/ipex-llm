@@ -42,8 +42,7 @@ from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_
 from ipex_llm.transformers.models.utils import rotate_half, SILU
 from ipex_llm.transformers.models.utils import mlp_fusion_check
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
-from ipex_llm.transformers.models.utils import use_flash_attention, use_new_esimd_sdp_fp16, \
-    use_sdp_fp8
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_fp8
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.utils.common import invalidInputError, invalidOperationError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
@@ -291,9 +290,9 @@ def qwen_attention_forward_original(
         attn_output = attn_output.transpose(1, 2)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            use_new_esimd_sdp_fp16(q_len, key.shape[2], self.head_dim, query):
+            use_sdp(q_len, key.shape[2], self.head_dim, query):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp16(query, key, value, attention_mask)
+        attn_output = linear_q4_0.sdp(query, key, value, attention_mask)
         attn_output = attn_output.view(query.shape)
         attn_output = attn_output.transpose(1, 2)
         attn_weight = None

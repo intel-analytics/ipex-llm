@@ -50,7 +50,7 @@ from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
 from transformers.models.cohere.modeling_cohere import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
-from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
 from transformers.models.cohere.modeling_cohere import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
 from ipex_llm.transformers.kv import DynamicFp8Cache
@@ -420,9 +420,13 @@ def cohere_attention_forward_origin(
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+            use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+        if attention_mask is not None:
+            causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
+        else:
+            causal_mask = None
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, causal_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:

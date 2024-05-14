@@ -52,8 +52,7 @@ from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
-from ipex_llm.transformers.models.utils import use_flash_attention, use_new_esimd_sdp_fp16, \
-    use_sdp_fp8
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_fp8
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
 from ipex_llm.transformers.models.llama import should_use_xetla_mm_qkv
@@ -591,10 +590,10 @@ def mistral_attention_forward_original(
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-    elif use_new_esimd_sdp_fp16(q_len, key_states.shape[2], self.head_dim, query_states):
+    elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
@@ -1032,10 +1031,10 @@ def mistral_attention_forward_4_36_original(
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-    elif use_new_esimd_sdp_fp16(q_len, key_states.shape[2], self.head_dim, query_states):
+    elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
