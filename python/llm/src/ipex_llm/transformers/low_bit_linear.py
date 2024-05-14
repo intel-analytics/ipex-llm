@@ -72,6 +72,7 @@ FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
 FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
+FP6 = ggml_tensor_qtype["fp6"]
 IQ2_XXS = ggml_tensor_qtype["gguf_iq2_xxs"]
 IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
 Q2_K = ggml_tensor_qtype["q2_k"]
@@ -242,7 +243,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8E4, FP8E5]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
