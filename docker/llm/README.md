@@ -1,6 +1,6 @@
 # IPEX-LLM Docker Containers
 
-You can run IPEX-LLM containers (via docker or k8s) for inference, serving and fine-tuning on Intel CPU and GPU. Details on how to use these containers are available at [IPEX-LLM Docker Container Guides](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Docker/index.html).
+You can run IPEX-LLM containers (via docker or k8s) for inference, serving and fine-tuning on Intel CPU and GPU. Details on how to use these containers are available at [IPEX-LLM Docker Container Guides](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/index.html).
 
 ### Prerequisites
 
@@ -11,7 +11,7 @@ You can run IPEX-LLM containers (via docker or k8s) for inference, serving and f
 
 
 #### Pull a IPEX-LLM Docker Image
-To pull IPEX-LLM Docker images from [Intel Analytics Docker Hub](https://hub.docker.com/u/intelanalytics), use the `docker pull` command. For instance, to pull the CPU inference image:
+To pull IPEX-LLM Docker images from [Docker Hub](https://hub.docker.com/u/intelanalytics), use the `docker pull` command. For instance, to pull the CPU inference image:
 ```bash
 docker pull intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT
 ```
@@ -29,7 +29,7 @@ Available images in hub are:
 | intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT| GPU Finetuning|
 
 #### Run a Container
-Use `docker run` command to run an IPEX-LLM docker container. For detailed instructions, refer to the [IPEX-LLM Docker Container Guides](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Docker/index.html).
+Use `docker run` command to run an IPEX-LLM docker container. For detailed instructions, refer to the [IPEX-LLM Docker Container Guides](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/index.html).
 
 
 #### Build Docker Image

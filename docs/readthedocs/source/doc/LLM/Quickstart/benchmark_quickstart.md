@@ -23,12 +23,14 @@ cd ipex-llm/python/llm/dev/benchmark/all-in-one/
 
 ## config.yaml
 
+
 ```yaml
 repo_id:
   - 'meta-llama/Llama-2-7b-chat-hf'
-local_model_hub: '/mnt/disk1/models'
-warm_up: 1
+local_model_hub: 'path to your local model hub'
+warm_up: 1 # must set >=2 when run "pipeline_parallel_gpu" test_api
 num_trials: 3
+num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: 1 # default to 1
 in_out_pairs:
@@ -36,26 +38,37 @@ in_out_pairs:
   - '1024-128'
   - '2048-256'
 test_api:
-  - "transformer_int4_gpu"
-cpu_embedding: False
+  - "transformer_int4_gpu"   # on Intel GPU, transformer-like API, (qtype=int4)
+cpu_embedding: False # whether put embedding to CPU
+streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
 ```
 
 Some parameters in the yaml file that you can configure:
 
-- repo_id: The name of the model and its organization.
-- local_model_hub: The folder path where the models are stored on your machine.
-- warm_up: The number of runs as warmup trials, executed before performance benchmarking.
-- num_trials: The number of runs for performance benchmarking. The final benchmark result would be the average of all the trials.
-- low_bit: The low_bit precision you want to convert to for benchmarking.
-- batch_size: The number of samples on which the models make predictions in one forward pass.
-- in_out_pairs: Input sequence length and output sequence length combined by '-'.
-- test_api: Use different test functions on different machines.
+
+- `repo_id`: The name of the model and its organization.
+- `local_model_hub`: The folder path where the models are stored on your machine. Replace 'path to your local model hub' with /llm/models.
+- `warm_up`: The number of warmup trials before performance benchmarking (must set to >= 2 when using "pipeline_parallel_gpu" test_api).
+- `num_trials`: The number of runs for performance benchmarking (the final result is the average of all trials).
+- `low_bit`: The low_bit precision you want to convert to for benchmarking.
+- `batch_size`: The number of samples on which the models make predictions in one forward pass.
+- `in_out_pairs`: Input sequence length and output sequence length combined by '-'.
+- `test_api`: Different test functions for different machines.
   - `transformer_int4_gpu` on Intel GPU for Linux
   - `transformer_int4_gpu_win` on Intel GPU for Windows
   - `transformer_int4` on Intel CPU
-- cpu_embedding: Whether to put embedding on CPU (only available now for windows gpu related test_api).
+- `cpu_embedding`: Whether to put embedding on CPU (only available for windows GPU-related test_api).
+- `streaming`: Whether to output in a streaming way (only available for GPU Windows-related test_api).
+- `use_fp16_torch_dtype`: Whether to use fp16 for the non-linear layer (only available for "pipeline_parallel_gpu" test_api).
+- `n_gpu`: Number of GPUs to use (only available for "pipeline_parallel_gpu" test_api).
 
-Remark: If you want to benchmark the performance without warmup, you can set `warm_up: 0` and `num_trials: 1` in `config.yaml`, and run each single model and in_out_pair separately.
+
+```eval_rst
+.. note::
+
+  If you want to benchmark the performance without warmup, you can set ``warm_up: 0`` and ``num_trials: 1`` in ``config.yaml``, and run each single model and in_out_pair separately. 
+```
+
 
 ## Run on Windows
 
