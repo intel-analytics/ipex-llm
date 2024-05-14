@@ -23,10 +23,11 @@ For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred)
 
 Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.html), follow [Install Intel GPU Driver](./install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](./install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
 
-#### Windows
-Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](./install_windows_gpu.html), follow [Update GPU driver](./install_windows_gpu.html#optional-update-gpu-driver).
+#### Windows (Optional)
 
-**Note**: IPEX-LLM backend only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output.
+IPEX-LLM backend for llama.cpp only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output. 
+
+If you have lower GPU driver version, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](./install_windows_gpu.html), and follow [Update GPU driver](./install_windows_gpu.html#optional-update-gpu-driver).
 
 ### 1 Install IPEX-LLM for llama.cpp
 
