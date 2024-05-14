@@ -1,13 +1,21 @@
-## RUN llama.cpp and ollama and open-webui with IPEX-LLM CPP docker image on Intel GPUs
+## Run llama.cpp/Ollama/open-webui with Docker on Intel GPU
 
 ## Quick Start
 
 ### Setting Docker on windows
 If you want to run this image on windows, please refer to (this document)[https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows] to set up Docker on windows. And run below steps on wls ubuntu. And you need to enable `--net=host`,follow [this guide](https://docs.docker.com/network/drivers/host/#docker-desktop) so that you can easily access the service running on the docker. And the [v6.1x kernel version wsl]( https://learn.microsoft.com/en-us/community/content/wsl-user-msft-kernel-v6#1---building-the-microsoft-linux-kernel-v61x) is recommend to use.
 
-### Get the latest Image
+### Build Image or pull the latest Image
 ```bash
+# pull the latest image
 docker pull intelanalytics/ipex-llm-cpp-xpu:latest
+
+# build
+docker build \
+  --build-arg http_proxy=.. \
+  --build-arg https_proxy=.. \
+  --build-arg no_proxy=.. \
+  --rm --no-cache -t intelanalytics/ipex-llm-cpp-xpu:latest .
 ```
 
 ### Start Image
@@ -94,7 +102,7 @@ llama_print_timings:       total time =     xxx ms /    63 tokens
 ```
 
 
-### Use the image for running llama.cpp inference with IPEX-LLM on Intel GPU
+### Running llama.cpp inference with IPEX-LLM on Intel GPU
 
 ```bash
 cd /llm/scripts/
@@ -107,7 +115,7 @@ bash start-llama-cpp.sh
 Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html) for more details.
 
 
-### Use the image for running Ollama serving with IPEX-LLM on Intel GPU
+### Running Ollama serving with IPEX-LLM on Intel GPU
 
 Running the ollama on the background, you can see the ollama.log in `/root/ollama/ollama.log`
 ```bash
@@ -115,8 +123,27 @@ cd /llm/scripts/
 # set the recommended Env
 source ipex-llm-init --gpu --device $DEVICE
 bash start-ollama.sh # ctrl+c to exit
-# pull model
-cd /llm/ollama && ./ollama pull dolphin-phi:latest
+```
+
+#### Run Ollama models (interactive)
+
+```bash
+cd /llm/ollama
+# create a file named Modelfile
+FROM /models/mistral-7b-v0.1.Q4_0.gguf
+TEMPLATE [INST] {{ .Prompt }} [/INST]
+PARAMETER num_predict 64
+
+# create example and run it on console
+./ollama create example -f Modelfile
+./ollama run example
+```
+
+#### Pull models from ollama to serve
+
+```bash
+cd /llm/ollama
+./ollama pull dolphin-phi:latest
 ```
 
 Use the Curl to Test:
@@ -132,7 +159,7 @@ curl http://localhost:11434/api/generate -d '
 Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#pull-model) for more details.
 
 
-### Use the image for running Open WebUI with Intel GPU
+### Running Open WebUI with Intel GPU
 
 Start the ollama and load the model first, then use the open-webui to chat.
 If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add export HF_ENDPOINT=https://hf-mirror.com before running bash start.sh.
