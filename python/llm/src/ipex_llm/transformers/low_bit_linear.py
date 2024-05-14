@@ -696,11 +696,11 @@ class LowBitLinear(nn.Linear):
                         not use_xmx(x_2d, self.weight.qtype):
                     x_2d = x_2d.half()
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                    input_seq_size)
+                                                     input_seq_size)
                     result = result.to(x.dtype)
                 else:
                     result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                    input_seq_size)
+                                                     input_seq_size)
                 if do_empty_cache:
                     torch.xpu.empty_cache()
             result = result.view(new_shape)
