@@ -4,14 +4,14 @@ You can run IPEX-LLM containers (via docker or k8s) for inference, serving and f
 
 ### Prerequisites
 
-- Docker (on Linux) or Docker Desktop (on Windows)
+- Docker on Windows or Linux
 - Windows Subsystem for Linux (WSL) is required if using Windows.  
 
 ### Quick Start 
 
 
 #### Pull a IPEX-LLM Docker Image
-To pull IPEX-LLM Docker images from [Intel Analytics Docker Hub](https://hub.docker.com/u/intelanalytics), use the `docker pull` command. For instance, to download the CPU inference image:
+To pull IPEX-LLM Docker images from [Intel Analytics Docker Hub](https://hub.docker.com/u/intelanalytics), use the `docker pull` command. For instance, to pull the CPU inference image:
 ```bash
 docker pull intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT
 ```
@@ -21,7 +21,7 @@ Available images in hub are:
 | Image Name | Description |
 | --- | --- |
 | intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT | CPU Inference |
-| intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT | XPU Inference |
+| intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT | GPU Inference |
 | intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT | CPU Serving|
 | intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT | GPU Serving|
 | intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT | CPU Finetuning via Docker|

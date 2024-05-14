@@ -1,16 +1,10 @@
-# Run PyTorch Inference on Intel GPU using Docker (on Linux or WSL)
+# Run PyTorch Inference on an Intel GPU via Docker
 
 We can run PyTorch Inference Benchmark, Chat Service and PyTorch Examples on Intel GPUs within Docker (on Linux or WSL).
 
 ## Install Docker
 
-1. Linux Installation
-
-    Follow the instructions in this [guide](https://www.docker.com/get-started/) to install Docker on Linux.
-
-2. Windows Installation
-
-    For Windows installation, refer to this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows).
+Follow the [Docker installation Guide](./docker_windows_gpu.html#install-docker) to install docker on either Linux or Windows.
 
 ## Launch Docker
 
@@ -20,26 +14,52 @@ docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
 ```
 
 Start ipex-llm-xpu Docker Container:
-```bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
-export CONTAINER_NAME=my_container
-export MODEL_PATH=/llm/models[change to your model path]
 
-docker run -itd \
-    --net=host \
-    --device=/dev/dri \
-    --memory="32G" \
-    --name=$CONTAINER_NAME \
-    --shm-size="16g" \
-    -v $MODEL_PATH:/llm/models \
-    $DOCKER_IMAGE
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+        export CONTAINER_NAME=my_container
+        export MODEL_PATH=/llm/models[change to your model path]
+
+        docker run -itd \
+            --net=host \
+            --device=/dev/dri \
+            --memory="32G" \
+            --name=$CONTAINER_NAME \
+            --shm-size="16g" \
+            -v $MODEL_PATH:/llm/models \
+            $DOCKER_IMAGE
+
+   .. tab:: Windows WSL
+
+      .. code-block:: bash
+
+         #/bin/bash
+        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+        export CONTAINER_NAME=my_container
+        export MODEL_PATH=/llm/models[change to your model path]
+
+        sudo docker run -itd \
+                --net=host \
+                --privileged \
+                --device /dev/dri \
+                --memory="32G" \
+                --name=$CONTAINER_NAME \
+                --shm-size="16g" \
+                -v $MODEL_PATH:/llm/llm-models \
+                -v /usr/lib/wsl:/usr/lib/wsl \ 
+                $DOCKER_IMAGE
 ```
+
 
 Access the container:
 ```
 docker exec -it $CONTAINER_NAME bash
 ```
-
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
 ```bash
