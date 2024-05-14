@@ -863,6 +863,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                      calib_dataloader,
                                                                      input_sample)
 
+            # When approch is not dynamic meaning the quantize accpets calib_data param,
+            # add sample_size property to calib_dataloader to make the for loop in
+            # `ipex_quantization_model.py`
+            # `jit_int8_model.py`
+            # load sample items less than this value
+            if approach != "dynamic":
+                calib_dataloader._nano_calib_sample_size = sample_size
+
             # transform the dataloader to inc mode
             inc_calib_dataloader =\
                 transform_multiple_input_dataloader_to_inc_mode(model,
