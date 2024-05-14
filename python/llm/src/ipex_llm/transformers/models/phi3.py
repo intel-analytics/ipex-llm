@@ -263,22 +263,28 @@ class Phi3RotaryEmbeddingCached(nn.Module):
         self.dim = dim
         self.max_position_embeddings = max_position_embeddings
         self.base = base
-        inv_freq = 1.0 / (self.base ** (torch.arange(0, self.dim, 2, dtype=torch.int64, device=device).float() / self.dim))
+        inv_freq = 1.0 / (self.base ** (torch.arange(0, self.dim, 2,
+                                                     dtype=torch.int64,
+                                                     device=device).float() / self.dim))
         self.register_buffer("inv_freq", inv_freq, persistent=False)
         # self.gen_seq_len = None
 
         # Build here to make `torch.jit.trace` work.
         self._set_cos_sin_cache(
-            seq_len=max_position_embeddings, device=self.inv_freq.device, dtype=torch.get_default_dtype()
+            seq_len=max_position_embeddings,
+            device=self.inv_freq.device, dtype=torch.get_default_dtype()
         )
 
     def _set_cos_sin_cache(self, seq_len, device, dtype):
         self.max_seq_len_cached = seq_len
-        position_ids_expanded = torch.arange(self.max_seq_len_cached, device=device, dtype=self.inv_freq.dtype).reshape(1, 1, -1)
+        position_ids_expanded = torch.arange(self.max_seq_len_cached,
+                                             device=device,
+                                             dtype=self.inv_freq.dtype).reshape(1, 1, -1)
         inv_freq_expanded = self.inv_freq[None, :, None].float().expand(1, -1, 1)
         with torch.autocast(device_type=device.type, enabled=False):
             freqs = (inv_freq_expanded.float() @ position_ids_expanded.float()).transpose(1, 2)
-            # Different from paper, but it uses a different permutation in order to obtain the same calculation
+            # Different from paper,
+            # but it uses a different permutation in order to obtain the same calculation
             emb = torch.cat((freqs, freqs), dim=-1)
             self.register_buffer("cos_cached", emb.cos().to(dtype), persistent=False)
             self.register_buffer("sin_cached", emb.sin().to(dtype), persistent=False)
@@ -292,6 +298,7 @@ class Phi3RotaryEmbeddingCached(nn.Module):
             self.cos_cached[:, seq_len-position_ids.shape[-1]:seq_len, :].to(dtype=x.dtype),
             self.sin_cached[:, seq_len-position_ids.shape[-1]:seq_len, :].to(dtype=x.dtype),
         )
+
 
 def phi3_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):

@@ -851,9 +851,9 @@ def convert_forward(m, target_m, new_forward):
 def replace_RotaryEmbed(m, target_m,  replace_embed):
     for attr_name, sub_m in m.named_children():
         if isinstance(sub_m, target_m):
-            setattr(sub_m, attr_name, replace_embed(sub_m.dim,
-                                                    sub_m.max_position_embeddings,
-                                                    sub_m.base))
+            setattr(m, attr_name, replace_embed(sub_m.dim,
+                                                sub_m.max_position_embeddings,
+                                                sub_m.base))
         replace_RotaryEmbed(sub_m, target_m, replace_embed)
 
 
