@@ -46,7 +46,7 @@ pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pyto
 You need first run the fastchat controller
 
 ```bash
-python3 -m fastchat.serve.controller
+python -m fastchat.serve.controller
 ```
 
 ### Launch model worker(s) and load models
@@ -63,14 +63,22 @@ To run the `ipex_llm_worker` on CPU, using the following code:
 source ipex-llm-init -t
 
 # Available low_bit format including sym_int4, sym_int8, bf16 etc.
-python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
 ```
 
 For GPU example:
 
 ```bash
 # Available low_bit format including sym_int4, sym_int8, fp16 etc.
-python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
+```
+
+We have also provided an option `--load-low-bit-model` to load models that have been converted and saved into disk using the `save_low_bit` interface as introduced in this [document](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load/README.md).
+
+Check the following examples:
+```bash
+# Or --device "cpu"
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path /Low/Bit/Model/Path --trust-remote-code --device "xpu" --load-low-bit-model
 ```
 
 #### For self-speculative decoding example:
@@ -80,14 +88,14 @@ You can use IPEX-LLM to run `self-speculative decoding` example. Refer to [here]
 ```bash
 # Available low_bit format only including bf16 on CPU.
 source ipex-llm-init -t
-python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "bf16" --trust-remote-code --device "cpu" --speculative
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "bf16" --trust-remote-code --device "cpu" --speculative
 
 # Available low_bit format only including fp16 on GPU.
 source /opt/intel/oneapi/setvars.sh
 export ENABLE_SDP_FUSION=1
 export SYCL_CACHE_PERSISTENT=1
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "fp16" --trust-remote-code --device "xpu" --speculative
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "fp16" --trust-remote-code --device "xpu" --speculative
 ```
 
 For a full list of accepted arguments, you can refer to the main method of the `ipex_llm_worker.py`
@@ -100,16 +108,16 @@ To run using the `vLLM_worker`,  we don't need to change model name, just simply
 
 ```bash
 # On CPU
-python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device cpu
+python -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device cpu
 
 # On GPU
-python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
+python -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
 ```
 
 ### Launch Gradio web server
 
 ```bash
-python3 -m fastchat.serve.gradio_web_server
+python -m fastchat.serve.gradio_web_server
 ```
 
 This is the user interface that users will interact with.
@@ -121,5 +129,5 @@ By following these steps, you will be able to serve your models using the web UI
 To start an OpenAI API server that provides compatible APIs using IPEX-LLM backend, you can launch the `openai_api_server` and follow this [doc](https://github.com/lm-sys/FastChat/blob/main/docs/openai_api.md) to use it.
 
 ```bash
-python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
+python -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```

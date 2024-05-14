@@ -362,7 +362,7 @@ def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
     elif query_states.dtype != torch.float16:
         # esimd_sdp only has optimization for FP16 now
         return False
-    elif head_dim != 128 and head_dim != 64:
+    elif head_dim not in [64, 96, 128]:
         # esimd_sdp only support head_dim = 128 and 64 now
         return False
     elif q_len == k_len:
@@ -382,6 +382,14 @@ def use_sdp_fp8(q_len, k_len, query_states):
         # sdp_fp8 only support rest token now
         return False
     return True
+
+
+def use_sdp_causal(q_len, kv_len, query_states, training):
+    return (
+        q_len == kv_len     # first token
+        and query_states.device.type == "xpu"   # GPU
+        and not query_states.requires_grad and not training     # no training
+    )
 
 
 def mlp_fusion_check(x, qtype, training):

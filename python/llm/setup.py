@@ -285,15 +285,6 @@ def setup_package():
 
 
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-    xpu_20_requires = copy.deepcopy(all_requires)
-    xpu_20_requires.remove('torch')
-    # xpu_20 only works for linux now
-    xpu_20_requires += ["torch==2.0.1a0;platform_system=='Linux'",
-                        "torchvision==0.15.2a0;platform_system=='Linux'",
-                        "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                        "bigdl-core-xe==" + CORE_XE_VERSION + ";platform_system=='Linux'",
-                        "bigdl-core-xe-esimd==" + CORE_XE_VERSION + ";platform_system=='Linux'"]
-
     xpu_21_requires = copy.deepcopy(all_requires)
     xpu_21_requires.remove('torch')
     xpu_21_requires += ["torch==2.1.0a0",
@@ -330,7 +321,6 @@ def setup_package():
         },
         extras_require={"all": all_requires,
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
-                        "xpu-2-0": xpu_20_requires,
                         "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires,
                         "cpp": ["bigdl-core-cpp==" + CORE_XE_VERSION],
