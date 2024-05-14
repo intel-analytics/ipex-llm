@@ -1,0 +1,15 @@
+{{ if .Values.webhook.enable }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "spark-operator.fullname" . }}-webhook
+  labels:
+    {{- include "spark-operator.labels" . | nindent 4 }}
+spec:
+  ports:
+  - port: 443
+    targetPort: {{ .Values.webhook.port }}
+    name: webhook
+  selector:
+    {{- include "spark-operator.selectorLabels" . | nindent 4 }}
+{{ end }}

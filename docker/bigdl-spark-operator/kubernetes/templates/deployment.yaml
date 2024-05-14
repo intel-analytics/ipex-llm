@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "spark-operator.fullname" . }}
+  labels:
+    {{- include "spark-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "spark-operator.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+    {{- if or .Values.podAnnotations .Values.metrics.enable }}
+      annotations:
+      {{- if .Values.metrics.enable }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.metrics.port }}"
+        prometheus.io/path: {{ .Values.metrics.endpoint }}
+      {{- end }}
+      {{- if .Values.podAnnotations }}
+        {{- toYaml .Values.podAnnotations | trim | nindent 8 }}
+      {{- end }}
+    {{- end }}
+      labels:
+        {{- include "spark-operator.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+          {{- toYaml . | trim | nindent 8 }}
+        {{- end }}
+    spec:
+      volumes:
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: nfsvolumeclaim
+      serviceAccountName: {{ include "spark-operator.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        env: 
+        - name: KUBECONFIG
+          value: /root/.kube/config
+        image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          privileged: true
+        {{- if .Values.metrics.enable }}
+        ports:
+          - name: {{ .Values.metrics.portName | quote }}
+            containerPort: {{ .Values.metrics.port }}
+        {{ end }}
+        args:
+        - -v={{ .Values.logLevel }}
+        - -logtostderr
+        - -namespace={{ .Values.sparkJobNamespace }}
+        - -enable-ui-service={{ .Values.uiService.enable}}
+        - -ingress-url-format={{ .Values.ingressUrlFormat }}
+        - -controller-threads={{ .Values.controllerThreads }}
+        - -resync-interval={{ .Values.resyncInterval }}
+        - -enable-batch-scheduler={{ .Values.batchScheduler.enable }}
+        - -label-selector-filter={{ .Values.labelSelectorFilter }}
+        {{- if .Values.metrics.enable }}
+        - -enable-metrics=true
+        - -metrics-labels=app_type
+        - -metrics-port={{ .Values.metrics.port }}
+        - -metrics-endpoint={{ .Values.metrics.endpoint }}
+        - -metrics-prefix={{ .Values.metrics.prefix }}
+        {{- end }}
+        {{- if .Values.webhook.enable }}
+        - -enable-webhook=true
+        - -webhook-svc-namespace={{ .Release.Namespace }}
+        - -webhook-port={{ .Values.webhook.port }}
+        - -webhook-timeout={{ .Values.webhook.timeout }}
+        - -webhook-svc-name={{ include "spark-operator.fullname" . }}-webhook
+        - -webhook-config-name={{ include "spark-operator.fullname" . }}-webhook-config
+        - -webhook-namespace-selector={{ .Values.webhook.namespaceSelector }}
+        {{- end }}
+        - -enable-resource-quota-enforcement={{ .Values.resourceQuotaEnforcement.enable }}
+        {{- if gt (int .Values.replicaCount) 1 }}
+        - -leader-election=true
+        - -leader-election-lock-namespace={{ default .Release.Namespace .Values.leaderElection.lockNamespace }}
+        - -leader-election-lock-name={{ .Values.leaderElection.lockName }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+          - name: nfs-storage
+            mountPath: /bigdl2.0/data
+          - name: nfs-storage
+            mountPath: /root/.kube/config
+            subPath: kubeconfig
+      nodeSelector:
+        test: "true"
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,56 @@
+{{ if .Values.webhook.enable }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "spark-operator.fullname" . }}-webhook-cleanup
+  annotations:
+    {{- toYaml .Values.webhook.cleanupAnnotations | nindent 4 }}
+  labels:
+    {{- include "spark-operator.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      name: {{ include "spark-operator.fullname" . }}-webhook-cleanup
+      {{- if .Values.istio.enabled }}
+      annotations:
+        "sidecar.istio.io/inject": "false"
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "spark-operator.serviceAccountName" . }}
+      restartPolicy: OnFailure
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: clean-secret
+        image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        command:
+        - "/bin/sh"
+        - "-c"
+        - "curl -ik \
+          -X DELETE \
+          -H \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" \
+          -H \"Accept: application/json\" \
+          -H \"Content-Type: application/json\" \
+          https://kubernetes.default.svc/api/v1/namespaces/{{ .Release.Namespace }}/secrets/{{ include "spark-operator.fullname" . }}-webhook-certs \
+          && \
+          curl -ik \
+          -X DELETE \
+          -H \"Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)\" \
+          -H \"Accept: application/json\" \
+          -H \"Content-Type: application/json\" \
+          --data \"{\\\"kind\\\":\\\"DeleteOptions\\\",\\\"apiVersion\\\":\\\"batch/v1\\\",\\\"propagationPolicy\\\":\\\"Foreground\\\"}\" \
+          https://kubernetes.default.svc/apis/batch/v1/namespaces/{{ .Release.Namespace }}/jobs/{{ include "spark-operator.fullname" . }}-webhook-init"
+{{ end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

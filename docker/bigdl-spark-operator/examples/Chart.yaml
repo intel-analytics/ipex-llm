@@ -1,0 +1,6 @@
+apiVersion: v2
+name: bigdl-pyspark-ncf
+description: A Helm chart for bigdl-pyspark-ncf
+type: application
+version: 0.3.0
+appVersion: "1.16.0"

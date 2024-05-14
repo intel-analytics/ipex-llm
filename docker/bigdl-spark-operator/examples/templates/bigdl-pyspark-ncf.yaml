@@ -1,0 +1,100 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: bigdl-pyspark-ncf
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: {{ .Values.image }}
+  imagePullPolicy: Always
+  mainApplicationFile: local:///bigdl2.0/data/spark_pandas.py
+  arguments:
+   - -f
+   - /bigdl2.0/data/nyc_taxi.csv
+  deps:
+    pyFiles:
+     - local:///bigdl2.0/data/bigdl-2.1.0/python/bigdl-spark_3.1.2-2.1.0-python-api.zip
+     - local:///bigdl2.0/data/transfer_learning.py
+  sparkVersion: "3.1.2"
+  batchScheduler: "volcano"
+  restartPolicy:
+    type: Never
+  sparkConf:
+    "spark.driver.host": {{ .Values.sparkDriverHost }}
+    "spark.driver.port": {{ .Values.sparkDriverPort }}
+    "spark.cores.max": "64"
+    "spark.kubernetes.authenticate.driver.serviceAccountName": "spark"
+    "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim"
+    "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data"
+    "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName": "nfsvolumeclaim"
+    "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path": "/bigdl2.0/data"
+    "spark.archives": "file:///bigdl2.0/data/pandas-environment.tar.gz"
+    "spark.pyspark.driver.python": "/bigdl2.0/data/python_env/bin/python"
+    "spark.pyspark.python": "/bigdl2.0/data/python"
+    "spark.kubernetes.executor.deleteOnTermination": "false"
+    "spark.kubernetes.file.upload.path": "/bigdl2.0/data/"
+    "spark.shuffle.reduceLocality.enabled": "false"
+    "spark.shuffle.blockTransferService": "nio"
+    "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    "spark.scheduler.maxRegisteredResourcesWaitingTime": "3600s"
+    "spark.speculation": "false"
+    "spark.serializer": "org.apache.spark.serializer.JavaSerializer"
+    "spark.sql.catalogImplementation": "in-memory"
+    "spark.driver.extraClassPath": "local:///bigdl2.0/data/bigdl-2.1.0/jars/*"
+    "spark.executor.extraClassPath": "local:///bigdl2.0/data/bigdl-2.1.0/jars/* 
+  volumes:
+  - name: nfs-storage
+    persistentVolumeClaim:
+      claimName: nfsvolumeclaim  
+  driver:
+    cores: 4
+    memory: "50g"  
+    labels:
+      version: 3.1.2
+    serviceAccount: spark
+    securityContext:
+      privileged: true
+    javaOptions: "-Dderby.stream.error.file=/tmp"
+    volumeMounts:
+      - name: nfs-storage
+        mountPath: /bigdl2.0/data
+      - name: nfs-storage
+        mountPath: /root/.kube/config
+        subPath: kubeconfig
+    env:
+      - name: http_proxy
+        value: {{ .Values.httpProxyUrl }}
+      - name: https_proxy
+        value: {{ .Values.httpsProxyUrl }}
+      - name: no_proxy
+        value: {{ .Values.localIP }}
+  executor:
+    cores: 16
+    memory: "50g"
+    instances: 1
+    memory: "512m"    
+    labels:
+      version: 3.1.2
+    serviceAccount: spark
+    securityContext:
+      privileged: true
+    volumeMounts:
+      - name: nfs-storage
+        mountPath: /bigdl2.0/data
+      - name: nfs-storage
+        mountPath: /root/.kube/config
+        subPath: kubeconfig
+    env:
+      - name: http_proxy
+        value: {{ .Values.httpProxyUrl }}
+      - name: https_proxy
+        value: {{ .Values.httpsProxyUrl }}
+      - name: PYTHONHOME
+        value: "/bigdl2.0/data/python_env"
+      - name: BIGDL_HOME
+        value: "/opt/bigdl-2.1.0"
+      - name: SPARK_HOME
+        value: "/opt/spark"
+      - name: no_proxy
+        value: {{ .Values.localIP }}

@@ -1,0 +1,6 @@
+image: "intelanalytics/bigdl-k8s-spark-3.1.2:2.1.0"
+sparkDriverHost: "1.2.3.4"
+sparkDriverPort: "10008"
+httpProxyUrl: "http://x.x.x.x:xxxx"
+httpsProxyUrl: "https://x.x.x.x:xxxx"
+localIP: "1.2.3.4"
