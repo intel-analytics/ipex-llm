@@ -1,0 +1,48 @@
+name: BigDL Core Release Scala
+
+on:
+  pull_request:
+  
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'bigdl core branch (e.g. master, branch-2.1)'
+        required: true
+        default: 'master'
+        type: string
+      targetaddr:
+        description: 'target addr (e.g. LOCAL, OSSRH)'
+        required: true
+        default: 'local'
+        type: string
+
+env:
+  Branch: ${{ github.event.inputs.branch }}
+  Target_Address: ${{ github.event.inputs.targetaddr }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  bigdl-core-release-mac:
+    runs-on: [self-hosted, bigdl-mac]
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: intel-analytics/BigDL-core
+        ref: ${{ env.Branch }}
+    
+    - name: Build package
+      run: |
+        set -x
+        export PATH=/Users/test/workspace/maven/bin:/usr/local/bin:$PATH
+        echo $PATH
+        export Target_Address=LOCAL
+        source /opt/intel/mkl/bin/mklvars.sh intel64
+        export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_80.jdk/Contents/Home
+        export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
+        java -version
+        javac -version
+        mvn -B clean package -pl '!ppml' -P mac
