@@ -8,6 +8,8 @@ from transformers import AutoTokenizer, AutoConfig
 from transformers.utils import logging
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 import numpy as np
+import asyncio, uuid
+
 logger = logging.get_logger(__name__)
 
 
@@ -229,9 +231,30 @@ def load_model(checkpoint):
         model = LlamaForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
     return model
 
+from pydantic import BaseModel
+class BatchTask(BaseModel):
+    batch_id: str
+    request_ids: List[str]
+    max_tokens: int
+    batch_size: int
+    input_len: int
+    # plain_texts: List[str]
+    prompt_lengths: List[int]
+    stopped: bool
+    # input_ids: torch.Tensor
+    # attention_mask: torch.Tensor
+
+
+def make_attention_mask(prompt_lengths):
+    max_length = max(prompt_lengths)
+    attention_mask = torch.zeros((len(prompt_lengths), max_length), dtype=torch.int64)
+    for i, length in enumerate(prompt_lengths):
+        attention_mask[i, max_length - length:] = 1
+    return attention_mask
+
 class ModelRunner:
     
-    def __init__(self, checkpoint, rank, world_size, low_bit):
+    def __init__(self, checkpoint, rank, world_size, low_bit, max_num_seqs):
         import intel_extension_for_pytorch as ipex
         import sys
         self.pp_config = PPConfig(rank, world_size)
@@ -252,53 +275,233 @@ class ModelRunner:
         self.next_rank = (self.rank + 1) % self.world_size
         self.hidden_size = self.model.config.hidden_size
     
+        self.max_num_seqs = max_num_seqs
+        self.batch_list = [None] * self.world_size
+        self.on_going_batches = [None] * self.world_size
+        self.input_ids_dict = {}
+        # self.attention_mask_dict = {}
+        self.past_key_values_dict = {}
+        self.tokens = {}
+
+        self.waiting_requests = asyncio.Queue()
+        self.send_buff = None
+
                 
-    def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
-        times = []
-        with torch.no_grad():
-            _input_ids = None
-            _past_key_values = None
-            bs = input_ids.shape[0]
-            output_ids = input_ids.clone()
-            for i in range(max_tokens):
-                start = time.perf_counter()
-                if _input_ids is None:
-                    _input_ids = input_ids
-                if self.rank == 0:
-                    outputs = self.model(input_ids=_input_ids, attention_mask=attention_mask, past_key_values=_past_key_values, use_cache=True)
-                else:
-                    inputs_embeds = torch.empty(_input_ids.shape + (self.hidden_size,) , device=f'xpu:{self.rank}', dtype=torch.float32)
-                    dist.recv(inputs_embeds, src=self.pre_rank)
-                    outputs = self.model(inputs_embeds=inputs_embeds, attention_mask=attention_mask, past_key_values=_past_key_values, use_cache=True)
+    # def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
+    #     times = []
+    #     with torch.no_grad():
+    #         _input_ids = None
+    #         _past_key_values = None
+    #         bs = input_ids.shape[0]
+    #         output_ids = input_ids.clone()
+    #         for i in range(max_tokens):
+    #             start = time.perf_counter()
+    #             if _input_ids is None:
+    #                 _input_ids = input_ids
+    #             if self.rank == 0:
+    #                 outputs = self.model(input_ids=_input_ids, attention_mask=attention_mask, past_key_values=_past_key_values, use_cache=True)
+    #             else:
+    #                 inputs_embeds = torch.empty(_input_ids.shape + (self.hidden_size,) , device=f'xpu:{self.rank}', dtype=torch.float32)
+    #                 dist.recv(inputs_embeds, src=self.pre_rank)
+    #                 outputs = self.model(inputs_embeds=inputs_embeds, attention_mask=attention_mask, past_key_values=_past_key_values, use_cache=True)
                 
-                if self.rank == self.world_size - 1:
-                    logits = outputs.logits
-                    next_ids = torch.argmax(logits[:, -1:, :], dim=-1)
-                    assert next_ids.shape == (bs, 1)
-                    dist.broadcast(next_ids, src=self.rank)
-                else:
-                    dist.send(outputs.last_hidden_state, dst=self.next_rank)
-                    next_ids = torch.empty((bs, 1), device=f'xpu:{self.rank}', dtype=torch.int64)
-                    dist.broadcast(next_ids, src=self.world_size - 1)
+    #             if self.rank == self.world_size - 1:
+    #                 logits = outputs.logits
+    #                 next_ids = torch.argmax(logits[:, -1:, :], dim=-1)
+    #                 assert next_ids.shape == (bs, 1)
+    #                 dist.broadcast(next_ids, src=self.rank)
+    #             else:
+    #                 dist.send(outputs.last_hidden_state, dst=self.next_rank)
+    #                 next_ids = torch.empty((bs, 1), device=f'xpu:{self.rank}', dtype=torch.int64)
+    #                 dist.broadcast(next_ids, src=self.world_size - 1)
                 
-                _input_ids = next_ids
-                output_ids = torch.cat([output_ids, next_ids], dim=-1)
-                _past_key_values = outputs.past_key_values
-                end = time.perf_counter()
-                times.append(end - start)
+    #             _input_ids = next_ids
+    #             output_ids = torch.cat([output_ids, next_ids], dim=-1)
+    #             _past_key_values = outputs.past_key_values
+    #             end = time.perf_counter()
+    #             times.append(end - start)
         
+    #     if self.rank == 0:
+    #         logger.info(f"first token latency: {times[0]}, rest token avg latecy: {np.mean(times[1:])}")
+    #     return output_ids
+
+
+    def model_step(self, input):
+        # dist.broadcast(batch_list, src=0)
+        cur_batch = self.batch_list[self.rank]
+        if cur_batch is None or cur_batch.stopped:
+            return None
+        
+        cur_id = cur_batch.batch_id
+        _past_key_values = self.past_key_values_dict.get(cur_id, None)
+        # attention_mask = self.attention_mask_dict[cur_id]
+        attention_mask = make_attention_mask(cur_batch.prompt_lengths)
+
         if self.rank == 0:
-            logger.info(f"first token latency: {times[0]}, rest token avg latecy: {np.mean(times[1:])}")
-        return output_ids
-
-
-    def step(self, input_ids=None, inputs_embeds=None):
-        output = self.model(input_ids=input_ids, inputs_embeds=inputs_embeds)
+            input_ids = input
+            inputs_embeds = None
+        else:
+            input_ids = None
+            inputs_embeds = input
+        output = self.model(
+            input_ids=input_ids, 
+            inputs_embeds=inputs_embeds,
+            attention_mask=attention_mask, 
+            past_key_values=_past_key_values,
+            use_cache=True
+        )
+        self.past_key_values_dict[cur_id] = output.past_key_values
         if not self.pp_config.is_tail:
             return output.last_hidden_state
         else:
+            # logger.info(f"logits: {output.logits.shape}")
             return output.logits
 
     
     def is_initialized(self):
         return True
+    
+    
+    async def add_request(self, tokenizer):
+        request_ids, prompt_requests = [], []
+        for _ in range(self.max_num_seqs):
+            if self.waiting_requests.empty():
+                break
+            
+            tmp_result = await self.waiting_requests.get()
+            logger.info(tmp_result)
+            request_id, prompt_request = tmp_result
+            request_ids.append(request_id)
+            prompt_requests.append(prompt_request)
+
+        plain_texts = [req.prompt for req in prompt_requests]
+        inputs = tokenizer(plain_texts, return_tensors="pt", padding=True)
+        input_ids = inputs.input_ids.to(f'xpu:{self.rank}')
+        attention_mask = inputs.attention_mask.to(f'xpu:{self.rank}')
+        new_batch = BatchTask(
+            batch_id="batch_" + str(uuid.uuid4()),
+            request_ids=request_ids,
+            max_tokens=max([req.n_predict for req in prompt_requests]),
+            batch_size=input_ids.size(0),
+            input_len=input_ids.size(1),
+            prompt_lengths=[sum(attention_mask[i,:]) for i in range(input_ids.size(0))],
+            stopped=False,
+            # plain_texts=plain_texts,
+            # input_ids=input_ids,
+            # attention_mask=attention_mask,
+        )
+
+        self.input_ids_dict[new_batch.batch_id] = input_ids
+        # self.attention_mask_dict[new_batch.batch_id] = attention_mask
+
+        return new_batch
+
+    
+    def clear_batch(self, cur_id):
+        self.input_ids_dict.pop(cur_id, None)
+        self.tokens.pop(cur_id, None)
+        # self.attention_mask_dict.pop(cur_id, None)
+        self.past_key_values_dict.pop(cur_id, None)
+
+    
+
+    async def process_step(self, tokenizer, result_dict):
+        batch_list = self.batch_list
+        cur_batch = None
+
+        if self.rank == 0:
+            if self.on_going_batches[0] is not None:
+                cur_batch = self.on_going_batches[0]
+                cur_input = None
+            
+            if cur_batch is None:
+                if not self.waiting_requests.empty():
+                    cur_batch = await self.add_request(tokenizer)
+                    cur_input = self.input_ids_dict[cur_batch.batch_id]
+                else:
+                    cur_batch = None
+                    cur_input = None
+
+            batch_list = [cur_batch] + batch_list
+
+            if len(batch_list) < self.world_size:
+                batch_list = batch_list + [None] * (self.world_size-len(batch_list))
+            batch_list = batch_list[:self.world_size]
+            dist.broadcast_object_list(batch_list, src=0)
+
+            if self.send_buff is not None:
+                logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
+                dist.send(self.send_buff, dst=self.next_rank)
+
+            if (cur_batch is not None) and (not cur_batch.stopped) and (cur_input is None):
+                cur_id = cur_batch.batch_id
+                next_ids = torch.empty((cur_batch.batch_size, 1,), device=f'xpu:{self.rank}', dtype=torch.int64)
+                logger.info(f"rank: {self.rank}, recv: {next_ids.shape}")
+                dist.recv(next_ids, src=self.pre_rank)
+                
+                if self.tokens.get(cur_id, None) is None:
+                    self.tokens[cur_id] = []
+
+                if len(next_ids.shape) == 1:
+                    next_ids = next_ids.unsqueeze(0)
+                self.tokens[cur_id].append(next_ids)
+                # self.input_ids_dict[cur_id] += next_ids
+                cur_input = next_ids
+                # batch_list[0].input_len += 1
+                batch_list[0].input_len = 1
+                batch_list[0].prompt_lengths = [x + 1 for x in batch_list[0].prompt_lengths]
+                if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
+                    # Finish a batch
+                    logger.info(self.tokens[cur_id])
+                    outputs = torch.cat(self.tokens[cur_id], dim=1)
+                    outputs = outputs.cpu()
+                    output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+                    for request_id, output_str in zip(cur_batch.request_ids, output_strs):
+                        result_dict[request_id] = output_str
+
+                    self.clear_batch(cur_id)
+                    batch_list[0].stopped = True
+            
+            if (cur_batch is not None) and cur_batch.stopped:
+                batch_list[0] = None
+                cur_batch = None
+                
+        else:
+            batch_list = [None] * self.world_size
+            dist.broadcast_object_list(batch_list, src=0)
+
+            if self.send_buff is not None:
+                logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
+                dist.send(self.send_buff, dst=self.next_rank)
+
+            cur_batch = batch_list[self.rank]
+            cur_input = None
+            if cur_batch is not None:
+                if cur_batch.stopped:
+                    self.clear_batch(cur_batch.batch_id)
+
+                cur_len = cur_batch.input_len
+                cur_input = torch.empty((cur_batch.batch_size, cur_len, self.hidden_size,), device=f'xpu:{self.rank}', dtype=torch.float32)
+                logger.info(f"rank: {self.rank}, recv: {cur_input.shape}")
+                dist.recv(cur_input, src=self.pre_rank)
+
+                # if self.attention_mask_dict.get(cur_batch.batch_id, None) is None:
+                #     self.attention_mask_dict[cur_batch.batch_id] = make_attention_mask(cur_batch.prompt_lengths)
+            
+            
+        self.batch_list = batch_list
+        logger.info(f"rank: {self.rank}, {batch_list}")
+        
+        output = self.model_step(cur_input)
+        if output is not None and self.rank == self.world_size - 1:
+            output = torch.argmax(output[:, -1:, :], dim=-1)
+
+        if output is not None:
+            # dist.send(output, dst=self.next_rank)
+            self.send_buff = output
+        else:
+            self.send_buff = None
+        if self.rank == 0:
+            self.on_going_batches[:-1] = self.on_going_batches[1:]
+            self.on_going_batches[self.world_size - 1] = cur_batch
+

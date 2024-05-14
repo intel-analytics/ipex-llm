@@ -41,10 +41,10 @@ class PromptRequest(BaseModel):
     prompt: str
     n_predict: int = 32
 
+
 empty_req = PromptRequest(prompt="", n_predict=0)
 
 app = FastAPI()
-global tokenizer
 
 request_queue: asyncio.Queue = asyncio.Queue()
 result_dict: Dict[str, str] = {}
@@ -55,12 +55,12 @@ max_num_seqs = get_int_from_env(["MAX_NUM_SEQS"], "16")
 @app.post("/generate/")
 async def generate(prompt_request: PromptRequest):
     request_id = str(uuid.uuid4())
-    await request_queue.put((request_id, prompt_request))
+    await local_model.waiting_requests.put((request_id, prompt_request))
     while True:
-        await asyncio.sleep(0.1)
         if request_id in result_dict:
             output_str = result_dict.pop(request_id)
             return {"generated_text": output_str}
+        await asyncio.sleep(0)            
 
 
 def generate_text(prompt: List[str], n_predict = 32):
@@ -86,45 +86,17 @@ def generate_text(prompt: List[str], n_predict = 32):
     return output
 
 
-async def process_requests():
+async def process_requests(local_model, result_dict):
     while True:
-        request_ids, prompt_requests = [], []
-        for _ in range(max_num_seqs):
-            if request_queue.empty():
-                break
-            request_id, prompt_request = await request_queue.get()
-            request_ids.append(request_id)
-            prompt_requests.append(prompt_request)
-
-        if local_rank == 0 and prompt_requests:
-            # import pdb
-            # pdb.set_trace()
-            object_list = prompt_requests
-            if len(object_list) < max_num_seqs:
-                object_list = object_list + [empty_req] * (max_num_seqs - len(object_list))
-            logger.info(f"Running: {len(prompt_requests)}, Pending: {request_queue.qsize()}")
-            dist.broadcast_object_list(object_list, src=0)
-            start_time = time.time()
-            outputs = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
-            # print(outputs)
-            generate_time = time.time() - start_time
-            outputs = outputs.cpu()
-            output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-            output_strs = output_strs[:len(prompt_requests)]
-
-            for request_id, output_str in zip(request_ids, output_strs):
-                result_dict[request_id] = output_str
-            # print(result_dict)
-            logger.info(f"generate time: {generate_time}")
-
         await asyncio.sleep(0.1)
+        await local_model.process_step(tokenizer, result_dict)
+
 
 @app.on_event("startup")
 async def startup_event():
-    if local_rank == 0:
-        asyncio.create_task(process_requests())
+    asyncio.create_task(process_requests(local_model, result_dict))
 
-if __name__ == "__main__":
+async def main():
     parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`, `meta-llama/Llama-2-13b-chat-hf` and `meta-llama/Llama-2-70b-chat-hf`) to be downloaded'
@@ -133,27 +105,40 @@ if __name__ == "__main__":
                     help='The quantization type the model will convert to.')
     parser.add_argument('--port', type=int, default=8000,
                     help='The port number on which the server will run.')
+    parser.add_argument('--max-num-seqs', type=int, default=8,
+                    help='Max num sequences in a batch.')
     
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     low_bit = args.low_bit
+    max_num_seqs = args.max_num_seqs
 
     # serialize model initialization so that we do not run out of CPU memory
     for i in range(my_size):
         if my_rank == i:
             logger.info("start model initialization")
-            local_model = ModelRunner(model_path, my_rank, my_size, low_bit)
+            global local_model
+            local_model = ModelRunner(model_path, my_rank, my_size, low_bit, max_num_seqs)
             logger.info("model initialized")
         dist.barrier()
     # Load tokenizer
+    global tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
     if local_rank == 0:
-        uvicorn.run(app, host="0.0.0.0", port=args.port)
+        config = uvicorn.Config(app=app, host="0.0.0.0", port=args.port)
+        server = uvicorn.Server(config)
+        await server.serve()
     else:
         while True:
-            object_list = [None] * max_num_seqs
-            dist.broadcast_object_list(object_list, src=0)
-            output = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
+            await asyncio.sleep(0.1)
+            await local_model.process_step(tokenizer, result_dict)
+
+    #         object_list = [None] * max_num_seqs
+    #         dist.broadcast_object_list(object_list, src=0)
+    #         output = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
+
+if __name__ == "__main__":
+    asyncio.run(main())
