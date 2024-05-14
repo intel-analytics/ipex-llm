@@ -122,6 +122,7 @@ class TorchRunner(BaseRunner):
 
         self.timers = utils.TimerCollection()
         self.epochs = 0
+        self.epoch_step = 0
         self.global_step = 0
         self.models = None
         self.optimizers = None
@@ -248,7 +249,7 @@ class TorchRunner(BaseRunner):
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
         stats_list = list()
-        for i in range(self.num_epochs):
+        for i in range(self.epochs, self.num_epochs):
             del self.epoch_stats
             self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
             stats = self.train_epoch(self.train_loader, profile=profile,
@@ -372,6 +373,8 @@ class TorchRunner(BaseRunner):
         else:
             self._train_loop(iterator, metric_meters, callbacks)
 
+        self.epoch_step = 0
+
         self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
         return metric_meters.summary(sync_stats=self.sync_stats,
@@ -379,6 +382,8 @@ class TorchRunner(BaseRunner):
 
     def _train_loop(self, iterator, metric_meters, callbacks):
         for batch_idx, batch in enumerate(iterator):
+            if batch_idx < self.epoch_step:
+                continue
             self.batch_idx = batch_idx
 
             self._train_batch(batch, callbacks=callbacks)
@@ -437,6 +442,7 @@ class TorchRunner(BaseRunner):
         self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(batch)}
 
         self.global_step += 1
+        self.epoch_step += 1
 
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
@@ -668,6 +674,8 @@ class TorchRunner(BaseRunner):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,
+            "epoch_step": self.epoch_step,
+            "global_step": self.global_step,
             "models": [model.state_dict() for model in self.models]
         }
         if self.optimizers:
@@ -706,6 +714,10 @@ class TorchRunner(BaseRunner):
                 scheduler.load_state_dict(state_dict)
         if "epoch" in state:
             self.epochs = state["epoch"]
+        if "global_step" in state:
+            self.global_step = state["global_step"]
+        if "epoch_step" in state:
+            self.epoch_step = state["epoch_step"]
 
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
