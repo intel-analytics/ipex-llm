@@ -1,18 +1,17 @@
-# This file is copied from https://github.com/OpenAccess-AI-Collective/axolotl/blob/v0.4.0/examples/llama-2/qlora.yml
-base_model: NousResearch/Llama-2-7b-hf
-model_type: LlamaForCausalLM
-tokenizer_type: LlamaTokenizer
-is_llama_derived_model: true
+# This file is copied from https://github.com/OpenAccess-AI-Collective/axolotl/blob/main/examples/llama-3/qlora.yml
+base_model: meta-llama/Meta-Llama-3-8B
+model_type: AutoModelForCausalLM
+tokenizer_type: AutoTokenizer
 
 load_in_8bit: false
 load_in_4bit: true
 strict: false
 
 datasets:
-  - path: mhenrichsen/alpaca_2k_test
+  - path: aaditya/alpaca_subset_1
     type: alpaca
 dataset_prepared_path:
-val_set_size: 0.05
+val_set_size: 0
 output_dir: ./qlora-out
 
 adapter: qlora
@@ -70,6 +69,4 @@ weight_decay: 0.0
 fsdp:
 fsdp_config:
 special_tokens:
-  bos_token: "<s>"
-  eos_token: "</s>"
-  unk_token: "<unk>"
+  pad_token: "<|end_of_text|>"
