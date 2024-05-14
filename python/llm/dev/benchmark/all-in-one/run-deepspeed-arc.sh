@@ -10,7 +10,11 @@ source $basekit_root/ccl/latest/env/vars.sh --force
 
 NUM_GPUS=2 # number of used GPU
 export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
+if grep -q "Xeon" /proc/cpuinfo; then
+    export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=0
+else
+    export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
+fi
 export TORCH_LLM_ALLREDUCE=0 # Different from PVC
 
 mpirun -np $NUM_GPUS --prepend-rank python run.py
