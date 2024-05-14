@@ -413,7 +413,6 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -439,7 +438,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -463,7 +461,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -507,7 +504,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.31.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -533,7 +529,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -557,7 +552,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -600,7 +594,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.31.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -626,7 +619,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -650,7 +642,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -693,7 +684,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.31.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -719,7 +709,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -743,7 +732,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -784,7 +772,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.31.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -810,7 +797,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -834,7 +820,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
