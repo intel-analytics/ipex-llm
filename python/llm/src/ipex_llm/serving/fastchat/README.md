@@ -73,6 +73,8 @@ For GPU example:
 python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
 ```
 
+To calculate and print 1st token performance and the rest on CPU and GPU, you can download this file[benchmark_util.py](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/dev/benchmark/benchmark_util.py) In the current directory where you started the ipex_llm_worker, and add "--benchmark" config to enable it.
+
 We have also provided an option `--load-low-bit-model` to load models that have been converted and saved into disk using the `save_low_bit` interface as introduced in this [document](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load/README.md).
 
 Check the following examples:

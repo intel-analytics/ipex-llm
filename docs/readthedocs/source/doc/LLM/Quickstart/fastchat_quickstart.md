@@ -61,6 +61,8 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "xpu"
 ```
 
+To calculate and print 1st token performance and the rest on CPU and GPU, you can download this file[benchmark_util.py](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/dev/benchmark/benchmark_util.py) In the current directory where you started the ipex_llm_worker, and add "--benchmark" config to enable it.
+
 #### For self-speculative decoding example:
 
 You can use IPEX-LLM to run `self-speculative decoding` example. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel MAX GPUs. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel CPUs.
