@@ -1528,6 +1528,13 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.Phi3Model, model_forward)
         from ipex_llm.transformers.models.phi3 import Phi3RotaryEmbeddingCached
         replace_RotaryEmbed(model, module.Phi3RotaryEmbedding, Phi3RotaryEmbeddingCached)
+        from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
+        convert_forward(
+            model,
+            module.Phi3RMSNorm,
+            phi3_rms_norm_forward)
+        # Empty cache after the first attention to run long context.
+        model.model.layers[0].self_attn.register_forward_hook(empty_cache_post)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

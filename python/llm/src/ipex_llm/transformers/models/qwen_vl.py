@@ -32,7 +32,7 @@ import torch.utils.checkpoint
 from transformers.utils import logging
 from ipex_llm.transformers.models.utils import extend_kv_cache, init_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import rotate_half
-from ipex_llm.transformers.models.utils import use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_sdp
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 
 import os
@@ -207,11 +207,9 @@ def qwen_attention_forward_vl(
     query = query.permute(0, 2, 1, 3)
 
     if not self.training and not hidden_states.requires_grad and \
-            use_esimd_sdp(q_len, key.shape[2], self.head_dim, query):
-        import linear_fp16_esimd
-        attn_output = linear_fp16_esimd.sdp_forward(query,
-                                                    key,
-                                                    value)
+            use_sdp(q_len, key.shape[2], self.head_dim, query):
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp(query, key, value, attention_mask)
         attn_output = attn_output.view(query.shape)
         attn_output = attn_output.transpose(1, 2)
         attn_weight = None
