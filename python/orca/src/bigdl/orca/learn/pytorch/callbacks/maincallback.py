@@ -87,6 +87,13 @@ class MainCallback(Callback):
         Any behavior inconsistent with the default training behavior should be overridden here.
         """
         self.on_iter_forward(runner)
+    
+    def on_train_backward(self, runner):
+        """
+        this will be called during backward when training.
+        Any behavior inconsistent with the default backward behavior should be overridden here.
+        """
+        self.on_iter_backward(runner)
 
     def on_val_forward(self, runner):
         """
