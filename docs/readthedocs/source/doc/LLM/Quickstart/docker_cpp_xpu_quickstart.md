@@ -3,19 +3,12 @@
 ## Quick Start
 
 ### Setting Docker on windows
-If you want to run this image on windows, please refer to (this document)[https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows] to set up Docker on windows. And run below steps on wls ubuntu. And you need to enable `--net=host`,follow [this guide](https://docs.docker.com/network/drivers/host/#docker-desktop) so that you can easily access the service running on the docker. And the [v6.1x kernel version wsl]( https://learn.microsoft.com/en-us/community/content/wsl-user-msft-kernel-v6#1---building-the-microsoft-linux-kernel-v61x) is recommend to use.
+If you want to run this image on windows, please refer to (this document)[https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows] to set up Docker on windows. And run below steps on wls ubuntu. And you need to enable `--net=host`,follow [this guide](https://docs.docker.com/network/drivers/host/#docker-desktop) so that you can easily access the service running on the docker. The [v6.1x kernel version wsl]( https://learn.microsoft.com/en-us/community/content/wsl-user-msft-kernel-v6#1---building-the-microsoft-linux-kernel-v61x) is recommended to use.Otherwise, you may encounter the blocking issue before loading the model to GPU.
 
-### Build Image or pull the latest Image
+### Pull the latest image
 ```bash
-# pull the latest image
+# This image will be updated every day
 docker pull intelanalytics/ipex-llm-cpp-xpu:latest
-
-# build
-docker build \
-  --build-arg http_proxy=.. \
-  --build-arg https_proxy=.. \
-  --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/ipex-llm-cpp-xpu:latest .
 ```
 
 ### Start Docker Container
