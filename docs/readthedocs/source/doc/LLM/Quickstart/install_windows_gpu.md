@@ -11,7 +11,7 @@ It applies to Intel Core Ultra and Core 11 - 14 gen integrated GPUs (iGPUs), as 
 ```eval_rst
 .. tip::
 
-   It is recommended to update your GPU driver version for the cases mentioned `here <../Overview/install_gpu.html#prerequisites:~:text=For%20the%20following%20cases%2C%20it%20is%20recommended%20to%20update%20your%20GPU%20driver%20to%20the%20latest%3A>`_.
+   It is recommended to update your GPU driver, if you have driver version lower than ``31.0.101.5122``. Refer to `here <../Overview/install_gpu.html#prerequisites>`_ for more information.
 ```
 
 Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
