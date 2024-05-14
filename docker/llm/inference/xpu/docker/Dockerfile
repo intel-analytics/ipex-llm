@@ -8,17 +8,9 @@ ENV PYTHONUNBUFFERED=1
 ENV USE_XETLA=OFF
 ENV SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 COPY chat.py /llm/chat.py
 COPY benchmark.sh /llm/benchmark.sh
 
-=======
->>>>>>> 391ae7965d (test_cpp_docker)
-=======
-COPY chat.py /llm/chat.py
-
->>>>>>> 4179e998c1 (restore)
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
