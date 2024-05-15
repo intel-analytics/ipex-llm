@@ -215,7 +215,6 @@ class PromptLookupCandidateGenerator():
                 self.num_output_tokens = max(self.num_output_tokens - 1, self.min_candidates)
 
 
-
 @torch.no_grad()
 def lookup_generate(self,
                     inputs: Optional[torch.Tensor] = None,
