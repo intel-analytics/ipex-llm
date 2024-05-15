@@ -53,7 +53,7 @@ from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
 from ipex_llm.transformers.models.mistral import should_use_fuse_rope, repeat_kv
 try:
     from transformers.cache_utils import Cache
@@ -266,11 +266,9 @@ def stablelm_attention_forward_original(
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states, attention_mask):
-        import linear_fp16_esimd
-        attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                    key_states,
-                                                    value_states)
+            use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -447,8 +445,7 @@ def stablelm_attention_forward_quantized(
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                            value_states.transpose(-1, -2))
+            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     invalidInputError(attn_output.size() == attn_output_size,

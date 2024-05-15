@@ -6,6 +6,12 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width="100%" controls></video>
 
+```eval_rst
+.. note::
+
+  Our current version is consistent with `c780e75 <https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452>`_ of llama.cpp.
+```
+
 ## Quick Start
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
 
@@ -15,20 +21,40 @@ IPEX-LLM's support for `llama.cpp` now is available for Linux system and Windows
 #### Linux
 For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
-Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
+Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.html), follow [Install Intel GPU Driver](./install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](./install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
 
-#### Windows
-Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition, latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html) and Intel® oneAPI Base Toolkit 2024.0.
+#### Windows (Optional)
 
-**Note**: IPEX-LLM backend only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output.
+IPEX-LLM backend for llama.cpp only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output. 
+
+If you have lower GPU driver version, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](./install_windows_gpu.html), and follow [Update GPU driver](./install_windows_gpu.html#optional-update-gpu-driver).
 
 ### 1 Install IPEX-LLM for llama.cpp
 
 To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed.
-```cmd
-conda create -n llm-cpp python=3.11
-conda activate llm-cpp
-pip install --pre --upgrade ipex-llm[cpp]
+
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         conda create -n llm-cpp python=3.11
+         conda activate llm-cpp
+         pip install --pre --upgrade ipex-llm[cpp]
+
+   .. tab:: Windows
+
+      .. note::
+
+      Please run the following command in Anaconda Prompt.
+
+      .. code-block:: cmd
+
+         conda create -n llm-cpp python=3.11
+         conda activate llm-cpp
+         pip install --pre --upgrade ipex-llm[cpp]
+
 ```
 
 **After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
@@ -78,13 +104,9 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 
 **Now you can use these executable files by standard llama.cpp's usage.**
 
-### 3 Example: Running community GGUF models with IPEX-LLM
+#### Runtime Configuration
 
-Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
-
-#### Set Environment Variables
-
-Configure oneAPI variables by running the following command:
+To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
 
 ```eval_rst
 .. tabs::
@@ -93,18 +115,32 @@ Configure oneAPI variables by running the following command:
       .. code-block:: bash
 
          source /opt/intel/oneapi/setvars.sh
+         export SYCL_CACHE_PERSISTENT=1
 
    .. tab:: Windows
 
-      .. note::
-
-      This is a required step for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
+      Please run the following command in Anaconda Prompt.
 
       .. code-block:: bash
 
-         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+         set SYCL_CACHE_PERSISTENT=1
 
 ```
+
+```eval_rst
+.. tip::
+
+  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance:
+
+  .. code-block:: bash
+
+      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+
+```
+
+### 3 Example: Running community GGUF models with IPEX-LLM
+
+Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 
 #### Model Download
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main).
@@ -118,20 +154,22 @@ Before running, you should download or copy community GGUF model to your current
       .. code-block:: bash
       
          ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
-      
+
       .. note::
 
       For more details about meaning of each parameter, you can use ``./main -h``.
 
    .. tab:: Windows
 
+      Please run the following command in Anaconda Prompt.
+
       .. code-block:: bash
 
-         main.exe -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+         main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
 
       .. note::
 
-      For more details about meaning of each parameter, you can use ``main.exe -h``.
+      For more details about meaning of each parameter, you can use ``main -h``.
 ```
 
 #### Sample Output
@@ -273,3 +311,21 @@ If your program hang after `llm_load_tensors:  SYCL_Host buffer size =    xx.xx 
 
 #### How to set `-ngl` parameter
 `-ngl` means the number of layers to store in VRAM. If your VRAM is enough, we recommend putting all layers on GPU, you can just set `-ngl` to a large number like 999 to achieve this goal.
+
+If `-ngl` is set to 0, it means that the entire model will run on CPU. If `-ngl` is set to greater than 0 and less than model layers, then it's mixed GPU + CPU scenario.
+
+```eval_rst
+.. note::
+
+  Now Q4_0 /Q4_1 /Q8_0 precisons are not allowed to run on CPU or run with mixed CPU and GPU.
+```
+
+#### How to specificy GPU
+If your machine has multi GPUs, `llama.cpp` will default use all GPUs which may slow down your inference for model which can run on single GPU. You can add `-sm none` in your command to use one GPU only.
+
+Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device before excuting your command, more details can refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/multi_gpus_selection.html#oneapi-device-selector).
+
+#### Program crash with Chinese prompt
+If you run the llama.cpp program on Windows and find that your program crashes or outputs abnormally when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
+
+For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).

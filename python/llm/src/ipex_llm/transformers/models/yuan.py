@@ -293,8 +293,7 @@ def yuan_attention_forward_quantized(
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights,
-                                                            value_states.transpose(-1, -2))
+            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
 
         invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
                           "`attn_output` should be of size "

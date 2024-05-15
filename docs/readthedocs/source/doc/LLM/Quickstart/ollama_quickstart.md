@@ -6,6 +6,12 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
 
+```eval_rst
+.. note::
+
+  Our current version is consistent with `v0.1.34 <https://github.com/ollama/ollama/releases/tag/v0.1.34>`_ of ollama.
+```
+
 ## Quickstart
 
 ### 1 Install IPEX-LLM for Ollama
@@ -56,6 +62,7 @@ You may launch the Ollama service as below:
          export no_proxy=localhost,127.0.0.1
          export ZES_ENABLE_SYSMAN=1
          source /opt/intel/oneapi/setvars.sh
+         export SYCL_CACHE_PERSISTENT=1
 
          ./ollama serve
 
@@ -68,8 +75,7 @@ You may launch the Ollama service as below:
          set OLLAMA_NUM_GPU=999
          set no_proxy=localhost,127.0.0.1
          set ZES_ENABLE_SYSMAN=1
-         # Below is a required step for APT or offline installed oneAPI. Skip below step for PIP-installed oneAPI.
-         call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+         set SYCL_CACHE_PERSISTENT=1
 
          ollama serve
 
@@ -79,6 +85,17 @@ You may launch the Ollama service as below:
 .. note::
 
   Please set environment variable ``OLLAMA_NUM_GPU`` to ``999`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
+```
+
+```eval_rst
+.. tip::
+
+  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
+
+  .. code-block:: bash
+
+      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+
 ```
 
 ```eval_rst

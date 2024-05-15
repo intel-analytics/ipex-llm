@@ -117,11 +117,12 @@ class _BaseAutoModelClass:
                              Default to be ``False``.
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
                                 ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
-                                ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
-                                ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``, gguf_iq1_s'``,
-                                ``'fp16'``, ``'bf16'``, ``'q4_k'`` or ``'q6_k'``,
-                                ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
-                                asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
+                                ``'nf4'``, ``'fp4'``, ``'fp6'`` ``'fp8'``, ``'fp8_e4m3'``,
+                                ``'fp8_e5m2'``, ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``,
+                                ``'gguf_iq1_s'``, ``'fp16'``, ``'bf16'``, ``'q4_k'`` or
+                                ``'q6_k'``, ``'sym_int4'`` means symmetric int 4,
+                                ``'asym_int4'`` means asymmetric int 4,
+                                ``'nf4'`` means 4-bit NormalFloat, etc.
                                 Relevant low bit optimizations will be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be ``True``.
@@ -243,8 +244,6 @@ class _BaseAutoModelClass:
                 if q_config["quant_method"] == "gptq":
                     invalidInputError(q_config["bits"] == 4,
                                       "Only 4-bit gptq is supported in bigdl-llm.")
-                    invalidInputError(q_config["desc_act"] is False,
-                                      "Only desc_act=False is supported in bigdl-llm.")
                     if load_in_low_bit is not None:
                         invalidInputError(load_in_low_bit == "asym_int4",
                                           "You can only load gptq model as aysm_int4 low bit type.")
@@ -380,7 +379,7 @@ class _BaseAutoModelClass:
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
-                          f"fp4, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
+                          f"fp4, fp6, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
                           f"gguf_iq2_xs, gguf_iq1_s, q2_k, q4_k, q6_k, mixed_fp4 or mixed_fp8.")
         qtype = ggml_tensor_qtype[q_k]
 
@@ -448,6 +447,8 @@ class _BaseAutoModelClass:
                 offload_dir=None
             )
         else:
+            if quant_config is not None:
+                kwargs["quantization_config"] = quant_config
             _load_pre()
             try:
                 # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
@@ -673,7 +674,7 @@ class _BaseAutoModelClass:
             resolved_archive_file,
             pretrained_model_name_or_path,
             sharded_metadata=sharded_metadata,
-            _fast_init=_fast_init,
+            _fast_init=False,  # always false to avoid pre-init behaviors
             low_cpu_mem_usage=bigdl_lcmu_enabled,
             offload_folder=offload_folder,
             offload_state_dict=offload_state_dict,

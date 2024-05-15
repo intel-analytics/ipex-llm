@@ -45,6 +45,7 @@ from typing import Optional, TypeVar, Union, overload
 from ipex_llm.utils.common import invalidInputError
 import os
 import torch
+import torch.distributed
 import torch.nn.functional as F
 from torch import Tensor, device, dtype, nn
 from operator import mul
@@ -52,6 +53,7 @@ from functools import reduce
 from ipex_llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_type, \
     get_ipex_version
+from ipex_llm.transformers.convert import is_deepspeed_available, is_vllm_available
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -70,6 +72,7 @@ FP4 = ggml_tensor_qtype["fp4"]
 MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
 FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
+FP6 = ggml_tensor_qtype["fp6"]
 IQ2_XXS = ggml_tensor_qtype["gguf_iq2_xxs"]
 IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
 Q2_K = ggml_tensor_qtype["q2_k"]
@@ -240,7 +243,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP8E4, FP8E5]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -579,7 +582,7 @@ class MatMulLowBitCPU(torch.autograd.Function):
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
                  conver_to_half=True, mp_group=None, enable_xetla=False,
-                 optimize_lm_head=False):
+                 optimize_lm_head=False, act_order=False):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
@@ -603,6 +606,11 @@ class LowBitLinear(nn.Linear):
         # since performance isn't impacted.
         self.is_lm_head = self.in_len * self.out_len >= 32000 * 4096 and self.bias is None
         self.low_memory_mode = self.is_lm_head
+        self.act_order = act_order
+        if act_order:
+            self.register_buffer(
+                "g_idx_map",
+                torch.tensor([i for i in range(self.in_len)], dtype=torch.int64))
 
     def forward(self, x: torch.Tensor):
         # empty cache before and after lm_head at first token when input > 1024
@@ -640,6 +648,9 @@ class LowBitLinear(nn.Linear):
             return torch.empty(new_shape, dtype=x.dtype, device=x.device)
 
         x_2d = x.view(-1, x_shape[-1])
+
+        if self.act_order:
+            x_2d = x_2d[:, self.g_idx_map]
         # x0 for weight
         x0 = self.weight.data
 
@@ -694,8 +705,14 @@ class LowBitLinear(nn.Linear):
                     torch.xpu.empty_cache()
             result = result.view(new_shape)
             if self.mp_group is not None:
-                from deepspeed import comm as dist
-                dist.inference_all_reduce(result, group=self.mp_group)
+                # FIXME: the user may install both vllm and deepspeed
+                if is_deepspeed_available():
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
+                elif is_vllm_available():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                else:
+                    invalidInputError(False, "mp_group is not None, but no supported backend found")
             if self.bias is not None:
                 result += self.bias
         else:
@@ -721,6 +738,7 @@ class LowBitLinear(nn.Linear):
                     result = result.view(new_shape)
             # allreduce to combine partial results and add bias if necessary
             if self.mp_group is not None:
+                # TODO: implement for CPU logic for vLLM tp
                 # deepspeed distibuted mode
                 from deepspeed import comm as dist
                 dist.inference_all_reduce(result, group=self.mp_group)
@@ -772,8 +790,13 @@ class FP16Linear(nn.Linear):
                     self.weight_type = 2
                 result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
             if self.mp_group is not None:
-                from deepspeed import comm as dist
-                dist.inference_all_reduce(result, group=self.mp_group)
+                if is_deepspeed_available():
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
+                elif is_vllm_available():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                else:
+                    invalidInputError(False, "mp_group is not None, but no supported backend found")
             return result
         else:
             if self.in_len == 4096 and self.weight_type != 3 or \
@@ -809,8 +832,13 @@ class FP16Linear(nn.Linear):
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.mp_group is not None:
-                from deepspeed import comm as dist
-                dist.inference_all_reduce(result, group=self.mp_group)
+                if is_deepspeed_available():
+                    from deepspeed import comm as dist
+                    dist.inference_all_reduce(result, group=self.mp_group)
+                elif is_vllm_available():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                else:
+                    invalidInputError(False, "mp_group is not None, but no supported backend found")
             if self.bias is not None:
                 result += self.bias
 

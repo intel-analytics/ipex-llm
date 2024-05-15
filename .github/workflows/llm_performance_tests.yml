@@ -28,7 +28,7 @@ jobs:
   #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -39,7 +39,7 @@ jobs:
       OMP_NUM_THREADS: 16
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      CSV_SAVE_PATH: ${{ github.event.schedule && '/mnt/disk1/nightly_perf_gpu/' || '/mnt/disk1/pr_perf_gpu/' }}
+      CSV_SAVE_PATH: ${{ (github.event.schedule || github.event_name == 'workflow_dispatch') && '/mnt/disk1/nightly_perf_gpu/' || '/mnt/disk1/pr_perf_gpu/' }}
 
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -153,12 +153,12 @@ jobs:
           python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
           python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-434.yaml
           find . -name "*test*.csv" -delete
-          if [ ${{ github.event.schedule}} ]; then
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
           
   llm-performance-test-on-spr:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -230,7 +230,7 @@ jobs:
           done
 
   llm-performance-test-on-core:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -245,7 +245,7 @@ jobs:
     runs-on: [self-hosted, "${{ matrix.os }}", llm, perf-core, "${{ matrix.platform }}"]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      CSV_SAVE_PATH: ${{ github.event.schedule && 'D:/action-runners/nightly_perf_core_' || 'D:/action-runners/pr_perf_core_' }}${{ matrix.platform }}/
+      CSV_SAVE_PATH: ${{ (github.event.schedule || github.event_name == 'workflow_dispatch') && 'D:/action-runners/nightly_perf_core_' || 'D:/action-runners/pr_perf_core_' }}${{ matrix.platform }}/
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
@@ -297,12 +297,12 @@ jobs:
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
-          if [ ${{ github.event.schedule}} ]; then
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/core_${{ matrix.platform }}/
           fi
 
   llm-performance-test-on-igpu:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -391,7 +391,7 @@ jobs:
       - name: Set directory envs & and fix generated csv date name
         shell: bash
         run: |
-          if [ ${{ github.event_name }} == 'schedule' ]; then
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             echo "CSV_SAVE_PATH=${CSV_NIGHTLY_PATH}" >> "$GITHUB_ENV"
           else
             echo "CSV_SAVE_PATH=${CSV_PR_PATH}" >> "$GITHUB_ENV"
@@ -413,7 +413,6 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -439,7 +438,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -463,7 +461,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -507,7 +504,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.31.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -533,7 +529,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -557,7 +552,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -600,7 +594,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.31.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -626,7 +619,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -650,7 +642,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -693,7 +684,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.31.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -719,7 +709,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -743,7 +732,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -784,7 +772,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.31.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -810,7 +797,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.34.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -834,7 +820,6 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
 
@@ -863,6 +848,7 @@ jobs:
 
           call conda deactivate
 
+      # TODO: avoid duplicated code
       - name: Upload results to ftp
         if: ${{ always() }}
         shell: cmd
@@ -873,7 +859,11 @@ jobs:
                 curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
             )
           )
-
+          IF "${{ github.event_name }}"=="workflow_dispatch" (
+            for %%f in (*.html) do (
+                curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
+            )
+          )
       # for test on machine when encountering error
       # - name: Remove conda env
       #   if: ${{ always() }}

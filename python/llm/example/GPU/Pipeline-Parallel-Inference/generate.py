@@ -21,7 +21,7 @@ import time
 import argparse
 
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import LlamaTokenizer
+from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
@@ -51,6 +51,7 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--gpu-num', type=int, default=2, help='GPU number to use')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -62,19 +63,19 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    first_half = ['model.embed_tokens', 'model.layers.0', 'model.layers.1', 'model.layers.2',
-                  'model.layers.3', 'model.layers.4', 'model.layers.5', 'model.layers.6',
-                  'model.layers.7', 'model.layers.8', 'model.layers.9', 'model.layers.10',
-                  'model.layers.11', 'model.layers.12', 'model.layers.13', 'model.layers.14',
-                  'model.layers.15']
-    second_half = ['model.layers.16', 'model.layers.17', 'model.layers.18', 'model.layers.19',
-                   'model.layers.20', 'model.layers.21', 'model.layers.22', 'model.layers.23',
-                   'model.layers.24', 'model.layers.25', 'model.layers.26', 'model.layers.27',
-                   'model.layers.28', 'model.layers.29', 'model.layers.30', 'model.layers.31',
-                   'model.norm', 'lm_head']
 
-    device_map=({key: 'xpu:0' for key in first_half})
-    device_map.update({key: 'xpu:1' for key in second_half})
+    model_layers = ['model.embed_tokens']
+    for i in range(model.config.num_hidden_layers):
+        model_layers.append(f'model.layers.{i}')
+    model_layers = model_layers + ['model.norm', 'lm_head']
+
+    device_map = {}
+    split_len = len(model_layers) // args.gpu_num
+    for i in range(args.gpu_num):
+        device_map.update({key: f'xpu:{i}' for key in model_layers[split_len * i: split_len * (i + 1)]})
+        if i == args.gpu_num - 1:
+            device_map.update({key: f'xpu:{i}' for key in model_layers[split_len * (i + 1): ]})
+
     from accelerate import dispatch_model
     model = dispatch_model(
         model,
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     )
 
     # Load tokenizer
-    tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     # Generate predicted tokens
     with torch.inference_mode():
@@ -92,8 +93,10 @@ if __name__ == '__main__':
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu:0')
         # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
+                                do_sample=False,
                                 max_new_tokens=args.n_predict)
         output = model.generate(input_ids,
+                                do_sample=False,
                                 max_new_tokens=args.n_predict)
 
         # start inference
@@ -103,6 +106,7 @@ if __name__ == '__main__':
         # it is important to set `use_cache=True` explicitly in the `generate` function
         # to obtain optimal performance with IPEX-LLM INT4 optimizations
         output = model.generate(input_ids,
+                                do_sample=False,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()

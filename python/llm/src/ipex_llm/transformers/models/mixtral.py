@@ -55,7 +55,7 @@ from ipex_llm.transformers.models.utils import apply_rotary_pos_emb,\
     apply_rotary_pos_emb_cache_freq_xpu, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.mistral import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
-from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
 from ipex_llm.transformers.low_bit_linear import IQ2_XXS
 
@@ -332,12 +332,9 @@ def mixtral_attention_forward(
                                                      value_states,
                                                      is_causal=True)
         attn_weights = None
-    elif use_esimd_sdp(query_states.shape[2], key_states.shape[2],
-                       self.head_dim, query_states):
-        import linear_fp16_esimd
-        attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                    key_states,
-                                                    value_states)
+    elif use_sdp(query_states.shape[2], key_states.shape[2], self.head_dim, query_states):
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:

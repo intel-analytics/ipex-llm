@@ -46,7 +46,7 @@ from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
-from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_fp8
 from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from transformers.modeling_outputs import BaseModelOutputWithPast
@@ -214,12 +214,18 @@ def should_use_fast_rope(self, query_states, position_ids):
     return use_fuse_rope
 
 
-def should_split_qkv_tensor(query_states, output_attentions):
-    if not output_attentions and query_states.dtype == torch.float16 and \
-            query_states.shape[2] >= 6800:
-        # split tensor for memory block limitation
-        # support fp16 and set input length threshold at 6800 for now
-        return True
+def should_split_qkv_tensor(query_states, bsz, num_heads, q_len, kv_seq_len, output_attentions):
+    if not output_attentions:
+        if os.environ.get("IPEX_LLM_SPLIT_QKV", None) is not None:
+            return os.environ.get("IPEX_LLM_SPLIT_QKV", None) == "1"
+        elif query_states.dtype == torch.float16 and \
+                query_states.shape[2] >= 6800:
+            # split tensor for memory block limitation
+            # support fp16 and set input length threshold at 6800 for now
+            return True
+        elif query_states.element_size()*bsz*num_heads*q_len*kv_seq_len >= 4*1024**3:
+            # attn_weight size larger than memory block limitation 4GB
+            return True
     return False
 
 
@@ -437,7 +443,7 @@ def llama_attention_forward_4_31_quantized(
         if use_cache:
             k_cache, v_cache = init_fp8_kv_cache(
                 bsz, self.num_key_value_heads, kv_seq_len, self.head_dim,
-                device=query_states.device, new_layout=True
+                device=query_states.device
             )
             key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
                                                            key_states, value_states)
@@ -445,11 +451,11 @@ def llama_attention_forward_4_31_quantized(
     else:
         k_cache, v_cache = past_key_value
         key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
-                                                       key_states, value_states, new_layout=True)
+                                                       key_states, value_states)
         kv_seq_len = key_states.shape[-2]
         past_key_value = (key_states, value_states)
 
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+        if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             # repeat k/v heads if n_kv_heads < n_heads
@@ -666,9 +672,9 @@ def llama_attention_forward_4_31_original(
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states, attention_mask):
+            use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -1028,7 +1034,8 @@ def llama_attention_forward_4_36_quantized(
     if len(past_key_value.key_cache) <= self.layer_idx:
         repeated_key_states = repeat_kv(key_states, self.num_key_value_groups)
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
-        if should_split_qkv_tensor(query_states, output_attentions):
+        if should_split_qkv_tensor(query_states, bsz, self.num_heads,
+                                   q_len, kv_seq_len, output_attentions):
             attn_output, _ = native_sdp_split_qkv_tensor(query_states, repeated_key_states,
                                                          repeated_value_states, attention_mask,
                                                          bsz, q_len, kv_seq_len, self.head_dim,
@@ -1066,15 +1073,13 @@ def llama_attention_forward_4_36_quantized(
         if use_cache:
             cache_kwargs = None
             key_states, value_states = past_key_value.update(key_states, value_states,
-                                                             self.layer_idx, cache_kwargs,
-                                                             new_layout=True)
+                                                             self.layer_idx, cache_kwargs)
     else:
         cache_kwargs = None  # Specific to RoPE models
         key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs,
-                                                         new_layout=True)
+                                                         self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
-        if query_states.size(2) != 1 or query_states.device.type != 'xpu':
+        if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
             key_states = repeat_kv(key_states, self.num_key_value_groups)\
@@ -1342,9 +1347,9 @@ def llama_attention_forward_4_36_original(
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+            use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -1352,10 +1357,31 @@ def llama_attention_forward_4_36_original(
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
         # otherwise, use native attention
-        attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                               attention_mask,
-                                               bsz, q_len, kv_seq_len,
-                                               self.head_dim, self.num_heads, output_attentions)
+        if query_states.device.type == "xpu":
+            attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                                   attention_mask,
+                                                   bsz, q_len, kv_seq_len,
+                                                   self.head_dim, self.num_heads, output_attentions)
+        else:
+            # CPU path
+            if not output_attentions:
+                attn_output = torch.nn.functional.scaled_dot_product_attention(
+                    query_states,
+                    key_states,
+                    value_states,
+                    attn_mask=attention_mask,
+                    dropout_p=self.attention_dropout if self.training else 0.0,
+                    # The q_len > 1 is necessary to match with
+                    # AttentionMaskConverter.to_causal_4d that
+                    # does not create a causal mask in case q_len == 1.
+                    is_causal=self.is_causal and attention_mask is None and q_len > 1,
+                )
+            else:
+                attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
+                                                       attention_mask,
+                                                       bsz, q_len, kv_seq_len,
+                                                       self.head_dim,
+                                                       self.num_heads, output_attentions)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     if attn_output.size() != attn_output_size:
@@ -1383,7 +1409,7 @@ def llama_attention_forward_4_36_original(
 
 def native_sdp(query, key, value, attention_mask,
                bsz, q_len, kv_seq_len, head_dim, num_heads, output_attentions):
-    if should_split_qkv_tensor(query, output_attentions):
+    if should_split_qkv_tensor(query, bsz, num_heads, q_len, kv_seq_len, output_attentions):
         return native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                                            bsz, q_len, kv_seq_len, head_dim, num_heads)
     else:
@@ -1422,8 +1448,7 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
     query_split = torch.split(query.to(key.dtype), block_size, dim=1)
     key_split = torch.split(key.transpose(2, 3), block_size, dim=1)
     value_split = torch.split(value, block_size, dim=1)
-    attn_output = torch.empty(bsz, num_heads, q_len, head_dim).to(query.device)
-    idx = 0
+    attn_outputs = []
     for q, k, v in zip(query_split, key_split, value_split):
         attn_weights_split = torch.matmul(q, k) / math.sqrt(head_dim)
         block_actual_size = attn_weights_split.size(1)
@@ -1441,9 +1466,8 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                                   f"but is {attention_mask.size()}")
             attn_weights_split = attn_weights_split + attention_mask
         attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
-        attn_weights_split = torch.matmul(attn_weights_split, v)
-        attn_output[:, idx:idx+block_actual_size, :, :] = attn_weights_split
-        idx = idx + block_actual_size
+        attn_outputs.append(torch.matmul(attn_weights_split, v))
+    attn_output = torch.cat(attn_outputs, dim=1)
     return attn_output.to(key.dtype), None
 
 
@@ -1779,9 +1803,6 @@ def llama_model_forward_4_36_internal(
     if inputs_embeds is None:
         inputs_embeds = self.embed_tokens(input_ids)
 
-    # IPEX-LLM modifications:
-    # Disable sdpa for CPU
-    self._use_sdpa = False
     if self._use_flash_attention_2:
         # 2d mask is passed through the layers
         attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) \

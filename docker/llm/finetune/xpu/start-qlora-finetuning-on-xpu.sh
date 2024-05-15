@@ -14,5 +14,7 @@ then
   DATA_PARAM="--dataset ./data/alpaca-cleaned" # otherwise, default to download from HF dataset
 fi
 
-python qlora_finetuning.py $MODEL_PARAM $DATA_PARAM
+# QLoRA example dir
+cd /LLM-Finetuning/QLoRA/simple-example/
 
+python qlora_finetuning.py $MODEL_PARAM $DATA_PARAM
