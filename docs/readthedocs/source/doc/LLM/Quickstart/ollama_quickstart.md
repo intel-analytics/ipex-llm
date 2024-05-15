@@ -46,6 +46,12 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
 ```
 
+```eval_rst
+.. note::
+
+   If you have installed higher version ``ipex-llm[cpp]`` and want to upgrade your ollama binary file, don't forget to remove old binary files first and initialize again with ``init-ollama`` or ``init-ollama.bat``.
+```
+
 **Now you can use this executable file by standard ollama's usage.**
 
 ### 3 Run Ollama Serve

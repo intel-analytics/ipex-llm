@@ -102,6 +102,12 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
    ``init-llama-cpp`` will create soft links of llama.cpp's executable files to current directory, if you want to use these executable files in other places, don't forget to run above commands again.
 ```
 
+```eval_rst
+.. note::
+
+   If you have installed higher version ``ipex-llm[cpp]`` and want to upgrade your binary file, don't forget to remove old binary files first and initialize again with ``init-llama-cpp`` or ``init-llama-cpp.bat``.
+```
+
 **Now you can use these executable files by standard llama.cpp's usage.**
 
 #### Runtime Configuration
@@ -313,12 +319,6 @@ If your program hang after `llm_load_tensors:  SYCL_Host buffer size =    xx.xx 
 `-ngl` means the number of layers to store in VRAM. If your VRAM is enough, we recommend putting all layers on GPU, you can just set `-ngl` to a large number like 999 to achieve this goal.
 
 If `-ngl` is set to 0, it means that the entire model will run on CPU. If `-ngl` is set to greater than 0 and less than model layers, then it's mixed GPU + CPU scenario.
-
-```eval_rst
-.. note::
-
-  Now Q4_0 /Q4_1 /Q8_0 precisons are not allowed to run on CPU or run with mixed CPU and GPU.
-```
 
 #### How to specificy GPU
 If your machine has multi GPUs, `llama.cpp` will default use all GPUs which may slow down your inference for model which can run on single GPU. You can add `-sm none` in your command to use one GPU only.
