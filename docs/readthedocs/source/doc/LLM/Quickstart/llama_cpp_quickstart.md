@@ -21,12 +21,13 @@ IPEX-LLM's support for `llama.cpp` now is available for Linux system and Windows
 #### Linux
 For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
-Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
+Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.html), follow [Install Intel GPU Driver](./install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](./install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
 
-#### Windows
-Visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) Community Edition and latest [GPU driver](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html).
+#### Windows (Optional)
 
-**Note**: IPEX-LLM backend only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output.
+IPEX-LLM backend for llama.cpp only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output. 
+
+If you have lower GPU driver version, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](./install_windows_gpu.html), and follow [Update GPU driver](./install_windows_gpu.html#optional-update-gpu-driver).
 
 ### 1 Install IPEX-LLM for llama.cpp
 
@@ -46,13 +47,12 @@ To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed
 
       .. note::
 
-      for Windows, we use pip to install oneAPI.
+      Please run the following command in Anaconda Prompt.
 
       .. code-block:: cmd
 
          conda create -n llm-cpp python=3.11
          conda activate llm-cpp
-         pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 # install oneapi
          pip install --pre --upgrade ipex-llm[cpp]
 
 ```
@@ -118,7 +118,9 @@ To use GPU acceleration, several environment variables are required or recommend
          export SYCL_CACHE_PERSISTENT=1
 
    .. tab:: Windows
-   
+
+      Please run the following command in Anaconda Prompt.
+
       .. code-block:: bash
 
          set SYCL_CACHE_PERSISTENT=1
@@ -158,6 +160,8 @@ Before running, you should download or copy community GGUF model to your current
       For more details about meaning of each parameter, you can use ``./main -h``.
 
    .. tab:: Windows
+
+      Please run the following command in Anaconda Prompt.
 
       .. code-block:: bash
 
