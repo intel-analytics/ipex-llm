@@ -961,16 +961,24 @@ def _optimize_post(model, lightweight_bmm=False):
                         llama_decoder_forward)
         if version.parse(trans_version) >= version.parse("4.36.0"):
             # transformers version >= 4.36.0
-            from ipex_llm.transformers.models.llama import llama_attention_forward_4_36
+            from ipex_llm.transformers.models.llama import llama_attention_forward_4_38
             from ipex_llm.transformers.models.llama import llama_model_forward_4_36
-            convert_forward(
-                model,
-                transformers.models.llama.modeling_llama.LlamaAttention,
-                llama_attention_forward_4_36, )
-            convert_forward(
-                model,
-                transformers.models.llama.modeling_llama.LlamaModel,
-                llama_model_forward_4_36)
+            if version.parse(trans_version) >= version.parse("4.38.0"):
+                from ipex_llm.transformers.models.llama import llama_attention_forward_4_38_original
+                # Todo: support llama_model_forward with transformers version >= 4.38.0
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaAttention,
+                    llama_attention_forward_4_38_original)
+            else:
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaModel,
+                    llama_model_forward_4_36)
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaAttention,
+                    llama_attention_forward_4_38)
         else:
             # transformers version between 4.31.0 - 4.35.2
             convert_forward(
