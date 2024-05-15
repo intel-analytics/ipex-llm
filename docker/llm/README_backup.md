@@ -588,12 +588,12 @@ Then you can use `./outputs/checkpoint-200-merged` as a normal huggingface trans
 
 The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-LLM 4bit optimizations) in a docker environment, which is accelerated by Intel XPU.
 
-### 1. Prepare ipex-llm-finetune-qlora-xpu Docker Image
+### 1. Prepare ipex-llm-finetune-xpu Docker Image
 
 Run the following command:
 
 ```bash
-docker pull intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-xpu:2.1.0-SNAPSHOT
 ```
 
 ### 2. Prepare Base Model, Data and Start Docker Container
@@ -606,7 +606,7 @@ export DATA_PATH=your_downloaded_data_path
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
 export CONTAINER_NAME=my_container
-export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-xpu:2.1.0-SNAPSHOT
 
 docker run -itd \
    --net=host \
