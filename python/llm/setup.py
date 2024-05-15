@@ -52,6 +52,7 @@ github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 
 cpu_torch_version = 'torch == 2.1.2+cpu'
+cpu_torch_version_win = 'torch == 2.1.2'
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
                cpu_torch_version,
                'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
@@ -232,6 +233,8 @@ def setup_package():
     if "--win" in sys.argv:
         platform_name = "Windows"
         sys.argv.remove("--win")
+        CONVERT_DEP.remove(cpu_torch_version)
+        CONVERT_DEP.append(cpu_torch_version_win)
     if "--linux" in sys.argv:
         platform_name = "Linux"
         sys.argv.remove("--linux")
