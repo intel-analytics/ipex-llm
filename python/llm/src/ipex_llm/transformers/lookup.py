@@ -206,7 +206,6 @@ class PromptLookupCandidateGenerator():
         if self.num_output_tokens == 0:
             ran = random.random() - 0.15
             if ran <= accept_rate:
-                # print(f"random: {ran}, accept_rate: {accept_rate}")
                 self.num_output_tokens = 1
         elif num_matches == self.num_output_tokens:
             self.num_output_tokens = min(self.num_output_tokens + 1, self.max_candidates)
@@ -231,8 +230,6 @@ def lookup_generate(self,
                                               **sampling_kwargs)
 
     device_name = get_xpu_device_type(input_ids)
-
-    print(device_name, generation_config)
 
     candidates_generator = PromptLookupCandidateGenerator(
         num_output_tokens=num_output_tokens,
