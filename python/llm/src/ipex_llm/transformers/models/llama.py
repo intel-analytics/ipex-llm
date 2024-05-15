@@ -1051,7 +1051,7 @@ def llama_attention_forward_4_38_quantized(
         if should_split_qkv_tensor(query_states, bsz, self.num_heads,
                                    q_len, kv_seq_len, output_attentions):
             attn_output, _ = native_sdp_split_qkv_tensor(query_states, repeated_key_states,
-                                                         repeated_value_states, 
+                                                         repeated_value_states,
                                                          attention_mask, cache_position,
                                                          bsz, q_len, kv_seq_len, self.head_dim,
                                                          self.num_heads)
