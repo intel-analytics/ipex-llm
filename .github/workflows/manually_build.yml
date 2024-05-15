@@ -17,7 +17,7 @@ on:
         - ipex-llm-finetune-lora-cpu
         - ipex-llm-finetune-qlora-cpu-standalone
         - ipex-llm-finetune-qlora-cpu-k8s
-        - ipex-llm-finetune-qlora-xpu
+        - ipex-llm-finetune-xpu
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
@@ -133,8 +133,8 @@ jobs:
           sudo docker push ${image}:latest
           sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
-  ipex-llm-finetune-qlora-xpu:
-    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-xpu' || inputs.artifact == 'all' }}
+  ipex-llm-finetune-xpu:
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-xpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -142,12 +142,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: ipex-llm-finetune-qlora-xpu
+    - name: ipex-llm-finetune-xpu
       run: |
         echo "##############################################################"
-        echo "####### ipex-llm-finetune-qlora-xpu ########"
+        echo "####### ipex-llm-finetune-xpu ########"
         echo "##############################################################"
-        export image=intelanalytics/ipex-llm-finetune-qlora-xpu
+        export image=intelanalytics/ipex-llm-finetune-xpu
         cd docker/llm/finetune/qlora/xpu/docker
         sudo docker build \
           --no-cache=true \
