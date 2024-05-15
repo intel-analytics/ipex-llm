@@ -26,11 +26,8 @@ import numpy as np
 from datetime import date
 
 import os
-current_dir = os.path.dirname(os.path.realpath(__file__))
-benchmark_util_path = os.path.join(current_dir, '..')
 import sys
-sys.path.append(benchmark_util_path)
-from benchmark_util import BenchmarkWrapper
+from ipex_llm.utils.benchmark_util import BenchmarkWrapper
 from ipex_llm.utils.common.log4Error import invalidInputError
 
 LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
