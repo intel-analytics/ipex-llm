@@ -6,11 +6,11 @@ We can run PyTorch Inference Benchmark, Chat Service and PyTorch Examples on Int
 
 1. Linux Installation
 
-    Follow the instructions in this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html#linux) to install Docker on Linux.
+    Follow the instructions in this [guide](https://www.docker.com/get-started/) to install Docker on Linux.
 
 2. Windows Installation
 
-    For Windows installation, refer to this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html#install-docker-desktop-for-windows).
+    For Windows installation, refer to this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/docker_windows_gpu.html#install-docker-on-windows).
 
 ## Launch Docker
 
