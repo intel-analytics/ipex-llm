@@ -1,6 +1,7 @@
 from torch import nn
 import torch
 import torch.distributed as dist
+import intel_extension_for_pytorch as ipex
 
 from typing import List, Optional, Tuple, Union, Iterator
 import time
@@ -255,7 +256,7 @@ def make_attention_mask(prompt_lengths):
 class ModelRunner:
     
     def __init__(self, checkpoint, rank, world_size, low_bit, max_num_seqs):
-        import intel_extension_for_pytorch as ipex
+        
         import sys
         self.pp_config = PPConfig(rank, world_size)
         
@@ -369,7 +370,7 @@ class ModelRunner:
                 break
             
             tmp_result = await self.waiting_requests.get()
-            logger.info(tmp_result)
+            # logger.info(tmp_result)
             request_id, prompt_request = tmp_result
             request_ids.append(request_id)
             prompt_requests.append(prompt_request)
@@ -402,8 +403,8 @@ class ModelRunner:
         self.tokens.pop(cur_id, None)
         # self.attention_mask_dict.pop(cur_id, None)
         self.past_key_values_dict.pop(cur_id, None)
+        # torch.xpu.empty_cache()
 
-    
 
     async def process_step(self, tokenizer, result_dict):
         batch_list = self.batch_list
@@ -430,13 +431,13 @@ class ModelRunner:
             dist.broadcast_object_list(batch_list, src=0)
 
             if self.send_buff is not None:
-                logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
+                # logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
                 dist.send(self.send_buff, dst=self.next_rank)
 
             if (cur_batch is not None) and (not cur_batch.stopped) and (cur_input is None):
                 cur_id = cur_batch.batch_id
                 next_ids = torch.empty((cur_batch.batch_size, 1,), device=f'xpu:{self.rank}', dtype=torch.int64)
-                logger.info(f"rank: {self.rank}, recv: {next_ids.shape}")
+                # logger.info(f"rank: {self.rank}, recv: {next_ids.shape}")
                 dist.recv(next_ids, src=self.pre_rank)
                 
                 if self.tokens.get(cur_id, None) is None:
@@ -452,7 +453,7 @@ class ModelRunner:
                 batch_list[0].prompt_lengths = [x + 1 for x in batch_list[0].prompt_lengths]
                 if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
                     # Finish a batch
-                    logger.info(self.tokens[cur_id])
+                    # logger.info(self.tokens[cur_id])
                     outputs = torch.cat(self.tokens[cur_id], dim=1)
                     outputs = outputs.cpu()
                     output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
@@ -461,17 +462,17 @@ class ModelRunner:
 
                     self.clear_batch(cur_id)
                     batch_list[0].stopped = True
-            
-            if (cur_batch is not None) and cur_batch.stopped:
-                batch_list[0] = None
-                cur_batch = None
+            else:
+                if (cur_batch is not None) and cur_batch.stopped:
+                    batch_list[0] = None
+                    cur_batch = None
                 
         else:
             batch_list = [None] * self.world_size
             dist.broadcast_object_list(batch_list, src=0)
 
             if self.send_buff is not None:
-                logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
+                # logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
                 dist.send(self.send_buff, dst=self.next_rank)
 
             cur_batch = batch_list[self.rank]
@@ -479,18 +480,19 @@ class ModelRunner:
             if cur_batch is not None:
                 if cur_batch.stopped:
                     self.clear_batch(cur_batch.batch_id)
-
-                cur_len = cur_batch.input_len
-                cur_input = torch.empty((cur_batch.batch_size, cur_len, self.hidden_size,), device=f'xpu:{self.rank}', dtype=torch.float32)
-                logger.info(f"rank: {self.rank}, recv: {cur_input.shape}")
-                dist.recv(cur_input, src=self.pre_rank)
+                else:
+                    cur_len = cur_batch.input_len
+                    cur_input = torch.empty((cur_batch.batch_size, cur_len, self.hidden_size,), device=f'xpu:{self.rank}', dtype=torch.float32)
+                    # logger.info(f"rank: {self.rank}, recv: {cur_input.shape}")
+                    dist.recv(cur_input, src=self.pre_rank)
 
                 # if self.attention_mask_dict.get(cur_batch.batch_id, None) is None:
                 #     self.attention_mask_dict[cur_batch.batch_id] = make_attention_mask(cur_batch.prompt_lengths)
             
             
         self.batch_list = batch_list
-        logger.info(f"rank: {self.rank}, {batch_list}")
+        # if self.rank == 0:
+        #     logger.info(f"rank: {self.rank}, {batch_list}")
         
         output = self.model_step(cur_input)
         if output is not None and self.rank == self.world_size - 1:
