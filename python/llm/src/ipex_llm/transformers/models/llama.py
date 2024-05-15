@@ -333,6 +333,7 @@ def llama_attention_forward_4_31(
     output_attentions: bool = False,
     use_cache: bool = False,
     padding_mask: Optional[torch.LongTensor] = None,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     if use_quantize_kv_cache(self.q_proj, hidden_states):
@@ -348,6 +349,7 @@ def llama_attention_forward_4_31(
         output_attentions=output_attentions,
         use_cache=use_cache,
         padding_mask=padding_mask,
+        cache_position=cache_position,
         kwargs=kwargs
     )
 
@@ -361,6 +363,7 @@ def llama_attention_forward_4_31_quantized(
     output_attentions: bool = False,
     use_cache: bool = False,
     padding_mask: Optional[torch.LongTensor] = None,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, hidden_size = hidden_states.size()
@@ -437,7 +440,8 @@ def llama_attention_forward_4_31_quantized(
         repeated_key_states = repeat_kv(key_states, self.num_key_value_groups)
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
         attn_output, attn_weights = native_sdp(query_states, repeated_key_states,
-                                               repeated_value_states, attention_mask,
+                                               repeated_value_states,
+                                               attention_mask, cache_position,
                                                bsz, q_len, kv_seq_len,
                                                self.head_dim, self.num_heads, output_attentions)
         if use_cache:
@@ -462,7 +466,7 @@ def llama_attention_forward_4_31_quantized(
             key_states = repeat_kv(key_states, self.num_key_value_groups)
             value_states = repeat_kv(value_states, self.num_key_value_groups)
             attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                                   attention_mask,
+                                                   attention_mask, cache_position,
                                                    bsz, q_len, kv_seq_len,
                                                    self.head_dim, self.num_heads, output_attentions)
         else:
@@ -498,6 +502,7 @@ def llama_attention_forward_4_31_original(
     output_attentions: bool = False,
     use_cache: bool = False,
     padding_mask: Optional[torch.LongTensor] = None,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, hidden_size = hidden_states.size()
@@ -683,7 +688,7 @@ def llama_attention_forward_4_31_original(
         value_states = repeat_kv(value_states, self.num_key_value_groups)
         # otherwise, use native attention
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                               attention_mask,
+                                               attention_mask, cache_position,
                                                bsz, q_len, kv_seq_len,
                                                self.head_dim, self.num_heads, output_attentions)
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
@@ -1360,8 +1365,13 @@ def llama_attention_forward_4_38_original(
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
 
+    if cache_position is not None:
+        new_attention_mask = attention_mask[:, :, kv_seq_len - q_len:kv_seq_len, 0:kv_seq_len]
+    else:
+        new_attention_mask = attention_mask
+
     if not self.training and not hidden_states.requires_grad and \
-            use_flash_attention(query_states, key_states, attention_mask):
+            use_flash_attention(query_states, key_states, new_attention_mask):
         # repeat k/v heads if n_kv_heads < n_heads
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
@@ -1374,7 +1384,7 @@ def llama_attention_forward_4_38_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -1384,7 +1394,7 @@ def llama_attention_forward_4_38_original(
         # otherwise, use native attention
         if query_states.device.type == "xpu":
             attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                                   attention_mask, cache_position,
+                                                   new_attention_mask, cache_position,
                                                    bsz, q_len, kv_seq_len,
                                                    self.head_dim, self.num_heads, output_attentions)
         else:
@@ -1394,16 +1404,16 @@ def llama_attention_forward_4_38_original(
                     query_states,
                     key_states,
                     value_states,
-                    attn_mask=attention_mask,
+                    attn_mask=new_attention_mask,
                     dropout_p=self.attention_dropout if self.training else 0.0,
                     # The q_len > 1 is necessary to match with
                     # AttentionMaskConverter.to_causal_4d that
                     # does not create a causal mask in case q_len == 1.
-                    is_causal=self.is_causal and attention_mask is None and q_len > 1,
+                    is_causal=self.is_causal and new_attention_mask is None and q_len > 1,
                 )
             else:
                 attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                                       attention_mask, cache_position,
+                                                       new_attention_mask, cache_position,
                                                        bsz, q_len, kv_seq_len,
                                                        self.head_dim,
                                                        self.num_heads, output_attentions)
