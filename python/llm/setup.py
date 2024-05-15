@@ -53,10 +53,10 @@ libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 
 cpu_torch_version = ["torch==2.1.2+cpu;platform_system=='Linux'", "torch==2.1.2;platform_system=='Windows'"]
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
-               cpu_torch_version,
                'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
                # TODO: Support accelerate 0.22.0
-               'accelerate == 0.21.0', 'tabulate']
+               'accelerate == 0.21.0', 'tabulate'] + cpu_torch_version
+
 SERVING_DEP = ['fschat[model_worker, webui] == 0.2.36', 'protobuf']
 windows_binarys = [
     "llama.dll",
@@ -279,7 +279,7 @@ def setup_package():
 
     # Add internal requires for llama-index
     llama_index_requires = copy.deepcopy(all_requires)
-    for exclude_require in [cpu_torch_version, 'transformers == 4.31.0', 'tokenizers == 0.13.3']:
+    for exclude_require in ['transformers == 4.31.0', 'tokenizers == 0.13.3'] + cpu_torch_version:
         llama_index_requires.remove(exclude_require)
     llama_index_requires += ["torch<2.2.0",
                              "transformers>=4.34.0,<4.39.0",
@@ -291,7 +291,8 @@ def setup_package():
                               "onednn==2024.0.0;platform_system=='Windows'"]
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_21_requires = copy.deepcopy(all_requires)
-    xpu_21_requires.remove(cpu_torch_version)
+    for exclude_require in cpu_torch_version:
+        xpu_21_requires.remove(exclude_require)
     xpu_21_requires += ["torch==2.1.0a0",
                         "torchvision==0.16.0a0",
                         "intel_extension_for_pytorch==2.1.10+xpu",
