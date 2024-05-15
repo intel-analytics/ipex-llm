@@ -26,6 +26,7 @@ This section includes efficient guide to show you how to:
 * `Run IPEX-LLM Serving with FastChat <./fastchat_quickstart.html>`_
 * `Finetune LLM with Axolotl on Intel GPU <./axolotl_quickstart.html>`_
 * `Run IPEX-LLM serving on Multiple Intel GPUs using DeepSpeed AutoTP and FastApi <./deepspeed_autotp_fastapi_quickstart.html>`
+* `Run llama.cpp/Ollama/open-webui with Docker on Intel GPU <./docker_cpp_xpu_quickstart.html>`
 
 
 .. |bigdl_llm_migration_guide| replace:: ``bigdl-llm`` Migration Guide
