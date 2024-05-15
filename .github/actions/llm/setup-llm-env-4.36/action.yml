@@ -1,0 +1,45 @@
+name: "Setup IPEX-LLM Env"
+description: "IPEX-LLM installation"
+inputs:
+  extra-dependency:
+    description: "Name of extra dependencies filled in brackets"
+    required: false
+    default: "all"
+runs:
+  using: "composite"
+  steps:
+    - name: Create conda env for llm tests and conduct install tests
+      shell: bash
+      run: |
+        # make sure we install the latest version for bigdl-core-xe related packages
+        pip uninstall bigdl-core-xe -y || true
+        pip uninstall bigdl-core-xe-esimd -y || true
+        pip uninstall bigdl-core-xe-21 -y || true
+        pip uninstall bigdl-core-xe-esimd-21 -y || true
+        sed -i 's/"bigdl-core-xe==" + CORE_XE_VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-esimd==" + CORE_XE_VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION/"bigdl-core-xe-esimd-21"/g' python/llm/setup.py
+
+        pip install requests
+        if [[ ${{ runner.os }} == 'Linux' ]]; then
+          bash python/llm/dev/release_default_linux.sh default false
+        elif [[ ${{ runner.os }} == 'Windows' ]]; then
+          bash python/llm/dev/release_default_windows.sh default false
+        else
+          echo "Runner os is not supported!!!!!"
+          exit 1
+        fi
+        whl_name=$(ls python/llm/dist)
+        if [[ ${{ inputs.extra-dependency }} == 'xpu_2.0' ]]; then
+          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.0]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
+          pip install pytest expecttest
+        elif [[ ${{ inputs.extra-dependency }} == 'xpu_2.1' ]]; then
+          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.1]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
+          pip install pytest expecttest
+        else
+          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"
+          pip install pytest
+          bash python/llm/test/run-llm-install-tests.sh
+        fi
+        pip install transformers==4.36.2
