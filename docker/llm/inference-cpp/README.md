@@ -16,7 +16,7 @@ If you want to run this image on windows, please refer to (this document)[https:
 ### Pull the latest image
 ```bash
 # This image will be updated every day
-docker pull intelanalytics/ipex-llm-cpp-xpu:latest
+docker pull intelanalytics/ipex-llm-inference-cpp-xpu:latest
 ```
 
 ### Start Docker Container
@@ -26,8 +26,8 @@ To map the `xpu` into the container, you need to specify `--device=/dev/dri` whe
 An Linux example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-cpp-xpu:latest
-export CONTAINER_NAME=ipex-llm-cpp-xpu-container
+export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
+export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
 sudo docker run -itd \
         --net=host \
         --device=/dev/dri \
@@ -44,8 +44,8 @@ sudo docker run -itd \
 An Windows example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-cpp-xpu:latest
-export CONTAINER_NAME=ipex-llm-cpp-xpu-container
+export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
+export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
 sudo docker run -itd \
         --net=host \
         --device=/dev/dri \
@@ -65,7 +65,7 @@ sudo docker run -itd \
 After the container is booted, you could get into the container through `docker exec`.
 
 ```bash
-docker exec -it ipex-llm-cpp-xpu-container /bin/bash
+docker exec -it ipex-llm-inference-cpp-xpu-container /bin/bash
 ```
 
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
