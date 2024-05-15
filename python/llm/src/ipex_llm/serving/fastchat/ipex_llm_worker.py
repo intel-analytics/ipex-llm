@@ -71,7 +71,7 @@ class BigDLLLMWorker(BaseModelWorker):
         speculative: bool = False,
         load_low_bit_model: bool = False,
         stream_interval: int = 4,
-        benchmark: bool = False,
+        benchmark: str = "true",
     ):
         super().__init__(
             controller_addr,
@@ -104,8 +104,8 @@ class BigDLLLMWorker(BaseModelWorker):
             speculative,
             load_low_bit_model,
         )
-        if benchmark:
-            from benchmark_util import BenchmarkWrapper
+        if benchmark.lower() == "true":
+            from ipex_llm.utils.benchmark_util import BenchmarkWrapper
             self.model = BenchmarkWrapper(self.model, do_print=True)
             logger.info(f"enable benchmark successfully")
         self.stream_interval = stream_interval
@@ -501,10 +501,7 @@ if __name__ == "__main__":
         help="To use self-speculative or not",
     )
     parser.add_argument(
-        "--benchmark",
-        action="store_true",
-        default=False,
-        help="To print model generation latency or not",
+        "--benchmark", type=str, default="true", help="To print model generation latency or not"
     )
     parser.add_argument(
         "--trust-remote-code",
