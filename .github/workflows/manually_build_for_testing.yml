@@ -18,7 +18,7 @@ on:
         - ipex-llm-finetune-qlora-cpu
         - ipex-llm-finetune-qlora-xpu
         - ipex-llm-xpu
-        - ipex-llm-cpp-xpu
+        - ipex-llm-inference-cpp-xpu
         - ipex-llm-cpu
         - ipex-llm-serving-xpu
         - ipex-llm-serving-cpu
@@ -147,8 +147,8 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  ipex-llm-cpp-xpu:
-    if: ${{ github.event.inputs.artifact == 'ipex-llm-cpp-xpu' || github.event.inputs.artifact == 'all' }}
+  ipex-llm-inference-cpp-xpu:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-inference-cpp-xpu' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -158,13 +158,13 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: ipex-llm-cpp-xpu
+    - name: ipex-llm-inference-cpp-xpu
       run: |
         echo "##############################################################"
-        echo "####### ipex-llm-cpp-xpu ########"
+        echo "####### ipex-llm-inference-cpp-xpu ########"
         echo "##############################################################"
-        export image=intelanalytics/ipex-llm-cpp-xpu
-        cd docker/llm/cpp/
+        export image=intelanalytics/ipex-llm-inference-cpp-xpu
+        cd docker/llm/inference-cpp/
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
