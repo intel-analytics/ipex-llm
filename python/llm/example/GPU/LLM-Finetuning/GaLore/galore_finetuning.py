@@ -39,6 +39,7 @@ if __name__ == '__main__':
 
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
+        load_in_low_bit = 'sym_int8',
         torch_dtype = torch.bfloat16,
         optimize_model=False,
         use_cache = False,
