@@ -25,7 +25,7 @@ from transformers.modeling_outputs import BaseModelOutputWithPast
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
-from ipex_llm.transformers.models.utils import use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_sdp
 
 
 import os
@@ -558,25 +558,28 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
                                                                value_layer,
                                                                is_causal=True).to(key_layer.dtype)
         else:
-            if use_esimd_sdp(query_layer.shape[2], key_layer.shape[2],
-                             query_layer.shape[-1], query_layer):
-                import linear_fp16_esimd
-                attn_output = linear_fp16_esimd.sdp_forward(query_layer,
-                                                            key_layer,
-                                                            value_layer)
+            # attention_mask is not None only when past_key_value is not None and q_len > 1
+            if attention_mask is not None:
+                attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
+                                        device=query_layer.device)
+                attention_mask = ~attention_mask
+                if attention_mask.dtype == torch.bool:
+                    attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
+                else:
+                    attn_bias += attention_mask
+            else:
+                attn_bias = None
+
+            if use_sdp(query_layer.shape[2], key_layer.shape[2],
+                       query_layer.shape[-1], query_layer):
+                import linear_q4_0
+                attn_output = linear_q4_0.sdp(query_layer, key_layer, value_layer, attn_bias)
                 context_layer = attn_output.view(query_layer.shape)
             else:
                 head_dim = query_layer.size(-1)
                 attn = torch.matmul(query_layer.to(key_layer.dtype),
                                     key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-                if attention_mask is not None:
-                    attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
-                                            device=query_layer.device)
-                    attention_mask = ~attention_mask
-                    if attention_mask.dtype == torch.bool:
-                        attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
-                    else:
-                        attn_bias += attention_mask
+                if attn_bias is not None:
                     attn += attn_bias
                 attn = F.softmax(attn, dim=-1,
                                  dtype=torch.float32).to(value_layer.dtype)

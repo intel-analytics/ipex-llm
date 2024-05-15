@@ -28,10 +28,11 @@ from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_
     restore_fp8_kv_cache, use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
     append_kv_cache, is_enough_kv_cache_room_4_31
-from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, SILU
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from ipex_llm.transformers.models.utils import mlp_fusion_check
+from ipex_llm.utils.common.log4Error import invalidInputError
 from transformers.utils import logging
 logger = logging.get_logger(__name__)
 
@@ -166,9 +167,8 @@ def baichuan_attention_forward_7b_quantized(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    if attention_mask is not None:
-        if attention_mask.dtype == torch.bool:
-            attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
+    invalidInputError(attention_mask is None or attention_mask.dtype != torch.bool,
+                      "attention_mask's dtype cannot be bool")
 
     scaling_factor = 1 / math.sqrt(query_states.size(-1))
     if query_states.size(2) != 1 or device.type != 'xpu':
@@ -279,6 +279,9 @@ def baichuan_attention_forward_7b_origin(
 
     past_key_value = (key_states, value_states) if use_cache else None
 
+    invalidInputError(attention_mask is None or attention_mask.dtype != torch.bool,
+                      "attention_mask's dtype cannot be bool")
+
     if xops is not None and self.training:
         attn_weights = None
         query_states = query_states.transpose(1, 2)
@@ -296,17 +299,12 @@ def baichuan_attention_forward_7b_origin(
                                                          is_causal=True)
             attn_weights = None
         elif not self.training and not hidden_states.requires_grad and \
-                use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-            import linear_fp16_esimd
-            attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                        key_states,
-                                                        value_states)
+                use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+            import linear_q4_0
+            attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
             attn_output = attn_output.view(query_states.shape)
             attn_weights = None
         else:
-            if attention_mask is not None:
-                if attention_mask.dtype == torch.bool:
-                    attention_mask.masked_fill_(attention_mask.logical_not(), float("-inf"))
             if should_split_qkv_tensor(query_states, bsz, self.num_heads,
                                        q_len, kv_seq_len, output_attentions):
                 attn_output, attn_weights = native_sdp_split_qkv_tensor(query_states,
