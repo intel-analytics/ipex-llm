@@ -51,7 +51,7 @@ from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_che
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from transformers.models.llama.modeling_llama import LlamaModel
-from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4
+from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4, FP6
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.utils.common import invalidInputError
 
@@ -68,7 +68,7 @@ logger = logging.get_logger(__name__)
 def llama_decoding_fast_path_qtype_check(proj):
     # IQ2_XXS only can be used in Llama-like model
     qtype = getattr(proj, "qtype", None)
-    return qtype in [SYM_INT4, FP8E5, IQ2_XXS, FP4]
+    return qtype in [SYM_INT4, FP8E5, IQ2_XXS, FP4, FP6]
 
 
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
