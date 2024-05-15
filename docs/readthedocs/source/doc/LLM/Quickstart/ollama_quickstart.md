@@ -6,6 +6,12 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
 
+```eval_rst
+.. note::
+
+  Our current version is consistent with `v0.1.34 <https://github.com/ollama/ollama/releases/tag/v0.1.34>`_ of ollama.
+```
+
 ## Quickstart
 
 ### 1 Install IPEX-LLM for Ollama
@@ -38,6 +44,12 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
          conda activate llm-cpp
          init-ollama.bat
 
+```
+
+```eval_rst
+.. note::
+
+   If you have installed higher version ``ipex-llm[cpp]`` and want to upgrade your ollama binary file, don't forget to remove old binary files first and initialize again with ``init-ollama`` or ``init-ollama.bat``.
 ```
 
 **Now you can use this executable file by standard ollama's usage.**

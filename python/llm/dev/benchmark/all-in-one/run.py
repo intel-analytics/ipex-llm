@@ -28,10 +28,8 @@ from datetime import date
 
 import os
 current_dir = os.path.dirname(os.path.realpath(__file__))
-benchmark_util_path = os.path.join(current_dir, '..')
 import sys
-sys.path.append(benchmark_util_path)
-from benchmark_util import BenchmarkWrapper
+from ipex_llm.utils.benchmark_util import BenchmarkWrapper
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.utils.common import invalidInputError
 

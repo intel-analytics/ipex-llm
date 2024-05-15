@@ -848,6 +848,15 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
+def replace_RotaryEmbed(m, target_m,  replace_embed):
+    for attr_name, sub_m in m.named_children():
+        if isinstance(sub_m, target_m):
+            setattr(m, attr_name, replace_embed(sub_m.dim,
+                                                sub_m.max_position_embeddings,
+                                                sub_m.base))
+        replace_RotaryEmbed(sub_m, target_m, replace_embed)
+
+
 def replace_func(m, target_m, func_name, new_func):
     for _, sub_m in m.named_children():
         if isinstance(sub_m, target_m):
@@ -1517,6 +1526,13 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi3 import model_forward_wrapper
         model_forward = model_forward_wrapper(module.Phi3Model.forward)
         convert_forward(model, module.Phi3Model, model_forward)
+        from ipex_llm.transformers.models.phi3 import Phi3RotaryEmbeddingCached
+        replace_RotaryEmbed(model, module.Phi3RotaryEmbedding, Phi3RotaryEmbeddingCached)
+        from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
+        convert_forward(
+            model,
+            module.Phi3RMSNorm,
+            phi3_rms_norm_forward)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

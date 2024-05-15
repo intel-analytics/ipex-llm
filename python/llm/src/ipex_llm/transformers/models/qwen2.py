@@ -52,7 +52,7 @@ from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.kv import DynamicFp8Cache
 from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
 from transformers.models.qwen2.modeling_qwen2 import Qwen2Model, apply_rotary_pos_emb
 from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask_for_sdpa
 from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask
@@ -72,6 +72,21 @@ logger = logging.get_logger(__name__)
 import os
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
+
+
+def should_split_qkv_tensor(query_states, bsz, num_heads, q_len, kv_seq_len, output_attentions):
+    if not output_attentions:
+        if os.environ.get("IPEX_LLM_SPLIT_QKV", None) is not None:
+            return os.environ.get("IPEX_LLM_SPLIT_QKV", None) == "1"
+        elif query_states.dtype == torch.float16 and \
+                query_states.shape[2] >= 5000:
+            # split tensor for memory block limitation
+            # support fp16 and set input length threshold at 5000 for now
+            return True
+        elif query_states.element_size()*bsz*num_heads*q_len*kv_seq_len >= 4*1024**3:
+            # attn_weight size larger than memory block limitation 4GB
+            return True
+    return False
 
 
 def should_use_fuse_rope(self, query_states, position_ids):
@@ -370,28 +385,43 @@ def qwen2_attention_forward_quantized(
         key, value = restore_fp8_kv_cache(key_states, value_states, query_states.dtype)
         key = repeat_kv(key, self.num_key_value_groups)
         value = repeat_kv(value, self.num_key_value_groups)
-        attn_weights = torch.matmul(query_states, key.transpose(2, 3))
-        attn_weights = attn_weights / math.sqrt(self.head_dim)
+        if should_split_qkv_tensor(query_states, bsz, self.num_heads,
+                                   q_len, kv_seq_len, output_attentions):
+            attn_output, attn_weights = native_sdp_split_qkv_tensor(query_states, key,
+                                                                    value, attention_mask,
+                                                                    bsz, q_len, kv_seq_len,
+                                                                    self.head_dim, self.num_heads,
+                                                                    self.attention_dropout,
+                                                                    self.training)
+        else:
+            attn_weights = torch.matmul(query_states, key.transpose(2, 3))
+            attn_weights = attn_weights / math.sqrt(self.head_dim)
 
-        invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
-                          ("Attention weights should be of size "
-                           f"{(bsz, self.num_heads, q_len, kv_seq_len)},"
-                           "but is {attn_weights.size()}"))
+            invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
+                              ("Attention weights should be of size "
+                               f"{(bsz, self.num_heads, q_len, kv_seq_len)},"
+                               "but is {attn_weights.size()}"))
 
-        if attention_mask is not None:
-            invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
-                              (f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}"
-                               f" but is {attention_mask.size()}"))
+            if attention_mask is not None:
+                invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
+                                  (f"Attention mask should be of size "
+                                   f"{(bsz, 1, q_len, kv_seq_len)},"
+                                   f" but is {attention_mask.size()}"))
 
-            attn_weights = attn_weights + attention_mask
+                attn_weights = attn_weights + attention_mask
 
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                             dtype=torch.float32).to(query_states.dtype)
-        attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout,
-                                             training=self.training)
+            if kv_seq_len >= 2048 or bsz >= 64:
+                # for memory considerations, do not upcast attention to fp32
+                # for long sequences or large batches
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+            else:
+                # upcast attention to fp32
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                     dtype=torch.float32).to(query_states.dtype)
+            attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                                 training=self.training)
 
-        attn_output = torch.matmul(attn_weights, value)
+            attn_output = torch.matmul(attn_weights, value)
 
     invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
                       "`attn_output` should be of size "
@@ -535,36 +565,49 @@ def qwen2_attention_forward_origin(
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import linear_fp16_esimd
-        attn_output = linear_fp16_esimd.sdp_forward(query_states,
-                                                    key_states,
-                                                    value_states)
+            use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_q4_0
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        if should_split_qkv_tensor(query_states, bsz, self.num_heads,
+                                   q_len, kv_seq_len, output_attentions):
+            attn_output, attn_weights = native_sdp_split_qkv_tensor(query_states, key_states,
+                                                                    value_states, attention_mask,
+                                                                    bsz, q_len, kv_seq_len,
+                                                                    self.head_dim, self.num_heads,
+                                                                    self.attention_dropout,
+                                                                    self.training)
+        else:
+            attn_weights = torch.matmul(query_states,
+                                        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-        invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
-                          ("Attention weights should be of size "
-                           f"{(bsz, self.num_heads, q_len, kv_seq_len)},"
-                           "but is {attn_weights.size()}"))
+            invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
+                              ("Attention weights should be of size "
+                               f"{(bsz, self.num_heads, q_len, kv_seq_len)},"
+                               "but is {attn_weights.size()}"))
 
-        if attention_mask is not None:
-            invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
-                              (f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}"
-                               f" but is {attention_mask.size()}"))
+            if attention_mask is not None:
+                invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
+                                  (f"Attention mask should be of size "
+                                   f"{(bsz, 1, q_len, kv_seq_len)},"
+                                   f" but is {attention_mask.size()}"))
 
-            attn_weights = attn_weights + attention_mask
+                attn_weights = attn_weights + attention_mask
 
-        # upcast attention to fp32
-        attn_weights = \
-            nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
-        attn_weights = nn.functional.dropout(attn_weights,
-                                             p=self.attention_dropout,
-                                             training=self.training)
-        attn_output = torch.matmul(attn_weights, value_states)
+            if kv_seq_len >= 2048 or bsz >= 64:
+                # for memory considerations, do not upcast attention to fp32
+                # for long sequences or large batches
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+            else:
+                # upcast attention to fp32
+                attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                                     dtype=torch.float32).to(query_states.dtype)
+            attn_weights = nn.functional.dropout(attn_weights,
+                                                 p=self.attention_dropout,
+                                                 training=self.training)
+            attn_output = torch.matmul(attn_weights, value_states)
 
     invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
                       "`attn_output` should be of size "
@@ -725,3 +768,36 @@ def qwen2_sdpa_attention_forward(
     attn_output = self.o_proj(attn_output)
 
     return attn_output, None, past_key_value
+
+
+def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
+                                bsz, q_len, kv_seq_len, head_dim, num_heads,
+                                attention_dropout, training):
+    block_size = 8
+    query_split = torch.split(query, block_size, dim=1)
+    key_split = torch.split(key.transpose(2, 3), block_size, dim=1)
+    value_split = torch.split(value, block_size, dim=1)
+    attn_outputs = []
+    for q, k, v in zip(query_split, key_split, value_split):
+        attn_weights_split = torch.matmul(q, k) / math.sqrt(head_dim)
+        block_actual_size = attn_weights_split.size(1)
+        attn_weights_split_size = (bsz, block_actual_size, q_len, kv_seq_len)
+        if attn_weights_split.size() != attn_weights_split_size:
+            invalidInputError(False,
+                              f"Splitted attention weights should be of size "
+                              f"{attn_weights_split_size}, but is {attn_weights_split.size()}")
+
+        if attention_mask is not None:
+            attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+            if attention_mask.size() != attn_mask_size:
+                invalidInputError(False,
+                                  f"Attention mask should be of size {attn_mask_size}, "
+                                  f"but is {attention_mask.size()}")
+            attn_weights_split = attn_weights_split + attention_mask
+        attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
+        attn_weights_split = nn.functional.dropout(attn_weights_split,
+                                                   p=attention_dropout,
+                                                   training=training)
+        attn_outputs.append(torch.matmul(attn_weights_split, v))
+    attn_output = torch.cat(attn_outputs, dim=1)
+    return attn_output, None

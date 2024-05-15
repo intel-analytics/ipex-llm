@@ -283,16 +283,10 @@ def setup_package():
                              "sentence-transformers~=2.6.1"]
 
 
+    oneapi_2024_0_requires = ["dpcpp-cpp-rt==2024.0.2;platform_system=='Windows'",
+                              "mkl-dpcpp==2024.0.0;platform_system=='Windows'",
+                              "onednn==2024.0.0;platform_system=='Windows'"]
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-    xpu_20_requires = copy.deepcopy(all_requires)
-    xpu_20_requires.remove('torch')
-    # xpu_20 only works for linux now
-    xpu_20_requires += ["torch==2.0.1a0;platform_system=='Linux'",
-                        "torchvision==0.15.2a0;platform_system=='Linux'",
-                        "intel_extension_for_pytorch==2.0.110+xpu;platform_system=='Linux'",
-                        "bigdl-core-xe==" + CORE_XE_VERSION + ";platform_system=='Linux'",
-                        "bigdl-core-xe-esimd==" + CORE_XE_VERSION + ";platform_system=='Linux'"]
-
     xpu_21_requires = copy.deepcopy(all_requires)
     xpu_21_requires.remove('torch')
     xpu_21_requires += ["torch==2.1.0a0",
@@ -300,8 +294,13 @@ def setup_package():
                         "intel_extension_for_pytorch==2.1.10+xpu",
                         "bigdl-core-xe-21==" + CORE_XE_VERSION,
                         "bigdl-core-xe-esimd-21==" + CORE_XE_VERSION]
+    xpu_21_requires += oneapi_2024_0_requires
     # default to ipex 2.1 for linux and windows
     xpu_requires = copy.deepcopy(xpu_21_requires)
+
+
+    cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION]
+    cpp_requires += oneapi_2024_0_requires
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
@@ -329,10 +328,9 @@ def setup_package():
         },
         extras_require={"all": all_requires,
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
-                        "xpu-2-0": xpu_20_requires,
                         "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires,
-                        "cpp": ["bigdl-core-cpp==" + CORE_XE_VERSION],
+                        "cpp": cpp_requires,
                         "llama-index": llama_index_requires}, # for internal usage when upstreaming for llama-index
         classifiers=[
             'License :: OSI Approved :: Apache Software License',

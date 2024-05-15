@@ -34,13 +34,14 @@
 import math
 import torch
 import warnings
+from torch import nn
 
 from ipex_llm.transformers.models.utils import (
     rotate_half, should_use_fuse_rope,
     apply_rotary_pos_emb_cache_freq_xpu
 )
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
-from ipex_llm.transformers.models.utils import use_new_esimd_sdp_fp16, use_quantize_kv_cache
+from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal, use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import use_sdp_fp8, restore_fp8_kv_cache
 from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache
 
@@ -136,14 +137,19 @@ def attention_forward(
         key_states, value_states = past_key_value.update(key_states, value_states,
                                                          self.layer_idx, None)
 
-    if (isinstance(past_key_value, DynamicFp8Cache) and
-            use_sdp_fp8(q_len, kv_seq_len, query_states)):
+    if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states, attention_mask)
-    elif (isinstance(past_key_value, DynamicNormalCache) and
-            use_new_esimd_sdp_fp16(q_len, kv_seq_len, self.head_dim, query_states)):
+        if isinstance(past_key_value, DynamicFp8Cache):
+            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+                                              attention_mask)
+        else:
+            attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+    elif use_sdp_causal(q_len, kv_seq_len, query_states, self.training):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp16(query_states, key_states, value_states, attention_mask)
+        if isinstance(past_key_value, DynamicFp8Cache):
+            attn_output = linear_q4_0.sdp_fp8_causal(query_states, key_states, value_states)
+        else:
+            attn_output = linear_q4_0.sdp_causal(query_states, key_states, value_states)
     else:
         if isinstance(past_key_value, DynamicFp8Cache):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -228,10 +234,9 @@ def model_forward_wrapper(origin_model_forward):
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
     ):
-        # IPEX-LLM OPT: kv cache but no sdp (its head_dim 96, cannot use sdp)
+        # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
         use_cache = use_cache if use_cache is not None else self.config.use_cache
-        use_quantize_kv = (use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids) and
-                           self.config.hidden_size // self.config.num_attention_heads in [64, 128])
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids)
         if use_cache:
             if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
@@ -250,3 +255,61 @@ def model_forward_wrapper(origin_model_forward):
             return_dict=return_dict,
         )
     return model_forward
+
+
+class Phi3RotaryEmbeddingCached(nn.Module):
+    def __init__(self, dim, max_position_embeddings=2048, base=10000, device=None):
+        super().__init__()
+
+        self.dim = dim
+        self.max_position_embeddings = max_position_embeddings
+        self.base = base
+        inv_freq = 1.0 / (self.base ** (torch.arange(0, self.dim, 2,
+                                                     dtype=torch.int64,
+                                                     device=device).float() / self.dim))
+        self.register_buffer("inv_freq", inv_freq, persistent=False)
+        # self.gen_seq_len = None
+
+        # Build here to make `torch.jit.trace` work.
+        self._set_cos_sin_cache(
+            seq_len=max_position_embeddings,
+            device=self.inv_freq.device, dtype=torch.get_default_dtype()
+        )
+
+    def _set_cos_sin_cache(self, seq_len, device, dtype):
+        self.max_seq_len_cached = seq_len
+        position_ids_expanded = torch.arange(self.max_seq_len_cached,
+                                             device=device,
+                                             dtype=self.inv_freq.dtype).reshape(1, 1, -1)
+        inv_freq_expanded = self.inv_freq[None, :, None].float().expand(1, -1, 1)
+        with torch.autocast(device_type=device.type, enabled=False):
+            freqs = (inv_freq_expanded.float() @ position_ids_expanded.float()).transpose(1, 2)
+            # Different from paper,
+            # but it uses a different permutation in order to obtain the same calculation
+            emb = torch.cat((freqs, freqs), dim=-1)
+            self.register_buffer("cos_cached", emb.cos().to(dtype), persistent=False)
+            self.register_buffer("sin_cached", emb.sin().to(dtype), persistent=False)
+
+    def forward(self, x, position_ids, seq_len=None):
+        # x: [bs, num_attention_heads, seq_len, head_size]
+        if seq_len > self.max_seq_len_cached:
+            self._set_cos_sin_cache(seq_len=seq_len, device=x.device, dtype=x.dtype)
+
+        return (
+            self.cos_cached[:, seq_len-position_ids.shape[-1]:seq_len, :].to(dtype=x.dtype),
+            self.sin_cached[:, seq_len-position_ids.shape[-1]:seq_len, :].to(dtype=x.dtype),
+        )
+
+
+def phi3_rms_norm_forward(self, hidden_states):
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
+        import linear_q4_0
+        x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
+        output = linear_q4_0.rms_norm(self.weight, x_2d, self.variance_epsilon)
+        return output.reshape(hidden_states.shape)
+
+    input_dtype = hidden_states.dtype
+    hidden_states = hidden_states.to(torch.float32)
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+    hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+    return self.weight * hidden_states.to(input_dtype)

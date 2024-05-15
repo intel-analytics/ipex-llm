@@ -15,7 +15,11 @@
 
 Follow the steps in [Run Ollama on Intel GPU Guide](./ollama_quickstart.md) to install and run Ollama on Intel GPU. Ensure that `ollama serve` is running correctly and can be accessed through a local URL (e.g., `https://127.0.0.1:11434`) or a remote URL (e.g., `http://your_ip:11434`).
 
+We recommend pulling the desired model before proceeding with Dify. For instance, to pull the LLaMA2-7B model, you can use the following command:
 
+```bash
+ollama pull llama2:7b
+```
 
 ### 2. Install and Start `Dify`
 

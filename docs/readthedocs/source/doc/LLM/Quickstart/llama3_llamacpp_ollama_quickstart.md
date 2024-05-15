@@ -79,7 +79,7 @@ Under your current directory, exceuting below command to do inference with Llama
 
       .. code-block:: bash
 
-        main -ngl 33 -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -e -ngl 33 --color --no-mmap
+        main -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -e -ngl 33 --color --no-mmap
 ```
 
 Under your current directory, you can also execute below command to have interactive chat with Llama3:
@@ -90,7 +90,7 @@ Under your current directory, you can also execute below command to have interac
 
       .. code-block:: bash
 
-         ./main -ngl 33 -c 0 --interactive-first --color -e --in-prefix '<|start_header_id|>user<|end_header_id|>\n\n' --in-suffix '<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n' -r '<|eot_id|>' -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
+         ./main -ngl 33 --interactive-first --color -e --in-prefix '<|start_header_id|>user<|end_header_id|>\n\n' --in-suffix '<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n' -r '<|eot_id|>' -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
 
    .. tab:: Windows
 
@@ -98,7 +98,7 @@ Under your current directory, you can also execute below command to have interac
 
       .. code-block:: bash
 
-        main -ngl 33 -c 0 --interactive-first --color -e --in-prefix '<|start_header_id|>user<|end_header_id|>\n\n' --in-suffix '<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n' -r '<|eot_id|>' -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
+        main -ngl 33 --interactive-first --color -e --in-prefix "<|start_header_id|>user<|end_header_id|>\n\n" --in-suffix "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n" -r "<|eot_id|>" -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
 ```
 
 Below is a sample output on Intel Arc GPU:
