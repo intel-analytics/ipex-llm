@@ -27,6 +27,7 @@ import numpy as np
 from datetime import date
 
 import os
+current_dir = os.path.dirname(os.path.realpath(__file__))
 import sys
 from ipex_llm.utils.benchmark_util import BenchmarkWrapper
 from ipex_llm.utils.common.log4Error import invalidInputError
