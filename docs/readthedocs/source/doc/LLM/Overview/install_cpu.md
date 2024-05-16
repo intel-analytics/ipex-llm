@@ -41,11 +41,26 @@ For optimal performance with LLM models using IPEX-LLM optimizations on Intel CP
 
 First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.11 enviroment:
 
-```bash
-conda create -n llm python=3.11
-conda activate llm
+```eval_rst	
+.. tabs::
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         conda create -n llm python=3.11
+         conda activate llm
+
+         pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install the latest ipex-llm nightly build with 'all' option
+
+   .. tab:: Windows
+
+      .. code-block:: bash
+
+         conda create -n llm python=3.11
+         conda activate llm
+
+         pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 
 Then for running a LLM model with IPEX-LLM optimizations (taking an `example.py` an example):
