@@ -706,6 +706,8 @@ def _optimize_pre(model):
         from ipex_llm.transformers.models.phi import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "phi3":
+        from ipex_llm.transformers.models.phi3 import pre_compute_inv_freq
+        model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.phi3 import split_mlp
         model.apply(split_mlp)
     if model.config.model_type == "qwen":
@@ -1525,8 +1527,6 @@ def _optimize_post(model, lightweight_bmm=False):
         # for phi-3
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.phi3 import su_scaled_rope_forward
-        convert_forward(model, module.Phi3SuScaledRotaryEmbedding, su_scaled_rope_forward)
         from ipex_llm.transformers.models.phi3 import attention_forward
         convert_forward(model, module.Phi3Attention, attention_forward)
         from ipex_llm.transformers.models.phi3 import mlp_forward
@@ -1534,13 +1534,8 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi3 import model_forward_wrapper
         model_forward = model_forward_wrapper(module.Phi3Model.forward)
         convert_forward(model, module.Phi3Model, model_forward)
-        from ipex_llm.transformers.models.phi3 import Phi3RotaryEmbeddingCached
-        replace_RotaryEmbed(model, module.Phi3RotaryEmbedding, Phi3RotaryEmbeddingCached)
         from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
-        convert_forward(
-            model,
-            module.Phi3RMSNorm,
-            phi3_rms_norm_forward)
+        convert_forward(model, module.Phi3RMSNorm, phi3_rms_norm_forward)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
