@@ -14,7 +14,7 @@ On Linux
 conda create -n llm python=3.11
 conda activate llm
 
-pip install ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
  # install ipex-llm with 'all' option
 pip install transformers==4.34.0
 BUILD_CUDA_EXT=0 pip install git+https://github.com/PanQiWei/AutoGPTQ.git@1de9ab6
@@ -26,7 +26,7 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install ipex-llm[all] # install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
 pip install transformers==4.34.0
 BUILD_CUDA_EXT=0 pip install git+https://github.com/PanQiWei/AutoGPTQ.git@1de9ab6
 pip install optimum==0.14.0

@@ -16,7 +16,8 @@ On Linux:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install ipex-llm with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install einops # additional package required for falcon-7b-instruct and falcon-40b-instruct to conduct generation
 ```
 
@@ -26,7 +27,7 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install ipex-llm[all] # install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
 pip install einops # additional package required for falcon-7b-instruct and falcon-40b-instruct to conduct generation
 ```
 

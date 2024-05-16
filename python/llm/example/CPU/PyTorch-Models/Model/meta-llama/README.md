@@ -9,6 +9,9 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 In the example [example_chat_completion.py](./example_chat_completion.py), we show a basic use case for a Llama model to engage in a conversation with an AI assistant using `chat_completion` API, with IPEX-LLM INT4 optimizations. The process for [example_text_completion.py](./example_text_completion.py) is similar.
 ### 1. Install
 We suggest using conda to manage environment:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11
 conda activate llm
@@ -20,7 +23,24 @@ git apply < ../cpu.patch # apply cpu version patch
 pip install -e .
 
 cd -
-pip install ipex-llm[all] # install ipex-llm with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+# Install meta-llama repository
+git clone https://github.com/facebookresearch/llama.git
+cd llama/
+git apply < ../cpu.patch # apply cpu version patch
+pip install -e .
+
+cd -
+pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 
 ### 2. Run

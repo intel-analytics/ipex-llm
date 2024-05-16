@@ -92,11 +92,24 @@ Inference time: xxxx s
 In the example [streamchat.py](./streamchat.py), we show a basic use case for a ChatGLM2 model to stream chat, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
+
+On Linux:
+
 ```bash
-conda create -n llm python=3.11
+conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install ipex-llm[all] # install ipex-llm with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11 # recommend to use Python 3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 
 ### 2. Run

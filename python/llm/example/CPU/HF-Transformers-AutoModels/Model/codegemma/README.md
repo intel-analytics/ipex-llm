@@ -18,7 +18,7 @@ conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
 # install ipex-llm with 'all' option
-pip install ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
 # According to CodeGemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
 pip install transformers==4.38.1
@@ -31,7 +31,7 @@ conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
 # install ipex-llm with 'all' option
-pip install ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all]
 
 # According to CodeGemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
 pip install transformers==4.38.1
