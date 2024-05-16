@@ -267,3 +267,17 @@ def gemma_attention_forward(
         attn_weights = None
 
     return attn_output.to(original_dtype), attn_weights, past_key_value
+
+
+def gemma_rms_norm_forward(self, hidden_states):
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
+        import linear_q4_0
+        x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
+        output = linear_q4_0.rms_norm(self.weight, x_2d, self.variance_epsilon)
+        return output.reshape(hidden_states.shape)
+
+    input_dtype = hidden_states.dtype
+    hidden_states = hidden_states.to(torch.float32)
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+    hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+    return (1+self.weight) * hidden_states.to(input_dtype)
