@@ -104,7 +104,7 @@ def attention_fn(
         present = None
 
     pytorch_major_version = int(torch.__version__.split('.')[0])
-    if  pytorch_major_version >= 2:
+    if pytorch_major_version >= 2:
         query_layer = query_layer.permute(1, 2, 0, 3)
         if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
 
