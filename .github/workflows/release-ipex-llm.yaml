@@ -1,0 +1,56 @@
+name: Release IPEX-LLM Pypi
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'ipex-llm version (e.g. 2.1.0b1)'
+        required: true
+        default: '2.1.0b0'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+
+  ipex-llm-release:
+    if: ${{ github.event_name == 'workflow_dispatch' }} 
+    runs-on: [self-hosted, Bree]
+    needs: llm-cpp-build
+    steps:
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+    
+    - name: set release version
+      env:
+        DEFAULT_VERSION: '2.1.0b0'
+      run: |
+        echo "RELEASE_VERSION=${{ github.event.inputs.version || env.DEFAULT_VERSION }}" >> $GITHUB_ENV
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.15'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install twine
+
+    - name: Download llm binary
+      uses: ./.github/actions/llm/download-llm-binary
+
+    - name: Build package
+      run: |
+        echo ${RELEASE_VERSION}
+
+        ## windows ##
+        bash python/llm/dev/release_default_windows.sh ${RELEASE_VERSION} true
+
+        ## linux ##
+        bash python/llm/dev/release_default_linux.sh ${RELEASE_VERSION} true
