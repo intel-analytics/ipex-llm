@@ -54,3 +54,4 @@ exclude:
   - 'bigscience/bloomz-7b1:1024:4'
   - 'fnlp/moss-moon-003-sft-4bit:1024'
   - 'fnlp/moss-moon-003-sft-4bit:2048'  
+  - 'Qwen/Qwen-7B-Chat:2048:4'
