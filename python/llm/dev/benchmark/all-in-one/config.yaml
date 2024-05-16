@@ -29,8 +29,8 @@ num_trials: 3
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' ##'fp8' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: 
-  - 1 # default to 1
-  - 2 # default to 1
+  # - 1 # default to 1
+  # - 2 # default to 1
 in_out_pairs:
   - '32-32'
   - '1024-128'
@@ -68,4 +68,3 @@ exclude:
   - 'bigcode/starcoder-15.5b-4bit:2048:2'
   - 'databricks/dolly-v2-12b:2048:2'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
-  
