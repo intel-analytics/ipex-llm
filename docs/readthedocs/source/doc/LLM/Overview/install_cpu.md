@@ -4,8 +4,18 @@
 
 Install IPEX-LLM for CPU supports using pip through:
 
-```bash
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+```eval_rst	
+.. tabs::
+
+   .. tab:: Linux
+
+      .. code-block:: bash
+         pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install the latest ipex-llm nightly build with 'all' option
+
+   .. tab:: Windows
+
+      .. code-block:: bash
+         pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 
 Please refer to [Environment Setup](#environment-setup) for more information.
