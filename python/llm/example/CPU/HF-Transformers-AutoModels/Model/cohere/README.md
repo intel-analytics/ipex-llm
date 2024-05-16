@@ -16,7 +16,7 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install ipex-llm with 'all' option
-pip install tansformers==4.40.0
+pip install transformers==4.40.0
 ```
 
 On Windows:
@@ -26,7 +26,7 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
-pip install tansformers==4.40.0
+pip install transformers==4.40.0
 ```
 
 ### 2. Run
