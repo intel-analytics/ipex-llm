@@ -1506,14 +1506,14 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask, cache_positio
             if cache_position is not None:
                 # for transformers 4.38.0
                 causal_mask = attention_mask[:, :, cache_position, : kv_seq_len]
-                attn_weights = attn_weights + causal_mask
+                attn_weights_split = attn_weights_split + causal_mask
             else:
                 attn_mask_size = (bsz, 1, q_len, kv_seq_len)
                 if attention_mask.size() != attn_mask_size:
                     invalidInputError(False,
                                       f"Attention mask should be of size {attn_mask_size}, "
                                       f"but is {attention_mask.size()}")
-                attn_weights = attn_weights + attention_mask
+                attn_weights_split = attn_weights_split + attention_mask
         attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
         attn_outputs.append(torch.matmul(attn_weights_split, v))
     attn_output = torch.cat(attn_outputs, dim=1)
