@@ -37,6 +37,7 @@ import fire
 import torch
 from datasets import load_dataset
 import accelerate
+import transformers
 
 from transformers import AutoTokenizer, BitsAndBytesConfig, AutoConfig, AutoModelForCausalLM
 from peft import (
