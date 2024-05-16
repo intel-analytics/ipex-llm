@@ -1,4 +1,4 @@
-## Run llama.cpp/Ollama/open-webui with Docker on Intel GPU
+## Run llama.cpp/Ollama/Open-WebUI on an Intel GPU via Docker
 
 ## Quick Start
 
