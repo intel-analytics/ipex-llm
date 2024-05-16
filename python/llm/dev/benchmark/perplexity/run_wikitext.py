@@ -13,7 +13,6 @@ parser.add_argument("--precision", type=str, default="sym_int4")
 parser.add_argument("--use-cache", action="store_true")
 args = parser.parse_args()
 
-
 if args.precision == "fp16":  # ipex fp16
     from transformers import AutoModelForCausalLM
     if "xpu" in args.device:
@@ -61,7 +60,6 @@ for i in tqdm(range(num_chunks)):
         # N.B. the model only calculates loss over trg_len - 1 labels, because it internally shifts the labels
         # to the left by 1.
         neg_log_likelihood = outputs.loss
-        # print(neg_log_likelihood)
 
     nlls.append(neg_log_likelihood)
     if "xpu" in args.device:
