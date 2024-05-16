@@ -14,7 +14,19 @@ In the example [generate.py](./generate.py), we show a basic use case for a Qwen
 
 We suggest using conda to manage environment:
 
+On Linux:
+
 ```bash
+conda create -n llm python=3.11
+conda activate llm
+
+pip install ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install ipex-llm with 'all' option
+pip install tiktoken einops transformers_stream_generator  # additional package required for Qwen-7B-Chat to conduct generation
+```
+
+On Windows:
+
+```cmd
 conda create -n llm python=3.11
 conda activate llm
 

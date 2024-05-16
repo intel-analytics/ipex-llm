@@ -11,7 +11,22 @@ In the example [generate.py](./generate.py), we show a basic use case for a Gemm
 We suggest using conda to manage the Python environment:
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+On Linux:
+
 ```bash
+conda create -n llm python=3.11 # recommend to use Python 3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install the latest ipex-llm nightly build with 'all' option
+
+# According to Gemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
+pip install transformers==4.38.1
+```
+
+On Windows:
+
+```cmd
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 

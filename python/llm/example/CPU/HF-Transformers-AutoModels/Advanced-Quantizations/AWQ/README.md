@@ -33,7 +33,20 @@ In the example [generate.py](./generate.py), we show a basic use case for a AWQ 
 
 We suggest using conda to manage environment:
 
+On Linux
+
 ```bash
+conda create -n llm python=3.11
+conda activate llm
+
+pip install autoawq==0.1.8 --no-deps
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install ipex-llm with 'all' option
+pip install transformers==4.35.0
+pip install accelerate==0.25.0
+pip install einops
+```
+On windows:
+```cmd
 conda create -n llm python=3.11
 conda activate llm
 
@@ -43,6 +56,7 @@ pip install transformers==4.35.0
 pip install accelerate==0.25.0
 pip install einops
 ```
+
 **Note: For Mixtral model, please use transformers 4.36.0:**
 ```bash
 pip install transformers==4.36.0

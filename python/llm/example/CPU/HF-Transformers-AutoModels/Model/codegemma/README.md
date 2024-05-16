@@ -10,7 +10,23 @@ In the example [generate.py](./generate.py), we show a basic use case for a Code
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+On Linux:
+
 ```bash
+conda create -n llm python=3.11 # recommend to use Python 3.11
+conda activate llm
+
+# install ipex-llm with 'all' option
+pip install ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+
+# According to CodeGemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
+pip install transformers==4.38.1
+```
+
+On Windows:
+
+```cmd
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 

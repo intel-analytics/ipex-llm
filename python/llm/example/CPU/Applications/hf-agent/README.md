@@ -10,7 +10,7 @@ To run this example with IPEX-LLM, we have some recommended requirements for you
 ### 1. Install
 We suggest using conda to manage environment:
 
-On linux:
+On Linux
 ```bash
 conda create -n llm python=3.11
 conda activate llm

@@ -8,7 +8,20 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 In the example [generate.py](./generate.py), we show a basic use case for a CodeLlama model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
+
+On Linux:
+
 ```bash
+conda create -n llm python=3.11
+conda activate llm --extra-index-url https://download.pytorch.org/whl/cpu
+
+pip install ipex-llm[all] # install ipex-llm with 'all' option
+pip install transformers==4.34.1 # CodeLlamaTokenizer is supported in higher version of transformers
+```
+
+On Windows:
+
+```cmd
 conda create -n llm python=3.11
 conda activate llm
 

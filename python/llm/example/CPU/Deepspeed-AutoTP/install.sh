@@ -20,4 +20,4 @@ pip install deepspeed==0.11.1
 # 4. exclude intel deepspeed extension, which is only for XPU
 pip uninstall intel-extension-for-deepspeed
 # 5. install ipex-llm
-pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu

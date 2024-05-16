@@ -9,7 +9,7 @@ In the example [generate.py](./generate.py), we show a basic use case for a Baic
 ### 1. Install
 We suggest using conda to manage environment:
 
-On Linux:
+On Linux
 ```bash
 conda create -n llm python=3.11
 conda activate llm

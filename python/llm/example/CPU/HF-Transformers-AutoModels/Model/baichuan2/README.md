@@ -8,8 +8,21 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 In the example [generate.py](./generate.py), we show a basic use case for a Baichuan model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11
+conda activate llm
+
+pip install ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+ # install ipex-llm with 'all' option
+pip install transformers_stream_generator  # additional package required for Baichuan-13B-Chat to conduct generation
+```
+
+On Windows:
+```cmd
+onda create -n llm python=3.11
 conda activate llm
 
 pip install ipex-llm[all] # install ipex-llm with 'all' option
