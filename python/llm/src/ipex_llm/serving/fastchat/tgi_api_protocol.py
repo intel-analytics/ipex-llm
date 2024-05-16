@@ -8,10 +8,12 @@ import sys
 
 pseudo_infinite_int = sys.maxsize
 
+
 class ErrorResponse(BaseModel):
     object: str = "error"
     message: str
     code: int
+
 
 class ChatMessage(BaseModel):
     role: str
@@ -60,9 +62,11 @@ class LogProbs(BaseModel):
     tokens: List[str] = Field(default_factory=list)
     top_logprobs: List[Optional[Dict[str, float]]] = Field(default_factory=list)
 
+
 class Grammar(BaseModel):
     type: str = "json"
     value: str = "string"
+
 
 class ChatCompletionParam(BaseModel):
     best_of: Optional[int] = 1
@@ -84,6 +88,7 @@ class ChatCompletionParam(BaseModel):
     typical_p: Optional[float] = 0.95
     watermark: Optional[bool] = True
 
+
 class ChatCompletionRequest(BaseModel):
     inputs: str
     parameters: ChatCompletionParam
@@ -96,6 +101,7 @@ class ChatCompletionChoice(BaseModel):
     finish_reason: Optional[Literal["stop", "length"]] = None
     generated_text: str
     generated_tokens: Optional[int] = 0
+
 
 class ChatCompletionDetails(BaseModel):
     best_of_sequences: List[ChatCompletionChoice]
@@ -117,8 +123,10 @@ class ChatCompletionStreamChoice(BaseModel):
     message: DeltaMessage
     finish_reason: Optional[Literal["stop", "length"]] = None
 
+
 class ChatCompletionStreamDetails(BaseModel):
     best_of_sequences: List[ChatCompletionStreamChoice]
+
 
 class ChatCompletionStreamResponse(BaseModel):
     id: str = Field(default_factory=lambda: f"chatcmpl-{shortuuid.random()}")
