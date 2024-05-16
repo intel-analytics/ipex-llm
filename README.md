@@ -80,8 +80,13 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 ### Install `ipex-llm`
 - [Windows GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html): installing `ipex-llm` on Windows with Intel GPU
 - [Linux GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html): installing `ipex-llm` on Linux with Intel GPU
-- [Docker](docker/llm): using `ipex-llm` dockers on Intel CPU and GPU
 - *For more details, please refer to the [installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html)*
+
+### Use Docker
+- [Overview](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html) : overview and tips of running `ipex-llm`containers.
+- [Python Inference using `ipex-llm` on Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_pytorch_inference_gpu.html#) : running LLMs using python libraries such as huggingface transformers, langchain, llama-index, etc. on Intel GPU
+- [C++ Inference using `ipex-llm` on Intel GPU](): running LLMs using llama.cpp, ollama, Open WebUI, etc. using C++ interface of `ipex-llm` on Intel GPU
+
 
 ### Run `ipex-llm`
 - [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html): running **llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp`*) on Intel GPU

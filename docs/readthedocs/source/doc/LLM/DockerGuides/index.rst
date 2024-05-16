@@ -10,3 +10,4 @@ In this section, you will find guides related to using IPEX-LLM with Docker, cov
 * `Run llama.cpp/Ollama/open-webui with Docker on Intel GPU <./docker_cpp_xpu_quickstart.html>`_
 * `Run IPEX-LLM integrated FastChat with Docker on Intel GPU <./fastchat_docker_quickstart.html>`_
 * `Run IPEX-LLM integrated vLLM with Docker on Intel GPU <./vllm_docker_quickstart.html>`_
+* `Python Inference using IPEX-LLM on Intel GPU <./docker_pytorch_inference_gpu.html>`_
