@@ -533,10 +533,10 @@ class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
     @custom_fwd
-    def forward(ctx, A, weight, input_seq_size, enable_deepspeed_zero3=False):
+    def forward(ctx, A, weight, input_seq_size):
         ctx.is_empty = False
         import linear_q4_0
-        if enable_deepspeed_zero3:
+        if hasattr(weight, "enable_deepspeed_zero3") and weight.enable_deepspeed_zero3:
             result = linear_q4_0.forward_new(A, weight.data.byte(), NF4, input_seq_size)
         else:
             result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
@@ -548,7 +548,7 @@ class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
     @custom_bwd
-    def backward(ctx, grad_output, enable_deepspeed_zero3=False):
+    def backward(ctx, grad_output):
         import linear_q4_0
         if ctx.is_empty:
             bias_grad = None if ctx.bias is None else torch.zeros_like(ctx.bias)
@@ -559,7 +559,7 @@ class MatMulLowBit(torch.autograd.Function):
         if req_gradA:
             if torch.xpu.is_autocast_xpu_enabled():
                 grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
-            if enable_deepspeed_zero3:
+            if hasattr(weight, "enable_deepspeed_zero3") and weight.enable_deepspeed_zero3:
                 dequant_weight = linear_q4_0.dequant(A, weight.data.byte(), NF4)
                 grad_A = torch.matmul(grad_output, dequant_weight)
             else:
