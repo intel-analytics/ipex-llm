@@ -20,7 +20,7 @@ device = f"xpu:{my_rank}"
 logger.info(f"rank: {my_rank}, size: {my_size}")
 
 import time
-from transformers import AutoTokenizer, AutoConfig
+from transformers import AutoTokenizer, AutoConfig, LlamaTokenizer
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
@@ -45,6 +45,8 @@ class PromptRequest(BaseModel):
 empty_req = PromptRequest(prompt="", n_predict=0)
 
 app = FastAPI()
+global tokenizer
+global local_model
 
 request_queue: asyncio.Queue = asyncio.Queue()
 result_dict: Dict[str, str] = {}
@@ -58,7 +60,13 @@ async def generate(prompt_request: PromptRequest):
     await local_model.waiting_requests.put((request_id, prompt_request))
     while True:
         if request_id in result_dict:
-            output_str = result_dict.pop(request_id)
+            with local_model.dict_lock:
+                output_str = result_dict[request_id]
+            if len(output_str) == 0:
+                logger.info(f"Why? {request_id}")
+                # await asyncio.sleep(0.1)
+                # continue
+            result_dict.pop(request_id)
             return {"generated_text": output_str}
         await asyncio.sleep(0)            
 
@@ -88,7 +96,7 @@ def generate_text(prompt: List[str], n_predict = 32):
 
 async def process_requests(local_model, result_dict):
     while True:
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
         await local_model.process_step(tokenizer, result_dict)
 
 
@@ -123,7 +131,7 @@ async def main():
         dist.barrier()
     # Load tokenizer
     global tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
+    tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -133,12 +141,8 @@ async def main():
         await server.serve()
     else:
         while True:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0)
             await local_model.process_step(tokenizer, result_dict)
-
-    #         object_list = [None] * max_num_seqs
-    #         dist.broadcast_object_list(object_list, src=0)
-    #         output = generate_text([req.prompt for req in object_list], [req.n_predict for req in object_list])
 
 if __name__ == "__main__":
     asyncio.run(main())

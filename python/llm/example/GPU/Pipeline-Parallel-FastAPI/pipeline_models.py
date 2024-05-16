@@ -10,6 +10,7 @@ from transformers.utils import logging
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 import numpy as np
 import asyncio, uuid
+import threading
 
 logger = logging.get_logger(__name__)
 
@@ -283,9 +284,11 @@ class ModelRunner:
         # self.attention_mask_dict = {}
         self.past_key_values_dict = {}
         self.tokens = {}
+        self.token_times = {}
 
         self.waiting_requests = asyncio.Queue()
         self.send_buff = None
+        self.dict_lock = threading.Lock()
 
                 
     # def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
@@ -393,6 +396,7 @@ class ModelRunner:
         )
 
         self.input_ids_dict[new_batch.batch_id] = input_ids
+        self.token_times[new_batch.batch_id] = [time.perf_counter()]
         # self.attention_mask_dict[new_batch.batch_id] = attention_mask
 
         return new_batch
@@ -401,6 +405,7 @@ class ModelRunner:
     def clear_batch(self, cur_id):
         self.input_ids_dict.pop(cur_id, None)
         self.tokens.pop(cur_id, None)
+        self.token_times.pop(cur_id, None)
         # self.attention_mask_dict.pop(cur_id, None)
         self.past_key_values_dict.pop(cur_id, None)
         # torch.xpu.empty_cache()
@@ -417,6 +422,7 @@ class ModelRunner:
             
             if cur_batch is None:
                 if not self.waiting_requests.empty():
+                    # await asyncio.sleep(0.01)
                     cur_batch = await self.add_request(tokenizer)
                     cur_input = self.input_ids_dict[cur_batch.batch_id]
                 else:
@@ -446,6 +452,7 @@ class ModelRunner:
                 if len(next_ids.shape) == 1:
                     next_ids = next_ids.unsqueeze(0)
                 self.tokens[cur_id].append(next_ids)
+                self.token_times[cur_id].append(time.perf_counter())
                 # self.input_ids_dict[cur_id] += next_ids
                 cur_input = next_ids
                 # batch_list[0].input_len += 1
@@ -456,10 +463,15 @@ class ModelRunner:
                     # logger.info(self.tokens[cur_id])
                     outputs = torch.cat(self.tokens[cur_id], dim=1)
                     outputs = outputs.cpu()
-                    output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+                    output_strs = tokenizer.batch_decode(outputs, skip_special_tokens=False)
                     for request_id, output_str in zip(cur_batch.request_ids, output_strs):
-                        result_dict[request_id] = output_str
+                        with self.dict_lock:
+                            result_dict[request_id] = output_str
 
+                    cur_times = self.token_times[cur_id]
+                    first_token = cur_times[1] - cur_times[0]
+                    next_token = (cur_times[-1] - cur_times[1]) / (len(self.tokens[cur_id]) - 1)
+                    logger.info(f"First token latency: {first_token}, next token latency: {next_token}")
                     self.clear_batch(cur_id)
                     batch_list[0].stopped = True
             else:
