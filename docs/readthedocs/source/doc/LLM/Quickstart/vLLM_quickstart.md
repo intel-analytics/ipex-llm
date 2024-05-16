@@ -60,6 +60,28 @@ wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/
 python offline_inference.py
 ```
 
+For instructions on how to change the `load_in_low_bit` value in `offline_inference.py`, check the following example:
+
+```bash
+llm = LLM(model="YOUR_MODEL",
+          device="xpu",
+          dtype="float16",
+          enforce_eager=True,
+          # Simply change here for the desired load_in_low_bit value
+          load_in_low_bit="sym_int4",
+          tensor_parallel_size=1,
+          trust_remote_code=True)
+```
+
+The result of executing `Baichuan2-7B-Chat` model with `sym_int4` low-bit format is shown as follows:
+
+```
+Prompt: 'Hello, my name is', Generated text: ' [Your Name] and I am a [Your Job Title] at [Your'
+Prompt: 'The president of the United States is', Generated text: ' the head of state and head of government in the United States. The president leads'
+Prompt: 'The capital of France is', Generated text: ' Paris.\nThe capital of France is Paris.'
+Prompt: 'The future of AI is', Generated text: " bright, but it's not without challenges. As AI continues to evolve,"
+```
+
 ### Service
 To fully utilize the continuous batching feature of the `vLLM`, you can send requests to the service using `curl` or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same `forward` step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
@@ -98,6 +120,12 @@ You can tune the service using these four arguments:
 3. `--max-num-batched-token`: Maximum number of batched tokens per iteration.
 4. `--max-num-seq`: Maximum number of sequences per iteration. Default: 256
 
+If the service have been booted successfully, the console will display messages similar to the following:
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/start-vllm-service.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/start-vllm-service.png" width=100%; />
+</a>
+
 
 After the service has been booted successfully, you can send a test request using `curl`. Here, `YOUR_MODEL` should be set equal to `$served_model_name` in your booting script, e.g. `Qwen1.5`.
 
@@ -106,12 +134,18 @@ After the service has been booted successfully, you can send a test request usin
 curl http://localhost:8000/v1/completions \
 -H "Content-Type: application/json" \
 -d '{
-        "model": "YOUR_MODEL_NAME",
-        "prompt": "San Francisco is a",
-        "max_tokens": 128,
-        "temperature": 0
- }' &
+  "model": "YOUR_MODEL",
+  "prompt": "San Francisco is a",
+  "max_tokens": 128,
+  "temperature": 0
+}' | jq '.choices[0].text'
 ```
+
+Below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_int4`:
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/vllm-curl-result.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/vllm-curl-result.png" width=100%; />
+</a>
 
 ```eval_rst
 .. tip::
@@ -170,7 +204,13 @@ python -m ipex_llm.vllm.entrypoints.openai.api_server \
   --tensor-parallel-size 2
 ```
 
-## Performing benchmark
+If the service have booted successfully, you should see the output similar to the following figure:
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/start-vllm-service.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/start-vllm-service.png" width=100%; />
+</a>
+
+## 5.Performing benchmark
 
 To perform benchmark, you can use the **benchmark_throughput** script that is originally provided by vLLM repo.
 
@@ -181,7 +221,7 @@ source /opt/intel/oneapi/setvars.sh
 
 wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
 
-wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/docker/llm/serving/xpu/docker/benchmark_throughput.py
+wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/docker/llm/serving/xpu/docker/benchmark_vllm_throughput.py -O benchmark_throughput.py
 
 export MODEL="YOUR_MODEL"
 
@@ -200,6 +240,12 @@ python3 ./benchmark_throughput.py \
     --load-in-low-bit sym_int4 \
     --gpu-memory-utilization 0.85
 ```
+
+The following figure shows the result of benchmarking `Llama-2-7b-chat-hf` using 50 prompts:
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/vllm-benchmark-result.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/vllm-benchmark-result.png" width=100%; />
+</a>
 
 
 ```eval_rst
