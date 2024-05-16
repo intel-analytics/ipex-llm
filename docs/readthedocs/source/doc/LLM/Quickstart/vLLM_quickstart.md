@@ -1,4 +1,4 @@
-# Serving using IPEX-LLM and vLLM
+# Serving using IPEX-LLM and vLLM on Intel GPU
 
 vLLM is a fast and easy-to-use library for LLM inference and serving. You can find the detailed information at their [homepage](https://github.com/vllm-project/vllm).
 
