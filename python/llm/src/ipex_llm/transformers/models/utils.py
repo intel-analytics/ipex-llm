@@ -318,69 +318,6 @@ def use_flash_attention(query, key, attention_mask=None):
     return True
 
 
-def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
-    if head_dim != 128:
-        # esimd_sdp only support head_dim = 128 now
-        return False
-    elif q_len != 1:
-        # esimd_sdp only support rest token and q_len == 1 now
-        return False
-    elif k_len < 8:
-        # esimd_sdp will cause wrong output when k_len < 8
-        return False
-    elif query_states.device.type != "xpu":
-        # esimd_sdp only support GPU now
-        return False
-    elif query_states.dtype != torch.float16:
-        # esimd_sdp only has optimization for FP16 now
-        return False
-
-    device_name = torch.xpu.get_device_name(query_states.device.index)
-    if device_name.startswith("Intel(R) Arc(TM) A") or \
-       device_name.startswith("Intel(R) Data Center GPU Flex") or \
-       device_name.startswith("Intel(R) Data Center GPU Max"):
-        import linear_fp16_esimd
-        if not hasattr(linear_fp16_esimd, "sdp_forward"):
-            return False
-    else:
-        return False
-
-    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Data Center GPU Max"):
-        # esimd_sdp not support PVC GPU when batch size > 1 for now
-        return False
-    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A") \
-            and is_deepspeed_available:
-        # esimd_sdp not support ARC GPU when batch size > 1 using DeepSpeed AutoTP for now
-        return False
-    if query_states.shape[0] > 1 and attention_mask is not None:
-        # for batched input, can't accept attention_mask
-        # TODO: this check needs some time
-        if not torch.all(attention_mask.eq(0)):
-            return False
-
-    return True
-
-
-def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
-    if query_states.device.type != "xpu":
-        # esimd_sdp only support GPU now
-        return False
-    elif query_states.dtype != torch.float16:
-        # esimd_sdp only has optimization for FP16 now
-        return False
-    elif head_dim not in [64, 96, 128]:
-        # esimd_sdp only support head_dim = 128 and 64 now
-        return False
-    elif q_len == k_len:
-        # new sdp_fp16 only support rest token now
-        return False
-    elif q_len > 32:
-        # Use new sdp_fp16 only when q_len <= 32
-        return False
-
-    return True
-
-
 def use_sdp(q_len, kv_len, head_dim, query_states):
     return (
         query_states.device.type == "xpu"
@@ -400,9 +337,10 @@ def use_sdp_fp8(q_len, kv_len, query_states):
     )
 
 
-def use_sdp_causal(q_len, kv_len, query_states, training):
+def use_sdp_causal(q_len, kv_len, head_dim, query_states, training):
     return (
         q_len == kv_len     # first token
+        and head_dim in [64, 96, 128]           # for now
         and query_states.device.type == "xpu"   # GPU
         and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
         and not query_states.requires_grad and not training     # not training
