@@ -1864,16 +1864,18 @@ def llama_model_forward_4_38_internal(
 
     # retrieve input_ids and inputs_embeds
     if (input_ids is None) ^ (inputs_embeds is not None):
-        raise ValueError(
-            "You cannot specify both input_ids and inputs_embeds at the same time, and must specify either one"
+        invalidInputError(False,
+            "You cannot specify both input_ids and inputs_embeds at the same time, "
+            "and must specify either one"
         )
 
     if self.gradient_checkpointing and self.training and use_cache:
         logger.warning_once(
-            "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`."
+            "`use_cache=True` is incompatible with gradient checkpointing. "
+            "Setting `use_cache=False`."
         )
         use_cache = False
-    
+
     if inputs_embeds is None:
         inputs_embeds = self.embed_tokens(input_ids)
 
@@ -1953,9 +1955,9 @@ def llama_model_forward_4_38_internal(
     from ipex_llm.transformers.kv import DynamicFp8Cache
     if use_cache:
         next_cache = (
-            next_decoder_cache.to_legacy_cache() \
-                if not isinstance(next_decoder_cache, DynamicFp8Cache) \
-                    else next_decoder_cache
+            next_decoder_cache.to_legacy_cache()\
+            if not isinstance(next_decoder_cache, DynamicFp8Cache)\
+            else next_decoder_cache
         )
     if not return_dict:
         return tuple(v for v in [hidden_states, next_cache, all_hidden_states,
