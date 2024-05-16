@@ -22,7 +22,7 @@ pip install einops  # additional package required for Ziya to conduct generation
 After setting up the Python environment, you could run the example by following steps.
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./generate.py --prompt 'def quick_sort(arr):\n'
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.

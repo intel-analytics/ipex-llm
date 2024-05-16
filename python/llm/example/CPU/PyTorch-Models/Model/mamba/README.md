@@ -23,7 +23,7 @@ After setting up the Python environment, you could run the example by following 
 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./generate.py
 ```
 

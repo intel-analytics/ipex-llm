@@ -64,7 +64,7 @@ After setting up the Python environment, you could run the example by following 
 
 #### 3.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./chat.py --image-path demo.jpg
 ```
 More information about arguments can be found in [Arguments Info](#33-arguments-info) section. The expected output can be found in [Sample Output](#34-sample-output) section.

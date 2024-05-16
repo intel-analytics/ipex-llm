@@ -46,7 +46,7 @@ Arguments info:
 
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 torchrun --nproc-per-node 1 example_chat_completion.py --ckpt_dir llama-2-7b-chat/ --tokenizer_path tokenizer.model --max_seq_len 64 --max_batch_size 1 --backend cpu
 ```
 

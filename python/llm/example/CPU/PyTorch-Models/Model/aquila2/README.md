@@ -22,7 +22,7 @@ After setting up the Python environment, you could run the example by following 
 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./generate.py --prompt 'What is AI?'
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.

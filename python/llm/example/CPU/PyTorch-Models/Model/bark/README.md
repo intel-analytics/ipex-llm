@@ -34,7 +34,7 @@ After setting up the Python environment and downloading Bark model, you could ru
 
 #### 3.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 # make sure `--model-path` corresponds to the local folder of downloaded model
 python ./synthesize_speech.py --model-path 'bark/' --text "This is an example text for synthesize speech."
 ```

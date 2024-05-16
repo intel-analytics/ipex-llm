@@ -45,7 +45,7 @@ Arguments info:
 
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./generate.py 
 ```
 
@@ -121,7 +121,7 @@ Arguments info:
 
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 $env:PYTHONUNBUFFERED=1  # ensure stdout and stderr streams are sent straight to terminal without being first buffered
 python ./streamchat.py
 ```

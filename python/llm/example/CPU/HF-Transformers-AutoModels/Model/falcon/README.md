@@ -79,7 +79,7 @@ Arguments info:
 
 #### 3.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./generate.py 
 ```
 
