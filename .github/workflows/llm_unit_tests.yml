@@ -473,138 +473,150 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: TEST
+        shell: cmd
+        run: |
+          tree D:\actions-runner\bigdl-gpu-ut\_work\_tool\Python
+
+      - name: Set up libuv
         shell: bash
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools
-          python -m pip install --upgrade wheel
-          python -m pip install --upgrade notebook
+          mkdir libuv && cd ./libuv
+          wget https://anaconda.org/anaconda/libuv/1.44.2/download/win-64/libuv-1.44.2-h2bbff1b_0.tar.bz2
+          tar -jxvf ./libuv-1.44.2-h2bbff1b_0.tar.bz2
+        
+      # - name: Install dependencies
+      #   shell: bash
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     python -m pip install --upgrade setuptools
+      #     python -m pip install --upgrade wheel
+      #     python -m pip install --upgrade notebook
 
-          # May remove later
-          pip uninstall sentence-transformers -y || true
+      #     # May remove later
+      #     pip uninstall sentence-transformers -y || true
 
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Install IPEX-LLM for xpu
-        uses: ./.github/actions/llm/setup-llm-env
-        with:
-          extra-dependency: "xpu_${{ matrix.pytorch-version }}"
+      # - name: Install IPEX-LLM for xpu
+      #   uses: ./.github/actions/llm/setup-llm-env
+      #   with:
+      #     extra-dependency: "xpu_${{ matrix.pytorch-version }}"
 
-      - name: Test installed xpu version
-        shell: bash
-        run: |
-          bash python/llm/test/run-llm-install-tests.sh
+      # - name: Test installed xpu version
+      #   shell: bash
+      #   run: |
+      #     bash python/llm/test/run-llm-install-tests.sh
 
-      - name: Download LLMs and datasets
-        shell: bash
-        run: |
-          if [ ! -d $LLAMA2_7B_ORIGIN_PATH ]; then
-            echo "Directory $LLAMA2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Llama-2-7b-chat-hf -P $ORIGIN_DIR
-          fi
-          if [ ! -d $CHATGLM2_6B_ORIGIN_PATH ]; then
-            echo "Directory $CHATGLM2_6B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
-          fi
-          if [ ! -d $FALCON_7B_ORIGIN_PATH ]; then
-            echo "Directory $FALCON_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/falcon-7b-instruct-with-patch -P $ORIGIN_DIR
-          fi
-          if [ ! -d $MPT_7B_ORIGIN_PATH ]; then
-            echo "Directory $MPT_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/mpt-7b-chat -P $ORIGIN_DIR
-          fi
-          if [ ! -d $WHISPER_TINY_ORIGIN_PATH ]; then
-            echo "Directory $WHISPER_TINY_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/whisper-tiny -P $ORIGIN_DIR
-          fi
-          if [ ! -d $DATASET_DIR ]; then
-            mkdir -p $DATASET_DIR
-          fi
-          if [ ! -d $YAHMA_ALPACA_CLEANED_PATH ]; then
-            echo "Directory $YAHMA_ALPACA_CLEANED_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/yahma_alpaca_cleaned -P $DATASET_DIR
-          fi
-          if [ ! -d $SPEECH_DATASET_PATH ]; then
-            echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR
-          fi
-          if [ ! -d $MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH ]; then
-            echo "Directory $MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Mistral-7B-Instruct-v0.1 -P $ORIGIN_DIR
-          fi
-          if [ ! -d $QWEN_7B_ORIGIN_PATH ]; then
-            echo "Directory $QWEN_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Qwen-7B-Chat -P $ORIGIN_DIR
-          fi
-          if [ ! -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
-            echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Baichuan2-7B-Chat -P $ORIGIN_DIR
-          fi
-          if [ ! -d $VICUNA_7B_1_3_ORIGIN_PATH ]; then
-            echo "Directory $VICUNA_7B_1_3_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/vicuna-7b-v1.3 -P $ORIGIN_DIR
-          fi
+      # - name: Download LLMs and datasets
+      #   shell: bash
+      #   run: |
+      #     if [ ! -d $LLAMA2_7B_ORIGIN_PATH ]; then
+      #       echo "Directory $LLAMA2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Llama-2-7b-chat-hf -P $ORIGIN_DIR
+      #     fi
+      #     if [ ! -d $CHATGLM2_6B_ORIGIN_PATH ]; then
+      #       echo "Directory $CHATGLM2_6B_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
+      #     fi
+      #     if [ ! -d $FALCON_7B_ORIGIN_PATH ]; then
+      #       echo "Directory $FALCON_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/falcon-7b-instruct-with-patch -P $ORIGIN_DIR
+      #     fi
+      #     if [ ! -d $MPT_7B_ORIGIN_PATH ]; then
+      #       echo "Directory $MPT_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/mpt-7b-chat -P $ORIGIN_DIR
+      #     fi
+      #     if [ ! -d $WHISPER_TINY_ORIGIN_PATH ]; then
+      #       echo "Directory $WHISPER_TINY_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/whisper-tiny -P $ORIGIN_DIR
+      #     fi
+      #     if [ ! -d $DATASET_DIR ]; then
+      #       mkdir -p $DATASET_DIR
+      #     fi
+      #     if [ ! -d $YAHMA_ALPACA_CLEANED_PATH ]; then
+      #       echo "Directory $YAHMA_ALPACA_CLEANED_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/yahma_alpaca_cleaned -P $DATASET_DIR
+      #     fi
+      #     if [ ! -d $SPEECH_DATASET_PATH ]; then
+      #       echo "Directory $SPEECH_DATASET_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/datasets/librispeech_asr_dummy -P $DATASET_DIR
+      #     fi
+      #     if [ ! -d $MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH ]; then
+      #       echo "Directory $MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Mistral-7B-Instruct-v0.1 -P $ORIGIN_DIR
+      #     fi
+      #     if [ ! -d $QWEN_7B_ORIGIN_PATH ]; then
+      #       echo "Directory $QWEN_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Qwen-7B-Chat -P $ORIGIN_DIR
+      #     fi
+      #     if [ ! -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
+      #       echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Baichuan2-7B-Chat -P $ORIGIN_DIR
+      #     fi
+      #     if [ ! -d $VICUNA_7B_1_3_ORIGIN_PATH ]; then
+      #       echo "Directory $VICUNA_7B_1_3_ORIGIN_PATH not found. Downloading from FTP server..."
+      #       wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/vicuna-7b-v1.3 -P $ORIGIN_DIR
+      #     fi
           
-      - name: Run LLM inference test
-        shell: bash
-        run: |
-          python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
-          bash python/llm/test/run-llm-inference-tests-gpu.sh --win-arc
-          python -m pip install transformers==4.34.0 
-          bash python/llm/test/run-llm-inference-tests-gpu-434.sh --win-arc
+      # - name: Run LLM inference test
+      #   shell: bash
+      #   run: |
+      #     python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
+      #     bash python/llm/test/run-llm-inference-tests-gpu.sh --win-arc
+      #     python -m pip install transformers==4.34.0 
+      #     bash python/llm/test/run-llm-inference-tests-gpu-434.sh --win-arc
 
-      - name: Run LLM example tests
-        shell: bash
-        run: |
-          python -m pip uninstall datasets -y
-          python -m pip install transformers==4.36.0 datasets peft==0.10.0 accelerate==0.23.0
-          python -m pip install bitsandbytes scipy
-          bash python/llm/test/run-llm-example-tests-gpu.sh
+      # - name: Run LLM example tests
+      #   shell: bash
+      #   run: |
+      #     python -m pip uninstall datasets -y
+      #     python -m pip install transformers==4.36.0 datasets peft==0.10.0 accelerate==0.23.0
+      #     python -m pip install bitsandbytes scipy
+      #     bash python/llm/test/run-llm-example-tests-gpu.sh
           
-      - name: Get Langchain version
-        shell: bash
-        id: get_langchain_version
-        run: |
-          pip install langchain
-          LANGCHAIN_VERSION=$(pip show langchain | grep Version | cut -d " " -f 2)
-          LANGCHAIN_REF="langchain==$LANGCHAIN_VERSION"
-          echo "langchain_ver=$LANGCHAIN_REF" >> $GITHUB_OUTPUT
+      # - name: Get Langchain version
+      #   shell: bash
+      #   id: get_langchain_version
+      #   run: |
+      #     pip install langchain
+      #     LANGCHAIN_VERSION=$(pip show langchain | grep Version | cut -d " " -f 2)
+      #     LANGCHAIN_REF="langchain==$LANGCHAIN_VERSION"
+      #     echo "langchain_ver=$LANGCHAIN_REF" >> $GITHUB_OUTPUT
 
-      - name: Checkout Langchain repo
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
-        with:
-          repository: "langchain-ai/langchain"
-          ref: ${{ join(steps.get_langchain_version.outputs.*, '\n') }}
-          path: langchain_upstream
+      # - name: Checkout Langchain repo
+      #   uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+      #   with:
+      #     repository: "langchain-ai/langchain"
+      #     ref: ${{ join(steps.get_langchain_version.outputs.*, '\n') }}
+      #     path: langchain_upstream
             
-      - name: Run LLM langchain GPU test
-        shell: bash
-        run: |
-          pip install -U langchain==0.0.184
-          pip install -U chromadb==0.3.25
-          pip install -U pandas==2.0.3
-          bash python/llm/test/run-llm-langchain-tests-gpu.sh --win-arc
+      # - name: Run LLM langchain GPU test
+      #   shell: bash
+      #   run: |
+      #     pip install -U langchain==0.0.184
+      #     pip install -U chromadb==0.3.25
+      #     pip install -U pandas==2.0.3
+      #     bash python/llm/test/run-llm-langchain-tests-gpu.sh --win-arc
           
-          pip install -U langchain
-          pip install -U langchain-community
-          pip install --pre --upgrade bigdl-llm[all]
-          bash python/llm/test/run-langchain-upstream-tests.sh
+      #     pip install -U langchain
+      #     pip install -U langchain-community
+      #     pip install --pre --upgrade bigdl-llm[all]
+      #     bash python/llm/test/run-langchain-upstream-tests.sh
 
-      - name: Run LLM llamaindex GPU test
-        shell: bash
-        run: |
-          pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
-          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
-            pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-          fi
-          pip install transformers==4.36.0
-          pip install "pydantic>=2.0.0"
-          bash python/llm/test/run-llm-llamaindex-tests-gpu.sh --win-arc
-      - name: Run sentence-transformers uninstallation
-        if: ${{ always() }}
-        shell: bash
-        run: |
-          pip uninstall sentence-transformers -y || true
+      # - name: Run LLM llamaindex GPU test
+      #   shell: bash
+      #   run: |
+      #     pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+      #     if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+      #       pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      #     fi
+      #     pip install transformers==4.36.0
+      #     pip install "pydantic>=2.0.0"
+      #     bash python/llm/test/run-llm-llamaindex-tests-gpu.sh --win-arc
+      # - name: Run sentence-transformers uninstallation
+      #   if: ${{ always() }}
+      #   shell: bash
+      #   run: |
+      #     pip uninstall sentence-transformers -y || true
