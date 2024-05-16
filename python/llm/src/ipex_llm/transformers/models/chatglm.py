@@ -23,7 +23,6 @@ import torch.utils.checkpoint
 import torch.nn.functional as F
 from typing import Optional, Tuple
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from ipex_llm.transformers.models.utils import use_sdp
 
 
 def rotate_half(x):
