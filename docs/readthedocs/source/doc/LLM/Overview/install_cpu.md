@@ -10,11 +10,13 @@ Install IPEX-LLM for CPU supports using pip through:
    .. tab:: Linux
 
       .. code-block:: bash
+
          pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install the latest ipex-llm nightly build with 'all' option
 
    .. tab:: Windows
 
-      .. code-block:: bash
+      .. code-block:: cmd
+
          pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 
@@ -65,7 +67,7 @@ First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html)
 
    .. tab:: Windows
 
-      .. code-block:: bash
+      .. code-block:: cmd
 
          conda create -n llm python=3.11
          conda activate llm
