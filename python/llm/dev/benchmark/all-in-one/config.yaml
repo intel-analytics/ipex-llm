@@ -1,16 +1,40 @@
 repo_id:
-  # - 'THUDM/chatglm2-6b'
   - 'meta-llama/Llama-2-7b-chat-hf'
-  # - 'liuhaotian/llava-v1.5-7b' # requires a LLAVA_REPO_DIR env variables pointing to the llava dir; added only for gpu win related test_api now
-local_model_hub: 'path to your local model hub'
-warm_up: 1 # must set >=2 when run "pipeline_parallel_gpu" test_api
+  - 'meta-llama/Llama-2-13b-chat-hf'
+  - 'THUDM/chatglm2-6b'
+  - 'THUDM/chatglm3-6b'
+  - 'tiiuae/falcon-7b-instruct-with-patch'
+  - 'mosaicml/mpt-7b-chat'
+  - 'redpajama/gptneox-7b-redpajama-bf16'
+  - 'bigcode/starcoder-15.5b-4bit'
+  - 'databricks/dolly-v1-6b'
+  - 'databricks/dolly-v2-7b'
+  - 'databricks/dolly-v2-12b'
+  - 'internlm/internlm-chat-7b-8k'
+  - 'BAAI/AquilaChat-7B'
+  - 'baichuan-inc/Baichuan2-7B-Chat'
+  - 'baichuan-inc/Baichuan2-13B-Chat-4bit' 
+  - 'bigscience/bloomz-7b1'
+  - 'fnlp/moss-moon-003-sft-4bit'
+  # For the models that require transformers 4.34.0
+  # - 'mistralai/Mistral-7B-v0.1'
+  # For the models that require transformers 4.37.0
+  # - 'Qwen/Qwen1.5-7B-Chat'
+  # - 'microsoft/phi-2'
+  # - 'microsoft/Phi-3-mini-4k-instruct'
+  # - 'meta-llama/Meta-Llama-3-8B-Instruct'
+local_model_hub: '/mnt/disk1/models'
+warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
-low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
-batch_size: 1 # default to 1
+low_bit: 'sym_int4' ##'fp8' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 
+  - 1 # default to 1
+  - 2 # default to 1
 in_out_pairs:
   - '32-32'
   - '1024-128'
+  - '2048-256'
 test_api:
   - "transformer_int4_gpu"                # on Intel GPU, transformer-like API, (qtype=int4)
   # - "transformer_int4_gpu_win"            # on Intel GPU for Windows, transformer-like API, (qtype=int4)
@@ -37,3 +61,11 @@ cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only avaiable now for "pipeline_parallel_gpu" test_api)
 n_gpu: 2 # number of GPUs to use (only avaiable now for "pipeline_parallel_gpu" test_api)
+exclude:
+  - 'bigscience/bloomz-7b1:2048:2'
+  - 'fnlp/moss-moon-003-sft-4bit:1024'
+  - 'fnlp/moss-moon-003-sft-4bit:2048'
+  - 'bigcode/starcoder-15.5b-4bit:2048:2'
+  - 'databricks/dolly-v2-12b:2048:2'
+  - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
+  
