@@ -9,11 +9,27 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM3 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
+# install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+# Refer to https://github.com/modelscope/modelscope/issues/765, please make sure you are using 1.11.0 version
+pip install modelscope==1.11.0
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+# install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 # Refer to https://github.com/modelscope/modelscope/issues/765, please make sure you are using 1.11.0 version
 pip install modelscope==1.11.0
 ```

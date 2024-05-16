@@ -22,7 +22,6 @@ cd llama/
 git apply < ../cpu.patch # apply cpu version patch
 pip install -e .
 
-cd -
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 ```
@@ -39,7 +38,6 @@ cd llama/
 git apply < ../cpu.patch # apply cpu version patch
 pip install -e .
 
-cd -
 pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 

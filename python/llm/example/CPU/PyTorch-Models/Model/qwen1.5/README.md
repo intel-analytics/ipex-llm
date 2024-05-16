@@ -10,7 +10,25 @@ In the example [generate.py](./generate.py), we show a basic use case for a Qwen
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+On Linux:
+
 ```bash
+conda create -n llm python=3.11 # recommend to use Python 3.11
+conda activate llm
+
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+pip install transformers==4.37.0 # install transformers which supports Qwen2
+
+# only for Qwen1.5-MoE-A2.7B
+pip install transformers==4.40.0
+pip install trl==0.8.1
+```
+
+On Windows:
+
+```cmd
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 

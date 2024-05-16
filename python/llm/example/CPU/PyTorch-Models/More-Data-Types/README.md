@@ -9,11 +9,24 @@ To run this example with IPEX-LLM, we have some recommended requirements for you
 In the example [generate.py](./generate.py), we show a basic use case of low-bit optimizations (including INT8/INT5/INT4) on a Llama2 model to predict the next N tokens using `generate()` API. By specifying `--low-bit` argument, you could apply other low-bit optimization (e.g. INT8/INT5) on model.
 ### 1. Install
 We suggest using conda to manage environment:
+
+On Linux:
+
 ```bash
-conda create -n llm python=3.11
+conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11 # recommend to use Python 3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
 ```
 
 ### 2. Run

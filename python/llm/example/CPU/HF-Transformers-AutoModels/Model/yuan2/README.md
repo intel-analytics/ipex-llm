@@ -19,8 +19,8 @@ On Linux:
 conda create -n llm python=3.11
 conda activate llm
 
+# install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
- # install the latest ipex-llm nightly build with 'all' option
 pip install einops # additional package required for Yuan2 to conduct generation
 pip install pandas # additional package required for Yuan2 to conduct generation
 ```

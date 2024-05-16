@@ -10,14 +10,26 @@ In the example [chat.py](./chat.py), we show a basic use case for a Qwen-VL mode
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
-
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib # additional package required for Qwen-VL-Chat to conduct generation
+```
 
+On Windows:
+
+```cmd
+conda create -n llm python=3.11 # recommend to use Python 3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib # additional package required for Qwen-VL-Chat to conduct generation
 ```
 
 ### 2. Run

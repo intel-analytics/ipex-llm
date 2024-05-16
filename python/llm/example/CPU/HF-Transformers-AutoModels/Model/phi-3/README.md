@@ -22,7 +22,7 @@ On Linux:
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu # install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
 pip install transformers==4.37.0
 ```
