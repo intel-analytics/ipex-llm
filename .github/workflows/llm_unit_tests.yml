@@ -481,9 +481,10 @@ jobs:
           tar -jxvf ./libuv.tar.bz2
           echo $ANALYTICS_ZOO_ROOT
           echo ${{ github.workspace }}
-          cp -r ./Library/bin/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/bin/
-          cp -r ./Library/include/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/include/
-          cp -r ./Library/lib/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/libs/
+          pwd
+          cp -r ./Library/bin/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/3.11.9/x64/bin/
+          cp -r ./Library/include/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/3.11.9/x64/include/
+          cp -r ./Library/lib/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/3.11.9/x64/libs/
         
       - name: Install dependencies
         shell: bash
