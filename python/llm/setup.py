@@ -46,7 +46,8 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 IPEX_LLM_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(IPEX_LLM_PYTHON_HOME,
                './llm/version.txt'), 'r').read().strip()
-CORE_XE_VERSION = VERSION.replace("2.1.0", "2.5.0")
+# CORE_XE_VERSION = VERSION.replace("2.1.0", "2.5.0")
+CORE_XE_VERSION = "2.5.0b20240515"
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
