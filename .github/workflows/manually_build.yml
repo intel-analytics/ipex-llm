@@ -148,7 +148,7 @@ jobs:
         echo "####### ipex-llm-finetune-xpu ########"
         echo "##############################################################"
         export image=intelanalytics/ipex-llm-finetune-xpu
-        cd docker/llm/finetune/qlora/xpu/docker
+        cd docker/llm/finetune/xpu
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
