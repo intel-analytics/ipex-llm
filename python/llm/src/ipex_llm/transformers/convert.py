@@ -273,6 +273,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  enable_xetla=False,
                                  mixed_precision=False,
                                  act_order=False,
+                                 enable_deepspeed_zero3=False,
                                  ):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
@@ -337,36 +338,70 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     if in_features % 64 != 0:
                         # now our kernel requires in_features is a multiple of 64
                         continue
-                    new_linear = LowBitLinear(
-                        in_features,
-                        out_features,
-                        qtype,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        enable_xetla=enable_xetla,
-                        optimize_lm_head=optimize_lm_head
-                    )
-                    cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
-                                                                       full_module_name,
-                                                                       imatrix_data,
-                                                                       model_config)
-                    # mixed precison for lm_head
-                    if mixed_precision and is_lm_head(name, model_config, out_features):
-                        if cur_qtype in [ggml_tensor_qtype["sym_int4"],
-                                         ggml_tensor_qtype["asym_int4"]]:
-                            cur_qtype = ggml_tensor_qtype["sym_int8"]
-                    device = module.weight.data.device
-                    # Copy the weights
-                    paramsLowBit = FP4Params(data=module.weight.data,
-                                             requires_grad=False,
-                                             quantized=False,
-                                             _shape=None,
-                                             convert_shape_only=convert_shape_only,
-                                             qtype=cur_qtype,
-                                             imatrix=cur_imatrix,
-                                             in_features=in_features,
-                                             enable_xetla=enable_xetla).to(device)
-                    new_linear._parameters['weight'] = paramsLowBit
+                    if enable_deepspeed_zero3:
+                        cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
+                                                                           full_module_name,
+                                                                           imatrix_data,
+                                                                           model_config)
+                        # mixed precison for lm_head
+                        if mixed_precision and is_lm_head(name, model_config, out_features):
+                            if cur_qtype in [ggml_tensor_qtype["sym_int4"],
+                                             ggml_tensor_qtype["asym_int4"]]:
+                                cur_qtype = ggml_tensor_qtype["sym_int8"]
+                        device = module.weight.data.device
+                        # Copy the weights
+                        new_weight = FP4Params(data=module.weight.data,
+                                           requires_grad=False,
+                                           quantized=False,
+                                           _shape=None,
+                                           convert_shape_only=convert_shape_only,
+                                           qtype=cur_qtype,
+                                           imatrix=cur_imatrix,
+                                           in_features=in_features,
+                                           enable_xetla=enable_xetla,
+                                           enable_deepspeed_zero3=enable_deepspeed_zero3).to(device)
+                        new_linear = LowBitLinear(
+                            in_features,
+                            out_features,
+                            qtype,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                            enable_xetla=enable_xetla,
+                            optimize_lm_head=optimize_lm_head,
+                            enable_deepspeed_zero3=enable_deepspeed_zero3,
+                            weight=new_weight
+                       )
+                    else:
+                        new_linear = LowBitLinear(
+                            in_features,
+                            out_features,
+                            qtype,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                            enable_xetla=enable_xetla,
+                            optimize_lm_head=optimize_lm_head
+                        )
+                        cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
+                                                                           full_module_name,
+                                                                           imatrix_data,
+                                                                           model_config)
+                        # mixed precison for lm_head
+                        if mixed_precision and is_lm_head(name, model_config, out_features):
+                            if cur_qtype in [ggml_tensor_qtype["sym_int4"],
+                                             ggml_tensor_qtype["asym_int4"]]:
+                                cur_qtype = ggml_tensor_qtype["sym_int8"]
+                        device = module.weight.data.device
+                        # Copy the weights
+                        paramsLowBit = FP4Params(data=module.weight.data,
+                                                 requires_grad=False,
+                                                 quantized=False,
+                                                 _shape=None,
+                                                 convert_shape_only=convert_shape_only,
+                                                 qtype=cur_qtype,
+                                                 imatrix=cur_imatrix,
+                                                 in_features=in_features,
+                                                 enable_xetla=enable_xetla).to(device)
+                        new_linear._parameters['weight'] = paramsLowBit
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
                             .to(device)
@@ -757,7 +792,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          imatrix_data=None,
                          embedding_qtype=None,
                          enable_xetla=False,
-                         mixed_precision=False):
+                         mixed_precision=False,
+                         enable_deepspeed_zero3=False):
     logger.info(f"Converting the current model to "
                 f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
                 f"format......")
@@ -788,6 +824,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         enable_xetla=enable_xetla,
         mixed_precision=mixed_precision,
         act_order=act_order,
+        enable_deepspeed_zero3=enable_deepspeed_zero3,
     )
     if not has_been_replaced:
         warnings.warn(

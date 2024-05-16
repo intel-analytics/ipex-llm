@@ -295,14 +295,17 @@ def get_peft_model(*args, **kwargs):
         LoraModel._create_new_module = old_create_new_module
 
     if model.device.type == "xpu":
-        cast_lora_weight(model, torch.bfloat16)
+        enable_deepspeed_zero3 = kwargs.pop("enable_deepspeed_zero3", False)
+        cast_lora_weight(model, torch.bfloat16, enable_deepspeed_zero3)
         _optimize_post(model)
         torch.xpu.synchronize()
 
     return model
 
 
-def prepare_model_for_kbit_training(model, use_gradient_checkpointing=True):
+def prepare_model_for_kbit_training(model,
+                                    use_gradient_checkpointing=True,
+                                    enable_deepspeed_zero3=False):
     r"""
     This method wraps the entire protocol for preparing a model before running a training.
     This includes:
@@ -320,7 +323,7 @@ def prepare_model_for_kbit_training(model, use_gradient_checkpointing=True):
         # freeze base model's layers
         param.requires_grad = False
 
-    if not is_gptq_quantized:
+    if not is_gptq_quantized and not enable_deepspeed_zero3:
         # cast all non INT8 parameters to fp32
         # for param in model.parameters():
         #     if (param.dtype == torch.float16) or (param.dtype == torch.bfloat16):
@@ -375,7 +378,9 @@ from peft.mapping import PEFT_TYPE_TO_CONFIG_MAPPING
 PEFT_TYPE_TO_CONFIG_MAPPING["lora"] = LoraConfig
 
 
-def cast_lora_weight(model, dtype=torch.bfloat16):
+def cast_lora_weight(model,
+                     dtype=torch.bfloat16,
+                     enable_deepspeed_zero3=False):
     for name, module in model.named_modules():
         if isinstance(module, LowBitLinear):
             module.compute_dtype = dtype
@@ -385,7 +390,7 @@ def cast_lora_weight(model, dtype=torch.bfloat16):
             module = module.to(dtype)
             module.compute_dtype = dtype
         if 'norm' in name:
-            module = module.to(torch.float32)
+            module = module.to(torch.bfloat16 if enable_deepspeed_zero3 else torch.float32)
         if 'lm_head' in name or 'embed_tokens' in name:
             if hasattr(module, 'weight'):
                 if module.weight.dtype == torch.float32:

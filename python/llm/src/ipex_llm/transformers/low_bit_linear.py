@@ -199,7 +199,8 @@ def get_qk_size(qtype: int):
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                        device=None, convert_shape_only=False,
                        imatrix: torch.Tensor=None,
-                       in_features: int=None):
+                       in_features: int=None,
+                       enable_deepspeed_zero3=False):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
 
@@ -213,8 +214,12 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                       f"Last dim of input tensor must be multiple of {QK}")
 
     dst_size = (n // QK) * block_size_in_bytes
-    dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
-                             device=device)
+    if enable_deepspeed_zero3:
+        dst_tensor = torch.empty(dst_size, dtype=torch.bfloat16,
+                                 device=device)
+    else:
+        dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                                 device=device)
 
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
@@ -233,13 +238,16 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     return dst_tensor
 
 
-def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int):
+def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor,
+                                 num_elem: int, qtype: int,
+                                 enable_deepspeed_zero3=False):
 
-    invalidInputError(tensor.dtype == torch.uint8,
-                      "Input tensor must be uint8")
+    if not enable_deepspeed_zero3:
+        invalidInputError(tensor.dtype == torch.uint8,
+                          "Input tensor must be uint8")
 
     invalidInputError(tensor.device == torch.device('cpu'),
-                      "Input tensor must be uint8")
+                      "Input tensor must be on cpu")
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
@@ -332,7 +340,8 @@ class FP4Params(torch.nn.Parameter):
                 qtype=None,
                 imatrix=None,
                 in_features=None,
-                enable_xetla=False,):
+                enable_xetla=False,
+                enable_deepspeed_zero3=False,):
         if data is None:
             data = torch.empty(0)
 
@@ -345,6 +354,7 @@ class FP4Params(torch.nn.Parameter):
         self.imatrix = imatrix
         self.in_features = in_features
         self.enable_xetla = enable_xetla
+        self.enable_deepspeed_zero3 = enable_deepspeed_zero3
         return self
 
     def ggml_mse(self, w, ggml_qtype, device):
@@ -399,7 +409,8 @@ class FP4Params(torch.nn.Parameter):
                                                  device=device,
                                                  convert_shape_only=self.convert_shape_only,
                                                  imatrix=self.imatrix,
-                                                 in_features=self.in_features)
+                                                 in_features=self.in_features,
+                                                 enable_deepspeed_zero3=self.enable_deepspeed_zero3)
                 self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
@@ -432,7 +443,8 @@ class FP4Params(torch.nn.Parameter):
             self.quantize(device)  # tensor is cpu now
             self.data = ggml_q_format_convet_cpu2xpu(self.data,
                                                      reduce(mul, self._shape, 1),
-                                                     self.qtype)
+                                                     self.qtype,
+                                                     self.enable_deepspeed_zeor3)
             if self.enable_xetla:
                 self.data = ggml_xpu_to_ipex_llm_xetla(self.data, self._shape, self.qtype)
             new_param = FP4Params(super().to(device=device,
@@ -521,10 +533,13 @@ class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
     @custom_fwd
-    def forward(ctx, A, weight, input_seq_size):
+    def forward(ctx, A, weight, input_seq_size, enable_deepspeed_zero3=False):
         ctx.is_empty = False
         import linear_q4_0
-        result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
+        if enable_deepspeed_zero3:
+            result = linear_q4_0.forward_new(A, weight.data.byte(), NF4, input_seq_size)
+        else:
+            result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
         if any(ctx.needs_input_grad[:2]):
             ctx.tensors = (A, weight)
         else:
@@ -533,7 +548,7 @@ class MatMulLowBit(torch.autograd.Function):
 
     @staticmethod
     @custom_bwd
-    def backward(ctx, grad_output):
+    def backward(ctx, grad_output, enable_deepspeed_zero3=False):
         import linear_q4_0
         if ctx.is_empty:
             bias_grad = None if ctx.bias is None else torch.zeros_like(ctx.bias)
@@ -544,8 +559,12 @@ class MatMulLowBit(torch.autograd.Function):
         if req_gradA:
             if torch.xpu.is_autocast_xpu_enabled():
                 grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
-            dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype)
-            grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
+            if enable_deepspeed_zero3:
+                dequant_weight = linear_q4_0.dequant(A, weight.data.byte(), NF4)
+                grad_A = torch.matmul(grad_output, dequant_weight)
+            else:
+                dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype)
+                grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None
 
@@ -582,12 +601,17 @@ class MatMulLowBitCPU(torch.autograd.Function):
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
                  conver_to_half=True, mp_group=None, enable_xetla=False,
-                 optimize_lm_head=False, act_order=False):
+                 optimize_lm_head=False, act_order=False,
+                 enable_deepspeed_zero3=False,
+                 weight=None):
         super().__init__(input_features, output_features, bias)
-        self.weight = FP4Params(self.weight.data,
-                                requires_grad=False,
-                                quantized=False, _shape=None, qtype=qtype,
-                                enable_xetla=enable_xetla)
+        if enable_deepspeed_zero3 and weight is not None:
+            self._parameters['weight'] = weight
+        else:
+            self.weight = FP4Params(self.weight.data,
+                                    requires_grad=False,
+                                    quantized=False, _shape=None, qtype=qtype,
+                                    enable_xetla=enable_xetla)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
@@ -611,6 +635,7 @@ class LowBitLinear(nn.Linear):
             self.register_buffer(
                 "g_idx_map",
                 torch.tensor([i for i in range(self.in_len)], dtype=torch.int64))
+        self.enable_deepspeed_zero3 = enable_deepspeed_zero3
 
     def forward(self, x: torch.Tensor):
         # empty cache before and after lm_head at first token when input > 1024
