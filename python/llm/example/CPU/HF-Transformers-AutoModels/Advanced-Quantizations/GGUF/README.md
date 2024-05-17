@@ -37,12 +37,11 @@ pip install transformers==4.36.0  # upgrade transformers
 
 On Windows:
 ```cmd
-conda create -n llm python=3.11 # recommend to use Python 3.11
+conda create -n llm python=3.11
 conda activate llm
 
-# install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] 
-pip install transformers==4.36.0  # upgrade transformers
+pip install transformers==4.36.0
 ```
 
 ### 2. Run

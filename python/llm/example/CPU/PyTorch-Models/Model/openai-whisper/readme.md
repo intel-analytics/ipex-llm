@@ -22,15 +22,15 @@ pip install -U openai-whisper
 pip install librosa # required by audio processing
 ```
 
-On Windows:
+On windows:
 
 ```cmd
 conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 pip install -U openai-whisper
-pip install librosa # required by audio processing
+pip install librosa
 ```
 
 ### 2. Run

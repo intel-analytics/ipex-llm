@@ -24,15 +24,14 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install transformers==4.38.0
 ```
 
-On Windows:
+On windows:
 
 ```cmd
-conda create -n llm python=3.11 # recommend to use Python 3.11
+conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 
-# Refer to https://huggingface.co/stabilityai/stablelm-zephyr-3b/blob/8b471c751c0e78cb46cf9f47738dd0eb45392071/config.json#L21, please make sure you are using a stable version of Transformers, 4.38.0 or newer.
 pip install transformers==4.38.0
 ```
 

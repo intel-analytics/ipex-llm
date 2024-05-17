@@ -29,20 +29,20 @@ cd LLaVA # change the working directory to the LLaVA folder
 git checkout tags/v1.2.0 -b 1.2.0 # Get the branch which is compatible with transformers 4.36
 ```
 
-On Windows:
+On windows:
 
 ```cmd
-conda create -n llm python=3.11 # recommend to use Python 3.11
+conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
-pip install einops # install dependencies required by llava
+pip install --pre --upgrade ipex-llm[all]
+pip install einops
 pip install transformers==4.36.2
 
-git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
-cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
-cd LLaVA # change the working directory to the LLaVA folder
-git checkout tags/v1.2.0 -b 1.2.0 # Get the branch which is compatible with transformers 4.36
+git clone https://github.com/haotian-liu/LLaVA.git
+copy generate.py .\LLaVA\
+cd LLaVA
+git checkout tags/v1.2.0 -b 1.2.0
 ```
 
 ### 2. Run

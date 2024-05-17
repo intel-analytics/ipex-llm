@@ -27,8 +27,8 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
-pip install einops # additional package required for falcon-7b-instruct and falcon-40b-instruct to conduct generation
+pip install --pre --upgrade ipex-llm[all]
+pip install einops
 ```
 
 ### 2. (Optional) Download Model and Replace File

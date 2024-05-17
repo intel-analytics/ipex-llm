@@ -20,14 +20,14 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install transformers==4.35.2 # required by SOLAR
 ```
 
-On Windows:
+On windows:
 
 ```cmd
 conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
-pip install transformers==4.35.2 # required by SOLAR
+pip install --pre --upgrade ipex-llm[all]
+pip install transformers==4.35.2
 ```
 
 ### 2. Run

@@ -28,9 +28,7 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-# install ipex-llm with 'all' option
 pip install --pre --upgrade ipex-llm[all]
-# Refer to https://github.com/modelscope/modelscope/issues/765, please make sure you are using 1.11.0 version
 pip install modelscope==1.11.0
 ```
 

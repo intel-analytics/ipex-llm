@@ -21,13 +21,13 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 
-On Windows:
+On windows:
 
 ```cmd
-conda create -n llm python=3.11 # recommend to use Python 3.11
+conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 ```
 ### 2. Run
 After setting up the Python environment, you could run the example by following steps.

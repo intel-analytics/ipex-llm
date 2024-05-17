@@ -24,8 +24,8 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
-pip install transformers_stream_generator  # additional package required for Baichuan-13B-Chat to conduct generation
+pip install --pre --upgrade ipex-llm[all]
+pip install transformers_stream_generator
 ```
 
 ### 2. Run

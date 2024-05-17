@@ -27,9 +27,8 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 
-# transformers>=4.33.0 is required for Llama3 with IPEX-LLM optimizations
 pip install transformers==4.37.0 
 ```
 

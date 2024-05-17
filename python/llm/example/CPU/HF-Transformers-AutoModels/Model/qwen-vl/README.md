@@ -24,15 +24,15 @@ pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scip
 
 ```
 
-On Windows:
+On windows:
 
 ```cmd
-conda create -n llm python=3.11 # recommend to use Python 3.11
+conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 
-pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib # additional package required for Qwen-VL-Chat to conduct generation
+pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib
 
 ```
 

@@ -32,13 +32,12 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-# Install meta-llama repository
 git clone https://github.com/facebookresearch/llama.git
 cd llama/
-git apply < ../cpu.patch # apply cpu version patch
+git apply < ../cpu.patch
 pip install -e .
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 ```
 
 ### 2. Run

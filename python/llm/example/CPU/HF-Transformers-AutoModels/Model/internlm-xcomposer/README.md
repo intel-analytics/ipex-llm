@@ -24,15 +24,15 @@ pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdow
 
 ```
 
-On Windows:
+On windows:
 
 ```cmd
-conda create -n llm python=3.11 # recommend to use Python 3.11
+conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 
-pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops # additional package required for InternLM_XComposer to conduct generation
+pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops
 
 ```
 

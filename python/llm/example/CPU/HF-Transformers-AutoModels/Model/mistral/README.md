@@ -26,15 +26,14 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install transformers==4.34.0
 ```
 
-On Windows:
+On windows:
 
 ```cmd
-conda create -n llm python=3.11 # recommend to use Python 3.11
+conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 
-# Refer to https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting, please make sure you are using a stable version of Transformers, 4.34.0 or newer.
 pip install transformers==4.34.0
 ```
 

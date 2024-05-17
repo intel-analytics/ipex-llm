@@ -25,8 +25,8 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install ipex-llm with 'all' option
-pip install pillow # additional package required for opening images
+pip install --pre --upgrade ipex-llm[all]
+pip install pillow
 ```
 
 ### 2. Run
