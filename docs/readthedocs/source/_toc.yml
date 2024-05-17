@@ -21,6 +21,7 @@ subtrees:
               - entries:
                 - file: doc/LLM/DockerGuides/docker_windows_gpu
                 - file: doc/LLM/DockerGuides/docker_pytorch_inference_gpu
+                - file: doc/LLM/DockerGuides/docker_cpp_xpu_quickstart
           - file: doc/LLM/Quickstart/index
             title: "Quickstart"
             subtrees:
@@ -41,7 +42,6 @@ subtrees:
                 - file: doc/LLM/Quickstart/fastchat_quickstart
                 - file: doc/LLM/Quickstart/axolotl_quickstart
                 - file: doc/LLM/Quickstart/deepspeed_autotp_fastapi_quickstart
-                - file: doc/LLM/Quickstart/docker_cpp_xpu_quickstart
           - file: doc/LLM/Overview/KeyFeatures/index
             title: "Key Features"
             subtrees:

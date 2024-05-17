@@ -358,6 +358,10 @@ def mlp_fusion_check(x, qtype, training):
         return False
     if training or x.requires_grad:
         return False
+    if qtype == FP6:
+        device = get_xpu_device_type(x)
+        if device == "mtl":
+            return False
     return True
 
 
