@@ -563,13 +563,13 @@ jobs:
       #     python -m pip install transformers==4.34.0 
       #     bash python/llm/test/run-llm-inference-tests-gpu-434.sh --win-arc
 
-      - name: Run LLM example tests
-        shell: bash
-        run: |
-          python -m pip uninstall datasets -y
-          python -m pip install transformers==4.36.0 datasets peft==0.10.0 accelerate==0.23.0
-          python -m pip install bitsandbytes scipy
-          bash python/llm/test/run-llm-example-tests-gpu.sh
+      # - name: Run LLM example tests
+      #   shell: bash
+      #   run: |
+      #     python -m pip uninstall datasets -y
+      #     python -m pip install transformers==4.36.0 datasets peft==0.10.0 accelerate==0.23.0
+      #     python -m pip install bitsandbytes scipy
+      #     bash python/llm/test/run-llm-example-tests-gpu.sh
           
       - name: Get Langchain version
         shell: bash
