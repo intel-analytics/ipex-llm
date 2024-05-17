@@ -481,21 +481,21 @@ jobs:
           tar -jxvf ./libuv.tar.bz2
           cp -r ./Library/bin/* ../../../_tool/Python/3.11.9/x64/Library/bin/
           cd ../../../_tool/Python/3.11.9/x64/Library/bin/
-          echo "$(pwd)" >> $GITHUB_PATH
+          # echo "$(pwd)" >> $GITHUB_PATH
           cd -
 
           cp -r ./Library/lib/* ../../../_tool/Python/3.11.9/x64/Library/lib/
           cd ../../../_tool/Python/3.11.9/x64/Library/lib/
-          echo "$(pwd)" >> $GITHUB_PATH
+          # echo "$(pwd)" >> $GITHUB_PATH
           cd -
 
           cp -r ./Library/include/* ../../../_tool/Python/3.11.9/x64/include/
           cd ../../../_tool/Python/3.11.9/x64/include/
-          echo "$(pwd)" >> $GITHUB_PATH
+          # echo "$(pwd)" >> $GITHUB_PATH
           cd -
 
           cd ../../../_tool/Python/3.11.9/x64/
-          echo "$(pwd)" >> $GITHUB_PATH
+          # echo "$(pwd)" >> $GITHUB_PATH
           cd -
           
           echo "$PATH"
