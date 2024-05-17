@@ -5,7 +5,7 @@ We can run PyTorch Inference Benchmark, Chat Service and PyTorch Examples on Int
 ```eval_rst
 .. note::
 
-   The current Windows + WSL + Docker solution only supports Arc series dGPU. For Windows users with MTL iGPU, it is recommended to install directly via pip install in Anaconda Prompt. Refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html>`.
+   The current Windows + WSL + Docker solution only supports Arc series dGPU. For Windows users with MTL iGPU, it is recommended to install directly via pip install in Anaconda Prompt. Refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html>`_.
 
 ```
 
