@@ -488,7 +488,6 @@ jobs:
 
           pwd
           cd $(cygpath -u "$Python3_ROOT_DIR")/bin/
-          echo "$(pwd)" >> $GITHUB_PATH
           echo "$(cygpath -w $(pwd))" >> $GITHUB_PATH
           cd -
 
