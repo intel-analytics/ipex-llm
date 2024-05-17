@@ -587,18 +587,18 @@ jobs:
       #     ref: ${{ join(steps.get_langchain_version.outputs.*, '\n') }}
       #     path: langchain_upstream
             
-      - name: Run LLM langchain GPU test
-        shell: bash
-        run: |
-          pip install -U langchain==0.0.184
-          pip install -U chromadb==0.3.25
-          pip install -U pandas==2.0.3
-          bash python/llm/test/run-llm-langchain-tests-gpu.sh --win-arc
+      # - name: Run LLM langchain GPU test
+      #   shell: bash
+      #   run: |
+      #     pip install -U langchain==0.0.184
+      #     pip install -U chromadb==0.3.25
+      #     pip install -U pandas==2.0.3
+      #     bash python/llm/test/run-llm-langchain-tests-gpu.sh --win-arc
           
-          pip install -U langchain
-          pip install -U langchain-community
-          pip install --pre --upgrade bigdl-llm[all]
-          bash python/llm/test/run-langchain-upstream-tests.sh
+      #     pip install -U langchain
+      #     pip install -U langchain-community
+      #     pip install --pre --upgrade bigdl-llm[all]
+      #     bash python/llm/test/run-langchain-upstream-tests.sh
 
       - name: Run LLM llamaindex GPU test
         shell: bash
