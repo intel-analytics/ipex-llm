@@ -35,6 +35,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 pip install transformers==4.37.0
 
+REM for Qwen1.5-MoE-A2.7B
 pip install transformers==4.40.0
 pip install trl==0.8.1
 ```
