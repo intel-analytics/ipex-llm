@@ -58,6 +58,8 @@ If you successfully run the serving, you can get output like this:
 
 We can use `curl` to test serving api
 
+#### generate()
+
 ```bash
 # Set http_proxy and https_proxy to null to ensure that requests are not forwarded by a proxy.
 export http_proxy=
@@ -77,9 +79,65 @@ And you should get output like this:
 
 ```json
 {
-  "generated_text": "What is AI? Artificial intelligence (AI) refers to the development of computer systems able to perform tasks that would normally require human intelligence, such as visual perception, speech",
-  "generate_time": "0.45149803161621094s"
+  "index": 0,
+  "message": {
+    "role": "assistant",
+    "content": "\nUnterscheidung zwischen KI und AI\n\nAI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks "
+  },
+  "finish_reason": "stop"
 }
+```
+#### generate_stream()
+```bash
+# Set http_proxy and https_proxy to null to ensure that requests are not forwarded by a proxy.
+export http_proxy=
+export https_proxy=
+
+curl -X 'POST' \
+  'http://127.0.0.1:8000/generate_stream/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "prompt": "What is AI?",
+  "n_predict": 32
+}'
+```
+
+And you should get output like this:
+```json
+{"index": 0, "message": {"role": "assistant", "content": "\n"}, "finish_reason": null}
+{"index": 1, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 2, "message": {"role": "assistant", "content": "Unterscheidung "}, "finish_reason": null}
+{"index": 3, "message": {"role": "assistant", "content": "zwischen "}, "finish_reason": null}
+{"index": 4, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 5, "message": {"role": "assistant", "content": "KI "}, "finish_reason": null}
+{"index": 6, "message": {"role": "assistant", "content": "und "}, "finish_reason": null}
+{"index": 7, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 8, "message": {"role": "assistant", "content": "AI\n"}, "finish_reason": null}
+{"index": 9, "message": {"role": "assistant", "content": "\n"}, "finish_reason": null}
+{"index": 10, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 11, "message": {"role": "assistant", "content": "AI "}, "finish_reason": null}
+{"index": 12, "message": {"role": "assistant", "content": "stands "}, "finish_reason": null}
+{"index": 13, "message": {"role": "assistant", "content": "for "}, "finish_reason": null}
+{"index": 14, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 15, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 16, "message": {"role": "assistant", "content": "Artificial "}, "finish_reason": null}
+{"index": 17, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 18, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 19, "message": {"role": "assistant", "content": "Intelligence, "}, "finish_reason": null}
+{"index": 20, "message": {"role": "assistant", "content": "which "}, "finish_reason": null}
+{"index": 21, "message": {"role": "assistant", "content": "refers "}, "finish_reason": null}
+{"index": 22, "message": {"role": "assistant", "content": "to "}, "finish_reason": null}
+{"index": 23, "message": {"role": "assistant", "content": "the "}, "finish_reason": null}
+{"index": 24, "message": {"role": "assistant", "content": "development "}, "finish_reason": null}
+{"index": 25, "message": {"role": "assistant", "content": "of "}, "finish_reason": null}
+{"index": 26, "message": {"role": "assistant", "content": "computer "}, "finish_reason": null}
+{"index": 27, "message": {"role": "assistant", "content": "systems "}, "finish_reason": null}
+{"index": 28, "message": {"role": "assistant", "content": "that "}, "finish_reason": null}
+{"index": 29, "message": {"role": "assistant", "content": "can "}, "finish_reason": null}
+{"index": 30, "message": {"role": "assistant", "content": "perform "}, "finish_reason": null}
+{"index": 31, "message": {"role": "assistant", "content": "tasks "}, "finish_reason": null}
+{"index": 32, "message": {"role": "assistant", "content": null}, "finish_reason": "length"}
 
 ```
 
