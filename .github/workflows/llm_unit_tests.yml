@@ -486,8 +486,10 @@ jobs:
           # May remove later
           pip uninstall sentence-transformers -y || true
 
-          cd ../../../_tool/Python/3.11.9/x64/bin/
+          pwd
+          cd $(cygpath -u $(Python3_ROOT_DIR))/bin/
           echo "$(pwd)" >> "$GITHUB_PATH"
+          cd -
 
       # - name: Download llm binary
       #   uses: ./.github/actions/llm/download-llm-binary
