@@ -19,8 +19,6 @@ On Linux:
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-# below command will install PyTorch CPU as default
-pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Please make sure you are using a stable version of Transformers, 4.36.0 or newer.
@@ -33,7 +31,6 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
 pip install --pre --upgrade ipex-llm[all]
 
 pip install transformers==4.36.0

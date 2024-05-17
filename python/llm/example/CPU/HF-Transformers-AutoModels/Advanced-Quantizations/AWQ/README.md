@@ -40,7 +40,7 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install autoawq==0.1.8 --no-deps
- # install ipex-llm with 'all' option
+# install ipex-llm with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install transformers==4.35.0
 pip install accelerate==0.25.0

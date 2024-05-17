@@ -32,7 +32,6 @@ On Windows:
 conda create -n llm python=3.11
 conda activate llm
 
-pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
 pip install --pre --upgrade ipex-llm[all]
 
 pip install transformers==4.36.0
