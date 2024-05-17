@@ -439,7 +439,7 @@ jobs:
           pip uninstall sentence-transformers -y || true
   
   llm-unit-test-on-win-arc:
-    needs: [setup-python-version]
+    needs: [setup-python-version, llm-cpp-build]
     strategy:
       fail-fast: false
       matrix:
