@@ -41,7 +41,7 @@
 # SOFTWARE.
 import os
 from transformers.modeling_utils import _add_variant
-from ipex_llm.ggml.quantize import ggml_tensor_qtype
+from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from ..utils.common import invalidInputError
 from typing import Union, Optional
 import torch
@@ -271,10 +271,12 @@ def module_name_process(full_module_name):
 
 def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_config=None):
     cur_qtype = qtype
+    cur_imatrix = None
     if model_config is not None:
         model_type = getattr(model_config, "model_type", None)
     else:
         model_dtype = None
+
     if qtype in [ggml_tensor_qtype["gguf_iq2_xxs"], ggml_tensor_qtype["gguf_iq2_xs"],
                  ggml_tensor_qtype["gguf_iq1_s"]]:
         # For quantization which needs importance matrix
@@ -306,7 +308,6 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_confi
             cur_imatrix = None
             if new_module_name == 'lm_head':
                 cur_qtype = ggml_tensor_qtype['sym_int8']
-        return cur_qtype, cur_imatrix
     elif qtype == ggml_tensor_qtype["q2_k"]:
         new_module_name, layer, cur_module = module_name_process(full_module_name)
         if cur_module == 'v' or (cur_module == 'down' and int(layer) in [0, 1, 10, 11]):
@@ -319,8 +320,26 @@ def get_cur_qtype_and_imatrix(qtype, full_module_name, imatrix_data, model_confi
             cur_imatrix = None
             if new_module_name == 'lm_head':
                 cur_qtype = ggml_tensor_qtype['sym_int8']
+    elif qtype > 100:
+        # gguf mixed precision
+        new_module_name, layer, cur_module = module_name_process(full_module_name)
+        num_hidden_layers = getattr(model_config, "num_hidden_layers", None)
+        if qtype in [gguf_mixed_qtype["gguf_q4k_s"], gguf_mixed_qtype["gguf_q4k_m"]] and \
+                new_module_name == 'lm_head':
+            cur_qtype = ggml_tensor_qtype['q6_k']
+        elif qtype == gguf_mixed_qtype["gguf_q4k_m"]:
+            if int(layer) < int(num_hidden_layers/2) and cur_module in ['v', 'down']:
+                cur_qtype = ggml_tensor_qtype['q6_k']
+            else:
+                cur_qtype = ggml_tensor_qtype['q4_k']
+        elif qtype == gguf_mixed_qtype["gguf_q4k_s"]:
+            if int(layer) < int(num_hidden_layers/8) and cur_module in ['v', 'down']:
+                cur_qtype = ggml_tensor_qtype['q5_k']
+            else:
+                cur_qtype = ggml_tensor_qtype['q4_k']
     else:
-        return qtype, None
+        pass
+    return cur_qtype, cur_imatrix
 
 
 def get_modelscope_hf_config(model_id_or_path: str,

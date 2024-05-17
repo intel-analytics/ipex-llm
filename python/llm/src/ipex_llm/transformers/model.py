@@ -42,7 +42,7 @@ from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, \
     load_state_dict, \
     get_local_shard_files, load_imatrix_data
-from ipex_llm.ggml.quantize import ggml_tensor_qtype
+from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.gguf.api import load_gguf_model
 import torch
@@ -117,12 +117,12 @@ class _BaseAutoModelClass:
                              Default to be ``False``.
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``,
                                 ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``,
-                                ``'nf4'``, ``'fp4'``, ``'fp6'`` ``'fp8'``, ``'fp8_e4m3'``,
-                                ``'fp8_e5m2'``, ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``,
-                                ``'gguf_iq1_s'``, ``'fp16'``, ``'bf16'``, ``'q4_k'`` or
-                                ``'q6_k'``, ``'sym_int4'`` means symmetric int 4,
-                                ``'asym_int4'`` means asymmetric int 4,
-                                ``'nf4'`` means 4-bit NormalFloat, etc.
+                                ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,
+                                ``'fp6'``, ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``,
+                                ``'gguf_iq1_s'``, ``'gguf_q4k_m'``, ``'gguf_q4k_s'``,
+                                ``'fp16'``, ``'bf16'``,
+                                ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
+                                asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
                                 Relevant low bit optimizations will be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be ``True``.
@@ -139,8 +139,9 @@ class _BaseAutoModelClass:
             added to llama.cpp.
         :param model_hub: str value, options are ``'huggingface'`` and ``'modelscope'``,
             specify the model hub. Default to be ``'huggingface'``.
-        :param embedding_qtype: str value, options are ``'q2_k'`` now. Default to be None.
-            Relevant low bit optimizations will be applied to nn.Embedding layer.
+        :param embedding_qtype: str value, options are ``'q2_k'``, ``'q4_k'`` now.
+            Default to be None. Relevant low bit optimizations will be applied to
+            ``nn.Embedding`` layer.
         :param mixed_precision: boolean value, Whether to use mixed precision quantization.
             Default to be False. If set to True, we will use sym_int8 for lm_head when
             load_in_low_bit is sym_int4 or asym_int4.
@@ -321,10 +322,12 @@ class _BaseAutoModelClass:
                                   "For gguf_iq2 and gguf_iq1 quantization,"
                                   "imatrix is needed.")
             cpu_embedding = kwargs.get("cpu_embedding", False)
-            # for 2bit, default use embedding_quantization
-            if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "gguf_iq1_s", "q2_k"] and \
-               not cpu_embedding and embedding_qtype is None:
-                embedding_qtype = "q2_k"
+            # for iq2/k-quants, default use embedding_quantization
+            if not cpu_embedding and embedding_qtype is None:
+                if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "gguf_iq1_s", "q2_k"]:
+                    embedding_qtype = "q2_k"
+                elif q_k in ["gguf_q4k_s", "gguf_q4k_m"]:
+                    embedding_qtype = "q4_k"
             if imatrix_file is not None:
                 imatrix_data = load_imatrix_data(imatrix_file)
                 kwargs["imatrix_data"] = imatrix_data
@@ -376,12 +379,16 @@ class _BaseAutoModelClass:
     @classmethod
     def load_convert(cls, q_k, optimize_model, *args, **kwargs):
         from .convert import ggml_convert_low_bit
-        invalidInputError(q_k in ggml_tensor_qtype,
+        invalidInputError(q_k in ggml_tensor_qtype or q_k in gguf_mixed_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
                           f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8, nf3, nf4, "
                           f"fp4, fp6, fp8, fp8_e4m3, fp8_e5m2, fp16,  bf16, gguf_iq2_xxs, "
-                          f"gguf_iq2_xs, gguf_iq1_s, q2_k, q4_k, q6_k, mixed_fp4 or mixed_fp8.")
-        qtype = ggml_tensor_qtype[q_k]
+                          f"gguf_iq2_xs, gguf_iq1_s, q2_k, q4_k, q5_k, q6_k, "
+                          f"gguf_q4k_s, gguf_q4k_m, mixed_fp4 or mixed_fp8.")
+        if q_k in ggml_tensor_qtype:
+            qtype = ggml_tensor_qtype[q_k]
+        else:
+            qtype = gguf_mixed_qtype[q_k]
 
         # In case it needs a second try,
         # `from_pretrained`` may pop items out in dict
@@ -550,17 +557,24 @@ class _BaseAutoModelClass:
                           " with load_in_4bit or load_in_low_bit to get a low-bit model , and "
                           " serialize the model using save_low_bit first.")
 
-        invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
+        invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype or
+                          bigdl_transformers_low_bit in gguf_mixed_qtype,
                           f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
                           f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
 
         # set default optimize_model=True
         optimize_model = kwargs.pop("optimize_model", True)
 
-        qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
+        if bigdl_transformers_low_bit in ggml_tensor_qtype:
+            qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
+        else:
+            qtype = gguf_mixed_qtype[bigdl_transformers_low_bit]
         if bigdl_transformers_low_bit in ["gguf_iq2_xxs", "gguf_iq2_xs", "gguf_iq1_s", "q2_k"] and \
                 not cpu_embedding:
             embedding_qtype = "q2_k"
+        elif bigdl_transformers_low_bit in ["gguf_q4k_s", "gguf_q4k_m"] and \
+                not cpu_embedding:
+            embedding_qtype = "q4_k"
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
 

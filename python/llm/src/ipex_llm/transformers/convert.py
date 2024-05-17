@@ -42,7 +42,7 @@ from accelerate import init_empty_weights
 import warnings
 import transformers
 import importlib.util
-from ipex_llm.ggml.quantize import ggml_tensor_qtype
+from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from .utils import logger, get_cur_qtype_and_imatrix
 from typing import Union
 import numpy as np
@@ -337,15 +337,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     if in_features % 64 != 0:
                         # now our kernel requires in_features is a multiple of 64
                         continue
-                    new_linear = LowBitLinear(
-                        in_features,
-                        out_features,
-                        qtype,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        enable_xetla=enable_xetla,
-                        optimize_lm_head=optimize_lm_head
-                    )
                     cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                        full_module_name,
                                                                        imatrix_data,
@@ -355,6 +346,16 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if cur_qtype in [ggml_tensor_qtype["sym_int4"],
                                          ggml_tensor_qtype["asym_int4"]]:
                             cur_qtype = ggml_tensor_qtype["sym_int8"]
+
+                    new_linear = LowBitLinear(
+                        in_features,
+                        out_features,
+                        cur_qtype,
+                        module.bias is not None,
+                        mp_group=mp_group,
+                        enable_xetla=enable_xetla,
+                        optimize_lm_head=optimize_lm_head
+                    )
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
@@ -766,9 +767,16 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          embedding_qtype=None,
                          enable_xetla=False,
                          mixed_precision=False):
-    logger.info(f"Converting the current model to "
-                f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
-                f"format......")
+    if qtype in ggml_tensor_qtype.values():
+        index = list(ggml_tensor_qtype.values()).index(qtype)
+        logger.info(f"Converting the current model to "
+                    f"{list(ggml_tensor_qtype.keys())[index]} "
+                    f"format......")
+    else:
+        index = list(gguf_mixed_qtype.values()).index(qtype)
+        logger.info(f"Converting the current model to "
+                    f"{list(gguf_mixed_qtype.keys())[index]} "
+                    f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 
     # using ipex_llm optimizer before changing to bigdl linear
