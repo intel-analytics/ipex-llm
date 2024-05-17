@@ -11,11 +11,15 @@ In the example [generate.py](./generate.py), we show a basic use case for a LLaV
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install einops # install dependencies required by llava
 pip install transformers==4.36.2
 
@@ -23,6 +27,22 @@ git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
 cd LLaVA # change the working directory to the LLaVA folder
 git checkout tags/v1.2.0 -b 1.2.0 # Get the branch which is compatible with transformers 4.36
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all]
+pip install einops
+pip install transformers==4.36.2
+
+git clone https://github.com/haotian-liu/LLaVA.git
+copy generate.py .\LLaVA\
+cd LLaVA
+git checkout tags/v1.2.0 -b 1.2.0
 ```
 
 ### 2. Run
@@ -34,7 +54,7 @@ After setting up the Python environment, you could run the example by following 
 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./generate.py --image-path-or-url 'https://llava-vl.github.io/static/images/monalisa.jpg'
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
