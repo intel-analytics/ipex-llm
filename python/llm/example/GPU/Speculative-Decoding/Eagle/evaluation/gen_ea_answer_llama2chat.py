@@ -1,8 +1,23 @@
-"""Generate answers with local models.
+#
+# Copyright 2016 The BigDL Authors.
+#
+# This script was based on https://github.com/SafeAILab/EAGLE/blob/main/eagle/evaluation/gen_ea_answer_llama2chat.py
+#
+# Copyright 2024 SafeAI Lab (SAIL).
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-Usage:
-python3 gen_model_answer.py --model-path lmsys/fastchat-t5-3b-v1.0 --model-id fastchat-t5-3b-v1.0
-"""
 import argparse
 import json
 import os
@@ -15,7 +30,7 @@ from fastchat.llm_judge.common import load_questions
 from fastchat.model import get_conversation_template
 from tqdm import tqdm
 
-from ipex_llm.transformers.eagle.ipex_ea_model import *
+from eagle.model.ea_model import EaModel
 from eagle.model.utils import *
 from eagle.model.kv_cache import initialize_past_key_values
 from eagle.model.choices import *
@@ -58,21 +73,48 @@ def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None,
 
     input_len = input_ids.shape[1]
     reset_tree_mode(model)
-
-    outputs = model.base_model(input_ids, past_key_values=past_key_values, use_cache=True)
+    tree_logits, logits, hidden_state, sample_token = initialize_tree(
+        input_ids, model, tree_buffers["tree_attn_mask"], past_key_values, logits_processor
+    )
     new_token = 0
 
     for idx in range(max_steps):
-        if logits_processor is not None:
-            logits = outputs.logits[:, -1]
-            logits = logits_processor(None, logits)
-            probabilities = torch.nn.functional.softmax(logits, dim=-1)
-            input_id = torch.multinomial(probabilities, 1)
-        else:
-            input_id = outputs.logits[:, -1:].argmax(dim=-1)
-        outputs = model.base_model(input_id, use_cache=True, past_key_values=past_key_values)
-        input_ids = torch.cat([input_ids, input_id], dim=-1)
-
+        candidates, cart_candidates_prob, tree_candidates = generate_candidates(
+            tree_logits,
+            tree_buffers["tree_indices"],
+            tree_buffers["retrieve_indices"],
+            sample_token,
+            logits_processor
+        )
+        logits, hidden_state_new, outputs = tree_decoding(
+            model,
+            tree_candidates,
+            past_key_values,
+            tree_buffers["tree_position_ids"],
+            input_ids,
+            tree_buffers["retrieve_indices_head"],
+        )
+        best_candidate, accept_length, sample_p = evaluate_posterior(
+            logits, candidates, logits_processor, cart_candidates_prob, tree_logits[2], tree_buffers["p_indices"],
+            tree_candidates, tree_buffers["b_indices"]
+        )
+        input_ids, tree_logits, new_token, hidden_state, sample_token = update_inference_inputs(
+            input_ids,
+            candidates,
+            best_candidate,
+            accept_length,
+            tree_buffers["retrieve_indices"],
+            logits_processor,
+            logits,
+            tree_logits,
+            new_token,
+            past_key_values_data,
+            current_length_data,
+            model,
+            hidden_state,
+            hidden_state_new,
+            sample_p
+        )
         if tokenizer.eos_token_id in input_ids[0, input_len:].tolist():
             break
         if new_token > 1024:
@@ -100,11 +142,7 @@ def run_eval(
         enable_ipex_llm,
 ):
     questions = load_questions(question_file, question_begin, question_end)
-    # random shuffle the questions to balance the loading
-    # random.shuffle(questions)
     shuffled_ids = [q["question_id"] for q in questions]
-    # with open(f"data/{args.bench_name}/model_ids/{args.model_id}.shuffled_ids", "w") as fout:
-    #     json.dump(shuffled_ids, fout)
 
     # Split the question file into `num_gpus` files
     assert num_gpus_total % num_gpus_per_model == 0
@@ -156,10 +194,8 @@ def get_model_answers(
         tree_choices,
         enable_ipex_llm,
 ):
-    #temperature = 0.0
-    print('Check is_xpu_available', is_xpu_available())
     try:
-        model = IpexEaModel.from_pretrained(
+        model = EaModel.from_pretrained(
             base_model_path=base_model_path,
             ea_model_path=ea_model_path,
             #torch_dtype=torch.float16,
@@ -170,7 +206,7 @@ def get_model_answers(
         )
     except ValueError:
         print("Using sequential device_map.")
-        model = IpexEaModel.from_pretrained(
+        model = EaModel.from_pretrained(
             base_model_path=base_model_path,
             ea_model_path=ea_model_path,
             #torch_dtype=torch.float16,
@@ -180,7 +216,7 @@ def get_model_answers(
             device_map="sequential"
         )
     if enable_ipex_llm:
-        model = optimize_model(model)
+        model = optimize_model(model, optimize_llm=False)
     model.to("xpu")
     tokenizer = model.get_tokenizer()
 
@@ -194,12 +230,12 @@ def get_model_answers(
     print('Check model training state:', model.training)
 
 
-
     question = questions[0]
 
     # warmup
     for _ in range(3):
         torch.manual_seed(0)
+
         conv = get_conversation_template("llama-2-chat")
         sys_p = "You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe.  Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.\n\nIf a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information."
         conv.system_message = sys_p
@@ -207,6 +243,7 @@ def get_model_answers(
         idxs = []
         new_tokens = []
         wall_time = []
+        fail_count = 0
         for j in range(len(question["turns"])):
             qs = question["turns"][j]
             conv.append_message(conv.roles[0], qs)
@@ -215,9 +252,7 @@ def get_model_answers(
             inputs = tokenizer([prompt], return_tensors="pt").to("xpu")
             input_ids = inputs.input_ids
 
-            # try:
             start_time = time.time()
-
             output_ids, new_token, idx = ea_forward(
                 torch.as_tensor(input_ids),
                 model,
@@ -225,6 +260,7 @@ def get_model_answers(
                 tree_choices,
                 logits_processor,
             )
+
             total_time = time.time() - start_time
             output_ids = output_ids[0][len(input_ids[0]):]
             # be consistent with the template's stop_token_ids
@@ -236,7 +272,7 @@ def get_model_answers(
                 ]
                 if len(stop_token_ids_index) > 0:
                     output_ids = output_ids[: stop_token_ids_index[0]]
-
+    
             output = tokenizer.decode(
                 output_ids,
                 spaces_between_special_tokens=False,
@@ -254,16 +290,12 @@ def get_model_answers(
 
             if conv.name == "xgen" and output.startswith("Assistant:"):
                 output = output.replace("Assistant:", "", 1).strip()
-
-
             turns.append(output)
             idxs.append(int(idx))
             new_tokens.append(int(new_token))
             wall_time.append(total_time)
             conv.messages[-1][-1] = output
-    print('Warmup done')
 
-    # questions=questions[6:]
     for question in tqdm(questions):
 
         choices = []
@@ -369,10 +401,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--base-model-path", type=str, default="/home/lyh/weights/hf/llama2chat/7B/",
                         help="1")
-    parser.add_argument(
-        "--load-in-8bit", action="store_false", help="Use 8-bit quantization"
-    )
-    parser.add_argument("--model-id", type=str, default="ess-llama-2-chat-7b-fp32-baseline")
+    parser.add_argument("--model-id", type=str, default="ess-llama-2-chat-7b-fp32")
     parser.add_argument(
         "--bench-name",
         type=str,
@@ -428,8 +457,8 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--enable-ipex-llm",
-        action='store_true',
+        "--enable-ipex-llm", 
+        action='store_true', 
         help="Enable ipex-llm optimization"
     )
     args = parser.parse_args()
@@ -462,7 +491,6 @@ if __name__ == "__main__":
         args.num_gpus_per_model,
         args.num_gpus_total,
         args.max_gpu_memory,
-
         args.temperature,
         args.tree_choices,
         args.enable_ipex_llm,
