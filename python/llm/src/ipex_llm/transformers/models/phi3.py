@@ -34,13 +34,15 @@
 import math
 import torch
 import warnings
+from torch import nn
 
 from ipex_llm.transformers.models.utils import (
     rotate_half, should_use_fuse_rope,
-    apply_rotary_pos_emb_cache_freq_xpu
 )
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
-from ipex_llm.transformers.kv import DynamicNormalCache
+from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
+from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache
 
 from typing import Optional, Tuple, List
 from transformers.models.phi.modeling_phi import repeat_kv
@@ -53,6 +55,30 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
     q_embed = (q * cos) + (rotate_half(q) * sin)
     k_embed = (k * cos) + (rotate_half(k) * sin)
     return q_embed, k_embed
+
+
+def pre_compute_inv_freq(module: torch.nn.Module):
+    if module.__class__.__name__ == "Phi3RotaryEmbedding":
+        module.inv_freq = 1.0 / (
+            module.base **
+            (torch.arange(0, module.dim, 2, dtype=torch.int64).float() / module.dim)
+        )
+    elif module.__class__.__name__ == "Phi3SuScaledRotaryEmbedding":
+        inv_freq_shape = torch.arange(0, module.dim, 2, dtype=torch.int64).float() / module.dim
+        short_ext_factors = torch.tensor(module.short_factor, dtype=torch.float32)
+        module.inv_freq = 1.0 / (short_ext_factors * module.base ** inv_freq_shape)
+
+        long_ext_factors = torch.tensor(module.long_factor, dtype=torch.float32)
+        module.register_buffer("long_inv_freq", None, persistent=False)
+        module.long_inv_freq = 1.0 / (long_ext_factors * module.base ** inv_freq_shape)
+
+        if module.max_position_embeddings <= module.original_max_position_embeddings:
+            module.scaling_factor = 1.0
+        else:
+            scale = module.max_position_embeddings / module.original_max_position_embeddings
+            module.scaling_factor = math.sqrt(
+                1 + math.log(scale) / math.log(module.original_max_position_embeddings)
+            )
 
 
 def attention_forward(
@@ -80,12 +106,24 @@ def attention_forward(
     if past_key_value is not None:
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
-    cos, sin = self.rotary_emb(value_states, position_ids, seq_len=kv_seq_len)
     # IPEX-LLM OPT: fuse rope
     if should_use_fuse_rope(hidden_states, position_ids, self.training):
-        query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states, key_states,
-                                                                       sin, cos, "phi3")
+        import linear_q4_0
+        if self.rotary_emb.__class__.__name__ == "Phi3RotaryEmbedding":     # 4k
+            linear_q4_0.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                             query_states, key_states)
+        else:   # 128k
+            if kv_seq_len > self.rotary_emb.original_max_position_embeddings:
+                linear_q4_0.rotary_half_inplaced(self.rotary_emb.long_inv_freq, position_ids,
+                                                 query_states, key_states)
+            else:
+                linear_q4_0.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                                 query_states, key_states)
+            # todo: fuse scaling_factor
+            query_states *= self.rotary_emb.scaling_factor
+            key_states *= self.rotary_emb.scaling_factor
     else:
+        cos, sin = self.rotary_emb(value_states, position_ids, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                         cos, sin, position_ids)
 
@@ -93,22 +131,39 @@ def attention_forward(
         key_states, value_states = past_key_value.update(key_states, value_states,
                                                          self.layer_idx, None)
 
-    # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
+    if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
+        import linear_q4_0
+        if isinstance(past_key_value, DynamicFp8Cache):
+            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+                                              attention_mask)
+        else:
+            attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+    elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
+        import linear_q4_0
+        if isinstance(past_key_value, DynamicFp8Cache):
+            attn_output = linear_q4_0.sdp_fp8_causal(query_states, key_states, value_states)
+        else:
+            attn_output = linear_q4_0.sdp_causal(query_states, key_states, value_states)
+    else:
+        if isinstance(past_key_value, DynamicFp8Cache):
+            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
+                                                            query_states.dtype)
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    attn_weights = torch.matmul(query_states,
-                                key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(query_states,
+                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    if attention_mask is not None:
-        attn_weights = attn_weights + attention_mask
+        if attention_mask is not None:
+            attn_weights = attn_weights + attention_mask
 
-    # upcast attention to fp32
-    attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                               dtype=torch.float32).to(value_states.dtype)
-    attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
-                                               training=self.training)
-    attn_output = torch.matmul(attn_weights, value_states)
+        # upcast attention to fp32
+        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                   dtype=torch.float32).to(value_states.dtype)
+        attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                                   training=self.training)
+        attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
@@ -173,10 +228,13 @@ def model_forward_wrapper(origin_model_forward):
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
     ):
-        # IPEX-LLM OPT: kv cache but no sdp (its head_dim 96, cannot use sdp)
+        # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
         use_cache = use_cache if use_cache is not None else self.config.use_cache
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids)
         if use_cache:
-            if not isinstance(past_key_values, DynamicNormalCache):
+            if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+                past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+            if not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
         return origin_model_forward(
             self=self,
@@ -191,3 +249,17 @@ def model_forward_wrapper(origin_model_forward):
             return_dict=return_dict,
         )
     return model_forward
+
+
+def phi3_rms_norm_forward(self, hidden_states):
+    if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
+        import linear_q4_0
+        x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
+        output = linear_q4_0.rms_norm(self.weight, x_2d, self.variance_epsilon)
+        return output.reshape(hidden_states.shape)
+
+    input_dtype = hidden_states.dtype
+    hidden_states = hidden_states.to(torch.float32)
+    variance = hidden_states.pow(2).mean(-1, keepdim=True)
+    hidden_states = hidden_states * torch.rsqrt(variance + self.variance_epsilon)
+    return self.weight * hidden_states.to(input_dtype)

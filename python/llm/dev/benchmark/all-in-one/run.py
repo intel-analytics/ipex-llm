@@ -28,11 +28,10 @@ from datetime import date
 
 import os
 current_dir = os.path.dirname(os.path.realpath(__file__))
-benchmark_util_path = os.path.join(current_dir, '..')
 import sys
-sys.path.append(benchmark_util_path)
-from benchmark_util import BenchmarkWrapper
+from ipex_llm.utils.benchmark_util import BenchmarkWrapper
 from ipex_llm.utils.common.log4Error import invalidInputError
+from ipex_llm.utils.common import invalidInputError
 
 LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'meta-llama/Llama-2-70b-chat-hf','decapoda-research/llama-7b-hf',
@@ -50,7 +49,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                    num_beams=num_beams)
+                                    min_new_tokens=out_len, num_beams=num_beams)
         torch.xpu.synchronize()
         end = time.perf_counter()
         output_ids = output_ids.cpu()
@@ -110,6 +109,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_speculative_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
     elif test_api == 'pipeline_parallel_gpu':
         result = run_pipeline_parallel_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=use_fp16_torch_dtype, n_gpu=n_gpu)
+    else:
+        invalidInputError(False, "Unknown test_api " + test_api + ", please check your config.yaml.")
 
     for in_out_pair in in_out_pairs:
         if result and result[in_out_pair]:
@@ -238,7 +239,7 @@ def run_transformer_int4(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
@@ -304,7 +305,7 @@ def run_pytorch_autocast_bf16(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
@@ -374,7 +375,7 @@ def run_optimize_model(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
@@ -558,7 +559,7 @@ def run_optimize_model_gpu(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 torch.xpu.synchronize()
                 end = time.perf_counter()
                 output_ids = output_ids.cpu()
@@ -630,7 +631,7 @@ def run_ipex_fp16_gpu(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 torch.xpu.synchronize()
                 end = time.perf_counter()
                 output_ids = output_ids.cpu()
@@ -708,7 +709,7 @@ def run_bigdl_fp16_gpu(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 torch.xpu.synchronize()
                 end = time.perf_counter()
                 output_ids = output_ids.cpu()
@@ -800,7 +801,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                                num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 if local_rank == 0:
                     print("model generate cost: " + str(end - st))
@@ -887,10 +888,12 @@ def run_transformer_int4_gpu_win(repo_id,
                 for i in range(num_trials + warm_up):
                     st = time.perf_counter()
                     if streaming:
-                        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                        output_ids = model.generate(input_ids, do_sample=False,
+                                                    max_new_tokens=out_len, min_new_tokens=out_len,
                                                     num_beams=num_beams, streamer=streamer)
                     else:
-                        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                        output_ids = model.generate(input_ids, do_sample=False,
+                                                    max_new_tokens=out_len, min_new_tokens=out_len,
                                                     num_beams=num_beams)
                     torch.xpu.synchronize()
                     end = time.perf_counter()
@@ -994,10 +997,12 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                 for i in range(num_trials + warm_up):
                     st = time.perf_counter()
                     if streaming:
-                        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                        output_ids = model.generate(input_ids, do_sample=False,
+                                                    max_new_tokens=out_len, min_new_tokens=out_len,
                                                     num_beams=num_beams, streamer=streamer)
                     else:
-                        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                        output_ids = model.generate(input_ids, do_sample=False,
+                                                    max_new_tokens=out_len, min_new_tokens=out_len,
                                                     num_beams=num_beams)
                     torch.xpu.synchronize()
                     end = time.perf_counter()
@@ -1096,10 +1101,12 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                 for i in range(num_trials + warm_up):
                     st = time.perf_counter()
                     if streaming:
-                        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                        output_ids = model.generate(input_ids, do_sample=False,
+                                                    max_new_tokens=out_len, min_new_tokens=out_len,
                                                     num_beams=num_beams, streamer=streamer)
                     else:
-                        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                        output_ids = model.generate(input_ids, do_sample=False,
+                                                    max_new_tokens=out_len, min_new_tokens=out_len,
                                                     num_beams=num_beams)
                     torch.xpu.synchronize()
                     end = time.perf_counter()
@@ -1183,7 +1190,7 @@ def run_transformer_autocast_bf16( repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
@@ -1254,7 +1261,7 @@ def run_bigdl_ipex_bf16(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids, total_list = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                                        min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
@@ -1324,7 +1331,7 @@ def run_bigdl_ipex_int4(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids, total_list = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                                        min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
@@ -1394,7 +1401,7 @@ def run_bigdl_ipex_int8(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids, total_list = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                                        min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
@@ -1505,7 +1512,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 torch.xpu.synchronize()
                 end = time.perf_counter()
                 output_ids = output_ids.cpu()
@@ -1584,11 +1591,12 @@ def run_speculative_cpu(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 if _enable_ipex:
-                    output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams, attention_mask=attention_mask)
+                    output_ids = model.generate(input_ids, do_sample=False,
+                                                max_new_tokens=out_len, min_new_tokens=out_len,
+                                                num_beams=num_beams, attention_mask=attention_mask)
                 else:
-                    output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                    output_ids = model.generate(input_ids, do_sample=False,max_new_tokens=out_len,
+                                                min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)
@@ -1659,7 +1667,7 @@ def run_speculative_gpu(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 torch.xpu.synchronize()
                 end = time.perf_counter()
                 output_ids = output_ids.cpu()
@@ -1779,7 +1787,7 @@ def run_pipeline_parallel_gpu(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            num_beams=num_beams)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 torch.xpu.synchronize()
                 end = time.perf_counter()
                 output_ids = output_ids.cpu()

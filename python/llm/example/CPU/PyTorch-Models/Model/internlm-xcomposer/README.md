@@ -10,14 +10,28 @@ In the example [chat.py](./chat.py), we show a basic use case for an InternLM_XC
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
 pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops # additional package required for InternLM_XComposer to conduct generation
+```
 
+On Windows:
+
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all]
+
+pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops
 ```
 
 ### 2. Download Model and Replace File
@@ -49,7 +63,7 @@ After setting up the Python environment, you could run the example by following 
 
 #### 3.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./chat.py --image-path demo.jpg
 ```
 More information about arguments can be found in [Arguments Info](#33-arguments-info) section. The expected output can be found in [Sample Output](#34-sample-output) section.

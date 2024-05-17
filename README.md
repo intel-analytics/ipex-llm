@@ -110,7 +110,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
   - LLM finetuning on Intel [GPU](python/llm/example/GPU/LLM-Finetuning), including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)
   - QLoRA finetuning on Intel [CPU](python/llm/example/CPU/QLoRA-FineTuning)
 - Integration with community libraries
-  - [HuggingFace tansformers](python/llm/example/GPU/HF-Transformers-AutoModels)
+  - [HuggingFace transformers](python/llm/example/GPU/HF-Transformers-AutoModels)
   - [Standard PyTorch model](python/llm/example/GPU/PyTorch-Models)
   - [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP)
   - [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning/HF-PEFT)
@@ -183,6 +183,8 @@ Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaM
 | DeciLM-7B | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/deciLM-7b) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/deciLM-7b) |
 | Deepseek | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/deepseek) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/deepseek) |
 | StableLM | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/stablelm) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/stablelm) |
+| CodeGemma | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegemma) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/codegemma) |
+| Command-R/cohere | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/cohere) | [link](python/llm/example/GPU/HF-Transformers-AutoModels/Model/cohere) |
 
 ## Get Support
 - Please report a bug or raise a feature request by opening a [Github Issue](https://github.com/intel-analytics/ipex-llm/issues)

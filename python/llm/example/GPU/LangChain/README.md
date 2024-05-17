@@ -13,16 +13,17 @@ pip install -U chromadb==0.3.25
 pip install -U pandas==2.0.3
 ```
 
-### 3. Configures OneAPI environment variables
-#### 3.1 Configurations for Linux
+### 3. Configures OneAPI environment variables for Linux
+
+> [!NOTE]
+> Skip this step if you are running on Windows.
+
+This is a required step on Linux for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
+
 ```bash
 source /opt/intel/oneapi/setvars.sh
 ```
-#### 3.2 Configurations for Windows
-```cmd
-call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-```
-> Note: Please make sure you are using **CMD** (**Anaconda Prompt** if using conda) to run the command as PowerShell is not supported.
+
 ### 4. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
 #### 4.1 Configurations for Linux
@@ -33,6 +34,7 @@ For optimal performance, it is recommended to set several environment variables.
 ```bash
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
 ```
 
 </details>
@@ -44,9 +46,21 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```bash
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
 export ENABLE_SDP_FUSION=1
 ```
 > Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
+</details>
+
+<details>
+
+<summary>For Intel iGPU</summary>
+
+```bash
+export SYCL_CACHE_PERSISTENT=1
+export BIGDL_LLM_XMX_DISABLED=1
+```
+
 </details>
 
 #### 4.2 Configurations for Windows
@@ -63,7 +77,7 @@ set BIGDL_LLM_XMX_DISABLED=1
 
 <details>
 
-<summary>For Intel Arc™ A300-Series or Pro A60</summary>
+<summary>For Intel Arc™ A-Series Graphics</summary>
 
 ```cmd
 set SYCL_CACHE_PERSISTENT=1
@@ -71,15 +85,8 @@ set SYCL_CACHE_PERSISTENT=1
 
 </details>
 
-<details>
-
-<summary>For other Intel dGPU Series</summary>
-
-There is no need to set further environment variables.
-
-</details>
-
-> Note: For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
+> [!NOTE]
+> For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
 ### 5. Run the examples
 

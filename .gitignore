@@ -50,3 +50,7 @@ __pycache__
 target
 build
 dist
+
+# For readthedocs
+docs/readthedocs/requirements-doc.txt
+docs/readthedocs/_build/*

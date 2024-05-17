@@ -20,10 +20,11 @@ import warnings
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
-from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4
+from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4, FP6
 from ipex_llm.transformers.convert import is_deepspeed_available
 
 FP8_KV_ALLOC_LENGTH = 512
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 # used in fused mlp forward
 SILU = 0
@@ -178,6 +179,12 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         q_embed = (q * cos) + (rotate_half(q) * sin)
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
+    elif model_family == "llama2":
+        cos = cos.unsqueeze(1)
+        sin = sin.unsqueeze(1)
+        q_embed = (q * cos) + (rotate_half(q) * sin)
+        k_embed = (k * cos) + (rotate_half(k) * sin)
+        return q_embed, k_embed
     elif model_family == "gptj":
         q_embed = (q * cos) + (rotate_every_two(q) * sin)
         k_embed = (k * cos) + (rotate_every_two(k) * sin)
@@ -312,76 +319,33 @@ def use_flash_attention(query, key, attention_mask=None):
     return True
 
 
-def use_esimd_sdp(q_len, k_len, head_dim, query_states, attention_mask=None):
-    if head_dim != 128:
-        # esimd_sdp only support head_dim = 128 now
-        return False
-    elif q_len != 1:
-        # esimd_sdp only support rest token and q_len == 1 now
-        return False
-    elif k_len < 8:
-        # esimd_sdp will cause wrong output when k_len < 8
-        return False
-    elif query_states.device.type != "xpu":
-        # esimd_sdp only support GPU now
-        return False
-    elif query_states.dtype != torch.float16:
-        # esimd_sdp only has optimization for FP16 now
-        return False
-
-    device_name = torch.xpu.get_device_name(query_states.device.index)
-    if device_name.startswith("Intel(R) Arc(TM) A") or \
-       device_name.startswith("Intel(R) Data Center GPU Flex") or \
-       device_name.startswith("Intel(R) Data Center GPU Max"):
-        import linear_fp16_esimd
-        if not hasattr(linear_fp16_esimd, "sdp_forward"):
-            return False
-    else:
-        return False
-
-    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Data Center GPU Max"):
-        # esimd_sdp not support PVC GPU when batch size > 1 for now
-        return False
-    if query_states.shape[0] > 1 and device_name.startswith("Intel(R) Arc(TM) A") \
-            and is_deepspeed_available:
-        # esimd_sdp not support ARC GPU when batch size > 1 using DeepSpeed AutoTP for now
-        return False
-    if query_states.shape[0] > 1 and attention_mask is not None:
-        # for batched input, can't accept attention_mask
-        # TODO: this check needs some time
-        if not torch.all(attention_mask.eq(0)):
-            return False
-
-    return True
+def use_sdp(q_len, kv_len, head_dim, query_states):
+    return (
+        query_states.device.type == "xpu"
+        and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
+        and head_dim in [64, 96, 128]
+        and q_len != kv_len     # next token
+        and q_len <= 32         # lookup
+    )
 
 
-def use_new_esimd_sdp_fp16(q_len, k_len, head_dim, query_states):
-    if query_states.device.type != "xpu":
-        # esimd_sdp only support GPU now
-        return False
-    elif query_states.dtype != torch.float16:
-        # esimd_sdp only has optimization for FP16 now
-        return False
-    elif head_dim != 128 and head_dim != 64:
-        # esimd_sdp only support head_dim = 128 and 64 now
-        return False
-    elif q_len == k_len:
-        # new sdp_fp16 only support rest token now
-        return False
-    elif q_len > 32:
-        # Use new sdp_fp16 only when q_len <= 32
-        return False
-
-    return True
+def use_sdp_fp8(q_len, kv_len, query_states):
+    return (
+        query_states.device.type == "xpu"
+        and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
+        and q_len != kv_len     # next token
+        and q_len <= 32         # lookup
+    )
 
 
-def use_sdp_fp8(q_len, k_len, query_states):
-    if query_states.device.type != "xpu":
-        return False
-    if q_len == k_len:
-        # sdp_fp8 only support rest token now
-        return False
-    return True
+def use_sdp_causal(q_len, kv_len, head_dim, query_states, training):
+    return (
+        q_len == kv_len     # first token
+        and head_dim in [64, 96, 128]           # for now
+        and query_states.device.type == "xpu"   # GPU
+        and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
+        and not query_states.requires_grad and not training     # not training
+    )
 
 
 def mlp_fusion_check(x, qtype, training):
@@ -391,10 +355,14 @@ def mlp_fusion_check(x, qtype, training):
         return False
     if x.device.type != 'xpu':
         return False
-    if qtype not in [SYM_INT4, FP8E5, FP4, IQ2_XXS]:
+    if qtype not in [SYM_INT4, FP8E5, FP4, IQ2_XXS, FP6]:
         return False
     if training or x.requires_grad:
         return False
+    if qtype == FP6:
+        device = get_xpu_device_type(x)
+        if device == "mtl":
+            return False
     return True
 
 
@@ -459,3 +427,49 @@ def fp16_fusion_check(proj, x, training):
     if device_type != "pvc":
         return False
     return True
+
+
+def update_past_key_value(past_key_value, key_states, value_states,
+                          kv_seq_len, use_quantize_kv, device):
+    bsz, num_heads, _, head_dim = key_states.shape
+    if use_quantize_kv:
+        if past_key_value is None:
+            k_cache, v_cache = init_fp8_kv_cache(
+                bsz, num_heads, kv_seq_len, head_dim,
+                device=device
+            )
+        else:
+            k_cache, v_cache = past_key_value
+        key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
+                                                       key_states, value_states)
+    else:
+        if past_key_value is None:
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+            k_cache, v_cache = init_kv_cache(bsz,
+                                             num_heads,
+                                             head_dim,
+                                             kv_seq_len,
+                                             max_cache_length,
+                                             dtype=key_states.dtype,
+                                             device=device)
+            k_cache[...] = key_states
+            v_cache[...] = value_states
+            key_states = k_cache
+            value_states = v_cache
+        else:
+            k_cache, v_cache = past_key_value
+            if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
+                max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+                new_k_cache, new_v_cache = extend_kv_cache(bsz,
+                                                           num_heads,
+                                                           head_dim,
+                                                           k_cache.size(2),
+                                                           max_cache_length,
+                                                           dtype=k_cache.dtype,
+                                                           device=device)
+                new_k_cache[...] = k_cache
+                new_v_cache[...] = v_cache
+                k_cache = new_k_cache
+                v_cache = new_v_cache
+            key_states, value_states = append_kv_cache(k_cache, v_cache, key_states, value_states)
+    return key_states, value_states

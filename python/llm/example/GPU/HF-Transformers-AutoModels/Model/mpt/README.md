@@ -23,13 +23,11 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.11 libuv
 conda activate llm
-# below command will use pip to install the Intel oneAPI Base Toolkit 2024.0
-pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install einops  # additional package required for mpt-7b-chat and mpt-30b-chat to conduct generation
+pip install einops # additional package required for mpt-7b-chat and mpt-30b-chat to conduct generation
 ```
 
 ### 2. Configures OneAPI environment variables for Linux

@@ -9,6 +9,6 @@ For OS, IPEX-LLM supports Ubuntu 20.04 or later (glibc>=2.17), CentOS 7 or later
 ## Best Known Configuration on Linux
 For better performance, it is recommended to set environment variables on Linux with the help of IPEX-LLM:
 ```bash
-pip install ipex-llm
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 source ipex-llm-init
 ```

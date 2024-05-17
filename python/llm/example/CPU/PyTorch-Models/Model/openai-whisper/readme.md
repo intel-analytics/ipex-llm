@@ -9,13 +9,28 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `transcribe()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11
 conda activate llm
 
-pip install ipex-llm[all] # install ipex-llm with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install -U openai-whisper
 pip install librosa # required by audio processing
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all]
+pip install -U openai-whisper
+pip install librosa
 ```
 
 ### 2. Run
@@ -35,7 +50,7 @@ Arguments info:
 
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./recognize.py --audio-file /PATH/TO/AUDIO_FILE
 ```
 

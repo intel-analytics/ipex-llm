@@ -25,9 +25,11 @@ You may install **`ipex-llm`** with `FastChat` as follows:
 
 ```bash
 pip install --pre --upgrade ipex-llm[serving]
+pip install transformers==4.36.0
 
 # Or
 pip install --pre --upgrade ipex-llm[all]
+
 ```
 
 To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
@@ -44,45 +46,12 @@ pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pyto
 You need first run the fastchat controller
 
 ```bash
-python3 -m fastchat.serve.controller
+python -m fastchat.serve.controller
 ```
 
 ### Launch model worker(s) and load models
 
 Using IPEX-LLM in FastChat does not impose any new limitations on model usage. Therefore, all Hugging Face Transformer models can be utilized in FastChat.
-
-#### IPEX-LLM model worker (deprecated)
-
-> Warning: This method has been deprecated, please change to use `IPEX-LLM` [worker](#ipex-llm-worker) instead.
-
-FastChat determines the Model adapter to use through path matching. Therefore, in order to load models using IPEX-LLM, you need to make some modifications to the model's name.
-
-For instance, assuming you have downloaded the `llama-7b-hf` from [HuggingFace](https://huggingface.co/decapoda-research/llama-7b-hf).  Then, to use the `IPEX-LLM` as backend, you need to change name from `llama-7b-hf` to `ipex-llm-7b`.The key point here is that the model's path should include "ipex" and **should not include paths matched by other model adapters**.
-
-Then we will use `ipex-llm-7b` as model-path.
-
-> note: This is caused by the priority of name matching list. The new added `IPEX-LLM` adapter is at the tail of the name-matching list so that it has the lowest priority. If model path contains other keywords like `vicuna` which matches to another adapter with higher priority, then the `IPEX-LLM` adapter will not work.
-
-A special case is `ChatGLM` models. For these models, you do not need to do any changes after downloading the model and the `IPEX-LLM` backend will be used automatically.
-
-Then we can run model workers
-
-```bash
-# On CPU
-python3 -m ipex_llm.serving.fastchat.model_worker --model-path PATH/TO/ipex-llm-7b --device cpu
-
-# On GPU
-python3 -m ipex_llm.serving.fastchat.model_worker --model-path PATH/TO/ipex-llm-7b --device xpu
-```
-
-If you run successfully using `ipex_llm` backend, you can see the output in log like this:
-
-```bash
-INFO - Converting the current model to sym_int4 format......
-```
-
-> note: We currently only support int4 quantization for this method.
-</details>
 
 #### IPEX-LLM worker
 
@@ -94,14 +63,39 @@ To run the `ipex_llm_worker` on CPU, using the following code:
 source ipex-llm-init -t
 
 # Available low_bit format including sym_int4, sym_int8, bf16 etc.
-python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "cpu"
 ```
 
 For GPU example:
 
 ```bash
 # Available low_bit format including sym_int4, sym_int8, fp16 etc.
-python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "sym_int4" --trust-remote-code --device "xpu"
+```
+
+We have also provided an option `--load-low-bit-model` to load models that have been converted and saved into disk using the `save_low_bit` interface as introduced in this [document](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load/README.md).
+
+Check the following examples:
+```bash
+# Or --device "cpu"
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path /Low/Bit/Model/Path --trust-remote-code --device "xpu" --load-low-bit-model
+```
+
+#### For self-speculative decoding example:
+
+You can use IPEX-LLM to run `self-speculative decoding` example. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel MAX GPUs. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel CPUs.
+
+```bash
+# Available low_bit format only including bf16 on CPU.
+source ipex-llm-init -t
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "bf16" --trust-remote-code --device "cpu" --speculative
+
+# Available low_bit format only including fp16 on GPU.
+source /opt/intel/oneapi/setvars.sh
+export ENABLE_SDP_FUSION=1
+export SYCL_CACHE_PERSISTENT=1
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "fp16" --trust-remote-code --device "xpu" --speculative
 ```
 
 For a full list of accepted arguments, you can refer to the main method of the `ipex_llm_worker.py`
@@ -114,16 +108,16 @@ To run using the `vLLM_worker`,  we don't need to change model name, just simply
 
 ```bash
 # On CPU
-python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device cpu
+python -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device cpu
 
 # On GPU
-python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
+python -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
 ```
 
 ### Launch Gradio web server
 
 ```bash
-python3 -m fastchat.serve.gradio_web_server
+python -m fastchat.serve.gradio_web_server
 ```
 
 This is the user interface that users will interact with.
@@ -135,5 +129,5 @@ By following these steps, you will be able to serve your models using the web UI
 To start an OpenAI API server that provides compatible APIs using IPEX-LLM backend, you can launch the `openai_api_server` and follow this [doc](https://github.com/lm-sys/FastChat/blob/main/docs/openai_api.md) to use it.
 
 ```bash
-python3 -m fastchat.serve.openai_api_server --host localhost --port 8000
+python -m fastchat.serve.openai_api_server --host localhost --port 8000
 ```

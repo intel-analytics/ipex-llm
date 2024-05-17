@@ -12,12 +12,13 @@ on:
         - all
         - ipex-llm-cpu
         - ipex-llm-xpu
+        - ipex-llm-inference-cpp-xpu
         - ipex-llm-serving-cpu
         - ipex-llm-serving-xpu
         - ipex-llm-finetune-lora-cpu
         - ipex-llm-finetune-qlora-cpu-standalone
         - ipex-llm-finetune-qlora-cpu-k8s
-        - ipex-llm-finetune-qlora-xpu
+        - ipex-llm-finetune-xpu
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
@@ -133,8 +134,8 @@ jobs:
           sudo docker push ${image}:latest
           sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
-  ipex-llm-finetune-qlora-xpu:
-    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-xpu' || inputs.artifact == 'all' }}
+  ipex-llm-finetune-xpu:
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-xpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     
     steps:
@@ -142,13 +143,13 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: ipex-llm-finetune-qlora-xpu
+    - name: ipex-llm-finetune-xpu
       run: |
         echo "##############################################################"
-        echo "####### ipex-llm-finetune-qlora-xpu ########"
+        echo "####### ipex-llm-finetune-xpu ########"
         echo "##############################################################"
-        export image=intelanalytics/ipex-llm-finetune-qlora-xpu
-        cd docker/llm/finetune/qlora/xpu/docker
+        export image=intelanalytics/ipex-llm-finetune-xpu
+        cd docker/llm/finetune/xpu
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
@@ -179,6 +180,36 @@ jobs:
         echo "##############################################################"
         export image=intelanalytics/ipex-llm-xpu
         cd docker/llm/inference/xpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        # tag 'latest'
+        sudo docker tag ${image}:${TAG} ${image}:latest
+        sudo docker push ${image}:latest
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+
+  ipex-llm-inference-cpp-xpu:
+    if: ${{ inputs.artifact == 'ipex-llm-inference-cpp-xpu' || inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    
+    steps:
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: ipex-llm-inference-cpp-xpu
+      run: |
+        echo "##############################################################"
+        echo "####### ipex-llm-inference-cpp-xpu ########"
+        echo "##############################################################"
+        export image=intelanalytics/ipex-llm-inference-cpp-xpu
+        cd docker/llm/inference-cpp/
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \

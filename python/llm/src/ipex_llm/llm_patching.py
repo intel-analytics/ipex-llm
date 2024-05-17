@@ -17,6 +17,8 @@
 import transformers
 import importlib
 import sys
+from packaging import version
+
 from ipex_llm.utils.common import invalidInputError
 from enum import Enum
 
@@ -57,12 +59,14 @@ def llm_patch(train=False):
         import peft
         from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training,\
             LoraConfig, TrainingArguments
+        peft_version = peft.__version__
         replace_attr(transformers, "TrainingArguments", TrainingArguments)
         get_peft_model_original = getattr(peft, "get_peft_model")
         replace_attr(peft, "get_peft_model", get_peft_model)
         setattr(peft, "get_peft_model_original", get_peft_model_original)
         replace_attr(peft, "prepare_model_for_kbit_training", prepare_model_for_kbit_training)
-        replace_attr(peft, "prepare_model_for_int8_training", prepare_model_for_kbit_training)
+        if version.parse(peft_version) <= version.parse("0.5.0"):
+            replace_attr(peft, "prepare_model_for_int8_training", prepare_model_for_kbit_training)
         replace_attr(peft, "LoraConfig", LoraConfig)
         bigdl_patched = 'Train'
 

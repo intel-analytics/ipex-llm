@@ -42,13 +42,17 @@ from accelerate import init_empty_weights
 import warnings
 import transformers
 import importlib.util
-from ipex_llm.ggml.quantize import ggml_tensor_qtype
+from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from .utils import logger, get_cur_qtype_and_imatrix
 from typing import Union
 import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+import subprocess
+import sys
+
+_IS_VLLM_AVAILABLE = None
 
 
 def is_auto_gptq_available():
@@ -60,7 +64,16 @@ def is_auto_awq_available():
 
 
 def is_vllm_available():
-    return importlib.util.find_spec("vllm") is not None
+    global _IS_VLLM_AVAILABLE
+    if _IS_VLLM_AVAILABLE is not None:
+        return _IS_VLLM_AVAILABLE
+    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'list'])
+    installed_packages = [r.decode().split('  ')[0] for r in reqs.split()]
+    if 'vllm' in installed_packages:
+        _IS_VLLM_AVAILABLE = True
+    else:
+        _IS_VLLM_AVAILABLE = False
+    return _IS_VLLM_AVAILABLE
 
 
 def is_torch_distributed_initialized():
@@ -324,15 +337,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     if in_features % 64 != 0:
                         # now our kernel requires in_features is a multiple of 64
                         continue
-                    new_linear = LowBitLinear(
-                        in_features,
-                        out_features,
-                        qtype,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        enable_xetla=enable_xetla,
-                        optimize_lm_head=optimize_lm_head
-                    )
                     cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                        full_module_name,
                                                                        imatrix_data,
@@ -342,6 +346,16 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if cur_qtype in [ggml_tensor_qtype["sym_int4"],
                                          ggml_tensor_qtype["asym_int4"]]:
                             cur_qtype = ggml_tensor_qtype["sym_int8"]
+
+                    new_linear = LowBitLinear(
+                        in_features,
+                        out_features,
+                        cur_qtype,
+                        module.bias is not None,
+                        mp_group=mp_group,
+                        enable_xetla=enable_xetla,
+                        optimize_lm_head=optimize_lm_head
+                    )
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
@@ -693,8 +707,16 @@ def _optimize_pre(model):
         from ipex_llm.transformers.models.phi import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "phi3":
+        from ipex_llm.transformers.models.phi3 import pre_compute_inv_freq
+        model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.phi3 import split_mlp
         model.apply(split_mlp)
+    # for baichuan2
+    if model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
+        if model.config.hidden_size in [4096, 2048]:
+            # baichuan2-7B
+            from ipex_llm.transformers.models.baichuan2 import pre_compute_inv_freq
+            model.apply(pre_compute_inv_freq)
     if model.config.model_type == "qwen":
         rope_base = model.config.rotary_emb_base
         from accelerate.big_modeling import init_empty_weights
@@ -745,9 +767,16 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          embedding_qtype=None,
                          enable_xetla=False,
                          mixed_precision=False):
-    logger.info(f"Converting the current model to "
-                f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
-                f"format......")
+    if qtype in ggml_tensor_qtype.values():
+        index = list(ggml_tensor_qtype.values()).index(qtype)
+        logger.info(f"Converting the current model to "
+                    f"{list(ggml_tensor_qtype.keys())[index]} "
+                    f"format......")
+    else:
+        index = list(gguf_mixed_qtype.values()).index(qtype)
+        logger.info(f"Converting the current model to "
+                    f"{list(gguf_mixed_qtype.keys())[index]} "
+                    f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 
     # using ipex_llm optimizer before changing to bigdl linear
@@ -833,6 +862,15 @@ def convert_forward(m, target_m, new_forward):
             bound_method = new_forward.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, "forward", bound_method)
         convert_forward(sub_m, target_m, new_forward)
+
+
+def replace_RotaryEmbed(m, target_m,  replace_embed):
+    for attr_name, sub_m in m.named_children():
+        if isinstance(sub_m, target_m):
+            setattr(m, attr_name, replace_embed(sub_m.dim,
+                                                sub_m.max_position_embeddings,
+                                                sub_m.base))
+        replace_RotaryEmbed(sub_m, target_m, replace_embed)
 
 
 def replace_func(m, target_m, func_name, new_func):
@@ -939,16 +977,27 @@ def _optimize_post(model, lightweight_bmm=False):
                         llama_decoder_forward)
         if version.parse(trans_version) >= version.parse("4.36.0"):
             # transformers version >= 4.36.0
-            from ipex_llm.transformers.models.llama import llama_attention_forward_4_36
-            from ipex_llm.transformers.models.llama import llama_model_forward_4_36
-            convert_forward(
-                model,
-                transformers.models.llama.modeling_llama.LlamaAttention,
-                llama_attention_forward_4_36, )
-            convert_forward(
-                model,
-                transformers.models.llama.modeling_llama.LlamaModel,
-                llama_model_forward_4_36)
+            from ipex_llm.transformers.models.llama import llama_attention_forward_4_38
+            if version.parse(trans_version) >= version.parse("4.38.0"):
+                from ipex_llm.transformers.models.llama import llama_model_forward_4_38
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaModel,
+                    llama_model_forward_4_38)
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaAttention,
+                    llama_attention_forward_4_38)
+            else:
+                from ipex_llm.transformers.models.llama import llama_model_forward_4_36
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaModel,
+                    llama_model_forward_4_36)
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaAttention,
+                    llama_attention_forward_4_38)
         else:
             # transformers version between 4.31.0 - 4.35.2
             convert_forward(
@@ -1269,6 +1318,24 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MoeAttention,
                         qwen2moe_attention_forward)
+    elif model.config.model_type == "cohere":
+        # for CohereForAI/c4ai-command-r-v01
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.cohere import cohere_attention_forward
+        from ipex_llm.transformers.models.cohere import cohere_model_forward
+        convert_forward(model,
+                        module.CohereModel,
+                        cohere_model_forward)
+        convert_forward(model,
+                        module.CohereAttention,
+                        cohere_attention_forward)
+        convert_forward(model,
+                        module.CohereLayerNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        module.CohereMLP,
+                        llama_mlp_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1484,6 +1551,8 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi3 import model_forward_wrapper
         model_forward = model_forward_wrapper(module.Phi3Model.forward)
         convert_forward(model, module.Phi3Model, model_forward)
+        from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
+        convert_forward(model, module.Phi3RMSNorm, phi3_rms_norm_forward)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

@@ -45,6 +45,8 @@ def load_model(
     device: str = "cpu",
     low_bit: str = 'sym_int4',
     trust_remote_code: bool = True,
+    speculative: bool = False,
+    load_low_bit_model: bool = False,
 ):
     """Load a model using BigDL LLM backend."""
 
@@ -52,21 +54,38 @@ def load_model(
     invalidInputError(device == 'cpu' or device == 'xpu',
                       "BigDL-LLM only supports device cpu or xpu")
 
-    tokenizer_cls = get_tokenizer_cls(model_path)
     model_cls = get_model_cls(model_path, low_bit)
+    # Load tokenizer
+    tokenizer_cls = get_tokenizer_cls(model_path)
+
     model_kwargs = {"use_cache": True}
+    if speculative:
+        invalidInputError(load_low_bit_model is not True,
+                          "Self-Speculative currently do not support load low-bit format models")
+        invalidInputError(low_bit == "fp16" or low_bit == "bf16",
+                          "Self-Speculative only supports low_bit fp16 or bf16")
+        model_kwargs["speculative"] = True
+
     if trust_remote_code:
         model_kwargs["trust_remote_code"] = True
-    if low_bit == "bf16":
-        model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.bfloat16})
-    elif low_bit == "fp16":
-        model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.float16})
-    else:
-        model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": 'auto'})
 
-    # Load tokenizer
-    tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
-    model = model_cls.from_pretrained(model_path, **model_kwargs)
+    if load_low_bit_model:
+        # After save_low_bit, the from_pretrained interface does not accept trust_remote_code=True
+        tokenizer = tokenizer_cls.from_pretrained(model_path)
+        model = model_cls.load_low_bit(model_path, **model_kwargs)
+    else:
+        if trust_remote_code:
+            tokenizer = tokenizer_cls.from_pretrained(model_path, trust_remote_code=True)
+        else:
+            tokenizer = tokenizer_cls.from_pretrained(model_path)
+        if low_bit == "bf16":
+            model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.bfloat16})
+        elif low_bit == "fp16":
+            model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": torch.float16})
+        else:
+            model_kwargs.update({"load_in_low_bit": low_bit, "torch_dtype": 'auto'})
+
+        model = model_cls.from_pretrained(model_path, **model_kwargs)
     if not get_enable_ipex():
         model = model.eval()
 
@@ -77,13 +96,14 @@ def load_model(
     return model, tokenizer
 
 
-def try_run_test_generation(local_model_hub, model_path, device, low_bit):
+def try_run_test_generation(local_model_hub, model_path, device, low_bit, load_low_bit_model):
     path = get_model_path(model_path, local_model_hub)
     try:
-        run_test_generation(path, device, low_bit)
+        run_test_generation(path, device, low_bit, load_low_bit_model)
     except:
         print(f"Loading model failed for model {model_path} \
-              with device:{device} and low_bit:{low_bit}")
+              with device:{device} and low_bit:{low_bit} \
+              and load_low_bit_model {load_low_bit_model}")
         return "False"
     return "True"
 
@@ -99,11 +119,11 @@ def get_model_path(repo_id, local_model_hub):
         return repo_id
 
 
-def run_test_generation(model_path, device, low_bit):
-    model, tokenizer = load_model(model_path, device, low_bit, True)
+def run_test_generation(model_path, device, low_bit, load_low_bit_model):
+    # Disable speculative by default
+    model, tokenizer = load_model(model_path, device, low_bit, True, False, load_low_bit_model)
     with torch.inference_mode():
         prompt = "What is AI?"
-        # TODO: if gpu, will need to move the tensor to xpu
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         if device == 'xpu':
             input_ids = input_ids.to('xpu')
@@ -127,7 +147,6 @@ def run_test_generation(model_path, device, low_bit):
 # Note that this only test loading models instead of generation correctness
 if __name__ == '__main__':
     import os
-    # TODO: move config.yaml to a different folder
     current_dir = os.path.dirname(os.path.realpath(__file__))
     results = []
     from omegaconf import OmegaConf
@@ -138,9 +157,15 @@ if __name__ == '__main__':
     for model in conf.repo_id:
         for low_bit in conf.low_bit:
             for device in conf.device:
-                result = try_run_test_generation(conf['local_model_hub'], model, device, low_bit)
-                results.append([model, device, low_bit, result])
+                result = try_run_test_generation(conf['local_model_hub'],
+                                                 model,
+                                                 device,
+                                                 low_bit,
+                                                 conf["load_low_bit_model"]
+                                                 )
+                results.append([model, device, low_bit, conf["load_low_bit_model"], result])
 
-    df = pd.DataFrame(results, columns=['model', 'device', 'low_bit', 'result'])
+    df = pd.DataFrame(results,
+                      columns=['model', 'device', 'low_bit', 'use_low_bit_model', 'result'])
     df.to_csv(csv_name)
     results = []
