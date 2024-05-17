@@ -483,10 +483,6 @@ class ModelRunner:
             batch_list = [None] * self.world_size
             dist.broadcast_object_list(batch_list, src=0)
 
-            if self.send_buff is not None:
-                # logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
-                dist.send(self.send_buff, dst=self.next_rank)
-
             cur_batch = batch_list[self.rank]
             cur_input = None
             if cur_batch is not None:
@@ -501,6 +497,9 @@ class ModelRunner:
                 # if self.attention_mask_dict.get(cur_batch.batch_id, None) is None:
                 #     self.attention_mask_dict[cur_batch.batch_id] = make_attention_mask(cur_batch.prompt_lengths)
             
+            if self.send_buff is not None:
+                # logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
+                dist.send(self.send_buff, dst=self.next_rank)
             
         self.batch_list = batch_list
         # if self.rank == 0:
