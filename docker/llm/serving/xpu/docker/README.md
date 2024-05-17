@@ -57,9 +57,9 @@ You can modify this script to using fastchat with either `ipex_llm_worker` or `v
 
 To run vLLM engine using `IPEX-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md).
 
-We have included multiple example files in `/llm/vllm-examples`:
-1. `offline_inference.py`: Used for offline inference example
-2. `benchmark_throughput.py`: Used for benchmarking throughput
+We have included multiple example files in `/llm/`:
+1. `vllm_offline_inference.py`: Used for vLLM offline inference example
+2. `benchmark_vllm_throughput.py`: Used for benchmarking throughput
 3. `payload-1024.lua`: Used for testing request per second using 1k-128 request
 4. `start-vllm-service.sh`: Used for template for starting vLLM service
 
@@ -69,19 +69,19 @@ We can benchmark the api_server to get an estimation about TPS (transactions per
 
 
 In container, do the following:
-1. modify the `/llm/vllm-examples/payload-1024.lua` so that the "model" attribute is correct.  By default, we use a prompt that is roughly 1024 token long, you can change it if needed.
+1. modify the `/llm/payload-1024.lua` so that the "model" attribute is correct.  By default, we use a prompt that is roughly 1024 token long, you can change it if needed.
 2. Start the benchmark using `wrk` using the script below:
 
 ```bash
-cd /llm/vllm-examples
+cd /llm
 # You can change -t and -c to control the concurrency.
 # By default, we use 12 connections to benchmark the service.
 wrk -t12 -c12 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
 
 ```
-#### Offline benchmark through benchmark_throughput.py
+#### Offline benchmark through benchmark_vllm_throughput.py
 
-We have included the benchmark_throughput script provied by `vllm` in our image as `/llm/benchmark_throughput.py`.  To use the benchmark_throughput script, you will need to download the test dataset through:
+We have included the benchmark_throughput script provied by `vllm` in our image as `/llm/benchmark_vllm_throughput.py`.  To use the benchmark_throughput script, you will need to download the test dataset through:
 
 ```bash
 wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
@@ -89,7 +89,7 @@ wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/r
 
 The full example looks like this:
 ```bash
-cd /llm/vllm-examples
+cd /llm/
 
 wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
 
@@ -97,9 +97,9 @@ export MODEL="YOUR_MODEL"
 
 # You can change load-in-low-bit from values in [sym_int4, fp8, fp16]
 
-python3 /llm/vllm-examples/benchmark_throughput.py \
+python3 /llm/benchmark_vllm_throughput.py \
     --backend vllm \
-    --dataset /llm/vllm-examples/ShareGPT_V3_unfiltered_cleaned_split.json \
+    --dataset /llm/ShareGPT_V3_unfiltered_cleaned_split.json \
     --model $MODEL \
     --num-prompts 1000 \
     --seed 42 \
@@ -147,9 +147,9 @@ for MODEL in "${MODELS[@]}"; do
         # Execute the command and redirect output to the log file
         # Sometimes you might need to set --max-model-len if memory is not enough
         # load-in-low-bit accepts inputs [sym_int4, fp8, fp16]
-        python3 /llm/vllm-examples/benchmark_throughput.py \
+        python3 /llm/benchmark_vllm_throughput.py \
             --backend vllm \
-            --dataset /llm/vllm-examples/ShareGPT_V3_unfiltered_cleaned_split.json \
+            --dataset /llm/ShareGPT_V3_unfiltered_cleaned_split.json \
             --model $MODEL \
             --num-prompts 1000 \
             --seed 42 \

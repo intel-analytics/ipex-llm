@@ -183,7 +183,7 @@ jobs:
       # - name: Install IPEX-LLM from Pypi
       #  shell: bash
       #  run: |
-      #    pip install --pre --upgrade ipex-llm[all] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      #    pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
       #    test_version_date=`date -d 'yesterday' '+%Y%m%d'`
       #    if ! pip show ipex-llm | grep $test_version_date; then
       #      echo "Did not install ipex-llm with excepted version $test_version_date"
@@ -257,12 +257,13 @@ jobs:
       # - name: Install IPEX-LLM from Pypi
       #  shell: bash
       #  run: |
-      #    pip install --pre --upgrade ipex-llm[all] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      #    pip install --pre --upgrade ipex-llm[all]
       #    test_version_date=`date -d 'yesterday' '+%Y%m%d'`
       #    if ! pip show ipex-llm | grep $test_version_date; then
       #      echo "Did not install ipex-llm with excepted version $test_version_date"
       #      exit 1
       #    fi
+
 
       - name: Test on core ${{ matrix.platform }}
         shell: bash

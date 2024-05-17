@@ -133,6 +133,40 @@ def llama_model_forward_4_36(
     )
 
 
+def llama_model_forward_4_38(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+    cache_position: Optional[torch.LongTensor] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    from ipex_llm.transformers.kv import DynamicFp8Cache
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    input = input_ids if input_ids is not None else inputs_embeds
+    if use_cache and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input):
+        if not isinstance(past_key_values, DynamicFp8Cache):
+            past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+    return llama_model_forward_4_38_internal(
+        self=self,
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_attentions=output_attentions,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+        cache_position=cache_position,
+    )
+
+
 def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
         import linear_q4_0
@@ -333,6 +367,7 @@ def llama_attention_forward_4_31(
     output_attentions: bool = False,
     use_cache: bool = False,
     padding_mask: Optional[torch.LongTensor] = None,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     if use_quantize_kv_cache(self.q_proj, hidden_states):
@@ -348,6 +383,7 @@ def llama_attention_forward_4_31(
         output_attentions=output_attentions,
         use_cache=use_cache,
         padding_mask=padding_mask,
+        cache_position=cache_position,
         kwargs=kwargs
     )
 
@@ -361,6 +397,7 @@ def llama_attention_forward_4_31_quantized(
     output_attentions: bool = False,
     use_cache: bool = False,
     padding_mask: Optional[torch.LongTensor] = None,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, hidden_size = hidden_states.size()
@@ -437,7 +474,8 @@ def llama_attention_forward_4_31_quantized(
         repeated_key_states = repeat_kv(key_states, self.num_key_value_groups)
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
         attn_output, attn_weights = native_sdp(query_states, repeated_key_states,
-                                               repeated_value_states, attention_mask,
+                                               repeated_value_states,
+                                               attention_mask, cache_position,
                                                bsz, q_len, kv_seq_len,
                                                self.head_dim, self.num_heads, output_attentions)
         if use_cache:
@@ -462,7 +500,7 @@ def llama_attention_forward_4_31_quantized(
             key_states = repeat_kv(key_states, self.num_key_value_groups)
             value_states = repeat_kv(value_states, self.num_key_value_groups)
             attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                                   attention_mask,
+                                                   attention_mask, cache_position,
                                                    bsz, q_len, kv_seq_len,
                                                    self.head_dim, self.num_heads, output_attentions)
         else:
@@ -498,6 +536,7 @@ def llama_attention_forward_4_31_original(
     output_attentions: bool = False,
     use_cache: bool = False,
     padding_mask: Optional[torch.LongTensor] = None,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, hidden_size = hidden_states.size()
@@ -683,7 +722,7 @@ def llama_attention_forward_4_31_original(
         value_states = repeat_kv(value_states, self.num_key_value_groups)
         # otherwise, use native attention
         attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                               attention_mask,
+                                               attention_mask, cache_position,
                                                bsz, q_len, kv_seq_len,
                                                self.head_dim, self.num_heads, output_attentions)
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
@@ -850,11 +889,13 @@ def llama_attention_selective_batching_forward_4_31(
                 current_key_states = repeat_kv(current_key_states, self.num_key_value_groups)
                 current_value_states = repeat_kv(current_value_states, self.num_key_value_groups)
 
+                cache_position = None
                 current_query_states = query_states[batch: batch + 1, :, :, :]
                 attn_output, attn_weights = native_sdp(current_query_states,
                                                        current_key_states,
                                                        current_value_states,
                                                        attention_mask[batch],
+                                                       cache_position,
                                                        1,
                                                        1,
                                                        current_kv_len,
@@ -896,10 +937,12 @@ def llama_attention_selective_batching_forward_4_31(
     if isinstance(attention_mask, list):
         # For decoding fast path
         attention_mask = attention_mask[0]
+    cache_position = None
     attn_output, attn_weights = native_sdp(query_states,
                                            key_states,
                                            value_states,
                                            attention_mask,
+                                           cache_position,
                                            bsz,
                                            q_len,
                                            kv_seq_len,
@@ -919,20 +962,21 @@ def llama_attention_selective_batching_forward_4_31(
     return attn_output.to(original_dtype), attn_weights, updated_past_key_values
 
 
-def llama_attention_forward_4_36(
+def llama_attention_forward_4_38(
     self,
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Cache] = None,
+    past_key_value: Optional[List[torch.FloatTensor]] = None,
     output_attentions: bool = False,
     use_cache: bool = False,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
     if use_quantize_kv_cache(self.q_proj, hidden_states):
-        forward_function = llama_attention_forward_4_36_quantized
+        forward_function = llama_attention_forward_4_38_quantized
     else:
-        forward_function = llama_attention_forward_4_36_original
+        forward_function = llama_attention_forward_4_38_original
     return forward_function(
         self=self,
         hidden_states=hidden_states,
@@ -941,20 +985,22 @@ def llama_attention_forward_4_36(
         past_key_value=past_key_value,
         output_attentions=output_attentions,
         use_cache=use_cache,
+        cache_position=cache_position,
         kwargs=kwargs
     )
 
 
-def llama_attention_forward_4_36_quantized(
+def llama_attention_forward_4_38_quantized(
     self,
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Cache] = None,
+    past_key_value: Optional[List[torch.FloatTensor]] = None,
     output_attentions: bool = False,
     use_cache: bool = False,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1026,9 +1072,15 @@ def llama_attention_forward_4_36_quantized(
                                                                          "llama",
                                                                          rope_theta=rope_theta)
         else:
-            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                            cos, sin, position_ids, "llama")
+            if cache_position is not None:
+                # for transformers 4.38.0
+                cos, sin = self.rotary_emb(value_states, position_ids)
+                query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                                cos, sin, position_ids, "llama2")
+            else:
+                cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+                query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                                cos, sin, position_ids, "llama")
     kv_seq_len = key_states.shape[-2]
 
     if len(past_key_value.key_cache) <= self.layer_idx:
@@ -1037,7 +1089,8 @@ def llama_attention_forward_4_36_quantized(
         if should_split_qkv_tensor(query_states, bsz, self.num_heads,
                                    q_len, kv_seq_len, output_attentions):
             attn_output, _ = native_sdp_split_qkv_tensor(query_states, repeated_key_states,
-                                                         repeated_value_states, attention_mask,
+                                                         repeated_value_states,
+                                                         attention_mask, cache_position,
                                                          bsz, q_len, kv_seq_len, self.head_dim,
                                                          self.num_heads)
         else:
@@ -1053,13 +1106,17 @@ def llama_attention_forward_4_36_quantized(
                 )
 
             if attention_mask is not None:
-                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                    invalidInputError(
-                        False,
-                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                        f" but is {attention_mask.size()}"
-                    )
-                attn_weights = attn_weights + attention_mask
+                if cache_position is not None:
+                    # for transformers 4.38.0
+                    causal_mask = attention_mask[:, :, cache_position, : kv_seq_len]
+                    attn_weights = attn_weights + causal_mask
+                else:
+                    attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+                    if attention_mask.size() != attn_mask_size:
+                        invalidInputError(False,
+                                          f"Attention mask should be of size {attn_mask_size}, "
+                                          f"but is {attention_mask.size()}")
+                    attn_weights = attn_weights + attention_mask
 
             if kv_seq_len >= 2048 or bsz >= 64:
                 # for memory considerations, do not upcast attention to fp32
@@ -1097,13 +1154,17 @@ def llama_attention_forward_4_36_quantized(
                 )
 
             if attention_mask is not None:
-                if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-                    invalidInputError(
-                        False,
-                        f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)},"
-                        f" but is {attention_mask.size()}"
-                    )
-                attn_weights = attn_weights + attention_mask
+                if cache_position is not None:
+                    # for transformers 4.38.0
+                    causal_mask = attention_mask[:, :, cache_position, : kv_seq_len]
+                    attn_weights = attn_weights + causal_mask
+                else:
+                    attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+                    if attention_mask.size() != attn_mask_size:
+                        invalidInputError(False,
+                                          f"Attention mask should be of size {attn_mask_size}, "
+                                          f"but is {attention_mask.size()}")
+                    attn_weights = attn_weights + attention_mask
 
             if kv_seq_len >= 2048 or bsz >= 64:
                 # for memory considerations, do not upcast attention to fp32
@@ -1116,8 +1177,12 @@ def llama_attention_forward_4_36_quantized(
             attn_output = torch.matmul(attn_weights, value_states)
         else:
             import linear_q4_0
+            if cache_position is not None:
+                new_attn_mask = attention_mask[:, :, kv_seq_len-q_len:kv_seq_len, 0:kv_seq_len]
+            else:
+                new_attn_mask = attention_mask
             attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+                                              new_attn_mask)
             attn_weights = None
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
@@ -1146,16 +1211,17 @@ def llama_attention_forward_4_36_quantized(
     return attn_output, attn_weights, past_key_value
 
 
-def llama_attention_forward_4_36_original(
+def llama_attention_forward_4_38_original(
     self,
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Cache] = None,
+    past_key_value: Optional[List[torch.FloatTensor]] = None,
     output_attentions: bool = False,
     use_cache: bool = False,
+    cache_position: Optional[torch.LongTensor] = None,
     **kwargs
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1293,9 +1359,15 @@ def llama_attention_forward_4_36_original(
                                                                          "llama",
                                                                          rope_theta=rope_theta)
         else:
-            cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                            cos, sin, position_ids, "llama")
+            if cache_position is not None:
+                # for transformers 4.38.0
+                cos, sin = self.rotary_emb(value_states, position_ids)
+                query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                                cos, sin, position_ids, "llama2")
+            else:
+                cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+                query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                                cos, sin, position_ids, "llama")
 
         if past_key_value is not None:
             # update the number of seen tokens
@@ -1335,8 +1407,13 @@ def llama_attention_forward_4_36_original(
                 past_key_value.key_cache[self.layer_idx] = key_states
                 past_key_value.value_cache[self.layer_idx] = value_states
 
+    if cache_position is not None:
+        new_attention_mask = attention_mask[:, :, kv_seq_len - q_len:kv_seq_len, 0:kv_seq_len]
+    else:
+        new_attention_mask = attention_mask
+
     if not self.training and not hidden_states.requires_grad and \
-            use_flash_attention(query_states, key_states, attention_mask):
+            use_flash_attention(query_states, key_states, new_attention_mask):
         # repeat k/v heads if n_kv_heads < n_heads
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
@@ -1349,7 +1426,7 @@ def llama_attention_forward_4_36_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -1359,7 +1436,7 @@ def llama_attention_forward_4_36_original(
         # otherwise, use native attention
         if query_states.device.type == "xpu":
             attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                                   attention_mask,
+                                                   new_attention_mask, cache_position,
                                                    bsz, q_len, kv_seq_len,
                                                    self.head_dim, self.num_heads, output_attentions)
         else:
@@ -1369,16 +1446,16 @@ def llama_attention_forward_4_36_original(
                     query_states,
                     key_states,
                     value_states,
-                    attn_mask=attention_mask,
+                    attn_mask=new_attention_mask,
                     dropout_p=self.attention_dropout if self.training else 0.0,
                     # The q_len > 1 is necessary to match with
                     # AttentionMaskConverter.to_causal_4d that
                     # does not create a causal mask in case q_len == 1.
-                    is_causal=self.is_causal and attention_mask is None and q_len > 1,
+                    is_causal=self.is_causal and new_attention_mask is None and q_len > 1,
                 )
             else:
                 attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                                       attention_mask,
+                                                       new_attention_mask, cache_position,
                                                        bsz, q_len, kv_seq_len,
                                                        self.head_dim,
                                                        self.num_heads, output_attentions)
@@ -1407,10 +1484,10 @@ def llama_attention_forward_4_36_original(
     return attn_output.to(original_dtype), attn_weights, past_key_value
 
 
-def native_sdp(query, key, value, attention_mask,
+def native_sdp(query, key, value, attention_mask, cache_position,
                bsz, q_len, kv_seq_len, head_dim, num_heads, output_attentions):
     if should_split_qkv_tensor(query, bsz, num_heads, q_len, kv_seq_len, output_attentions):
-        return native_sdp_split_qkv_tensor(query, key, value, attention_mask,
+        return native_sdp_split_qkv_tensor(query, key, value, attention_mask, cache_position,
                                            bsz, q_len, kv_seq_len, head_dim, num_heads)
     else:
         attn_weights = torch.matmul(query.to(key.dtype),
@@ -1423,12 +1500,17 @@ def native_sdp(query, key, value, attention_mask,
                               f"but is {attn_weights.size()}")
 
         if attention_mask is not None:
-            attn_mask_size = (bsz, 1, q_len, kv_seq_len)
-            if attention_mask.size() != attn_mask_size:
-                invalidInputError(False,
-                                  f"Attention mask should be of size {attn_mask_size}, "
-                                  f"but is {attention_mask.size()}")
-            attn_weights = attn_weights + attention_mask
+            if cache_position is not None:
+                # for transformers 4.38.0
+                causal_mask = attention_mask[:, :, cache_position, : kv_seq_len]
+                attn_weights = attn_weights + causal_mask
+            else:
+                attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+                if attention_mask.size() != attn_mask_size:
+                    invalidInputError(False,
+                                      f"Attention mask should be of size {attn_mask_size}, "
+                                      f"but is {attention_mask.size()}")
+                attn_weights = attn_weights + attention_mask
 
         if kv_seq_len >= 2048 or bsz >= 64:
             # for memory considerations, do not upcast attention to fp32
@@ -1442,7 +1524,7 @@ def native_sdp(query, key, value, attention_mask,
         return attn_output, attn_weights
 
 
-def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
+def native_sdp_split_qkv_tensor(query, key, value, attention_mask, cache_position,
                                 bsz, q_len, kv_seq_len, head_dim, num_heads):
     block_size = 8
     query_split = torch.split(query.to(key.dtype), block_size, dim=1)
@@ -1459,12 +1541,17 @@ def native_sdp_split_qkv_tensor(query, key, value, attention_mask,
                               f"{attn_weights_split_size}, but is {attn_weights_split.size()}")
 
         if attention_mask is not None:
-            attn_mask_size = (bsz, 1, q_len, kv_seq_len)
-            if attention_mask.size() != attn_mask_size:
-                invalidInputError(False,
-                                  f"Attention mask should be of size {attn_mask_size}, "
-                                  f"but is {attention_mask.size()}")
-            attn_weights_split = attn_weights_split + attention_mask
+            if cache_position is not None:
+                # for transformers 4.38.0
+                causal_mask = attention_mask[:, :, cache_position, : kv_seq_len]
+                attn_weights_split = attn_weights_split + causal_mask
+            else:
+                attn_mask_size = (bsz, 1, q_len, kv_seq_len)
+                if attention_mask.size() != attn_mask_size:
+                    invalidInputError(False,
+                                      f"Attention mask should be of size {attn_mask_size}, "
+                                      f"but is {attention_mask.size()}")
+                attn_weights_split = attn_weights_split + attention_mask
         attn_weights_split = nn.functional.softmax(attn_weights_split, dim=-1)
         attn_outputs.append(torch.matmul(attn_weights_split, v))
     attn_output = torch.cat(attn_outputs, dim=1)
@@ -1722,8 +1809,9 @@ def llama_attention_fast_forward(
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
 
+    cache_position = None
     attn_output, attn_weights = native_sdp(query_states, key_states, value_states,
-                                           attention_mask,
+                                           attention_mask, cache_position,
                                            bsz, q_len, kv_seq_len,
                                            self.head_dim, self.num_heads, output_attentions)
 
@@ -1750,6 +1838,135 @@ def llama_attention_fast_forward(
         attn_weights = None
 
     return attn_output, attn_weights, past_key_value
+
+
+def llama_model_forward_4_38_internal(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+    cache_position: Optional[torch.LongTensor] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    output_attentions = output_attentions if output_attentions is not None else \
+        self.config.output_attentions
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    # retrieve input_ids and inputs_embeds
+    if (input_ids is None) ^ (inputs_embeds is not None):
+        invalidInputError(False,
+                          f"You cannot specify both input_ids and inputs_embeds at the same time,"
+                          f" and must specify either one")
+
+    if self.gradient_checkpointing and self.training and use_cache:
+        logger.warning_once(
+            "`use_cache=True` is incompatible with gradient checkpointing. "
+            "Setting `use_cache=False`."
+        )
+        use_cache = False
+
+    if inputs_embeds is None:
+        inputs_embeds = self.embed_tokens(input_ids)
+
+    past_seen_tokens = 0
+    if use_cache:  # kept for BC (cache positions)
+        if not isinstance(past_key_values, Cache):
+            past_key_values = DynamicCache.from_legacy_cache(past_key_values)
+        past_seen_tokens = past_key_values.get_seq_length()
+
+    if cache_position is None:
+        cache_position = torch.arange(
+            past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1],
+            device=inputs_embeds.device
+        )
+
+    if position_ids is None:
+        position_ids = cache_position.unsqueeze(0)
+
+    causal_mask = self._update_causal_mask(attention_mask, inputs_embeds)
+
+    # embed positions
+    hidden_states = inputs_embeds
+
+    # decoder layers
+    all_hidden_states = () if output_hidden_states else None
+    all_self_attns = () if output_attentions else None
+    next_decoder_cache = None
+
+    for decoder_layer in self.layers:
+        if output_hidden_states:
+            all_hidden_states += (hidden_states,)
+
+        if self.gradient_checkpointing and self.training:
+            layer_outputs = self._gradient_checkpointing_func(
+                decoder_layer.__call__,
+                hidden_states,
+                causal_mask,
+                position_ids,
+                past_key_values,
+                output_attentions,
+                use_cache,
+                cache_position,
+            )
+        else:
+            # bigdl-llm changes:
+            curr_device = decoder_layer.input_layernorm.weight.device
+            if causal_mask is not None:
+                causal_mask = causal_mask.to(curr_device)
+            if position_ids is not None:
+                position_ids = position_ids.to(curr_device)
+            # bigdl-llm changes end
+            layer_outputs = decoder_layer(
+                hidden_states,
+                attention_mask=causal_mask,
+                position_ids=position_ids,
+                past_key_value=past_key_values,
+                output_attentions=output_attentions,
+                use_cache=use_cache,
+                cache_position=cache_position,
+            )
+
+        hidden_states = layer_outputs[0]
+
+        if use_cache:
+            next_decoder_cache = layer_outputs[2 if output_attentions else 1]
+
+        if output_attentions:
+            all_self_attns += (layer_outputs[1],)
+
+    hidden_states = self.norm(hidden_states)
+
+    # add hidden states from the last decoder layer
+    if output_hidden_states:
+        all_hidden_states += (hidden_states,)
+
+    next_cache = None
+    from ipex_llm.transformers.kv import DynamicFp8Cache
+    if use_cache:
+        next_cache = (
+            next_decoder_cache.to_legacy_cache()
+            if not isinstance(next_decoder_cache, DynamicFp8Cache)
+            else next_decoder_cache
+        )
+    if not return_dict:
+        return tuple(v for v in [hidden_states, next_cache, all_hidden_states,
+                                 all_self_attns] if v is not None)
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=next_cache,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attns,
+    )
 
 
 def llama_model_forward_4_36_internal(

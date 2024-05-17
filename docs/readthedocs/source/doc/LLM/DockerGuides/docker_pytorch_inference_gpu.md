@@ -2,6 +2,13 @@
 
 We can run PyTorch Inference Benchmark, Chat Service and PyTorch Examples on Intel GPUs within Docker (on Linux or WSL).
 
+```eval_rst
+.. note::
+
+   The current Windows + WSL + Docker solution only supports Arc series dGPU. For Windows users with MTL iGPU, it is recommended to install directly via pip install in Anaconda Prompt. Refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html>`_.
+
+```
+
 ## Install Docker
 
 Follow the [Docker installation Guide](./docker_windows_gpu.html#install-docker) to install docker on either Linux or Windows.
@@ -10,7 +17,7 @@ Follow the [Docker installation Guide](./docker_windows_gpu.html#install-docker)
 
 Prepare ipex-llm-xpu Docker Image:
 ```bash
-docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-xpu:latest
 ```
 
 Start ipex-llm-xpu Docker Container:
@@ -21,7 +28,7 @@ Start ipex-llm-xpu Docker Container:
 
       .. code-block:: bash
 
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
         export CONTAINER_NAME=my_container
         export MODEL_PATH=/llm/models[change to your model path]
 
@@ -39,7 +46,7 @@ Start ipex-llm-xpu Docker Container:
       .. code-block:: bash
 
          #/bin/bash
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
         export CONTAINER_NAME=my_container
         export MODEL_PATH=/llm/models[change to your model path]
 
