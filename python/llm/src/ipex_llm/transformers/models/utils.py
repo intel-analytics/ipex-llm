@@ -24,6 +24,7 @@ from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_
 from ipex_llm.transformers.convert import is_deepspeed_available
 
 FP8_KV_ALLOC_LENGTH = 512
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 # used in fused mlp forward
 SILU = 0
@@ -426,3 +427,49 @@ def fp16_fusion_check(proj, x, training):
     if device_type != "pvc":
         return False
     return True
+
+
+def update_past_key_value(past_key_value, key_states, value_states,
+                          kv_seq_len, use_quantize_kv, device):
+    bsz, num_heads, _, head_dim = key_states.shape
+    if use_quantize_kv:
+        if past_key_value is None:
+            k_cache, v_cache = init_fp8_kv_cache(
+                bsz, num_heads, kv_seq_len, head_dim,
+                device=device
+            )
+        else:
+            k_cache, v_cache = past_key_value
+        key_states, value_states = append_fp8_kv_cache(k_cache, v_cache,
+                                                       key_states, value_states)
+    else:
+        if past_key_value is None:
+            max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+            k_cache, v_cache = init_kv_cache(bsz,
+                                             num_heads,
+                                             head_dim,
+                                             kv_seq_len,
+                                             max_cache_length,
+                                             dtype=key_states.dtype,
+                                             device=device)
+            k_cache[...] = key_states
+            v_cache[...] = value_states
+            key_states = k_cache
+            value_states = v_cache
+        else:
+            k_cache, v_cache = past_key_value
+            if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
+                max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
+                new_k_cache, new_v_cache = extend_kv_cache(bsz,
+                                                           num_heads,
+                                                           head_dim,
+                                                           k_cache.size(2),
+                                                           max_cache_length,
+                                                           dtype=k_cache.dtype,
+                                                           device=device)
+                new_k_cache[...] = k_cache
+                new_v_cache[...] = v_cache
+                k_cache = new_k_cache
+                v_cache = new_v_cache
+            key_states, value_states = append_kv_cache(k_cache, v_cache, key_states, value_states)
+    return key_states, value_states
