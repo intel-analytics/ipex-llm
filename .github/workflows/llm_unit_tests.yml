@@ -486,7 +486,7 @@ jobs:
           echo PATH=$PATH:${{ github.workspace }}/../../../_tool/Python/3.11.9/x64/bin/ >> $GITHUB_PATH
           echo PATH=$PATH:${{ github.workspace }}/../../../_tool/Python/3.11.9/x64/Library/bin/ >> $GITHUB_PATH
           echo PATH=$PATH:${{ github.workspace }}/../../../_tool/Python/3.11.9/x64/Library/lib/ >> $GITHUB_PATH
-          echo $GITHUB_PATH 
+          echo $GITHUB_PATH
         
       - name: Install dependencies
         shell: bash
