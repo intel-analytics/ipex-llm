@@ -481,22 +481,24 @@ jobs:
           tar -jxvf ./libuv.tar.bz2
           cp -r ./Library/bin/* ../../../_tool/Python/3.11.9/x64/Library/bin/
           cd ../../../_tool/Python/3.11.9/x64/Library/bin/
-          echo PATH=$PATH:$(pwd) >> $GITHUB_PATH
+          echo "$(pwd)" >> $GITHUB_PATH
           cd -
 
           cp -r ./Library/lib/* ../../../_tool/Python/3.11.9/x64/Library/lib/
           cd ../../../_tool/Python/3.11.9/x64/Library/lib/
-          echo PATH=$PATH:$(pwd) >> $GITHUB_PATH
+          echo "$(pwd)" >> $GITHUB_PATH
           cd -
 
           cp -r ./Library/include/* ../../../_tool/Python/3.11.9/x64/include/
           cd ../../../_tool/Python/3.11.9/x64/include/
-          echo PATH=$PATH:$(pwd) >> $GITHUB_PATH
+          echo "$(pwd)" >> $GITHUB_PATH
           cd -
 
           cd ../../../_tool/Python/3.11.9/x64/
-          echo PATH=$PATH:$(pwd) >> $GITHUB_PATH
+          echo "$(pwd)" >> $GITHUB_PATH
           cd -
+          
+          echo "$PATH"
         
       - name: Install dependencies
         shell: bash
@@ -521,6 +523,7 @@ jobs:
         shell: bash
         run: |
           env
+          echo "$PATH"
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Download LLMs and datasets
