@@ -710,6 +710,12 @@ def _optimize_pre(model):
         model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.phi3 import split_mlp
         model.apply(split_mlp)
+    # for baichuan2
+    if model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
+        if model.config.hidden_size in [4096, 2048]:
+            # baichuan2-7B
+            from ipex_llm.transformers.models.baichuan2 import pre_compute_inv_freq
+            model.apply(pre_compute_inv_freq)
     if model.config.model_type == "qwen":
         rope_base = model.config.rotary_emb_base
         from accelerate.big_modeling import init_empty_weights
