@@ -9,12 +9,13 @@ In the example [generate.py](./generate.py), we show a basic use case for a Baic
 ### 1. Install
 We suggest using conda to manage environment:
 
-On Linux
+
+On Linux:
 ```bash
 conda create -n llm python=3.11
 conda activate llm
 
- # install ipex-llm with 'all' option
+# install ipex-llm with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install transformers_stream_generator  # additional package required for Baichuan-13B-Chat to conduct generation
 ```

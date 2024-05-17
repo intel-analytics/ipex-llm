@@ -80,13 +80,13 @@ We have several docker images available for running LLMs on Intel GPUs. The foll
 
 | Image Name | Description | Use Case |
 |------------|-------------|----------|
-| intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT | CPU Inference |For development and running LLMs using llama.cpp, Ollama and Python|
-| intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT | GPU Inference |For development and running LLMs using llama.cpp, Ollama and Python|
-| intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT | CPU Serving|For serving multiple users/requests through REST APIs using vLLM/FastChat|
-| intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT | GPU Serving|For serving multiple users/requests through REST APIs using vLLM/FastChat|
-| intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT | CPU Finetuning via Docker|For fine-tuning LLMs using QLora/Lora, etc. |
-|intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT|CPU Finetuning via Kubernetes|For fine-tuning LLMs using QLora/Lora, etc. |
-| intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT| GPU Finetuning|For fine-tuning LLMs using QLora/Lora, etc.|
+| intelanalytics/ipex-llm-cpu:latest | CPU Inference |For development and running LLMs using llama.cpp, Ollama and Python|
+| intelanalytics/ipex-llm-xpu:latest | GPU Inference |For development and running LLMs using llama.cpp, Ollama and Python|
+| intelanalytics/ipex-llm-serving-cpu:latest | CPU Serving|For serving multiple users/requests through REST APIs using vLLM/FastChat|
+| intelanalytics/ipex-llm-serving-xpu:latest | GPU Serving|For serving multiple users/requests through REST APIs using vLLM/FastChat|
+| intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:latest | CPU Finetuning via Docker|For fine-tuning LLMs using QLora/Lora, etc. |
+|intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:latest|CPU Finetuning via Kubernetes|For fine-tuning LLMs using QLora/Lora, etc. |
+| intelanalytics/ipex-llm-finetune-qlora-xpu:latest| GPU Finetuning|For fine-tuning LLMs using QLora/Lora, etc.|
 
 We have also provided several quickstarts for various usage scenarios:
 - [Run and develop LLM applications in PyTorch](./docker_pytorch_inference_gpu.html)

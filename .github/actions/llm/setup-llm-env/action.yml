@@ -38,7 +38,11 @@ runs:
           pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[xpu_2.1]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ 
           pip install pytest expecttest
         else
-          pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]" --extra-index-url https://download.pytorch.org/whl/cpu
+          if [[ ${{ runner.os }} == 'Linux' ]]; then
+            pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]" --extra-index-url https://download.pytorch.org/whl/cpu
+          elif [[ ${{ runner.os }} == 'Windows' ]]; then
+            pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"
+          fi
           pip install pytest
           bash python/llm/test/run-llm-install-tests.sh
         fi
