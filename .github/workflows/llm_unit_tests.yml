@@ -479,12 +479,14 @@ jobs:
           mkdir libuv && cd ./libuv
           powershell -Command "Invoke-WebRequest https://anaconda.org/anaconda/libuv/1.44.2/download/win-64/libuv-1.44.2-h2bbff1b_0.tar.bz2 -OutFile libuv.tar.bz2"
           tar -jxvf ./libuv.tar.bz2
-          echo $ANALYTICS_ZOO_ROOT
-          echo ${{ github.workspace }}
-          pwd
-          cp -r ./Library/bin/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/3.11.9/x64/bin/
-          cp -r ./Library/include/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/3.11.9/x64/include/
-          cp -r ./Library/lib/* /d/actions-runner/bigdl-gpu-ut/_work/_tool/Python/3.11.9/x64/libs/
+          cp -r ./Library/bin/* ../../../_tool/Python/3.11.9/x64/Library/bin/
+          cp -r ./Library/lib/* ../../../_tool/Python/3.11.9/x64/Library/libs/
+          cp -r ./Library/include/* ../../../_tool/Python/3.11.9/x64/include/
+          echo PATH=$PATH:${{ github.workspace }}/../../../_tool/Python/3.11.9/x64/ >> $GITHUB_PATH
+          echo PATH=$PATH:${{ github.workspace }}/../../../_tool/Python/3.11.9/x64/bin/ >> $GITHUB_PATH
+          echo PATH=$PATH:${{ github.workspace }}/../../../_tool/Python/3.11.9/x64/Library/bin/ >> $GITHUB_PATH
+          echo PATH=$PATH:${{ github.workspace }}/../../../_tool/Python/3.11.9/x64/Library/libs/ >> $GITHUB_PATH
+          echo $GITHUB_PATH
         
       - name: Install dependencies
         shell: bash
