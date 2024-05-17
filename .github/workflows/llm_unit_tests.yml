@@ -520,6 +520,7 @@ jobs:
       - name: Test installed xpu version
         shell: bash
         run: |
+          env
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Download LLMs and datasets
