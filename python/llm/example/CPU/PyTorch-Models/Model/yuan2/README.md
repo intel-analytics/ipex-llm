@@ -25,7 +25,7 @@ pip install einops # additional package required for Yuan2 to conduct generation
 pip install pandas # additional package required for Yuan2 to conduct generation
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

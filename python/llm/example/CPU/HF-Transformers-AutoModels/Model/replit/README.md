@@ -22,7 +22,7 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install "transformers<4.35"
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

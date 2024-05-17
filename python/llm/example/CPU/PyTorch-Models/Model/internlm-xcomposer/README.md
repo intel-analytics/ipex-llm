@@ -23,7 +23,7 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops # additional package required for InternLM_XComposer to conduct generation
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

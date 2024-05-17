@@ -25,7 +25,7 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install tiktoken einops transformers_stream_generator  # additional package required for Qwen-7B-Chat to conduct generation
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

@@ -29,7 +29,7 @@ cd LLaVA # change the working directory to the LLaVA folder
 git checkout tags/v1.2.0 -b 1.2.0 # Get the branch which is compatible with transformers 4.36
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

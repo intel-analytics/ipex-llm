@@ -46,7 +46,7 @@ pip install transformers==4.35.0
 pip install accelerate==0.25.0
 pip install einops
 ```
-On windows:
+On Windows:
 ```cmd
 conda create -n llm python=3.11
 conda activate llm

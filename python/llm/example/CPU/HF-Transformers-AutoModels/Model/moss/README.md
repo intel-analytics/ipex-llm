@@ -20,7 +20,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install "transformers<4.34"
 ```
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

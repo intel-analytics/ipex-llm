@@ -20,7 +20,7 @@ pip install einops  # additional package required for mpt-7b-chat and mpt-30b-ch
 
 #### 1.2 Installation on Windows
 We suggest using conda to manage environment:
-```cmd
+```bash
 conda create -n llm python=3.11 libuv
 conda activate llm
 

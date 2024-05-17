@@ -26,7 +26,7 @@ pip install transformers==4.40.0
 pip install trl==0.8.1
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

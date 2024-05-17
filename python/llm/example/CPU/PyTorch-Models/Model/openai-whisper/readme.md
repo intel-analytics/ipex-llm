@@ -22,7 +22,7 @@ pip install -U openai-whisper
 pip install librosa # required by audio processing
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

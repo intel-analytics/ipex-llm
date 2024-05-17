@@ -24,7 +24,7 @@ pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scip
 
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

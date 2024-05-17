@@ -23,7 +23,7 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install transformers==4.35 pillow # additional package required for Fuyu to conduct generation
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

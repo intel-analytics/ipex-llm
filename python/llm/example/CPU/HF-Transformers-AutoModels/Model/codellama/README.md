@@ -13,7 +13,7 @@ On Linux:
 
 ```bash
 conda create -n llm python=3.11
-conda activate llm --extra-index-url https://download.pytorch.org/whl/cpu
+conda activate llm
 
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu

@@ -24,7 +24,7 @@ pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdow
 
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11

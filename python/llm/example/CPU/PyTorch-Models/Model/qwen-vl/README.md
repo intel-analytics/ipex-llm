@@ -22,7 +22,7 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install accelerate tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib # additional package required for Qwen-VL-Chat to conduct generation
 ```
 
-On windows:
+On Windows:
 
 ```cmd
 conda create -n llm python=3.11
