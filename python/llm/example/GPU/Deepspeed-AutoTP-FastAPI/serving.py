@@ -210,11 +210,24 @@ app = FastAPI()
 
 
 async def stream_generator(token_queue, request_id):
+    index = 0
     while True:
         if not token_queue.empty():
             remain, token = await token_queue.get()
-            yield json.dumps({"generate_text": token}) + "\n"
+            response = {
+                "index": index,
+                "message": {"role": "assistant", "content": token},
+                "finish_reason": None,
+            }
+            yield json.dumps(response) + "\n"
+            index = index + 1
             if remain == 0:
+                response = {
+                    "index": index,
+                    "message": {"role": "assistant", "content": None},
+                    "finish_reason": "length",
+                }
+                yield json.dumps(response) + "\n"
                 break
         else:
             await asyncio.sleep(0)
@@ -245,7 +258,14 @@ async def generate(prompt_request: PromptRequest):
             async for item in generator(token_queue, request_id):
                 output_str.append(item)
 
-            return {"generated_text": "".join(output_str)}
+            return {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "".join(output_str),
+                },
+                "finish_reason": "stop",
+            }
 
 
 @app.post("/generate_stream/")
@@ -257,7 +277,9 @@ async def generate_stream(prompt_request: PromptRequest):
         if request_id in streamer_dict:
             token_queue = streamer_dict[request_id]
 
-            return StreamingResponse(stream_generator(token_queue, request_id))
+            return StreamingResponse(
+                stream_generator(token_queue, request_id), media_type="application/json"
+            )
 
 
 async def process_requests():
