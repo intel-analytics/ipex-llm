@@ -23,7 +23,9 @@ For both Linux/Windows, you will need to Install Dev Container extension.
 
 Open the Extensions view in VSCode (you can use the shortcut Ctrl+Shift+X), then search for and install the "Dev Containers" extension.
 
-<gif>
+
+![install_dev_container-ezgif com-video-to-gif-converter (1)](https://github.com/liu-shaojun/ipex-llm/assets/61072813/21fbbd60-8d3e-4b6d-949b-62f43a102148)
+
 
 #### Install WSL Extension for Windows
 
