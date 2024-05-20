@@ -5,7 +5,7 @@ export TEST_BIGDLLLM_MODEL_IDS=${VICUNA_7B_1_3_ORIGIN_PATH}
 export TEST_IPEXLLM_MODEL_IDS=${VICUNA_7B_1_3_ORIGIN_PATH}
 
 # Use Windows style path when running on Windows
-if [[ $1 == "--win-arc" ]]; then
+if [[ $RUNNER_OS == "Windows" ]]; then
   export TEST_BIGDLLLM_MODEL_IDS=$(cygpath -m ${VICUNA_7B_1_3_ORIGIN_PATH})
   export TEST_IPEXLLM_MODEL_IDS=$(cygpath -m ${VICUNA_7B_1_3_ORIGIN_PATH})
 fi

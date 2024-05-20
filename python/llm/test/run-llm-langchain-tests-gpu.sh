@@ -4,11 +4,11 @@ export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
 export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/langchain_gpu
 
-if [[ $1 == "--win-arc" ]]; then
-  export SYCL_CACHE_PERSISTENT=1
-else
+if [[ $RUNNER_OS == "Linux" ]]; then
   export USE_XETLA=OFF
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+elif [[ $RUNNER_OS == "Windows" ]]; then
+  export SYCL_CACHE_PERSISTENT=1
 fi
 
 export DEVICE='xpu'
