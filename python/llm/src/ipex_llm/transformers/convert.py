@@ -717,40 +717,6 @@ def _optimize_pre(model):
             # baichuan2-7B
             from ipex_llm.transformers.models.baichuan2 import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
-    if model.config.model_type == "qwen":
-        rope_base = model.config.rotary_emb_base
-        from accelerate.big_modeling import init_empty_weights
-
-        def split_qkv_proj_func(module):
-            if "QWenAttention" in module.__class__.__name__:
-                c_attn_weight = module.c_attn.weight.data
-                c_attn_bias = module.c_attn.bias.data
-                # Compatible with AutoTP case
-                projection_size = c_attn_weight.shape[0] // 3
-                hid_size = module.hidden_size
-                with init_empty_weights():
-                    q_proj = torch.nn.Linear(hid_size, projection_size)
-                    k_proj = torch.nn.Linear(hid_size, projection_size)
-                    v_proj = torch.nn.Linear(hid_size, projection_size)
-                if not model.config.to_dict().get("bigdl_transformers_low_bit", False):
-                    q_proj.weight = torch.nn.Parameter(
-                        c_attn_weight[:projection_size, :], requires_grad=False)
-                    q_proj.bias = torch.nn.Parameter(
-                        c_attn_bias[:projection_size], requires_grad=False)
-                    k_proj.weight = torch.nn.Parameter(
-                        c_attn_weight[projection_size: 2 * projection_size, :], requires_grad=False)
-                    k_proj.bias = torch.nn.Parameter(
-                        c_attn_bias[projection_size: 2 * projection_size], requires_grad=False)
-                    v_proj.weight = torch.nn.Parameter(
-                        c_attn_weight[2 * projection_size:, :], requires_grad=False)
-                    v_proj.bias = torch.nn.Parameter(
-                        c_attn_bias[2 * projection_size:], requires_grad=False)
-                module.q_proj = q_proj
-                module.k_proj = k_proj
-                module.v_proj = v_proj
-                module.rope_base = rope_base
-                del module.c_attn
-        model.apply(split_qkv_proj_func)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
