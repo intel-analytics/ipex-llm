@@ -148,6 +148,12 @@ bash qlora_finetune_llama3_8b_arc_1_card.sh
 
 ##### Finetuning Qwen-1.5-7B examples on single Arc A770
 
+Install transformers 4.37.0
+
+```bash
+pip install transformers==4.37.0
+```
+
 ```bash
 bash qlora_finetune_qwen15_7b_arc_1_card.sh
 ```
