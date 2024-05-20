@@ -142,6 +142,29 @@ bash qlora_finetune_llama3_8b_arc_1_card.sh
 
 </details>
 
+
+<details>
+  <summary> Show Qwen-1.5-7B examples </summary>
+
+##### Finetuning Qwen-1.5-7B examples on single Arc A770
+
+```bash
+bash qlora_finetune_qwen15_7b_arc_1_card.sh
+```
+
+</details>
+
+<details>
+  <summary> Show Baichuan2-7B examples </summary>
+
+##### Finetuning Baichuan2-7B examples on single Arc A770
+
+```bash
+bash qlora_finetune_baichuan2_7b_arc_1_card.sh
+```
+
+</details>
+
 ### 4. (Optional) Resume Training
 
 If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
