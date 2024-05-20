@@ -7,7 +7,11 @@ This guide provides steps to run/develop PyTorch examples in VSCode with Docker 
 ```eval_rst
 .. note::
 
-   This guide assumes you have already installed VSCode in your environment. To run/develop on Windows, install VSCode and then follow the steps below. To run/develop on Linux, you might open VSCode first and SSH to a remote Linux machine, then proceed with the following steps.
+   This guide assumes you have already installed VSCode in your environment. 
+   
+   To run/develop on Windows, install VSCode and then follow the steps below. 
+   
+   To run/develop on Linux, you might open VSCode first and SSH to a remote Linux machine, then proceed with the following steps.
 
 ```
 
@@ -19,9 +23,9 @@ Follow the [Docker installation Guide](./docker_windows_gpu.html#install-docker)
 ## Install Extensions for VSCcode
 
 #### Install Dev Containers Extension
-For both Linux/Windows, you will need to Install Dev Container extension.
+For both Linux/Windows, you will need to Install Dev Containers extension.
 
-Open the Extensions view in VSCode (you can use the shortcut Ctrl+Shift+X), then search for and install the "Dev Containers" extension.
+Open the Extensions view in VSCode (you can use the shortcut `Ctrl+Shift+X`), then search for and install the `Dev Containers` extension.
 
 
 ![install_dev_container-ezgif com-video-to-gif-converter (1)](https://github.com/liu-shaojun/ipex-llm/assets/61072813/21fbbd60-8d3e-4b6d-949b-62f43a102148)
@@ -30,16 +34,16 @@ Open the Extensions view in VSCode (you can use the shortcut Ctrl+Shift+X), then
 
 #### Install WSL Extension for Windows
 
-For Windows, you will need to install wsl extension to to the WSL environment. Open the Extensions view in VSCode (you can use the shortcut `Ctrl+Shift+X`), then search for and install the "WSL" extension.
+For Windows, you will need to install wsl extension to to the WSL environment. Open the Extensions view in VSCode (you can use the shortcut `Ctrl+Shift+X`), then search for and install the `WSL` extension.
 
-Press F1 to bring up the Command Palette and type in "WSL: Connect to WSL Using Distro" and select it and then select a specific WSL distro `Ubuntu`
+Press F1 to bring up the Command Palette and type in `WSL: Connect to WSL Using Distro` and select it and then select a specific WSL distro `Ubuntu`
 
 ![installwslextention-ezgif com-video-to-gif-converter (1)](https://github.com/liu-shaojun/ipex-llm/assets/61072813/f53b9d17-1719-442c-b08f-d0c369476dc0)
 
 
 ## Launch Container
 
-Open the Terminal in VSCode (you can use the shortcut `Ctrl+Shift+&#96;`), then pull ipex-llm-xpu Docker Image:
+Open the Terminal in VSCode (you can use the shortcut `Ctrl+Shift+``), then pull ipex-llm-xpu Docker Image:
 
 ```bash
 docker pull intelanalytics/ipex-llm-xpu:latest
@@ -94,10 +98,10 @@ Press F1 to bring up the Command Palette and type in "Dev Containers: Attach t
 
 Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model/`.
 
-In this folder, we provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs.
-
 ![run_example-ezgif com-video-to-gif-converter](https://github.com/liu-shaojun/ipex-llm/assets/61072813/031d185b-9693-4454-ba77-5f187fbb9cab)
 
+
+In this folder, we provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs.
 
 For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can navigate to llama2 directory, excute the following command to run example:
   ```bash
