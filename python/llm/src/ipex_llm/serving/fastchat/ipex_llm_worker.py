@@ -104,7 +104,7 @@ class BigDLLLMWorker(BaseModelWorker):
             speculative,
             load_low_bit_model,
         )
-        if benchmark.lower() == "true":
+        if benchmark.lower() == "true" and not speculative:
             from ipex_llm.utils.benchmark_util import BenchmarkWrapper
             self.model = BenchmarkWrapper(self.model, do_print=True)
             logger.info(f"enable benchmark successfully")
