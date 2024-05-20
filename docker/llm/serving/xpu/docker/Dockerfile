@@ -47,8 +47,9 @@ RUN cd /llm &&\
     pip install transformers_stream_generator einops tiktoken && \
     pip uninstall -y oneccl_bind_pt && \
     pip install /tmp/oneccl_bind_pt-2.1.100+xpu-cp311-cp311-linux_x86_64.whl && \
-    bash /tmp/oneccl_wks_installer_rc1.sh
-    # TODO: cleanup
+    bash /tmp/oneccl_wks_installer_rc1.sh && \
+    rm /tmp/oneccl_wks_installer_rc1.sh && \
+    rm /tmp/oneccl_bind_pt-2.1.100+xpu-cp311-cp311-linux_x86_64.whl
 
 ADD ./vllm_offline_inference.py       /llm/
 ADD ./payload-1024.lua                /llm/
