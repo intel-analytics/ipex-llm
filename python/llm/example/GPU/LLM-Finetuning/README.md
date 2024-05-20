@@ -15,12 +15,11 @@ This folder contains examples of running different training mode with IPEX-LLM o
 
 | Model      | Finetune mode                                                   | Frameworks Support |
 |------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
-| LLaMA 2    |   Lora, QLoRA, QA-LoRA, ReLora  | DPO, HF-PEFT, axolotl |
-| LLaMA 3    |   Lora, QLoRA | HF-PEFT, axolotl |
+| LLaMA 2/3    |   Lora, QLoRA, QA-LoRA, ReLora  | DPO, HF-PEFT, axolotl |
 | Mistral | Lora, QLoRA | DPO, HF-PEFT |
-| ChatGLM 3 | Lora, QLoRA | HF-PEFT |
-| Qwen-1.5 | Lora, QLoRA | HF-PEFT |
-| Baichuan2 | Lora, QLoRA | HF-PEFT |
+| ChatGLM 3 | QLoRA | HF-PEFT |
+| Qwen-1.5 | QLoRA | HF-PEFT |
+| Baichuan2 | QLoRA | HF-PEFT |
 
 ## Troubleshooting
 - If you fail to finetune on multi cards because of following error message:
