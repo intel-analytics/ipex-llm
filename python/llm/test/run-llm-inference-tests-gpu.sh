@@ -31,6 +31,7 @@ pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_mlp.py -v -s -k "not Mist
 
 echo "START RMSNORM TEST"
 
+
 pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_RMSNorm.py -v -s -k "not Mistral"
 
 echo "FINISH INFERENCE HERE"
