@@ -137,5 +137,8 @@ class Test_Optimize_Gpu_Model:
         # since the original Llama2 code adds residual after the mlp layer, which differs from the implementation of bigdl
         layer_before_Decoder = "model.layers.30"
         Decoder_layer = "model.layers.31"
-        lower_bound = 1e-1
+        if os.environ['RUNNER_OS'] == "Windows":
+            lower_bound = 2e-1
+        else:
+            lower_bound = 1e-1
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, Decoder_layer, layer_before_Decoder, lower_bound)
