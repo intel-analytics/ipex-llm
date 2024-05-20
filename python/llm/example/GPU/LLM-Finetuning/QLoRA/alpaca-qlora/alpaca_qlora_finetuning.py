@@ -191,11 +191,14 @@ def train(
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
-
-    tokenizer.pad_token_id = (
-        0  # unk. we want this to be different from the eos token
-    )
+    
     tokenizer.padding_side = "left"  # Allow batched inference
+    if "llama" in model.config.model_type:
+        tokenizer.pad_token_id = 0
+    elif "qwen2" in model.config.model_type:
+        tokenizer.pad_token = '<|endoftext|>'
+    elif "baichuan" in model.config.model_type:
+        tokenizer.pad_token = "<unk>"
 
     print(model)
 
