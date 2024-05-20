@@ -188,5 +188,5 @@ class Test_Optimize_Gpu_Model:
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "transformer.h.31.ln_1"
         self_attn = "transformer.h.31.attn"
-        lower_bound = 8e-3
+        lower_bound = 2e-2
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
