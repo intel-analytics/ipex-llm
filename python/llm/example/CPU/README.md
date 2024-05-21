@@ -27,6 +27,6 @@ This folder contains examples of running IPEX-LLM on Intel CPU:
 ## Best Known Configuration on Linux
 For better performance, it is recommended to set environment variables on Linux with the help of IPEX-LLM:
 ```bash
-pip install --pre --upgrade ipex-llm --extra-index-url https://download.pytorch.org/whl/cpu
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 source ipex-llm-init
 ```
