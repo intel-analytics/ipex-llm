@@ -175,7 +175,7 @@ class IPEXLLMGPUExecutor(ExecutorBase):
                 start=1,
         ):
             local_rank = node_workers[node_id].index(rank)
-            from ipex_llm.vllm.model_convert import _ipex_llm_convert
+            from ipex_llm.vllm.model_convert_xpu import _ipex_llm_convert
 
             def create_worker_function(rank, local_rank, load_in_low_bit):
                 def worker_function():

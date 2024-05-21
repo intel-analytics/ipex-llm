@@ -21,7 +21,6 @@ from vllm.engine.arg_utils import AsyncEngineArgs, EngineArgs
 from vllm.entrypoints.llm import LLM
 from vllm.utils import Counter
 
-from ipex_llm.vllm.model_convert import _ipex_llm_convert
 from ipex_llm.utils.common import invalidInputError
 
 
@@ -39,8 +38,12 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     ) -> "AsyncLLMEngine":
         """Creates an async LLM engine from the engine arguments."""
         # Enable ipex-llm optimizations
-        _ipex_llm_convert(load_in_low_bit)
         engine_configs = engine_args.create_engine_configs()
+        if engine_configs.device_config.device_type == "cpu":
+            from ipex_llm.vllm.model_convert import _ipex_llm_convert
+        else:
+            from ipex_llm.vllm.model_convert_xpu import _ipex_llm_convert
+        _ipex_llm_convert(load_in_low_bit)
         parallel_config = engine_configs[2]
         if parallel_config.worker_use_ray or engine_args.engine_use_ray:
             from vllm.engine.ray_utils import initialize_ray_cluster
@@ -127,8 +130,12 @@ class IPEXLLMLLMEngine(LLMEngine):
     ) -> "LLMEngine":
         """Creates an LLM engine from the engine arguments."""
         # Create the engine configs.
-        _ipex_llm_convert(load_in_low_bit)
         engine_configs = engine_args.create_engine_configs()
+        if engine_configs.device_config.device_type == "cpu":
+            from ipex_llm.vllm.model_convert import _ipex_llm_convert
+        else:
+            from ipex_llm.vllm.model_convert_xpu import _ipex_llm_convert
+        _ipex_llm_convert(load_in_low_bit)
         parallel_config = engine_configs[2]
 
         # Initialize the cluster and specify the executor class.
