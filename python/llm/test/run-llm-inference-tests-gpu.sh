@@ -33,6 +33,9 @@ pytest_check_error() {
   cat pytest_check_error.log
   failed_lines=$(cat pytest_check_error.log | grep failed)
   if [[ $failed_lines != "" ]]; then
+    echo "=====FAILED LINES====="
+    echo $failed_lines
+    echo "=====FAILED LINES====="
     exit 1
   fi
   rm pytest_check_error.log
