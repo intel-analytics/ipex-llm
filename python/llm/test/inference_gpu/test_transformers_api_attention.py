@@ -26,7 +26,8 @@ from transformers import LlamaTokenizer, AutoTokenizer
 device = os.environ['DEVICE']
 print(f'Running on {device}')
 
-PROMPT = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
+PROMPT = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun. But her parents were very strict, and they didn't allow her to leave the house without their permission. The little girl was very sad because she couldn't explore the world like she wanted to."
+
 TEST_MODEL_LIST = [
     ("MPT-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
     ("Llama2-7B", AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
@@ -188,5 +189,5 @@ class Test_Optimize_Gpu_Model:
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "transformer.h.31.ln_1"
         self_attn = "transformer.h.31.attn"
-        lower_bound = 2e-2
+        lower_bound = 8e-3
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
