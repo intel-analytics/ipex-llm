@@ -4,6 +4,13 @@ vLLM is a fast and easy-to-use library for LLM inference and serving. You can fi
 
 IPEX-LLM can be integrated into vLLM so that user can use `IPEX-LLM` to boost the performance of vLLM engine on Intel **GPUs** *(e.g., local PC with descrete GPU such as Arc, Flex and Max)*.
 
+Currently, IPEX-LLM integrated vLLM only supports the following models:
+
+- Qwen series models
+- Llama series models
+- ChatGLM series models
+- Baichuan series models
+
 
 ## Quick Start
 
