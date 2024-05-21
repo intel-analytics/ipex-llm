@@ -18,5 +18,4 @@
 python ./alpaca_qlora_finetuning.py \
     --base_model "Qwen/Qwen1.5-7B-Chat" \
     --data_path "yahma/alpaca-cleaned" \
-    --output_dir "./ipex-llm-qlora-alpaca"
-    
+    --output_dir "./ipex-llm-qlora-alpaca"    
