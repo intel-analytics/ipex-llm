@@ -36,10 +36,15 @@ Open the Extensions view in VSCode (you can use the shortcut `Ctrl+Shift+X`), th
 
 For Windows, you will need to install wsl extension to to the WSL environment. Open the Extensions view in VSCode (you can use the shortcut `Ctrl+Shift+X`), then search for and install the `WSL` extension.
 
-Press F1 to bring up the Command Palette and type in `WSL: Connect to WSL Using Distro` and select it and then select a specific WSL distro `Ubuntu`
+Press F1 to bring up the Command Palette and type in `WSL: Connect to WSL Using Distro...` and select it and then select a specific WSL distro `Ubuntu`
 
 ![](https://github.com/liu-shaojun/ipex-llm/assets/61072813/f53b9d17-1719-442c-b08f-d0c369476dc0)
 
+<a href="https://github.com/liu-shaojun/ipex-llm/assets/61072813/f53b9d17-1719-442c-b08f-d0c369476dc0" target="_blank">
+  <img src="https://github.com/liu-shaojun/ipex-llm/assets/61072813/f53b9d17-1719-442c-b08f-d0c369476dc0" width=100%; />
+</a>
+
+<br/>
 
 ## Launch Container
 
@@ -94,7 +99,7 @@ Start ipex-llm-xpu Docker Container:
 
 ## Run/Develop Pytorch Examples
 
-Press F1 to bring up the Command Palette and type in "Dev Containers: Attach to Running Container..." and select it and then select `my_container`
+Press F1 to bring up the Command Palette and type in `Dev Containers: Attach to Running Container...` and select it and then select `my_container`
 
 Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model/`.
 
