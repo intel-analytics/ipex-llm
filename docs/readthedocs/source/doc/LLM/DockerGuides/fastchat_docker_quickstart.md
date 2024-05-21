@@ -98,6 +98,8 @@ export API_PORT=8000
 bash /llm/start-fastchat-service.sh -w vllm_worker
 ```
 
+The `vllm_worker` may start slowly than normal `ipex_llm_worker`.  The booted service should be similar to the following figure:
+
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/fastchat-vllm-worker.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/fastchat-vllm-worker.png" width=100%; />
 </a>
