@@ -19,7 +19,7 @@ This folder contains examples of running different training mode with IPEX-LLM o
 | Mistral | [Lora](DPO), [QLoRA](DPO) | [DPO](DPO) |
 | ChatGLM 3 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
 | Qwen-1.5 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
-| Baichuan2 | [QLoRA]QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
+| Baichuan2 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
 
 ## Troubleshooting
 - If you fail to finetune on multi cards because of following error message:
