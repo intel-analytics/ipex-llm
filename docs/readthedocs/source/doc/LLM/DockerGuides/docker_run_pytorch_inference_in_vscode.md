@@ -31,6 +31,14 @@ Open the Extensions view in VSCode (you can use the shortcut `Ctrl+Shift+X`), th
 ![](https://github.com/liu-shaojun/ipex-llm/assets/61072813/21fbbd60-8d3e-4b6d-949b-62f43a102148)
 
 
+![install_dev_container-ezgif com-crop-video](https://github.com/liu-shaojun/ipex-llm/assets/61072813/e25bd266-a05d-42e2-807a-a277fa68a870)
+
+
+<a href="https://github.com/liu-shaojun/ipex-llm/assets/61072813/e25bd266-a05d-42e2-807a-a277fa68a870" target="_blank">
+  <img src="https://github.com/liu-shaojun/ipex-llm/assets/61072813/e25bd266-a05d-42e2-807a-a277fa68a870" width=100%; />
+</a>
+
+<br/>
 
 #### Install WSL Extension for Windows
 
