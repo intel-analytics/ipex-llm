@@ -15,15 +15,14 @@
 #
 import torch
 from vllm.logger import init_logger
+from vllm.model_executor.model_loader import get_model
 from vllm.model_executor.models.llama import LlamaMLP, LlamaAttention
 from vllm.model_executor.models.qwen2 import Qwen2MLP, Qwen2Attention
 from vllm.model_executor.models.qwen import QWenMLP, QWenAttention
 from vllm.model_executor.models.baichuan import BaiChuanMLP, BaiChuanAttention
 from vllm.model_executor.models.chatglm import GLMMLP, GLMAttention
-from vllm.model_executor.model_loader import get_model
 from vllm.attention import Attention, AttentionMetadata
 from vllm.lora.worker_manager import LRUCacheWorkerLoRAManager
-from vllm.model_executor.input_metadata import InputMetadata
 from vllm.config import DeviceConfig
 from typing import Tuple
 from ipex_llm.utils.common import invalidInputError
