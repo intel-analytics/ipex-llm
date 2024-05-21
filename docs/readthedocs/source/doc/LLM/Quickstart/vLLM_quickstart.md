@@ -104,7 +104,7 @@ served_model_name="YOUR_MODEL_NAME"
  # --max-model-len, --max-num-batched-tokens, --max-num-seqs
  # to acquire the best performance
 
-python -m ipex_llm.vllm.entrypoints.openai.api_server \
+python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --served-model-name $served_model_name \
   --port 8000 \
   --model $model \
@@ -195,7 +195,7 @@ export CCL_ATL_SHM=1
  # --max-model-len, --max-num-batched-tokens, --max-num-seqs
  # to acquire the best performance
 
-python -m ipex_llm.vllm.entrypoints.openai.api_server \
+python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --served-model-name $served_model_name \
   --port 8000 \
   --model $model \

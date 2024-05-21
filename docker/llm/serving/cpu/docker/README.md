@@ -120,7 +120,7 @@ In container, do the following:
 cd /llm
 # You can change -t and -c to control the concurrency.
 # By default, we use 12 connections to benchmark the service.
-wrk -t12 -c12 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
+wrk -t4 -c4 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
 
 ```
 #### Offline benchmark through benchmark_vllm_throughput.py
@@ -149,8 +149,7 @@ python3 /llm/benchmark_vllm_throughput.py \
     --seed 42 \
     --trust-remote-code \
     --enforce-eager \
-    --dtype float16 \
-    --device xpu \
-    --load-in-low-bit sym_int4 \
-    --gpu-memory-utilization 0.85
+    --dtype bfloat16 \
+    --device cpu \
+    --load-in-low-bit sym_int4
 ```

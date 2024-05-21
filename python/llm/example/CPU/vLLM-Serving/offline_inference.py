@@ -31,7 +31,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ipex_llm.vllm.engine import IPEXLLMClass as LLM
+from ipex_llm.vllm.cpu.engine import IPEXLLMClass as LLM
 from vllm import SamplingParams
 
 # Sample prompts.
