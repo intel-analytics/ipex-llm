@@ -82,10 +82,11 @@ And you should get output like this:
   "index": 0,
   "message": {
     "role": "assistant",
-    "content": "\nUnterscheidung zwischen KI und AI\n\nAI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks "
+    "content": "\n\nArtificial intelligence (AI) is a branch of computer science that deals with the creation of intelligent machines that can perform tasks that typically "
   },
   "finish_reason": "stop"
 }
+
 ```
 #### generate_stream()
 ```bash
@@ -106,38 +107,39 @@ curl -X 'POST' \
 And you should get output like this:
 ```json
 {"index": 0, "message": {"role": "assistant", "content": "\n"}, "finish_reason": null}
-{"index": 1, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
-{"index": 2, "message": {"role": "assistant", "content": "Unterscheidung "}, "finish_reason": null}
-{"index": 3, "message": {"role": "assistant", "content": "zwischen "}, "finish_reason": null}
+{"index": 1, "message": {"role": "assistant", "content": "\n"}, "finish_reason": null}
+{"index": 2, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 3, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
 {"index": 4, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
-{"index": 5, "message": {"role": "assistant", "content": "KI "}, "finish_reason": null}
-{"index": 6, "message": {"role": "assistant", "content": "und "}, "finish_reason": null}
+{"index": 5, "message": {"role": "assistant", "content": "Artificial "}, "finish_reason": null}
+{"index": 6, "message": {"role": "assistant", "content": "intelligence "}, "finish_reason": null}
 {"index": 7, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
-{"index": 8, "message": {"role": "assistant", "content": "AI\n"}, "finish_reason": null}
-{"index": 9, "message": {"role": "assistant", "content": "\n"}, "finish_reason": null}
-{"index": 10, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
-{"index": 11, "message": {"role": "assistant", "content": "AI "}, "finish_reason": null}
-{"index": 12, "message": {"role": "assistant", "content": "stands "}, "finish_reason": null}
-{"index": 13, "message": {"role": "assistant", "content": "for "}, "finish_reason": null}
-{"index": 14, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
-{"index": 15, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
-{"index": 16, "message": {"role": "assistant", "content": "Artificial "}, "finish_reason": null}
+{"index": 8, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 9, "message": {"role": "assistant", "content": "(AI) "}, "finish_reason": null}
+{"index": 10, "message": {"role": "assistant", "content": "is "}, "finish_reason": null}
+{"index": 11, "message": {"role": "assistant", "content": "a "}, "finish_reason": null}
+{"index": 12, "message": {"role": "assistant", "content": "branch "}, "finish_reason": null}
+{"index": 13, "message": {"role": "assistant", "content": "of "}, "finish_reason": null}
+{"index": 14, "message": {"role": "assistant", "content": "computer "}, "finish_reason": null}
+{"index": 15, "message": {"role": "assistant", "content": "science "}, "finish_reason": null}
+{"index": 16, "message": {"role": "assistant", "content": "that "}, "finish_reason": null}
 {"index": 17, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
-{"index": 18, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
-{"index": 19, "message": {"role": "assistant", "content": "Intelligence, "}, "finish_reason": null}
-{"index": 20, "message": {"role": "assistant", "content": "which "}, "finish_reason": null}
-{"index": 21, "message": {"role": "assistant", "content": "refers "}, "finish_reason": null}
-{"index": 22, "message": {"role": "assistant", "content": "to "}, "finish_reason": null}
-{"index": 23, "message": {"role": "assistant", "content": "the "}, "finish_reason": null}
-{"index": 24, "message": {"role": "assistant", "content": "development "}, "finish_reason": null}
-{"index": 25, "message": {"role": "assistant", "content": "of "}, "finish_reason": null}
-{"index": 26, "message": {"role": "assistant", "content": "computer "}, "finish_reason": null}
-{"index": 27, "message": {"role": "assistant", "content": "systems "}, "finish_reason": null}
-{"index": 28, "message": {"role": "assistant", "content": "that "}, "finish_reason": null}
-{"index": 29, "message": {"role": "assistant", "content": "can "}, "finish_reason": null}
-{"index": 30, "message": {"role": "assistant", "content": "perform "}, "finish_reason": null}
-{"index": 31, "message": {"role": "assistant", "content": "tasks "}, "finish_reason": null}
+{"index": 18, "message": {"role": "assistant", "content": "deals "}, "finish_reason": null}
+{"index": 19, "message": {"role": "assistant", "content": "with "}, "finish_reason": null}
+{"index": 20, "message": {"role": "assistant", "content": "the "}, "finish_reason": null}
+{"index": 21, "message": {"role": "assistant", "content": "creation "}, "finish_reason": null}
+{"index": 22, "message": {"role": "assistant", "content": "of "}, "finish_reason": null}
+{"index": 23, "message": {"role": "assistant", "content": ""}, "finish_reason": null}
+{"index": 24, "message": {"role": "assistant", "content": "intelligent "}, "finish_reason": null}
+{"index": 25, "message": {"role": "assistant", "content": "machines "}, "finish_reason": null}
+{"index": 26, "message": {"role": "assistant", "content": "that "}, "finish_reason": null}
+{"index": 27, "message": {"role": "assistant", "content": "can "}, "finish_reason": null}
+{"index": 28, "message": {"role": "assistant", "content": "perform "}, "finish_reason": null}
+{"index": 29, "message": {"role": "assistant", "content": "tasks "}, "finish_reason": null}
+{"index": 30, "message": {"role": "assistant", "content": "that "}, "finish_reason": null}
+{"index": 31, "message": {"role": "assistant", "content": "typically "}, "finish_reason": null}
 {"index": 32, "message": {"role": "assistant", "content": null}, "finish_reason": "length"}
+
 
 ```
 
