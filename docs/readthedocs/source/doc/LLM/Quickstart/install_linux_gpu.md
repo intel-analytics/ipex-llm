@@ -94,7 +94,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
 
 
-#### For linux MTL
+#### (Optional) Update Level Zero on Intel Core Ultra iGPU
 * Check level_zero version >= 1.3.28717.12 with `sycl-ls`, and check the verison tagged behind `[ext_oneapi_level_zero:gpu]` 
 ```
 >> sycl-ls
