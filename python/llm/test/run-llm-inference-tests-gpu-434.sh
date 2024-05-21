@@ -8,7 +8,7 @@ if [[ $RUNNER_OS == "Linux" ]]; then
   export USE_XETLA=OFF
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 elif [[ $RUNNER_OS == "Windows" ]]; then
-  export ANALYTICS_ZOO_ROOT=$(cygpath -u $(ANALYTICS_ZOO_ROOT))
+  export ANALYTICS_ZOO_ROOT=$(cygpath -m ${ANALYTICS_ZOO_ROOT})
   export SYCL_CACHE_PERSISTENT=1
 fi
 
