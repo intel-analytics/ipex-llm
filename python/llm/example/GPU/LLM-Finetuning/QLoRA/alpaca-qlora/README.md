@@ -142,6 +142,16 @@ bash qlora_finetune_llama3_8b_arc_1_card.sh
 
 </details>
 
+<details>
+  <summary> Show ChatGLM3-6B examples </summary>
+
+##### Finetuning ChatGLM3-6B examples on single Arc A770
+
+```bash
+bash qlora_finetune_chatglm3_6b_arc_1_card.sh
+```
+
+</details>
 
 <details>
   <summary> Show Qwen-1.5-7B examples </summary>
