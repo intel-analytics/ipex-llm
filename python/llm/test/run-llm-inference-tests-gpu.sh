@@ -22,19 +22,27 @@ start=$(date "+%s")
 #   THREAD_NUM=2
 # fi
 # export OMP_NUM_THREADS=$THREAD_NUM
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v -s
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_layernorm.py -v -s
+
+# pytest may return exit code 127, which cause unexpected error
+# ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
+pytest_check_error() {
+  result=$(eval "$@" || echo "FINISH PYTEST")
+  echo $result
+  failed_lines=$(echo $result | grep failed)
+  if [[ $failed_lines != "" ]]; then
+    exit 1
+  fi
+}
+
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v -s
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_layernorm.py -v -s
+
 export BIGDL_LLM_XMX_DISABLED=1
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_final_logits.py -v -s
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_attention.py -v -s -k "not Mistral"
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_mlp.py -v -s -k "not Mistral"
 
-echo "START RMSNORM TEST"
-
-
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_RMSNorm.py -v -s -k "not Mistral"
-
-echo "FINISH INFERENCE HERE"
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_final_logits.py -v -s
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_attention.py -v -s -k "not Mistral"
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_mlp.py -v -s -k "not Mistral"
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_RMSNorm.py -v -s -k "not Mistral"
 
 unset BIGDL_LLM_XMX_DISABLED
 
