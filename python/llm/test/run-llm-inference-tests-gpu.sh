@@ -29,16 +29,23 @@ start=$(date "+%s")
 # ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
 pytest_check_error() {
   result=$(eval "$@" || echo "FINISH PYTEST")
+  echo HERE 1
   echo $result > pytest_check_error.log
+  echo HERE 2
   cat pytest_check_error.log
+  echo HERE 3
   failed_lines=$(cat pytest_check_error.log | grep failed)
+  echo HERE 4
   if [[ $failed_lines != "" ]]; then
+    echo HERE 5
     echo "=====FAILED LINES====="
     echo $failed_lines
     echo "=====FAILED LINES====="
     exit 1
   fi
+  echo HERE 6
   rm pytest_check_error.log
+  echo HERE 7
 }
 
 pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v -s
@@ -62,7 +69,7 @@ echo "Time used:$time seconds"
 echo "# Start testing layers.fast_rope_embedding"
 start=$(date "+%s")
 
-pytest ${LLM_INFERENCE_TEST_DIR}/test_layer_fast_rope.py -v -s
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_layer_fast_rope.py -v -s
 
 now=$(date "+%s")
 time=$((now-start))
