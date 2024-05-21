@@ -43,7 +43,7 @@ Press F1 to bring up the Command Palette and type in `WSL: Connect to WSL Usin
 
 ## Launch Container
 
-Open the Terminal in VSCode (you can use the shortcut `Ctrl+Shift+``), then pull ipex-llm-xpu Docker Image:
+Open the Terminal in VSCode (you can use the shortcut `` Ctrl+Shift+` ``), then pull ipex-llm-xpu Docker Image:
 
 ```bash
 docker pull intelanalytics/ipex-llm-xpu:latest
