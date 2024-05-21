@@ -1,6 +1,7 @@
 import asyncio
 import importlib
 import inspect
+import os
 import re
 from contextlib import asynccontextmanager
 from http import HTTPStatus
@@ -113,7 +114,7 @@ async def create_chat_completion(request: ChatCompletionRequest,
         return StreamingResponse(content=generator,
                                  media_type="text/event-stream")
     else:
-        assert isinstance(generator, ChatCompletionResponse)
+        invalidInputError(isinstance(generator, ChatCompletionResponse))
         return JSONResponse(content=generator.model_dump())
 
 
@@ -142,8 +143,8 @@ if __name__ == "__main__":
         allow_headers=args.allowed_headers,
     )
 
-    if token := envs.VLLM_API_KEY or args.api_key:
-
+    token = os.environ.get("VLLM_API_KEY") or args.api_key
+    if token:
         @app.middleware("http")
         async def authentication(request: Request, call_next):
             root_path = "" if args.root_path is None else args.root_path

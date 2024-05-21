@@ -156,10 +156,10 @@ def get_load_function(low_bit):
         _model_attention_convert()
 
         self.model = get_model(self.model_config,
-                            self.device_config,
-                            lora_config=self.lora_config,
-                            parallel_config=self.parallel_config,
-                            scheduler_config=self.scheduler_config)
+                               self.device_config,
+                               lora_config=self.lora_config,
+                               parallel_config=self.parallel_config,
+                               scheduler_config=self.scheduler_config)
         from ipex_llm import optimize_model
         optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype)
 

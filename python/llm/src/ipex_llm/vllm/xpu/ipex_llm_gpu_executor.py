@@ -176,7 +176,6 @@ class IPEXLLMGPUExecutor(ExecutorBase):
                 start=1,
         ):
             local_rank = node_workers[node_id].index(rank)
-            
 
             def create_worker_function(rank, local_rank, load_in_low_bit):
                 def worker_function():

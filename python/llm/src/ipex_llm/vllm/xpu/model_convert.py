@@ -167,14 +167,14 @@ def get_load_function(low_bit):
             # We have to create a new DeviceConfig.
             # Otherwise, will get the wrong xpu memory usage
             self.model = get_model(self.model_config,
-                                DeviceConfig("cpu"),
-                                lora_config=self.lora_config,
-                                parallel_config=self.parallel_config,
-                                scheduler_config=self.scheduler_config)
+                                   DeviceConfig("cpu"),
+                                   lora_config=self.lora_config,
+                                   parallel_config=self.parallel_config,
+                                   scheduler_config=self.scheduler_config)
             from ipex_llm import optimize_model
             optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype)
             self.model = self.model.to(device=self.device_config.device,
-                                    dtype=self.model_config.dtype)
+                                       dtype=self.model_config.dtype)
 
         self.model_memory_usage = m.consumed_memory
         logger = init_logger(__name__)

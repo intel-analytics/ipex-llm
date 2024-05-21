@@ -48,8 +48,8 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
             from vllm.executor.neuron_executor import NeuronExecutorAsync
             executor_class = NeuronExecutorAsync
         elif engine_config.device_config.device_type == "cpu":
-            assert not engine_config.parallel_config.worker_use_ray, (
-                "Ray is not supported with the CPU backend.")
+            invalidInputError(not engine_config.parallel_config.worker_use_ray, (
+                "Ray is not supported with the CPU backend."))
             from vllm.executor.cpu_executor import CPUExecutorAsync
             executor_class = CPUExecutorAsync
         elif engine_config.parallel_config.worker_use_ray:
@@ -57,8 +57,8 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
             from vllm.executor.ray_gpu_executor import RayGPUExecutorAsync
             executor_class = RayGPUExecutorAsync
         else:
-            assert engine_config.parallel_config.world_size == 1, (
-                "Ray is required if parallel_config.world_size > 1.")
+            invalidInputError(engine_config.parallel_config.world_size == 1, (
+                "Ray is required if parallel_config.world_size > 1."))
             from vllm.executor.gpu_executor import GPUExecutorAsync
             executor_class = GPUExecutorAsync
         # Create the async LLM engine.
@@ -157,16 +157,15 @@ class IPEXLLMLLMEngine(LLMEngine):
             from vllm.executor.ray_gpu_executor import RayGPUExecutor
             executor_class = RayGPUExecutor
         else:
-            assert engine_config.parallel_config.world_size == 1, (
-                "Ray is required if parallel_config.world_size > 1.")
+            invalidInputError(engine_config.parallel_config.world_size == 1, (
+                "Ray is required if parallel_config.world_size > 1."))
             from vllm.executor.gpu_executor import GPUExecutor
             executor_class = GPUExecutor
-
 
         # Create the LLM engine.
         engine = cls(**engine_config.to_dict(),
                      executor_class=executor_class,
                      log_stats=not engine_args.disable_log_stats,
                      usage_context=usage_context,
-                    )
+                     )
         return engine
