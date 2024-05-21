@@ -18,7 +18,6 @@ from typing import List, Optional, Union
 from vllm.engine.llm_engine import LLMEngine
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.engine.arg_utils import AsyncEngineArgs, EngineArgs
-from vllm.engine.ray_utils import initialize_ray_cluster
 from vllm.entrypoints.llm import LLM
 from vllm.utils import Counter
 
@@ -44,6 +43,7 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         engine_configs = engine_args.create_engine_configs()
         parallel_config = engine_configs[2]
         if parallel_config.worker_use_ray or engine_args.engine_use_ray:
+            from vllm.engine.ray_utils import initialize_ray_cluster
             initialize_ray_cluster(parallel_config)
             # from vllm.executor.ray_gpu_executor import RayGPUExecutorAsync
             from ipex_llm.vllm.ipex_llm_gpu_executor import get_gpu_executor_class_async
