@@ -1,4 +1,4 @@
-# Serving using IPEX-LLM and vLLM on Intel GPUs via docker
+# Serving using IPEX-LLM integrated vLLM/FastChat on Intel GPUs via docker
 
 This guide demonstrates how to do LLM serving with `IPEX-LLM` integrated `FastChat` or `vLLM` in Docker on Linux with Intel GPUs.
 
