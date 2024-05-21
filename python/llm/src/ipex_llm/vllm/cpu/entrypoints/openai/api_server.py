@@ -61,6 +61,11 @@ app = fastapi.FastAPI(lifespan=lifespan)
 
 def parse_args():
     parser = make_arg_parser()
+    parser.add_argument(
+        "--load-in-low-bit",
+        type=str,
+        default="sym_int4",
+        help="Low-bit quantization for IPEX-LLM models")
     return parser.parse_args()
 
 

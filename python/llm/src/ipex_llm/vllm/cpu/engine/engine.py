@@ -19,6 +19,7 @@ from vllm.engine.llm_engine import LLMEngine
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.engine.arg_utils import AsyncEngineArgs, EngineArgs
 from vllm.entrypoints.llm import LLM
+from vllm.executor.ray_utils import initialize_ray_cluster
 from vllm.usage.usage_lib import (UsageContext, is_usage_stats_enabled,
                                   usage_message)
 from vllm.utils import Counter
@@ -35,38 +36,43 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         cls,
         engine_args: AsyncEngineArgs,
         start_engine_loop: bool = True,
+        usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
         load_in_low_bit: str = "sym_int4",
-        # ipex_llm_optimize_mode: str = 'NATIVE',
     ) -> "AsyncLLMEngine":
         """Creates an async LLM engine from the engine arguments."""
         # Enable ipex-llm optimizations
-        engine_configs = engine_args.create_engine_configs()
+        engine_config = engine_args.create_engine_config()
         from ipex_llm.vllm.cpu.model_convert import _ipex_llm_convert
         _ipex_llm_convert(load_in_low_bit)
-        parallel_config = engine_configs[2]
-        if parallel_config.worker_use_ray or engine_args.engine_use_ray:
-            from vllm.engine.ray_utils import initialize_ray_cluster
-            initialize_ray_cluster(parallel_config)
-            # from vllm.executor.ray_gpu_executor import RayGPUExecutorAsync
-            from ipex_llm.vllm.xpu.ipex_llm_gpu_executor import get_gpu_executor_class_async
-            executor_class = get_gpu_executor_class_async(load_in_low_bit)
-        elif engine_configs.device_config.device_type == "cpu":
+        if engine_config.device_config.device_type == "neuron":
+            from vllm.executor.neuron_executor import NeuronExecutorAsync
+            executor_class = NeuronExecutorAsync
+        elif engine_config.device_config.device_type == "cpu":
+            assert not engine_config.parallel_config.worker_use_ray, (
+                "Ray is not supported with the CPU backend.")
             from vllm.executor.cpu_executor import CPUExecutorAsync
             executor_class = CPUExecutorAsync
+        elif engine_config.parallel_config.worker_use_ray:
+            initialize_ray_cluster(engine_config.parallel_config)
+            from vllm.executor.ray_gpu_executor import RayGPUExecutorAsync
+            executor_class = RayGPUExecutorAsync
         else:
-            invalidInputError(parallel_config.world_size == 1, (
-                "Ray is required if parallel_config.world_size > 1."))
+            assert engine_config.parallel_config.world_size == 1, (
+                "Ray is required if parallel_config.world_size > 1.")
             from vllm.executor.gpu_executor import GPUExecutorAsync
             executor_class = GPUExecutorAsync
         # Create the async LLM engine.
-        engine = cls(parallel_config.worker_use_ray,
-                     engine_args.engine_use_ray,
-                     *engine_configs,
-                     executor_class,
-                     log_requests=not engine_args.disable_log_requests,
-                     log_stats=not engine_args.disable_log_stats,
-                     max_log_len=engine_args.max_log_len,
-                     start_engine_loop=start_engine_loop)
+        engine = cls(
+            engine_config.parallel_config.worker_use_ray,
+            engine_args.engine_use_ray,
+            **engine_config.to_dict(),
+            executor_class=executor_class,
+            log_requests=not engine_args.disable_log_requests,
+            log_stats=not engine_args.disable_log_stats,
+            max_log_len=engine_args.max_log_len,
+            start_engine_loop=start_engine_loop,
+            usage_context=usage_context,
+        )
         return engine
 
 
