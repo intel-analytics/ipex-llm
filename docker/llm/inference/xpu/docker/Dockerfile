@@ -53,12 +53,20 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
     # Download vLLM-Serving
-    git clone https://github.com/intel-analytics/IPEX-LLM && \
-    cp -r ./IPEX-LLM/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
-    rm -rf ./IPEX-LLM && \
+    cp -r ./ipex-llm/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
     # Install related library of benchmarking
-    pip install pandas && \
-    pip install omegaconf && \
-    chmod +x /llm/benchmark.sh
+    pip install pandas omegaconf && \
+    chmod +x /llm/benchmark.sh && \
+    # Download Deepspeed-AutoTP
+    cp -r ./ipex-llm/python/llm/example/GPU/Deepspeed-AutoTP/ ./Deepspeed-AutoTP && \
+    # Install related library of Deepspeed-AutoTP
+    pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install git+https://github.com/microsoft/DeepSpeed.git@ed8aed5 && \
+    pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@0eb734b && \
+    pip install mpi4py && \
+    apt-get update && \
+    apt-get install -y google-perftools && \
+    ln -s /usr/local/lib/python3.11/dist-packages/ipex_llm/libs/libtcmalloc.so /lib/libtcmalloc.so && \
+    rm -rf ./ipex-llm
 
 WORKDIR /llm/
