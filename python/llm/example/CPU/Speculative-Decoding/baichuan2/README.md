@@ -11,7 +11,7 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.11
 conda activate llm
-pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install intel_extension_for_pytorch==2.1.0
 pip install transformers==4.31.0
 ```
