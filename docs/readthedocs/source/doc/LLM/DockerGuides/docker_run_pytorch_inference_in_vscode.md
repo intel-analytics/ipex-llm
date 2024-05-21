@@ -28,7 +28,7 @@ For both Linux/Windows, you will need to Install Dev Containers extension.
 Open the Extensions view in VSCode (you can use the shortcut `Ctrl+Shift+X`), then search for and install the `Dev Containers` extension.
 
 
-![install_dev_container-ezgif com-video-to-gif-converter (1)](https://github.com/liu-shaojun/ipex-llm/assets/61072813/21fbbd60-8d3e-4b6d-949b-62f43a102148)
+![](https://github.com/liu-shaojun/ipex-llm/assets/61072813/21fbbd60-8d3e-4b6d-949b-62f43a102148)
 
 
 
@@ -38,7 +38,7 @@ For Windows, you will need to install wsl extension to to the WSL environment. O
 
 Press F1 to bring up the Command Palette and type in `WSL: Connect to WSL Using Distro` and select it and then select a specific WSL distro `Ubuntu`
 
-![installwslextention-ezgif com-video-to-gif-converter (1)](https://github.com/liu-shaojun/ipex-llm/assets/61072813/f53b9d17-1719-442c-b08f-d0c369476dc0)
+![](https://github.com/liu-shaojun/ipex-llm/assets/61072813/f53b9d17-1719-442c-b08f-d0c369476dc0)
 
 
 ## Launch Container
@@ -98,7 +98,7 @@ Press F1 to bring up the Command Palette and type in "Dev Containers: Attach t
 
 Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model/`.
 
-![run_example-ezgif com-video-to-gif-converter](https://github.com/liu-shaojun/ipex-llm/assets/61072813/031d185b-9693-4454-ba77-5f187fbb9cab)
+![](https://github.com/liu-shaojun/ipex-llm/assets/61072813/031d185b-9693-4454-ba77-5f187fbb9cab)
 
 
 In this folder, we provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs.
