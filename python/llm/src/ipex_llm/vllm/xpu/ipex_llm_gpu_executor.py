@@ -17,6 +17,7 @@ from vllm.sequence import SamplerOutput, SequenceGroupMetadata
 from vllm.utils import (set_cuda_visible_devices, get_ip, get_open_port,
                         get_distributed_init_method, make_async)
 import functools
+from ipex_llm.vllm.xpu.model_convert import _ipex_llm_convert
 from ipex_llm.utils.common import invalidInputError
 
 if ray is not None:
@@ -175,7 +176,7 @@ class IPEXLLMGPUExecutor(ExecutorBase):
                 start=1,
         ):
             local_rank = node_workers[node_id].index(rank)
-            from ipex_llm.vllm.model_convert_xpu import _ipex_llm_convert
+            
 
             def create_worker_function(rank, local_rank, load_in_low_bit):
                 def worker_function():

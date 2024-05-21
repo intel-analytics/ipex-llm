@@ -3,7 +3,7 @@ model="YOUR_MODEL_PATH"
 served_model_name="YOUR_MODEL_NAME"
  
  
-python -m ipex_llm.vllm.entrypoints.openai.api_server \
+python -m ipex_llm.vllm.cpu.entrypoints.openai.api_server \
   --served-model-name $served_model_name \
   --port 8000 \
   --model $model \

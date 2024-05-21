@@ -18,9 +18,10 @@ from typing import List, Optional, Union
 from vllm.engine.llm_engine import LLMEngine
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.engine.arg_utils import AsyncEngineArgs, EngineArgs
+from vllm.engine.ray_utils import initialize_ray_cluster
 from vllm.entrypoints.llm import LLM
 from vllm.utils import Counter
-
+from ipex_llm.vllm.xpu.model_convert import _ipex_llm_convert
 from ipex_llm.utils.common import invalidInputError
 
 
@@ -39,21 +40,15 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         """Creates an async LLM engine from the engine arguments."""
         # Enable ipex-llm optimizations
         engine_configs = engine_args.create_engine_configs()
-        if engine_configs.device_config.device_type == "cpu":
-            from ipex_llm.vllm.model_convert import _ipex_llm_convert
-        else:
-            from ipex_llm.vllm.model_convert_xpu import _ipex_llm_convert
+        
         _ipex_llm_convert(load_in_low_bit)
         parallel_config = engine_configs[2]
         if parallel_config.worker_use_ray or engine_args.engine_use_ray:
-            from vllm.engine.ray_utils import initialize_ray_cluster
+            
             initialize_ray_cluster(parallel_config)
             # from vllm.executor.ray_gpu_executor import RayGPUExecutorAsync
-            from ipex_llm.vllm.ipex_llm_gpu_executor import get_gpu_executor_class_async
+            from ipex_llm.vllm.xpu.ipex_llm_gpu_executor import get_gpu_executor_class_async
             executor_class = get_gpu_executor_class_async(load_in_low_bit)
-        elif engine_configs.device_config.device_type == "cpu":
-            from vllm.executor.cpu_executor import CPUExecutorAsync
-            executor_class = CPUExecutorAsync
         else:
             invalidInputError(parallel_config.world_size == 1, (
                 "Ray is required if parallel_config.world_size > 1."))
@@ -131,10 +126,6 @@ class IPEXLLMLLMEngine(LLMEngine):
         """Creates an LLM engine from the engine arguments."""
         # Create the engine configs.
         engine_configs = engine_args.create_engine_configs()
-        if engine_configs.device_config.device_type == "cpu":
-            from ipex_llm.vllm.model_convert import _ipex_llm_convert
-        else:
-            from ipex_llm.vllm.model_convert_xpu import _ipex_llm_convert
         _ipex_llm_convert(load_in_low_bit)
         parallel_config = engine_configs[2]
 
@@ -142,11 +133,8 @@ class IPEXLLMLLMEngine(LLMEngine):
         if parallel_config.worker_use_ray:
             initialize_ray_cluster(parallel_config)
             # from vllm.executor.ray_gpu_executor import RayGPUExecutor
-            from ipex_llm.vllm.ipex_llm_gpu_executor import get_gpu_executor_class
+            from ipex_llm.vllm.xpu.ipex_llm_gpu_executor import get_gpu_executor_class
             executor_class = get_gpu_executor_class(load_in_low_bit)
-        elif engine_configs.device_config.device_type == "cpu":
-            from vllm.executor.cpu_executor import CPUExecutor
-            executor_class = CPUExecutor
         else:
             invalidInputError(parallel_config.world_size == 1,
                               "Ray is required if parallel_config.world_size > 1.")
