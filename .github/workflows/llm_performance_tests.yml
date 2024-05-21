@@ -10,8 +10,8 @@ permissions:
 
 # Controls when the action will run.
 on:
-  schedule:
-    - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
+  # schedule:
+  #   - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
   pull_request:
     branches: [main]
