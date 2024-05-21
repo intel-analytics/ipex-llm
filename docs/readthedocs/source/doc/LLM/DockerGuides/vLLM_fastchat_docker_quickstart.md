@@ -17,21 +17,20 @@ docker pull intelanalytics/ipex-llm-serving-xpu:latest
 
  To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. Change the `/path/to/models` to mount the models. 
 
-      .. code-block:: bash
-
-        #/bin/bash
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
-        export CONTAINER_NAME=ipex-llm-serving-xpu-container
-        sudo docker run -itd \
-                --net=host \
-                --device=/dev/dri \
-                -v /path/to/models:/llm/models \
-                -e no_proxy=localhost,127.0.0.1 \
-                --memory="32G" \
-                --name=$CONTAINER_NAME \
-                --shm-size="16g" \
-                $DOCKER_IMAGE
-
+```
+#/bin/bash
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
+export CONTAINER_NAME=ipex-llm-serving-xpu-container
+sudo docker run -itd \
+        --net=host \
+        --device=/dev/dri \
+        -v /path/to/models:/llm/models \
+        -e no_proxy=localhost,127.0.0.1 \
+        --memory="32G" \
+        --name=$CONTAINER_NAME \
+        --shm-size="16g" \
+        $DOCKER_IMAGE
+```
 
 After the container is booted, you could get into the container through `docker exec`.
 
@@ -89,7 +88,6 @@ If everything goes smoothly, the result should be similar to the following figur
 .. note::
   To verify/use the service booted by the script, follow the instructions in `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#launch-restful-api-serve>`_.
 ```
-To verify/use the service booted by the script, follow the instructions in this [doc](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#launch-restful-api-server).
 
 After a request has been sent to the `openai_api_server`, the corresponding inference time latency can be found in the worker log as shown below:
 
@@ -135,7 +133,7 @@ The following figure shows performing benchmark on `Llama-2-7b-chat-hf` using th
 
 #### Offline benchmark through benchmark_vllm_throughput.py
 
-Please refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#performing-benchmark) on how to use `benchmark_vllm_throughput.py` on benchmarking.
+Please refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#performing-benchmark) on how to use `benchmark_vllm_throughput.py` for benchmarking.
 
 
 ### Service
