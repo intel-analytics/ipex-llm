@@ -717,6 +717,10 @@ def _optimize_pre(model):
             # baichuan2-7B
             from ipex_llm.transformers.models.baichuan2 import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
+    # for qwen2
+    if model.config.model_type == "qwen2":
+        from ipex_llm.transformers.models.qwen2 import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
