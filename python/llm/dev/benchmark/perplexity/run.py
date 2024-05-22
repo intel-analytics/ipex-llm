@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# This file is adapted from
+# https://github.com/insuhan/hyper-attn/blob/main/benchmark_patch_llm.py
+#
 
 import argparse
 from tqdm import tqdm
