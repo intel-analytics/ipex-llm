@@ -269,7 +269,7 @@ class ModelRunner:
 
         model = optimize_model(model, low_bit=low_bit)
         
-        model = model.to(torch.float32).to(f'xpu:{rank}')
+        model = model.to(torch.float16).to(f'xpu:{rank}')
         self.model = model
         self.rank = rank
         self.world_size = world_size
@@ -284,6 +284,7 @@ class ModelRunner:
         self.past_key_values_dict = {}
         self.tokens = {}
         self.token_times = {}
+        self.dtype = torch.float16
 
         self.waiting_requests = asyncio.Queue()
         self.send_buff = None
@@ -484,7 +485,7 @@ class ModelRunner:
                     self.clear_batch(cur_batch.batch_id)
                 else:
                     cur_len = cur_batch.input_len
-                    cur_input = torch.empty((cur_batch.batch_size, cur_len, self.hidden_size,), device=f'xpu:{self.rank}', dtype=torch.float32)
+                    cur_input = torch.empty((cur_batch.batch_size, cur_len, self.hidden_size,), device=f'xpu:{self.rank}', dtype=self.dtype)
                     # logger.info(f"rank: {self.rank}, recv: {cur_input.shape}")
                     dist.recv(cur_input, src=self.pre_rank)
 
