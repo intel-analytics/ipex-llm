@@ -48,6 +48,7 @@ exclude:
   - 'databricks/dolly-v2-12b:2048:4'
   - 'internlm/internlm-chat-7b-8k:2048:4'
   - 'BAAI/AquilaChat-7B:2048:4'
+  - 'baichuan-inc/Baichuan2-7B-Chat:2048:4'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:1024:4'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
   - 'bigscience/bloomz-7b1:2048'
@@ -55,3 +56,5 @@ exclude:
   - 'fnlp/moss-moon-003-sft-4bit:1024'
   - 'fnlp/moss-moon-003-sft-4bit:2048'  
   - 'Qwen/Qwen-7B-Chat:2048:4'
+
+  
