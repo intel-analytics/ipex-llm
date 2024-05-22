@@ -38,9 +38,6 @@ pytest_check_error() {
   echo HERE 4
   if [[ $failed_lines != "" ]]; then
     echo HERE 5
-    echo "=====FAILED LINES====="
-    echo $failed_lines
-    echo "=====FAILED LINES====="
     exit 1
   fi
   echo HERE 6

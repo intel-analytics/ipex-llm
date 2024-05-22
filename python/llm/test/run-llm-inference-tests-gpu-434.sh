@@ -31,11 +31,8 @@ pytest_check_error() {
   result=$(eval "$@" || echo "FINISH PYTEST")
   echo $result > pytest_check_error.log
   cat pytest_check_error.log
-  failed_lines=$(cat pytest_check_error.log | { grep failed || true; }) ;
+  failed_lines=$(cat pytest_check_error.log | { grep failed || true; })
   if [[ $failed_lines != "" ]]; then
-    echo "=====FAILED LINES====="
-    echo $failed_lines
-    echo "=====FAILED LINES====="
     exit 1
   fi
   rm pytest_check_error.log

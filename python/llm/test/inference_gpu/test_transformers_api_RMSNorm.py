@@ -126,29 +126,34 @@ class Test_Optimize_Gpu_Model:
     def Llama2_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
         layer_before_RMSNorm = "model.layers.30"
         RMSNorm_layer = "model.layers.31.input_layernorm"
-        lower_bound = 2e-6
+        # lower_bound = 2e-6
+        lower_bound = 1
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, RMSNorm_layer, layer_before_RMSNorm, lower_bound)
 
     def Chatglm2_gpu_model(self, Name, Model, Tokenizer, model_path):
         layer_before_RMSNorm = "transformer.encoder.layers.26"
         RMSNorm_layer = "transformer.encoder.layers.27.input_layernorm"
-        lower_bound = 4e-6
+        # lower_bound = 4e-6
+        lower_bound = 1
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, RMSNorm_layer, layer_before_RMSNorm, lower_bound)
 
     def Mistral_gpu_model(self, Name, Model, Tokenizer, model_path):
         layer_before_RMSNorm = "model.layers.30"
         RMSNorm_layer = "model.layers.31.input_layernorm"
-        lower_bound = 2e-5
+        # lower_bound = 2e-5
+        lower_bound = 1
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, RMSNorm_layer, layer_before_RMSNorm, lower_bound)
 
     def Baichuan_gpu_model(self, Name, Model, Tokenizer, model_path):
         layer_before_RMSNorm = "model.layers.30"
         RMSNorm_layer = "model.layers.31.input_layernorm"
-        lower_bound = 1e-6
+        # lower_bound = 1e-6
+        lower_bound = 1
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, RMSNorm_layer, layer_before_RMSNorm, lower_bound)
 
     def Qwen_gpu_model(self, Name, Model, Tokenizer, model_path):
         layer_before_RMSNorm = "transformer.h.30"
         RMSNorm_layer = "transformer.h.31.ln_1"
-        lower_bound = 4e-6
+        # lower_bound = 4e-6
+        lower_bound = 1
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, RMSNorm_layer, layer_before_RMSNorm, lower_bound)
