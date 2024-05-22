@@ -28,7 +28,7 @@ start=$(date "+%s")
 # pytest may return exit code 127, which cause unexpected error
 # ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
 pytest_check_error() {
-  result=$(eval "$@" || echo "FINISH PYTEST")
+  result=$(eval "$@" || echo "FINISH PYTEST") 
   echo HERE 1
   echo $result > pytest_check_error.log
   echo HERE 2
