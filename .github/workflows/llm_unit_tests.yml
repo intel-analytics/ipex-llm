@@ -286,10 +286,7 @@ jobs:
 
           # On Windows, we need to add "Python3_ROOT_DIR/bin" to path to make libuv work
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            pwd
-            cd $(cygpath -u "$Python3_ROOT_DIR")/bin/
-            echo "$(cygpath -w $(pwd))" >> $GITHUB_PATH
-            cd -
+            echo "$(cygpath -w $(cygpath -u "$Python3_ROOT_DIR")/bin/)" >> $GITHUB_PATH
           fi
 
       - name: Download llm binary
