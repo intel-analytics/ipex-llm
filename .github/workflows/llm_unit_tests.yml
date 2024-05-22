@@ -277,7 +277,7 @@ jobs:
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools
+          python -m pip install --upgrade "setuptools<70.0.0"
           python -m pip install --upgrade wheel
           python -m pip install --upgrade notebook
 

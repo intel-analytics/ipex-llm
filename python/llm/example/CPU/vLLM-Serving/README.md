@@ -18,7 +18,7 @@ conda create -n ipex-vllm python=3.11
 conda activate ipex-vllm
 # Install dependencies
 pip3 install numpy
-pip3 install --pre --upgrade ipex-llm[all]
+pip3 install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip3 install psutil
 pip3 install sentencepiece  # Required for LLaMA tokenizer.
 pip3 install fastapi

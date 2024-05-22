@@ -9,12 +9,24 @@ To run this example with IPEX-LLM, we have some recommended requirements for you
 
 ### 1. Install
 We suggest using conda to manage environment:
+
+On Linux:
 ```bash
 conda create -n llm python=3.11
 conda activate llm
 
-pip install ipex-llm[all] # install ipex-llm with 'all' option
+ # install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install pillow # additional package required for opening images
+```
+
+On Windows:
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all]
+pip install pillow
 ```
 
 ### 2. Run
@@ -32,7 +44,7 @@ Arguments info:
 
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./run_agent.py --image-path IMAGE_PATH
 ```
 

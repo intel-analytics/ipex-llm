@@ -10,7 +10,7 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.11
 conda activate llm
-pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install tiktoken einops transformers_stream_generator  # additional package required for Qwen to conduct generation
 ```
 ### 2. Configures environment variables

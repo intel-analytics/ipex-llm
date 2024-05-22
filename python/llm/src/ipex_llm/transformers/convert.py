@@ -42,7 +42,7 @@ from accelerate import init_empty_weights
 import warnings
 import transformers
 import importlib.util
-from ipex_llm.ggml.quantize import ggml_tensor_qtype
+from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from .utils import logger, get_cur_qtype_and_imatrix
 from typing import Union
 import numpy as np
@@ -337,15 +337,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     if in_features % 64 != 0:
                         # now our kernel requires in_features is a multiple of 64
                         continue
-                    new_linear = LowBitLinear(
-                        in_features,
-                        out_features,
-                        qtype,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        enable_xetla=enable_xetla,
-                        optimize_lm_head=optimize_lm_head
-                    )
                     cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                        full_module_name,
                                                                        imatrix_data,
@@ -355,6 +346,16 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if cur_qtype in [ggml_tensor_qtype["sym_int4"],
                                          ggml_tensor_qtype["asym_int4"]]:
                             cur_qtype = ggml_tensor_qtype["sym_int8"]
+
+                    new_linear = LowBitLinear(
+                        in_features,
+                        out_features,
+                        cur_qtype,
+                        module.bias is not None,
+                        mp_group=mp_group,
+                        enable_xetla=enable_xetla,
+                        optimize_lm_head=optimize_lm_head
+                    )
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
@@ -706,42 +707,20 @@ def _optimize_pre(model):
         from ipex_llm.transformers.models.phi import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "phi3":
+        from ipex_llm.transformers.models.phi3 import pre_compute_inv_freq
+        model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.phi3 import split_mlp
         model.apply(split_mlp)
-    if model.config.model_type == "qwen":
-        rope_base = model.config.rotary_emb_base
-        from accelerate.big_modeling import init_empty_weights
-
-        def split_qkv_proj_func(module):
-            if "QWenAttention" in module.__class__.__name__:
-                c_attn_weight = module.c_attn.weight.data
-                c_attn_bias = module.c_attn.bias.data
-                # Compatible with AutoTP case
-                projection_size = c_attn_weight.shape[0] // 3
-                hid_size = module.hidden_size
-                with init_empty_weights():
-                    q_proj = torch.nn.Linear(hid_size, projection_size)
-                    k_proj = torch.nn.Linear(hid_size, projection_size)
-                    v_proj = torch.nn.Linear(hid_size, projection_size)
-                if not model.config.to_dict().get("bigdl_transformers_low_bit", False):
-                    q_proj.weight = torch.nn.Parameter(
-                        c_attn_weight[:projection_size, :], requires_grad=False)
-                    q_proj.bias = torch.nn.Parameter(
-                        c_attn_bias[:projection_size], requires_grad=False)
-                    k_proj.weight = torch.nn.Parameter(
-                        c_attn_weight[projection_size: 2 * projection_size, :], requires_grad=False)
-                    k_proj.bias = torch.nn.Parameter(
-                        c_attn_bias[projection_size: 2 * projection_size], requires_grad=False)
-                    v_proj.weight = torch.nn.Parameter(
-                        c_attn_weight[2 * projection_size:, :], requires_grad=False)
-                    v_proj.bias = torch.nn.Parameter(
-                        c_attn_bias[2 * projection_size:], requires_grad=False)
-                module.q_proj = q_proj
-                module.k_proj = k_proj
-                module.v_proj = v_proj
-                module.rope_base = rope_base
-                del module.c_attn
-        model.apply(split_qkv_proj_func)
+    # for baichuan2
+    if model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
+        if model.config.hidden_size in [4096, 2048]:
+            # baichuan2-7B
+            from ipex_llm.transformers.models.baichuan2 import pre_compute_inv_freq
+            model.apply(pre_compute_inv_freq)
+    # for qwen2
+    if model.config.model_type == "qwen2":
+        from ipex_llm.transformers.models.qwen2 import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
@@ -758,9 +737,16 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          embedding_qtype=None,
                          enable_xetla=False,
                          mixed_precision=False):
-    logger.info(f"Converting the current model to "
-                f"{list(ggml_tensor_qtype.keys())[list(ggml_tensor_qtype.values()).index(qtype)]} "
-                f"format......")
+    if qtype in ggml_tensor_qtype.values():
+        index = list(ggml_tensor_qtype.values()).index(qtype)
+        logger.info(f"Converting the current model to "
+                    f"{list(ggml_tensor_qtype.keys())[index]} "
+                    f"format......")
+    else:
+        index = list(gguf_mixed_qtype.values()).index(qtype)
+        logger.info(f"Converting the current model to "
+                    f"{list(gguf_mixed_qtype.keys())[index]} "
+                    f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
 
     # using ipex_llm optimizer before changing to bigdl linear
@@ -962,15 +948,18 @@ def _optimize_post(model, lightweight_bmm=False):
         if version.parse(trans_version) >= version.parse("4.36.0"):
             # transformers version >= 4.36.0
             from ipex_llm.transformers.models.llama import llama_attention_forward_4_38
-            from ipex_llm.transformers.models.llama import llama_model_forward_4_36
             if version.parse(trans_version) >= version.parse("4.38.0"):
-                from ipex_llm.transformers.models.llama import llama_attention_forward_4_38_original
-                # Todo: support llama_model_forward with transformers version >= 4.38.0
+                from ipex_llm.transformers.models.llama import llama_model_forward_4_38
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaModel,
+                    llama_model_forward_4_38)
                 convert_forward(
                     model,
                     transformers.models.llama.modeling_llama.LlamaAttention,
-                    llama_attention_forward_4_38_original)
+                    llama_attention_forward_4_38)
             else:
+                from ipex_llm.transformers.models.llama import llama_model_forward_4_36
                 convert_forward(
                     model,
                     transformers.models.llama.modeling_llama.LlamaModel,
@@ -1525,8 +1514,6 @@ def _optimize_post(model, lightweight_bmm=False):
         # for phi-3
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.phi3 import su_scaled_rope_forward
-        convert_forward(model, module.Phi3SuScaledRotaryEmbedding, su_scaled_rope_forward)
         from ipex_llm.transformers.models.phi3 import attention_forward
         convert_forward(model, module.Phi3Attention, attention_forward)
         from ipex_llm.transformers.models.phi3 import mlp_forward
@@ -1534,13 +1521,8 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi3 import model_forward_wrapper
         model_forward = model_forward_wrapper(module.Phi3Model.forward)
         convert_forward(model, module.Phi3Model, model_forward)
-        from ipex_llm.transformers.models.phi3 import Phi3RotaryEmbeddingCached
-        replace_RotaryEmbed(model, module.Phi3RotaryEmbedding, Phi3RotaryEmbeddingCached)
         from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
-        convert_forward(
-            model,
-            module.Phi3RMSNorm,
-            phi3_rms_norm_forward)
+        convert_forward(model, module.Phi3RMSNorm, phi3_rms_norm_forward)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

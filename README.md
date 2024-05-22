@@ -110,7 +110,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
   - LLM finetuning on Intel [GPU](python/llm/example/GPU/LLM-Finetuning), including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)
   - QLoRA finetuning on Intel [CPU](python/llm/example/CPU/QLoRA-FineTuning)
 - Integration with community libraries
-  - [HuggingFace tansformers](python/llm/example/GPU/HF-Transformers-AutoModels)
+  - [HuggingFace transformers](python/llm/example/GPU/HF-Transformers-AutoModels)
   - [Standard PyTorch model](python/llm/example/GPU/PyTorch-Models)
   - [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP)
   - [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning/HF-PEFT)

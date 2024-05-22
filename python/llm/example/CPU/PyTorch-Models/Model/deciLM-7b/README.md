@@ -10,12 +10,26 @@ In the example [generate.py](./generate.py), we show a basic use case for a Deci
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install transformers==4.35.2 # required by DeciLM-7B
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all]
+pip install transformers==4.35.2
 ```
 
 ### 2. Run
@@ -23,7 +37,7 @@ After setting up the Python environment, you could run the example by following 
 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.

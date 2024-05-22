@@ -8,6 +8,10 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 
 ## Example:
 
+### 0. Prerequisites
+
+Please visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
+
 ### 1. Install
 
 ```bash
@@ -15,6 +19,7 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install transformers==4.37.0
 pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 # configures OneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
@@ -49,6 +54,14 @@ bash run_vicuna_33b_arc_2_card.sh
 
 > **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
 
+- Run Qwen1.5-14B-Chat on two Intel Arc A770
+
+```bash
+bash run_qwen_14b_arc_2_card.sh
+```
+
+> **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
+
 - Run Mistral-7B-Instruct on two cards of Intel Data Center GPU Flex
 
 ```bash
@@ -69,7 +82,7 @@ bash run_mistral_7b_instruct_flex_2_card.sh
 [0] One day, she decided to go on a journey to find the legendary
 ```
 
-**Important**: The first token latency is much larger than rest token latency, you could use [our benchmark tool](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/dev/benchmark/README.md) to obtain more details about first and rest token latency.
+**Important**: To obtain more details about performance, please use [our benchmark tool](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/dev/benchmark/all-in-one). You need to specify `test_api` as `"deepspeed_optimize_model_gpu"`, and modify other configurations based on your requirement in `config.yaml`. Then just run `run-deepspeed-arc.sh` or `run-deepspeed-pvc.sh` according to your device to collect performance data.
 
 ### Known Issue
 
