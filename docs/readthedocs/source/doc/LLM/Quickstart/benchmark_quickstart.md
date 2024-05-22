@@ -113,6 +113,14 @@ Please refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overvie
 
          ./run-arc.sh
 
+   .. tab:: Intel iGPU
+
+      For Intel iGPU, we recommend:
+
+      .. code-block:: bash
+
+         ./run-igpu.sh
+
    .. tab:: Intel Data Center GPU Max
 
       Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` before running the benchmark script on Intel Data Center GPU Max Series.
