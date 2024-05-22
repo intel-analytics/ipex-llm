@@ -215,7 +215,7 @@ def mlp_forward(
     )
 
 
-def model_forward_wrapper(origin_model_forward):
+def phi3_model_forward_wrapper(origin_model_forward):
     def model_forward(
         self,
         input_ids: torch.LongTensor = None,
@@ -243,6 +243,46 @@ def model_forward_wrapper(origin_model_forward):
             position_ids=position_ids,
             past_key_values=past_key_values,
             inputs_embeds=inputs_embeds,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+    return model_forward
+
+
+def phi3v_model_forward_wrapper(origin_model_forward):
+    def model_forward(
+        self,
+        input_ids: torch.LongTensor = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_values: Optional[List[torch.FloatTensor]] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        pixel_values: Optional[torch.FloatTensor] = None,
+        image_sizes: Optional[torch.LongTensor] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+    ):
+        # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
+        use_cache = use_cache if use_cache is not None else self.config.use_cache
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids)
+        if use_cache:
+            if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+                past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+            if not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
+                past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
+        return origin_model_forward(
+            self=self,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            pixel_values=pixel_values,
+            image_sizes=image_sizes,
             use_cache=use_cache,
             output_attentions=output_attentions,
             output_hidden_states=output_hidden_states,
