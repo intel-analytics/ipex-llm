@@ -39,7 +39,7 @@ import copy
 from setuptools import setup
 
 long_description = '''
-    IPEX LLM
+    IPEX-LLM is a PyTorch library for running LLM on Intel CPU and GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max) with very low latency
 '''
 
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
