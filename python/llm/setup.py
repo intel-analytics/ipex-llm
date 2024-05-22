@@ -319,7 +319,7 @@ def setup_package():
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
-        url='https://github.com/intel-analytics/BigDL',
+        url='https://github.com/intel-analytics/ipex-llm',
         packages=get_llm_packages(),
         package_dir={"": "src"},
         package_data={
