@@ -25,7 +25,7 @@ start=$(date "+%s")
 # fi
 # export OMP_NUM_THREADS=$THREAD_NUM
 
-# pytest may return exit code 127, which cause unexpected error
+# ipex may return exit code 127, which cause unexpected error
 # ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
 pytest_check_error() {
   result=$(eval "$@" || echo "FINISH PYTEST")

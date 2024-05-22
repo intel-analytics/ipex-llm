@@ -16,18 +16,15 @@ sed -i 's/max_steps=200/max_steps=2/; s/save_steps=100/save_steps=2/; s/logging_
 
 # ipex may return exit code 127, which cause unexpected error
 # ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
-workaround_wrapper() {
-    result=$(eval "$@" || ( [[ $? == 127 && $RUNNER_OS == "Windows" ]] && echo "EXIT CODE 127 DETECTED ON WINDOWS, IGNORE."))
-    echo $result > example_test.log
-    cat example_test.log
-    rm example_test.log
+ipex_workaround_wrapper() {
+    eval "$@" || ( [[ $? == 127 && $RUNNER_OS == "Windows" ]] && echo "EXIT CODE 127 DETECTED ON WINDOWS, IGNORE." || exit 1)
 }
 
-workaround_wrapper python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py \
+ipex_workaround_wrapper python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/qlora_finetuning.py \
 --repo-id-or-model-path ${LLAMA2_7B_ORIGIN_PATH} \
 --dataset ${YAHMA_ALPACA_CLEANED_PATH}
 
-workaround_wrapper python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/export_merged_model.py \
+ipex_workaround_wrapper python ${ANALYTICS_ZOO_ROOT}/python/llm/example/GPU/LLM-Finetuning/QLoRA/simple-example/export_merged_model.py \
 --repo-id-or-model-path ${LLAMA2_7B_ORIGIN_PATH} \
 --adapter_path ${PWD}/outputs/checkpoint-2 \
 --output_path ${PWD}/outputs/checkpoint-2-merged
