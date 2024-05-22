@@ -11,6 +11,15 @@ This folder contains examples of running different training mode with IPEX-LLM o
 - [HF-PEFT](HF-PEFT): run finetuning on Intel GPU using Hugging Face PEFT code without modification
 - [axolotl](axolotl): LLM finetuning on Intel GPU using axolotl without writing code
 
+## Verified Models
+
+| Model      | Finetune mode                                                   | Frameworks Support |
+|------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
+| LLaMA 2/3    |   [LoRA](LoRA), [QLoRA](QLoRA), [QA-LoRA](QA-LoRA), [ReLora](ReLora)  | [HF-PEFT](HF-PEFT), [axolotl](axolotl) |
+| Mistral | [LoRA](DPO), [QLoRA](DPO) | [DPO](DPO) |
+| ChatGLM 3 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
+| Qwen-1.5 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
+| Baichuan2 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
 
 ## Troubleshooting
 - If you fail to finetune on multi cards because of following error message:

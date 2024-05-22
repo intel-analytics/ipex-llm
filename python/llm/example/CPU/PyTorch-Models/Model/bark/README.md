@@ -10,11 +10,26 @@ In the example [synthesize_speech.py](./synthesize_speech.py), we show a basic u
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] # install the latest ipex-llm nightly build with 'all' option
+# install the latest ipex-llm nightly build with 'all' option
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+pip install TTS scipy
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all]
 pip install TTS scipy
 ```
 
@@ -34,7 +49,7 @@ After setting up the Python environment and downloading Bark model, you could ru
 
 #### 3.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
-```powershell
+```cmd
 # make sure `--model-path` corresponds to the local folder of downloaded model
 python ./synthesize_speech.py --model-path 'bark/' --text "This is an example text for synthesize speech."
 ```

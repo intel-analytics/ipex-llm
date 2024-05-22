@@ -9,7 +9,7 @@ We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.11
 conda activate llm
-pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 ### 2. Configures OneAPI environment variables
 ```bash

@@ -12,15 +12,27 @@ In the example [generate.py](./generate.py), we show a basic use case for a Mixt
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
 
 After installing conda, create a Python environment for IPEX-LLM:
+
+On Linux:
+
 ```bash
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-# below command will install PyTorch CPU as default
-pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
-pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
 # Please make sure you are using a stable version of Transformers, 4.36.0 or newer.
+pip install transformers==4.36.0
+```
+
+On Windows:
+
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[all]
+
 pip install transformers==4.36.0
 ```
 

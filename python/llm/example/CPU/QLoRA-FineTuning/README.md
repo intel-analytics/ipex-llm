@@ -18,7 +18,7 @@ This example is ported from [bnb-4bit-training](https://colab.research.google.co
 ```bash
 conda create -n llm python=3.11
 conda activate llm
-pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install transformers==4.36.0
 pip install peft==0.10.0
 pip install datasets

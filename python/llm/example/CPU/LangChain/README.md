@@ -4,7 +4,7 @@ This folder contains examples showcasing how to use `langchain` with `ipex-llm`.
 
 ### Install-IPEX LLM
 
-Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm#install). 
+Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_cpu.html). 
 
 ### Install Dependences Required by the Examples
 
