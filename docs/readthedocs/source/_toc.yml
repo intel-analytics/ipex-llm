@@ -23,6 +23,8 @@ subtrees:
                 - file: doc/LLM/DockerGuides/docker_pytorch_inference_gpu
                 - file: doc/LLM/DockerGuides/docker_run_pytorch_inference_in_vscode
                 - file: doc/LLM/DockerGuides/docker_cpp_xpu_quickstart
+                - file: doc/LLM/DockerGuides/fastchat_docker_quickstart
+                - file: doc/LLM/DockerGuides/vllm_docker_quickstart
           - file: doc/LLM/Quickstart/index
             title: "Quickstart"
             subtrees:
