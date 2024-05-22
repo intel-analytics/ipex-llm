@@ -706,7 +706,7 @@ def _optimize_pre(model):
     if model.config.model_type == "phi":
         from ipex_llm.transformers.models.phi import merge_qkv
         model.apply(merge_qkv)
-    if model.config.model_type == "phi3":
+    if model.config.model_type in ["phi3", "phi3_v"]:
         from ipex_llm.transformers.models.phi3 import pre_compute_inv_freq
         model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.phi3 import split_mlp
@@ -1510,7 +1510,7 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi import model_forward
         convert_forward(model, module.PhiAttention, attention_forward)
         convert_forward(model, module.PhiModel, model_forward)
-    elif model.config.model_type == "phi3":
+    elif model.config.model_type in ["phi3", "phi3_v"]:
         # for phi-3
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1518,11 +1518,16 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.Phi3Attention, attention_forward)
         from ipex_llm.transformers.models.phi3 import mlp_forward
         convert_forward(model, module.Phi3MLP, mlp_forward)
-        from ipex_llm.transformers.models.phi3 import model_forward_wrapper
-        model_forward = model_forward_wrapper(module.Phi3Model.forward)
-        convert_forward(model, module.Phi3Model, model_forward)
         from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
         convert_forward(model, module.Phi3RMSNorm, phi3_rms_norm_forward)
+        if model.config.model_type == "phi3":
+            from ipex_llm.transformers.models.phi3 import phi3_model_forward_wrapper
+            model_forward = phi3_model_forward_wrapper(module.Phi3Model.forward)
+            convert_forward(model, module.Phi3Model, model_forward)
+        else:
+            from ipex_llm.transformers.models.phi3 import phi3v_model_forward_wrapper
+            model_forward = phi3v_model_forward_wrapper(module.Phi3VModel.forward)
+            convert_forward(model, module.Phi3VModel, model_forward)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
