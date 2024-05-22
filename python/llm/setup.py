@@ -281,6 +281,7 @@ def setup_package():
     llama_index_requires = copy.deepcopy(all_requires)
     for exclude_require in ['transformers == 4.31.0', 'tokenizers == 0.13.3'] + cpu_torch_version:
         llama_index_requires.remove(exclude_require)
+    llama_index_requires += ["setuptools<70.0.0"]
     llama_index_requires += ["torch<2.2.0",
                              "transformers>=4.34.0,<4.39.0",
                              "sentence-transformers~=2.6.1"]
@@ -293,6 +294,7 @@ def setup_package():
     xpu_21_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
         xpu_21_requires.remove(exclude_require)
+    xpu_21_requires += ["setuptools<70.0.0"]
     xpu_21_requires += ["torch==2.1.0a0",
                         "torchvision==0.16.0a0",
                         "intel_extension_for_pytorch==2.1.10+xpu",
