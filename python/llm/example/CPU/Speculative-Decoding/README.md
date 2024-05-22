@@ -9,7 +9,7 @@ You can use IPEX-LLM to run BF16 inference for any Huggingface Transformer model
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#system-support) for more information. Make sure you have installed `ipex-llm` before:
 
 ```bash
-pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 
 Moreover, install IPEX 2.1.0, which can be done through `pip install intel_extension_for_pytorch==2.1.0`.

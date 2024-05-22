@@ -86,6 +86,8 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
         libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 mesa-va-drivers \
         mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo
     
+    sudo apt install -y intel-i915-dkms intel-fw-gpu
+
     sudo reboot
     ```
 

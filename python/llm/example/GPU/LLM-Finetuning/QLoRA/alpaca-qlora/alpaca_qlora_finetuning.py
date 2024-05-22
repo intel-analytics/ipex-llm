@@ -173,6 +173,7 @@ def train(
             bnb_4bit_compute_dtype=torch.bfloat16
         )
         model = AutoModelForCausalLM.from_pretrained(base_model,
+                                                     torch_dtype=torch.bfloat16,
                                                      quantization_config=bnb_config,
                                                      trust_remote_code=True)
         # below is also supported
@@ -191,12 +192,6 @@ def train(
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
-
-    tokenizer.pad_token_id = (
-        0  # unk. we want this to be different from the eos token
-    )
-    tokenizer.padding_side = "left"  # Allow batched inference
-
     print(model)
 
     # Prepare a IPEX-LLM compatible Peft model
