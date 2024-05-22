@@ -29,20 +29,13 @@ start=$(date "+%s")
 # ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
 pytest_check_error() {
   result=$(eval "$@" || echo "FINISH PYTEST")
-  echo HERE 1
   echo $result > pytest_check_error.log
-  echo HERE 2
   cat pytest_check_error.log
-  echo HERE 3
   failed_lines=$(cat pytest_check_error.log | { grep failed || true; })
-  echo HERE 4
   if [[ $failed_lines != "" ]]; then
-    echo HERE 5
     exit 1
   fi
-  echo HERE 6
   rm pytest_check_error.log
-  echo HERE 7
 }
 
 pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v -s

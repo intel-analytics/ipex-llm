@@ -378,21 +378,21 @@ jobs:
           python -m pip install transformers==4.34.0 
           bash python/llm/test/run-llm-inference-tests-gpu-434.sh
 
-      # - name: Run LLM example tests
-      #   shell: bash
-      #   run: |
-      #     python -m pip uninstall datasets -y
-      #     python -m pip install transformers==4.36.0 datasets peft==0.10.0 accelerate==0.23.0
-      #     python -m pip install bitsandbytes scipy
-      #     # Specific oneapi position on arc ut test machines
-      #     if [[ "$RUNNER_OS" == "Linux" ]]; then
-      #       if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
-      #         source /opt/intel/oneapi/setvars.sh
-      #       elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
-      #         source /home/arda/intel/oneapi/setvars.sh
-      #       fi
-      #     fi
-      #     bash python/llm/test/run-llm-example-tests-gpu.sh
+      - name: Run LLM example tests
+        shell: bash
+        run: |
+          python -m pip uninstall datasets -y
+          python -m pip install transformers==4.36.0 datasets peft==0.10.0 accelerate==0.23.0
+          python -m pip install bitsandbytes scipy
+          # Specific oneapi position on arc ut test machines
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+              source /opt/intel/oneapi/setvars.sh
+            elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+              source /home/arda/intel/oneapi/setvars.sh
+            fi
+          fi
+          bash python/llm/test/run-llm-example-tests-gpu.sh
           
       - name: Get Langchain version
         shell: bash
