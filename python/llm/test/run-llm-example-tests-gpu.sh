@@ -1,6 +1,10 @@
 #!/bin/bash
 
-export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+if [[ $RUNNER_OS == "Linux" ]]; then
+  export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+elif [[ $RUNNER_OS == "Windows" ]]; then
+  export ANALYTICS_ZOO_ROOT=$(cygpath -m ${ANALYTICS_ZOO_ROOT})
+fi
 
 set -e
 
@@ -13,7 +17,7 @@ sed -i 's/max_steps=200/max_steps=2/; s/save_steps=100/save_steps=2/; s/logging_
 # ipex may return exit code 127, which cause unexpected error
 # ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
 workaround_wrapper() {
-    result=$(eval "$@" || ( [ $? -eq 127 && $RUNNER_OS == "Windows" ] && echo "EXIT CODE 127 DETECTED ON WINDOWS, IGNORE."))
+    result=$(eval "$@" || ( [[ $? == 127 && $RUNNER_OS == "Windows" ]] && echo "EXIT CODE 127 DETECTED ON WINDOWS, IGNORE."))
     echo $result > example_test.log
     cat example_test.log
     rm example_test.log
