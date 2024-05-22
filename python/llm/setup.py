@@ -339,7 +339,7 @@ def setup_package():
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.9',
+            'Programming Language :: Python :: 3.11',
             'Programming Language :: Python :: Implementation :: CPython'],
         scripts={
             'Linux': ['src/ipex_llm/cli/llm-cli', 'src/ipex_llm/cli/llm-chat', 'scripts/ipex-llm-init'],
