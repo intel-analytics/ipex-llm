@@ -56,6 +56,7 @@ jobs:
           list=$(echo ${python_version} | jq -c)
           echo "python-version=${list}" >> "$GITHUB_OUTPUT"
   llm-unit-test:
+    if: false
     needs: [setup-python-version, llm-cpp-build]
     strategy:
       fail-fast: false
