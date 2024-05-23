@@ -131,7 +131,7 @@ async def main():
         dist.barrier()
     # Load tokenizer
     global tokenizer
-    tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
