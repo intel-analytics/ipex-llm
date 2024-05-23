@@ -1,10 +1,6 @@
 #!/bin/bash
 
-if [[ $RUNNER_OS == "Linux" ]]; then
-  export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
-elif [[ $RUNNER_OS == "Windows" ]]; then
-  export ANALYTICS_ZOO_ROOT=$(cygpath -m ${ANALYTICS_ZOO_ROOT})
-fi
+export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 
 set -e
 
