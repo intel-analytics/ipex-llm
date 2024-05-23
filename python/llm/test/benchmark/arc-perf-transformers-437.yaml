@@ -22,3 +22,9 @@ test_api:
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 exclude:
   - 'Qwen/Qwen1.5-7B-Chat:2048:4'
+  - 'microsoft/Phi-3-mini-4k-instruct:32:2'  # remove after the release of ipex0523
+  - 'microsoft/Phi-3-mini-4k-instruct:1024:2'  # remove after the release of ipex0523
+  - 'microsoft/Phi-3-mini-4k-instruct:2048:2'  # remove after the release of ipex0523
+  - 'microsoft/Phi-3-mini-4k-instruct:32:4'  # remove after the release of ipex0523
+  - 'microsoft/Phi-3-mini-4k-instruct:1024:4'  # remove after the release of ipex0523
+  - 'microsoft/Phi-3-mini-4k-instruct:2048:4'  # remove after the release of ipex0523
