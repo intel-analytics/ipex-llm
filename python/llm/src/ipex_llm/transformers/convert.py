@@ -1231,8 +1231,8 @@ def _optimize_post(model, lightweight_bmm=False):
             # for Qwen-7B and Qwen-14B
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.qwen import qwen_attention_forward, \
-                                                          qwen_attention_forward_registered
+            from ipex_llm.transformers.models.qwen import qwen_attention_forward
+            from ipex_llm.transformers.models.qwen import qwen_attention_forward_registered
             from ipex_llm.transformers.models.qwen import qwen_mlp_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from ipex_llm.transformers.models.qwen import qwen_model_forward
