@@ -48,7 +48,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     pip install bitsandbytes scipy fire && \
     pip install tokenizers==0.15.2 && \
     # upgrade torch, torchaudio and torchvision for intel-extension-for-pytorch
-    pip install torch==2.1.0a0 torchvision==0.16.0a0 torchaudio==2.1.0a0 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install torch==2.1.0a0 torchvision==0.16.0a0 torchaudio==2.1.0a0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # Prepare accelerate config
     mkdir -p /root/.cache/huggingface/accelerate && \
     mv /LLM-Finetuning/axolotl/default_config.yaml /root/.cache/huggingface/accelerate/
