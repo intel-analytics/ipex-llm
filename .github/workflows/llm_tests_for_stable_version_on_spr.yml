@@ -13,9 +13,9 @@ on:
   # pull_request:
   #   branches: [main]
   #   paths:
-  #    - ".github/workflows/llm_performance_tests.yml"
-  #    - "python/llm/test/benchmark/**"
-  #    - "python/llm/dev/benchmark/all-in-one/**"
+  #     - ".github/workflows/llm_performance_tests.yml"
+  #     - "python/llm/test/benchmark/**"
+  #     - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 

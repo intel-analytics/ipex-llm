@@ -13,23 +13,23 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm_performance_tests.yml"
-      - "python/llm/test/benchmark/**"
-      - "python/llm/dev/benchmark/all-in-one/**"
+  # pull_request:
+  #  branches: [main]
+  #  paths:
+  #    - ".github/workflows/llm_performance_tests.yml"
+  #    - "python/llm/test/benchmark/**"
+  #    - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  llm-cpp-build: # please uncomment it for PR tests
-    uses: ./.github/workflows/llm-binary-build.yml
+  # llm-cpp-build: # please uncomment it for PR tests
+  #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    #if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
-    needs: llm-cpp-build # please uncomment it for PR tests
+    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
@@ -63,23 +63,23 @@ jobs:
           python -m pip install --upgrade tiktoken
 
       # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
-        with:
-          extra-dependency: "xpu_2.1"
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
+      #   with:
+      #    extra-dependency: "xpu_2.1"
 
-      #- name: Install IPEX-LLM from Pypi
-      #  shell: bash
-      #  run: |
-      #    pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-      #    test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-      #    if ! pip show ipex-llm | grep $test_version_date; then
-      #      echo "Did not install ipex-llm with excepted version $test_version_date"
-      #      exit 1
-      #    fi
+      - name: Install IPEX-LLM from Pypi
+        shell: bash
+        run: |
+          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show ipex-llm | grep $test_version_date; then
+            echo "Did not install ipex-llm with excepted version $test_version_date"
+            exit 1
+          fi
 
       - name: Test installed xpu version
         shell: bash
@@ -143,8 +143,8 @@ jobs:
           fi
           
   llm-performance-test-on-spr:
-    #if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
-    needs: llm-cpp-build # please uncomment it for PR tests
+    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
@@ -174,21 +174,21 @@ jobs:
           python -m pip install --upgrade transformers_stream_generator
 
       # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      #- name: Download llm binary
+      #  uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
+      #- name: Run LLM install (all) test
+      #  uses: ./.github/actions/llm/setup-llm-env
 
-      # - name: Install IPEX-LLM from Pypi
-      #  shell: bash
-      #  run: |
-      #    pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-      #    test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-      #    if ! pip show ipex-llm | grep $test_version_date; then
-      #      echo "Did not install ipex-llm with excepted version $test_version_date"
-      #      exit 1
-      #    fi
+      - name: Install IPEX-LLM from Pypi
+        shell: bash
+        run: |
+          pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show ipex-llm | grep $test_version_date; then
+            echo "Did not install ipex-llm with excepted version $test_version_date"
+            exit 1
+          fi
 
       - name: Test on cpu
         shell: bash
@@ -215,8 +215,8 @@ jobs:
           done
 
   llm-performance-test-on-core:
-    #if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
-    needs: llm-cpp-build # please uncomment it for PR tests
+    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
@@ -248,21 +248,21 @@ jobs:
           python -m pip install --upgrade tiktoken einops transformers_stream_generator
     
       # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # - name: Download llm binary
+      #  uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
-        uses: ./.github/actions/llm/setup-llm-env
+      #- name: Run LLM install (all) test
+      #  uses: ./.github/actions/llm/setup-llm-env
 
-      # - name: Install IPEX-LLM from Pypi
-      #  shell: bash
-      #  run: |
-      #    pip install --pre --upgrade ipex-llm[all]
-      #    test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-      #    if ! pip show ipex-llm | grep $test_version_date; then
-      #      echo "Did not install ipex-llm with excepted version $test_version_date"
-      #      exit 1
-      #    fi
+      - name: Install IPEX-LLM from Pypi
+        shell: bash
+        run: |
+          pip install --pre --upgrade ipex-llm[all]
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show ipex-llm | grep $test_version_date; then
+            echo "Did not install ipex-llm with excepted version $test_version_date"
+            exit 1
+          fi
 
 
       - name: Test on core ${{ matrix.platform }}
@@ -288,8 +288,8 @@ jobs:
           fi
 
   llm-performance-test-on-igpu:
-    #if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
-    needs: llm-cpp-build # please uncomment it for PR tests
+    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
@@ -305,16 +305,44 @@ jobs:
       # TODO: Put the ipex-llm related install process for win gpu into a action function
 
       # Please uncomment it and commment the install from pypi for PR tests
-      - name: Download llm binary
-        uses: ./.github/actions/llm/download-llm-binary
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Prepare for install ipex-llm from source
+      # - name: Prepare for install ipex-llm from source
+      #   shell: bash
+      #   run: |
+      #     sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+      #     sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION/"bigdl-core-xe-esimd-21"/g' python/llm/setup.py
+
+      # - name: Install ipex-llm and other related packages (install from source)
+      #   shell: cmd
+      #   run: |
+      #     call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
+      #     call conda activate igpu-perf
+
+      #     pip install --upgrade pip
+      #     pip install --upgrade wheel
+      #     pip install --upgrade omegaconf pandas
+      #     pip install --upgrade tiktoken einops transformers_stream_generator
+
+      #     cd python\llm
+      #     python setup.py clean --all bdist_wheel --win
+      #     if not exist dist\ipex_llm*.whl (exit /b 1)
+      #     for %%i in (dist\ipex_llm*.whl) do set whl_name=%%i
+
+      #     pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #    pip list
+
+      #    call conda deactivate
+
+      - name: Determine desired ipex-llm version
         shell: bash
         run: |
-          sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
-          sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION/"bigdl-core-xe-esimd-21"/g' python/llm/setup.py
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          echo "TEST_VERSION_DATE=${test_version_date}" >> "$GITHUB_ENV"
 
-      - name: Install ipex-llm and other related packages (install from source)
+      - name: Install ipex-llm and other related packages (install from pypi)
         shell: cmd
         run: |
           call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
@@ -325,43 +353,15 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
 
-          cd python\llm
-          python setup.py clean --all bdist_wheel --win
-          if not exist dist\ipex_llm*.whl (exit /b 1)
-          for %%i in (dist\ipex_llm*.whl) do set whl_name=%%i
-
-          pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-          if %ERRORLEVEL% neq 0 (exit /b 1)
+          pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+          pip show ipex-llm | findstr %TEST_VERSION_DATE%
+          if %ERRORLEVEL% neq 0 (
+            echo "Did not install ipex-llm with excepted version %TEST_VERSION_DATE%"
+            exit /b 1
+          )
           pip list
 
           call conda deactivate
-
-      #- name: Determine desired ipex-llm version
-      #  shell: bash
-      #  run: |
-      #    test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-      #    echo "TEST_VERSION_DATE=${test_version_date}" >> "$GITHUB_ENV"
-
-      #- name: Install ipex-llm and other related packages (install from pypi)
-      #  shell: cmd
-      #  run: |
-      #    call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
-      #    call conda activate igpu-perf
-
-      #    pip install --upgrade pip
-      #    pip install --upgrade wheel
-      #    pip install --upgrade omegaconf pandas
-      #    pip install --upgrade tiktoken einops transformers_stream_generator
-
-      #    pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-      #    pip show ipex-llm | findstr %TEST_VERSION_DATE%
-      #    if %ERRORLEVEL% neq 0 (
-      #      echo "Did not install ipex-llm with excepted version %TEST_VERSION_DATE%"
-      #      exit /b 1
-      #    )
-      #    pip list
-
-      #    call conda deactivate
 
       - name: Create env for html generation
         shell: cmd
