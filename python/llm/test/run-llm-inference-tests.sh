@@ -9,6 +9,8 @@ set -e
 echo "# Start testing inference"
 start=$(date "+%s")
 
+echo '=====TEST====='
+echo ${LLM_INFERENCE_TEST_DIR}/test_call_models.py
 python -m pytest -s ${LLM_INFERENCE_TEST_DIR}/test_call_models.py -v
 
 if [ -z "$THREAD_NUM" ]; then
