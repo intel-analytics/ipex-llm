@@ -1,7 +1,20 @@
 #
 # Copyright 2016 The BigDL Authors.
 #
-# This script was based on https://github.com/SafeAILab/EAGLE/blob/main/eagle/evaluation/gen_ea_answer_llama2chat.py
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# This file is adapted from
+# https://github.com/SafeAILab/EAGLE/blob/main/eagle/evaluation/gen_ea_answer_llama2chat.py
 #
 # Copyright 2024 SafeAI Lab (SAIL).
 #
@@ -185,6 +198,7 @@ def get_model_answers(
     )
 
     if enable_ipex_llm:
+        # single line of change to enable ipex-llm
         model = optimize_model(model, optimize_llm=False)
 
     tokenizer = model.get_tokenizer()

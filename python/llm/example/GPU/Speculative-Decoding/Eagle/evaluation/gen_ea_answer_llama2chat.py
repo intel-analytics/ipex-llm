@@ -1,7 +1,20 @@
 #
 # Copyright 2016 The BigDL Authors.
 #
-# This script was based on https://github.com/SafeAILab/EAGLE/blob/main/eagle/evaluation/gen_ea_answer_llama2chat.py
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# This file is adapted from
+# https://github.com/SafeAILab/EAGLE/blob/main/eagle/evaluation/gen_ea_answer_llama2chat.py
 #
 # Copyright 2024 SafeAI Lab (SAIL).
 #
@@ -134,9 +147,6 @@ def run_eval(
         answer_file,
         max_new_token,
         num_choices,
-        num_gpus_per_model,
-        num_gpus_total,
-        max_gpu_memory,
         temperature,
         tree_choices,
         enable_ipex_llm,
@@ -144,18 +154,9 @@ def run_eval(
     questions = load_questions(question_file, question_begin, question_end)
     shuffled_ids = [q["question_id"] for q in questions]
 
-    # Split the question file into `num_gpus` files
-    assert num_gpus_total % num_gpus_per_model == 0
-    use_ray = num_gpus_total // num_gpus_per_model > 1
+    get_answers_func = get_model_answers
 
-    if use_ray:
-        get_answers_func = ray.remote(num_gpus=num_gpus_per_model)(
-            get_model_answers
-        ).remote
-    else:
-        get_answers_func = get_model_answers
-
-    chunk_size = len(questions) // (num_gpus_total // num_gpus_per_model)  # // 2
+    chunk_size = len(questions)
     ans_handles = []
     for i in range(0, len(questions), chunk_size):
         ans_handles.append(
@@ -167,16 +168,11 @@ def run_eval(
                 answer_file,
                 max_new_token,
                 num_choices,
-                num_gpus_per_model,
-                max_gpu_memory,
                 temperature,
                 tree_choices,
                 enable_ipex_llm,
             )
         )
-
-    if use_ray:
-        ray.get(ans_handles)
 
 
 @torch.inference_mode()
@@ -188,8 +184,6 @@ def get_model_answers(
         answer_file,
         max_new_token,
         num_choices,
-        num_gpus_per_model,
-        max_gpu_memory,
         temperature,
         tree_choices,
         enable_ipex_llm,
@@ -216,6 +210,7 @@ def get_model_answers(
             device_map="sequential"
         )
     if enable_ipex_llm:
+        # single line of change to enable ipex-llm 
         model = optimize_model(model, optimize_llm=False)
     model.to("xpu")
     tokenizer = model.get_tokenizer()
@@ -430,21 +425,6 @@ if __name__ == "__main__":
         help="How many completion choices to generate.",
     )
     parser.add_argument(
-        "--num-gpus-per-model",
-        type=int,
-        default=1,
-        help="The number of GPUs per model.",
-    )
-    parser.add_argument(
-        "--num-gpus-total", type=int, default=1, help="The total number of GPUs."
-    )
-    parser.add_argument(
-        "--max-gpu-memory",
-        type=str,
-        help="Maxmum GPU memory used for model weights per GPU.",
-    )
-
-    parser.add_argument(
         "--temperature",
         type=float,
         default=1.0,
@@ -465,10 +445,6 @@ if __name__ == "__main__":
 
     args.model_id = args.model_id + "-temperature-" + str(args.temperature)
     args.tree_choices = eval(args.tree_choices)
-    if args.num_gpus_total // args.num_gpus_per_model > 1:
-        import ray
-
-        ray.init()
 
     question_file = f"data/{args.bench_name}/question.jsonl"
     if args.answer_file:
@@ -488,9 +464,6 @@ if __name__ == "__main__":
         answer_file,
         args.max_new_token,
         args.num_choices,
-        args.num_gpus_per_model,
-        args.num_gpus_total,
-        args.max_gpu_memory,
         args.temperature,
         args.tree_choices,
         args.enable_ipex_llm,

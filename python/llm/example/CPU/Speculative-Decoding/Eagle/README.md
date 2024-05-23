@@ -1,13 +1,11 @@
 # Eagle - Speculative Sampling using IPEX-LLM on Intel CPUs
-IPEX-LLM supports EAGLE (Extrapolation Algorithm for Greater Language-model Efficiency) which is a speculative sampling method that improves text generation speed.
-
-See [here](https://arxiv.org/abs/2401.15077) to view the paper and [here](https://github.com/SafeAILab/EAGLE) for more info on EAGLE code.
+In this directory, you will find the examples on how IPEX-LLM accelerate inference with speculative sampling using EAGLE (Extrapolation Algorithm for Greater Language-model Efficiency), a speculative sampling method that improves text generation speed) on Intel CPUs. See [here](https://arxiv.org/abs/2401.15077) to view the paper and [here](https://github.com/SafeAILab/EAGLE) for more info on EAGLE code.
 
 ## Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example - EAGLE Speculative Sampling with IPEX-LLM on MT-bench
-In this example, we run inference for a Llama2 model to showcase the speed of EAGLE with IPEX-LLM on MT-bench on Intel CPUs.
+In this example, we run inference for a Llama2 model to showcase the speed of EAGLE with IPEX-LLM on MT-bench data on Intel CPUs.
 
 ### 1. Install
 We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
@@ -17,7 +15,7 @@ After installing conda, create a Python environment for IPEX-LLM:
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] 
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install intel_extension_for_pytorch==2.1.0 
 pip install -r requirements.txt
 pip install eagle-llm
