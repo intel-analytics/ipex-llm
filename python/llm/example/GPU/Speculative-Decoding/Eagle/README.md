@@ -7,6 +7,7 @@ To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requ
 ### Verified Hardware Platforms
 
 - Intel Data Center GPU Max Series
+- Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series
 
 ## Example - EAGLE Speculative Sampling with IPEX-LLM on MT-bench
 In this example, we run inference for a Llama2 model to showcase the speed of EAGLE with IPEX-LLM on MT-bench data on Intel GPUs.
@@ -51,6 +52,17 @@ source /opt/intel/oneapi/setvars.sh
 ### 3. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
 #### 3.1 Configurations for Linux
+<details>
+
+<summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
+
+```bash
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
+```
+
+</details>
 <details>
 
 <summary>For Intel Data Center GPU Max Series</summary>
