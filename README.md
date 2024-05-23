@@ -77,25 +77,32 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 [^1]: Performance varies by use, configuration and other factors. `ipex-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
 ## `ipex-llm` Quickstart
-### Install `ipex-llm`
-- [Windows GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html): installing `ipex-llm` on Windows with Intel GPU
-- [Linux GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html): installing `ipex-llm` on Linux with Intel GPU
-- *For more details, please refer to the [installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html)*
 
-### Use Docker
-- [Overview](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html) : overview and tips of running `ipex-llm`containers.
-- [Python Inference using `ipex-llm` on Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_pytorch_inference_gpu.html#) : running LLMs using python libraries such as huggingface transformers, langchain, llama-index, etc. on Intel GPU
-- [C++ Inference using `ipex-llm` on Intel GPU](): running LLMs using llama.cpp, ollama, Open WebUI, etc. using C++ interface of `ipex-llm` on Intel GPU
+### Docker
+- [GPU Inference in C++](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_cpp_xpu_quickstart.html): running `llama.cpp`, `ollama`, `OpenWebUI`, etc., with `ipex-llm` on Intel GPU
+- [GPU Inference in Python](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_pytorch_inference_gpu.html#) : running HuggingFace `transformers`, `LangChain`, `LlamaIndex`, `ModelScope`, etc. with `ipex-llm` on Intel GPU
+- [GPU Dev in Visual Studio Code](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_run_pytorch_inference_in_vscode.html): LLM development in python using `ipex-llm` on Intel GPU in VSCode
+- [vLLM on GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/fastchat_docker_quickstart.html): serving with `ipex-llm` accelerated `vLLM` on Intel GPU 
+- [FastChat on GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/fastchat_docker_quickstart.html): serving with `ipex-llm` accelerated `FastChat`on Intel GPU
 
-
-### Run `ipex-llm`
+### Use
 - [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html): running **llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp`*) on Intel GPU
 - [ollama](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html): running **ollama** (*using C++ interface of `ipex-llm` as an accelerated backend for `ollama`*) on Intel GPU
 - [vLLM](python/llm/example/GPU/vLLM-Serving): running `ipex-llm` in `vLLM` on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving)
 - [FastChat](python/llm/src/ipex_llm/serving/fastchat): running `ipex-llm` in `FastChat` serving on on both Intel GPU and CPU
 - [LangChain-Chatchat RAG](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html): running `ipex-llm` in `LangChain-Chatchat` (*Knowledge Base QA using **RAG** pipeline*)
 - [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html): running `ipex-llm` in `oobabooga` **WebUI**
+- [Dify](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/dify_quickstart.html): running `ipex-llm` in `Dify`(*production-ready LLM app development platform*)
+- [Continue](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/continue_quickstart.html): using `Continue` (a coding copilot in VSCode) backed by `ipex-llm`
 - [Benchmarking](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/benchmark_quickstart.html): running  (latency and throughput) benchmarks for `ipex-llm` on Intel CPU and GPU
+
+
+### Install 
+- [Windows GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html): installing `ipex-llm` on Windows with Intel GPU
+- [Linux GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html): installing `ipex-llm` on Linux with Intel GPU
+- *For more details, please refer to the [installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html)*
+
+
 
 ### Code Examples
 - Low bit inference
