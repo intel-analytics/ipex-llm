@@ -54,12 +54,6 @@ from einops import rearrange
 import os
 
 
-try:
-    from transformers.generation.streamers import BaseStreamer
-except:  # noqa # pylint: disable=bare-except
-    BaseStreamer = None
-
-
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
@@ -462,7 +456,7 @@ def internlm_xcomposser2_chat(
     query: str,
     image: torch.Tensor = None,
     history: List[Tuple[str, str]]=[],
-    streamer: Optional[BaseStreamer] = None,
+    streamer=None,
     max_new_tokens: int = 1024,
     do_sample: bool = True,
     temperature: float = 1.0,
