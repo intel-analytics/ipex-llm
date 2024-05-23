@@ -372,8 +372,8 @@ def qwen2moe_attention_forward_quantized(
                                                          self.layer_idx, cache_kwargs)
     if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
             and not hidden_states.requires_grad:
-        import linear_q4_0
-        attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+        import bigdl_core_xe_addons
+        attn_weights = bigdl_core_xe_addons.query_key_fp8_matmul(query_states, key_states)
     else:
         key_states, value_states = restore_fp8_kv_cache(key_states,
                                                         value_states, query_states.dtype)
@@ -404,8 +404,8 @@ def qwen2moe_attention_forward_quantized(
                                          p=self.attention_dropout, training=self.training)
     if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
             and not hidden_states.requires_grad:
-        import linear_q4_0
-        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
+        import bigdl_core_xe_addons
+        attn_output = bigdl_core_xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
     else:
         attn_output = torch.matmul(attn_weights, value_states)
 

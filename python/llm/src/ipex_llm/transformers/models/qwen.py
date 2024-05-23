@@ -92,9 +92,10 @@ def qwen_attention_forward(
     rotary_pos_emb = rotary_pos_emb_list[0]
     if use_fuse_rope:
         rot_dim = rotary_pos_emb[0].size(-1)
-        import linear_q4_0
-        linear_q4_0.rotary_half_inplaced(inv_freq, position_ids,
-                                         query_states[..., :rot_dim], key_states[..., :rot_dim])
+        import bigdl_core_xe_addons
+        bigdl_core_xe_addons.rotary_half_inplaced(inv_freq, position_ids,
+                                                  query_states[..., :rot_dim],
+                                                  key_states[..., :rot_dim])
     else:
         rotary_pos_emb = [i[:, -q_len:, :, :].transpose(1, 2) for i in rotary_pos_emb]
         query_states = apply_rotary_pos_emb(query_states, rotary_pos_emb)
@@ -124,11 +125,12 @@ def qwen_attention_forward(
                                                      value_states.to(dtype=torch.float16),
                                                      is_causal=True).to(hidden_states.dtype)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import linear_q4_0
+        import bigdl_core_xe_addons
         if use_quantize_kv:
-            attn_output = linear_q4_0.sdp_fp8_causal(query_states, key_states, value_states)
+            attn_output = bigdl_core_xe_addons.sdp_fp8_causal(query_states, key_states,
+                                                              value_states)
         else:
-            attn_output = linear_q4_0.sdp_causal(query_states, key_states, value_states)
+            attn_output = bigdl_core_xe_addons.sdp_causal(query_states, key_states, value_states)
     else:
         if q_len > 1:
             causal_mask = torch.tril(
@@ -146,13 +148,13 @@ def qwen_attention_forward(
             attention_mask = None
 
         if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-            import linear_q4_0
+            import bigdl_core_xe_addons
             if use_quantize_kv:
-                attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                                  attention_mask)
+                attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                                           attention_mask)
             else:
-                attn_output = linear_q4_0.sdp(query_states, key_states, value_states,
-                                              attention_mask)
+                attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
+                                                       attention_mask)
         else:
             if use_quantize_kv:
                 key_states, value_states = restore_fp8_kv_cache(key_states, value_states,

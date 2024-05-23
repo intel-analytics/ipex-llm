@@ -267,8 +267,9 @@ def stablelm_attention_forward_original(
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        import bigdl_core_xe_addons
+        attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
+                                               attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -420,8 +421,8 @@ def stablelm_attention_forward_quantized(
             value_states = repeat_kv(value_states, self.num_key_value_groups)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
         else:
-            import linear_q4_0
-            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+            import bigdl_core_xe_addons
+            attn_weights = bigdl_core_xe_addons.query_key_fp8_matmul(query_states, key_states)
 
         attn_weights = attn_weights / math.sqrt(self.head_dim)
 
@@ -444,8 +445,8 @@ def stablelm_attention_forward_quantized(
         if query_states.size(2) != 1 or query_states.device.type != 'xpu':
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
+            import bigdl_core_xe_addons
+            attn_output = bigdl_core_xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
     invalidInputError(attn_output.size() == attn_output_size,

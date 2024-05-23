@@ -310,9 +310,9 @@ def qwen2_attention_forward(
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
     if should_use_fuse_rope(hidden_states, position_ids, self.training):
-        import linear_q4_0
-        linear_q4_0.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
-                                         query_states, key_states)
+        import bigdl_core_xe_addons
+        bigdl_core_xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                                  query_states, key_states)
     else:
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -337,18 +337,20 @@ def qwen2_attention_forward(
                            value_states.to(device, dtype=torch.float16),
                            is_causal=True).to(hidden_states.dtype)
     elif use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-        import linear_q4_0
+        import bigdl_core_xe_addons
         if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
+            attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
                                               attention_mask)
         else:
-            attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+            attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
+                                                   attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import linear_q4_0
+        import bigdl_core_xe_addons
         if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = linear_q4_0.sdp_fp8_causal(query_states, key_states, value_states)
+            attn_output = bigdl_core_xe_addons.sdp_fp8_causal(query_states, key_states,
+                                                              value_states)
         else:
-            attn_output = linear_q4_0.sdp_causal(query_states, key_states, value_states)
+            attn_output = bigdl_core_xe_addons.sdp_causal(query_states, key_states, value_states)
     else:
         if isinstance(past_key_value, DynamicFp8Cache):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,

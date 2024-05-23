@@ -162,8 +162,8 @@ def qwen_attention_forward_vl(
 
     if not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key.shape[2], self.head_dim, query):
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query, key, value, attention_mask)
+        import bigdl_core_xe_addons
+        attn_output = bigdl_core_xe_addons.sdp(query, key, value, attention_mask)
         attn_output = attn_output.view(query.shape)
         attn_output = attn_output.transpose(1, 2)
         attn_weight = None

@@ -427,9 +427,9 @@ def mistral_attention_forward_quantized(
 
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import linear_q4_0
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+            import bigdl_core_xe_addons
+            attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                                       attention_mask)
             attn_weights = None
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
@@ -592,8 +592,9 @@ def mistral_attention_forward_original(
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        import bigdl_core_xe_addons
+        attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
+                                               attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
@@ -852,9 +853,9 @@ def mistral_attention_forward_4_36_quantized(
 
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import linear_q4_0
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+            import bigdl_core_xe_addons
+            attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                                       attention_mask)
             attn_weights = None
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
@@ -1033,8 +1034,9 @@ def mistral_attention_forward_4_36_original(
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        import bigdl_core_xe_addons
+        attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
+                                               attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()

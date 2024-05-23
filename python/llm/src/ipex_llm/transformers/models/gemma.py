@@ -79,9 +79,9 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
 
 def gemma_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        import linear_q4_0
+        import bigdl_core_xe_addons
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = linear_q4_0.rms_norm(self.weight + 1, x_2d, self.eps)
+        output = bigdl_core_xe_addons.rms_norm(self.weight + 1, x_2d, self.eps)
         return output.reshape(hidden_states.shape)
 
     input_dtype = hidden_states.dtype

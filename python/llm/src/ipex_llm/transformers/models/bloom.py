@@ -66,12 +66,12 @@ def dropout_add(x: torch.Tensor, residual: torch.Tensor, prob: float, training: 
 
 def bloom_layer_norm_forward(self, hidden_states):
     if use_fused_layer_norm(hidden_states, self.training):
-        import linear_q4_0
-        result = linear_q4_0.fused_layer_norm(hidden_states,
-                                              [self.weight.size(0)],
-                                              self.weight,
-                                              self.bias,
-                                              self.eps)
+        import bigdl_core_xe_addons
+        result = bigdl_core_xe_addons.fused_layer_norm(hidden_states,
+                                                       [self.weight.size(0)],
+                                                       self.weight,
+                                                       self.bias,
+                                                       self.eps)
         # if nelement == 0, means fused norm failed, go back to python implement.
         if result.nelement != 0:
             return result

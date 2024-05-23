@@ -128,10 +128,10 @@ def append_fp8_kv_cache(k_cache, v_cache, key, value):
         new_k_cache = k_cache.as_strided(new_size, k_cache.stride(), storage_offset=0)
         new_v_cache = v_cache.as_strided(new_size, v_cache.stride(), storage_offset=0)
 
-    import linear_q4_0
-    linear_q4_0.quantize_key_value(key, value,
-                                   new_k_cache[:, :, cur_length:new_length, :],
-                                   new_v_cache[:, :, cur_length:new_length, :])
+    import bigdl_core_xe_addons
+    bigdl_core_xe_addons.quantize_key_value(key, value,
+                                            new_k_cache[:, :, cur_length:new_length, :],
+                                            new_v_cache[:, :, cur_length:new_length, :])
 
     return new_k_cache, new_v_cache
 
@@ -140,8 +140,8 @@ def restore_fp8_kv_cache(k_cache, v_cache, dtype):
     key_states = torch.empty(k_cache.shape, device=k_cache.device, dtype=dtype)
     value_states = torch.empty(v_cache.shape, device=v_cache.device, dtype=dtype)
 
-    import linear_q4_0
-    linear_q4_0.dequantize_key_value(k_cache, v_cache, key_states, value_states)
+    import bigdl_core_xe_addons
+    bigdl_core_xe_addons.dequantize_key_value(k_cache, v_cache, key_states, value_states)
 
     return key_states, value_states
 
@@ -211,12 +211,12 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family, rope_the
     if q.device.type != "xpu":
         invalidInputError(False,
                           f"only xpu is supported in this function")
-    import linear_q4_0
+    import bigdl_core_xe_addons
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
                         "mixtral"]:
-        linear_q4_0.apply_rotary_embedding_half_q_and_k(q, k, position_ids,
+        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k(q, k, position_ids,
                                                         q_embed, k_embed, rope_theta)
         return q_embed, k_embed
     else:
@@ -228,11 +228,11 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
     if q.device.type != "xpu":
         invalidInputError(False,
                           f"only xpu is supported in this function")
-    import linear_q4_0
+    import bigdl_core_xe_addons
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["qwen", "mixtral"]:
-        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
     elif model_family in ["qwen2", "yuan", "stablelm", "qwen2_moe"]:
         cos = cos.to(q.dtype)
         sin = sin.to(q.dtype)
@@ -240,11 +240,11 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
         cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
     elif model_family in ["gemma", "phi3"]:
         cos = cos.unsqueeze(1)
         sin = sin.unsqueeze(1)
-        linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")

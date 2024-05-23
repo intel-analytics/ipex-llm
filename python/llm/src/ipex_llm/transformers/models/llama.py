@@ -169,9 +169,9 @@ def llama_model_forward_4_38(
 
 def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        import linear_q4_0
+        import bigdl_core_xe_addons
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = linear_q4_0.rms_norm(self.weight, x_2d, self.variance_epsilon)
+        output = bigdl_core_xe_addons.rms_norm(self.weight, x_2d, self.variance_epsilon)
         return output.reshape(hidden_states.shape)
 
     input_dtype = hidden_states.dtype
@@ -504,9 +504,9 @@ def llama_attention_forward_4_31_quantized(
                                                    bsz, q_len, kv_seq_len,
                                                    self.head_dim, self.num_heads, output_attentions)
         else:
-            import linear_q4_0
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+            import bigdl_core_xe_addons
+            attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                                       attention_mask)
             attn_weights = None
 
     attn_output = attn_output.transpose(1, 2).contiguous()
@@ -712,8 +712,9 @@ def llama_attention_forward_4_31_original(
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        import bigdl_core_xe_addons
+        attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
+                                               attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -1176,13 +1177,13 @@ def llama_attention_forward_4_38_quantized(
                                                      dtype=torch.float32).to(query_states.dtype)
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import linear_q4_0
+            import bigdl_core_xe_addons
             if cache_position is not None:
                 new_attn_mask = attention_mask[:, :, kv_seq_len-q_len:kv_seq_len, 0:kv_seq_len]
             else:
                 new_attn_mask = attention_mask
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              new_attn_mask)
+            attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                                       new_attn_mask)
             attn_weights = None
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
@@ -1425,8 +1426,9 @@ def llama_attention_forward_4_38_original(
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, new_attention_mask)
+        import bigdl_core_xe_addons
+        attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
+                                               new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:

@@ -333,8 +333,9 @@ def mixtral_attention_forward(
                                                      is_causal=True)
         attn_weights = None
     elif use_sdp(query_states.shape[2], key_states.shape[2], self.head_dim, query_states):
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        import bigdl_core_xe_addons
+        attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
+                                               attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:

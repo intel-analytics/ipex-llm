@@ -268,8 +268,8 @@ def yuan_attention_forward_quantized(
                                                             query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
         else:
-            import linear_q4_0
-            attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+            import bigdl_core_xe_addons
+            attn_weights = bigdl_core_xe_addons.query_key_fp8_matmul(query_states, key_states)
 
         attn_weights = attn_weights / math.sqrt(self.head_dim)
 
@@ -292,8 +292,8 @@ def yuan_attention_forward_quantized(
         if query_states.size(2) != 1 or device.type != 'xpu':
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import linear_q4_0
-            attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
+            import bigdl_core_xe_addons
+            attn_output = bigdl_core_xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
 
         invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
                           "`attn_output` should be of size "
