@@ -175,7 +175,7 @@ bash qlora_finetune_qwen15_7b_arc_1_card.sh
 
 ##### Finetuning Baichuan2-7B examples on single Arc A770
 
-Modify `modeling_baichuan.py` in model dir. Add following 2 lines into Line 234. This changes fix [Baichuan2 type mismatch issue](https://github.com/baichuan-inc/Baichuan2/issues/291).
+Modify `modeling_baichuan.py` in model dir. Add following 2 lines into Line 234. This change fixes [Baichuan2 type mismatch issue](https://github.com/baichuan-inc/Baichuan2/issues/291).
 
 ```python
 if(attention_mask.dtype != query_states.dtype):
