@@ -44,11 +44,11 @@ import transformers
 import importlib.util
 from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from .utils import logger, get_cur_qtype_and_imatrix
-from typing import Union
 import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+from types import MethodType
 import subprocess
 import sys
 
@@ -1228,6 +1228,8 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.InternLM2Attention, internlm_xcomposser2_attention_forward)
         from ipex_llm.transformers.models.internlm import internlm_xcomposser2_mlp_forward
         convert_forward(model, module.InternLM2MLP, internlm_xcomposser2_mlp_forward)
+        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_chat
+        model.chat = MethodType(internlm_xcomposser2_chat, model)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
