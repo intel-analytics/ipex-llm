@@ -1243,13 +1243,20 @@ def _optimize_post(model, lightweight_bmm=False):
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from ipex_llm.transformers.models.qwen import qwen_attention_forward
+            from ipex_llm.transformers.models.qwen import qwen_attention_forward_registered
             from ipex_llm.transformers.models.qwen import qwen_mlp_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from ipex_llm.transformers.models.qwen import qwen_model_forward
-            convert_forward(model,
-                            module.QWenAttention,
-                            qwen_attention_forward
-                            )
+            if model.config.max_position_embeddings == 8192:
+                convert_forward(model,
+                                module.QWenAttention,
+                                qwen_attention_forward_registered
+                                )
+            else:
+                convert_forward(model,
+                                module.QWenAttention,
+                                qwen_attention_forward
+                                )
             convert_forward(model,
                             module.RMSNorm,
                             chatglm_rms_norm_forward)
@@ -1513,7 +1520,7 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.starcoder2 import model_forward
         convert_forward(model, module.Starcoder2Attention, attention_forward)
         convert_forward(model, module.Starcoder2Model, model_forward)
-    elif model.config.model_type == 'phi':
+    elif model.config.model_type in ["phi3", "phi3_v"]:
         # for phi-2
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1521,7 +1528,7 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi import model_forward
         convert_forward(model, module.PhiAttention, attention_forward)
         convert_forward(model, module.PhiModel, model_forward)
-    elif model.config.model_type in ["phi3", "phi3_v"]:
+    elif model.config.model_type == "phi3":
         # for phi-3
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
