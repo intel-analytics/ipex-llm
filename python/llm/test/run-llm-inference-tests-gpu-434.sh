@@ -25,18 +25,8 @@ start=$(date "+%s")
 # fi
 # export OMP_NUM_THREADS=$THREAD_NUM
 
-# ipex may return exit code 127, which cause unexpected error
-# ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
-pytest_check_error() {
-  result=$(eval "$@" || echo "FINISH PYTEST")
-  echo $result > pytest_check_error.log
-  cat pytest_check_error.log
-  failed_lines=$(cat pytest_check_error.log | { grep failed || true; })
-  if [[ $failed_lines != "" ]]; then
-    exit 1
-  fi
-  rm pytest_check_error.log
-}
+# import pytest_check_error function
+source ${ANALYTICS_ZOO_ROOT}/python/llm/test/run-llm-check-function.sh
 
 export BIGDL_LLM_XMX_DISABLED=1
 pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_attention.py -v -s -k \"Mistral\"
