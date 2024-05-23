@@ -175,6 +175,23 @@ bash qlora_finetune_qwen15_7b_arc_1_card.sh
 
 ##### Finetuning Baichuan2-7B examples on single Arc A770
 
+Modify `modeling_baichuan.py` in model dir. Add following 2 lines into Line 234. This changes fix [Baichuan2 type mismatch issue](https://github.com/baichuan-inc/Baichuan2/issues/291).
+
+```python
+if(attention_mask.dtype != query_states.dtype):
+    attention_mask = attention_mask.to(query_states.dtype)
+```
+
+After modification, line 234-236 should look like below.
+
+```python
+with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=True):
+    if(attention_mask.dtype != query_states.dtype):
+        attention_mask = attention_mask.to(query_states.dtype)
+    attn_output = F.scaled_dot_product_attention(query_states, key_states, value_states, attn_mask = attention_mask)
+```
+Launch finetune.
+
 ```bash
 bash qlora_finetune_baichuan2_7b_arc_1_card.sh
 ```
