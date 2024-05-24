@@ -481,7 +481,7 @@ def internlm_xcomposser2_chat(
         inputs, im_mask = self.interleav_wrap_chat(tokenizer, query, image,
                                                    history, meta_instruction)
     inputs = {
-        k: v.to(self.device)
+        k: v.to(device=self.device, dtype=self.dtype)
         for k, v in inputs.items() if torch.is_tensor(v)
     }
     im_mask = im_mask.to(self.device)
