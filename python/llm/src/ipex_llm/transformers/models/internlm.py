@@ -45,8 +45,9 @@ from torch import nn
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
     append_kv_cache, is_enough_kv_cache_room_4_31
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
+from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
 from ipex_llm.transformers.models.utils import update_past_key_value
 from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
@@ -83,7 +84,7 @@ def internlm_attention_forward(
     if past_key_value is not None:
         enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=kv_seq_len)
         kv_seq_len += past_key_value[0].shape[-2]
-    if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
+    if should_use_fuse_rope(hidden_states, position_ids, self.training):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                      key_states,
                                                                      position_ids,
@@ -228,7 +229,7 @@ def internlm2_attention_forward(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
-    if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
+    if should_use_fuse_rope(hidden_states, position_ids, self.training):
         query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
                                                                      key_states,
                                                                      position_ids,
@@ -376,9 +377,16 @@ def internlm_xcomposser2_attention_forward(
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
+
+    # IPEX-LLM OPT: fuse rope
     cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-    query_states, key_states = apply_rotary_pos_emb(
-        query_states, key_states, cos, sin, position_ids, "internlm")
+    if should_use_fuse_rope(hidden_states, position_ids, self.training):
+        query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(
+            query_states, key_states, sin, cos, "internlm", position_ids
+        )
+    else:
+        query_states, key_states = apply_rotary_pos_emb(
+            query_states, key_states, cos, sin, position_ids, "internlm")
 
     # IPEX-LLM OPT: kv cache and quantzie kv cache
     use_quantize_kv = use_quantize_kv_cache(self.wqkv, hidden_states)
