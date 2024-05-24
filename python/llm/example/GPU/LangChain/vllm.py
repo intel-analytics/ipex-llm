@@ -13,8 +13,9 @@ def main(args):
         temperature=0.8,
         max_model_len=2048,
         enforce_eager=True,
-        load_in_low_bit="fp8",
-        device="xpu"
+        load_in_low_bit=args.load_in_low_bit,
+        device="xpu",
+        tensor_parallel_size=args.tensor_parallel_size,
     )
 
     print(llm.invoke("What is the capital of France?"))
@@ -37,7 +38,10 @@ if __name__ == '__main__':
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
     parser.add_argument('-q', '--question', type=str, default='What is the capital of France?', help='qustion you want to ask.')
-    parser.add_argument('--max-tokens', type=int, default=128, help='max tokens to generate')
+    parser.add_argument('-t', '--max-tokens', type=int, default=128, help='max tokens to generate')
+    parser.add_argument('-p', '--tensor-parallel-size', type=int, default=1, help="vLLM tensor parallel size")
+    parser.add_argument('-l', '--load-in-low-bit', type=str, default='sym_int4', help="low bit format")
     args = parser.parse_args()
-    
+
     main(args)
+
