@@ -25,6 +25,7 @@ subtrees:
                 - file: doc/LLM/DockerGuides/docker_cpp_xpu_quickstart
                 - file: doc/LLM/DockerGuides/fastchat_docker_quickstart
                 - file: doc/LLM/DockerGuides/vllm_docker_quickstart
+                - file: doc/LLM/DockerGuides/vllm_cpu_docker_quickstart
           - file: doc/LLM/Quickstart/index
             title: "Quickstart"
             subtrees:

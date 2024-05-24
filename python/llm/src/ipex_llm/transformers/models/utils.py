@@ -233,7 +233,7 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["qwen", "mixtral"]:
         linear_q4_0.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
-    elif model_family in ["qwen2", "yuan", "stablelm", "qwen2_moe"]:
+    elif model_family in ["qwen2", "yuan", "stablelm", "qwen2_moe", "internlm"]:
         cos = cos.to(q.dtype)
         sin = sin.to(q.dtype)
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]

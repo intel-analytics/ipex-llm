@@ -108,8 +108,4 @@ Command: python chat.py --model-path /llm/llm-models/chatglm2-6b/
 Uptime: 29.349235 s
 Aborted
 ```
-To resolve this problem, you can disabling the iGPU in Device Manager on Windows as follows:
-
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/disable_iGPU.png">
- <img src="https://llm-assets.readthedocs.io/en/latest/_images/disable_iGPU.png" width=100%; />
-</a>
+To resolve this problem, you can disable the iGPU in Device Manager on Windows. For details, refer to [this guide](https://www.elevenforum.com/t/enable-or-disable-integrated-graphics-igpu-in-windows-11.18616/)

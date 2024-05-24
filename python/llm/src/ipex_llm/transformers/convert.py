@@ -44,11 +44,11 @@ import transformers
 import importlib.util
 from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from .utils import logger, get_cur_qtype_and_imatrix
-from typing import Union
 import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+from types import MethodType
 import subprocess
 import sys
 
@@ -725,6 +725,10 @@ def _optimize_pre(model):
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
         model.apply(merge_qkv)
+    # for internlm-xcomposer2-vl
+    if model.config.model_type == "internlmxcomposer2":
+        from ipex_llm.transformers.models.internlm import pre_process_attn_and_mlp
+        model.apply(pre_process_attn_and_mlp)
 
     return model
 
@@ -1217,6 +1221,15 @@ def _optimize_post(model, lightweight_bmm=False):
                             module.InternLMRMSNorm,
                             llama_rms_norm_forward
                             )
+    elif model.config.model_type == "internlmxcomposer2":
+        modeling_module_name = model.model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_attention_forward
+        convert_forward(model, module.InternLM2Attention, internlm_xcomposser2_attention_forward)
+        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_mlp_forward
+        convert_forward(model, module.InternLM2MLP, internlm_xcomposser2_mlp_forward)
+        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_chat
+        model.chat = MethodType(internlm_xcomposser2_chat, model)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
@@ -1510,7 +1523,7 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.starcoder2 import model_forward
         convert_forward(model, module.Starcoder2Attention, attention_forward)
         convert_forward(model, module.Starcoder2Model, model_forward)
-    elif model.config.model_type == 'phi':
+    elif model.config.model_type == "phi":
         # for phi-2
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

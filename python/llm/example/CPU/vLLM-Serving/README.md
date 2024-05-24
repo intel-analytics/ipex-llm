@@ -24,6 +24,13 @@ pip3 install sentencepiece  # Required for LLaMA tokenizer.
 pip3 install fastapi
 pip3 install "uvicorn[standard]"
 pip3 install "pydantic<2"  # Required for OpenAI server.
+
+# Install vllm
+git clone https://github.com/vllm-project/vllm.git && \
+cd ./vllm && \
+pip install wheel packaging ninja setuptools>=49.4.0 numpy && \
+pip install -v -r requirements-cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu && \
+VLLM_TARGET_DEVICE=cpu python3 setup.py install
 ```
 
 ### 2. Configure recommended environment variables
@@ -56,8 +63,8 @@ To fully utilize the continuous batching feature of the `vLLM`, you can send req
 #!/bin/bash
 # You may also want to adjust the `--max-num-batched-tokens` argument, it indicates the hard limit
 # of batched prompt length the server will accept
-numactl -C 48-95 -m 1 python -m ipex_llm.vllm.entrypoints.openai.api_server \
-        --model /MODEL_PATH/Llama-2-7b-chat-hf-ipex/ --port 8000  \
+numactl -C 48-95 -m 1 python -m ipex_llm.vllm.cpu.entrypoints.openai.api_server \
+        --model /MODEL_PATH/Llama-2-7b-chat-hf/ --port 8000  \
         --load-format 'auto' --device cpu --dtype bfloat16 \
         --load-in-low-bit sym_int4 \
         --max-num-batched-tokens 4096
@@ -70,25 +77,9 @@ Then you can access the api server as follows:
  curl http://localhost:8000/v1/completions \
          -H "Content-Type: application/json" \
          -d '{
-                 "model": "/MODEL_PATH/Llama-2-7b-chat-hf-ipex/",
+                 "model": "/MODEL_PATH/Llama-2-7b-chat-hf/",
                  "prompt": "San Francisco is a",
                  "max_tokens": 128,
                  "temperature": 0
  }' &
 ```
-
-### 4. (Optional) Add a new model
-
-Currently we have only supported LLaMA family model (including `llama`, `vicuna`, `llama-2`, etc.). To use aother model, you may need add some adaptions.
-
-#### 4.1 Add model code
-
-Create or clone the Pytorch model code to `IPEX/python/llm/src/ipex/llm/vllm/model_executor/models`.
-
-#### 4.2 Rewrite the forward methods
-
-Refering to `IPEX/python/llm/src/ipex/llm/vllm/model_executor/models/ipex_llama.py`, it's necessary to maintain a `kv_cache`, which is a nested list of dictionary that maps `req_id` to a three-dimensional tensor **(the structure may vary from models)**. Before the model's actual `forward` method, you could prepare a `past_key_values` according to current `req_id`, and after that you need to update the `kv_cache` with `output.past_key_values`. The clearence will be executed when the request is finished.
-
-#### 4.3 Register new model
-
-Finally, register your `*ForCausalLM` class to the _MODEL_REGISTRY in `IPEX/python/llm/src/ipex/llm/vllm/model_executor/model_loader.py`.
