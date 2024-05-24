@@ -1,33 +1,34 @@
-# Serving using IPEX-LLM integrated vLLM on Intel GPUs via docker
+# Serving using IPEX-LLM integrated vLLM on Intel CPU via docker
 
-This guide demonstrates how to do LLM serving with `IPEX-LLM` integrated `vLLM` in Docker on Linux with Intel GPUs.
+This guide demonstrates how to do LLM serving with `IPEX-LLM` integrated `vLLM` in Docker on Linux with Intel CPU.
 
 ## Install docker
 
-Follow the instructions in this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html#linux) to install Docker on Linux.
+Follow the instructions in this [guide](https://www.docker.com/get-started/) to install Docker on Linux.
 
 ## Pull the latest image
 
-*Note: For running vLLM serving on Intel CPUs, you can currently use either the `intelanalytics/ipex-llm-serving-xpu:latest` or `intelanalytics/ipex-llm-serving-vllm-xpu:latest` Docker image.*
+*Note: For running vLLM serving on Intel CPUs, you can currently use either the `intelanalytics/ipex-llm-serving-cpu:latest` or `intelanalytics/ipex-llm-serving-vllm-cpu:latest` Docker image.*
+
 ```bash
 # This image will be updated every day
-docker pull intelanalytics/ipex-llm-serving-xpu:latest
+docker pull intelanalytics/ipex-llm-serving-cpu:latest
 ```
 
 ## Start Docker Container
 
- To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. Change the `/path/to/models` to mount the models. 
-
+To fully use your Intel CPU to run vLLM inference and serving, you should 
 ```
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
-export CONTAINER_NAME=ipex-llm-serving-xpu-container
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:latest
+export CONTAINER_NAME=ipex-llm-serving-cpu-container
 sudo docker run -itd \
         --net=host \
-        --device=/dev/dri \
+        --cpuset-cpus="0-47" \
+        --cpuset-mems="0" \
         -v /path/to/models:/llm/models \
         -e no_proxy=localhost,127.0.0.1 \
-        --memory="32G" \
+        --memory="64G" \
         --name=$CONTAINER_NAME \
         --shm-size="16g" \
         $DOCKER_IMAGE
@@ -36,18 +37,7 @@ sudo docker run -itd \
 After the container is booted, you could get into the container through `docker exec`.
 
 ```bash
-docker exec -it ipex-llm-serving-xpu-container /bin/bash
-```
-
-
-To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
-
-```bash
-root@arda-arc12:/# sycl-ls
-[opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device 1.2 [2023.16.7.0.21_160000]
-[opencl:cpu:1] Intel(R) OpenCL, 13th Gen Intel(R) Core(TM) i9-13900K 3.0 [2023.16.7.0.21_160000]
-[opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) A770 Graphics 3.0 [23.17.26241.33]
-[ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
+docker exec -it ipex-llm-serving-cpu-container /bin/bash
 ```
 
 ## Running vLLM serving with IPEX-LLM on Intel GPU in Docker
@@ -58,12 +48,9 @@ We have included multiple vLLM-related files in `/llm/`:
 3. `payload-1024.lua`: Used for testing request per second using 1k-128 request
 4. `start-vllm-service.sh`: Used for template for starting vLLM service
 
-Before performing benchmark or starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#runtime-configurations) to setup our recommended runtime configurations.
-
+Before performing benchmark or starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_cpu.html#environment-setup) to setup our recommended runtime configurations.
 
 ### Service
-
-#### Single card serving
 
 A script named `/llm/start-vllm-service.sh` have been included in the image for starting the service conveniently.
 
@@ -78,15 +65,8 @@ If the service have booted successfully, you should see the output similar to th
 </a>
 
 
-#### Multi-card serving
-
-vLLM supports to utilize multiple cards through tensor parallel. 
-
-You can refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#about-tensor-paralle) on how to utilize the `tensor-parallel` feature and start the service.
-
 #### Verify
 After the service has been booted successfully, you can send a test request using `curl`. Here, `YOUR_MODEL` should be set equal to `served_model_name` in your booting script, e.g. `Qwen1.5`.
-
 
 ```bash
 curl http://localhost:8000/v1/completions \
@@ -108,7 +88,6 @@ Below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_i
 #### Tuning
 
 You can tune the service using these four arguments:
-- `--gpu-memory-utilization`
 - `--max-model-len`
 - `--max-num-batched-token`
 - `--max-num-seq`
@@ -127,19 +106,12 @@ Then in the container, do the following:
 
 ```bash
 cd /llm
-# warmup due to JIT compliation
+# warmup
 wrk -t4 -c4 -d3m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
 # You can change -t and -c to control the concurrency.
-# By default, we use 12 connections to benchmark the service.
-wrk -t12 -c12 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
+# By default, we use 8 connections to benchmark the service.
+wrk -t8 -c8 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
 ```
-
-The following figure shows performing benchmark on `Llama-2-7b-chat-hf` using the above script:
-
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/service-benchmark-result.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/service-benchmark-result.png" width=100%; />
-</a>
-
 
 #### Offline benchmark through benchmark_vllm_throughput.py
 

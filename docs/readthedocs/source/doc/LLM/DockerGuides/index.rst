@@ -12,3 +12,4 @@ In this section, you will find guides related to using IPEX-LLM with Docker, cov
 * Serving
    * `FastChat with IPEX-LLM on Intel GPU <./fastchat_docker_quickstart.html>`_
    * `vLLM with IPEX-LLM on Intel GPU <./vllm_docker_quickstart.html>`_
+   * `vLLM with IPEX-LLM on Intel CPU <./vllm_cpu_docker_quickstart.html>`_
