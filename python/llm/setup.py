@@ -53,7 +53,7 @@ libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 
 cpu_torch_version = ["torch==2.1.2+cpu;platform_system=='Linux'", "torch==2.1.2;platform_system=='Windows'"]
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
-               'transformers == 4.31.0', 'sentencepiece', 'tokenizers == 0.13.3',
+               'transformers == 4.36.2', 'sentencepiece', 'tokenizers == 0.15.2',
                # TODO: Support accelerate 0.22.0
                'accelerate == 0.21.0', 'tabulate'] + cpu_torch_version
 
@@ -279,11 +279,10 @@ def setup_package():
 
     # Add internal requires for llama-index
     llama_index_requires = copy.deepcopy(all_requires)
-    for exclude_require in ['transformers == 4.31.0', 'tokenizers == 0.13.3'] + cpu_torch_version:
+    for exclude_require in cpu_torch_version:
         llama_index_requires.remove(exclude_require)
     llama_index_requires += ["setuptools<70.0.0"]
     llama_index_requires += ["torch<2.2.0",
-                             "transformers>=4.34.0,<4.39.0",
                              "sentence-transformers~=2.6.1"]
 
 
