@@ -100,7 +100,7 @@ arguments info:
 - `-m MODEL_PATH`: **required**, path to the model
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
 
-#### 5.2. RAG (Retrival Augmented Generation)
+#### 4.2. RAG (Retrival Augmented Generation)
 
 Install dependencies:
 ```bash
@@ -120,7 +120,7 @@ arguments info:
 - `-i INPUT_PATH`: path to the input doc.
 
 
-#### 5.2. Low Bit
+#### 4.3. Low Bit
 
 The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use langchain with low_bit optimized model.
 By `save_low_bit` we save the weights of low_bit model into the target folder.
@@ -142,7 +142,7 @@ python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
 - `-t TARGET_PATH`: **Required**, the path to save the low_bit model
 - `-q QUESTION`: the question
 
-#### 5.3 vLLM
+#### 4.4 vLLM
 
 The vLLM example ([vllm.py](./vllm.py)) showcases how to use langchain with ipex-llm integrated vLLM engine.
 
