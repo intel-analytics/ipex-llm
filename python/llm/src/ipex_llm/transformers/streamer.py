@@ -77,15 +77,15 @@ class BatchTextIteratorStreamer(TextIteratorStreamer):
             text = self.tokenizer.decode(self.token_cache[idx], **self.decode_kwargs)
 
             if text.endswith("\n"):
-                printable_text = text[self.print_len[idx] :]
+                printable_text = text[self.print_len[idx]:]
                 self.token_cache[idx] = []
                 self.print_len[idx] = 0
                 # If the last token is a CJK character, we print the characters.
             elif len(text) > 0 and self._is_chinese_char(ord(text[-1])):
-                printable_text = text[self.print_len[idx] :]
+                printable_text = text[self.print_len[idx]:]
                 self.print_len[idx] += len(printable_text)
             else:
-                printable_text = text[self.print_len[idx] : text.rfind(" ") + 1]
+                printable_text = text[self.print_len[idx]:text.rfind(" ") + 1]
                 self.print_len[idx] += len(printable_text)
             printable_texts.append(printable_text)
 
@@ -98,7 +98,7 @@ class BatchTextIteratorStreamer(TextIteratorStreamer):
                 text = self.tokenizer.decode(
                     self.token_cache[idx], **self.decode_kwargs
                 )
-                printable_text = text[self.print_len[idx] :]
+                printable_text = text[self.print_len[idx]:]
                 self.token_cache[idx] = []
                 self.print_len[idx] = 0
             else:
