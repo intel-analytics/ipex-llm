@@ -12,10 +12,11 @@ repo_id:
   - 'WisdomShell/CodeShell-7B-Chat'
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
-  - 'liuhaotian/llava-v1.5-7b'
+#  - 'liuhaotian/llava-v1.5-7b' # Cannot load using AutoModelForCausalLM in 4.36+
   # - 'RWKV/rwkv-4-world-7b'
   # - 'RWKV/rwkv-5-world-7b'
   - 'IEITYuan/Yuan2-2B-hf'
+  - 'mistralai/Mistral-7B-Instruct-v0.1'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3

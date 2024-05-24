@@ -8,6 +8,7 @@ Follow the instructions in this [guide](https://ipex-llm.readthedocs.io/en/lates
 
 ## Pull the latest image
 
+*Note: For running vLLM serving on Intel GPUs, you can currently use either the `intelanalytics/ipex-llm-serving-xpu:latest` or `intelanalytics/ipex-llm-serving-vllm-xpu:latest` Docker image.*
 ```bash
 # This image will be updated every day
 docker pull intelanalytics/ipex-llm-serving-xpu:latest
@@ -81,7 +82,7 @@ If the service have booted successfully, you should see the output similar to th
 
 vLLM supports to utilize multiple cards through tensor parallel. 
 
-You can refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#about-tensor-paralle) on how to utilize the `tensor-parallel` feature and start the service.
+You can refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#about-tensor-parallel) on how to utilize the `tensor-parallel` feature and start the service.
 
 #### Verify
 After the service has been booted successfully, you can send a test request using `curl`. Here, `YOUR_MODEL` should be set equal to `served_model_name` in your booting script, e.g. `Qwen1.5`.

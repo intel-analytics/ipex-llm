@@ -49,6 +49,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     mkdir -p /llm/scripts && cd /llm && \
     git clone https://github.com/open-webui/open-webui.git && \
     cd /llm/open-webui/ && \
+    git checkout e29a999dc910afad91995221cb4bb7c274f87cd6 && \
     cp -RPp .env.example .env && \
     # Build frontend
     npm i && \
@@ -57,7 +58,9 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     cd ./backend && \
     # remove blinker to avoid error
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
-    pip install -r requirements.txt -U
+    pip install -r requirements.txt -U && \
+    rm -rf /root/.cache/Cypress && \
+    pip uninstall -y gunicorn python-jose PyMySQL
 
 COPY ./start-llama-cpp.sh /llm/scripts/start-llama-cpp.sh
 COPY ./start-ollama.sh /llm/scripts/start-ollama.sh

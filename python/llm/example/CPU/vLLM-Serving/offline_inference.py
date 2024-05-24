@@ -31,8 +31,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ipex_llm.vllm.entrypoints.llm import LLM
-from ipex_llm.vllm.sampling_params import SamplingParams
+from ipex_llm.vllm.cpu.engine import IPEXLLMClass as LLM
+from vllm import SamplingParams
 
 # Sample prompts.
 prompts = [
@@ -46,7 +46,7 @@ sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
 
 # Create an LLM.
 # llm = LLM(model="facebook/opt-125m")
-llm = LLM(model="YOUR_MODEL_PATH", load_in_low_bit="sym_int4")
+llm = LLM(model="YOUR_MODEL_PATH", device="cpu", load_in_low_bit="sym_int4")
 # Generate texts from the prompts. The output is a list of RequestOutput objects
 # that contain the prompt, generated text, and other information.
 outputs = llm.generate(prompts, sampling_params)

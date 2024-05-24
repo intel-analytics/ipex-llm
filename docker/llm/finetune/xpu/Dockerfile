@@ -21,13 +21,16 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.11 && \
+    apt-get install -y python3.11 python3-pip python3.11-dev python3-wheel python3.11-distutils && \
+    # avoid axolotl lib conflict
+    apt-get remove -y python3-blinker && apt autoremove -y && \
+    # link to python 3.11
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
     # remove apt cache
     rm -rf /var/lib/apt/lists/* && \
+    # upgrade pip
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python3 get-pip.py && \
     # install XPU ipex-llm
@@ -36,12 +39,6 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     git clone https://github.com/intel-analytics/IPEX-LLM.git && \
     mv IPEX-LLM/python/llm/example/GPU/LLM-Finetuning /LLM-Finetuning && \
     rm -rf IPEX-LLM && \
-    # install axolotl
-    git clone https://github.com/OpenAccess-AI-Collective/axolotl && \
-    cd axolotl && git checkout v0.4.0 && \
-    mv /LLM-Finetuning/axolotl/requirements-xpu.txt requirements.txt && \
-    pip install -e . --ignore-installed blinker && \
-    rm -rf .git && \
     # install transformers & peft dependencies
     pip install transformers==4.36.0 && \
     pip install peft==0.10.0 datasets accelerate==0.23.0 && \

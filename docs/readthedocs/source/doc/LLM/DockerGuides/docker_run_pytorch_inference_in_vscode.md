@@ -27,8 +27,8 @@ For both Linux/Windows, you will need to Install Dev Containers extension.
 
 Open the Extensions view in VSCode (you can use the shortcut `Ctrl+Shift+X`), then search for and install the `Dev Containers` extension.
 
-<a href="https://github.com/liu-shaojun/ipex-llm/assets/61072813/7fc4f9aa-04ea-4a13-82e6-89ab5c5d72d8" target="_blank">
-  <img src="https://github.com/liu-shaojun/ipex-llm/assets/61072813/7fc4f9aa-04ea-4a13-82e6-89ab5c5d72d8" width=100%; />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/install_dev_container_extension_in_vscode.gif" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/install_dev_container_extension_in_vscode.gif" width=100%; />
 </a>
 
 
@@ -39,8 +39,8 @@ For Windows, you will need to install wsl extension to to the WSL environment. O
 Press F1 to bring up the Command Palette and type in `WSL: Connect to WSL Using Distro...` and select it and then select a specific WSL distro `Ubuntu`
 
 
-<a href="https://github.com/liu-shaojun/ipex-llm/assets/61072813/9bce2cf3-f09a-4a3c-9cfa-1bb88a4b2ab9" target="_blank">
-  <img src="https://github.com/liu-shaojun/ipex-llm/assets/61072813/9bce2cf3-f09a-4a3c-9cfa-1bb88a4b2ab9" width=100%; />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/install_wsl_extention_in_vscode.gif" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/install_wsl_extention_in_vscode.gif" width=100%; />
 </a>
 
 
@@ -101,8 +101,8 @@ Press F1 to bring up the Command Palette and type in `Dev Containers: Attach t
 
 Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model/`.
 
-<a href="https://github.com/liu-shaojun/ipex-llm/assets/61072813/2a8a3520-dd67-49c3-969a-06714d5f91eb" target="_blank">
-  <img src="https://github.com/liu-shaojun/ipex-llm/assets/61072813/2a8a3520-dd67-49c3-969a-06714d5f91eb" width=100%; />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/run_example_in_vscode.gif" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/run_example_in_vscode.gif" width=100%; />
 </a>
 
 In this folder, we provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs.

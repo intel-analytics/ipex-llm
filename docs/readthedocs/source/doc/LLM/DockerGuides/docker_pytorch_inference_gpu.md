@@ -1,4 +1,4 @@
-# Run PyTorch Inference on an Intel GPU via Docker
+# Python Inference using IPEX-LLM on Intel GPU
 
 We can run PyTorch Inference Benchmark, Chat Service and PyTorch Examples on Intel GPUs within Docker (on Linux or WSL).
 

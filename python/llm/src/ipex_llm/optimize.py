@@ -47,7 +47,8 @@ def _save_low_bit(self, save_dir, *args, **kwargs):
     if isinstance(self, PreTrainedModel):
         # We borrowed this method to adapt to Transformer model cases
         # as much as possible, and later we may merge these two situations
-        self.save_pretrained(save_dir)
+        kwargs['safe_serialization'] = False
+        self.save_pretrained(save_dir, *args, **kwargs)
     else:
         # TODO: For the lowbit model still larger than 8GB,
         #       save it into shards.
