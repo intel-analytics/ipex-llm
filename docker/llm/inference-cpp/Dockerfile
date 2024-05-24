@@ -60,7 +60,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
     pip install -r requirements.txt -U && \
     rm -rf /root/.cache/Cypress && \
-    pip uninstall -y gunicorn python-jose
+    pip uninstall -y gunicorn python-jose PyMySQL
 
 COPY ./start-llama-cpp.sh /llm/scripts/start-llama-cpp.sh
 COPY ./start-ollama.sh /llm/scripts/start-ollama.sh
