@@ -18,7 +18,7 @@ def main(args):
         tensor_parallel_size=args.tensor_parallel_size,
     )
 
-    print(llm.invoke("What is the capital of France?"))
+    print(llm.invoke(args.question))
 
     template = """Question: {question}
 
@@ -27,9 +27,7 @@ def main(args):
 
     llm_chain = LLMChain(prompt=prompt, llm=llm)
 
-    question = "Who was the US president in the year the first Pokemon game was released?"
-
-    print(llm_chain.invoke(question))
+    print(llm_chain.invoke("Who was the US president in the year the first Pokemon game was released?"))
 
 
 

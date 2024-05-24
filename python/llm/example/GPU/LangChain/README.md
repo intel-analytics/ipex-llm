@@ -160,9 +160,19 @@ Besides, you should also install IPEX-LLM integrated vLLM according instructions
 - `-p TENSOR_PARALLEL_SIZE`: Use multiple cards for generation
 - `-l LOAD_IN_LOW_BIT`: Low bit format for quantization
 
+##### Single card
+
+The following command shows an example on how to execute the example using one card:
+
+```bash
+python ./vllm.py -m YOUR_MODEL_PATH -q "What is AI?" -t 128 -p 1 -l sym_int4
+```
+
+##### Multi cards
+
 To use `-p TENSOR_PARALLEL_SIZE` option, you will need to use our docker image: `intelanalytics/ipex-llm-serving-xpu:latest`. For how to use the image, try check this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/vllm_docker_quickstart.html#multi-card-serving).
 
-Also, please set the following environment variables:
+The following command shows an example on how to execute the example using two cards:
 
 ```bash
 export CCL_WORKER_COUNT=2
@@ -170,4 +180,5 @@ export FI_PROVIDER=shm
 export CCL_ATL_TRANSPORT=ofi
 export CCL_ZE_IPC_EXCHANGE=sockets
 export CCL_ATL_SHM=1
+python ./vllm.py -m YOUR_MODEL_PATH -q "What is AI?" -t 128 -p 2 -l sym_int4
 ```
