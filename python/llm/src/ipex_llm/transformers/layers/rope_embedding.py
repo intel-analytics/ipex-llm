@@ -45,7 +45,7 @@ class FastRopeEmbedding(torch.autograd.Function):
         import bigdl_core_xe_addons
         x_embed = torch.empty(x.shape, dtype=x.dtype, device=x.device)
         bigdl_core_xe_addons.apply_rotary_embedding_half_q_or_k(x, position_ids,
-                                                       x_embed, False)
+                                                                x_embed, False)
         ctx.save_for_backward(position_ids)
         return x_embed
 
@@ -59,9 +59,9 @@ class FastRopeEmbedding(torch.autograd.Function):
                          dtype=grad_output.dtype,
                          device=grad_output.device)
         bigdl_core_xe_addons.apply_rotary_embedding_half_q_or_k(grad_output,
-                                                       position_ids,
-                                                       dx,
-                                                       True)
+                                                                position_ids,
+                                                                dx,
+                                                                True)
         # LOG.info(f"backward, dx: {dx}, position_ids: {position_ids},
         #          requires_grad: {ctx.needs_input_grad}")
         return dx, None

@@ -340,7 +340,7 @@ def qwen2_attention_forward(
         import bigdl_core_xe_addons
         if isinstance(past_key_value, DynamicFp8Cache):
             attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+                                                       attention_mask)
         else:
             attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
                                                    attention_mask)

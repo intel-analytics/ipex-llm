@@ -218,7 +218,7 @@ def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family, rope_the
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
                         "mixtral"]:
         bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k(q, k, position_ids,
-                                                        q_embed, k_embed, rope_theta)
+                                                                 q_embed, k_embed, rope_theta)
         return q_embed, k_embed
     else:
         invalidInputError(False,
@@ -233,7 +233,8 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
     q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
     k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
     if model_family in ["qwen", "mixtral"]:
-        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos,
+                                                                            q_embed, k_embed)
     elif model_family in ["qwen2", "yuan", "stablelm", "qwen2_moe", "internlm"]:
         cos = cos.to(q.dtype)
         sin = sin.to(q.dtype)
@@ -241,11 +242,13 @@ def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_i
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
         cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
         sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos,
+                                                                            q_embed, k_embed)
     elif model_family in ["gemma", "phi3"]:
         cos = cos.unsqueeze(1)
         sin = sin.unsqueeze(1)
-        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos, q_embed, k_embed)
+        bigdl_core_xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos,
+                                                                            q_embed, k_embed)
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")

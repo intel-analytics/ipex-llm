@@ -703,7 +703,7 @@ class LowBitLinear(nn.Linear):
                                                              input_seq_size)
                     else:
                         result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                        input_seq_size)
+                                                         input_seq_size)
                     result = result.to(x.dtype)
                 else:
                     if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
@@ -713,7 +713,7 @@ class LowBitLinear(nn.Linear):
                                                              input_seq_size)
                     else:
                         result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                        input_seq_size)
+                                                         input_seq_size)
                 if do_empty_cache:
                     torch.xpu.empty_cache()
             result = result.view(new_shape)

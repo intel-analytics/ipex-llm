@@ -170,7 +170,7 @@ def baichuan_attention_forward_7b_quantized(
         else:
             import bigdl_core_xe_addons
             attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+                                                       attention_mask)
             attn_weights = None
 
     invalidInputError(
