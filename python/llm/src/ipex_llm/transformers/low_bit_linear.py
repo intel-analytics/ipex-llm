@@ -660,7 +660,7 @@ class LowBitLinear(nn.Linear):
             try:
                 import intel_extension_for_pytorch
                 import linear_q4_0
-                from ipex_llm.transformers.models.utils import use_xmx
+                from ipex_llm.transformers.models.utils import use_xmx, use_batch_forward
             except ModuleNotFoundError:
                 invalidInputError(False,
                                   "Please `pip install bigdl_core_xe` first.")
@@ -696,12 +696,24 @@ class LowBitLinear(nn.Linear):
                 if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32 and \
                         not use_xmx(x_2d, self.weight.qtype):
                     x_2d = x_2d.half()
-                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                     input_seq_size)
+                    if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
+                        import core_xe_batch
+                        result = core_xe_batch.batch_forward(x_2d, self.weight.data,
+                                                             self.weight.qtype,
+                                                             input_seq_size)
+                    else:
+                        result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                        input_seq_size)
                     result = result.to(x.dtype)
                 else:
-                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                     input_seq_size)
+                    if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
+                        import core_xe_batch
+                        result = core_xe_batch.batch_forward(x_2d, self.weight.data,
+                                                             self.weight.qtype,
+                                                             input_seq_size)
+                    else:
+                        result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                        input_seq_size)
                 if do_empty_cache:
                     torch.xpu.empty_cache()
             result = result.view(new_shape)

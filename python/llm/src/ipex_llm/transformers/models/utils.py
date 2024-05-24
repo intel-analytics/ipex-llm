@@ -20,7 +20,8 @@ import warnings
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
-from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4, FP6
+from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4,\
+    FP6, ASYM_INT4
 from ipex_llm.transformers.convert import is_deepspeed_available
 
 FP8_KV_ALLOC_LENGTH = 512
@@ -399,6 +400,26 @@ def use_xmx(x: torch.Tensor, qtype: int):
             (device != "pvc" and 1 < x.size(0) <= 64)
         )
     )
+
+
+def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
+    device = get_xpu_device_type(x)
+    batch_size = x.shape[0]
+    hard_condition = (
+        x.dtype in [torch.float, torch.half]
+        and x.shape[1] % 256 == 0
+        and output_len % 32 == 0
+        and device in ["arc", "flex", "pvc", "mtl"]
+        and qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, FP4,
+                      FP8E5, FP6]
+        and batch_size <= 64
+    )
+    if hard_condition:
+        return (
+            batch_size > 1
+            or (device in ["arc", "flex"] and qtype in [SYM_INT8, FP4])
+        )
+    return False
 
 
 def use_fused_layer_norm(x: torch.Tensor, training: bool):
