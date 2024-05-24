@@ -23,7 +23,10 @@ warm_up: 1
 num_trials: 3
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
-batch_size: 1 # default to 1
+batch_size: # 1 # default to 1
+  - 1
+  - 2
+  - 4
 in_out_pairs:
   - '32-32'
   - '1024-128'
@@ -32,7 +35,27 @@ test_api:
   - "transformer_int4_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 exclude:
-#  - 'fnlp/moss-moon-003-sft-4bit:1024'
-#  - 'fnlp/moss-moon-003-sft-4bit:2048'
+  - 'meta-llama/Llama-2-13b-chat-hf:2048:4'
+  - 'tiiuae/falcon-7b-instruct-with-patch:2048:4'
+  - 'mosaicml/mpt-7b-chat:2048:4'
+  - 'redpajama/gptneox-7b-redpajama-bf16:2048:4'
+  - 'bigcode/starcoder-15.5b-4bit:2048:2'
+  - 'bigcode/starcoder-15.5b-4bit:1024:4'
+  - 'bigcode/starcoder-15.5b-4bit:2048:4'
+  - 'databricks/dolly-v1-6b:2048:4'
+  - 'databricks/dolly-v2-7b:2048:4'
+  - 'databricks/dolly-v2-12b:2048:2'
+  - 'databricks/dolly-v2-12b:1024:4'
+  - 'databricks/dolly-v2-12b:2048:4'
+  - 'internlm/internlm-chat-7b-8k:2048:4'
+  - 'BAAI/AquilaChat-7B:2048:4'
+  - 'baichuan-inc/Baichuan2-7B-Chat:32:4'  # remove after the release of ipex-llm 0523
+  - 'baichuan-inc/Baichuan2-7B-Chat:1024:4'  # remove after the release of ipex-llm 0523
+  - 'baichuan-inc/Baichuan2-7B-Chat:2048:4'
+  - 'baichuan-inc/Baichuan2-13B-Chat-4bit:1024:4'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
   - 'bigscience/bloomz-7b1:2048'
+  - 'bigscience/bloomz-7b1:1024:4'
+#  - 'fnlp/moss-moon-003-sft-4bit:1024'
+#  - 'fnlp/moss-moon-003-sft-4bit:2048'
+  - 'Qwen/Qwen-7B-Chat:2048:4'
