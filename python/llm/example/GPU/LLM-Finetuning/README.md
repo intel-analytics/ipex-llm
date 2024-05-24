@@ -29,3 +29,15 @@ This folder contains examples of running different training mode with IPEX-LLM o
   Please try `sudo apt install level-zero-dev` to fix it.
 
 - Please raise the system open file limit using `ulimit -n 1048576`. Otherwise, there may exist error `Too many open files`.
+
+- If application raise `wandb.errors.UsageError: api_key not configured (no-tty)`. Please login wandb or disable wandb login with this command:
+
+```bash
+export WANDB_MODE=offline
+```
+
+- If application raise Hugging Face related errors, i.e., `NewConnectionError` or `Failed to download` etc. Please download models and datasets, set model and data path, then set `HF_HUB_OFFLINE` with this command:
+
+```bash
+export HF_HUB_OFFLINE=1
+```

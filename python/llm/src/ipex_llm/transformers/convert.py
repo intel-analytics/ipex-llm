@@ -44,11 +44,11 @@ import transformers
 import importlib.util
 from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from .utils import logger, get_cur_qtype_and_imatrix
-from typing import Union
 import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+from types import MethodType
 import subprocess
 import sys
 
@@ -706,7 +706,7 @@ def _optimize_pre(model):
     if model.config.model_type == "phi":
         from ipex_llm.transformers.models.phi import merge_qkv
         model.apply(merge_qkv)
-    if model.config.model_type == "phi3":
+    if model.config.model_type in ["phi3", "phi3_v"]:
         from ipex_llm.transformers.models.phi3 import pre_compute_inv_freq
         model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.phi3 import split_mlp
@@ -725,6 +725,10 @@ def _optimize_pre(model):
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
         model.apply(merge_qkv)
+    # for internlm-xcomposer2-vl
+    if model.config.model_type == "internlmxcomposer2":
+        from ipex_llm.transformers.models.internlm import pre_process_attn_and_mlp
+        model.apply(pre_process_attn_and_mlp)
 
     return model
 
@@ -1217,6 +1221,15 @@ def _optimize_post(model, lightweight_bmm=False):
                             module.InternLMRMSNorm,
                             llama_rms_norm_forward
                             )
+    elif model.config.model_type == "internlmxcomposer2":
+        modeling_module_name = model.model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_attention_forward
+        convert_forward(model, module.InternLM2Attention, internlm_xcomposser2_attention_forward)
+        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_mlp_forward
+        convert_forward(model, module.InternLM2MLP, internlm_xcomposser2_mlp_forward)
+        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_chat
+        model.chat = MethodType(internlm_xcomposser2_chat, model)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
@@ -1232,13 +1245,20 @@ def _optimize_post(model, lightweight_bmm=False):
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from ipex_llm.transformers.models.qwen import qwen_attention_forward
+            from ipex_llm.transformers.models.qwen import qwen_attention_forward_registered
             from ipex_llm.transformers.models.qwen import qwen_mlp_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from ipex_llm.transformers.models.qwen import qwen_model_forward
-            convert_forward(model,
-                            module.QWenAttention,
-                            qwen_attention_forward
-                            )
+            if model.config.max_position_embeddings == 8192:
+                convert_forward(model,
+                                module.QWenAttention,
+                                qwen_attention_forward_registered
+                                )
+            else:
+                convert_forward(model,
+                                module.QWenAttention,
+                                qwen_attention_forward
+                                )
             convert_forward(model,
                             module.RMSNorm,
                             chatglm_rms_norm_forward)
@@ -1502,7 +1522,7 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.starcoder2 import model_forward
         convert_forward(model, module.Starcoder2Attention, attention_forward)
         convert_forward(model, module.Starcoder2Model, model_forward)
-    elif model.config.model_type == 'phi':
+    elif model.config.model_type == "phi":
         # for phi-2
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1510,7 +1530,7 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi import model_forward
         convert_forward(model, module.PhiAttention, attention_forward)
         convert_forward(model, module.PhiModel, model_forward)
-    elif model.config.model_type == "phi3":
+    elif model.config.model_type in ["phi3", "phi3_v"]:
         # for phi-3
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1518,11 +1538,16 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.Phi3Attention, attention_forward)
         from ipex_llm.transformers.models.phi3 import mlp_forward
         convert_forward(model, module.Phi3MLP, mlp_forward)
-        from ipex_llm.transformers.models.phi3 import model_forward_wrapper
-        model_forward = model_forward_wrapper(module.Phi3Model.forward)
-        convert_forward(model, module.Phi3Model, model_forward)
         from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
         convert_forward(model, module.Phi3RMSNorm, phi3_rms_norm_forward)
+        if model.config.model_type == "phi3":
+            from ipex_llm.transformers.models.phi3 import phi3_model_forward_wrapper
+            model_forward = phi3_model_forward_wrapper(module.Phi3Model.forward)
+            convert_forward(model, module.Phi3Model, model_forward)
+        else:
+            from ipex_llm.transformers.models.phi3 import phi3v_model_forward_wrapper
+            model_forward = phi3v_model_forward_wrapper(module.Phi3VModel.forward)
+            convert_forward(model, module.Phi3VModel, model_forward)
     elif model.config.model_type == 'yuan':
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

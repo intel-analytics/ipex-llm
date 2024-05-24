@@ -96,9 +96,14 @@ class Test_Optimize_Gpu_Model:
             for i, (t1, t2) in enumerate(zip(layer_tensor, opt_layer_tensor)):
                 if isinstance(t1, torch.Tensor) and isinstance(t2, torch.Tensor):
                     MLP_output_diff.append(t1 - t2)
-                else:
+                elif isinstance(t1, tuple) and isinstance(t2, tuple):
+                    # if 'past_key_value'is of type tuple
                     for i, (t3, t4) in enumerate(zip(t1, t2)):
                         MLP_output_diff.append(t3 - t4)
+                else:
+                    # if 'past_key_value'is of type Cache, get last layer cache pair (key, value)
+                    MLP_output_diff.append(t1[-1][0] - t2[-1][0])
+                    MLP_output_diff.append(t1[-1][1] - t2[-1][1])
 
             max_diff_tensor = [torch.max(item).item() for item in MLP_output_diff]
             print(max_diff_tensor)

@@ -78,7 +78,7 @@ def run_vllm(
     load_in_low_bit: str = "sym_int4",
 ) -> float:
     from vllm import SamplingParams
-    from ipex_llm.vllm.engine import IPEXLLMClass as LLM
+    from ipex_llm.vllm.xpu.engine import IPEXLLMClass as LLM
     llm = LLM(model=model,
               tokenizer=tokenizer,
               quantization=quantization,

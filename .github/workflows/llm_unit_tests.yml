@@ -99,7 +99,7 @@ jobs:
           echo "LLAMA_ORIGIN_PATH=${ORIGIN_DIR}/llama-7b-hf" >> "$GITHUB_ENV"
           echo "BLOOM_ORIGIN_PATH=${ORIGIN_DIR}/bloom-7b1" >> "$GITHUB_ENV"
           echo "ORIGINAL_CHATGLM2_6B_PATH=${ORIGIN_DIR}/chatglm2-6b" >> "$GITHUB_ENV"
-          echo "ORIGINAL_REPLIT_CODE_PATH=${ORIGIN_DIR}/replit-code-v1-3b" >> "$GITHUB_ENV"
+          echo "ORIGINAL_CODESHELL_7B_PATH=${ORIGIN_DIR}/CodeShell-7B-Chat" >> "$GITHUB_ENV"
           echo "ORIGINAL_WHISPER_TINY_PATH=${ORIGIN_DIR}/whisper-tiny" >> "$GITHUB_ENV"
           echo "MISTRAL_ORIGIN_PATH=${ORIGIN_DIR}/Mistral-7B-v0.1" >> "$GITHUB_ENV"
           echo "LLAMA2_7B_ORIGIN_PATH=${ORIGIN_DIR}/Llama-2-7b-chat-hf" >> "$GITHUB_ENV"
@@ -157,13 +157,13 @@ jobs:
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR"            
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR"
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
           fi
-          if [ ! -d $ORIGINAL_REPLIT_CODE_PATH ]; then
-            echo "Directory $ORIGINAL_REPLIT_CODE_PATH not found. Downloading from FTP server..."
-            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGIN_DIR"
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/replit-code-v1-3b -P $ORIGIN_DIR
+          if [ ! -d $ORIGINAL_CODESHELL_7B_PATH ]; then
+            echo "Directory $ORIGINAL_CODESHELL_7B_PATH not found. Downloading from FTP server..."
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/CodeShell-7B-Chat -P $ORIGIN_DIR"
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/CodeShell-7B-Chat -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_WHISPER_TINY_PATH ]; then
             echo "Directory $ORIGINAL_WHISPER_TINY_PATH not found. Downloading from FTP server..."
@@ -226,7 +226,7 @@ jobs:
         shell: bash
         run: |
           pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
-          pip install transformers==4.36.0
+          pip install transformers==4.36.2
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests.sh
       - name: Run sentence-transformers uninstallation
@@ -234,6 +234,7 @@ jobs:
         shell: bash
         run: |
           pip uninstall sentence-transformers -y || true
+
   llm-unit-test-on-arc:
     needs: [setup-python-version, llm-cpp-build]
     strategy:
@@ -375,8 +376,6 @@ jobs:
           python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
           
           bash python/llm/test/run-llm-inference-tests-gpu.sh
-          python -m pip install transformers==4.34.0 
-          bash python/llm/test/run-llm-inference-tests-gpu-434.sh
 
       - name: Run LLM example tests
         shell: bash
@@ -447,7 +446,7 @@ jobs:
               source /home/arda/intel/oneapi/setvars.sh
             fi
           fi
-          pip install transformers==4.36.0
+          pip install transformers==4.36.2
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests-gpu.sh
       - name: Run sentence-transformers uninstallation

@@ -30,7 +30,7 @@ from typing import List
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import StreamingResponse, JSONResponse
 import uvicorn
-from ipex_llm.vllm.engine import IPEXLLMAsyncLLMEngine as AsyncLLMEngine
+
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
@@ -300,6 +300,10 @@ if __name__ == "__main__":
         args.tensor_parallel_size = args.num_gpus
 
     engine_args = AsyncEngineArgs.from_cli_args(args)
+    if args.device == 'cpu':
+        from ipex_llm.vllm.cpu.engine import IPEXLLMAsyncLLMEngine as AsyncLLMEngine
+    elif args.device == 'xpu':
+        from ipex_llm.vllm.xpu.engine import IPEXLLMAsyncLLMEngine as AsyncLLMEngine
     engine = AsyncLLMEngine.from_engine_args(engine_args, load_in_low_bit=args.load_in_low_bit)
     worker = VLLMWorker(
         args.controller_address,

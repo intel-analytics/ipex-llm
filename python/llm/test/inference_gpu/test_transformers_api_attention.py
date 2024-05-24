@@ -104,8 +104,8 @@ class Test_Optimize_Gpu_Model:
                     if isinstance(t1, torch.Tensor) and isinstance(t2, torch.Tensor):
                         # 'attn_output' is of type torch.Tensor.
                         attn_output_diff.append(t1 - t2)
-                    else:
-                        # 'past_key_value'is of type tuple as default.
+                    elif isinstance(t1, tuple) and isinstance(t2, tuple):
+                        # if 'past_key_value'is of type tuple
                         for i, (t3, t4) in enumerate(zip(t1, t2)):
                             if model.config.architectures[0] == "ChatGLMModel" and \
                                     hasattr(model.config, 'padded_vocab_size') and \
@@ -114,6 +114,10 @@ class Test_Optimize_Gpu_Model:
                                 # We need to narrow it here.
                                 t4 = t4[:, :, 15:17, :]
                             attn_output_diff.append(t3 - t4)
+                    else:
+                        # if 'past_key_value'is of type Cache, get last layer cache pair (key, value)
+                        attn_output_diff.append(t1[-1][0] - t2[-1][0])
+                        attn_output_diff.append(t1[-1][1] - t2[-1][1])
 
             max_diff_tensor = [torch.max(item).item() for item in attn_output_diff]
             print(max_diff_tensor)

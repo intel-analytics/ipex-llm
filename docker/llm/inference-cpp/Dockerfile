@@ -9,13 +9,15 @@ ENV PYTHONUNBUFFERED=1
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " > /etc/apt/sources.list.d/oneAPI.list && \
+RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
+    echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " | tee /etc/apt/sources.list.d/oneAPI.list && \
+    chmod 644 /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
+    rm /etc/apt/sources.list.d/intel-graphics.list && \
+    wget -O- https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor | tee /usr/share/keyrings/intel-graphics.gpg > /dev/null && \
+    echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc" | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
+    chmod 644 /usr/share/keyrings/intel-graphics.gpg && \
     apt-get update && \
     apt-get install -y curl wget git gnupg gpg-agent sudo && \
-    wget -qO - https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg && \
-    echo 'deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc' | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
-    rm /etc/apt/sources.list.d/intel-graphics.list && \
     # Install PYTHON 3.11 and IPEX-LLM[xpu]
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -47,6 +49,7 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     mkdir -p /llm/scripts && cd /llm && \
     git clone https://github.com/open-webui/open-webui.git && \
     cd /llm/open-webui/ && \
+    git checkout e29a999dc910afad91995221cb4bb7c274f87cd6 && \
     cp -RPp .env.example .env && \
     # Build frontend
     npm i && \
@@ -55,7 +58,9 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     cd ./backend && \
     # remove blinker to avoid error
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
-    pip install -r requirements.txt -U
+    pip install -r requirements.txt -U && \
+    rm -rf /root/.cache/Cypress && \
+    pip uninstall -y gunicorn python-jose PyMySQL
 
 COPY ./start-llama-cpp.sh /llm/scripts/start-llama-cpp.sh
 COPY ./start-ollama.sh /llm/scripts/start-ollama.sh
