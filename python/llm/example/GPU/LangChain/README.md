@@ -123,3 +123,7 @@ python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
 - `-m MODEL_PATH`: **Required**, the path to the model
 - `-t TARGET_PATH`: **Required**, the path to save the low_bit model
 - `-q QUESTION`: the question
+
+#### 5.3 vLLM
+
+The vLLM example ([vllm.py](./vllm.py)) showcases how to use langchain with ipex-llm integrated vLLM engine.
