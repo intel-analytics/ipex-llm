@@ -607,65 +607,6 @@ async def chat_completion_stream_generator(
         yield f"data: {json.dumps(chunk.model_dump(exclude_unset=True), ensure_ascii=False)}\n\n"
     yield "data: [DONE]\n\n"
 
-async def generate_completion_stream_generator(
-    request: CompletionRequest, n: int, worker_addr: str
-):
-    model_name = request.model
-    id = f"cmpl-{shortuuid.random()}"
-    finish_stream_events = []
-    for text in request.prompt:
-        for i in range(n):
-            previous_text = ""
-            gen_params = await get_gen_params(
-                request.model,
-                worker_addr,
-                text,
-                temperature=request.temperature,
-                top_p=request.top_p,
-                top_k=request.top_k,
-                presence_penalty=request.presence_penalty,
-                frequency_penalty=request.frequency_penalty,
-                max_tokens=request.max_tokens,
-                logprobs=request.logprobs,
-                echo=request.echo,
-                stop=request.stop,
-            )
-            async for content in generate_completion_stream(gen_params, worker_addr):
-                if content["error_code"] != 0:
-                    yield f"data: {json.dumps(chunk.model_dump(exclude_unset=True), ensure_ascii=False)}\n\n"
-                    yield "data: [DONE]\n\n"
-                    return
-                decoded_unicode = content["text"].replace("\ufffd", "")
-                delta_text = decoded_unicode[len(previous_text) :]
-                previous_text = (
-                    decoded_unicode
-                    if len(decoded_unicode) > len(previous_text)
-                    else previous_text
-                )
-                # todo: index is not apparent
-                choice_data = CompletionResponseStreamChoice(
-                    index=i,
-                    text=delta_text,
-                    logprobs=create_openai_logprobs(content.get("logprobs", None)),
-                    finish_reason=content.get("finish_reason", None),
-                )
-                chunk = CompletionStreamResponse(
-                    id=id,
-                    object="text_completion",
-                    choices=[choice_data],
-                    model=model_name,
-                )
-                if len(delta_text) == 0:
-                    if content.get("finish_reason", None) is not None:
-                        finish_stream_events.append(chunk)
-                    continue
-                yield f"data: {json.dumps(chunk.model_dump(exclude_unset=True), ensure_ascii=False)}\n\n"
-    # There is not "content" field in the last delta message, so exclude_none to exclude field "content".
-    for finish_chunk in finish_stream_events:
-        yield f"data: {json.dumps(chunk.model_dump(exclude_unset=True), ensure_ascii=False)}\n\n"
-    yield "data: [DONE]\n\n"
-
-
 async def generate_completion_stream(payload: Dict[str, Any], worker_addr: str):
     controller_address = app_settings.controller_address
     async with httpx.AsyncClient() as client:
