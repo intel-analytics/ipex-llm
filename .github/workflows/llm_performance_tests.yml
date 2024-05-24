@@ -14,11 +14,11 @@ on:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
   # pull_request:
-  #  branches: [main]
-  #  paths:
-  #    - ".github/workflows/llm_performance_tests.yml"
-  #    - "python/llm/test/benchmark/**"
-  #    - "python/llm/dev/benchmark/all-in-one/**"
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm_performance_tests.yml"
+  #     - "python/llm/test/benchmark/**"
+  #     - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
   workflow_call:
 
@@ -69,7 +69,7 @@ jobs:
       # - name: Run LLM install (all) test
       #   uses: ./.github/actions/llm/setup-llm-env
       #   with:
-      #    extra-dependency: "xpu_2.1"
+      #     extra-dependency: "xpu_2.1"
 
       - name: Install IPEX-LLM from Pypi
         shell: bash
@@ -174,11 +174,11 @@ jobs:
           python -m pip install --upgrade transformers_stream_generator
 
       # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
-      #- name: Download llm binary
-      #  uses: ./.github/actions/llm/download-llm-binary
+      # - name: Download llm binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      #- name: Run LLM install (all) test
-      #  uses: ./.github/actions/llm/setup-llm-env
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
 
       - name: Install IPEX-LLM from Pypi
         shell: bash
@@ -249,10 +249,10 @@ jobs:
     
       # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
       # - name: Download llm binary
-      #  uses: ./.github/actions/llm/download-llm-binary
+      #   uses: ./.github/actions/llm/download-llm-binary
 
-      #- name: Run LLM install (all) test
-      #  uses: ./.github/actions/llm/setup-llm-env
+      # - name: Run LLM install (all) test
+      #   uses: ./.github/actions/llm/setup-llm-env
 
       - name: Install IPEX-LLM from Pypi
         shell: bash
@@ -332,9 +332,9 @@ jobs:
 
       #     pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
       #     if %ERRORLEVEL% neq 0 (exit /b 1)
-      #    pip list
+      #     pip list
 
-      #    call conda deactivate
+      #     call conda deactivate
 
       - name: Determine desired ipex-llm version
         shell: bash
