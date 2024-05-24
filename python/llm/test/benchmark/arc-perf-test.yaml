@@ -26,7 +26,6 @@ low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: # 1 # default to 1
   - 1
   - 2
-  - 4
 in_out_pairs:
   - '32-32'
   - '1024-128'
@@ -49,6 +48,9 @@ exclude:
   - 'databricks/dolly-v2-12b:2048:4'
   - 'internlm/internlm-chat-7b-8k:2048:4'
   - 'BAAI/AquilaChat-7B:2048:4'
+  - 'baichuan-inc/Baichuan2-7B-Chat:32:2'  # remove after the release of ipex-llm 0523
+  - 'baichuan-inc/Baichuan2-7B-Chat:1024:2'  # remove after the release of ipex-llm 0523
+  - 'baichuan-inc/Baichuan2-7B-Chat:2048:2'
   - 'baichuan-inc/Baichuan2-7B-Chat:32:4'  # remove after the release of ipex-llm 0523
   - 'baichuan-inc/Baichuan2-7B-Chat:1024:4'  # remove after the release of ipex-llm 0523
   - 'baichuan-inc/Baichuan2-7B-Chat:2048:4'

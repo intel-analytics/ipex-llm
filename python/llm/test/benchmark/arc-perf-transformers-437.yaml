@@ -12,7 +12,6 @@ low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: # 1 # default to 1
   - 1
   - 2
-  - 4
 in_out_pairs:
   - '32-32'
   - '1024-128'
