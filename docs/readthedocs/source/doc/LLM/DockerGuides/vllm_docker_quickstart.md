@@ -8,7 +8,7 @@ Follow the instructions in this [guide](https://ipex-llm.readthedocs.io/en/lates
 
 ## Pull the latest image
 
-*Note: For running vLLM serving on Intel CPUs, you can currently use either the `intelanalytics/ipex-llm-serving-xpu:latest` or `intelanalytics/ipex-llm-serving-vllm-xpu:latest` Docker image.*
+*Note: For running vLLM serving on Intel GPUs, you can currently use either the `intelanalytics/ipex-llm-serving-xpu:latest` or `intelanalytics/ipex-llm-serving-vllm-xpu:latest` Docker image.*
 ```bash
 # This image will be updated every day
 docker pull intelanalytics/ipex-llm-serving-xpu:latest
