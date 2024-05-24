@@ -25,7 +25,7 @@ from vllm.logger import init_logger
 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
 from vllm.entrypoints.openai.serving_completion import OpenAIServingCompletion
 from vllm.entrypoints.openai.serving_engine import LoRA
-from ipex_llm.vllm.engine import IPEXLLMAsyncLLMEngine
+from ipex_llm.vllm.xpu.engine import IPEXLLMAsyncLLMEngine
 from ipex_llm.utils.common import invalidInputError
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds
