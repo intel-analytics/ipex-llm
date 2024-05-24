@@ -32,10 +32,10 @@ pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v 
 pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_layernorm.py -v -s
 
 export BIGDL_LLM_XMX_DISABLED=1
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_final_logits.py -v -s
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_attention.py -v -s
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_mlp.py -v -s
-pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_RMSNorm.py -v -s
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_final_logits.py -v -s
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_attention.py -v -s
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_mlp.py -v -s
+pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_RMSNorm.py -v -s
 unset BIGDL_LLM_XMX_DISABLED
 
 now=$(date "+%s")
