@@ -2,7 +2,7 @@
 In this directory, you will find the examples on how IPEX-LLM accelerate inference with speculative sampling using EAGLE (Extrapolation Algorithm for Greater Language-model Efficiency), a speculative sampling method that improves text generation speed) on Intel CPUs. See [here](https://arxiv.org/abs/2401.15077) to view the paper and [here](https://github.com/SafeAILab/EAGLE) for more info on EAGLE code.
 
 ## Requirements
-To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../../README.md#system-support) for more information. Make sure you have installed `ipex-llm` before:
 
 ## Example - EAGLE Speculative Sampling with IPEX-LLM on MT-bench
 In this example, we run inference for a Llama2 model to showcase the speed of EAGLE with IPEX-LLM on MT-bench data on Intel CPUs.

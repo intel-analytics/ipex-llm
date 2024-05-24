@@ -2,7 +2,15 @@
 In this directory, you will find the examples on how IPEX-LLM accelerate inference with speculative sampling using EAGLE (Extrapolation Algorithm for Greater Language-model Efficiency), a speculative sampling method that improves text generation speed) on Intel GPUs. See [here](https://arxiv.org/abs/2401.15077) to view the paper and [here](https://github.com/SafeAILab/EAGLE) for more info on EAGLE code.
 
 ## Requirements
-To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
+
+Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
+
+Step 2, please refer to our [driver installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
+> **Note**: IPEX 2.1.10+xpu requires Intel GPU Driver version >= stable_775_20_20231219.
+
+Step 3, you also need to download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html). OneMKL and DPC++ compiler are needed, others are optional.
+> **Note**: IPEX 2.1.10+xpu requires Intel® oneAPI Base Toolkit's version == 2024.0.
 
 ### Verified Hardware Platforms
 
