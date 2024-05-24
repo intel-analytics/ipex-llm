@@ -16,6 +16,6 @@
 
 # You could also specify `--base_model` to the local path of the huggingface model checkpoint folder and `--data_path` to the local path of the dataset JSON file
 python ./alpaca_qlora_finetuning.py \
-    --base_model "baichuan-inc/Baichuan2-7B-Chat" \
+    --base_model "path/to/Baichuan2-7B-Chat" \
     --data_path "yahma/alpaca-cleaned" \
     --output_dir "./ipex-llm-qlora-alpaca"
