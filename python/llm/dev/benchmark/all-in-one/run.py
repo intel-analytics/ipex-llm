@@ -494,21 +494,6 @@ def run_transformer_int4_gpu(repo_id,
             thread.start()
             thread.join()
 
-            # if result[in_out]:
-            #     first_token_latency = round(np.mean(result[in_out], axis=0)[0]*1000.0, 2)
-            #     rest_token_latency = round(np.mean(result[in_out], axis=0)[1]*1000.0, 2)
-            #     encoder_time = round(np.mean(result[in_out], axis=0)[2]*1000.0, 2)
-            #     input_output_tokens = in_out
-            #     actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
-            #     load_time = round(result[in_out][-1][5], 2)
-            #     peak_mem = result[in_out][-1][6]
-            #     with open(csv_name, mode='a', newline='') as file:
-            #         csv_writer = csv.writer(file)
-            #         file.seek(0, os.SEEK_END)
-            #         if file.tell() == 0:
-            #             csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens", "batch_size", "actual input/output tokens","num_beams","low_bit","cpu_embedding","model loading time (s)","peak mem (GB)"])
-            #         csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', load_time, peak_mem])
-
     model.to('cpu')
     torch.xpu.synchronize()
     torch.xpu.empty_cache()
