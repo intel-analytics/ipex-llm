@@ -45,11 +45,15 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
-def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time):
+def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookup):
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
-        output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+        if lookup:
+            output_ids = model.generate(input_ids, lookahead=conf.lookahead, do_sample=False, max_matching_ngram_size=conf.max_matching_ngram_size, max_new_tokens=out_len,
                                     min_new_tokens=out_len, num_beams=num_beams)
+        else:
+            output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                        min_new_tokens=out_len, num_beams=num_beams)
         torch.xpu.synchronize()
         end = time.perf_counter()
         output_ids = output_ids.cpu()
@@ -59,8 +63,12 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         torch.xpu.empty_cache()
         actual_out_len = output_ids.shape[1] - actual_in_len
         if i >= warm_up:
-            result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                   actual_in_len, actual_out_len, load_time, model.peak_memory])
+            if lookup:
+                result[in_out].append([model.first_token_time, (end - st - model.first_token_time)/model.n_token_generated, 0,
+                                       actual_in_len, actual_out_len, load_time])
+            else:
+                result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                        actual_in_len, actual_out_len, load_time, model.peak_memory])
 
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, n_gpu=2):
     # TODO: make a parameter
@@ -109,6 +117,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_speculative_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
     elif test_api == 'pipeline_parallel_gpu':
         result = run_pipeline_parallel_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=use_fp16_torch_dtype, n_gpu=n_gpu)
+    elif test_api == "transformer_int4_fp16_lookahead_gpu":
+        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=True, lookup=True)
     else:
         invalidInputError(False, "Unknown test_api " + test_api + ", please check your config.yaml.")
 
@@ -117,7 +127,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
             results.append([repo_id,
                             round(np.mean(result[in_out_pair], axis=0)[0]*1000.0, 2),
                             round(np.mean(result[in_out_pair], axis=0)[1]*1000.0, 2),
-                            round(np.mean(result[in_out_pair], axis=0)[2]*1000.0, 2),
+                            round(np.mean(result[in_out_pair], axis=0)[2]*1000.0, 2) if 'lookahead' not in test_api else 'N/A',
                             in_out_pair,
                             batch_size,
                             f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
@@ -396,7 +406,8 @@ def run_transformer_int4_gpu(repo_id,
                              low_bit,
                              batch_size,
                              cpu_embedding,
-                             fp16=False):
+                             fp16=False,
+                             lookup=False):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
@@ -443,7 +454,8 @@ def run_transformer_int4_gpu(repo_id,
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
 
-    model = BenchmarkWrapper(model)
+    if not lookup:
+        model = BenchmarkWrapper(model)
 
     result = {}
     with torch.inference_mode():
@@ -460,33 +472,42 @@ def run_transformer_int4_gpu(repo_id,
             # For the sequence length not in [32, 256, 1024, 2048, 8192], it will be truncated from 8192.txt.
             test_length = min(test_length, 8192)
             input_str = open(f"prompt/{test_length}.txt", 'r').read()
-            # As different tokenizer has different encodings,
-            # slice the input_ids to ensure the prompt length is required length.
-            input_ids = tokenizer.encode(input_str, return_tensors="pt")
-            input_ids = input_ids[:, :in_len]
+            if lookup:
+                question = "Can you please summarize this article?"
+                question_tokens = tokenizer.encode(question, return_tensors="pt")
+                max_article_len = in_len - question_tokens.size(1)
+                article_ids = tokenizer.encode(input_str, return_tensors="pt")
+                if article_ids.size(1) > max_article_len:
+                    article_ids = article_ids[:, :max_article_len]
+                input_ids = torch.cat((article_ids, question_tokens), dim=1)
+            else:
+                # As different tokenizer has different encodings,
+                # slice the input_ids to ensure the prompt length is required length.
+                input_ids = tokenizer.encode(input_str, return_tensors="pt")
+                input_ids = input_ids[:, :in_len]
             true_str = tokenizer.batch_decode(input_ids)[0]
             input_list = [true_str] * batch_size
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
-            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time))
+            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookup))
             thread.start()
             thread.join()
 
-            if result[in_out]:
-                first_token_latency = round(np.mean(result[in_out], axis=0)[0]*1000.0, 2)
-                rest_token_latency = round(np.mean(result[in_out], axis=0)[1]*1000.0, 2)
-                encoder_time = round(np.mean(result[in_out], axis=0)[2]*1000.0, 2)
-                input_output_tokens = in_out
-                actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
-                load_time = round(result[in_out][-1][5], 2)
-                peak_mem = result[in_out][-1][6]
-                with open(csv_name, mode='a', newline='') as file:
-                    csv_writer = csv.writer(file)
-                    file.seek(0, os.SEEK_END)
-                    if file.tell() == 0:
-                        csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens", "batch_size", "actual input/output tokens","num_beams","low_bit","cpu_embedding","model loading time (s)","peak mem (GB)"])
-                    csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', load_time, peak_mem])
+            # if result[in_out]:
+            #     first_token_latency = round(np.mean(result[in_out], axis=0)[0]*1000.0, 2)
+            #     rest_token_latency = round(np.mean(result[in_out], axis=0)[1]*1000.0, 2)
+            #     encoder_time = round(np.mean(result[in_out], axis=0)[2]*1000.0, 2)
+            #     input_output_tokens = in_out
+            #     actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
+            #     load_time = round(result[in_out][-1][5], 2)
+            #     peak_mem = result[in_out][-1][6]
+            #     with open(csv_name, mode='a', newline='') as file:
+            #         csv_writer = csv.writer(file)
+            #         file.seek(0, os.SEEK_END)
+            #         if file.tell() == 0:
+            #             csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens", "batch_size", "actual input/output tokens","num_beams","low_bit","cpu_embedding","model loading time (s)","peak mem (GB)"])
+            #         csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', load_time, peak_mem])
 
     model.to('cpu')
     torch.xpu.synchronize()
