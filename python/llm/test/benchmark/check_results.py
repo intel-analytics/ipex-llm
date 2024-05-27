@@ -34,8 +34,7 @@ def main():
     actual_test_num = len(csv_dataframe)
     actual_test_cases = []
     for index, row in csv_dataframe.iterrows():
-        actual_test_cases.append(row['model'] + ":" + row['input/output tokens'].split('-')[0])
-
+        actual_test_cases.append(row['model'] + ":" + row['input/output tokens'].split('-')[0] + ":" + str(row['batch_size']))
     if args.yaml_name:
         yaml_name = args.yaml_name
         conf = OmegaConf.load(yaml_name)
@@ -43,7 +42,7 @@ def main():
         for model in conf.repo_id:
             for in_out in conf['in_out_pairs']:
                 for batch_size in conf['batch_size']:
-                    model_id_input = model + ':' + in_out.split('-')[0] + '-' + str(batch_size)
+                    model_id_input = model + ':' + in_out.split('-')[0] + ':' + str(batch_size)
                     all_test_cases.append(model_id_input)
         exclude_test_cases = []
         if 'exclude' in conf and conf['exclude'] is not None:
