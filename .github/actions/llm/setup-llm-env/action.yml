@@ -56,9 +56,5 @@ runs:
             pip install --upgrade --pre -i https://pypi.python.org/simple --force-reinstall "python/llm/dist/${whl_name}[all]"
           fi
           pip install pytest
-          pip uninstall bigdl-core-xe-21 -y || true
-          pip install bigdl-core-xe-21==2.5.0b20200526
-          pip install bigdl-core-xe-addons-21==2.5.0b20200526
-          pip install bigdl-core-xe-batch-21==2.5.0b20200526
           bash python/llm/test/run-llm-install-tests.sh
         fi
