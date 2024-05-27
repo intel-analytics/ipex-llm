@@ -13,12 +13,20 @@ runs:
       run: |
         # make sure we install the latest version for bigdl-core-xe related packages
         pip uninstall bigdl-core-xe -y || true
+        pip uninstall bigdl-core-xe-batch -y || true
+        pip uninstall bigdl-core-xe-addons -y || true
         pip uninstall bigdl-core-xe-esimd -y || true
         pip uninstall bigdl-core-xe-21 -y || true
+        pip uninstall bigdl-core-xe-batch-21 -y || true
+        pip uninstall bigdl-core-xe-addons-21 -y || true
         pip uninstall bigdl-core-xe-esimd-21 -y || true
         sed -i 's/"bigdl-core-xe==" + CORE_XE_VERSION + "/"bigdl-core-xe/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-batch==" + CORE_XE_VERSION + "/"bigdl-core-xe-batch/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-addons==" + CORE_XE_VERSION + "/"bigdl-core-xe-addons/g' python/llm/setup.py
         sed -i 's/"bigdl-core-xe-esimd==" + CORE_XE_VERSION + "/"bigdl-core-xe-esimd/g' python/llm/setup.py
         sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-batch-21==" + CORE_XE_VERSION/"bigdl-core-xe-batch-21"/g' python/llm/setup.py
+        sed -i 's/"bigdl-core-xe-addons-21==" + CORE_XE_VERSION/"bigdl-core-xe-addons-21"/g' python/llm/setup.py
         sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION/"bigdl-core-xe-esimd-21"/g' python/llm/setup.py
 
         pip install requests
