@@ -18,6 +18,8 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install intel_extension_for_pytorch==2.1.0 
 pip install -r requirements.txt
+pip install transformers==4.36.2
+pip install gradio==3.50.2
 pip install eagle-llm
 ```
 
