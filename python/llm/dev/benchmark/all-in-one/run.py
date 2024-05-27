@@ -65,7 +65,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         if i >= warm_up:
             if lookahead:
                 result[in_out].append([model.first_token_time, (end - st - model.first_token_time)/model.n_token_generated, 0,
-                                       actual_in_len, actual_out_len, load_time])
+                                       actual_in_len, actual_out_len, load_time, 0])
             else:
                 result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                         actual_in_len, actual_out_len, load_time, model.peak_memory])
