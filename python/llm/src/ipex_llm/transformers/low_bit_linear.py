@@ -699,8 +699,8 @@ class LowBitLinear(nn.Linear):
                     result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
                 else:
                     result = xe_linear.forward_new(x_2d, self.weight.data,
-                                                     self.weight.qtype,
-                                                     input_seq_size)
+                                                   self.weight.qtype,
+                                                   input_seq_size)
             elif self.enable_xetla:
                 x_2d = x_2d.half()
                 result = xe_linear.mm_xetla(x_2d, self.weight.data, self.qtype)
@@ -723,7 +723,7 @@ class LowBitLinear(nn.Linear):
                                                         input_seq_size)
                     else:
                         result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                         input_seq_size)
+                                                       input_seq_size)
                     result = result.to(x.dtype)
                 else:
                     if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
