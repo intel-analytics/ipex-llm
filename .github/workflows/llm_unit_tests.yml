@@ -157,8 +157,8 @@ jobs:
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR"
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
+            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR"
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_CODESHELL_7B_PATH ]; then
             echo "Directory $ORIGINAL_CODESHELL_7B_PATH not found. Downloading from FTP server..."
@@ -320,7 +320,7 @@ jobs:
           fi
           if [ ! -d $CHATGLM2_6B_ORIGIN_PATH ]; then
             echo "Directory $CHATGLM2_6B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR
           fi
           if [ ! -d $FALCON_7B_ORIGIN_PATH ]; then
             echo "Directory $FALCON_7B_ORIGIN_PATH not found. Downloading from FTP server..."
@@ -328,7 +328,7 @@ jobs:
           fi
           if [ ! -d $MPT_7B_ORIGIN_PATH ]; then
             echo "Directory $MPT_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/mpt-7b-chat -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/mpt-7b-chat -P $ORIGIN_DIR
           fi
           if [ ! -d $WHISPER_TINY_ORIGIN_PATH ]; then
             echo "Directory $WHISPER_TINY_ORIGIN_PATH not found. Downloading from FTP server..."
@@ -355,7 +355,7 @@ jobs:
           fi
           if [ ! -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
             echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Baichuan2-7B-Chat -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/updated_for_4.36/Baichuan2-7B-Chat -P $ORIGIN_DIR
           fi
           if [ ! -d $VICUNA_7B_1_3_ORIGIN_PATH ]; then
             echo "Directory $VICUNA_7B_1_3_ORIGIN_PATH not found. Downloading from FTP server..."
