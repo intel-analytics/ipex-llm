@@ -14,7 +14,7 @@
 ------
 
 ################################################
-💫 IPEX-LLM
+💫 Intel® LLM library for PyTorch*
 ################################################
 
 .. raw:: html
@@ -30,7 +30,7 @@
        <p>
          <ul>
             <li><em>
-               It is built on top of <strong>Intel Extension for PyTorch</strong> (<strong><code><span>IPEX</span></code></strong>), as well as the excellent work of <strong><code><span>llama.cpp</span></code></strong>, <strong><code><span>bitsandbytes</span></code></strong>, <strong><code><span>vLLM</span></code></strong>, <strong><code><span>qlora</span></code></strong>, <strong><code><span>AutoGPTQ</span></code></strong>, <strong><code><span>AutoAWQ</span></code></strong>, etc. 
+               It runs on top of Intel Extension for PyTorch (<strong><code><span>IPEX</span></code></strong>), and is built on top of the excellent work of <strong><code><span>llama.cpp</span></code></strong>, <strong><code><span>transfromers</span></code></strong>, <strong><code><span>bitsandbytes</span></code></strong>, <strong><code><span>vLLM</span></code></strong>, <strong><code><span>qlora</span></code></strong>, <strong><code><span>AutoGPTQ</span></code></strong>, <strong><code><span>AutoAWQ</span></code></strong>, etc. 
             </li></em>
             <li><em>
                It provides seamless integration with <a href=doc/LLM/Quickstart/llama_cpp_quickstart.html>llama.cpp</a>, <a href=doc/LLM/Quickstart/ollama_quickstart.html>ollama</a>, <a href=doc/LLM/Quickstart/webui_quickstart.html>Text-Generation-WebUI</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>HuggingFace transformers</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning>HuggingFace PEFT</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LangChain >LangChain</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LlamaIndex >LlamaIndex</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Deepspeed-AutoTP >DeepSpeed-AutoTP</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving >vLLM</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat>FastChat</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>HuggingFace TRL</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Applications/autogen >AutoGen</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models >ModeScope</a>, etc.
@@ -44,6 +44,8 @@
 ************************************************
 Latest update 🔥
 ************************************************
+* [2024/05] ``ipex-llm`` now supports **Axolotl** for LLM finetuning on Intel GPU; see the quickstart `here <doc/LLM/Quickstart/axolotl_quickstart.html>`_.
+* [2024/04] You can now run **Open WebUI** on Intel GPU using ``ipex-llm``; see the quickstart `here <doc/LLM/Quickstart/open_webui_with_ollama_quickstart.html>`_.
 * [2024/04] You can now run **Llama 3** on Intel GPU using ``llama.cpp`` and ``ollama``; see the quickstart `here <doc/LLM/Quickstart/llama3_llamacpp_ollama_quickstart.html>`_.
 * [2024/04] ``ipex-llm`` now supports **Llama 3** on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama3>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3>`_.
 * [2024/04] ``ipex-llm`` now provides C++ interface, which can be used as an accelerated backend for running `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_ and `ollama <doc/LLM/Quickstart/ollama_quickstart.html>`_ on Intel GPU.
@@ -110,19 +112,16 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
 ************************************************
 
 ============================================
-Install ``ipex-llm``
+Docker
 ============================================
 
-* `Windows GPU <doc/LLM/Quickstart/install_windows_gpu.html>`_: installing ``ipex-llm`` on Windows with Intel GPU
-* `Linux GPU <doc/LLM/Quickstart/install_linux_gpu.html>`_: installing ``ipex-llm`` on Linux with Intel GPU
-* `Docker <https://github.com/intel-analytics/ipex-llm/tree/main/docker/llm>`_: using ``ipex-llm`` dockers on Intel CPU and GPU
-
-.. seealso::
-
-   For more details, please refer to the `installation guide <doc/LLM/Overview/install.html>`_
+* `GPU Inference in C++ <doc/LLM/DockerGuides/docker_cpp_xpu_quickstart.html>`_: running ``llama.cpp``, ``ollama``, ``OpenWebUI``, etc., with ``ipex-llm`` on Intel GPU
+* `GPU Inference in Python <doc/LLM/DockerGuides/docker_pytorch_inference_gpu.html>`_: running HuggingFace ``transformers``, ``LangChain``, ``LlamaIndex``, ``ModelScope``, etc. with ``ipex-llm`` on Intel GPU
+* `vLLM on GPU <doc/LLM/DockerGuides/vllm_docker_quickstart.html>`_: running ``vLLM`` serving with ``ipex-llm`` on Intel GPU 
+* `FastChat on GPU <doc/LLM/DockerGuides/fastchat_docker_quickstart.html>`_: running ``FastChat`` serving with ``ipex-llm`` on Intel GPU
 
 ============================================
-Run ``ipex-llm``
+Run
 ============================================
 
 * `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_: running **llama.cpp** (*using C++ interface of* ``ipex-llm`` *as an accelerated backend for* ``llama.cpp``) on Intel GPU
@@ -132,6 +131,17 @@ Run ``ipex-llm``
 * `LangChain-Chatchat RAG <https://github.com/intel-analytics/Langchain-Chatchat>`_: running ``ipex-llm`` in ``LangChain-Chatchat`` (*Knowledge Base QA using* **RAG** *pipeline*)
 * `Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html>`_: running ``ipex-llm`` in ``oobabooga`` **WebUI**
 * `Benchmarking <doc/LLM/Quickstart/benchmark_quickstart.html>`_: running  (latency and throughput) benchmarks for ``ipex-llm`` on Intel CPU and GPU
+
+============================================
+Install
+============================================
+
+* `Windows GPU <doc/LLM/Quickstart/install_windows_gpu.html>`_: installing ``ipex-llm`` on Windows with Intel GPU
+* `Linux GPU <doc/LLM/Quickstart/install_linux_gpu.html>`_: installing ``ipex-llm`` on Linux with Intel GPU
+
+.. seealso::
+
+   For more details, please refer to the `installation guide <doc/LLM/Overview/install.html>`_
 
 ============================================
 Code Examples
