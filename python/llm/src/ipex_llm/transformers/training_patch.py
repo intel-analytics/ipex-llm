@@ -259,6 +259,6 @@ def from_pretrained(cls, pretrained_model_name_or_path, subfolder=None, **kwargs
     return config
 
 # patch peft for merging adapter into the original model
-if is_peft_available:
+if is_peft_available():
     from peft.config import PeftConfigMixin
     PeftConfigMixin.from_pretrained = from_pretrained
