@@ -110,19 +110,16 @@ See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` mo
 ************************************************
 
 ============================================
-Install ``ipex-llm``
+Docker
 ============================================
 
-* `Windows GPU <doc/LLM/Quickstart/install_windows_gpu.html>`_: installing ``ipex-llm`` on Windows with Intel GPU
-* `Linux GPU <doc/LLM/Quickstart/install_linux_gpu.html>`_: installing ``ipex-llm`` on Linux with Intel GPU
-* `Docker <https://github.com/intel-analytics/ipex-llm/tree/main/docker/llm>`_: using ``ipex-llm`` dockers on Intel CPU and GPU
-
-.. seealso::
-
-   For more details, please refer to the `installation guide <doc/LLM/Overview/install.html>`_
+* `GPU Inference in C++ <doc/LLM/DockerGuides/docker_cpp_xpu_quickstart.html>`_: running ``llama.cpp``, ``ollama``, ``OpenWebUI``, etc., with ``ipex-llm`` on Intel GPU
+* `GPU Inference in Python <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_pytorch_inference_gpu.html>`_ running HuggingFace ``transformers``, ``LangChain``, ``LlamaIndex``, ``ModelScope``, etc. with ``ipex-llm`` on Intel GPU
+* `vLLM on GPU <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/fastchat_docker_quickstart.html>`_ running ``vLLM`` serving with ``ipex-llm`` on Intel GPU 
+* `FastChat on GPU <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/fastchat_docker_quickstart.html>`_ running ``FastChat`` serving with ``ipex-llm`` on Intel GPU
 
 ============================================
-Run ``ipex-llm``
+Run
 ============================================
 
 * `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_: running **llama.cpp** (*using C++ interface of* ``ipex-llm`` *as an accelerated backend for* ``llama.cpp``) on Intel GPU
@@ -132,6 +129,17 @@ Run ``ipex-llm``
 * `LangChain-Chatchat RAG <https://github.com/intel-analytics/Langchain-Chatchat>`_: running ``ipex-llm`` in ``LangChain-Chatchat`` (*Knowledge Base QA using* **RAG** *pipeline*)
 * `Text-Generation-WebUI <doc/LLM/Quickstart/webui_quickstart.html>`_: running ``ipex-llm`` in ``oobabooga`` **WebUI**
 * `Benchmarking <doc/LLM/Quickstart/benchmark_quickstart.html>`_: running  (latency and throughput) benchmarks for ``ipex-llm`` on Intel CPU and GPU
+
+============================================
+Install
+============================================
+
+* `Windows GPU <doc/LLM/Quickstart/install_windows_gpu.html>`_: installing ``ipex-llm`` on Windows with Intel GPU
+* `Linux GPU <doc/LLM/Quickstart/install_linux_gpu.html>`_: installing ``ipex-llm`` on Linux with Intel GPU
+
+.. seealso::
+
+   For more details, please refer to the `installation guide <doc/LLM/Overview/install.html>`_
 
 ============================================
 Code Examples
