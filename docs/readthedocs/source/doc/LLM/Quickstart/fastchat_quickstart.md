@@ -119,16 +119,17 @@ python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MO
 
 #### Launch multiple workers
 
-Sometimes we may want to start multiple workers for the best performance.  For running in CPU, you may want to seperate multiple workers in different socket.  Assuming each socket have 48 physicall cores, then you may want to start two workers using the following example:
+Sometimes we may want to start multiple workers for the best performance.  For running in CPU, you may want to seperate multiple workers in different sockets.  Assuming each socket have 48 physicall cores, then you may want to start two workers using the following example:
 
 ```bash
+export OMP_NUM_THREADS=48
 numactl -C 0-47 -m 0 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "cpu" &
 
 # All the workers other than the first worker need to specify a different worker port and corresponding worker-address
-numactl -C 48-95 -m 0 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "cpu" --port 21003 --worker-address "http://localhost:21003" &
+numactl -C 48-95 -m 1 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "cpu" --port 21003 --worker-address "http://localhost:21003" &
 ```
 
-For GPU, we may want to start two workers using different GPUs.  To achieve this, you should use `ZE_AFFINITY_MASK` environment variable to select different GPU for different workers.  Below shows an example:
+For GPU, we may want to start two workers using different GPUs.  To achieve this, you should use `ZE_AFFINITY_MASK` environment variable to select different GPUs for different workers.  Below shows an example:
 
 ```bash
 ZE_AFFINITY_MASK=1 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "xpu" &
