@@ -44,7 +44,7 @@
 ************************************************
 Latest update 🔥
 ************************************************
-* [2024/05] ``ipex-llm`` now supports **Axolotl** for LLM finetuning on Intel GPU; see the quickstart `here <doc/LLM/Quickstart/axolotl_quickstart.html>`_).
+* [2024/05] ``ipex-llm`` now supports **Axolotl** for LLM finetuning on Intel GPU; see the quickstart `here <doc/LLM/Quickstart/axolotl_quickstart.html>`_.
 * [2024/04] You can now run **Open WebUI** on Intel GPU using `ipex-llm`; see the quickstart `here <doc/LLM/Quickstart/open_webui_with_ollama_quickstart.html>`_.
 * [2024/04] You can now run **Llama 3** on Intel GPU using ``llama.cpp`` and ``ollama``; see the quickstart `here <doc/LLM/Quickstart/llama3_llamacpp_ollama_quickstart.html>`_.
 * [2024/04] ``ipex-llm`` now supports **Llama 3** on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama3>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3>`_.
