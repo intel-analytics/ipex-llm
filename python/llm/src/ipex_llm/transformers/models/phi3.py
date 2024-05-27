@@ -108,17 +108,17 @@ def attention_forward(
 
     # IPEX-LLM OPT: fuse rope
     if should_use_fuse_rope(hidden_states, position_ids, self.training):
-        import bigdl_core_xe_addons
+        import xe_addons
         if self.rotary_emb.__class__.__name__ == "Phi3RotaryEmbedding":     # 4k
-            bigdl_core_xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
-                                                      query_states, key_states)
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:   # 128k
             if kv_seq_len > self.rotary_emb.original_max_position_embeddings:
-                bigdl_core_xe_addons.rotary_half_inplaced(self.rotary_emb.long_inv_freq,
-                                                          position_ids, query_states, key_states)
+                xe_addons.rotary_half_inplaced(self.rotary_emb.long_inv_freq,
+                                               position_ids, query_states, key_states)
             else:
-                bigdl_core_xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq,
-                                                          position_ids, query_states, key_states)
+                xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq,
+                                               position_ids, query_states, key_states)
             # todo: fuse scaling_factor
             query_states *= self.rotary_emb.scaling_factor
             key_states *= self.rotary_emb.scaling_factor
@@ -132,21 +132,19 @@ def attention_forward(
                                                          self.layer_idx, None)
 
     if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-        import bigdl_core_xe_addons
+        import xe_addons
         if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                                       attention_mask)
+            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                            attention_mask)
         else:
-            attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
-                                                   attention_mask)
+            attn_output = xe_addons.sdp(query_states, key_states, value_states,
+                                        attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import bigdl_core_xe_addons
+        import xe_addons
         if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = bigdl_core_xe_addons.sdp_fp8_causal(query_states, key_states,
-                                                              value_states)
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states)
         else:
-            attn_output = bigdl_core_xe_addons.sdp_causal(query_states, key_states,
-                                                          value_states)
+            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states)
     else:
         if isinstance(past_key_value, DynamicFp8Cache):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -207,8 +205,8 @@ def mlp_forward(
     qtype = getattr(self.gate_proj, "qtype", None)
     if mlp_fusion_check(x_2d, qtype, self.training):
         x_2d = x_2d.contiguous()
-        import linear_q4_0
-        return self.down_proj(linear_q4_0.mlp_forward_xpu(
+        import xe_linear
+        return self.down_proj(xe_linear.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_features,
             SILU, qtype
@@ -296,9 +294,9 @@ def phi3v_model_forward_wrapper(origin_model_forward):
 
 def phi3_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        import bigdl_core_xe_addons
+        import xe_addons
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = bigdl_core_xe_addons.rms_norm(self.weight, x_2d, self.variance_epsilon)
+        output = xe_addons.rms_norm(self.weight, x_2d, self.variance_epsilon)
         return output.reshape(hidden_states.shape)
 
     input_dtype = hidden_states.dtype

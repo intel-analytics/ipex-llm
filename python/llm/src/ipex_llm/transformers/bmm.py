@@ -16,7 +16,7 @@
 
 
 import torch
-import linear_q4_0
+import xe_linear
 torch_bmm_old_ = torch.bmm
 
 
@@ -30,7 +30,7 @@ def torch_bmm(a, b):
     if a.size(1) == 1:
         torch_bmm_old_(a, b, out=C)
     else:
-        linear_q4_0.bmm(a.contiguous(), b.contiguous(), C)
+        xe_linear.bmm(a.contiguous(), b.contiguous(), C)
     return C
 
 

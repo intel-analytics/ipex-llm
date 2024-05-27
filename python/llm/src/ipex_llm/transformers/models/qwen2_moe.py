@@ -372,8 +372,8 @@ def qwen2moe_attention_forward_quantized(
                                                          self.layer_idx, cache_kwargs)
     if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
             and not hidden_states.requires_grad:
-        import bigdl_core_xe_addons
-        attn_weights = bigdl_core_xe_addons.query_key_fp8_matmul(query_states, key_states)
+        import xe_addons
+        attn_weights = xe_addons.query_key_fp8_matmul(query_states, key_states)
     else:
         key_states, value_states = restore_fp8_kv_cache(key_states,
                                                         value_states, query_states.dtype)
@@ -404,8 +404,8 @@ def qwen2moe_attention_forward_quantized(
                                          p=self.attention_dropout, training=self.training)
     if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
             and not hidden_states.requires_grad:
-        import bigdl_core_xe_addons
-        attn_output = bigdl_core_xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
+        import xe_addons
+        attn_output = xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
     else:
         attn_output = torch.matmul(attn_weights, value_states)
 
@@ -456,12 +456,12 @@ def qwen2moe_attention_forward_origin(
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]
         kv_seq_len = cache_k.shape[-2]
-        import linear_q4_0
+        import xe_linear
         args = [hidden_states, self.q_proj.weight, self.k_proj.weight, self.v_proj.weight,
                 self.q_proj.bias, self.k_proj.bias, self.v_proj.bias, position_ids, cache_k,
                 cache_v, self.q_proj.weight.qtype, self.v_proj.weight.qtype, kv_seq_len,
                 self.head_dim, self.rotary_emb.base]
-        query_states, key_states, value_states = linear_q4_0.forward_qkv_bias(*args)
+        query_states, key_states, value_states = xe_linear.forward_qkv_bias(*args)
         kv_seq_len += 1
         if self.layer_idx == 0:
             past_key_value._seen_tokens = kv_seq_len
@@ -613,12 +613,12 @@ def qwen2moe_attention_forward_sdpa(
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]
         kv_seq_len = cache_k.shape[-2]
-        import linear_q4_0
+        import xe_linear
         args = [hidden_states, self.q_proj.weight, self.k_proj.weight, self.v_proj.weight,
                 self.q_proj.bias, self.k_proj.bias, self.v_proj.bias, position_ids, cache_k,
                 cache_v, self.q_proj.weight.qtype, self.v_proj.weight.qtype, kv_seq_len,
                 self.head_dim, self.rotary_emb.base]
-        query_states, key_states, value_states = linear_q4_0.forward_qkv_bias(*args)
+        query_states, key_states, value_states = xe_linear.forward_qkv_bias(*args)
         kv_seq_len += 1
         if self.layer_idx == 0:
             past_key_value._seen_tokens = kv_seq_len
@@ -765,8 +765,8 @@ def qwen2moe_moeblock_forward(self, hidden_states: torch.Tensor):
     elif bs < 256 and hidden_states.device.type == 'xpu':
         final_hidden_states = torch.zeros((batch_size * sequence_length, hidden_dim),
                                           dtype=hidden_states.dtype, device=hidden_states.device)
-        import linear_q4_0
-        indexes = linear_q4_0.get_moe_indexes(selected_experts.to(torch.int32).cpu(), 60)
+        import xe_linear
+        indexes = xe_linear.get_moe_indexes(selected_experts.to(torch.int32).cpu(), 60)
         for expert_idx in range(self.num_experts):
             expert_layer = self.experts[expert_idx]
             idx_list = indexes[0][expert_idx]

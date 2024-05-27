@@ -111,9 +111,9 @@ def should_split_qkv_tensor(query_layer, bsz, n_head, seq_len):
 
 def chatglm_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        import bigdl_core_xe_addons
+        import xe_addons
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = bigdl_core_xe_addons.rms_norm(self.weight, x_2d, self.eps)
+        output = xe_addons.rms_norm(self.weight, x_2d, self.eps)
         return output.reshape(hidden_states.shape)
 
     input_dtype = hidden_states.dtype
@@ -322,8 +322,8 @@ def chatglm2_quantized_attention_forward_8eb45c(
             context_layer = torch.matmul(attn.to(value.dtype), value)
         else:
             key, value = k_cache, v_cache
-            import bigdl_core_xe_addons
-            context_layer = bigdl_core_xe_addons.sdp_fp8(query_layer, key, value, attn_bias)
+            import xe_addons
+            context_layer = xe_addons.sdp_fp8(query_layer, key, value, attn_bias)
 
     # context_layer's shape: [bs, n_head, seq_len, head_dim] -> [seq_len, bs, n_head * head_dim]
     context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(seq_len, batch_size, -1)
@@ -572,9 +572,8 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
 
             if use_sdp(query_layer.shape[2], key_layer.shape[2],
                        query_layer.shape[-1], query_layer):
-                import bigdl_core_xe_addons
-                attn_output = bigdl_core_xe_addons.sdp(query_layer, key_layer, value_layer,
-                                                       attn_bias)
+                import xe_addons
+                attn_output = xe_addons.sdp(query_layer, key_layer, value_layer, attn_bias)
                 context_layer = attn_output.view(query_layer.shape)
             else:
                 head_dim = query_layer.size(-1)

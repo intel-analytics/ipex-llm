@@ -97,10 +97,10 @@ def yuan_mlp_forward(
     bsz, hidden_size = x_2d.shape
     qtype = getattr(self.up_proj, "qtype", None)
     if mlp_fusion_check(x_2d, qtype, self.training):
-        import linear_q4_0
+        import xe_linear
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        out = self.down_proj(linear_q4_0.mlp_forward_xpu(
+        out = self.down_proj(xe_linear.mlp_forward_xpu(
             x_2d, self.up_proj.weight.data, self.gate_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.up_proj.out_len,
             SILU, qtype
@@ -268,8 +268,8 @@ def yuan_attention_forward_quantized(
                                                             query_states.dtype)
             attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
         else:
-            import bigdl_core_xe_addons
-            attn_weights = bigdl_core_xe_addons.query_key_fp8_matmul(query_states, key_states)
+            import xe_addons
+            attn_weights = xe_addons.query_key_fp8_matmul(query_states, key_states)
 
         attn_weights = attn_weights / math.sqrt(self.head_dim)
 
@@ -292,8 +292,8 @@ def yuan_attention_forward_quantized(
         if query_states.size(2) != 1 or device.type != 'xpu':
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import bigdl_core_xe_addons
-            attn_output = bigdl_core_xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
+            import xe_addons
+            attn_output = xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
 
         invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
                           "`attn_output` should be of size "

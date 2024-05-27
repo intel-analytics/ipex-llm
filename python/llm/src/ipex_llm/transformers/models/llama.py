@@ -169,9 +169,9 @@ def llama_model_forward_4_38(
 
 def llama_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        import bigdl_core_xe_addons
+        import xe_addons
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = bigdl_core_xe_addons.rms_norm(self.weight, x_2d, self.variance_epsilon)
+        output = xe_addons.rms_norm(self.weight, x_2d, self.variance_epsilon)
         return output.reshape(hidden_states.shape)
 
     input_dtype = hidden_states.dtype
@@ -190,10 +190,10 @@ def llama_mlp_forward(
     bsz, hidden_size = x_2d.shape
     qtype = getattr(self.gate_proj, "qtype", None)
     if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
-        import linear_q4_0
+        import xe_linear
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        out = self.down_proj(linear_q4_0.mlp_forward_xpu(
+        out = self.down_proj(xe_linear.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
             SILU, qtype
@@ -429,18 +429,18 @@ def llama_attention_forward_4_31_quantized(
             dtype=hidden_states.dtype,
             device=device
         )
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         tmp_cache_k, tmp_cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         0,
-                                                                         self.head_dim,
-                                                                         self.rotary_emb.base,)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       tmp_cache_k, tmp_cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       0,
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base,)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -504,9 +504,8 @@ def llama_attention_forward_4_31_quantized(
                                                    bsz, q_len, kv_seq_len,
                                                    self.head_dim, self.num_heads, output_attentions)
         else:
-            import bigdl_core_xe_addons
-            attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                                       attention_mask)
+            import xe_addons
+            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, attention_mask)
             attn_weights = None
 
     attn_output = attn_output.transpose(1, 2).contiguous()
@@ -562,18 +561,18 @@ def llama_attention_forward_4_31_original(
         kv_seq_len = past_key_value[0].shape[-2]
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         cache_k, cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         kv_seq_len,
-                                                                         self.head_dim,
-                                                                         self.rotary_emb.base,)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       cache_k, cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       kv_seq_len,
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base,)
         kv_seq_len += 1
 
     else:
@@ -625,12 +624,12 @@ def llama_attention_forward_4_31_original(
                                                                       self.k_proj,
                                                                       self.v_proj,
                                                                       self.q_proj.weight.qtype,)
-                    import linear_q4_0
+                    import xe_linear
                     q_out_len = self.q_proj.out_len
                     k_out_len = self.k_proj.out_len
                     v_out_len = self.v_proj.out_len
-                    qkv_states = linear_q4_0.mm_xetla(hidden_states, self.qkv_proj_qweight,
-                                                      self.q_proj.weight.qtype)
+                    qkv_states = xe_linear.mm_xetla(hidden_states, self.qkv_proj_qweight,
+                                                    self.q_proj.weight.qtype)
                     query_states = qkv_states[:, :, :q_out_len]
                     key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
                     value_states = qkv_states[:, :, q_out_len + k_out_len:]
@@ -712,9 +711,8 @@ def llama_attention_forward_4_31_original(
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import bigdl_core_xe_addons
-        attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
-                                               attention_mask)
+        import xe_addons
+        attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -812,19 +810,19 @@ def llama_attention_selective_batching_forward_4_31(
             past_k = new_cache_k
             past_v = new_cache_v
         hidden_states = hidden_states.view(1, -1)
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         past_k, past_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         kv_seq_len,
-                                                                         self.head_dim,
-                                                                         self.rotary_emb.base,
-                                                                         )
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       past_k, past_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       kv_seq_len,
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base,
+                                                                       )
         kv_seq_len += 1
     else:
         if self.config.pretraining_tp > 1:
@@ -1029,18 +1027,18 @@ def llama_attention_forward_4_38_quantized(
             dtype=hidden_states.dtype,
             device=device
         )
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         tmp_cache_k, tmp_cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         0,
-                                                                         self.head_dim,
-                                                                         self.rotary_emb.base,)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       tmp_cache_k, tmp_cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       0,
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base,)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -1177,13 +1175,12 @@ def llama_attention_forward_4_38_quantized(
                                                      dtype=torch.float32).to(query_states.dtype)
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import bigdl_core_xe_addons
+            import xe_addons
             if cache_position is not None:
                 new_attn_mask = attention_mask[:, :, kv_seq_len-q_len:kv_seq_len, 0:kv_seq_len]
             else:
                 new_attn_mask = attention_mask
-            attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                                       new_attn_mask)
+            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, new_attn_mask)
             attn_weights = None
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
@@ -1252,18 +1249,18 @@ def llama_attention_forward_4_38_original(
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]
         kv_seq_len = cache_k.shape[-2]
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         cache_k, cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         kv_seq_len,
-                                                                         self.head_dim,
-                                                                         self.rotary_emb.base,)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       cache_k, cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       kv_seq_len,
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:
@@ -1320,13 +1317,13 @@ def llama_attention_forward_4_38_original(
                                                                       self.k_proj,
                                                                       self.v_proj,
                                                                       self.q_proj.weight.qtype,)
-                    import linear_q4_0
+                    import xe_linear
                     q_out_len = self.q_proj.out_len
                     k_out_len = self.k_proj.out_len
                     v_out_len = self.v_proj.out_len
-                    qkv_states = linear_q4_0.mm_xetla(hidden_states,
-                                                      self.qkv_proj_qweight,
-                                                      self.q_proj.weight.qtype)
+                    qkv_states = xe_linear.mm_xetla(hidden_states,
+                                                    self.qkv_proj_qweight,
+                                                    self.q_proj.weight.qtype)
                     query_states = qkv_states[:, :, :q_out_len]
                     key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
                     value_states = qkv_states[:, :, q_out_len + k_out_len:]
@@ -1426,9 +1423,9 @@ def llama_attention_forward_4_38_original(
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import bigdl_core_xe_addons
-        attn_output = bigdl_core_xe_addons.sdp(query_states, key_states, value_states,
-                                               new_attention_mask)
+        import xe_addons
+        attn_output = xe_addons.sdp(query_states, key_states, value_states,
+                                    new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:

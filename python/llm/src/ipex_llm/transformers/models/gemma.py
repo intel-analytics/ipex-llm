@@ -79,9 +79,9 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
 
 def gemma_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training and hidden_states.requires_grad):
-        import bigdl_core_xe_addons
+        import xe_addons
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = bigdl_core_xe_addons.rms_norm(self.weight + 1, x_2d, self.eps)
+        output = xe_addons.rms_norm(self.weight + 1, x_2d, self.eps)
         return output.reshape(hidden_states.shape)
 
     input_dtype = hidden_states.dtype
@@ -100,10 +100,10 @@ def gemma_mlp_forward(
     bsz, hidden_size = x_2d.shape
     qtype = getattr(self.gate_proj, "qtype", None)
     if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
-        import linear_q4_0
+        import xe_linear
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        out = self.down_proj(linear_q4_0.mlp_forward_xpu(
+        out = self.down_proj(xe_linear.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
             GELU, qtype
@@ -146,17 +146,17 @@ def gemma_attention_forward(
 
         kv_seq_len = cache_k.shape[-2]
 
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         cache_k, cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         kv_seq_len,
-                                                                         self.head_dim)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       cache_k, cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       kv_seq_len,
+                                                                       self.head_dim)
         kv_seq_len += 1
 
         # update past_key_value's seem_tokens and kv caches.

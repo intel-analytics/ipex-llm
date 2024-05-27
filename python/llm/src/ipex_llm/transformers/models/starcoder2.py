@@ -135,9 +135,9 @@ def attention_forward(
                                                      self.layer_idx, None)
 
     if use_quantize_kv and q_len == 1:
-        import bigdl_core_xe_addons
-        attn_output = bigdl_core_xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                                   attention_mask)
+        import xe_addons
+        attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                        attention_mask)
         attn_weights = None
     else:
         if use_quantize_kv:
