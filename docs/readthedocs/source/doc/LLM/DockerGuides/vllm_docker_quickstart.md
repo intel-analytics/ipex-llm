@@ -1,6 +1,6 @@
-# Serving using IPEX-LLM integrated vLLM on Intel GPUs via docker
+# vLLM Serving with IPEX-LLM on Intel GPUs via docker
 
-This guide demonstrates how to do LLM serving with `IPEX-LLM` integrated `vLLM` in Docker on Linux with Intel GPUs.
+This guide demonstrates how to run `vLLM` serving with `IPEX-LLM` on Intel GPUs via Docker.
 
 ## Install docker
 
