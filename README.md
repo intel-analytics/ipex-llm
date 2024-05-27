@@ -83,7 +83,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 ### Docker
 - [GPU Inference in C++](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_cpp_xpu_quickstart.html): running `llama.cpp`, `ollama`, `OpenWebUI`, etc., with `ipex-llm` on Intel GPU
 - [GPU Inference in Python](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_pytorch_inference_gpu.html) : running HuggingFace `transformers`, `LangChain`, `LlamaIndex`, `ModelScope`, etc. with `ipex-llm` on Intel GPU
-- [vLLM on GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/fastchat_docker_quickstart.html): running `vLLM` serving with `ipex-llm` on Intel GPU 
+- [vLLM on GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/vllm_docker_quickstart.html): running `vLLM` serving with `ipex-llm` on Intel GPU 
 - [FastChat on GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/fastchat_docker_quickstart.html): running `FastChat` serving with `ipex-llm` on Intel GPU
 
 ### Use
