@@ -114,8 +114,30 @@ python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MO
 source /opt/intel/oneapi/setvars.sh
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu
+python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu --load-in-low-bit "sym_int4" --enforce-eager
 ```
+
+#### Launch multiple workers
+
+Sometimes we may want to start multiple workers for the best performance.  For running in CPU, you may want to seperate multiple workers in different socket.  Assuming each socket have 48 physicall cores, then you may want to start two workers using the following example:
+
+```bash
+numactl -C 0-47 -m 0 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "cpu" &
+
+# All the workers other than the first worker need to specify a different worker port and corresponding worker-address
+numactl -C 48-95 -m 0 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "cpu" --port 21003 --worker-address "http://localhost:21003" &
+```
+
+For GPU, we may want to start two workers using different GPUs.  To achieve this, you should use `ZE_AFFINITY_MASK` environment variable to select different GPU for different workers.  Below shows an example:
+
+```bash
+ZE_AFFINITY_MASK=1 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "xpu" &
+
+# All the workers other than the first worker need to specify a different worker port and corresponding worker-address
+ZE_AFFINITY_MASK=2 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "xpu" --port 21003 --worker-address "http://localhost:21003" &
+```
+
+If you are not sure the effect of `ZE_AFFINITY_MASK`, then you could set `ZE_AFFINITY_MASK` and check the result of `sycl-ls`.
 
 ### Launch Gradio web server
 
