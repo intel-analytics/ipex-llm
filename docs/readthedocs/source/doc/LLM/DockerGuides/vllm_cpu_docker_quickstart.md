@@ -1,6 +1,6 @@
-# Serving using IPEX-LLM integrated vLLM on Intel CPU via docker
+# vLLM Serving with IPEX-LLM on Intel CPU via Docker
 
-This guide demonstrates how to do LLM serving with `IPEX-LLM` integrated `vLLM` in Docker on Linux with Intel CPU.
+This guide demonstrates how to run `vLLM` serving with `ipex-llm` on Intel CPU via Docker.
 
 ## Install docker
 
