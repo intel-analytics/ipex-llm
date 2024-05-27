@@ -99,8 +99,9 @@ def main():
             for current_csv_ind,current_csv_row in current_csv.iterrows():
                 current_csv_model=current_csv_row['model'].strip()
                 current_csv_input_output_pairs=current_csv_row['input/output tokens'].strip()
-                current_csv_model_input_1st=current_csv_model+'-'+current_csv_input_output_pairs+'-'+'1st'
-                current_csv_model_input_2nd=current_csv_model+'-'+current_csv_input_output_pairs+'-'+'2nd'
+                current_csv_batch_size=str(current_csv_row['batch_size'])
+                current_csv_model_input_1st=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'1st'
+                current_csv_model_input_2nd=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'2nd'
                 add_to_dict(csv_dict, current_csv_model_input_1st, current_csv_row[latency_1st_token])
                 add_to_dict(csv_dict, current_csv_model_input_2nd, current_csv_row[latency_2_avg])
 
@@ -110,9 +111,10 @@ def main():
             latest_csv_input_output_pairs=latest_csv_row['input/output tokens'].strip()
             latest_1st_token_latency=latest_csv_row[latency_1st_token]
             latest_2_avg_latency=latest_csv_row[latency_2_avg]
+            latest_csv_batch_size=str(latest_csv_row['batch_size'])
 
-            key1=latest_csv_model+'-'+latest_csv_input_output_pairs+'-'+'1st'
-            key2=latest_csv_model+'-'+latest_csv_input_output_pairs+'-'+'2nd'
+            key1=latest_csv_model+'-'+latest_csv_input_output_pairs+'-'+latest_csv_batch_size+'-'+'1st'
+            key2=latest_csv_model+'-'+latest_csv_input_output_pairs+'-'+latest_csv_batch_size+'-'+'2nd'
 
             best_last1_value=best_in_dict(csv_dict, key1, latest_1st_token_latency)
             best_last2_value=best_in_dict(csv_dict, key2, latest_2_avg_latency)
@@ -128,8 +130,9 @@ def main():
 
                 previous_csv_model=previous_csv_row['model'].strip()
                 previous_csv_input_output_pairs=previous_csv_row['input/output tokens'].strip()
+                previous_csv_batch_size=str(previous_csv_row['batch_size'])
 
-                if latest_csv_model==previous_csv_model and latest_csv_input_output_pairs==previous_csv_input_output_pairs:
+                if latest_csv_model==previous_csv_model and latest_csv_input_output_pairs==previous_csv_input_output_pairs and latest_csv_batch_size==previous_csv_batch_size:
 
                     previous_1st_token_latency=previous_csv_row[latency_1st_token]
                     previous_2_avg_latency=previous_csv_row[latency_2_avg]
