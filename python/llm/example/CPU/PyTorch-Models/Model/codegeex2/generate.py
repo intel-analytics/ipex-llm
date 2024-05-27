@@ -29,7 +29,7 @@ CODEGEEX_PROMPT_FORMAT = "{prompt}"
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for CodeGeeX2 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/codegeex2-6b",
-                        help='The huggingface repo id for the codegeex2-6 model to be downloaded'
+                        help='The huggingface repo id for the CodeGeeX2 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="# language: Python\n# write a bubble sort function\n",
                         help='Prompt to infer')
