@@ -116,9 +116,9 @@ Docker
 ============================================
 
 * `GPU Inference in C++ <doc/LLM/DockerGuides/docker_cpp_xpu_quickstart.html>`_: running ``llama.cpp``, ``ollama``, ``OpenWebUI``, etc., with ``ipex-llm`` on Intel GPU
-* `GPU Inference in Python <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_pytorch_inference_gpu.html>`_: running HuggingFace ``transformers``, ``LangChain``, ``LlamaIndex``, ``ModelScope``, etc. with ``ipex-llm`` on Intel GPU
-* `vLLM on GPU <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/fastchat_docker_quickstart.html>`_: running ``vLLM`` serving with ``ipex-llm`` on Intel GPU 
-* `FastChat on GPU <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/fastchat_docker_quickstart.html>`_: running ``FastChat`` serving with ``ipex-llm`` on Intel GPU
+* `GPU Inference in Python <doc/LLM/DockerGuides/docker_pytorch_inference_gpu.html>`_: running HuggingFace ``transformers``, ``LangChain``, ``LlamaIndex``, ``ModelScope``, etc. with ``ipex-llm`` on Intel GPU
+* `vLLM on GPU <doc/LLM/DockerGuides/vllm_docker_quickstart.html>`_: running ``vLLM`` serving with ``ipex-llm`` on Intel GPU 
+* `FastChat on GPU <DockerGuides/fastchat_docker_quickstart.html>`_: running ``FastChat`` serving with ``ipex-llm`` on Intel GPU
 
 ============================================
 Run
