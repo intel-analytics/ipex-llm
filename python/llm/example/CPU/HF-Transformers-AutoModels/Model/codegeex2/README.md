@@ -51,7 +51,7 @@ For optimal performance on server, it is recommended to set several environment 
 E.g. on Linux,
 ```bash
 # set IPEX-LLM env variables
-source ipex-llm-init
+source ipex-llm-init -t
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
