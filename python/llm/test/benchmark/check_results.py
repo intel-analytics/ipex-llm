@@ -43,7 +43,7 @@ def main():
         for model in conf.repo_id:
             for in_out in conf['in_out_pairs']:
                 for batch_size in conf['batch_size']:
-                    model_id_input = model + ':' + in_out.split('-')[0] + '-' + batch_size
+                    model_id_input = model + ':' + in_out.split('-')[0] + '-' + str(batch_size)
                     all_test_cases.append(model_id_input)
         exclude_test_cases = []
         if 'exclude' in conf and conf['exclude'] is not None:
