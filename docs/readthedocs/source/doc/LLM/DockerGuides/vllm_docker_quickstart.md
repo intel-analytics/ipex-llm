@@ -1,4 +1,4 @@
-# vLLM Serving with IPEX-LLM on Intel GPUs via docker
+# vLLM Serving with IPEX-LLM on Intel GPUs via Docker
 
 This guide demonstrates how to run `vLLM` serving with `IPEX-LLM` on Intel GPUs via Docker.
 
