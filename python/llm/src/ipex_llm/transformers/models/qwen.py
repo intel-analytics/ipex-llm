@@ -127,9 +127,9 @@ def qwen_attention_forward(
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
         import xe_addons
         if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states, None)
         else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states, None)
     else:
         if q_len > 1:
             causal_mask = torch.tril(
@@ -256,9 +256,9 @@ def qwen_attention_forward_registered(
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
         import xe_addons
         if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states, None)
         else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states, None)
     else:
         if q_len > 1:
             causal_mask = registered_causal_mask[

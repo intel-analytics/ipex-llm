@@ -137,9 +137,10 @@ def baichuan_attention_forward_7b(
         import xe_addons
         if use_quantize_kv:
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
-                                                   value_states)
+                                                   value_states, attention_mask)
         else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_causal(query_states, key_states,
+                                               value_states, attention_mask)
     else:
         if use_quantize_kv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
