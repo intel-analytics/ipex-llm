@@ -594,6 +594,13 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/cohere">link</a></td>
        </tr>
+       <tr>
+         <td>CodeGeeX2</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegeex2">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/codegeex2">link</a></td>
+       </tr>
      </tbody>
    </table>
 
