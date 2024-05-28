@@ -414,6 +414,9 @@ def mixtral_model_forward(
         output_router_logits: Optional[bool] = None,
         return_dict: Optional[bool] = None,
 ) -> Union[Tuple, MoeModelOutputWithPast]:
+    # to be compatible with transformers>=4.37.0
+    self._use_flash_attention_2 = self.config._attn_implementation == "flash_attention_2"
+
     output_attentions = output_attentions if output_attentions is not None \
         else self.config.output_attentions
     output_router_logits = (
