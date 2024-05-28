@@ -180,7 +180,7 @@ class _BaseAutoModelClass:
             Default to be False. If set to True, we will use sym_int8 for lm_head when
             load_in_low_bit is sym_int4 or asym_int4.
         :param pipeline_parallel_stages: int value, the number of GPUs allocated for
-            pipeline parallel. Default to be ``None``. Please set pipeline_parallel_stages > 1
+            pipeline parallel. Default to be ``1``. Please set pipeline_parallel_stages > 1
             to run pipeline parallel inference on multiple GPUs.
         :return: a model instance
         """
@@ -215,7 +215,7 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
         user_quantization_config = kwargs.pop("quantization_config", None)
         speculative = kwargs.pop("speculative", False)
-        pipeline_parallel_stages = kwargs.pop("pipeline_parallel_stages", None)
+        pipeline_parallel_stages = kwargs.pop("pipeline_parallel_stages", 1)
         torch_dtype = kwargs.pop("torch_dtype", None)
         embedding_qtype = kwargs.pop("embedding_qtype", None)
 
@@ -372,16 +372,11 @@ class _BaseAutoModelClass:
             kwargs["embedding_qtype"] = embedding_qtype
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
 
-            if pipeline_parallel_stages:
+            if pipeline_parallel_stages > 1:
                 if speculative:
                     invalidInputError(False,
                                       f"Please do not set speculative=True"
                                       f" when using pipeline_parallel_stages")
-                if pipeline_parallel_stages == 1:
-                    warnings.warn(
-                        "Please set pipeline_parallel_stages > 1 to "
-                        "run pipeline parallel inference on multiple GPUs",
-                        FutureWarning)
                 model = pipeline_parallel(model, pipeline_parallel_stages)
 
             if speculative:
