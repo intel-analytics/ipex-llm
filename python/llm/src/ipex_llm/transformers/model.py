@@ -361,7 +361,7 @@ class _BaseAutoModelClass:
                                        model_layers[split_len * i: split_len * (i + 1)]})
                     if i == parallel_gpu_num - 1:
                         device_map.update({key: f'xpu:{i}' for key in
-                                           model_layers[split_len * (i + 1): ]})
+                                           model_layers[split_len * (i + 1):]})
 
                 from accelerate import dispatch_model
                 model = dispatch_model(
