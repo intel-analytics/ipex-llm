@@ -25,7 +25,6 @@ num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: # 1 # default to 1
   - 1
-  - 2
 in_out_pairs:
   - '32-32'
   - '1024-128'
@@ -34,12 +33,5 @@ test_api:
   - "transformer_int4_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 exclude:
-  # - 'bigcode/starcoder-15.5b-4bit:2048:2'
-  # - 'databricks/dolly-v2-12b:2048:2'
-  # - 'baichuan-inc/Baichuan2-7B-Chat:32:2' 
-  # - 'baichuan-inc/Baichuan2-7B-Chat:1024:2' 
-  # - 'baichuan-inc/Baichuan2-7B-Chat:2048:2'
   # - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048:1'
-  # - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048:2'
   # - 'bigscience/bloomz-7b1:2048:1'
-  # - 'bigscience/bloomz-7b1:2048:2'

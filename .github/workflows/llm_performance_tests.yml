@@ -141,6 +141,121 @@ jobs:
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
+      
+  llm-performance-test-on-arc-batch2:
+    # if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    needs: llm-cpp-build # please uncomment it for PR tests
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11"]
+    runs-on: [self-hosted, llm, perf]
+    env:
+      OMP_NUM_THREADS: 16
+      THREAD_NUM: 16
+      ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      CSV_SAVE_PATH: ${{ (github.event.schedule || github.event_name == 'workflow_dispatch') && '/mnt/disk1/nightly_perf_gpu/' || '/mnt/disk1/pr_perf_gpu/' }}
+
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        shell: bash
+        # pip install transformers_stream_generator for model internlm-chat-7b-8k
+        # pip install tiktoken for model Qwen-7B-Chat-10-12
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel
+          python -m pip install --upgrade omegaconf
+          python -m pip install --upgrade pandas
+          python -m pip install --upgrade einops
+          python -m pip install --upgrade transformers_stream_generator
+          python -m pip install --upgrade tiktoken
+
+      # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
+        with:
+          extra-dependency: "xpu_2.1"
+
+      # - name: Install IPEX-LLM from Pypi
+      #   shell: bash
+      #   run: |
+      #     pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      #     test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+      #     if ! pip show ipex-llm | grep $test_version_date; then
+      #       echo "Did not install ipex-llm with excepted version $test_version_date"
+      #       exit 1
+      #     fi
+
+      - name: Test installed xpu version
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          bash python/llm/test/run-llm-install-tests.sh
+
+      - name: Test on xpu(transformers==4.36.2)
+        shell: bash
+        run: |
+          date_for_test_version=$(date -d yesterday +%Y-%m-%d)
+          sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # hide time info
+          sed -i 's/str(end - st)/"xxxxxx"/g' run.py
+          # change csv name
+          sed -i 's/{today}/{today}_test1/g' run.py
+          python run.py
+
+      - name: Test on xpu(transformers==4.37.0)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
+          python -m pip install transformers==4.37.0
+          cp python/llm/test/benchmark/arc-perf-transformers-437-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/test1/test2/g' run.py
+          python run.py
+
+      - name: Concat csv and generate html
+        shell: bash
+        run: |
+          cd python/llm/dev/benchmark/all-in-one
+          python ../../../test/benchmark/concat_csv.py
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" $CSV_SAVE_PATH
+              fi
+          done
+          python -m pip install pandas==1.5.3
+          cd ../../../test/benchmark
+          python csv_to_html.py -f $CSV_SAVE_PATH
+
+      - name: Check and upload results to ftp
+        shell: bash
+        run: |
+          cd python/llm/dev/benchmark/all-in-one
+          python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test-batch2.yaml
+          python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-437-batch2.yaml
+          find . -name "*test*.csv" -delete
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          fi
           
   llm-performance-test-on-spr:
     if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests

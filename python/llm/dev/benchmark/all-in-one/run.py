@@ -1822,9 +1822,10 @@ if __name__ == '__main__':
     
     import pandas as pd
     for api in conf.test_api:
-        for batch_size in conf["batch_size"]:
+        for batch_size in conf["batch_size"]: # mwj might need to change
             global csv_name
-            csv_name = f'{current_dir}/{api}-results-{today}.csv'
+            batch = str(batch_size)
+            csv_name = f'{current_dir}/{api}-results-{today}-batch-{batch}.csv'
             for model in conf.repo_id:
                 in_out_pairs = conf['in_out_pairs'].copy()
                 if excludes:
