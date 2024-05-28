@@ -63,8 +63,7 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  trust_remote_code=True,
                                                  use_cache=True,
-                                                 pipeline_parallel=True,
-                                                 parallel_gpu_num=args.gpu_num)
+                                                 pipeline_parallel_stage=args.gpu_num)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
