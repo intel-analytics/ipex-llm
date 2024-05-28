@@ -239,10 +239,16 @@ parser.add_argument(
     default=[1, 2, 4, 5, 6],
     help="List of maximum concurrent requests to test.",
 )
+parser.add_argument(
+    "--max_new_tokens",
+    type=int,
+    default=128,
+    help="Maximum number of new tokens that the model will generate per request.",
+)
 args = parser.parse_args()
 PROMPT_LENGTH = args.prompt_length
 PROMPT = open(f"prompt/{PROMPT_LENGTH}.txt", "r").read()
-MAX_TOKENS = 128
+MAX_TOKENS = args.max_new_tokens
 
 
 for MAX_CONCURRENT_REQUESTS in args.max_concurrent_requests:
