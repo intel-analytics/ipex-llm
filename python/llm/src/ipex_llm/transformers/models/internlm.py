@@ -398,18 +398,20 @@ def internlm_xcomposser2_attention_forward(
 
     # IPEX-LLM OPT: sdp
     if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-        import xe_linear
+        import xe_addons
         if use_quantize_kv:
-            attn_output = xe_linear.sdp_fp8(query_states, key_states, value_states,
+            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
         else:
-            attn_output = xe_linear.sdp(query_states, key_states, value_states, attention_mask)
+            attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import xe_linear
+        import xe_addons
         if use_quantize_kv:
-            attn_output = xe_linear.sdp_fp8_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
+                                                   value_states, attention_mask)
         else:
-            attn_output = xe_linear.sdp_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_causal(query_states, key_states,
+                                               value_states, attention_mask)
     else:
         if use_quantize_kv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
