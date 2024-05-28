@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# ipex may return exit code 127, which cause unexpected error
+# wrapper for pytest command
+# add this before `pytest` or `python -m pytest` to avoid unexpected exit code 127 caused by ipex on Windows
 # ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
 pytest_check_error() {
   result=$(eval "$@" || echo "FINISH PYTEST")
@@ -13,7 +14,8 @@ pytest_check_error() {
   rm pytest_check_error.log
 }
 
-# ipex may return exit code 127, which cause unexpected error
+# wrapper for python command
+# add this before `python` to avoid unexpected exit code 127 caused by ipex on Windows
 # ref: https://github.com/intel/intel-extension-for-pytorch/issues/634
 ipex_workaround_wrapper() {
     eval "$@" || ( [[ $? == 127 && $RUNNER_OS == "Windows" ]] && echo "EXIT CODE 127 DETECTED ON WINDOWS, IGNORE." || exit 1)
