@@ -228,10 +228,14 @@ class PipelineBaseModel(nn.Module):
 
 
 def load_model(checkpoint):
-    from llama_models import LlamaForCausalLM
     if 'llama' in checkpoint.lower():
+        from llama_models import LlamaForCausalLM
         model = LlamaForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
+    elif 'qwen' in checkpoint.lower():
+        from qwen2_models import Qwen2ForCausalLM
+        model = Qwen2ForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
     return model
+
 
 from pydantic import BaseModel
 class BatchTask(BaseModel):
