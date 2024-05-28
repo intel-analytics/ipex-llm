@@ -48,6 +48,8 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 </table>
        
 ## Latest Update 🔥 
+- [2024/05] You can now easily run `ipex-llm` inference, serving and finetuning using [Docker](#docker).
+- [2024/05] You can now install `ipex-llm` on Windows using just "*[one command](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-ipex-llm)*".
 - [2024/05] `ipex-llm` now supports **Axolotl** for LLM finetuning on Intel GPU; see the quickstart [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/axolotl_quickstart.html).
 - [2024/04] You can now run **Open WebUI** on Intel GPU using `ipex-llm`; see the quickstart [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/open_webui_with_ollama_quickstart.html).
 - [2024/04] You can now run **Llama 3** on Intel GPU using `llama.cpp` and `ollama` with `ipex-llm`; see the quickstart [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama3_llamacpp_ollama_quickstart.html).
