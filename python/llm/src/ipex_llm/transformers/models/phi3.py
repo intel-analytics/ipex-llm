@@ -139,14 +139,15 @@ def attention_forward(
         else:
             attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                         attention_mask)
-    elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
-                                                   value_states, attention_mask)
-        else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states,
-                                               value_states, attention_mask)
+    # disable sdp_causal to avoid overflow for now
+    # elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
+    #     import xe_addons
+    #     if isinstance(past_key_value, DynamicFp8Cache):
+    #         attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
+    #                                                value_states, attention_mask)
+    #     else:
+    #         attn_output = xe_addons.sdp_causal(query_states, key_states,
+    #                                            value_states, attention_mask)
     else:
         if isinstance(past_key_value, DynamicFp8Cache):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
