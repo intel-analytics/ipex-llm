@@ -157,6 +157,10 @@ class _BaseAutoModelClass:
         :param mixed_precision: boolean value, Whether to use mixed precision quantization.
             Default to be False. If set to True, we will use sym_int8 for lm_head when
             load_in_low_bit is sym_int4 or asym_int4.
+        :param pipeline_parallel: boolean value, Whether to use pipeline parallel inference.
+                                  Default to be ``False``.
+        :param parallel_gpu_num: int value, the number of GPUs allocated for pipeline parallel
+                                 inference. Default to be ``None``.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
