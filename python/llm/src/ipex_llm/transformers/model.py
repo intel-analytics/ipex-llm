@@ -105,10 +105,10 @@ def pipeline_parallel(model, pipeline_parallel_stages):
     split_len = len(model_layers) // pipeline_parallel_stages
     for i in range(pipeline_parallel_stages):
         device_map.update({key: f'xpu:{i}' for key in
-                            model_layers[split_len * i: split_len * (i + 1)]})
+                           model_layers[split_len * i: split_len * (i + 1)]})
         if i == pipeline_parallel_stages - 1:
             device_map.update({key: f'xpu:{i}' for key in
-                                model_layers[split_len * (i + 1):]})
+                               model_layers[split_len * (i + 1):]})
 
     from accelerate import dispatch_model
     model = dispatch_model(
@@ -180,7 +180,7 @@ class _BaseAutoModelClass:
             Default to be False. If set to True, we will use sym_int8 for lm_head when
             load_in_low_bit is sym_int4 or asym_int4.
         :param pipeline_parallel_stages: int value, the number of GPUs allocated for
-            pipeline parallel. Default to be ``None``. Please set pipeline_parallel_stages > 1 
+            pipeline parallel. Default to be ``None``. Please set pipeline_parallel_stages > 1
             to run pipeline parallel inference on multiple GPUs.
         :return: a model instance
         """
