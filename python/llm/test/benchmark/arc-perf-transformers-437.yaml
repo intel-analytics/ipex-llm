@@ -1,7 +1,7 @@
 # For the models that require transformers 4.37.0
 repo_id:
   - 'Qwen/Qwen1.5-7B-Chat'
-  - 'Qwen/Qwen1.5-MoE-A2.7B-Chat'
+  # - 'Qwen/Qwen1.5-MoE-A2.7B-Chat'
   # - 'microsoft/phi-2'
   # - 'microsoft/Phi-3-mini-4k-instruct'
   # - 'meta-llama/Meta-Llama-3-8B-Instruct'
