@@ -91,20 +91,24 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 ### Use
 - [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html): running **llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp`*) on Intel GPU
 - [ollama](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html): running **ollama** (*using C++ interface of `ipex-llm` as an accelerated backend for `ollama`*) on Intel GPU
-- [vLLM](python/llm/example/GPU/vLLM-Serving): running `ipex-llm` in `vLLM` on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving)
-- [FastChat](python/llm/src/ipex_llm/serving/fastchat): running `ipex-llm` in `FastChat` serving on on both Intel GPU and CPU
-- [LangChain-Chatchat RAG](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html): running `ipex-llm` in `LangChain-Chatchat` (*Knowledge Base QA using **RAG** pipeline*)
+- [vLLM](python/llm/example/GPU/vLLM-Serving): running `ipex-llm` in **vLLM** on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving)
+- [FastChat](python/llm/src/ipex_llm/serving/fastchat): running `ipex-llm` in **FastChat** serving on on both Intel GPU and CPU
 - [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html): running `ipex-llm` in `oobabooga` **WebUI**
-- [Dify](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/dify_quickstart.html): running `ipex-llm` in `Dify`(*production-ready LLM app development platform*)
-- [Continue](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/continue_quickstart.html): using `Continue` (a coding copilot in VSCode) backed by `ipex-llm`
-- [Benchmarking](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/benchmark_quickstart.html): running  (latency and throughput) benchmarks for `ipex-llm` on Intel CPU and GPU
+- [Axolotl](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/axolotl_quickstart.html): running `ipex-llm` in **Axolotl** for LLM finetuning
+- [Benchmarking](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/benchmark_quickstart.html): running  (latency and throughput) **benchmarks** for `ipex-llm` on Intel CPU and GPU
+
+### Applications
+- [Local RAG](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html): running `LangChain-Chatchat` (*Knowledge Base QA using **RAG** pipeline*) with `ipex-llm`
+- [Coding copilot](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/continue_quickstart.html): running `Continue` (coding copilot in VSCode) with `ipex-llm`
+- [Open WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/open_webui_with_ollama_quickstart.html): running `Open WebUI` with `ipex-llm`
+- [PrivateGPT](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/privateGPT_quickstart.html): running `PrivateGPT` to interact with documents with `ipex-llm`
+- [Dify platform](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/dify_quickstart.html): running `ipex-llm` in `Dify`(*production-ready LLM app development platform*)
 
 
 ### Install 
 - [Windows GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html): installing `ipex-llm` on Windows with Intel GPU
 - [Linux GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html): installing `ipex-llm` on Linux with Intel GPU
 - *For more details, please refer to the [installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html)*
-
 
 
 ### Code Examples
