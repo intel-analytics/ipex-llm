@@ -1,4 +1,4 @@
-# Eagle - Speculative Sampling using IPEX-LLM on Intel GPUs
+# EAGLE - Speculative Sampling using IPEX-LLM on Intel GPUs
 In this directory, you will find the examples on how IPEX-LLM accelerate inference with speculative sampling using EAGLE (Extrapolation Algorithm for Greater Language-model Efficiency), a speculative sampling method that improves text generation speed) on Intel GPUs. See [here](https://arxiv.org/abs/2401.15077) to view the paper and [here](https://github.com/SafeAILab/EAGLE) for more info on EAGLE code.
 
 ## Requirements

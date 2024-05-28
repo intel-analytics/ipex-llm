@@ -43,12 +43,12 @@ from fastchat.llm_judge.common import load_questions
 from fastchat.model import get_conversation_template
 from tqdm import tqdm
 
-from eagle.model.ea_model import EaModel
+from eagle.model.ea_model import EaModel 
 from eagle.model.utils import *
 from eagle.model.kv_cache import initialize_past_key_values
-from eagle.model.choices import *
-import intel_extension_for_pytorch as ipex
 from ipex_llm import optimize_model
+
+mc_sim_7b_63 = [[0],[0,0],[0,0,0]]
 
 def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None, max_steps=512):
     assert input_ids.shape[0] == 1, "Only support batch size 1 for now!!"
@@ -188,31 +188,19 @@ def get_model_answers(
         tree_choices,
         enable_ipex_llm,
 ):
-    try:
-        model = EaModel.from_pretrained(
-            base_model_path=base_model_path,
-            ea_model_path=ea_model_path,
-            #torch_dtype=torch.float16,
-            torch_dtype=torch.float32,
-            low_cpu_mem_usage=True,
-            # load_in_8bit=True,
-            device_map="auto"
-        )
-    except ValueError:
-        print("Using sequential device_map.")
-        model = EaModel.from_pretrained(
-            base_model_path=base_model_path,
-            ea_model_path=ea_model_path,
-            #torch_dtype=torch.float16,
-            torch_dtype=torch.float32,
-            low_cpu_mem_usage=True,
-            # load_in_8bit=True,
-            device_map="sequential"
-        )
+
+    model = EaModel.from_pretrained(
+        base_model_path=base_model_path,
+        ea_model_path=ea_model_path,
+        torch_dtype=torch.float32,
+        low_cpu_mem_usage=True,
+        device_map="auto"
+    )
+
     if enable_ipex_llm:
-        # single line of change to enable ipex-llm 
-        model = optimize_model(model, optimize_llm=False)
-    model.to("xpu")
+        # single line of change to enable ipex-llm
+        model = optimize_model(model, low_bit='sym_int4', optimize_llm=False)
+
     tokenizer = model.get_tokenizer()
 
     if temperature > 1e-5:
@@ -221,8 +209,8 @@ def get_model_answers(
         logits_processor = None
 
     model.eval()
-
     print('Check model training state:', model.training)
+
 
 
     question = questions[0]
@@ -238,16 +226,16 @@ def get_model_answers(
         idxs = []
         new_tokens = []
         wall_time = []
-        fail_count = 0
         for j in range(len(question["turns"])):
             qs = question["turns"][j]
             conv.append_message(conv.roles[0], qs)
             conv.append_message(conv.roles[1], None)
             prompt = conv.get_prompt() + " "
-            inputs = tokenizer([prompt], return_tensors="pt").to("xpu")
-            input_ids = inputs.input_ids
+            input_ids = tokenizer([prompt]).input_ids
 
+            # try:
             start_time = time.time()
+
             output_ids, new_token, idx = ea_forward(
                 torch.as_tensor(input_ids),
                 model,
@@ -255,7 +243,6 @@ def get_model_answers(
                 tree_choices,
                 logits_processor,
             )
-
             total_time = time.time() - start_time
             output_ids = output_ids[0][len(input_ids[0]):]
             # be consistent with the template's stop_token_ids
@@ -267,7 +254,7 @@ def get_model_answers(
                 ]
                 if len(stop_token_ids_index) > 0:
                     output_ids = output_ids[: stop_token_ids_index[0]]
-    
+
             output = tokenizer.decode(
                 output_ids,
                 spaces_between_special_tokens=False,
@@ -285,11 +272,13 @@ def get_model_answers(
 
             if conv.name == "xgen" and output.startswith("Assistant:"):
                 output = output.replace("Assistant:", "", 1).strip()
+
             turns.append(output)
             idxs.append(int(idx))
             new_tokens.append(int(new_token))
             wall_time.append(total_time)
             conv.messages[-1][-1] = output
+    print('Warmup done')
 
     for question in tqdm(questions):
 
@@ -308,8 +297,7 @@ def get_model_answers(
                 conv.append_message(conv.roles[0], qs)
                 conv.append_message(conv.roles[1], None)
                 prompt = conv.get_prompt() + " "
-                inputs = tokenizer([prompt], return_tensors="pt").to("xpu")
-                input_ids = inputs.input_ids
+                input_ids = tokenizer([prompt]).input_ids
 
                 try:
                     start_time = time.time()
@@ -424,6 +412,7 @@ if __name__ == "__main__":
         default=1,
         help="How many completion choices to generate.",
     )
+
     parser.add_argument(
         "--temperature",
         type=float,
@@ -437,10 +426,11 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--enable-ipex-llm", 
-        action='store_true', 
+        "--enable-ipex-llm",
+        action='store_true',
         help="Enable ipex-llm optimization"
     )
+
     args = parser.parse_args()
 
     args.model_id = args.model_id + "-temperature-" + str(args.temperature)
@@ -470,4 +460,3 @@ if __name__ == "__main__":
     )
 
     reorg_answer_file(answer_file)
-
