@@ -27,6 +27,7 @@ class Qwen2Model(Qwen2PreTrainedModel):
     def __init__(self, config: Qwen2Config):
         super().__init__(config)
         self.config = config
+        self.config.model_type = 'pp_qwen2'
 
         # pp modification
         self.pp_config = PPConfig(pp_rank=dist.get_rank(), pp_world_size=dist.get_world_size())
@@ -229,6 +230,7 @@ class Qwen2ForCausalLM(Qwen2PreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.config = config
+        self.config.model_type = 'pp_qwen2'
         self.pp_config = PPConfig(pp_rank=dist.get_rank(), pp_world_size=dist.get_world_size())
         self.model = Qwen2Model(config)
         self.vocab_size = config.vocab_size
