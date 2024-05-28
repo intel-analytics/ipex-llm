@@ -179,9 +179,9 @@ class _BaseAutoModelClass:
         :param mixed_precision: boolean value, Whether to use mixed precision quantization.
             Default to be False. If set to True, we will use sym_int8 for lm_head when
             load_in_low_bit is sym_int4 or asym_int4.
-        :param pipeline_parallel_stage: int value, the number of GPUs allocated for
-            pipeline parallel. Default to be ``None``. Pipeline parallel will be enabled if
-            pipeline_parallel_stage > 1.
+        :param pipeline_parallel_stages: int value, the number of GPUs allocated for
+            pipeline parallel. Default to be ``None``. Please set pipeline_parallel_stages > 1 
+            to run pipeline parallel inference on multiple GPUs.
         :return: a model instance
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
@@ -379,7 +379,8 @@ class _BaseAutoModelClass:
                                       f" when using pipeline_parallel_stages")
                 if pipeline_parallel_stages == 1:
                     warnings.warn(
-                        "Please set pipeline_parallel_stages > 1 to enable pipeline parallel",
+                        "Please set pipeline_parallel_stages > 1 to "
+                        "run pipeline parallel inference on multiple GPUs",
                         FutureWarning)
                 model = pipeline_parallel(model, pipeline_parallel_stages)
 
