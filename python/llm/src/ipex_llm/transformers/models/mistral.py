@@ -278,17 +278,17 @@ def mistral_attention_forward_quantized(
             dtype=hidden_states.dtype,
             device=device
         )
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         tmp_cache_k, tmp_cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         0,
-                                                                         self.head_dim)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       tmp_cache_k, tmp_cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       0,
+                                                                       self.head_dim)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -427,9 +427,9 @@ def mistral_attention_forward_quantized(
 
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import linear_q4_0
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+            import xe_addons
+            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                            attention_mask)
             attn_weights = None
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
@@ -476,17 +476,17 @@ def mistral_attention_forward_original(
         kv_seq_len = past_key_value[0].shape[-2]
         cache_k = past_key_value[0]
         cache_v = past_key_value[1]
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         cache_k, cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         kv_seq_len,
-                                                                         self.head_dim)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       cache_k, cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       kv_seq_len,
+                                                                       self.head_dim)
         kv_seq_len += 1
     else:
 
@@ -496,13 +496,13 @@ def mistral_attention_forward_original(
                                                               self.k_proj,
                                                               self.v_proj,
                                                               self.q_proj.qtype)
-            import linear_q4_0
+            import xe_linear
             q_out_len = self.q_proj.out_len
             k_out_len = self.k_proj.out_len
             v_out_len = self.v_proj.out_len
-            qkv_states = linear_q4_0.mm_xetla(hidden_states,
-                                              self.qkv_proj_qweight,
-                                              self.q_proj.qtype)
+            qkv_states = xe_linear.mm_xetla(hidden_states,
+                                            self.qkv_proj_qweight,
+                                            self.q_proj.qtype)
             query_states = qkv_states[:, :, :q_out_len]
             key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
             value_states = qkv_states[:, :, q_out_len + k_out_len:]
@@ -592,8 +592,8 @@ def mistral_attention_forward_original(
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        import xe_addons
+        attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()
@@ -695,17 +695,17 @@ def mistral_attention_forward_4_36_quantized(
             dtype=hidden_states.dtype,
             device=device
         )
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         tmp_cache_k, tmp_cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         0,
-                                                                         self.head_dim)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       tmp_cache_k, tmp_cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       0,
+                                                                       self.head_dim)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -852,9 +852,8 @@ def mistral_attention_forward_4_36_quantized(
 
             attn_output = torch.matmul(attn_weights, value_states)
         else:
-            import linear_q4_0
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+            import xe_addons
+            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, attention_mask)
             attn_weights = None
 
     attn_output_size = (bsz, self.num_heads, q_len, self.head_dim)
@@ -905,17 +904,17 @@ def mistral_attention_forward_4_36_original(
 
         kv_seq_len = cache_k.shape[-2]
 
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         cache_k, cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         kv_seq_len,
-                                                                         self.head_dim)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       cache_k, cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       kv_seq_len,
+                                                                       self.head_dim)
         kv_seq_len += 1
 
         # update past_key_value's seem_tokens and kv caches.
@@ -931,13 +930,13 @@ def mistral_attention_forward_4_36_original(
                                                               self.k_proj,
                                                               self.v_proj,
                                                               self.q_proj.qtype)
-            import linear_q4_0
+            import xe_linear
             q_out_len = self.q_proj.out_len
             k_out_len = self.k_proj.out_len
             v_out_len = self.v_proj.out_len
-            qkv_states = linear_q4_0.mm_xetla(hidden_states,
-                                              self.qkv_proj_qweight,
-                                              self.q_proj.qtype)
+            qkv_states = xe_linear.mm_xetla(hidden_states,
+                                            self.qkv_proj_qweight,
+                                            self.q_proj.qtype)
             query_states = qkv_states[:, :, :q_out_len]
             key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
             value_states = qkv_states[:, :, q_out_len + k_out_len:]
@@ -1033,8 +1032,8 @@ def mistral_attention_forward_4_36_original(
         attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        import xe_addons
+        attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
         attn_output = attn_output.transpose(1, 2).contiguous()

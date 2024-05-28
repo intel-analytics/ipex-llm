@@ -92,9 +92,10 @@ def qwen_attention_forward(
     rotary_pos_emb = rotary_pos_emb_list[0]
     if use_fuse_rope:
         rot_dim = rotary_pos_emb[0].size(-1)
-        import linear_q4_0
-        linear_q4_0.rotary_half_inplaced(inv_freq, position_ids,
-                                         query_states[..., :rot_dim], key_states[..., :rot_dim])
+        import xe_addons
+        xe_addons.rotary_half_inplaced(inv_freq, position_ids,
+                                       query_states[..., :rot_dim],
+                                       key_states[..., :rot_dim])
     else:
         rotary_pos_emb = [i[:, -q_len:, :, :].transpose(1, 2) for i in rotary_pos_emb]
         query_states = apply_rotary_pos_emb(query_states, rotary_pos_emb)
@@ -124,11 +125,11 @@ def qwen_attention_forward(
                                                      value_states.to(dtype=torch.float16),
                                                      is_causal=True).to(hidden_states.dtype)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import linear_q4_0
+        import xe_addons
         if use_quantize_kv:
-            attn_output = linear_q4_0.sdp_fp8_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states, None)
         else:
-            attn_output = linear_q4_0.sdp_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states, None)
     else:
         if q_len > 1:
             causal_mask = torch.tril(
@@ -146,13 +147,13 @@ def qwen_attention_forward(
             attention_mask = None
 
         if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-            import linear_q4_0
+            import xe_addons
             if use_quantize_kv:
-                attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                                  attention_mask)
+                attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                                attention_mask)
             else:
-                attn_output = linear_q4_0.sdp(query_states, key_states, value_states,
-                                              attention_mask)
+                attn_output = xe_addons.sdp(query_states, key_states, value_states,
+                                            attention_mask)
         else:
             if use_quantize_kv:
                 key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -221,9 +222,9 @@ def qwen_attention_forward_registered(
     rotary_pos_emb = rotary_pos_emb_list[0]
     if use_fuse_rope:
         rot_dim = rotary_pos_emb[0].size(-1)
-        import linear_q4_0
-        linear_q4_0.rotary_half_inplaced(inv_freq, position_ids,
-                                         query_states[..., :rot_dim], key_states[..., :rot_dim])
+        import xe_addons
+        xe_addons.rotary_half_inplaced(inv_freq, position_ids,
+                                       query_states[..., :rot_dim], key_states[..., :rot_dim])
     else:
         rotary_pos_emb = [i[:, -q_len:, :, :].transpose(1, 2) for i in rotary_pos_emb]
         query_states = apply_rotary_pos_emb(query_states, rotary_pos_emb)
@@ -253,11 +254,11 @@ def qwen_attention_forward_registered(
                                                      value_states.to(dtype=torch.float16),
                                                      is_causal=True).to(hidden_states.dtype)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import linear_q4_0
+        import xe_addons
         if use_quantize_kv:
-            attn_output = linear_q4_0.sdp_fp8_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states, None)
         else:
-            attn_output = linear_q4_0.sdp_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states, None)
     else:
         if q_len > 1:
             causal_mask = registered_causal_mask[
@@ -272,13 +273,13 @@ def qwen_attention_forward_registered(
             attention_mask = None
 
         if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-            import linear_q4_0
+            import xe_addons
             if use_quantize_kv:
-                attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                                  attention_mask)
+                attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                                attention_mask)
             else:
-                attn_output = linear_q4_0.sdp(query_states, key_states, value_states,
-                                              attention_mask)
+                attn_output = xe_addons.sdp(query_states, key_states, value_states,
+                                            attention_mask)
         else:
             if use_quantize_kv:
                 key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -310,10 +311,10 @@ def qwen_mlp_forward(self, x: torch.Tensor) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
     qtype = getattr(self.w1, "qtype", None)
     if mlp_fusion_check(x_2d, qtype, self.training) and not self.w1.enable_xetla:
-        import linear_q4_0
+        import xe_linear
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        return self.c_proj(linear_q4_0.mlp_forward_xpu(
+        return self.c_proj(xe_linear.mlp_forward_xpu(
             x_2d, self.w2.weight.data, self.w1.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.w2.out_len,
             SILU, qtype

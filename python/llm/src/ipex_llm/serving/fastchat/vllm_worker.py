@@ -41,6 +41,9 @@ from fastchat.serve.model_worker import (
     worker_id,
 )
 from fastchat.utils import get_context_length, is_partial_stop
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from ipex_llm.vllm.cpu.engine import IPEXLLMAsyncLLMEngine as AsyncLLMEngine
 
 
 app = FastAPI()
@@ -56,7 +59,7 @@ class VLLMWorker(BaseModelWorker):
         model_names: List[str],
         limit_worker_concurrency: int,
         no_register: bool,
-        llm_engine: AsyncLLMEngine,
+        llm_engine: 'AsyncLLMEngine',
         conv_template: str,
     ):
         super().__init__(

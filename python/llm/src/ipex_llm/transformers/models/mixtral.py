@@ -105,8 +105,8 @@ def mixtral_moeblock_forward(self,
     elif bs < 256 and hidden_states.device.type == 'xpu':
         final_hidden_states = torch.zeros((batch_size * sequence_length, hidden_dim),
                                           dtype=hidden_states.dtype, device=hidden_states.device)
-        import linear_q4_0
-        indexes = linear_q4_0.get_moe_indexes(selected_experts.to(torch.int32).cpu(), 8)
+        import xe_linear
+        indexes = xe_linear.get_moe_indexes(selected_experts.to(torch.int32).cpu(), 8)
         for expert_idx in range(self.num_experts):
             expert_layer = self.experts[expert_idx]
             idx_list = indexes[0][expert_idx]
@@ -184,18 +184,18 @@ def mixtral_attention_forward(
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]
         kv_seq_len = cache_k.shape[-2]
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         cache_k, cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         kv_seq_len,
-                                                                         self.head_dim,
-                                                                         self.rotary_emb.base,)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       cache_k, cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       kv_seq_len,
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:
@@ -209,8 +209,8 @@ def mixtral_attention_forward(
     #     cache_k = past_key_value.key_cache[self.layer_idx]
     #     cache_v = past_key_value.value_cache[self.layer_idx]
     #     kv_seq_len = cache_k.shape[-2]
-    #     import linear_q4_0
-    #     query_states, key_states = linear_q4_0.forward_qk(hidden_states,
+    #     import xe_linear
+    #     query_states, key_states = xe_linear.forward_qk(hidden_states,
     #                                                       self.q_proj.weight,
     #                                                       self.k_proj.weight,
     #                                                       position_ids,
@@ -333,8 +333,8 @@ def mixtral_attention_forward(
                                                      is_causal=True)
         attn_weights = None
     elif use_sdp(query_states.shape[2], key_states.shape[2], self.head_dim, query_states):
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+        import xe_addons
+        attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:
@@ -389,8 +389,8 @@ def mixtral_mlp_forward(
 ) -> torch.Tensor:
     qtype = getattr(self.w1, "qtype", None)
     if mlp_fusion_check(x, qtype, self.training) and not self.w1.enable_xetla:
-        import linear_q4_0
-        return self.w2(linear_q4_0.mlp_forward_xpu(
+        import xe_linear
+        return self.w2(xe_linear.mlp_forward_xpu(
             x, self.w1.weight.data, self.w3.weight.data,
             x.shape[0], x.shape[1], self.w1.out_len,
             SILU, qtype,
@@ -414,6 +414,9 @@ def mixtral_model_forward(
         output_router_logits: Optional[bool] = None,
         return_dict: Optional[bool] = None,
 ) -> Union[Tuple, MoeModelOutputWithPast]:
+    # to be compatible with transformers>=4.37.0
+    self._use_flash_attention_2 = self.config._attn_implementation == "flash_attention_2"
+
     output_attentions = output_attentions if output_attentions is not None \
         else self.config.output_attentions
     output_router_logits = (
