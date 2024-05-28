@@ -1825,7 +1825,7 @@ if __name__ == '__main__':
         for batch_size in conf["batch_size"]: # mwj might need to change
             global csv_name
             batch = str(batch_size)
-            csv_name = f'{current_dir}/{api}-results-{today}-batch-{batch}.csv'
+            csv_name = f'{current_dir}/test_batch{batch}/{api}-results-{today}-batch-{batch}.csv'
             for model in conf.repo_id:
                 in_out_pairs = conf['in_out_pairs'].copy()
                 if excludes:
