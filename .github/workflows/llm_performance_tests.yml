@@ -144,7 +144,7 @@ jobs:
       
   llm-performance-test-on-arc-batch2:
     # if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
-    needs: llm-cpp-build # please uncomment it for PR tests
+    # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
       matrix:
