@@ -190,6 +190,8 @@ class _BaseAutoModelClass:
         optimize_model = kwargs.pop("optimize_model", True)
         user_quantization_config = kwargs.pop("quantization_config", None)
         speculative = kwargs.pop("speculative", False)
+        pipeline_parallel = kwargs.pop("pipeline_parallel", False)
+        parallel_gpu_num = kwargs.pop("parallel_gpu_num", None)
         torch_dtype = kwargs.pop("torch_dtype", None)
         embedding_qtype = kwargs.pop("embedding_qtype", None)
 
@@ -345,6 +347,26 @@ class _BaseAutoModelClass:
                 kwargs["imatrix_data"] = imatrix_data
             kwargs["embedding_qtype"] = embedding_qtype
             model = cls.load_convert(q_k, optimize_model, *args, **kwargs)
+
+            if pipeline_parallel:
+                model_layers = ['model.embed_tokens']
+                for i in range(model.config.num_hidden_layers):
+                    model_layers.append(f'model.layers.{i}')
+                model_layers = model_layers + ['model.norm', 'lm_head']
+
+                device_map = {}
+                split_len = len(model_layers) // parallel_gpu_num
+                for i in range(parallel_gpu_num):
+                    device_map.update({key: f'xpu:{i}' for key in
+                                       model_layers[split_len * i: split_len * (i + 1)]})
+                    if i == parallel_gpu_num - 1:
+                        device_map.update({key: f'xpu:{i}' for key in
+                                           model_layers[split_len * (i + 1): ]})
+
+                from accelerate import dispatch_model
+                model = dispatch_model(
+                    model, device_map=device_map, skip_keys=["past_key_value", "past_key_values"],
+                )
 
             if speculative:
                 from .speculative import speculative_generate, clear_benchmarks,\

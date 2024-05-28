@@ -62,27 +62,9 @@ if __name__ == '__main__':
                                                  load_in_4bit=True,
                                                  optimize_model=True,
                                                  trust_remote_code=True,
-                                                 use_cache=True)
-
-    model_layers = ['model.embed_tokens']
-    for i in range(model.config.num_hidden_layers):
-        model_layers.append(f'model.layers.{i}')
-    model_layers = model_layers + ['model.norm', 'lm_head']
-
-    device_map = {}
-    split_len = len(model_layers) // args.gpu_num
-    for i in range(args.gpu_num):
-        device_map.update({key: f'xpu:{i}' for key in model_layers[split_len * i: split_len * (i + 1)]})
-        if i == args.gpu_num - 1:
-            device_map.update({key: f'xpu:{i}' for key in model_layers[split_len * (i + 1): ]})
-
-    from accelerate import dispatch_model
-    model = dispatch_model(
-        model,
-        device_map=device_map,
-        offload_dir=None,
-        skip_keys=["past_key_value", "past_key_values"],
-    )
+                                                 use_cache=True,
+                                                 pipeline_parallel=True,
+                                                 parallel_gpu_num=args.gpu_num)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
