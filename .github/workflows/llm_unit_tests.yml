@@ -454,4 +454,3 @@ jobs:
         shell: bash
         run: |
           pip uninstall sentence-transformers -y || true
-  
