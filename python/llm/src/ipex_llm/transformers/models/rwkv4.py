@@ -56,8 +56,8 @@ def extract_key_value(self, hidden, state=None):
             self.time_mix_receptance.data,
         ]).to(dtype=hidden.dtype)
 
-    import linear_q4_0
-    mixed_result = linear_q4_0.rwkv_time_shift(hidden, shifted, self.mixed_mix)
+    import xe_linear
+    mixed_result = xe_linear.rwkv_time_shift(hidden, shifted, self.mixed_mix)
     key, value, receptance = mixed_result
 
     key = self.key(key)
@@ -92,8 +92,8 @@ def rwkv_linear_attention_xpu(
     time_decay = -torch.exp(time_decay)
 
     # `num_state`, `den_state`, `max_state` will be modified during this call
-    import linear_q4_0
-    output = linear_q4_0.rwkv_linear_attention_v4(
+    import xe_linear
+    output = xe_linear.rwkv_linear_attention_v4(
         time_decay,
         time_first,
         key,
@@ -167,8 +167,8 @@ def rwkv_ffn_forward(
         self.mixed_mix = torch.cat([self.time_mix_key.data,
                                     self.time_mix_receptance.data]).to(dtype=hidden.dtype)
 
-    import linear_q4_0
-    mixed_result = linear_q4_0.rwkv_time_shift(hidden, shifted, self.mixed_mix)
+    import xe_linear
+    mixed_result = xe_linear.rwkv_time_shift(hidden, shifted, self.mixed_mix)
     key, receptance = mixed_result
 
     key = torch.square(torch.relu(self.key(key)))

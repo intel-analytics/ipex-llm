@@ -104,11 +104,11 @@ class LowBitEmbedding(torch.nn.Embedding):
                           "`LowBitEmbedding` only supports GPU now.")
         try:
             import intel_extension_for_pytorch
-            import linear_q4_0
+            import xe_linear
         except ModuleNotFoundError:
             invalidInputError(False,
                               "Please `pip install bigdl_core_xe` first.")
 
-        result = linear_q4_0.dequantize_rows(x.contiguous(), self.weight.data,
-                                             self.weight.qtype, self.embedding_dim)
+        result = xe_linear.dequantize_rows(x.contiguous(), self.weight.data,
+                                           self.weight.qtype, self.embedding_dim)
         return result.to(self.torch_dtype)

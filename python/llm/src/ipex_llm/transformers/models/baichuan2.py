@@ -41,9 +41,9 @@ def pre_compute_inv_freq(module: torch.nn.Module):
 
 def baichuan_13b_rms_norm_forward(self, hidden_states):
     if hidden_states.device.type == "xpu" and not (self.training or hidden_states.requires_grad):
-        import linear_q4_0
+        import xe_addons
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = linear_q4_0.rms_norm(self.weight, x_2d, self.epsilon)
+        output = xe_addons.rms_norm(self.weight, x_2d, self.epsilon)
         return output.reshape(hidden_states.shape)
 
     input_dtype = hidden_states.dtype
@@ -60,10 +60,10 @@ def baichuan_mlp_forward(
     x_2d = x.view(-1, x.shape[-1])
     qtype = getattr(self.gate_proj, "qtype", None)
     if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
-        import linear_q4_0
+        import xe_linear
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
-        return self.down_proj(linear_q4_0.mlp_forward_xpu(
+        return self.down_proj(xe_linear.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
             x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
             SILU, qtype
@@ -96,9 +96,9 @@ def baichuan_attention_forward_7b(
 
     # IPEX-LLM OPT: fuse rope
     if should_use_fuse_rope(hidden_states, position_ids, self.training):
-        import linear_q4_0
-        linear_q4_0.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
-                                         query_states, key_states)
+        import xe_addons
+        xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                       query_states, key_states)
     else:
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -126,18 +126,20 @@ def baichuan_attention_forward_7b(
                                                      value_states.to(dtype=torch.float16),
                                                      is_causal=True).to(hidden_states.dtype)
     elif use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-        import linear_q4_0
+        import xe_addons
         if use_quantize_kv:
-            attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                              attention_mask)
+            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
+                                            attention_mask)
         else:
-            attn_output = linear_q4_0.sdp(query_states, key_states, value_states, attention_mask)
+            attn_output = xe_addons.sdp(query_states, key_states, value_states,
+                                        attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import linear_q4_0
+        import xe_addons
         if use_quantize_kv:
-            attn_output = linear_q4_0.sdp_fp8_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
+                                                   value_states)
         else:
-            attn_output = linear_q4_0.sdp_causal(query_states, key_states, value_states)
+            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states)
     else:
         if use_quantize_kv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -202,8 +204,8 @@ def baichuan_attention_forward_13b(
             attention_mask = attention_mask[:, None, -q_len:, :]
 
     if use_quantize_kv and q_len == 1:
-        import linear_q4_0
-        attn_weights = linear_q4_0.query_key_fp8_matmul(query_states, key_states)
+        import xe_addons
+        attn_weights = xe_addons.query_key_fp8_matmul(query_states, key_states)
     else:
         if use_quantize_kv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -216,8 +218,8 @@ def baichuan_attention_forward_13b(
     attn_weights = attn_weights.to(query_states.dtype)
     attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
     if use_quantize_kv and q_len == 1:
-        import linear_q4_0
-        attn_output = linear_q4_0.attn_value_fp8_matmul(attn_weights, value_states)
+        import xe_addons
+        attn_output = xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
     else:
         attn_output = torch.matmul(attn_weights.to(dtype=value_states.dtype), value_states)
     attn_output = attn_output.transpose(1, 2)
