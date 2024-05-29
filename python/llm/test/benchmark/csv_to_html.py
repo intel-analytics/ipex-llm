@@ -99,11 +99,14 @@ def main():
             for current_csv_ind,current_csv_row in current_csv.iterrows():
                 current_csv_model=current_csv_row['model'].strip()
                 current_csv_input_output_pairs=current_csv_row['input/output tokens'].strip()
-                current_csv_batch_size=str(current_csv_row['batch_size'])
-                current_csv_model_input_1st=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'1st'
-                current_csv_model_input_2nd=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'2nd'
-                add_to_dict(csv_dict, current_csv_model_input_1st, current_csv_row[latency_1st_token])
-                add_to_dict(csv_dict, current_csv_model_input_2nd, current_csv_row[latency_2_avg])
+                try: # mwj edit: add try
+                  current_csv_batch_size=str(current_csv_row['batch_size'])
+                  current_csv_model_input_1st=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'1st'
+                  current_csv_model_input_2nd=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'2nd'
+                  add_to_dict(csv_dict, current_csv_model_input_1st, current_csv_row[latency_1st_token])
+                  add_to_dict(csv_dict, current_csv_model_input_2nd, current_csv_row[latency_2_avg])
+                except:
+                  pass
 
         for latest_csv_ind,latest_csv_row in latest_csv.iterrows():
 
