@@ -20,6 +20,8 @@ pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.
 source /opt/intel/oneapi/setvars.sh
 pip install mpi4py fastapi uvicorn
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
+
+pip install transformers==4.31.0 # for llama2 models
 ```
 
 ### 2. Run pipeline parallel serving on multiple GPUs
