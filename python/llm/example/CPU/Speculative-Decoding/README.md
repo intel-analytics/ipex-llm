@@ -1,15 +1,6 @@
-# Self-Speculative Decoding for Large Language Model BF16 Inference using IPEX-LLM on Intel CPUs
-You can use IPEX-LLM to run BF16 inference for any Huggingface Transformer model with ***self-speculative decoding*** on Intel CPUs. This directory contains example scripts to help you quickly get started to run some popular open-source models using self-speculative decoding. Each model has its own dedicated folder, where you can find detailed instructions on how to install and run it.
+# Speculative-Decoding Examples on Intel CPU
 
-## Verified Hardware Platforms
+This folder contains examples of running Speculative-Decoding Examples with IPEX-LLM on Intel CPU:
 
-- Intel Xeon SPR server
-
-## Recommended Requirements
-To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#system-support) for more information. Make sure you have installed `ipex-llm` before:
-
-```bash
-pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-```
-
-Moreover, install IPEX 2.1.0, which can be done through `pip install intel_extension_for_pytorch==2.1.0`.
+- [Self-Speculation](Self-Speculation): running BF16 inference for Huggingface Transformer model with ***self-speculative decoding*** with IPEX-LLM on Intel CPUs
+- [EAGLE](EAGLE): running speculative sampling using ***EAGLE*** (Extrapolation Algorithm for Greater Language-model Efficiency) with IPEX-LLM on Intel CPUs
