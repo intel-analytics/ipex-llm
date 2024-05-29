@@ -106,6 +106,7 @@ jobs:
           sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
           # batch_size 2
+          cd ../../../../../ # go back to ipex-llm
           cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # hide time info
@@ -129,6 +130,7 @@ jobs:
           sed -i 's/test1/test2/g' run.py
           python run.py
           # batch_size 2
+          cd ../../../../../ # go back to ipex-llm
           cp python/llm/test/benchmark/arc-perf-transformers-437-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # change csv name
@@ -150,6 +152,7 @@ jobs:
           cd ../../../../test/benchmark # mwj
           python csv_to_html.py -f $CSV_SAVE_PATH
           # batch 2
+          cd ../../../../# go back to ipex-llm 
           cd python/llm/dev/benchmark/all-in-one/test_batch2 #mwj
           python ../../../../test/benchmark/concat_csv.py #mwj
           for file in *.csv; do
@@ -168,18 +171,18 @@ jobs:
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437.yaml
           find . -name "*test*.csv" -delete
-          cd python/llm/dev/benchmark/all-in-one
-          rm test_batch1
+          cd ../ # go back to all-in-one dir
+          rm -r test_batch1
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
           # batch 2
-          cd python/llm/dev/benchmark/all-in-one/test_batch2
+          cd test_batch2
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test-batch2.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437-batch2.yaml
           find . -name "*test*.csv" -delete
-          cd python/llm/dev/benchmark/all-in-one
-          rm test_batch2
+          cd ../
+          rm -r test_batch2
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
