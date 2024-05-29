@@ -8,7 +8,7 @@ def main(args):
     pipe = DiffusionPipeline.from_pretrained(
         args.repo_id_or_model_path,
         torch_dtype=torch.bfloat16,
-    ).to("xpu")
+    ).to("cpu")
 
     # set scheduler
     pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
@@ -30,7 +30,7 @@ if __name__=="__main__":
                         help='The huggingface repo id for the lcm lora sdxl checkpoint')
     parser.add_argument('--prompt', type=str, default="A lovely dog on the table, detailed, 8k",
                         help='Prompt to infer')
-    parser.add_argument('--save-path',type=str,default="lcm-lora-sdxl-gpu.png",
+    parser.add_argument('--save-path',type=str,default="lcm-lora-sdxl-cpu.png",
                         help="Path to save the generated figure")
     parser.add_argument('--num-steps',type=int,default=4,
                         help="Number of inference steps")
