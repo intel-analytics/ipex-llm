@@ -160,6 +160,7 @@ jobs:
                   cp "$file" $CSV_SAVE_PATH
               fi
           done
+          python -m pip install pandas==1.5.3
           cd ../../../../test/benchmark # mwj
           python csv_to_html.py -f $CSV_SAVE_PATH
 
