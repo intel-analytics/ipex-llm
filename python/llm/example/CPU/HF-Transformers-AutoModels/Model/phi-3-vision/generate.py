@@ -55,6 +55,7 @@ if __name__ == '__main__':
     # Load processor
     processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
     
+    # here the message formatting refers to https://huggingface.co/microsoft/Phi-3-vision-128k-instruct#sample-inference-code
     messages = [
         {"role": "user", "content": "<|image_1|>\n{prompt}".format(prompt=args.prompt)},
     ]
