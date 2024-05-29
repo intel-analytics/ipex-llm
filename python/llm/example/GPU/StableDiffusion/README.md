@@ -1,5 +1,5 @@
 # Stable Diffusion
-In this directory, you will find examples on how you could use run StableDiffusion models on [Intel GPUs](../README.md).
+In this directory, you will find examples on how to run StableDiffusion models on [Intel GPUs](../README.md).
 
 ### 1. Installation
 #### 1.1 Installation on Linux
@@ -106,7 +106,7 @@ python ./sdxl.py
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the stable diffusion xl model (e.g. `stabilityai/stable-diffusion-xl-base-1.0`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'stabilityai/stable-diffusion-xl-base-1.0'`.
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'A lovely dog on the table, detailed, 8k'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered. It is default to be `'A lovely dog on the table, detailed, 8k'`.
 - `--save-path`: argument defining the path to save the generated figure. It is default to be `sdxl-gpu.png`.
 - `--num-steps`: argument defining the number of inference steps. It is default to be `20`. 
 
@@ -119,6 +119,6 @@ python ./lora-lcm.py
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the stable diffusion xl model (e.g. `stabilityai/stable-diffusion-xl-base-1.0`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'stabilityai/stable-diffusion-xl-base-1.0'`.
 - `--lora-weights-path`: argument defining the huggingface repo id for the LCM-LoRA model (e.g. `latent-consistency/lcm-lora-sdxl`) to be downloaded, or the path to huggingface checkpoint folder. It is default to be `'latent-consistency/lcm-lora-sdxl'`. 
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'A lovely dog on the table, detailed, 8k'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered. It is default to be `'A lovely dog on the table, detailed, 8k'`.
 - `--save-path`: argument defining the path to save the generated figure. It is default to be `lcm-lora-sdxl-gpu.png`.
 - `--num-steps`: argument defining the number of inference steps. It is default to be `4`.
