@@ -55,6 +55,7 @@ import sys
 _IS_VLLM_AVAILABLE = None
 _USE_VLLM = False
 
+
 def is_auto_gptq_available():
     return importlib.util.find_spec("auto_gptq") is not None
 
