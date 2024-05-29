@@ -152,7 +152,7 @@ jobs:
           cd ../../../../test/benchmark # mwj
           python csv_to_html.py -f $CSV_SAVE_PATH
           # batch 2
-          cd ../../../../# go back to ipex-llm 
+          cd ../../../../  # go back to ipex-llm 
           cd python/llm/dev/benchmark/all-in-one/test_batch2 #mwj
           python ../../../../test/benchmark/concat_csv.py #mwj
           for file in *.csv; do
@@ -160,7 +160,6 @@ jobs:
                   cp "$file" $CSV_SAVE_PATH
               fi
           done
-          python -m pip install pandas==1.5.3
           cd ../../../../test/benchmark # mwj
           python csv_to_html.py -f $CSV_SAVE_PATH
 
