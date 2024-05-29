@@ -53,7 +53,7 @@ from functools import reduce
 from ipex_llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_type, \
     get_ipex_version
-from ipex_llm.transformers.convert import is_deepspeed_available, is_vllm_available
+from ipex_llm.transformers.convert import is_deepspeed_available, is_vllm_available, use_vllm
 
 T = TypeVar("T", bound="torch.nn.Module")
 
