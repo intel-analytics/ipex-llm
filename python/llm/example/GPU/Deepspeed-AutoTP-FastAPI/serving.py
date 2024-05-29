@@ -284,6 +284,8 @@ async def generate_stream(prompt_request: PromptRequest):
 
 async def process_requests():
     while True:
+        # Pause briefly to ensure stability in concurrency
+        await asyncio.sleep(0.1)
         request_ids, prompt_requests = [], []
         cur_batched_tokens = 0
 
@@ -342,8 +344,6 @@ async def process_requests():
             logger.info(
                 f"First token latency: {model.first_cost}, next token latency: {model.rest_cost_mean}, generate time: {generate_time}"
             )
-
-        await asyncio.sleep(0)
 
 
 @app.on_event("startup")
