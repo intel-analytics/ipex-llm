@@ -30,7 +30,7 @@ if __name__ == '__main__':
                         help='The huggingface repo id for the phi-3-vision model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--image-url-or-path', type=str,
-                        default="https://assets-c4akfrf5b4d3f4b7.z01.azurefd.net/assets/2024/04/BMDataViz_661fb89f3845e.png",
+                        default="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg",
                         help='The URL or path to the image to infer')
     parser.add_argument('--prompt', type=str, default="What is in the image?",
                         help='Prompt to infer')
@@ -44,10 +44,11 @@ if __name__ == '__main__':
     # Load model in INT8,
     # which convert the relevant layers in the model into INT8 format
     # We here use INT8 instead of INT4 for better output
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     # `_attn_implementation="eager"` is required for phi-3-vision
     # `modules_to_not_convert=["vision_embed_tokens"]` and `model = model.half()` are for acceleration and are optional
+
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True,
                                                  load_in_low_bit="sym_int8",
@@ -98,4 +99,5 @@ if __name__ == '__main__':
         print('-'*20, 'Prompt', '-'*20)
         print(messages)
         print('-'*20, 'Output', '-'*20)
+        print(f'Image link/path: {image_path}')
         print(output_str)

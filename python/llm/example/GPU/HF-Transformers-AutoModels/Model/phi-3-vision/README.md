@@ -112,7 +112,7 @@ python ./generate.py --prompt 'What is in the image?'
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the phi-3-vision model (e.g. `microsoft/Phi-3-vision-128k-instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'microsoft/Phi-3-vision-128k-instruct'`.
-- `--image-url-or-path PROMPT`: argument defining the image to be infered. It is default to be `'https://assets-c4akfrf5b4d3f4b7.z01.azurefd.net/assets/2024/04/BMDataViz_661fb89f3845e.png'`.
+- `--image-url-or-path PROMPT`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -124,12 +124,13 @@ Inference time: xxxx s
 -------------------- Prompt --------------------
 [{'role': 'user', 'content': '<|image_1|>\nWhat is in the image?'}]
 -------------------- Output --------------------
+Image link/path: http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 
 
 What is in the image?
- The image contains a bar chart showing the percentage of respondents who agree with various statements about their preparation and participation in meetings.
+ The image shows a child holding a white teddy bear dressed in a pink dress.
 ```
 
-The sample input image is (which is fetched from [phi-3-vision model card](https://huggingface.co/microsoft/Phi-3-vision-128k-instruct)):
+The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
 
-<a href="https://assets-c4akfrf5b4d3f4b7.z01.azurefd.net/assets/2024/04/BMDataViz_661fb89f3845e.png"><img width=400px src="https://assets-c4akfrf5b4d3f4b7.z01.azurefd.net/assets/2024/04/BMDataViz_661fb89f3845e.png" ></a>
+<a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=400px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>
