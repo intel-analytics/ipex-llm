@@ -1,0 +1,19 @@
+The Go source code and supporting files in this directory
+are covered by the usual Go license (see ../../../../LICENSE).
+
+When building with GOEXPERIMENT=boringcrypto, the following applies.
+
+The goboringcrypto_linux_amd64.syso object file is built
+from BoringSSL source code by build/build.sh and is covered
+by the BoringSSL license reproduced below and also at
+https://boringssl.googlesource.com/boringssl/+/fips-20190808/LICENSE.
+
+BoringSSL is a fork of OpenSSL. As such, large parts of it fall under OpenSSL
+licensing. Files that are completely new have a Google copyright and an ISC
+license. This license is reproduced at the bottom of this file.
+
+Contributors to BoringSSL are required to follow the CLA rules for Chromium:
+https://cla.developers.google.com/clas
+
+Some files from Intel are under yet another license, which is also included
+underneath.
