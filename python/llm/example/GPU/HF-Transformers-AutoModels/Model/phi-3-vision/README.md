@@ -15,8 +15,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install transformers==4.40.2
-pip install trl
+pip install transformers==4.37.0
 ```
 
 #### 1.2 Installation on Windows
@@ -28,8 +27,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install transformers==4.40.2
-pip install trl
+pip install transformers==4.37.0
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -131,3 +129,7 @@ Inference time: xxxx s
 What is in the image?
  The image contains a bar chart showing the percentage of respondents who agree with various statements about their preparation and participation in meetings.
 ```
+
+The sample input image is (which is fetched from [phi-3-vision model card](https://huggingface.co/microsoft/Phi-3-vision-128k-instruct)):
+
+<a href="https://assets-c4akfrf5b4d3f4b7.z01.azurefd.net/assets/2024/04/BMDataViz_661fb89f3845e.png"><img width=400px src="https://assets-c4akfrf5b4d3f4b7.z01.azurefd.net/assets/2024/04/BMDataViz_661fb89f3845e.png" ></a>

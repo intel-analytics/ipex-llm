@@ -41,8 +41,9 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
 
-    # Load model in INT8 for better output,
+    # Load model in INT8,
     # which convert the relevant layers in the model into INT8 format
+    # We here use INT8 instead of INT4 for better output
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     # `_attn_implementation="eager"` is required for phi-3-vision
