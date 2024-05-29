@@ -299,8 +299,7 @@ def setup_package():
                         "intel_extension_for_pytorch==2.1.10+xpu",
                         "bigdl-core-xe-21==" + CORE_XE_VERSION,
                         "bigdl-core-xe-batch-21==" + CORE_XE_VERSION,
-                        "bigdl-core-xe-addons-21==" + CORE_XE_VERSION,
-                        "bigdl-core-xe-esimd-21==" + CORE_XE_VERSION]
+                        "bigdl-core-xe-addons-21==" + CORE_XE_VERSION]
     xpu_21_requires += oneapi_2024_0_requires
     # default to ipex 2.1 for linux and windows
     xpu_requires = copy.deepcopy(xpu_21_requires)
