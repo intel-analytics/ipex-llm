@@ -82,9 +82,9 @@ In the example, several arguments can be passed to satisfy your requirements:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-[{'role': 'user', 'content': '<|image_1|>\nWhat is in the image?'}]
--------------------- Output --------------------
+Message: [{'role': 'user', 'content': '<|image_1|>\nWhat is in the image?'}]
 Image link/path: http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+-------------------- Output --------------------
 
 
 What is in the image?

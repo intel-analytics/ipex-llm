@@ -97,7 +97,7 @@ if __name__ == '__main__':
                                       skip_special_tokens=True,
                                       clean_up_tokenization_spaces=False)
         print('-'*20, 'Prompt', '-'*20)
-        print(messages)
-        print('-'*20, 'Output', '-'*20)
+        print(f'Message: {messages}')
         print(f'Image link/path: {image_path}')
+        print('-'*20, 'Output', '-'*20)
         print(output_str)
