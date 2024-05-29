@@ -6,7 +6,7 @@ You can use IPEX-LLM to run FP16 inference for any Huggingface Transformer model
 - Intel Data Center GPU Max Series
 
 ## Recommended Requirements
-To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for mode details.
+To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the [GPU installation guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) for more details.
 
 Step 1, only Linux system is supported now, Ubuntu 22.04 is prefered.
 
