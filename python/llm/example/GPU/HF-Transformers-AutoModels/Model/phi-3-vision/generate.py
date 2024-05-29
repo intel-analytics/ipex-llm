@@ -56,7 +56,7 @@ if __name__ == '__main__':
                                                  modules_to_not_convert=["vision_embed_tokens"]).eval()
     model = model.half().to('xpu')
     
-    # Load tokenizer
+    # Load processor
     processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
     
     messages = [
