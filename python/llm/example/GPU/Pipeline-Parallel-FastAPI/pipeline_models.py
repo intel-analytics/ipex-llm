@@ -413,6 +413,10 @@ class ModelRunner:
         cur_batch = None
 
         if self.rank == 0:
+            if self.send_buff is not None:
+                # logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
+                dist.send(self.send_buff, dst=self.next_rank)
+
             if self.on_going_batches[0] is not None:
                 cur_batch = self.on_going_batches[0]
                 cur_input = None
@@ -464,21 +468,19 @@ class ModelRunner:
                 if (cur_batch is not None) and cur_batch.stopped:
                     cur_batch = None
 
+            if cur_batch is not None:
+                dist.broadcast_object_list([cur_batch], src=0)
+                
+        else:
             if self.send_buff is not None:
                 # logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
                 dist.send(self.send_buff, dst=self.next_rank)
-            dist.broadcast_object_list([cur_batch], src=0)
-                
-        else:
+
             batch_list = [None]
             dist.broadcast_object_list(batch_list, src=0)
 
             cur_batch = batch_list[0]
             cur_input = None
-
-            if self.send_buff is not None:
-                # logger.info(f"rank: {self.rank}, send: {self.send_buff.shape}")
-                dist.send(self.send_buff, dst=self.next_rank)
 
             if cur_batch is not None:
                 if cur_batch.stopped:
