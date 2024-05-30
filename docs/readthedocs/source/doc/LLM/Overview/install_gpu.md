@@ -45,7 +45,7 @@ If you have driver version lower than `31.0.101.5122`, it is recommended to [**u
 ### Install IPEX-LLM
 #### Install IPEX-LLM From PyPI
 
-We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.11 enviroment.
+We recommend using [Miniforge](https://conda-forge.org/download/) to create a python 3.11 enviroment.
 
 ```eval_rst
 .. important::
@@ -108,7 +108,7 @@ pip install --pre --upgrade ipex-llm[xpu]
 
 To use GPU acceleration on Windows, several environment variables are required before running a GPU example:
 
-<!-- Make sure you are using CMD (Anaconda Prompt if using conda) as PowerShell is not supported, and configure oneAPI environment variables with: 
+<!-- Make sure you are using CMD (Miniforge Prompt if using conda) as PowerShell is not supported, and configure oneAPI environment variables with: 
 
 ```cmd
 call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
@@ -157,11 +157,11 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   conda install libuv
   ```
 
-<!-- * For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Anaconda Prompt through
+<!-- * For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Miniforge Prompt through
   ```cmd
   call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
   ```
-  Please note that you need to set these environment variables again once you have a new Anaconda Prompt window. -->
+  Please note that you need to set these environment variables again once you have a new Miniforge Prompt window. -->
 
 ## Linux
 
@@ -434,7 +434,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 ### Install IPEX-LLM
 #### Install IPEX-LLM From PyPI
 
-We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.11 enviroment:
+We recommend using [Miniforge](https://conda-forge.org/download/ to create a python 3.11 enviroment:
 
 ```eval_rst
 .. important::

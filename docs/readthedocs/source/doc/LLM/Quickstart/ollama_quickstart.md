@@ -39,7 +39,7 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
    .. tab:: Windows
 
-      Please run the following command with **administrator privilege in Anaconda Prompt**.
+      Please run the following command with **administrator privilege in Miniforge Prompt**.
 
       .. code-block:: bash
       
@@ -76,7 +76,7 @@ You may launch the Ollama service as below:
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -149,7 +149,7 @@ model**, e.g. `dolphin-phi`.
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -187,7 +187,7 @@ Then you can create the model in Ollama by `ollama create example -f Modelfile` 
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 

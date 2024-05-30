@@ -30,7 +30,7 @@ Download the `text-generation-webui` with IPEX-LLM integrations from [this link]
   
 #### Install Dependencies
 
-Open **Anaconda Prompt** and activate the conda environment you have created in [section 1](#1-install-ipex-llm), e.g., `llm`. 
+Open **Miniforge Prompt** and activate the conda environment you have created in [section 1](#1-install-ipex-llm), e.g., `llm`. 
 ```
 conda activate llm
 ```
@@ -50,7 +50,7 @@ pip install -r extensions/openai/requirements.txt
 ### 3 Start the WebUI Server
 
 #### Set Environment Variables
-Configure oneAPI variables by running the following command in **Anaconda Prompt**:
+Configure oneAPI variables by running the following command in **Miniforge Prompt**:
 
 ```eval_rst
 .. note::
@@ -67,7 +67,7 @@ set BIGDL_LLM_XMX_DISABLED=1
 ```
 
 #### Launch the Server
-In **Anaconda Prompt** with the conda environment `llm` activated, navigate to the `text-generation-webui` folder and execute the following commands (You can optionally lanch the server with or without the API service): 
+In **Miniforge Prompt** with the conda environment `llm` activated, navigate to the `text-generation-webui` folder and execute the following commands (You can optionally lanch the server with or without the API service): 
 
 ##### without API service
    ```cmd
@@ -154,7 +154,7 @@ Enter prompts into the textbox at the bottom and press the **Generate** button t
 
 #### Exit the WebUI
 
-To shut down the WebUI server, use **Ctrl+C** in the **Anaconda Prompt** terminal where the WebUI Server is runing, then close your browser tab.
+To shut down the WebUI server, use **Ctrl+C** in the **Miniforge Prompt** terminal where the WebUI Server is runing, then close your browser tab.
 
 
 ### 5. Advanced Usage
@@ -203,7 +203,7 @@ The first response to user prompt might be slower than expected, with delays of 
 
 During model loading, you may encounter an **ImportError** like `ImportError: This modeling file requires the following packages that were not found in your environment`. This indicates certain packages required by the model are absent from your environment. Detailed instructions for installing these necessary packages can be found at the bottom of the error messages. Take the following steps to fix these errors:
 
-- Exit the WebUI Server by pressing **Ctrl+C** in the **Anaconda Prompt** terminal.
+- Exit the WebUI Server by pressing **Ctrl+C** in the **Miniforge Prompt** terminal.
 - Install the missing pip packages as specified in the error message
 - Restart the WebUI Server.
 
