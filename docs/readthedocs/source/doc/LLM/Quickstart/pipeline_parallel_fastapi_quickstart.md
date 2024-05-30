@@ -42,7 +42,7 @@ We can use `curl` to test serving api
 # Set http_proxy and https_proxy to null to ensure that requests are not forwarded by a proxy.
 export http_proxy=
 export https_proxy=
-export no_proxy=
+export no_proxy=localhost,127.0.0.1
 
 curl -X 'POST' \
   'http://127.0.0.1:8000/generate/' \
