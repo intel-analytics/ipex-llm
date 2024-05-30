@@ -1,11 +1,11 @@
 # phi-3-vision
-In this directory, you will find examples on how you could apply IPEX-LLM INT8 optimizations on phi-3-vision models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [microsoft/Phi-3-vision-128k-instruct](https://huggingface.co/microsoft/Phi-3-vision-128k-instruct) as a reference phi-3-vision model.
+In this directory, you will find examples on how you could apply IPEX-LLM FP8 optimizations on phi-3-vision models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [microsoft/Phi-3-vision-128k-instruct](https://huggingface.co/microsoft/Phi-3-vision-128k-instruct) as a reference phi-3-vision model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a phi-3-vision model to predict the next N tokens using `generate()` API, with IPEX-LLM INT8 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a phi-3-vision model to predict the next N tokens using `generate()` API, with IPEX-LLM FP8 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -128,7 +128,7 @@ Image link/path: http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 
 
 What is in the image?
- The image shows a child holding a white teddy bear dressed in a pink dress.
+ The image shows a young girl holding a white teddy bear. She is wearing a pink dress with a heart on it. The background includes a stone
 ```
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):

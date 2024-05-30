@@ -41,9 +41,10 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
 
-    # Load model in INT8,
-    # which convert the relevant layers in the model into INT8 format
-    # We here use INT8 instead of INT4 for better output
+    # Load model in FP8,
+    # which convert the relevant layers in the model into FP8 format
+    # We here use FP8 instead of INT4 for better output
+    # You could also use `'sym_int4'` for INT4, `'sym_int8'` for INT8 and `'fp6'` for FP6
     # `_attn_implementation="eager"` is required for phi-3-vision
     # `modules_to_not_convert=["vision_embed_tokens"]` and `model = model.half()` are for acceleration and are optional
 
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True,
-                                                 load_in_low_bit="sym_int8",
+                                                 load_in_low_bit="fp8",
                                                  _attn_implementation="eager",
                                                  modules_to_not_convert=["vision_embed_tokens"]).eval()
     model = model.half().to('xpu')
