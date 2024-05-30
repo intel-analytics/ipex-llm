@@ -124,6 +124,8 @@ def is_gptq_linear(module):
 
 def is_linear_module(module):
 
+    global _USE_VLLM
+
     in_features = None
     out_features = None
     mp_group = None
