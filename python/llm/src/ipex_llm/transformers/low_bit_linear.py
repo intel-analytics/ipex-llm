@@ -53,7 +53,7 @@ from functools import reduce
 from ipex_llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_type, \
     get_ipex_version
-from ipex_llm.transformers.convert import is_deepspeed_available, is_vllm_available
+from ipex_llm.transformers.convert import is_deepspeed_available, get_use_vllm
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -737,12 +737,11 @@ class LowBitLinear(nn.Linear):
                     torch.xpu.empty_cache()
             result = result.view(new_shape)
             if self.mp_group is not None:
-                # FIXME: the user may install both vllm and deepspeed
-                if is_deepspeed_available():
+                if get_use_vllm():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
-                elif is_vllm_available():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
                 else:
                     invalidInputError(False, "mp_group is not None, but no supported backend found")
             if self.bias is not None:
@@ -822,11 +821,11 @@ class FP16Linear(nn.Linear):
                     self.weight_type = 2
                 result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
             if self.mp_group is not None:
-                if is_deepspeed_available():
+                if get_use_vllm():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
-                elif is_vllm_available():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
                 else:
                     invalidInputError(False, "mp_group is not None, but no supported backend found")
             return result
@@ -859,11 +858,11 @@ class FP16Linear(nn.Linear):
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.mp_group is not None:
-                if is_deepspeed_available():
+                if get_use_vllm():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
-                elif is_vllm_available():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
                 else:
                     invalidInputError(False, "mp_group is not None, but no supported backend found")
             if self.bias is not None:
