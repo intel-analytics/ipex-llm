@@ -487,13 +487,13 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
     has_been_replaced = False
-    
+
     splits = []
     if "." in module_name:
         splits = module_name.split(".")
     if not splits:
         invalidInputError(False,
-                          "Please provide a valid module_name with hierarchical structure indicated by '.'")
+                          "Please provide a valid module_name with hierarchical structure")
     else:
         parent_module = getattr(model, splits[0])
 
