@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # Load model in FP8,
     # which convert the relevant layers in the model into FP8 format
     # We here use FP8 instead of INT4 for better output
-    # You could also use `'sym_int4'` for INT4, `'sym_int8'` for INT8 and `'fp6'` for FP6
+    # You could also try `'sym_int4'` for INT4, `'sym_int8'` for INT8 and `'fp6'` for FP6
     # `_attn_implementation="eager"` is required for phi-3-vision
     # `modules_to_not_convert=["vision_embed_tokens"]` and `model = model.half()` are for acceleration and are optional
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,
                                                  load_in_low_bit="fp8",
                                                  _attn_implementation="eager",
-                                                 modules_to_not_convert=["vision_embed_tokens"]).eval()
+                                                 modules_to_not_convert=["vision_embed_tokens"])
     model = model.half().to('xpu')
     
     # Load processor

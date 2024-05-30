@@ -50,7 +50,7 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,
                                                  load_in_low_bit="sym_int8",
                                                  _attn_implementation="eager",
-                                                 modules_to_not_convert=["vision_embed_tokens"]).eval()
+                                                 modules_to_not_convert=["vision_embed_tokens"])
     
     # Load processor
     processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
