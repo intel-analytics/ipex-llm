@@ -434,7 +434,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 ### Install IPEX-LLM
 #### Install IPEX-LLM From PyPI
 
-We recommend using [miniconda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.11 enviroment:
+We recommend using [Miniforge](https://conda-forge.org/download/ to create a python 3.11 enviroment:
 
 ```eval_rst
 .. important::
