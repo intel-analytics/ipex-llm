@@ -113,7 +113,8 @@ def greedy_generate(model, tokenizer, input_ids, past_key_values, max_gen_len, s
 
         if pred_token_idx == tokenizer.eos_token_id:
             break
-    print(" ".join(generated_text[pos:]).strip('\n<'), flush=True)
+    if generated_text:
+        print(" ".join(generated_text[pos:]).strip('\n<'), flush=True)
     return past_key_values
 
 @torch.no_grad()

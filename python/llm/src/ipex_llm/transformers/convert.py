@@ -487,20 +487,25 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
         FP16Linear, BF16Linear
     has_been_replaced = False
 
+    splits = []
     if "." in module_name:
         splits = module_name.split(".")
-    parent_module = getattr(model, splits[0])
-
-    if "lm_head" not in module_name:
-        for split in splits[1:-2]:
-            new_module = getattr(parent_module, split)
-            parent_module = new_module
-        module = getattr(parent_module, splits[-2])
-        module_name = splits[-2]
+    if not splits:
+        invalidInputError(False,
+                          "Please provide a valid module_name with hierarchical structure")
     else:
-        module = parent_module
-        parent_module = model
-        module_name = splits[0]
+        parent_module = getattr(model, splits[0])
+
+        if "lm_head" not in module_name:
+            for split in splits[1:-2]:
+                new_module = getattr(parent_module, split)
+                parent_module = new_module
+            module = getattr(parent_module, splits[-2])
+            module_name = splits[-2]
+        else:
+            module = parent_module
+            parent_module = model
+            module_name = splits[0]
 
     if current_key_name is None:
         current_key_name = []
