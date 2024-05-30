@@ -9,7 +9,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 ```eval_rst
 .. note::
 
-  Our current version is consistent with `v0.1.34 <https://github.com/ollama/ollama/releases/tag/v0.1.34>`_ of ollama.
+  `ipex-llm[cpp]==2.5.0b20240527` is consistent with `v0.1.34 <https://github.com/ollama/ollama/releases/tag/v0.1.34>`_ of ollama.
+
+  Our current version is consistent with `v0.1.39 <https://github.com/ollama/ollama/releases/tag/v0.1.39>`_ of ollama.
 ```
 
 ## Quickstart
@@ -37,7 +39,7 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
    .. tab:: Windows
 
-      Please run the following command with **administrator privilege in Anaconda Prompt**.
+      Please run the following command with **administrator privilege in Miniforge Prompt**.
 
       .. code-block:: bash
       
@@ -74,7 +76,7 @@ You may launch the Ollama service as below:
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -147,7 +149,7 @@ model**, e.g. `dolphin-phi`.
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -185,7 +187,7 @@ Then you can create the model in Ollama by `ollama create example -f Modelfile` 
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 

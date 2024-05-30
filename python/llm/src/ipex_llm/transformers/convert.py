@@ -53,6 +53,7 @@ import subprocess
 import sys
 
 _IS_VLLM_AVAILABLE = None
+_USE_VLLM = False
 
 
 def is_auto_gptq_available():
@@ -74,6 +75,10 @@ def is_vllm_available():
     else:
         _IS_VLLM_AVAILABLE = False
     return _IS_VLLM_AVAILABLE
+
+
+def get_use_vllm():
+    return _USE_VLLM
 
 
 def is_torch_distributed_initialized():
@@ -119,14 +124,15 @@ def is_gptq_linear(module):
 
 def is_linear_module(module):
 
+    global _USE_VLLM
+
     in_features = None
     out_features = None
     mp_group = None
 
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
-
     if is_vllm_available():
-        # TODO: add tensor parallel feature later
+        # Only convert vllm modules
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
@@ -148,16 +154,9 @@ def is_linear_module(module):
                 in_features = module.input_size_per_partition
             elif isinstance(module, ColumnParallelLinear) and tp_size >= 2:
                 out_features = module.output_size_per_partition
-        else:
-            # Also check for Linear module
-            if isinstance(module, nn.Linear) or is_awq:
-                in_features = module.in_features
-                out_features = module.out_features
-                mp_group = None
-                result = True
-            else:
-                result = False
-    elif is_gptq_linear(module):
+            _USE_VLLM = True
+            return result, (in_features, out_features, mp_group)
+    if is_gptq_linear(module):
         in_features = module.infeatures
         out_features = module.outfeatures
         mp_group = None
@@ -488,20 +487,25 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
         FP16Linear, BF16Linear
     has_been_replaced = False
 
+    splits = []
     if "." in module_name:
         splits = module_name.split(".")
-    parent_module = getattr(model, splits[0])
-
-    if "lm_head" not in module_name:
-        for split in splits[1:-2]:
-            new_module = getattr(parent_module, split)
-            parent_module = new_module
-        module = getattr(parent_module, splits[-2])
-        module_name = splits[-2]
+    if not splits:
+        invalidInputError(False,
+                          "Please provide a valid module_name with hierarchical structure")
     else:
-        module = parent_module
-        parent_module = model
-        module_name = splits[0]
+        parent_module = getattr(model, splits[0])
+
+        if "lm_head" not in module_name:
+            for split in splits[1:-2]:
+                new_module = getattr(parent_module, split)
+                parent_module = new_module
+            module = getattr(parent_module, splits[-2])
+            module_name = splits[-2]
+        else:
+            module = parent_module
+            parent_module = model
+            module_name = splits[0]
 
     if current_key_name is None:
         current_key_name = []

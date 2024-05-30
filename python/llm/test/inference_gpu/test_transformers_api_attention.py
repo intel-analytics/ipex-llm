@@ -178,7 +178,10 @@ class Test_Optimize_Gpu_Model:
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "model.layers.31.input_layernorm"
         self_attn = "model.layers.31.self_attn"
-        lower_bound = 9e-3
+        if os.environ['RUNNER_OS'] == "Windows":
+            lower_bound = 2e-2
+        else:
+            lower_bound = 9e-3
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
     def Baichuan_gpu_model(self, Name, Model, Tokenizer, model_path):

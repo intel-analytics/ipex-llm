@@ -53,7 +53,7 @@ from functools import reduce
 from ipex_llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
 from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_type, \
     get_ipex_version
-from ipex_llm.transformers.convert import is_deepspeed_available, is_vllm_available
+from ipex_llm.transformers.convert import is_deepspeed_available, get_use_vllm
 
 T = TypeVar("T", bound="torch.nn.Module")
 
@@ -320,6 +320,27 @@ def reshape_lm_head_input(x):
     return x
 
 
+def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
+    device = get_xpu_device_type(x)
+    batch_size = x.shape[0]
+    hard_condition = (
+        x.dtype in [torch.float, torch.half]
+        and x.shape[1] % 256 == 0
+        and output_len % 32 == 0
+        and device in ["arc", "flex", "pvc", "mtl"]
+        and qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, FP4,
+                      FP8E5, FP6, FP8E4]
+        and batch_size <= 64
+    )
+    if hard_condition:
+        return (
+            batch_size > 1
+            or (device in ["arc", "flex"] and qtype in [SYM_INT8, FP4])
+            or (device in ["arc", "flex", "mtl"] and qtype in [FP8E4])
+        )
+    return False
+
+
 # Rename to FP4Params to trigger initializing
 # the params layer with all parameters on the CPU
 # https://github.com/huggingface/accelerate/blob/main/src/accelerate/utils/modeling.py#L333
@@ -524,8 +545,8 @@ class MatMulLowBit(torch.autograd.Function):
     @custom_fwd
     def forward(ctx, A, weight, input_seq_size):
         ctx.is_empty = False
-        import linear_q4_0
-        result = linear_q4_0.forward_new(A, weight.data, weight.qtype, input_seq_size)
+        import xe_linear
+        result = xe_linear.forward_new(A, weight.data, weight.qtype, input_seq_size)
         if any(ctx.needs_input_grad[:2]):
             ctx.tensors = (A, weight)
         else:
@@ -535,7 +556,7 @@ class MatMulLowBit(torch.autograd.Function):
     @staticmethod
     @custom_bwd
     def backward(ctx, grad_output):
-        import linear_q4_0
+        import xe_linear
         if ctx.is_empty:
             bias_grad = None if ctx.bias is None else torch.zeros_like(ctx.bias)
             return torch.zeros_like(ctx.A), torch.zeros_like(ctx.B), None, bias_grad, None
@@ -545,7 +566,7 @@ class MatMulLowBit(torch.autograd.Function):
         if req_gradA:
             if torch.xpu.is_autocast_xpu_enabled():
                 grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
-            dequant_weight = linear_q4_0.dequant(A, weight.data, weight.qtype)
+            dequant_weight = xe_linear.dequant(A, weight.data, weight.qtype)
             grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None
@@ -659,7 +680,7 @@ class LowBitLinear(nn.Linear):
             # GPU logic
             try:
                 import intel_extension_for_pytorch
-                import linear_q4_0
+                import xe_linear
                 from ipex_llm.transformers.models.utils import use_xmx
             except ModuleNotFoundError:
                 invalidInputError(False,
@@ -678,12 +699,12 @@ class LowBitLinear(nn.Linear):
                 if x_2d.requires_grad:
                     result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
                 else:
-                    result = linear_q4_0.forward_new(x_2d, self.weight.data,
-                                                     self.weight.qtype,
-                                                     input_seq_size)
+                    result = xe_linear.forward_new(x_2d, self.weight.data,
+                                                   self.weight.qtype,
+                                                   input_seq_size)
             elif self.enable_xetla:
                 x_2d = x_2d.half()
-                result = linear_q4_0.mm_xetla(x_2d, self.weight.data, self.qtype)
+                result = xe_linear.mm_xetla(x_2d, self.weight.data, self.qtype)
             else:
                 # inference path
                 # current workaround to reduce first token latency of fp32 input
@@ -696,22 +717,31 @@ class LowBitLinear(nn.Linear):
                 if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32 and \
                         not use_xmx(x_2d, self.weight.qtype):
                     x_2d = x_2d.half()
-                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                     input_seq_size)
+                    if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
+                        import xe_batch
+                        result = xe_batch.batch_forward(x_2d, self.weight.data,
+                                                        self.weight.qtype)
+                    else:
+                        result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                       input_seq_size)
                     result = result.to(x.dtype)
                 else:
-                    result = linear_q4_0.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                     input_seq_size)
+                    if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
+                        import xe_batch
+                        result = xe_batch.batch_forward(x_2d, self.weight.data,
+                                                        self.weight.qtype)
+                    else:
+                        result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                       input_seq_size)
                 if do_empty_cache:
                     torch.xpu.empty_cache()
             result = result.view(new_shape)
             if self.mp_group is not None:
-                # FIXME: the user may install both vllm and deepspeed
-                if is_deepspeed_available():
+                if get_use_vllm():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
-                elif is_vllm_available():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
                 else:
                     invalidInputError(False, "mp_group is not None, but no supported backend found")
             if self.bias is not None:
@@ -791,11 +821,11 @@ class FP16Linear(nn.Linear):
                     self.weight_type = 2
                 result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
             if self.mp_group is not None:
-                if is_deepspeed_available():
+                if get_use_vllm():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
-                elif is_vllm_available():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
                 else:
                     invalidInputError(False, "mp_group is not None, but no supported backend found")
             return result
@@ -810,13 +840,6 @@ class FP16Linear(nn.Linear):
             if x_2d.is_contiguous() is False:
                 x_2d = x_2d.contiguous()
 
-            try:
-                import intel_extension_for_pytorch
-                import linear_fp16_esimd
-            except ModuleNotFoundError:
-                invalidInputError(False,
-                                  "Please `pip install bigdl_core_xe_esimd` first.")
-
             if x_2d.shape[0] > 8:
                 # first token or batch size > 8, re-convert weight
                 if self.weight_type == 3:
@@ -828,16 +851,18 @@ class FP16Linear(nn.Linear):
                     result = F.linear(x_2d, self.weight)
             else:
                 # batch size <= 8, use esimd optimization
-                result = linear_fp16_esimd.forward(x_2d, self.weight.data)
+                import xe_batch
+                result = xe_batch.batch_forward(x_2d, self.weight.data,
+                                                self.qtype)
 
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.mp_group is not None:
-                if is_deepspeed_available():
+                if get_use_vllm():
+                    torch.distributed.all_reduce(result, group=self.mp_group)
+                elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
-                elif is_vllm_available():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
                 else:
                     invalidInputError(False, "mp_group is not None, but no supported backend found")
             if self.bias is not None:

@@ -261,9 +261,8 @@ def cohere_attention_forward_quantized(
                                                          cache_kwargs, new_layout=True)
     if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
             and not hidden_states.requires_grad:
-        import linear_q4_0
-        attn_output = linear_q4_0.sdp_fp8(query_states, key_states, value_states,
-                                          attention_mask)
+        import xe_addons
+        attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, attention_mask)
         attn_weights = None
     else:
         key_states, value_states = restore_fp8_kv_cache(key_states,
@@ -325,18 +324,18 @@ def cohere_attention_forward_origin(
         cache_k = past_key_value.key_cache[self.layer_idx]
         cache_v = past_key_value.value_cache[self.layer_idx]
         kv_seq_len = cache_k.shape[-2]
-        import linear_q4_0
-        query_states, key_states, value_states = linear_q4_0.forward_qkv(hidden_states,
-                                                                         self.q_proj.weight,
-                                                                         self.k_proj.weight,
-                                                                         self.v_proj.weight,
-                                                                         position_ids,
-                                                                         cache_k, cache_v,
-                                                                         self.q_proj.weight.qtype,
-                                                                         self.v_proj.weight.qtype,
-                                                                         kv_seq_len,
-                                                                         self.head_dim,
-                                                                         self.rotary_emb.base,)
+        import xe_linear
+        query_states, key_states, value_states = xe_linear.forward_qkv(hidden_states,
+                                                                       self.q_proj.weight,
+                                                                       self.k_proj.weight,
+                                                                       self.v_proj.weight,
+                                                                       position_ids,
+                                                                       cache_k, cache_v,
+                                                                       self.q_proj.weight.qtype,
+                                                                       self.v_proj.weight.qtype,
+                                                                       kv_seq_len,
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
         if self.layer_idx == 0:
@@ -421,12 +420,12 @@ def cohere_attention_forward_origin(
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
-        import linear_q4_0
+        import xe_addons
         if attention_mask is not None:
             causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
         else:
             causal_mask = None
-        attn_output = linear_q4_0.sdp(query_states, key_states, value_states, causal_mask)
+        attn_output = xe_addons.sdp(query_states, key_states, value_states, causal_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
     else:

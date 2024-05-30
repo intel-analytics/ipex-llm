@@ -39,13 +39,13 @@ Download and install the latest GPU driver from the [official Intel download pag
 
 ### Setup Python Environment
 
-Visit [Miniconda installation page](https://docs.anaconda.com/free/miniconda/), download the **Miniconda installer for Windows**, and follow the instructions to complete the installation.
+Visit [Miniforge installation page](https://conda-forge.org/download/), download the **Miniforge installer for Windows**, and follow the instructions to complete the installation.
 
 <div align="center">
-<img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_5.png"  width=70%/>
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_miniforge_download.png"  width=80%/>
 </div>
 
-After installation, open the **Anaconda Prompt**, create a new python environment `llm`:
+After installation, open the **Miniforge Prompt**, create a new python environment `llm`:
 ```cmd
 conda create -n llm python=3.11 libuv
 ```
@@ -83,7 +83,7 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choo
 You can verify if `ipex-llm` is successfully installed following below steps.
 
 ### Step 1: Runtime Configurations
-* Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
+* Open the **Miniforge Prompt** and activate the Python environment `llm` you previously created: 
    ```cmd
    conda activate llm
    ```
@@ -117,9 +117,9 @@ You can verify if `ipex-llm` is successfully installed following below steps.
 
 ### Step 2: Run Python Code
 
-*  Launch the Python interactive shell by typing `python` in the Anaconda prompt window and then press Enter.
+*  Launch the Python interactive shell by typing `python` in the Miniforge Prompt window and then press Enter.
 
-* Copy following code to Anaconda prompt **line by line** and press Enter **after copying each line**.
+* Copy following code to Miniforge Prompt **line by line** and press Enter **after copying each line**.
   ```python
   import torch 
   from ipex_llm.transformers import AutoModel,AutoModelForCausalLM    
@@ -211,7 +211,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
      
      .. tab:: ModelScope
   
-        Please first run following command in Anaconda Prompt to install ModelScope:
+        Please first run following command in Miniforge Prompt to install ModelScope:
 
         .. code-block:: cmd
 

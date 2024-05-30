@@ -18,10 +18,10 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 # configures OneAPI environment variables
 source /opt/intel/oneapi/setvars.sh
-# pip install git+https://github.com/microsoft/DeepSpeed.git@ed8aed5
-# pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@0eb734b
 pip install mpi4py fastapi uvicorn
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
+
+pip install transformers==4.31.0 # for llama2 models
 ```
 
 ### 2. Run pipeline parallel serving on multiple GPUs
@@ -31,3 +31,41 @@ conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 bash run.sh
 ```
 
+
+### 3. Sample Input and Output
+
+We can use `curl` to test serving api
+
+#### generate()
+
+```bash
+# Set http_proxy and https_proxy to null to ensure that requests are not forwarded by a proxy.
+export http_proxy=
+export https_proxy=
+
+curl -X 'POST' \
+  'http://127.0.0.1:8000/generate/' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "prompt": "What is AI?",
+  "n_predict": 32
+}'
+```
+
+
+### 4. Benchmark with wrk
+
+We use wrk for testing end-to-end throughput, check [here](https://github.com/wg/wrk).
+
+You can install by:
+```bash
+sudo apt install wrk
+```
+
+Please change the test url accordingly.
+
+```bash
+# set t/c to the number of concurrencies to test full throughput.
+wrk -t1 -c1 -d5m -s ./wrk_script_1024.lua http://127.0.0.1:8000/generate/ --timeout 1m
+```

@@ -157,8 +157,8 @@ jobs:
           # fi
           if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
             echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
-            echo "wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR"
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
+            echo "wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR"
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR
           fi
           if [ ! -d $ORIGINAL_CODESHELL_7B_PATH ]; then
             echo "Directory $ORIGINAL_CODESHELL_7B_PATH not found. Downloading from FTP server..."
@@ -240,10 +240,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # pytorch-version: ['2.1', '2.0']
+        runner: ['arc-ut', 'arc-ut-win']
         pytorch-version: ['2.1']
         python-version: ${{ fromJson(needs.setup-python-version.outputs.python-version) }}
-    runs-on: [self-hosted, llm, arc-ut]
+    runs-on: [self-hosted, llm, "${{ matrix.runner }}"]
     env:
       # OMP_NUM_THREADS: 16
       # THREAD_NUM: 16
@@ -284,6 +284,12 @@ jobs:
           # May remove later
           pip uninstall sentence-transformers -y || true
 
+          # On Windows, we need to add "Python3_ROOT_DIR/bin" to path to make libuv work
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            echo $Python3_ROOT_DIR'\bin\'
+            echo $Python3_ROOT_DIR'\bin\' >> $GITHUB_PATH
+          fi
+
       - name: Download llm binary
         uses: ./.github/actions/llm/download-llm-binary
 
@@ -296,10 +302,12 @@ jobs:
         shell: bash
         run: |
           # Specific oneapi position on arc ut test machines
-          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
-            source /opt/intel/oneapi/setvars.sh
-          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
-            source /home/arda/intel/oneapi/setvars.sh
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+              source /opt/intel/oneapi/setvars.sh
+            elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+              source /home/arda/intel/oneapi/setvars.sh
+            fi
           fi
           bash python/llm/test/run-llm-install-tests.sh
 
@@ -312,7 +320,7 @@ jobs:
           fi
           if [ ! -d $CHATGLM2_6B_ORIGIN_PATH ]; then
             echo "Directory $CHATGLM2_6B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/chatglm2-6b -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/chatglm2-6b -P $ORIGIN_DIR
           fi
           if [ ! -d $FALCON_7B_ORIGIN_PATH ]; then
             echo "Directory $FALCON_7B_ORIGIN_PATH not found. Downloading from FTP server..."
@@ -320,7 +328,7 @@ jobs:
           fi
           if [ ! -d $MPT_7B_ORIGIN_PATH ]; then
             echo "Directory $MPT_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/mpt-7b-chat -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/mpt-7b-chat -P $ORIGIN_DIR
           fi
           if [ ! -d $WHISPER_TINY_ORIGIN_PATH ]; then
             echo "Directory $WHISPER_TINY_ORIGIN_PATH not found. Downloading from FTP server..."
@@ -347,7 +355,7 @@ jobs:
           fi
           if [ ! -d $BAICHUAN2_7B_ORIGIN_PATH ]; then
             echo "Directory $BAICHUAN2_7B_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/Baichuan2-7B-Chat -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/llm/updated_for_4.36/Baichuan2-7B-Chat -P $ORIGIN_DIR
           fi
           if [ ! -d $VICUNA_7B_1_3_ORIGIN_PATH ]; then
             echo "Directory $VICUNA_7B_1_3_ORIGIN_PATH not found. Downloading from FTP server..."
@@ -358,12 +366,15 @@ jobs:
         shell: bash
         run: |
           # Specific oneapi position on arc ut test machines
-          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
-            source /opt/intel/oneapi/setvars.sh
-          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
-            source /home/arda/intel/oneapi/setvars.sh
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+              source /opt/intel/oneapi/setvars.sh
+            elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+              source /home/arda/intel/oneapi/setvars.sh
+            fi
           fi
           python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
+          
           bash python/llm/test/run-llm-inference-tests-gpu.sh
 
       - name: Run LLM example tests
@@ -373,10 +384,12 @@ jobs:
           python -m pip install transformers==4.36.0 datasets peft==0.10.0 accelerate==0.23.0
           python -m pip install bitsandbytes scipy
           # Specific oneapi position on arc ut test machines
-          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
-            source /opt/intel/oneapi/setvars.sh
-          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
-            source /home/arda/intel/oneapi/setvars.sh
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+              source /opt/intel/oneapi/setvars.sh
+            elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+              source /home/arda/intel/oneapi/setvars.sh
+            fi
           fi
           bash python/llm/test/run-llm-example-tests-gpu.sh
           
@@ -403,10 +416,12 @@ jobs:
           pip install -U chromadb==0.3.25
           pip install -U pandas==2.0.3
           # Specific oneapi position on arc ut test machines
-          if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
-            source /opt/intel/oneapi/setvars.sh
-          elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
-            source /home/arda/intel/oneapi/setvars.sh
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
+              source /opt/intel/oneapi/setvars.sh
+            elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
+              source /home/arda/intel/oneapi/setvars.sh
+            fi
           fi
           bash python/llm/test/run-llm-langchain-tests-gpu.sh
           
@@ -422,10 +437,14 @@ jobs:
           # Specific oneapi position on arc ut test machines
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-            source /opt/intel/oneapi/setvars.sh
+            if [[ "$RUNNER_OS" == "Linux" ]]; then
+              source /opt/intel/oneapi/setvars.sh
+            fi
           elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
             pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-            source /home/arda/intel/oneapi/setvars.sh
+            if [[ "$RUNNER_OS" == "Linux" ]]; then
+              source /home/arda/intel/oneapi/setvars.sh
+            fi
           fi
           pip install transformers==4.36.2
           pip install "pydantic>=2.0.0"

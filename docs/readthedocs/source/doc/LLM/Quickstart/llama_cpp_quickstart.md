@@ -9,7 +9,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 ```eval_rst
 .. note::
 
-  Our current version is consistent with `c780e75 <https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452>`_ of llama.cpp.
+  `ipex-llm[cpp]==2.5.0b20240527` is consistent with `c780e75 <https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452>`_ of llama.cpp.
+
+  Our current version is consistent with `62bfef5 <https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912>`_ of llama.cpp.
 ```
 
 ## Quick Start
@@ -47,7 +49,7 @@ To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed
 
       .. note::
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: cmd
 
@@ -84,7 +86,7 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 
    .. tab:: Windows
 
-      Please run the following command with **administrator privilege in Anaconda Prompt**.
+      Please run the following command with **administrator privilege in Miniforge Prompt**.
 
       .. code-block:: bash
       
@@ -125,7 +127,7 @@ To use GPU acceleration, several environment variables are required or recommend
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -167,7 +169,7 @@ Before running, you should download or copy community GGUF model to your current
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
