@@ -1822,7 +1822,7 @@ if __name__ == '__main__':
     
     import pandas as pd
     for api in conf.test_api:
-        for batch_size in conf["batch_size"]: # mwj might need to change
+        for batch_size in conf["batch_size"]:
             global csv_name
             batch = str(batch_size)
             csv_name = f'{current_dir}/test_batch{batch}/{api}-results-{today}-batch-{batch}.csv'
