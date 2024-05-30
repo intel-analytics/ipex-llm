@@ -99,7 +99,7 @@ def main():
             for current_csv_ind,current_csv_row in current_csv.iterrows():
                 current_csv_model=current_csv_row['model'].strip()
                 current_csv_input_output_pairs=current_csv_row['input/output tokens'].strip()
-                try: # mwj edit: add try
+                try:
                   current_csv_batch_size=str(current_csv_row['batch_size'])
                   current_csv_model_input_1st=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'1st'
                   current_csv_model_input_2nd=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'2nd'
