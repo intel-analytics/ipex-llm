@@ -153,10 +153,10 @@ sudo dpkg -i *.deb
 
 ### Setup Python Environment
  
-Download and install the Miniconda as follows if you don't have conda installed on your machine:
+Download and install the Miniforge as follows if you don't have conda installed on your machine:
   ```bash
-  wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-  bash Miniconda3-latest-Linux-x86_64.sh
+  wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+  bash Miniforge3-Linux-x86_64.sh
   source ~/.bashrc
   ```
 
@@ -259,7 +259,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for this demostration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
-* Step 1: Open the **Anaconda Prompt** and activate the Python environment `llm` you previously created: 
+* Step 1: Activate the Python environment `llm` you previously created: 
    ```bash
    conda activate llm
    ```

@@ -49,7 +49,7 @@ To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed
 
       .. note::
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: cmd
 
@@ -86,7 +86,7 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 
    .. tab:: Windows
 
-      Please run the following command with **administrator privilege in Anaconda Prompt**.
+      Please run the following command with **administrator privilege in Miniforge Prompt**.
 
       .. code-block:: bash
       
@@ -127,7 +127,7 @@ To use GPU acceleration, several environment variables are required or recommend
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -169,7 +169,7 @@ Before running, you should download or copy community GGUF model to your current
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
