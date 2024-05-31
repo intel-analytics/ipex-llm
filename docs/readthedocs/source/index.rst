@@ -556,6 +556,13 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/phi-3">link</a></td>
        </tr>
        <tr>
+         <td>Phi-3-vision</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/phi-3-vision">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/phi-3-vision">link</a></td>
+       </tr>
+       <tr>
          <td>Yuan2</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/yuan2">link</a></td>
@@ -603,6 +610,13 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/cohere">link</a></td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/cohere">link</a></td>
+       </tr>
+       <tr>
+         <td>CodeGeeX2</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegeex2">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/codegeex2">link</a></td>
        </tr>
      </tbody>
    </table>

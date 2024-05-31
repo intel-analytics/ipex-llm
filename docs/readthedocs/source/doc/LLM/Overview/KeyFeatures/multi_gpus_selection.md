@@ -10,7 +10,7 @@ The `sycl-ls` tool enumerates a list of devices available in the system. You can
 .. tabs::
    .. tab:: Windows
 
-      Please make sure you are using CMD (Anaconda Prompt if using conda):
+      Please make sure you are using CMD (Miniforge Prompt if using conda):
 
       .. code-block:: cmd
 

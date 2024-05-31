@@ -160,3 +160,22 @@ Please change the test url accordingly.
 # set t/c to the number of concurrencies to test full throughput.
 wrk -t1 -c1 -d5m -s ./wrk_script_1024.lua http://127.0.0.1:8000/generate/ --timeout 1m
 ```
+
+## Using the `benchmark.py` Script
+
+The `benchmark.py` script is designed to evaluate the performance of a streaming service by measuring response times and other relevant metrics. Below are the details on how to use the script effectively:
+
+### Command Line Arguments
+### Command Line Arguments
+- `--prompt_length`: Specifies the length of the prompt used in the test. Acceptable values are `32`, `1024`, and `2048`.
+- `--max_concurrent_requests`: Defines the levels of concurrency for the requests. You can specify multiple values to test different levels of concurrency in one run.
+- `--max_new_tokens`: Sets the maximum number of new tokens that the model will generate per request. Default is `128`.
+
+### Usage Example
+You can run the script with specific settings for prompt length, concurrent requests, and max new tokens by using the following command:
+
+```bash
+python benchmark.py --prompt_length 1024 --max_concurrent_requests 1 2 3 --max_new_tokens 128
+```
+
+This command sets the prompt length to 1024, tests concurrency levels of 1, 2, and 3, and configures the model to generate up to 128 new tokens per request. The results are saved in log files named according to the concurrency level (1.log, 2.log, 3.log).

@@ -48,7 +48,7 @@ Now we need to pull a model for coding. Here we use [CodeQWen1.5-7B](https://hug
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: cmd
 
@@ -72,7 +72,7 @@ Start by creating a file named `Modelfile` with the following content:
 FROM codeqwen:latest
 PARAMETER num_ctx 4096
 ```
-Next, use the following commands in the terminal (Linux) or Anaconda Prompt (Windows) to create a new model in Ollama named `codeqwen:latest-continue`:
+Next, use the following commands in the terminal (Linux) or Miniforge Prompt (Windows) to create a new model in Ollama named `codeqwen:latest-continue`:
 
 
 ```bash
@@ -81,7 +81,7 @@ Next, use the following commands in the terminal (Linux) or Anaconda Prompt (Win
 
 After creation, run `ollama list` to see `codeqwen:latest-continue` in the list of models.
 
-Finally, preload the new model by executing the following command in a new terminal (Linux) or Anaconda prompt (Windows):
+Finally, preload the new model by executing the following command in a new terminal (Linux) or Miniforge Prompt (Windows):
 
 ```bash
 ollama run codeqwen:latest-continue
