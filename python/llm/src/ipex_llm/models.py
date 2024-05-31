@@ -23,5 +23,3 @@ from ipex_llm.ggml.model.llama import Llama
 from ipex_llm.ggml.model.gptneox import Gptneox
 from ipex_llm.ggml.model.bloom import Bloom
 from ipex_llm.ggml.model.starcoder import Starcoder
-# temporarily disable until linux binary file for chatglm ready
-# from ipex_llm.ggml.model.chatglm import ChatGLM
