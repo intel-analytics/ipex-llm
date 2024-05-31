@@ -86,12 +86,7 @@ windows_binarys = [
     "quantize-llama_vnni.exe",
     "quantize-gptneox_vnni.exe",
     "quantize-bloom_vnni.exe",
-    "quantize-starcoder_vnni.exe",
-
-    "main-chatglm_vnni.exe",
-    "chatglm_C.cp39-win_amd64.pyd",
-    "chatglm_C.cp310-win_amd64.pyd",
-    "chatglm_C.cp311-win_amd64.pyd"
+    "quantize-starcoder_vnni.exe"
 ]
 linux_binarys = [
     "libllama_avx.so",
@@ -125,13 +120,7 @@ linux_binarys = [
     "main-llama",
     "main-gptneox",
     "main-bloom",
-    "main-starcoder",
-
-    "main-chatglm_vnni",
-    "main-chatglm_amx",
-    "chatglm_C.cpython-39-x86_64-linux-gnu.so",
-    "chatglm_C.cpython-310-x86_64-linux-gnu.so",
-    "chatglm_C.cpython-311-x86_64-linux-gnu.so"
+    "main-starcoder"
 ]
 
 ext_lib_urls = [
