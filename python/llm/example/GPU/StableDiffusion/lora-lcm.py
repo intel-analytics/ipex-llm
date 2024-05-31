@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Code is adapted from https://huggingface.co/docs/diffusers/main/en/using-diffusers/inference_with_lcm_lora
 
 import torch
 from diffusers import DiffusionPipeline, LCMScheduler

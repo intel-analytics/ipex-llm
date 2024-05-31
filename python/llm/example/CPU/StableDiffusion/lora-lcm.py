@@ -13,35 +13,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Code is adapted from https://huggingface.co/docs/diffusers/en/using-diffusers/sdxl
+# Code is adapted from https://huggingface.co/docs/diffusers/main/en/using-diffusers/inference_with_lcm_lora
 
-from diffusers import AutoPipelineForText2Image
 import torch
+from diffusers import DiffusionPipeline, LCMScheduler
 import ipex_llm
-import numpy as np
-from PIL import Image
 import argparse
 
 
 def main(args):
-    pipeline_text2image = AutoPipelineForText2Image.from_pretrained(
-        args.repo_id_or_model_path, 
-        torch_dtype=torch.bfloat16, 
-        use_safetensors=True
-    ).to("xpu")
+    pipe = DiffusionPipeline.from_pretrained(
+        args.repo_id_or_model_path,
+        torch_dtype=torch.bfloat16,
+    ).to("cpu")
 
-    image = pipeline_text2image(prompt=args.prompt,num_inference_steps=args.num_steps).images[0]
+    # set scheduler
+    pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
+
+    # load LCM-LoRA
+    pipe.load_lora_weights(args.lora_weights_path)
+
+    generator = torch.manual_seed(42)
+    image = pipe(
+        prompt=args.prompt, num_inference_steps=args.num_steps, generator=generator, guidance_scale=1.0
+    ).images[0]
     image.save(args.save_path)
 
 if __name__=="__main__":
-    parser = argparse.ArgumentParser(description="Stable Diffusion")
+    parser = argparse.ArgumentParser(description="Stable Diffusion lora-lcm")
     parser.add_argument('--repo-id-or-model-path', type=str, default="stabilityai/stable-diffusion-xl-base-1.0",
                         help='The huggingface repo id for the stable diffusion model checkpoint')
+    parser.add_argument('--lora-weights-path',type=str,default="latent-consistency/lcm-lora-sdxl",
+                        help='The huggingface repo id for the lcm lora sdxl checkpoint')
     parser.add_argument('--prompt', type=str, default="A lovely dog on the table, detailed, 8k",
                         help='Prompt to infer')
-    parser.add_argument('--save-path',type=str,default="sdxl-gpu.png",
+    parser.add_argument('--save-path',type=str,default="lcm-lora-sdxl-cpu.png",
                         help="Path to save the generated figure")
-    parser.add_argument('--num-steps',type=int,default=20,
+    parser.add_argument('--num-steps',type=int,default=4,
                         help="Number of inference steps")
     args = parser.parse_args()
     main(args)

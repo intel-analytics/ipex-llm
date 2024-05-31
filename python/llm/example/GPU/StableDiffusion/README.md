@@ -2,22 +2,13 @@
 In this directory, you will find examples on how to run StableDiffusion models on [Intel GPUs](../README.md).
 
 ### 1. Installation
-#### 1.1 Installation on Linux
-We suggest using conda to manage environment. 
-```bash
-conda create -n diffusion python=3.11
-conda activate diffusion
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-pip install diffusers["torch"] transformers
-pip install -U PEFT transformers
-```
+#### 1.1 Install IPEX-LLM
+Follow the instructions in IPEX-GPU installation guides ([Linux Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), [Windows Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html)) according to your system to install IPEX-LLM. After the installation, you should have created a conda environment, named diffusion for instance. 
 
-#### 1.2 Installation on Windows
-We suggest using conda to manage environment. 
+#### 1.2 Install dependencies for Stable Diffusion
+Assume you have created a conda environment named diffusion with ipex-llm installed. Run below commands to install dependencies for running Stable Diffusion.
 ```bash
-conda create -n diffusion python=3.11 libuv
 conda activate diffusion
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install diffusers["torch"] transformers
 pip install -U PEFT transformers
 ```

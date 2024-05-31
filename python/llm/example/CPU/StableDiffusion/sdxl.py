@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Code is adapted from https://huggingface.co/docs/diffusers/en/using-diffusers/sdxl
 
 from diffusers import AutoPipelineForText2Image
 import torch
