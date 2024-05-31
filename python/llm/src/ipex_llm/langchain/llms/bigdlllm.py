@@ -70,14 +70,13 @@ class BigdlNativeLLM(LLM):
                     "please switch to the new LLM API for sepcific models.")
 
     model_family: str = "llama"
-    """The model family: currently supports llama, gptneox, bloom, starcoder and chatglm."""
+    """The model family: currently supports llama, gptneox, bloom, starcoder."""
 
     family_info = {
         'llama': {'module': "ipex_llm.models" , 'class': "Llama"},
         'bloom': {'module': "ipex_llm.models", 'class': "Bloom"},
         'gptneox': {'module': "ipex_llm.models", 'class': "Gptneox"},
         'starcoder': {'module':"ipex_llm.models", 'class': "Starcoder"},
-        'chatglm': {'module':"ipex_llm.ggml.model.chatglm", 'class': "ChatGLM"},
     }  #: :meta private:
     """Info necessary for different model families initiation and configure."""
 
@@ -686,11 +685,6 @@ class BloomLLM(_BaseCausalLM):
 class GptneoxLLM(_BaseCausalLM):
     ggml_model = "Gptneox"
     ggml_module = "ipex_llm.models"
-
-
-class ChatGLMLLM(_BaseCausalLM):
-    ggml_model = "ChatGLM"
-    ggml_module = "ipex_llm.ggml.model.chatglm"
 
 
 class StarcoderLLM(_BaseCausalLM):

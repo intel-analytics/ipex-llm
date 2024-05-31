@@ -42,8 +42,7 @@ class BigdlNativeForCausalLM:
         :param pretrained_model_name_or_path: Path for converted BigDL-LLM optimized ggml
                binary checkpoint. The checkpoint should be converted by ``ipex_llm.llm_convert``.
         :param model_family: The model family of the pretrained checkpoint.
-               Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"``, ``"starcoder"``
-               and ``"chatglm"``.
+               Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"``, ``"starcoder"``.
         :param dtype: Which quantized precision will be converted.
                 Now only `int4` and `int8` are supported, and `int8` only works for `llama`
                 , `gptneox` and `starcoder`.
@@ -58,9 +57,9 @@ class BigdlNativeForCausalLM:
         """
         logging.warning("BigdlNativeForCausalLM has been deprecated, "
                         "please switch to the new CausalLM API for sepcific models.")
-        invalidInputError(model_family in ['llama', 'gptneox', 'bloom', 'starcoder', 'chatglm'],
+        invalidInputError(model_family in ['llama', 'gptneox', 'bloom', 'starcoder'],
                           "Now we only support model family: 'llama', 'gptneox', 'bloom',"
-                          " 'starcoder', 'chatglm', '{}' is not in the list.".format(model_family))
+                          " 'starcoder', '{}' is not in the list.".format(model_family))
         invalidInputError(dtype.lower() in ['int4', 'int8'],
                           "Now we only support int4 and int8 as date type for weight")
 
@@ -78,9 +77,6 @@ class BigdlNativeForCausalLM:
         elif model_family == 'starcoder':
             from ipex_llm.ggml.model.starcoder import Starcoder
             return Starcoder(model_path=ggml_model_path, **kwargs)
-        elif model_family == 'chatglm':
-            from ipex_llm.ggml.model.chatglm import ChatGLM
-            return ChatGLM(model_path=ggml_model_path, **kwargs)
 
 
 class _BaseGGMLClass:
@@ -110,9 +106,9 @@ class _BaseGGMLClass:
         :return: a model instance
         """
         try:
-            module = importlib.import_module(cls.GGML_Module)
-            class_ = getattr(module, cls.GGML_Model)
             if native:
+                module = importlib.import_module(cls.GGML_Module)
+                class_ = getattr(module, cls.GGML_Model)
                 invalidInputError(dtype.lower() in ['int4', 'int8'],
                                   "Now we only support int4 and int8 as date type for weight")
                 ggml_model_path = pretrained_model_name_or_path
