@@ -29,13 +29,14 @@ def _check_version(filename, flag="GLIBC"):
     if flag == "GLIBCXX":
         subfile = _check_glibcxx_version(filename)
     max_version = None
-    for version_string in subfile.split():
-        try:
-            version = Version(version_string.split("_")[1])
-            if max_version is None or version > max_version:
-                max_version = version
-        except Exception:
-            pass
+    if subfile:
+        for version_string in subfile.split():
+            try:
+                version = Version(version_string.split("_")[1])
+                if max_version is None or version > max_version:
+                    max_version = version
+            except Exception:
+                pass
     return max_version
 
 

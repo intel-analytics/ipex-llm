@@ -75,7 +75,7 @@ Under your current directory, exceuting below command to do inference with Llama
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -94,7 +94,7 @@ Under your current directory, you can also execute below command to have interac
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -138,7 +138,7 @@ Launch the Ollama service:
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 
@@ -183,7 +183,7 @@ Keep the Ollama service on and open another terminal and run llama3 with `ollama
 
    .. tab:: Windows
 
-      Please run the following command in Anaconda Prompt.
+      Please run the following command in Miniforge Prompt.
 
       .. code-block:: bash
 

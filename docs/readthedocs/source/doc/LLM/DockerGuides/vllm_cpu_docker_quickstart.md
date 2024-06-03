@@ -40,7 +40,7 @@ After the container is booted, you could get into the container through `docker 
 docker exec -it ipex-llm-serving-cpu-container /bin/bash
 ```
 
-## Running vLLM serving with IPEX-LLM on Intel GPU in Docker
+## Running vLLM serving with IPEX-LLM on Intel CPU in Docker
 
 We have included multiple vLLM-related files in `/llm/`:
 1. `vllm_offline_inference.py`: Used for vLLM offline inference example

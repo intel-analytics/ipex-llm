@@ -36,8 +36,7 @@ def load(model_path, model_family, n_threads):
         "llama": LlamaForCausalLM,
         "gptneox": GptneoxForCausalLM,
         "bloom": BloomForCausalLM,
-        "starcoder": StarcoderForCausalLM,
-        "chatglm": ChatGLMForCausalLM
+        "starcoder": StarcoderForCausalLM
     }
 
     if model_family in model_family_to_class:
@@ -55,7 +54,7 @@ def load(model_path, model_family, n_threads):
 
 def inference(llm, repo_id_or_model_path, model_family, prompt):
 
-    if model_family in ['llama', 'gptneox', 'bloom', 'starcoder', 'chatglm']:
+    if model_family in ['llama', 'gptneox', 'bloom', 'starcoder']:
         # ------ Option 1: Use IPEX-LLM based tokenizer
         print('-'*20, ' IPEX-LLM based tokenizer ', '-'*20)
         st = time.time()
@@ -109,9 +108,9 @@ def main():
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
     parser.add_argument('--model-family', type=str, default='llama', required=True,
-                        choices=["llama", "llama2", "bloom", "gptneox", "starcoder", "chatglm"],
+                        choices=["llama", "llama2", "bloom", "gptneox", "starcoder"],
                         help="The model family of the large language model (supported option: 'llama', 'llama2', "
-                             "'gptneox', 'bloom', 'starcoder', 'chatglm')")
+                             "'gptneox', 'bloom', 'starcoder')")
     parser.add_argument('--repo-id-or-model-path', type=str, required=True,
                         help='The path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default='Once upon a time, there existed a little girl who liked to have adventures. ',

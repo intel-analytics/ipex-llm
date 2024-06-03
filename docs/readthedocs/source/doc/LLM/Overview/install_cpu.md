@@ -51,7 +51,7 @@ Here list the recommended hardware and OS for smooth IPEX-LLM optimization exper
 
 For optimal performance with LLM models using IPEX-LLM optimizations on Intel CPUs, here are some best practices for setting up environment:
 
-First we recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to create a python 3.11 enviroment:
+First we recommend using [Conda](https://conda-forge.org/download/) to create a python 3.11 enviroment:
 
 ```eval_rst	
 .. tabs::
