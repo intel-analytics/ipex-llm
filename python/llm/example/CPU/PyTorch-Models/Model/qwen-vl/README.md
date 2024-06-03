@@ -7,7 +7,7 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 ## Example: Multimodal chat using `chat()` API
 In the example [chat.py](./chat.py), we show a basic use case for a Qwen-VL model to start a multimodal chat using `chat()` API, with IPEX-LLM 'optimize_model' API.
 ### 1. Install
-We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://conda-forge.org/download/).
 
 After installing conda, create a Python environment for IPEX-LLM:
 
