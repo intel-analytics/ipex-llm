@@ -1518,7 +1518,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
             # in_len.txt maybe shorter than we need,
             # use much longer context to make sure input length
             test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
+            while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
                 test_length = test_length * 2
             input_str = open(f"prompt/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
