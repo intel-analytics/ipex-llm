@@ -59,6 +59,9 @@ class IPEXImporter:
             import intel_extension_for_pytorch as ipex
             self.ipex_version = ipex.__version__
             logging.info("intel_extension_for_pytorch auto imported")
+            return ipex
+        else:
+            return None
 
     def get_ipex_version(self):
         """

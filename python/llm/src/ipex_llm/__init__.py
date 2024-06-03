@@ -25,13 +25,16 @@ import os
 from .llm_patching import llm_patch, llm_unpatch
 import sys
 import types
+import builtins
 
 # Default is false, set to true to auto importing Intel Extension for PyTorch.
 BIGDL_IMPORT_IPEX = os.getenv("BIGDL_IMPORT_IPEX", 'True').lower() in ('true', '1', 't')
 if BIGDL_IMPORT_IPEX:
     # Import Intel Extension for PyTorch as ipex if XPU version is installed
     from .utils.ipex_importer import ipex_importer
-    ipex_importer.import_ipex()
+    ipex = ipex_importer.import_ipex()
+    if ipex is not None:
+        builtins.ipex = ipex
 
 # Default is true, set to true to auto patching bigdl-llm to ipex_llm.
 BIGDL_COMPATIBLE_MODE = os.getenv("BIGDL_COMPATIBLE_MODE", 'True').lower() in ('true', '1', 't')
