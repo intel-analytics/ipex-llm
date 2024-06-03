@@ -39,7 +39,7 @@ import transformers
 from datasets import load_dataset
 import accelerate
 
-from transformers import LlamaTokenizer
+from transformers import AutoTokenizer
 from peft import (
     get_peft_model_state_dict,
     set_peft_model_state_dict,
@@ -198,13 +198,12 @@ def train(
     model = model.to("cpu")
     print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
-    tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    tokenizer = AutoTokenizer.from_pretrained(base_model)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
 
-    tokenizer.pad_token_id = (
-        0  # unk. we want this to be different from the eos token
-    )
-    tokenizer.padding_side = "left"  # Allow batched inference
+    # For Llama family
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
 
     print(model)
 
