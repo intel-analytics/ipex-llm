@@ -290,6 +290,8 @@ class ModelRunner:
         self.send_buff = None
         self.dict_lock = threading.Lock()
 
+        self.streamer = {}
+
                 
     # def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
     #     times = []
@@ -448,6 +450,14 @@ class ModelRunner:
                 # cur_batch.input_len += 1
                 cur_batch.input_len = 1
                 cur_batch.prompt_lengths = [x + 1 for x in cur_batch.prompt_lengths]
+
+                for index, request_id in enumerate(cur_batch.request_ids):
+                    # from transformers import TextIteratorStreamer
+                    if self.streamer.get(cur_id, None) is None:
+                        self.streamer[cur_id] = asyncio.Queue()
+                    remain = cur_batch.max_tokens - len(self.tokens[cur_id])
+                    await self.streamer[cur_id].put((remain, next_ids[index]))
+                
                 if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
                     # Finish a batch
                     # logger.info(self.tokens[cur_id])

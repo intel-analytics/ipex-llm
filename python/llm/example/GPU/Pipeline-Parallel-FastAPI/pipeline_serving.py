@@ -2,7 +2,9 @@ from pipeline_models import ModelRunner
 import torch.nn.parallel
 import torch.distributed as dist
 import os
+import json
 import intel_extension_for_pytorch as ipex
+from ipex_llm.transformers.streamer import BatchTextIteratorStreamer
 
 import oneccl_bindings_for_pytorch
 
@@ -22,6 +24,7 @@ logger.info(f"rank: {my_rank}, size: {my_size}")
 import time
 from transformers import AutoTokenizer, AutoConfig, LlamaTokenizer
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import uvicorn
 import asyncio, uuid
@@ -50,25 +53,98 @@ global local_model
 
 request_queue: asyncio.Queue = asyncio.Queue()
 result_dict: Dict[str, str] = {}
+streamer_dict = {}
 local_rank = my_rank
 max_num_seqs = get_int_from_env(["MAX_NUM_SEQS"], "16")
 
 
-@app.post("/generate/")
-async def generate(prompt_request: PromptRequest):
-    request_id = str(uuid.uuid4())
+# @app.post("/generate/")
+# async def generate(prompt_request: PromptRequest):
+#     request_id = str(uuid.uuid4())
+#     await local_model.waiting_requests.put((request_id, prompt_request))
+#     while True:
+#         if request_id in result_dict:
+#             with local_model.dict_lock:
+#                 output_str = result_dict[request_id]
+#             if len(output_str) == 0:
+#                 logger.info(f"Why? {request_id}")
+#                 # await asyncio.sleep(0.1)
+#                 # continue
+#             result_dict.pop(request_id)
+#             return {"generated_text": output_str}
+#         await asyncio.sleep(0)            
+
+
+async def stream_generator(token_queue, request_id):
+    index = 0
+    while True:
+        if not token_queue.empty():
+            remain, token = await token_queue.get()
+            response = {
+                "index": index,
+                "message": {"role": "assistant", "content": token},
+                "finish_reason": None,
+            }
+            yield json.dumps(response) + "\n"
+            index = index + 1
+            if remain == 0:
+                response = {
+                    "index": index,
+                    "message": {"role": "assistant", "content": None},
+                    "finish_reason": "length",
+                }
+                yield json.dumps(response) + "\n"
+                break
+        else:
+            await asyncio.sleep(0)
+    streamer_dict.pop(request_id, None)
+
+
+async def generator(token_queue, request_id):
+    while True:
+        if not token_queue.empty():
+            remain, token = await token_queue.get()
+            yield token
+            if remain == 0:
+                break
+        else:
+            await asyncio.sleep(0)
+    streamer_dict.pop(request_id, None)
+
+
+# @app.post("/generate/")
+# async def generate(prompt_request: PromptRequest):
+#     request_id = str(uuid.uuid4())
+#     await request_queue.put((request_id, prompt_request))
+#     while True:
+#         await asyncio.sleep(0)
+#         if request_id in streamer_dict:
+#             output_str = []
+#             token_queue = streamer_dict[request_id]
+#             async for item in generator(token_queue, request_id):
+#                 output_str.append(item)
+
+#             return {
+#                 "index": 0,
+#                 "message": {
+#                     "role": "assistant",
+#                     "content": "".join(output_str),
+#                 },
+#                 "finish_reason": "stop",
+#             }
+
+
+@app.post("/generate_stream/")
+async def generate_stream(prompt_request: PromptRequest):
+    request_id = str(uuid.uuid4()) + "stream"
     await local_model.waiting_requests.put((request_id, prompt_request))
     while True:
-        if request_id in result_dict:
-            with local_model.dict_lock:
-                output_str = result_dict[request_id]
-            if len(output_str) == 0:
-                logger.info(f"Why? {request_id}")
-                # await asyncio.sleep(0.1)
-                # continue
-            result_dict.pop(request_id)
-            return {"generated_text": output_str}
-        await asyncio.sleep(0)            
+        await asyncio.sleep(0.1)
+        cur_streamer = local_model.streamer.get(request_id, None)
+        if cur_streamer is not None:
+            return StreamingResponse(
+                stream_generator(cur_streamer, request_id), media_type="application/json"
+            )
 
 
 def generate_text(prompt: List[str], n_predict = 32):
