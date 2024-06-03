@@ -95,21 +95,23 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          # batch_size 1
           cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           mkdir test_batch1
           mkdir test_batch2
+          # batch_size 1
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           # change csv name
           sed -i 's/{today}/{today}_test1/g' run.py
           python run.py
+          mv *.csv test_batch1
           # batch_size 2
           cd ../../../../../ 
           cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           python run.py
+          mv *.csv test_batch2
 
       - name: Test on xpu(transformers==4.37.0)
         shell: bash
@@ -125,11 +127,13 @@ jobs:
           # change csv name
           sed -i 's/test1/test2/g' run.py
           python run.py
+          mv *.csv test_batch1
           # batch_size 2
           cd ../../../../../ 
           cp python/llm/test/benchmark/arc-perf-transformers-437-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           python run.py
+          mv *.csv test_batch2
 
       - name: Concat csv and generate html
         shell: bash
