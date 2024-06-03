@@ -80,6 +80,7 @@ IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 Q4_K = ggml_tensor_qtype["q4_k"]
 Q6_K = ggml_tensor_qtype["q6_k"]
 Q5_K = ggml_tensor_qtype["q5_k"]
+FP6_K = ggml_tensor_qtype["fp6_k"]
 
 
 # For sym_int4
@@ -220,13 +221,14 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
-        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K]:
+        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K, FP6_K]:
             ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
         else:
             if imatrix is not None:
                 # quantize with importance matrix
                 imatrix = imatrix.data.data_ptr()
                 imatrix = ctypes.cast(imatrix, ctypes.POINTER(ctypes.c_float))
+            # print(f"quantize_tensor_with_weights: {n // in_features}, {in_features}")
             # pass nrow and n_per_row
             ggml.ggml_quantize_tensor_with_weights(src, dst, qtype,
                                                    n // in_features, in_features,
@@ -244,7 +246,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5, FP6_K]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -269,7 +271,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5, FP6_K]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
@@ -722,8 +724,12 @@ class LowBitLinear(nn.Linear):
                         result = xe_batch.batch_forward(x_2d, self.weight.data,
                                                         self.weight.qtype)
                     else:
-                        result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                       input_seq_size)
+                        if self.weight.qtype == FP6_K:
+                            import nacore
+                            result = nacore.linear_fp6_k(x_2d, self.weight.data, 0)
+                        else:
+                            result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                        input_seq_size)
                     result = result.to(x.dtype)
                 else:
                     if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
@@ -731,8 +737,12 @@ class LowBitLinear(nn.Linear):
                         result = xe_batch.batch_forward(x_2d, self.weight.data,
                                                         self.weight.qtype)
                     else:
-                        result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                       input_seq_size)
+                        if self.weight.qtype == FP6_K:
+                            import nacore
+                            result = nacore.linear_fp6_k(x_2d, self.weight.data, 0)
+                        else:
+                            result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                        input_seq_size)
                 if do_empty_cache:
                     torch.xpu.empty_cache()
             result = result.view(new_shape)
