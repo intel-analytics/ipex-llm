@@ -62,7 +62,7 @@ try:
     from transformers.cache_utils import Cache, DynamicCache
 except ImportError:
     Cache = Tuple[torch.Tensor]
-from transformers import loggin
+from transformers import logging
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 

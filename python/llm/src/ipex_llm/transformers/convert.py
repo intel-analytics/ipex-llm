@@ -1608,9 +1608,8 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MiniCPMRMSNorm,
                         llama_rms_norm_forward)
-        convert_forward(
-            model,
-            module.MiniCPMAttention,
-            minicpm_attention_forward)
+        convert_forward(model,
+                        module.MiniCPMAttention,
+                        minicpm_attention_forward)
 
     return model
