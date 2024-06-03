@@ -100,13 +100,14 @@ def main():
                 current_csv_model=current_csv_row['model'].strip()
                 current_csv_input_output_pairs=current_csv_row['input/output tokens'].strip()
                 try: 
-                  current_csv_batch_size=str(current_csv_row['batch_size'])
-                  current_csv_model_input_1st=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'1st'
-                  current_csv_model_input_2nd=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'2nd'
-                  add_to_dict(csv_dict, current_csv_model_input_1st, current_csv_row[latency_1st_token])
-                  add_to_dict(csv_dict, current_csv_model_input_2nd, current_csv_row[latency_2_avg])
+                    current_csv_batch_size=str(current_csv_row['batch_size'])
+                    current_csv_model_input_1st=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'1st'
+                    current_csv_model_input_2nd=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'2nd'
+                    add_to_dict(csv_dict, current_csv_model_input_1st, current_csv_row[latency_1st_token])
+                    add_to_dict(csv_dict, current_csv_model_input_2nd, current_csv_row[latency_2_avg])
                 except NameError:
-                  pass
+                    #Old csv/html files didn't include 'batch_size' 
+                    pass
 
         for latest_csv_ind,latest_csv_row in latest_csv.iterrows():
 

@@ -110,7 +110,7 @@ jobs:
           cd ../../../../../ 
           cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
-          # changr csv name
+          # change csv name
           sed -i 's/batch1/batch2/g' run.py
           python run.py
           mv *.csv test_batch2

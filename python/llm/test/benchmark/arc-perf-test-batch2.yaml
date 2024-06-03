@@ -32,7 +32,7 @@ test_api:
   - "transformer_int4_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 exclude:
-  - 'bigcode/starcoder-15.5b-4bit:2048:2'
-  - 'databricks/dolly-v2-12b:2048:2'
+  - 'bigcode/starcoder-15.5b-4bit:2048'
+  - 'databricks/dolly-v2-12b:2048'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
   - 'bigscience/bloomz-7b1:2048'
