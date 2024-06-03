@@ -103,13 +103,15 @@ jobs:
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           # change csv name
-          sed -i 's/{today}/{today}_test1/g' run.py
+          sed -i 's/{today}/{today}_test1_batch1/g' run.py
           python run.py
           mv *.csv test_batch1
           # batch_size 2
           cd ../../../../../ 
           cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
+          # changr csv name
+          sed -i 's/batch1/batch2/g' run.py
           python run.py
           mv *.csv test_batch2
 
@@ -125,13 +127,15 @@ jobs:
           cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # change csv name
-          sed -i 's/test1/test2/g' run.py
+          sed -i 's/test1_batch2/test2_batch1/g' run.py
           python run.py
           mv *.csv test_batch1
           # batch_size 2
           cd ../../../../../ 
           cp python/llm/test/benchmark/arc-perf-transformers-437-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
+          # change csv name 
+          sed -i 's/batch1/batch2/g' run.py
           python run.py
           mv *.csv test_batch2
 
