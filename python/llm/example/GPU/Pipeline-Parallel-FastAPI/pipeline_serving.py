@@ -58,21 +58,21 @@ local_rank = my_rank
 max_num_seqs = get_int_from_env(["MAX_NUM_SEQS"], "16")
 
 
-# @app.post("/generate/")
-# async def generate(prompt_request: PromptRequest):
-#     request_id = str(uuid.uuid4())
-#     await local_model.waiting_requests.put((request_id, prompt_request))
-#     while True:
-#         if request_id in result_dict:
-#             with local_model.dict_lock:
-#                 output_str = result_dict[request_id]
-#             if len(output_str) == 0:
-#                 logger.info(f"Why? {request_id}")
-#                 # await asyncio.sleep(0.1)
-#                 # continue
-#             result_dict.pop(request_id)
-#             return {"generated_text": output_str}
-#         await asyncio.sleep(0)            
+@app.post("/generate/")
+async def generate(prompt_request: PromptRequest):
+    request_id = str(uuid.uuid4())
+    await local_model.waiting_requests.put((request_id, prompt_request))
+    while True:
+        if request_id in result_dict:
+            with local_model.dict_lock:
+                output_str = result_dict[request_id]
+            if len(output_str) == 0:
+                logger.info(f"Why? {request_id}")
+                # await asyncio.sleep(0.1)
+                # continue
+            result_dict.pop(request_id)
+            return {"generated_text": output_str}
+        await asyncio.sleep(0)            
 
 
 async def stream_generator(token_queue, request_id):

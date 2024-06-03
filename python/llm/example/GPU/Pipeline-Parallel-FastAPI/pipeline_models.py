@@ -291,6 +291,7 @@ class ModelRunner:
         self.dict_lock = threading.Lock()
 
         self.streamer = {}
+        self.token_cache = {}
 
                 
     # def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
@@ -452,11 +453,17 @@ class ModelRunner:
                 cur_batch.prompt_lengths = [x + 1 for x in cur_batch.prompt_lengths]
 
                 for index, request_id in enumerate(cur_batch.request_ids):
-                    # from transformers import TextIteratorStreamer
-                    if self.streamer.get(cur_id, None) is None:
-                        self.streamer[cur_id] = asyncio.Queue()
+                    from transformers import TextIteratorStreamer
+                    if self.streamer.get(request_id, None) is None:
+                        self.streamer[request_id] = asyncio.Queue()
+                    
                     remain = cur_batch.max_tokens - len(self.tokens[cur_id])
-                    await self.streamer[cur_id].put((remain, next_ids[index]))
+                    if self.token_cache.get(request_id, None) is None:
+                        self.token_cache[request_id] = []
+                    self.token_cache[request_id].append(next_ids[index])
+
+                    cur_text = tokenizer.decode(next_ids[index])
+                    await self.streamer[request_id].put((remain, cur_text))
                 
                 if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
                     # Finish a batch
