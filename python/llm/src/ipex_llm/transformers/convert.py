@@ -725,6 +725,9 @@ def _optimize_pre(model):
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.models.qwen2 import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "pp_qwen2":
+        from ipex_llm.transformers.models.qwen2 import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
@@ -1290,6 +1293,20 @@ def _optimize_post(model, lightweight_bmm=False):
                         llama_mlp_forward)
         convert_forward(model,
                         module.Qwen2Attention,
+                        qwen2_attention_forward)
+    elif model.config.model_type == "pp_qwen2":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.qwen2 import qwen2_model_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
+        convert_forward(model,
+                        transformers.models.qwen2.modeling_qwen2.Qwen2RMSNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        transformers.models.qwen2.modeling_qwen2.Qwen2MLP,
+                        llama_mlp_forward)
+        convert_forward(model,
+                        transformers.models.qwen2.modeling_qwen2.Qwen2Attention,
                         qwen2_attention_forward)
     elif model.config.model_type == "qwen2_moe":
         # for Qwen1.5-MOE-A2.7B

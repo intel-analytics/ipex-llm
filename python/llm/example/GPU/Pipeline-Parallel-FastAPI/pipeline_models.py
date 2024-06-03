@@ -270,8 +270,9 @@ class ModelRunner:
         end = time.perf_counter()
         logger.info(f"Time to load weights: {end - start:.2f}s")
         from ipex_llm import optimize_model
+        from ipex_llm.transformers.convert import _optimize_pre
 
-        model = optimize_model(model, low_bit=low_bit)
+        model = optimize_model(model, low_bit=low_bit, cpu_embedding=True)
         
         model = model.to(torch.float16).to(f'xpu:{rank}')
         self.model = model
