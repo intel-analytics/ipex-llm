@@ -192,11 +192,9 @@ def train(
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
 
-    tokenizer.pad_token_id = (
-        0  # unk. we want this to be different from the eos token
-    )
-    tokenizer.padding_side = "left"  # Allow batched inference
-
+    # For Llama family
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
     print(model)
 
     # Prepare a IPEX-LLM compatible Peft model
