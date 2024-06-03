@@ -111,10 +111,10 @@ def gptbigcode_sdpa_attention_forward(
         encoder_attention_mask: Optional[torch.Tensor] = None,
         use_cache: Optional[bool] = False,
         output_attentions: Optional[bool] = False,
-    ) -> Union[
-        Tuple[torch.Tensor, Optional[torch.Tensor]],
-        Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[torch.Tensor, ...]],
-    ]:
+) -> Union[
+    Tuple[torch.Tensor, Optional[torch.Tensor]],
+    Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[torch.Tensor, ...]],
+]:
         if encoder_hidden_states is not None:
             if not hasattr(self, "q_attn") or not self.is_cross_attention:
                 from ipex_llm.utils.common import invalidInputError
@@ -133,7 +133,8 @@ def gptbigcode_sdpa_attention_forward(
             query, key_value = self.c_attn(hidden_states).split(
                 (self.embed_dim, 2 * self.kv_dim), dim=2)
         else:
-            # Note: We split as (self.num_heads, 3, self.head_dim) instead of (3, self.num_heads, self.head_dim),
+            # Note: We split as (self.num_heads, 3, self.head_dim) instead of
+            # (3, self.num_heads, self.head_dim),
             # i.e., the memory layout is not the same as GPT2.
             # This makes the concatenation with past_key_value more efficient.
             query, key_value = (
@@ -160,11 +161,13 @@ def gptbigcode_sdpa_attention_forward(
         key, value = key_value.split((self.head_dim, self.head_dim), dim=-1)
 
         if not output_attentions and head_mask is None:
-            # Difference with the original implementation: there is no need to transpose the key here,
+            # Difference with the original implementation: there is no need to
+            # transpose the key here,
             # as SDPA expects seq_length to be at index -2 for the key as well
             attn_output, attn_weights = self._attn(query, key, value, attention_mask, head_mask)
         else:
-            # TODO: Improve this warning with e.g. `model.config._attn_implementation = "manual"` once this is implemented.
+            # TODO: Improve this warning with e.g. `model.config._attn_implementation = "manual"`
+            # once this is implemented.
             logger.warning_once(
                 "GPTBigCodeModel is using GPTBigCodeSdpaAttention, "
                 "but `torch.nn.functional.scaled_dot_product_attention` does not support "
@@ -186,7 +189,8 @@ def gptbigcode_sdpa_attention_forward(
         outputs = (attn_output, present)
         if output_attentions:
             if self.multi_query:
-                # Transpose to return weights in the usual format (batch_size, num_heads, query_length, key_length)
+                # Transpose to return weights in the usual format
+                # (batch_size, num_heads, query_length, key_length)
                 attn_weights = attn_weights.transpose(1, 2)
             outputs += (attn_weights,)
 
