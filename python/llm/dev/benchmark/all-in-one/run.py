@@ -1823,7 +1823,7 @@ if __name__ == '__main__':
     import pandas as pd
     for api in conf.test_api:
         global csv_name
-        if not OmegaConf.is_list(conf["batch_size"]): #OmegaConf.is_list(conf["batch_size"]): 
+        if not OmegaConf.is_list(conf["batch_size"]):
             batch_list = [conf["batch_size"]]
         else:
             batch_list = conf["batch_size"]
