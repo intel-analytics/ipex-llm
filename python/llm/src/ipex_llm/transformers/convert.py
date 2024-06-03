@@ -1520,14 +1520,18 @@ def _optimize_post(model, lightweight_bmm=False):
                      module.GPTBigCodeAttention,
                      "_attn",
                      _attn)
-        convert_forward(model,
-                        module.GPTBigCodeSdpaAttention,
-                        gptbigcode_sdpa_attention_forward)
-        sdpa_attn = _attn_wrapper(module.GPTBigCodeSdpaAttention._attn)
-        replace_func(model,
-                     module.GPTBigCodeSdpaAttention,
-                     "_attn",
-                     sdpa_attn)
+        try:
+            # for transformers 4.36+
+            convert_forward(model,
+                            module.GPTBigCodeSdpaAttention,
+                            gptbigcode_sdpa_attention_forward)
+            sdpa_attn = _attn_wrapper(module.GPTBigCodeSdpaAttention._attn)
+            replace_func(model,
+                         module.GPTBigCodeSdpaAttention,
+                         "_attn",
+                         sdpa_attn)
+        except AttributeError:
+            pass
     elif model.config.model_type == "starcoder2":
         # starcoder2
         modeling_module_name = model.__class__.__module__
