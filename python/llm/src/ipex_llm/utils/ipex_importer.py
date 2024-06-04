@@ -18,6 +18,7 @@ from importlib.metadata import distribution, PackageNotFoundError
 import logging
 import builtins
 import sys
+from ipex_llm.utils.common import log4Error
 
 class IPEXImporter:
     """
@@ -60,7 +61,8 @@ class IPEXImporter:
             # Check if user import ipex manually
             if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
                 logging.error("IPEX-LLM will automatically import Intel Extension for PyTorch.")
-                raise ImportError("Please import ipex-llm before importing intel_extension_for_pytorch!")
+                log4Error.invalidInputError(False, 
+                                            "Please import ipex-llm before importing intel_extension_for_pytorch!")
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
             logging.info("intel_extension_for_pytorch auto imported")
@@ -77,7 +79,8 @@ class IPEXImporter:
             # Expose ipex to Python builtins
             builtins.ipex = ipex
         else:
-            raise ImportError("Can not import intel_extension_for_pytorch.")
+            log4Error.invalidInputError(False,
+                                        "Can not import intel_extension_for_pytorch.")
 
     def get_ipex_version(self):
         """
