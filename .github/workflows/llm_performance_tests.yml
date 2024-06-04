@@ -422,13 +422,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen1.5 (32-32)
+      - name: Prepare igpu perf test for transformers 4.37 (32-32)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32_437.yaml
 
-      - name: Test on igpu for Qwen1.5 (32-32)
+      - name: Test on igpu for transformers 4.37 (32-32)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -490,13 +490,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (1024-128)
+      - name: Test on igpu for transformers 4.37 (1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -557,13 +557,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (2048-256)
+      - name: Prepare igpu perf test for transformers 4.37 (2048-256)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (2048-256)
+      - name: Test on igpu for transformers 4.37 (2048-256)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -624,13 +624,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (load_low_bit 1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (load_low_bit 1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_loadlowbit_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (load_low_bit 1024-128)
+      - name: Test on igpu for transformers 4.37 (load_low_bit 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -689,13 +689,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (int4+fp16 1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (int4+fp16 1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (int4+fp16 1024-128)
+      - name: Test on igpu for transformers 4.37 (int4+fp16 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
