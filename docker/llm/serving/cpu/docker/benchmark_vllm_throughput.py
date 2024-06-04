@@ -98,6 +98,22 @@ def run_vllm(
               enable_prefix_caching=enable_prefix_caching,
               load_in_low_bit=load_in_low_bit)
 
+    for prompt, _, output_len in warm_requests:
+        sampling_params = SamplingParams(
+            n=n,
+            temperature=0.0 if use_beam_search else 1.0,
+            top_p=1.0,
+            use_beam_search=use_beam_search,
+            ignore_eos=True,
+            max_tokens=output_len,
+        )
+        llm._add_request(
+            prompt=prompt,
+            prompt_token_ids=None,
+            sampling_params=sampling_params,
+        )
+    llm._run_engine(use_tqdm=True)
+
     # Add the requests to the engine.
     for prompt, _, output_len in requests:
         sampling_params = SamplingParams(
