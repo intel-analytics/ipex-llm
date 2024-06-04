@@ -149,7 +149,7 @@ def is_linear_module(module):
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
-        
+
         VLLM_LINEAR_LIST = [
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         ]
@@ -158,7 +158,6 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
-            
             if isinstance(module, RowParallelLinear) and tp_size >= 2:
                 mp_group = get_tensor_model_parallel_group()
                 in_features = module.input_size_per_partition

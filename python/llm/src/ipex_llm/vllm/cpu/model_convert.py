@@ -47,7 +47,6 @@ def _Attention_forward(
     qkv = self.qkv_proj(hidden_states).to(dtype=kv_cache.dtype)
     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
     q, k = self.rotary_emb(positions, q, k)
-    
     attn_output = self.attn(q, k, v, kv_cache, attn_metadata, self.kv_scale)
     output = self.o_proj(attn_output)
     return output
