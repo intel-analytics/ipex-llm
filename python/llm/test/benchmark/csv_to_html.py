@@ -105,7 +105,7 @@ def main():
                     current_csv_model_input_2nd=current_csv_model+'-'+current_csv_input_output_pairs+'-'+current_csv_batch_size+'-'+'2nd'
                     add_to_dict(csv_dict, current_csv_model_input_1st, current_csv_row[latency_1st_token])
                     add_to_dict(csv_dict, current_csv_model_input_2nd, current_csv_row[latency_2_avg])
-                except NameError:
+                except KeyError:
                     #Old csv/html files didn't include 'batch_size' 
                     pass
 
