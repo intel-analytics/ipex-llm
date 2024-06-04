@@ -51,7 +51,6 @@ import json
 # code change to import from IPEX-LLM API instead of using transformers API
 from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import LlamaTokenizer
-import intel_extension_for_pytorch as ipex
 
 
 def load(model_name_or_path):
