@@ -17,6 +17,7 @@
 from importlib.metadata import distribution, PackageNotFoundError
 import logging
 import builtins
+import sys
 
 class IPEXImporter:
     """
@@ -56,15 +57,10 @@ class IPEXImporter:
         Raises ImportError if failed
         """
         if self.is_xpu_version_installed():
-            ipex_imported = False
-            try:
-                distribution('intel_extension_for_pytorch')
-                ipex_importer = True
-            except PackageNotFoundError:
-                pass
-            if ipex_imported:
-                logging.warning("IPEX-LLM will automatically import Intel Extension for PyTorch.",
-                                "Please avoid import Intel Extension for PyTorch manually!")
+            # Check if user import ipex manually
+            if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
+                logging.error("IPEX-LLM will automatically import Intel Extension for PyTorch.")
+                raise ImportError("Please avoid import Intel Extension for PyTorch manually!")
             # import ipex
             import intel_extension_for_pytorch as ipex
             if ipex is not None:
