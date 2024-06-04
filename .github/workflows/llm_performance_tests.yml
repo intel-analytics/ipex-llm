@@ -389,6 +389,14 @@ jobs:
 
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
+      - name: Add extra warmup for chatglm3-6b int4+fp32 for more stable results
+        shell: bash
+        run: |
+          sed -i '/^\s*result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)/ i\
+                  if repo_id in ["THUDM/chatglm3-6b"]:\
+                      run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)
+          ' python/llm/dev/benchmark/all-in-one/run.py
+
       - name: Prepare igpu perf test (32-32)
         shell: bash
         run: |
@@ -414,13 +422,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen1.5 (32-32)
+      - name: Prepare igpu perf test for transformers 4.37 (32-32)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32_437.yaml
 
-      - name: Test on igpu for Qwen1.5 (32-32)
+      - name: Test on igpu for transformers 4.37 (32-32)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -482,13 +490,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (1024-128)
+      - name: Test on igpu for transformers 4.37 (1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -549,13 +557,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (2048-256)
+      - name: Prepare igpu perf test for transformers 4.37 (2048-256)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (2048-256)
+      - name: Test on igpu for transformers 4.37 (2048-256)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -616,13 +624,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (load_low_bit 1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (load_low_bit 1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_loadlowbit_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (load_low_bit 1024-128)
+      - name: Test on igpu for transformers 4.37 (load_low_bit 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -681,13 +689,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (int4+fp16 1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (int4+fp16 1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (int4+fp16 1024-128)
+      - name: Test on igpu for transformers 4.37 (int4+fp16 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
