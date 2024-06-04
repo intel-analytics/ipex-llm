@@ -389,6 +389,14 @@ jobs:
 
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
+      - name: Add extra warmup for chatglm3-6b int4+fp32 for more stable results
+        shell: bash
+        run: |
+          sed -i '/^\s*result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)/ i\
+                  if repo_id in ["THUDM/chatglm3-6b"]:\
+                      run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)
+          ' python/llm/dev/benchmark/all-in-one/run.py
+
       - name: Prepare igpu perf test (32-32)
         shell: bash
         run: |
