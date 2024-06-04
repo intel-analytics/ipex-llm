@@ -8,7 +8,7 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 In this example, we run inference for a Llama2 model to showcase the speed of EAGLE with IPEX-LLM on MT-bench data on Intel CPUs.
 
 ### 1. Install
-We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://conda-forge.org/download/).
 
 After installing conda, create a Python environment for IPEX-LLM:
 ```bash

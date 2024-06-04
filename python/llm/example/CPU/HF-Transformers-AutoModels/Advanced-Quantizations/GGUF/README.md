@@ -21,7 +21,7 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 In the example [generate.py](./generate.py), we show a basic use case to load a GGUF LLaMA2 model into `ipex-llm` using `from_gguf()` API, with IPEX-LLM optimizations.
 
 ### 1. Install
-We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://conda-forge.org/download/).
 
 After installing conda, create a Python environment for IPEX-LLM:
 
