@@ -137,9 +137,6 @@ class PromptLookupCandidateGenerator():
             self.min_candidates = 0
 
         self.lookup_table = {}
-        for i in range(self.max_matching_ngram_size, 0, -1):
-            self.lookup_table[i] = {}
-
         invalidInputError(self.max_matching_ngram_size > 0 and self.num_output_tokens > 0,
                           "Invalid max_matching_ngram_size or num_output_tokens")
     
@@ -147,6 +144,7 @@ class PromptLookupCandidateGenerator():
     def init_look_up_table(self,
                            input_ids: torch.LongTensor):
         for ngram_size in range(self.max_matching_ngram_size, 0, -1):
+            # Create sliding windows of size ngram_size
             windows = input_ids.unfold(dimension=1, size=ngram_size, step=1)
             for idx in range(windows.size(1)):
                 window = tensor2key(windows[0, idx])
@@ -155,6 +153,7 @@ class PromptLookupCandidateGenerator():
 
     def update_look_up_table(self,
                              new_input_ids: torch.LongTensor):
+        # Maintain a look up table
         window = tensor2key(new_input_ids[0, -self.max_matching_ngram_size:])
         for ngram_size in range(self.max_matching_ngram_size):
             if not self.lookup_table.get(window[ngram_size:], None):
@@ -180,24 +179,16 @@ class PromptLookupCandidateGenerator():
             `torch.LongTensor` of shape `(num_candidates, candidate_length)`:
             The candidate sequences to be tried.
         """
-        # breakpoint()
         if self.num_output_tokens == 0:
             return input_ids, None
         input_length = input_ids.size(1)
 
         chosen_ids = None
         for ngram_size in range(min(self.max_matching_ngram_size, input_length - 1), 0, -1):
-            # # Create sliding windows of size ngram_size
-            # windows = input_ids.unfold(dimension=1, size=ngram_size, step=1)
-
             # Convert ngram to a tensor for comparison
             ngram_tensor = input_ids[0, -ngram_size:]
 
-            # # Find where the windows match the ngram
-            # matches = (windows == ngram_tensor).all(dim=2)
-
             # # Get the indices of matches
-            # match_indices = matches.nonzero(as_tuple=True)[1]
             idx = self.get_n_gram_idx(ngram_tensor)
 
             # Iterate through match indices to find a valid continuation
