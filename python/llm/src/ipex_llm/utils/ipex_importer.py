@@ -20,6 +20,7 @@ import builtins
 import sys
 from ipex_llm.utils.common import log4Error
 
+
 class IPEXImporter:
     """
     Auto import Intel Extension for PyTorch as ipex,
@@ -55,14 +56,15 @@ class IPEXImporter:
         """
         Try to import Intel Extension for PyTorch as ipex for XPU
 
-        Raises ImportError if failed
+        Raises ImportError and invalidInputError if failed
         """
         if self.is_xpu_version_installed():
             # Check if user import ipex manually
             if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
                 logging.error("IPEX-LLM will automatically import Intel Extension for PyTorch.")
-                log4Error.invalidInputError(False, 
-                                            "Please import ipex-llm before importing intel_extension_for_pytorch!")
+                log4Error.invalidInputError(False,
+                                            "Please import ipex-llm before importing \
+                                                intel_extension_for_pytorch!")
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
             logging.info("intel_extension_for_pytorch auto imported")
@@ -71,7 +73,7 @@ class IPEXImporter:
         """
         Try to import Intel Extension for PyTorch as ipex
 
-        Raises ImportError if failed
+        Raises ImportError and invalidInputError if failed
         """
         # import ipex
         import intel_extension_for_pytorch as ipex
