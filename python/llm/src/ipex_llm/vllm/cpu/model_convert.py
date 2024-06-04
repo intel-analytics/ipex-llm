@@ -145,9 +145,9 @@ def _model_attention_convert():
 
 
 def _ipex_llm_convert(load_in_low_bit):
-    from vllm.worker.model_runner import ModelRunner
+    from vllm.worker.cpu_model_runner import CPUModelRunner
     import vllm.model_executor.model_loader as model_loader
-    setattr(ModelRunner, "load_model", get_load_function(load_in_low_bit))
+    setattr(CPUModelRunner, "load_model", get_load_function(load_in_low_bit))
 
 
 def get_load_function(low_bit):
@@ -155,11 +155,15 @@ def get_load_function(low_bit):
         _model_mlp_convert()
         _model_attention_convert()
 
-        self.model = get_model(self.model_config,
-                               self.device_config,
-                               lora_config=self.lora_config,
-                               parallel_config=self.parallel_config,
-                               scheduler_config=self.scheduler_config)
+        self.model = get_model(
+            model_config=self.model_config,
+            load_config=self.load_config,
+            device_config=self.device_config,
+            vision_language_config=self.vision_language_config,
+            lora_config=self.lora_config,
+            parallel_config=self.parallel_config,
+            scheduler_config=self.scheduler_config)
+
         from ipex_llm import optimize_model
         optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype)
 
