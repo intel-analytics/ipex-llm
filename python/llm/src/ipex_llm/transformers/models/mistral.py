@@ -1076,7 +1076,7 @@ def mistral_attention_forward_4_36_original(
     return attn_output.to(original_dtype), attn_weights, past_key_value
 
 
-def mistral_attention_forward_4_38(
+def mistral_attention_forward_4_39(
     self,
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor]=None,
@@ -1089,7 +1089,7 @@ def mistral_attention_forward_4_38(
     if use_quantize_kv_cache(self.q_proj, hidden_states):
         forward_function = mistral_attention_forward_4_36_quantized
     else:
-        forward_function = mistral_attention_forward_4_38_original
+        forward_function = mistral_attention_forward_4_39_original
     return forward_function(
         self=self,
         hidden_states=hidden_states,
