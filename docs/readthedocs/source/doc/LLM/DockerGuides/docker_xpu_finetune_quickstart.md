@@ -34,7 +34,7 @@ docker pull intelanalytics/ipex-llm-xpu-finetune:latest
 
         #/bin/bash
         export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu-finetune:latest
-        export CONTAINER_NAME=ipex-llm-xpu-finetune
+        export CONTAINER_NAME=ipex-llm-xpu-finetune-container
         sudo docker run -itd \
                 --net=host \
                 --device=/dev/dri \
@@ -42,8 +42,6 @@ docker pull intelanalytics/ipex-llm-xpu-finetune:latest
                 -e no_proxy=localhost,127.0.0.1 \
                 --memory="32G" \
                 --name=$CONTAINER_NAME \
-                -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
-                -e DEVICE=Arc \
                 --shm-size="16g" \
                 $DOCKER_IMAGE
    
@@ -54,8 +52,8 @@ docker pull intelanalytics/ipex-llm-xpu-finetune:latest
       .. code-block:: bash
 
         #/bin/bash
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
-        export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
+        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu-finetune:latest
+        export CONTAINER_NAME=ipex-llm-xpu-finetune-container
         sudo docker run -itd \
                 --net=host \
                 --device=/dev/dri \
@@ -65,8 +63,6 @@ docker pull intelanalytics/ipex-llm-xpu-finetune:latest
                 -e no_proxy=localhost,127.0.0.1 \
                 --memory="32G" \
                 --name=$CONTAINER_NAME \
-                -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
-                -e DEVICE=Arc \
                 --shm-size="16g" \
                 $DOCKER_IMAGE
 
@@ -76,7 +72,7 @@ docker pull intelanalytics/ipex-llm-xpu-finetune:latest
 After the container is booted, you could get into the container through `docker exec`.
 
 ```bash
-docker exec -it ipex-llm-inference-cpp-xpu-container /bin/bash
+docker exec -it ipex-llm-xpu-finetune-container /bin/bash
 ```
 
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
@@ -99,17 +95,17 @@ docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=ipex-llm-finetune-xpu \
+   --name=ipex-llm-finetune-xpu-container \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/alpaca-cleaned \
    --shm-size="16g" \
-   intelanalytics/ipex-llm-finetune-xpu:2.1.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-xpu:latest
 ```
 
 ```bash
-docker exec -it ipex-llm-finetune-xpu bash
+docker exec -it ipex-llm-finetune-xpu-container bash
 ```
 
 ```bash
@@ -131,17 +127,17 @@ docker run -itd \
    --net=host \
    --device=/dev/dri \
    --memory="32G" \
-   --name=ipex-llm-finetune-xpu \
+   --name=ipex-llm-finetune-xpu-container \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/model \
    -v $DATA_PATH:/data/alpaca-cleaned \
    --shm-size="16g" \
-   intelanalytics/ipex-llm-finetune-xpu:2.1.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-xpu:latest
 ```
 
 ```bash
-docker exec -it ipex-llm-finetune-xpu bash
+docker exec -it ipex-llm-finetune-xpu-container bash
 ```
 
 ```bash
