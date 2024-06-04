@@ -134,6 +134,12 @@ You can tune the service using these four arguments:
 3. `--max-num-batched-token`: Maximum number of batched tokens per iteration.
 4. `--max-num-seq`: Maximum number of sequences per iteration. Default: 256
 
+For longer input prompt, we would suggest to use `--max-num-batched-token` to restrict the service.  The reason behind this logic is that the `peak GPU memory usage` will appear when generating first token.  By using `--max-num-batched-token`, we can restrict the input size when generating first token.
+
+`--max-num-seqs` will restrict the generation for both first token and rest token.  It will restrict the maximum batch size to the value set by `--max-num-seqs`.
+
+When out-of-memory error occurs, the most obvious solution is to reduce the `gpu-memory-utilization`.  Other ways to resolve this error is to set `--max-num-batched-token` if peak memory occurs when generating first token or using `--max-num-seq` if peak memory occurs when generating rest tokens.
+
 If the service have been booted successfully, the console will display messages similar to the following:
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/start-vllm-service.png" target="_blank">
