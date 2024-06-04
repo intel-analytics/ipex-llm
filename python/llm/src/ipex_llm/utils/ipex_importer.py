@@ -52,7 +52,7 @@ class IPEXImporter:
 
     def import_ipex(self):
         """
-        Try to import Intel Extension for PyTorch as ipex
+        Try to import Intel Extension for PyTorch as ipex for XPU
 
         Raises ImportError if failed
         """
@@ -60,14 +60,24 @@ class IPEXImporter:
             # Check if user import ipex manually
             if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
                 logging.error("IPEX-LLM will automatically import Intel Extension for PyTorch.")
-                raise ImportError("Please avoid import Intel Extension for PyTorch manually!")
-            # import ipex
-            import intel_extension_for_pytorch as ipex
-            if ipex is not None:
-                # Expose ipex to Python builtins
-                builtins.ipex = ipex
+                raise ImportError("Please import ipex-llm before importing intel_extension_for_pytorch!")
+            self.directly_import_ipex()
             self.ipex_version = ipex.__version__
             logging.info("intel_extension_for_pytorch auto imported")
+
+    def directly_import_ipex(self):
+        """
+        Try to import Intel Extension for PyTorch as ipex
+
+        Raises ImportError if failed
+        """
+        # import ipex
+        import intel_extension_for_pytorch as ipex
+        if ipex is not None:
+            # Expose ipex to Python builtins
+            builtins.ipex = ipex
+        else:
+            raise ImportError("Can not import intel_extension_for_pytorch.")
 
     def get_ipex_version(self):
         """
@@ -78,15 +88,8 @@ class IPEXImporter:
         if self.ipex_version is not None:
             return self.ipex_version
         # try to import Intel Extension for PyTorch and get version
-        try:
-            import intel_extension_for_pytorch as ipex
-            if ipex is not None:
-                # Expose ipex to Python builtins
-                builtins.ipex = ipex
-            self.ipex_version = ipex.__version__
-        except ImportError:
-            logging.warning("Can not import intel_extension_for_pytorch.")
-            self.ipex_version = None
+        self.directly_import_ipex()
+        self.ipex_version = ipex.__version__
         return self.ipex_version
 
 
