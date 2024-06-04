@@ -4,7 +4,7 @@ setlocal
 :: Usage #############################
 :: ipex-llm-init.bat
 :: Example:
-:: ipex-llm-init.bat --gpu
+:: ipex-llm-init.bat
 :: ######################################
 
 CALL :main %*
