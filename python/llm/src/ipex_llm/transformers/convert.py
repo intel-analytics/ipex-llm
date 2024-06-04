@@ -663,39 +663,8 @@ def _optimize_pre(model):
                 model.lm_head.weight.data = norm_weight
     # for yuan 2.0
     if model.config.model_type == "yuan":
-        def merge_qk_proj_func(module):
-            if "YuanAttention" in module.__class__.__name__:
-                q_weight = module.q_proj.weight.data
-                k_weight = module.k_proj.weight.data
-                num_heads = module.num_heads
-                head_dim = module.head_dim
-                hidden_size = module.hidden_size
-
-                weight_q = torch.cat([
-                    q_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
-                    k_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
-                ], dim=0).view(num_heads * head_dim, hidden_size)
-
-                weight_k = torch.cat([
-                    q_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
-                    k_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
-                ], dim=0).view(num_heads * head_dim, hidden_size)
-
-                merged_q_proj = torch.nn.Linear(0, 0, False)
-                merged_q_proj.weight = torch.nn.Parameter(weight_q, requires_grad=False)
-                merged_q_proj.in_features = hidden_size
-                merged_q_proj.out_features = num_heads * head_dim
-                module.merged_q_proj = merged_q_proj
-
-                merged_k_proj = torch.nn.Linear(0, 0, False)
-                merged_k_proj.weight = torch.nn.Parameter(weight_k, requires_grad=False)
-                merged_k_proj.in_features = hidden_size
-                merged_k_proj.out_features = num_heads * head_dim
-                module.merged_k_proj = merged_k_proj
-
-                del module.q_proj
-                del module.k_proj
-        model.apply(merge_qk_proj_func)
+        from ipex_llm.transformers.models.yuan import merge_qk
+        model.apply(merge_qk)
     # for bge-large
     if model.config.model_type == 'bert' and (
         not model.config.is_decoder and
