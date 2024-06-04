@@ -130,6 +130,7 @@ def is_linear_module(module):
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
+        from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
         from vllm.model_executor.parallel_utils.parallel_state import (
             get_tensor_model_parallel_group,
             get_tensor_model_parallel_world_size
@@ -148,6 +149,11 @@ def is_linear_module(module):
                 in_features = module.input_size_per_partition
             elif isinstance(module, ColumnParallelLinear) and tp_size >= 2:
                 out_features = module.output_size_per_partition
+        elif isinstance(module, ParallelLMHead):
+            in_features = module.embedding_dim
+            out_features = module.num_embeddings_per_partition
+            result = True
+            mp_group = None  # TODO: check this
         else:
             # Also check for Linear module
             if isinstance(module, nn.Linear) or is_awq:
