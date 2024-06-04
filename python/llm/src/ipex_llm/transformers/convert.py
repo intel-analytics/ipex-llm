@@ -54,6 +54,7 @@ import sys
 
 _IS_VLLM_AVAILABLE = None
 _USE_VLLM = False
+_VLLM_VERSION = None
 
 
 def is_auto_gptq_available():
@@ -75,6 +76,14 @@ def is_vllm_available():
     else:
         _IS_VLLM_AVAILABLE = False
     return _IS_VLLM_AVAILABLE
+
+
+def get_package_version(package_name):
+    result = subprocess.run(['pip', 'list'], capture_output=True, text=True)
+    for line in result.stdout.splitlines():
+        if line.startswith(package_name):
+            return line.split()[1]
+    return None
 
 
 def get_use_vllm():
@@ -133,13 +142,24 @@ def is_linear_module(module):
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
     if is_vllm_available():
         # Only convert vllm modules
+        global _VLLM_VERSION
+        if _VLLM_VERSION is None:
+            _VLLM_VERSION = get_package_version('vllm')
+        if 'xpu' in _VLLM_VERSION:
+            # For vllm xpu
+            from vllm.model_executor.parallel_utils.parallel_state import (
+                get_tensor_model_parallel_group,
+                get_tensor_model_parallel_world_size
+            )
+            tp_size = get_tensor_model_parallel_world_size()
+        else:
+            # For vllm cpu
+            tp_size = 1
+
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
-        from vllm.model_executor.parallel_utils.parallel_state import (
-            get_tensor_model_parallel_group,
-            get_tensor_model_parallel_world_size
-        )
+
         VLLM_LINEAR_LIST = [
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         ]
@@ -148,7 +168,6 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
-            tp_size = get_tensor_model_parallel_world_size()
             if isinstance(module, RowParallelLinear) and tp_size >= 2:
                 mp_group = get_tensor_model_parallel_group()
                 in_features = module.input_size_per_partition
