@@ -54,6 +54,7 @@ import sys
 
 _IS_VLLM_AVAILABLE = None
 _USE_VLLM = False
+_VLLM_VERSION = None
 
 
 def is_auto_gptq_available():
@@ -141,9 +142,10 @@ def is_linear_module(module):
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
     if is_vllm_available():
         # Only convert vllm modules
-        import vllm
-        _vllm_version = get_package_version('vllm')
-        if 'xpu' in _vllm_version:
+        global _VLLM_VERSION
+        if _VLLM_VERSION is None:
+            _VLLM_VERSION = get_package_version('vllm')
+        if 'xpu' in _VLLM_VERSION:
             # For vllm xpu
             from vllm.model_executor.parallel_utils.parallel_state import (
                 get_tensor_model_parallel_group,
