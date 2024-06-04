@@ -41,7 +41,11 @@ def main():
         all_test_cases = []
         for model in conf.repo_id:
             for in_out in conf['in_out_pairs']:
-                for batch_size in conf['batch_size']:
+                if not OmegaConf.is_list(conf["batch_size"]):
+                    batch_list = [conf["batch_size"]]
+                else:
+                    batch_list = conf["batch_size"]
+                for batch_size in batch_list:
                     model_id_input = model + ':' + in_out.split('-')[0] + ':' + str(batch_size)
                     all_test_cases.append(model_id_input)
         exclude_test_cases = []
