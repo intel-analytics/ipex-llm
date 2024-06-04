@@ -110,7 +110,11 @@ class Qwen2Model(Qwen2PreTrainedModel):
         )
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         if not isinstance(self.layers[self.layer_start], DummyLayer):
-            use_quantize_kv = use_quantize_kv_cache(self.layers[self.layer_start].mlp.up_proj, input_ids)
+            if inputs_embeds is not None:
+                temp_input = inputs_embeds
+            else:
+                temp_input = input_ids
+            use_quantize_kv = use_quantize_kv_cache(self.layers[self.layer_start].mlp.up_proj, temp_input)
         if use_cache:
             if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
