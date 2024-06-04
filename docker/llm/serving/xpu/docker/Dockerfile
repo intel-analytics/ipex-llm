@@ -12,7 +12,7 @@ RUN cd /llm &&\
     # Install ipex-llm[serving] only will update ipex_llm source code without updating
     # bigdl-core-xe, which will lead to problems
     apt-get update && \
-    apt-get install -y libfabric-dev wrk && \
+    apt-get install -y libfabric-dev wrk libaio-dev && \
     pip install --pre --upgrade ipex-llm[xpu,serving] && \
     pip install transformers==4.37.0 gradio==4.19.2 && \
     # Install vLLM-v2 dependencies
