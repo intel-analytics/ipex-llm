@@ -15,6 +15,8 @@ from pipeline_models import (
     _make_causal_mask, _expand_mask, DummyLayer, PPConfig,
     PipelineBaseModel,
 )
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
+from ipex_llm.transformers.kv import DynamicFp8Cache
 
 class Qwen2Model(Qwen2PreTrainedModel):
     """
@@ -107,6 +109,14 @@ class Qwen2Model(Qwen2PreTrainedModel):
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
         )
         use_cache = use_cache if use_cache is not None else self.config.use_cache
+        if inputs_embeds is not None:
+            temp_input = inputs_embeds
+        else:
+            temp_input = input_ids
+        use_quantize_kv = use_quantize_kv_cache(self.layers[self.layer_start].mlp.up_proj, temp_input)
+        if use_cache:
+            if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+                past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
 
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
@@ -198,7 +208,7 @@ class Qwen2Model(Qwen2PreTrainedModel):
             hidden_states = layer_outputs[0]
 
             if use_cache:
-                next_decoder_cache = layer_outputs[2 if output_attentions else 1].to_legacy_cache()
+                next_decoder_cache = layer_outputs[2 if output_attentions else 1]
 
             # logger.info(f"rank: {self.pp_config.pp_rank}: {idx} {next_decoder_cache[idx][0].shape}")
 
