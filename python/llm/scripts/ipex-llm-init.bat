@@ -4,36 +4,39 @@ setlocal
 :: Usage #############################
 :: ipex-llm-init.bat
 :: Example:
-:: ipex-llm-init.bat --gpu --device Arc
+:: ipex-llm-init.bat --gpu
 :: ######################################
 
-REM Call the argument parsing function
-call :parse-args %*
+CALL :main %*
+GOTO :end
 
-:: Initialize default values
-set ENABLE_GPU=0
-set DEVICE=""
 
-:enable-gpu
-SET ENABLE_GPU=1
-GOTO :eof
-
-:disable-gpu
-SET ENABLE_GPU=0
+:initialize
 CALL :unset-gpu-envs
+SET MODE=
 GOTO :eof
+
+
 
 :unset-gpu-envs
+SET ONEAPI_DEVICE_SELECTOR_=%ONEAPI_DEVICE_SELECTOR%
+SET SYCL_CACHE_PERSISTENT_=%SYCL_CACHE_PERSISTENT%
+SET BIGDL_LLM_XMX_DISABLED_=%BIGDL_LLM_XMX_DISABLED%
+SET ZE_AFFINITY_MASK_=%ZE_AFFINITY_MASK%
+endlocal
 SET SYCL_CACHE_PERSISTENT=
 SET BIGDL_LLM_XMX_DISABLED=
+SET ZE_AFFINITY_MASK=
+SET ONEAPI_DEVICE_SELECTOR=
+setlocal
 GOTO :eof
 
 :display-var
 echo +++++ Env Variables +++++
 echo Exported:
-echo     ENABLE_GPU             = %ENABLE_GPU%
-echo     SYCL_CACHE_PERSISTENT  = %SYCL_CACHE_PERSISTENT%
-echo     BIGDL_LLM_XMX_DISABLED = %BIGDL_LLM_XMX_DISABLED%
+echo     ONEAPI_DEVICE_SELECTOR = %ONEAPI_DEVICE_SELECTOR_%
+echo     SYCL_CACHE_PERSISTENT  = %SYCL_CACHE_PERSISTENT_%
+echo     BIGDL_LLM_XMX_DISABLED = %BIGDL_LLM_XMX_DISABLED_%
 echo +++++++++++++++++++++++++
 GOTO :eof
 
@@ -44,68 +47,98 @@ echo ipex-llm-init is a tool to automatically configure and run the subcommand u
 echo environment variables for accelerating IPEX-LLM.
 echo.
 echo Optional options:
-echo     -h, --help                Display this help message and exit.
-echo     -g, --gpu                 Enable GPU support
-echo     --device ^<device_type^>    Specify the device type (Arc, iGPU)
+echo     -h, --help                Display this help message then exit.
+::echo     -g, --gpu                 Enable GPU support
+::echo     -c, --cpu                 Enable CPU support
+echo.
+::echo If no option is specified, it will guide you to choose one.
 GOTO :eof
 
-:display-error
-echo Invalid Option: -%1 1>&2
+
+:display-error-invalid-option
+echo Invalid Option: %1 1>&2
 echo.
 CALL :display-help
-EXIT /B 1
+GOTO :eof
+
+
+:display-error-too-many-options
+echo Too Many Options: ipex-llm-init is supposed to receive only one option.
+echo.
+Call :display-help
+GOTO :eof
+
 
 :parse-args
-IF "%~1"=="" GOTO args-done
-IF "%~1"=="-h" GOTO display-help
-IF "%~1"=="--help" GOTO display-help
-IF "%~1"=="-g" CALL :enable-gpu & echo DEBUG: ENABLE_GPU enabled & SHIFT & GOTO parse-args
-IF "%~1"=="--gpu" CALL :enable-gpu & echo DEBUG: ENABLE_GPU enabled & SHIFT & GOTO parse-args
-IF "%~1"=="--device" (
-    IF "%~2"=="" (
-        echo Error: --device option requires a value.
-        GOTO :eof
-    )
-    SET "DEVICE=%2"
-    SHIFT
-    SHIFT
-    GOTO parse-args
-)
-CALL :display-error %1
+IF "%~1"=="" SET MOD=gpu & GOTO :eof
+IF "%~1"=="-h" SET MOD=help & GOTO :check-too-many-options
+IF "%~1"=="--help" SET MOD=help & GOTO :check-too-many-options
+::IF "%~1"=="-g" SET MOD=gpu & echo DEBUG: ENABLE_GPU enabled & SHIFT & GOTO :check-too-many-options
+::IF "%~1"=="--gpu" SET MOD=gpu & echo DEBUG: ENABLE_GPU enabled & SHIFT & GOTO :check-too-many-options
+::IF "%~1"=="-c" SET MOD=cpu & echo DEBUG: ENABLE_GPU disabled & SHIFT & GOTO :check-too-many-options
+::IF "%~1"=="--cpu" SET MOD=cpu & echo DEBUG: ENABLE_GPU disabled & SHIFT & GOTO :check-too-many-options
+:: IF "%~1"=="-a" SET MOD=auto & echo DEBUG: try to auto detect device & SHIFT & GOTO :check-too-many-options
+:: IF "%~1"=="--auto" SET MOD=auto & echo DEBUG: try to auto detect device & SHIFT & GOTO :check-too-many-options
+
+CALL :display-error-invalid-option %1
 EXIT /B 1
 
-:args-done
+:check-too-many-options
+IF "%~2"=="" GOTO :eof
+CALL :display-error-too-many-options
+EXIT /B 1
 
-:: Ensure -g and --device are used together or not at all
-IF "%ENABLE_GPU%"=="1" (
-    IF "%DEVICE%"=="" (
-        echo Error: --device must be specified with -g
-        GOTO display-help
-    )
-) ELSE IF NOT "%DEVICE%"=="" (
-    echo Error: -g must be specified with --device
-    GOTO display-help
+
+
+:main
+CALL :initialize
+CALL :parse-args %*
+
+if %ERRORLEVEL% NEQ 0 EXIT /B %ERRORLEVEL%
+
+IF %MOD%==help (
+    CALL :display-help
+    GOTO :eof
 )
 
-IF "%ENABLE_GPU%"=="1" (
-    echo DEBUG: ENABLE_GPU is enabled and DEVICE is %DEVICE%
-    IF /I "%DEVICE%"=="Arc" (
-        SET SYCL_CACHE_PERSISTENT=1
-    ) ELSE IF /I "%DEVICE%"=="iGPU" (
-        SET SYCL_CACHE_PERSISTENT=1
-        SET BIGDL_LLM_XMX_DISABLED=1
-    ) ELSE (
-        echo Error: Invalid device type specified for GPU.
-        echo.
-        CALL :display-help
-        EXIT /B 1
-    )
+
+
+if "%TMP%"=="" (
+    SET TMPFILEPATH=.\tmp_ipex-llm-init_bat.tmp
 ) ELSE (
-    CALL :unset-gpu-envs
+    SET TMPFILEPATH=%TMP%\tmp_ipex-llm-init_bat.tmp
 )
+
+python .\ipex-llm-init-support.py %MOD% %TMPFILEPATH% 2>nul
+
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to run ipex-llm-init-support.py.
+    echo Please check the error message above.
+    EXIT /B 1
+)
+
+SET ONEAPI_DEVICE_SELECTOR_=
+SET SYCL_CACHE_PERSISTENT_=
+SET BIGDL_LLM_XMX_DISABLED_=
+
+(
+    SET /p ONEAPI_DEVICE_SELECTOR_=
+    SET /p SYCL_CACHE_PERSISTENT_=
+    SET /p BIGDL_LLM_XMX_DISABLED_=
+) < %TMPFILEPATH%
+del %TMPFILEPATH%
+
+
+
 
 CALL :display-var
 echo Complete.
 
+GOTO :eof
+
 :end
-endlocal
+endlocal & (
+    SET ONEAPI_DEVICE_SELECTOR=%ONEAPI_DEVICE_SELECTOR_%
+    SET SYCL_CACHE_PERSISTENT=%SYCL_CACHE_PERSISTENT_%
+    SET BIGDL_LLM_XMX_DISABLED=%BIGDL_LLM_XMX_DISABLED_%
+) 
