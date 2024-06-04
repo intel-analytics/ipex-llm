@@ -274,9 +274,6 @@ if __name__ == "__main__":
     multi_turn = args.multi_turn
     max_context = args.max_context
 
-    if device == 'xpu':
-        import intel_extension_for_pytorch as ipex
-
     model = model.to(device)
 
     model.generation_config = GenerationConfig.from_pretrained(
