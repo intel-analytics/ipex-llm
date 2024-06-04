@@ -1,7 +1,6 @@
 from torch import nn
 import torch
 import torch.distributed as dist
-import intel_extension_for_pytorch as ipex
 
 from typing import List, Optional, Tuple, Union, Iterator
 import time
