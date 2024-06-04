@@ -855,7 +855,7 @@ def convert_bigdl_other_module(model, dtype):
 
 def convert_forward(m, target_m, new_forward):
     for _, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
+        if sub_m.__class__ == target_m:
             bound_method = new_forward.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, "forward", bound_method)
         convert_forward(sub_m, target_m, new_forward)
@@ -872,7 +872,7 @@ def replace_RotaryEmbed(m, target_m,  replace_embed):
 
 def replace_func(m, target_m, func_name, new_func):
     for _, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
+        if sub_m.__class__ == target_m:
             bound_method = new_func.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, func_name, bound_method)
         replace_func(sub_m, target_m, func_name, new_func)
@@ -1529,7 +1529,8 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.gptbigcode import _attn_wrapper
-        from ipex_llm.transformers.models.gptbigcode import gptbigcode_attention_forward
+        from ipex_llm.transformers.models.gptbigcode import gptbigcode_attention_forward, \
+            gptbigcode_sdpa_attention_forward
         convert_forward(model,
                         module.GPTBigCodeAttention,
                         gptbigcode_attention_forward)
@@ -1538,6 +1539,18 @@ def _optimize_post(model, lightweight_bmm=False):
                      module.GPTBigCodeAttention,
                      "_attn",
                      _attn)
+        try:
+            # for transformers 4.36+
+            convert_forward(model,
+                            module.GPTBigCodeSdpaAttention,
+                            gptbigcode_sdpa_attention_forward)
+            sdpa_attn = _attn_wrapper(module.GPTBigCodeSdpaAttention._attn)
+            replace_func(model,
+                         module.GPTBigCodeSdpaAttention,
+                         "_attn",
+                         sdpa_attn)
+        except AttributeError:
+            pass
     elif model.config.model_type == "starcoder2":
         # starcoder2
         modeling_module_name = model.__class__.__module__
