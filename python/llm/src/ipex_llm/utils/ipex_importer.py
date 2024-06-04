@@ -61,9 +61,9 @@ class IPEXImporter:
         if self.is_xpu_version_installed():
             # Check if user import ipex manually
             if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
-                logging.error("IPEX-LLM will automatically import Intel Extension for PyTorch.")
+                logging.error("ipex_llm will automatically import intel_extension_for_pytorch.")
                 log4Error.invalidInputError(False,
-                                            "Please import ipex-llm before importing \
+                                            "Please import ipex_llm before importing \
                                                 intel_extension_for_pytorch!")
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
