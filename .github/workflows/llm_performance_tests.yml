@@ -147,23 +147,23 @@ jobs:
           python ../../../../test/benchmark/concat_csv.py
           for file in *.csv; do
               if [[ $file != *test* ]]; then
-                  cp "$file" $CSV_SAVE_PATH
+                  cp "$file" $CSV_SAVE_PATH/batch_size_1
               fi
           done
           python -m pip install pandas==1.5.3
           cd ../../../../test/benchmark
-          python csv_to_html.py -f $CSV_SAVE_PATH
+          python csv_to_html.py -f $CSV_SAVE_PATH/batch_size_1
           # batch_size 2
           cd ../../../../
           cd python/llm/dev/benchmark/all-in-one/test_batch2
           python ../../../../test/benchmark/concat_csv.py
           for file in *.csv; do
               if [[ $file != *test* ]]; then
-                  cp "$file" $CSV_SAVE_PATH
+                  cp "$file" $CSV_SAVE_PATH/batch_size_2
               fi
           done
           cd ../../../../test/benchmark
-          python csv_to_html.py -f $CSV_SAVE_PATH
+          python csv_to_html.py -f $CSV_SAVE_PATH/batch_size_2
 
       - name: Check and upload results to ftp
         shell: bash
