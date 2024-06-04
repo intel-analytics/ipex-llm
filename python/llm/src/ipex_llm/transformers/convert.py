@@ -133,13 +133,23 @@ def is_linear_module(module):
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
     if is_vllm_available():
         # Only convert vllm modules
+        import vllm
+        _vllm_version = vllm.__version__
+        if _vllm_version.endswith("xpu"):
+            # For vllm xpu
+            from vllm.model_executor.parallel_utils.parallel_state import (
+                get_tensor_model_parallel_group,
+                get_tensor_model_parallel_world_size
+            )
+            tp_size = get_tensor_model_parallel_world_size()
+        else:
+            # For vllm cpu
+            tp_size = 1
+
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
-        from vllm.model_executor.parallel_utils.parallel_state import (
-            get_tensor_model_parallel_group,
-            get_tensor_model_parallel_world_size
-        )
+        
         VLLM_LINEAR_LIST = [
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         ]
@@ -148,7 +158,7 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
-            tp_size = get_tensor_model_parallel_world_size()
+            
             if isinstance(module, RowParallelLinear) and tp_size >= 2:
                 mp_group = get_tensor_model_parallel_group()
                 in_features = module.input_size_per_partition
