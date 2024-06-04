@@ -77,6 +77,14 @@ def is_vllm_available():
     return _IS_VLLM_AVAILABLE
 
 
+def get_package_version(package_name):
+    result = subprocess.run(['pip', 'list'], capture_output=True, text=True)
+    for line in result.stdout.splitlines():
+        if line.startswith(package_name):
+            return line.split()[1]
+    return None
+
+
 def get_use_vllm():
     return _USE_VLLM
 
@@ -134,8 +142,8 @@ def is_linear_module(module):
     if is_vllm_available():
         # Only convert vllm modules
         import vllm
-        _vllm_version = vllm.__version__
-        if _vllm_version.endswith("xpu"):
+        _vllm_version = get_package_version('vllm')
+        if 'xpu' in _vllm_version:
             # For vllm xpu
             from vllm.model_executor.parallel_utils.parallel_state import (
                 get_tensor_model_parallel_group,
