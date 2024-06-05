@@ -174,9 +174,9 @@ def benchmark(
                     )
                     p90_first_token_latency = np.percentile(first_token_latencies, 90)
                     p95_first_token_latency = np.percentile(first_token_latencies, 95)
-                    average_first_token_inference_latency = np.mean(
-                        first_token_inference_times
-                    )
+                    # average_first_token_inference_latency = np.mean(
+                    #     first_token_inference_times
+                    # )
                     print(
                         f"Average first token latency: {average_first_token_latency * 1000} milliseconds.",
                         file=file,
@@ -189,10 +189,10 @@ def benchmark(
                         f"P95 first token latency: {p95_first_token_latency * 1000} milliseconds.",
                         file=file,
                     )
-                    print(
-                        f"Average first token inference latency: {average_first_token_inference_latency * 1000} milliseconds.",
-                        file=file,
-                    )
+                    # print(
+                    #     f"Average first token inference latency: {average_first_token_inference_latency * 1000} milliseconds.",
+                    #     file=file,
+                    # )
                     print(file=file)
 
                 if next_token_latencies:
@@ -201,9 +201,9 @@ def benchmark(
                     )
                     p90_next_token_latency = np.percentile(next_token_latencies, 90)
                     p95_next_token_latency = np.percentile(next_token_latencies, 95)
-                    average_next_token_inference_latency = np.mean(
-                        next_token_inference_times
-                    )
+                    # average_next_token_inference_latency = np.mean(
+                    #     next_token_inference_times
+                    # )
                     print(
                         f"Average next token latency: {average_next_token_latency * 1000} milliseconds.",
                         file=file,
@@ -216,10 +216,10 @@ def benchmark(
                         f"P95 next token latency: {p95_next_token_latency * 1000} milliseconds.",
                         file=file,
                     )
-                    print(
-                        f"Average next token inference latency: {average_next_token_inference_latency * 1000} milliseconds.",
-                        file=file,
-                    )
+                    # print(
+                    #     f"Average next token inference latency: {average_next_token_inference_latency * 1000} milliseconds.",
+                    #     file=file,
+                    # )
                     print(file=file)
 
 
@@ -267,4 +267,4 @@ for MAX_CONCURRENT_REQUESTS in args.max_concurrent_requests:
         is_warmup=True,
     )
 
-    benchmark(LLM_URLS, PROMPT, NUM_REQUESTS, MAX_CONCURRENT_REQUESTS, MAX_TOKENS)
+    benchmark(LLM_URLS, PROMPT, NUM_REQUESTS, MAX_CONCURRENT_REQUESTS, MAX_TOKENS, PROMPT_LENGTH)
