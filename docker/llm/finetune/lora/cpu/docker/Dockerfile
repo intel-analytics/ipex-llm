@@ -20,7 +20,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] h
 
 RUN mkdir /ipex_llm/data && mkdir /ipex_llm/model && \
 # Install python 3.11.1
-    apt-get update && apt-get install -y curl wget gpg gpg-agent software-properties-common git gcc g++ make libunwind8-dev zlib1g-dev libssl-dev libffi-dev && \
+    apt-get update && apt-get install -y curl wget gpg gpg-agent git gcc g++ make libunwind8-dev zlib1g-dev libssl-dev libffi-dev && \
     mkdir -p /opt/python && \
     cd /opt/python && \
     wget https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tar.xz && \

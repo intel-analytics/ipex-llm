@@ -1844,17 +1844,22 @@ if __name__ == '__main__':
     import pandas as pd
     for api in conf.test_api:
         global csv_name
-        csv_name = f'{current_dir}/{api}-results-{today}.csv'
-        for model in conf.repo_id:
-            in_out_pairs = conf['in_out_pairs'].copy()
-            if excludes:
-                for in_out in conf['in_out_pairs']:
-                    model_id_input = model + ':' + in_out.split('-')[0]
-                    model_id_input_batch_size = model_id_input + ':' + str(conf['batch_size'])
-                    if model_id_input in excludes or model_id_input_batch_size in excludes:
-                        in_out_pairs.remove(in_out)
-            run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], streaming, use_fp16_torch_dtype, n_gpu)
+        csv_name = f'{current_dir}/{api}-results-{today}.csv' 
+        if not OmegaConf.is_list(conf["batch_size"]):
+            batch_list = [conf["batch_size"]]
+        else:
+            batch_list = conf["batch_size"]
+        for batch_size in batch_list:
+            for model in conf.repo_id:
+                in_out_pairs = conf['in_out_pairs'].copy()
+                if excludes:
+                    for in_out in conf['in_out_pairs']:
+                        model_id_input = model + ':' + in_out.split('-')[0]
+                        model_id_input_batch_size = model_id_input + ':' + str(batch_size)
+                        if model_id_input in excludes or model_id_input_batch_size in excludes:
+                            in_out_pairs.remove(in_out)
+                run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, n_gpu)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])

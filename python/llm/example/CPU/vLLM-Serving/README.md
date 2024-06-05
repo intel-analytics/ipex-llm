@@ -28,6 +28,7 @@ pip3 install "pydantic<2"  # Required for OpenAI server.
 # Install vllm
 git clone https://github.com/vllm-project/vllm.git && \
 cd ./vllm && \
+git checkout v0.4.2 && \
 pip install wheel packaging ninja setuptools>=49.4.0 numpy && \
 pip install -v -r requirements-cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu && \
 VLLM_TARGET_DEVICE=cpu python3 setup.py install

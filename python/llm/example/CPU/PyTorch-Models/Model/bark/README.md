@@ -7,7 +7,7 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 ## Example: Synthesize speech with the given input text
 In the example [synthesize_speech.py](./synthesize_speech.py), we show a basic use case for Bark model to synthesize speech based on the given text, with IPEX-LLM INT4 optimizations.
 ### 1. Install
-We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://conda-forge.org/download/).
 
 After installing conda, create a Python environment for IPEX-LLM:
 

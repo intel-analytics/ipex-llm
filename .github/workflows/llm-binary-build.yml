@@ -210,6 +210,7 @@ jobs:
           path: |
             avx_release
       - name: Clean up test environment
+        if: ${{ always() }}
         shell: bash
         run: |
           make clean

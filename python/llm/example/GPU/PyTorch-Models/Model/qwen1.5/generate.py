@@ -20,7 +20,6 @@ import argparse
 
 from transformers import AutoTokenizer
 from ipex_llm import optimize_model
-import intel_extension_for_pytorch as ipex
 import numpy as np
 
 

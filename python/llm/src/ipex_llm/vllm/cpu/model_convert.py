@@ -24,8 +24,10 @@ from vllm.model_executor.models.chatglm import GLMMLP, GLMAttention
 from vllm.attention import Attention, AttentionMetadata
 from vllm.lora.worker_manager import LRUCacheWorkerLoRAManager
 from vllm.config import DeviceConfig
-from typing import Tuple
+
+from vllm._C import ops
 from ipex_llm.utils.common import invalidInputError
+from typing import List, Optional, Tuple, Union
 
 
 def _MLP_forward(self, x):
@@ -42,7 +44,7 @@ def _Attention_forward(
     kv_cache: torch.Tensor,
     attn_metadata: AttentionMetadata,
 ) -> torch.Tensor:
-    qkv = self.qkv_proj(hidden_states)
+    qkv = self.qkv_proj(hidden_states).to(dtype=kv_cache.dtype)
     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
     q, k = self.rotary_emb(positions, q, k)
     attn_output = self.attn(q, k, v, kv_cache, attn_metadata, self.kv_scale)
@@ -145,9 +147,61 @@ def _model_attention_convert():
 
 
 def _ipex_llm_convert(load_in_low_bit):
-    from vllm.worker.model_runner import ModelRunner
+    from vllm.worker.cpu_model_runner import CPUModelRunner
     import vllm.model_executor.model_loader as model_loader
-    setattr(ModelRunner, "load_model", get_load_function(load_in_low_bit))
+    setattr(CPUModelRunner, "load_model", get_load_function(load_in_low_bit))
+
+    from vllm.model_executor.layers.rotary_embedding import RotaryEmbedding
+    setattr(RotaryEmbedding, "forward", _ipex_llm_rotary_embedding_forward)
+    from vllm.model_executor.layers.layernorm import RMSNorm
+    setattr(RMSNorm, "forward", _ipex_llm_rmsnorm_forward)
+
+
+def _ipex_llm_rotary_embedding_forward(
+    self,
+    positions: torch.Tensor,
+    query: torch.Tensor,
+    key: torch.Tensor,
+    offsets: Optional[torch.Tensor] = None,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    self.cos_sin_cache = self.cos_sin_cache.to(positions.device, dtype=query.dtype)
+
+    # ops.rotary_embedding()/batched_rotary_embedding()
+    # are in-place operations that update the query and key tensors.
+    if offsets is not None:
+        ops.batched_rotary_embedding(positions, query, key, self.head_size,
+                                     self.cos_sin_cache,
+                                     self.is_neox_style, self.rotary_dim,
+                                     offsets)
+    else:
+        ops.rotary_embedding(positions, query, key, self.head_size,
+                             self.cos_sin_cache, self.is_neox_style)
+    return query, key
+
+
+def _ipex_llm_rmsnorm_forward(
+    self,
+    x: torch.Tensor,
+    residual: Optional[torch.Tensor] = None,
+) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+    x = x.to(dtype=self.weight.data.dtype)
+    if residual is not None:
+        residual = residual.to(dtype=self.weight.data.dtype)
+        ops.fused_add_rms_norm(
+            x,
+            residual,
+            self.weight.data,
+            self.variance_epsilon,
+        )
+        return x, residual
+    out = torch.empty_like(x)
+    ops.rms_norm(
+        out,
+        x,
+        self.weight.data,
+        self.variance_epsilon,
+    )
+    return out
 
 
 def get_load_function(low_bit):
@@ -155,11 +209,15 @@ def get_load_function(low_bit):
         _model_mlp_convert()
         _model_attention_convert()
 
-        self.model = get_model(self.model_config,
-                               self.device_config,
-                               lora_config=self.lora_config,
-                               parallel_config=self.parallel_config,
-                               scheduler_config=self.scheduler_config)
+        self.model = get_model(
+            model_config=self.model_config,
+            load_config=self.load_config,
+            device_config=self.device_config,
+            vision_language_config=self.vision_language_config,
+            lora_config=self.lora_config,
+            parallel_config=self.parallel_config,
+            scheduler_config=self.scheduler_config)
+
         from ipex_llm import optimize_model
         optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype)
 

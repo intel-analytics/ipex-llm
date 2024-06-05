@@ -54,6 +54,7 @@ import sys
 
 _IS_VLLM_AVAILABLE = None
 _USE_VLLM = False
+_VLLM_VERSION = None
 
 
 def is_auto_gptq_available():
@@ -75,6 +76,14 @@ def is_vllm_available():
     else:
         _IS_VLLM_AVAILABLE = False
     return _IS_VLLM_AVAILABLE
+
+
+def get_package_version(package_name):
+    result = subprocess.run(['pip', 'list'], capture_output=True, text=True)
+    for line in result.stdout.splitlines():
+        if line.startswith(package_name):
+            return line.split()[1]
+    return None
 
 
 def get_use_vllm():
@@ -133,13 +142,24 @@ def is_linear_module(module):
     is_awq = is_auto_awq_available() and isinstance(module, WQLinear_GEMM)
     if is_vllm_available():
         # Only convert vllm modules
+        global _VLLM_VERSION
+        if _VLLM_VERSION is None:
+            _VLLM_VERSION = get_package_version('vllm')
+        if 'xpu' in _VLLM_VERSION:
+            # For vllm xpu
+            from vllm.model_executor.parallel_utils.parallel_state import (
+                get_tensor_model_parallel_group,
+                get_tensor_model_parallel_world_size
+            )
+            tp_size = get_tensor_model_parallel_world_size()
+        else:
+            # For vllm cpu
+            tp_size = 1
+
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
-        from vllm.model_executor.parallel_utils.parallel_state import (
-            get_tensor_model_parallel_group,
-            get_tensor_model_parallel_world_size
-        )
+
         VLLM_LINEAR_LIST = [
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         ]
@@ -148,7 +168,6 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
-            tp_size = get_tensor_model_parallel_world_size()
             if isinstance(module, RowParallelLinear) and tp_size >= 2:
                 mp_group = get_tensor_model_parallel_group()
                 in_features = module.input_size_per_partition
@@ -836,7 +855,7 @@ def convert_bigdl_other_module(model, dtype):
 
 def convert_forward(m, target_m, new_forward):
     for _, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
+        if sub_m.__class__ == target_m:
             bound_method = new_forward.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, "forward", bound_method)
         convert_forward(sub_m, target_m, new_forward)
@@ -853,7 +872,7 @@ def replace_RotaryEmbed(m, target_m,  replace_embed):
 
 def replace_func(m, target_m, func_name, new_func):
     for _, sub_m in m.named_children():
-        if isinstance(sub_m, target_m):
+        if sub_m.__class__ == target_m:
             bound_method = new_func.__get__(sub_m, sub_m.__class__)
             setattr(sub_m, func_name, bound_method)
         replace_func(sub_m, target_m, func_name, new_func)
@@ -1510,7 +1529,8 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.gptbigcode import _attn_wrapper
-        from ipex_llm.transformers.models.gptbigcode import gptbigcode_attention_forward
+        from ipex_llm.transformers.models.gptbigcode import gptbigcode_attention_forward, \
+            gptbigcode_sdpa_attention_forward
         convert_forward(model,
                         module.GPTBigCodeAttention,
                         gptbigcode_attention_forward)
@@ -1519,6 +1539,18 @@ def _optimize_post(model, lightweight_bmm=False):
                      module.GPTBigCodeAttention,
                      "_attn",
                      _attn)
+        try:
+            # for transformers 4.36+
+            convert_forward(model,
+                            module.GPTBigCodeSdpaAttention,
+                            gptbigcode_sdpa_attention_forward)
+            sdpa_attn = _attn_wrapper(module.GPTBigCodeSdpaAttention._attn)
+            replace_func(model,
+                         module.GPTBigCodeSdpaAttention,
+                         "_attn",
+                         sdpa_attn)
+        except AttributeError:
+            pass
     elif model.config.model_type == "starcoder2":
         # starcoder2
         modeling_module_name = model.__class__.__module__
@@ -1598,4 +1630,22 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.StableLmModel,
                         stablelm_model_forward
                         )
+    elif model.config.model_type == 'minicpm':
+        from ipex_llm.transformers.models.minicpm import minicpm_attention_forward
+        from ipex_llm.transformers.models.minicpm import minicpm_model_forward
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        convert_forward(model,
+                        module.MiniCPMMLP,
+                        llama_mlp_forward)
+        convert_forward(model,
+                        module.MiniCPMRMSNorm,
+                        llama_rms_norm_forward)
+        convert_forward(model,
+                        module.MiniCPMAttention,
+                        minicpm_attention_forward)
+        convert_forward(model,
+                        module.MiniCPMModel,
+                        minicpm_model_forward)
+
     return model
