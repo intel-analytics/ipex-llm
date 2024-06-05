@@ -1,6 +1,6 @@
 # Run IPEX-LLM on Multiple Intel GPUs in Pipeline Parallel Fashion
 
-This example demonstrates how to run IPEX-LLM optimized low-bit model vertically partitioned on two [Intel GPUs](../README.md) for Linux users.
+This example demonstrates how to run IPEX-LLM optimized low-bit model vertically partitioned on multiple [Intel GPUs](../README.md) for Linux users.
 
 ## Requirements
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
