@@ -1823,12 +1823,12 @@ if __name__ == '__main__':
     import pandas as pd
     for api in conf.test_api:
         global csv_name
+        csv_name = f'{current_dir}/{api}-results-{today}.csv' 
         if not OmegaConf.is_list(conf["batch_size"]):
             batch_list = [conf["batch_size"]]
         else:
             batch_list = conf["batch_size"]
         for batch_size in batch_list:
-            csv_name = f'{current_dir}/{api}-results-{today}.csv' 
             for model in conf.repo_id:
                 in_out_pairs = conf['in_out_pairs'].copy()
                 if excludes:
