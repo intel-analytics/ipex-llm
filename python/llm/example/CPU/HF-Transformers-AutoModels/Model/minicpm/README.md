@@ -1,11 +1,11 @@
-# minicpm
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on minicpm models. For illustration purposes, we utilize the [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) as a reference minicpm model.
+# MiniCPM
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM models. For illustration purposes, we utilize the [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) as a reference MiniCPM model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a minicpm model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
+In the example [generate.py](./generate.py), we show a basic use case for a MiniCPM model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 
@@ -33,13 +33,13 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the minicpm model (e.g. `openbmb/MiniCPM-2B-sft-bf16`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-2B-sft-bf16'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MiniCPM model (e.g. `openbmb/MiniCPM-2B-sft-bf16`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-2B-sft-bf16'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 > **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
-> Please select the appropriate size of the minicpm model based on the capabilities of your machine.
+> Please select the appropriate size of the MiniCPM model based on the capabilities of your machine.
 
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
