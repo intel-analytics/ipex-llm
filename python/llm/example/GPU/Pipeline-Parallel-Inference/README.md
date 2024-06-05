@@ -13,7 +13,7 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 > sudo sh ./l_BaseKit_p_2024.1.0.596_offline.sh
 > ```
 
-## Example:
+## Example: Run pipeline parallel inference on multiple GPUs
 
 ### 1. Installation
 
@@ -32,7 +32,7 @@ source /opt/intel/oneapi/setvars.sh
 ```
 
 > [!NOTE]
-> Please make sure you configure the environment variables for **oneAPI 2024.1**.
+> Please make sure you configure the environment variables for **Intel® oneAPI Base Toolkit's version == 2024.0.**.
 
 ### 3 Runtime Configurations
 
