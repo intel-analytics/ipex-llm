@@ -43,6 +43,12 @@ class PromptRequest(BaseModel):
     prompt: str
     n_predict: int = 32
 
+from openai.types.chat import ChatCompletionMessageParam
+class ChatCompletionRequest(BaseModel):
+    messages: List[ChatCompletionMessageParam]
+    model: str
+    max_tokens: Optional[int] = None
+    stream: Optional[bool] = False
 
 empty_req = PromptRequest(prompt="", n_predict=0)
 
@@ -54,7 +60,6 @@ request_queue: asyncio.Queue = asyncio.Queue()
 result_dict: Dict[str, str] = {}
 streamer_dict = {}
 local_rank = my_rank
-max_num_seqs = get_int_from_env(["MAX_NUM_SEQS"], "16")
 
 
 # @app.post("/generate/")
@@ -81,16 +86,18 @@ async def stream_generator(local_model, token_queue, request_id):
             with local_model.dict_lock:
                 remain, token = await token_queue.get()
             response = {
+                "id": request_id,
                 "index": index,
-                "message": {"role": "assistant", "content": token},
+                "delta": {"role": "assistant", "content": token},
                 "finish_reason": None,
             }
             yield json.dumps(response) + "\n"
             index = index + 1
             if remain == 0:
                 response = {
+                    "id": request_id,
                     "index": index,
-                    "message": {"role": "assistant", "content": None},
+                    "delta": {"role": "assistant", "content": None},
                     "finish_reason": "length",
                 }
                 yield json.dumps(response) + "\n"
@@ -149,6 +156,37 @@ async def generate_stream(prompt_request: PromptRequest):
                 stream_generator(local_model, cur_streamer, request_id), media_type="application/json"
             )
 
+
+DEFAULT_SYSTEM_PROMPT = """\
+"""
+
+def get_prompt(messages) -> str:
+    prompt = ""
+    for msg in messages:
+        role = msg["role"]
+        content = msg["content"]
+        if role == "system":
+            prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
+        elif role == "user":
+            prompt += f"[INST] {content} [/INST] "
+        elif role == "assistant":
+            prompt += f"{content} "
+        else:
+            raise ValueError(f"Unknown role: {role}")
+    return prompt.strip()
+
+@app.post("/v1/chat/completions")
+async def create_chat_completion(request: ChatCompletionRequest):
+
+    prompt_request = PromptRequest(
+        prompt=get_prompt(request.messages),
+        n_predict=request.max_tokens
+    )
+    if request.stream:
+        return generate_stream(prompt_request)
+    else:
+        return generate(prompt_request)
+    
 
 def generate_text(prompt: List[str], n_predict = 32):
     while prompt[-1] == "":

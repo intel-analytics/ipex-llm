@@ -292,6 +292,7 @@ class ModelRunner:
         self.streamer = {}
         self.token_cache = {}
         self.print_len = {}
+        self.is_finish = {}
 
                 
     # def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
@@ -453,35 +454,41 @@ class ModelRunner:
                 cur_batch.prompt_lengths = [x + 1 for x in cur_batch.prompt_lengths]
 
                 for index, request_id in enumerate(cur_batch.request_ids):
-                    from transformers import TextIteratorStreamer
-                    if self.streamer.get(request_id, None) is None:
-                        self.streamer[request_id] = asyncio.Queue()
-                    
-                    remain = cur_batch.max_tokens - len(self.tokens[cur_id])
-                    if self.token_cache.get(request_id, None) is None:
-                        self.token_cache[request_id] = []
-                        self.print_len[request_id] = 0
-                    self.token_cache[request_id].extend(next_ids[index].tolist())
 
-                    text = tokenizer.decode(self.token_cache[request_id])
-                    if text.endswith("\n"):
-                        printable_text = text[self.print_len[request_id]:]
-                        self.token_cache[request_id] = []
-                        self.print_len[request_id] = 0
-                    elif len(text) > 0 and _is_chinese_char(ord(text[-1])):
-                        printable_text = text[self.print_len[request_id]:]
-                        self.print_len[request_id] += len(printable_text)
-                    else:
-                        printable_text = text[self.print_len[request_id] : text.rfind(" ") + 1]
-                        self.print_len[request_id] += len(printable_text)
+                    if not self.is_finish.get(request_id, False):
+                        remain = cur_batch.max_tokens - len(self.tokens[cur_id])
+                        
+                        if self.streamer.get(request_id, None) is None:
+                            self.streamer[request_id] = asyncio.Queue()
+                            
+                        if next_ids[index].int() == tokenizer.eos_token_id:
+                            remain = 0
+                            self.is_finish[request_id] = True
 
-                    if remain > 0:
-                        await self.streamer[request_id].put((remain, printable_text))
-                    else:
-                        printable_text = printable_text + text[self.print_len[request_id]:]
-                        self.token_cache.pop(request_id, None)
-                        self.print_len.pop(request_id, None)
-                        await self.streamer[request_id].put((remain, printable_text))
+                        if self.token_cache.get(request_id, None) is None:
+                            self.token_cache[request_id] = []
+                            self.print_len[request_id] = 0
+                        self.token_cache[request_id].extend(next_ids[index].tolist())
+
+                        text = tokenizer.decode(self.token_cache[request_id])
+                        if text.endswith("\n"):
+                            printable_text = text[self.print_len[request_id]:]
+                            self.token_cache[request_id] = []
+                            self.print_len[request_id] = 0
+                        elif len(text) > 0 and _is_chinese_char(ord(text[-1])):
+                            printable_text = text[self.print_len[request_id]:]
+                            self.print_len[request_id] += len(printable_text)
+                        else:
+                            printable_text = text[self.print_len[request_id] : text.rfind(" ") + 1]
+                            self.print_len[request_id] += len(printable_text)
+
+                        if remain > 0:
+                            await self.streamer[request_id].put((remain, printable_text))
+                        else:
+                            printable_text = printable_text + text[self.print_len[request_id]:]
+                            self.token_cache.pop(request_id, None)
+                            self.print_len.pop(request_id, None)
+                            await self.streamer[request_id].put((remain, printable_text))
                 
                 if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
                     # Finish a batch
