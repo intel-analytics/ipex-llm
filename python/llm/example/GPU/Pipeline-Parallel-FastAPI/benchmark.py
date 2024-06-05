@@ -79,6 +79,7 @@ def benchmark(
     num_requests,
     max_concurrent_requests,
     max_tokens,
+    prompt_length,
     is_warmup=False,
 ):
 
@@ -162,7 +163,7 @@ def benchmark(
                     file=file,
                 )
                 print(
-                    f"Total token throughput: {(128 + 1024) * num_requests / total_time}",
+                    f"Total token throughput: {(max_tokens + prompt_length) * num_requests / total_time}",
                     file=file,
                 )
                 print(file=file)
@@ -228,7 +229,7 @@ parser = argparse.ArgumentParser(description="Set prompt length.")
 parser.add_argument(
     "--prompt_length",
     type=int,
-    choices=[32, 1024, 2048],
+    choices=[32, 128, 1024, 2048],
     default=1024,
     help="Length of the prompt: 32, 1024, or 2048",
 )
@@ -262,6 +263,7 @@ for MAX_CONCURRENT_REQUESTS in args.max_concurrent_requests:
         NUM_WARMUP,
         MAX_CONCURRENT_REQUESTS,
         MAX_TOKENS,
+        PROMPT_LENGTH,
         is_warmup=True,
     )
 
