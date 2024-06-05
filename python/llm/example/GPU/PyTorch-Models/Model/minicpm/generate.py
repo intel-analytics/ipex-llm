@@ -21,8 +21,6 @@ import argparse
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from ipex_llm import optimize_model
 
-# you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16#chat-format
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for minicpm model')
@@ -56,10 +54,11 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
+
+        # here the prompt formatting refers to: https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16/blob/79fbb1db171e6d8bf77cdb0a94076a43003abd9e/modeling_minicpm.py#L1320
         chat = [
             { "role": "user", "content": args.prompt },
         ]
-        
         prompt = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=False)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 
