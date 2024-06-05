@@ -23,9 +23,9 @@ from ipex_llm import optimize_model
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for minicpm model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for MiniCPM model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-2B-sft-bf16",
-                        help='The huggingface repo id for the minicpm model to be downloaded'
+                        help='The huggingface repo id for the MiniCPM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')

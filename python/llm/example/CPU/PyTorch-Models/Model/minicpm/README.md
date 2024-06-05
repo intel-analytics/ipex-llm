@@ -66,6 +66,7 @@ numactl -C 0-47 -m 0 python ./generate.py --prompt 'What is AI?'
 #### 2.3 Sample Output
 #### [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16)
 ```log
+Inference time: xxxx s
 -------------------- Prompt --------------------
 <用户>what is AI?<AI>
 -------------------- Output --------------------
