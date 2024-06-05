@@ -23,7 +23,6 @@ from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://hf-mirror.com/openbmb/MiniCPM-2B-sft-bf16#chat-format
-# MINICPM_PROMPT_FORMAT = "<用户>{prompt}<AI>"
 
 
 if __name__ == '__main__':
@@ -61,7 +60,7 @@ if __name__ == '__main__':
             { "role": "user", "content": args.prompt },
         ]
         
-        prompt = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
+        prompt = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=False)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 
         # ipex_llm model needs a warmup, then inference time can be accurate
