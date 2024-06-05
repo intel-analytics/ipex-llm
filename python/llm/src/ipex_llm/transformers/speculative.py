@@ -162,6 +162,8 @@ def clear_benchmarks(self):
     self.generate_time = []
     self.draft_time = []
     self.verify_time = []
+    self.match_time = []
+    self.post_time = []
     self.draft_num = []
     self.accept_num = []
     self.n_drafted = 0
