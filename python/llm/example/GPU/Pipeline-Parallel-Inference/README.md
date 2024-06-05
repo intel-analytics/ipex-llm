@@ -32,7 +32,7 @@ source /opt/intel/oneapi/setvars.sh
 ```
 
 > [!NOTE]
-> Please make sure you configure the environment variables for **Intel® oneAPI Base Toolkit's version == 2024.0.**.
+> Please make sure you configure the environment variables for **Intel® oneAPI Base Toolkit's version == 2024.1.**.
 
 ### 3 Runtime Configurations
 
