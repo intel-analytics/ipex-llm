@@ -74,6 +74,6 @@ Make sure intel-basekit>=2024.0.1-43 and intel-level-zero-gpu>=1.3.27191.42-775~
 
 You may encounter this error during finetuning, expecially when run 70B model. Please raise the system open file limit using `ulimit -n 1048576`.
 
-### **In Windows:** RuntimeError: could not create a primitive
+### `RuntimeError: could not create a primitive` on Windows
 
-This error may happen when you have multiple GPUs in Windows operating system. To solve this error, you can open Device Manager (you can find it by search "Device Manager" in your start menu). Then click the "Display adapter" option, and disable all the GPU you do not want to use. Restart your computer and try again. IPEX-LLM should work fine this time.
+This error may happen when multiple GPUs exists for Windows Users. To solve this error, you can open Device Manager (search "Device Manager" in your start menu). Then click the "Display adapter" option, and disable all the GPU device you do not want to use. Restart your computer and try again. IPEX-LLM should work fine this time.
