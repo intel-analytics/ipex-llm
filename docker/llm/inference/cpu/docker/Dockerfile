@@ -12,12 +12,10 @@ COPY ./start-notebook.sh /llm/start-notebook.sh
 # Update the software sources
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Install essential packages
-    apt install software-properties-common libunwind8-dev vim less -y && \
+    apt install libunwind8-dev vim less -y && \
 # Install git, curl, and wget
     apt-get install -y git curl wget && \
 # Install Python 3.11
-    # Add Python 3.11 PPA repository
-    add-apt-repository ppa:deadsnakes/ppa -y && \
     # Install Python 3.11
     apt-get install -y python3.11 && \
     # Remove the original /usr/bin/python3 symbolic link

@@ -2,9 +2,6 @@ from pipeline_models import ModelRunner
 import torch.nn.parallel
 import torch.distributed as dist
 import os
-import json
-import intel_extension_for_pytorch as ipex
-from ipex_llm.transformers.streamer import BatchTextIteratorStreamer
 
 import oneccl_bindings_for_pytorch
 

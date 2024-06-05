@@ -44,6 +44,7 @@ else:  # ipex-llm
                                                  use_cache=args.use_cache, trust_remote_code=True)
     model = model.half()
 model = model.to(args.device)
+model = model.eval()
 
 with open(args.data_path, "rb") as f:
     data = f.read()

@@ -14,13 +14,12 @@ RUN curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-P
     # update dependencies
     apt-get update && \
     # install basic dependencies
-    apt-get install -y curl wget git gnupg gpg-agent software-properties-common libunwind8-dev vim less && \
+    apt-get install -y curl wget git gnupg gpg-agent libunwind8-dev vim less && \
     # install Intel GPU driver
     apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero level-zero-dev --allow-downgrades && \
     # install python 3.11
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3.11 python3-pip python3.11-dev python3-wheel python3.11-distutils && \
     # avoid axolotl lib conflict
     apt-get remove -y python3-blinker && apt autoremove -y && \

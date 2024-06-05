@@ -76,9 +76,13 @@ def run_vllm(
     enable_prefix_caching: bool,
     gpu_memory_utilization: float = 0.9,
     load_in_low_bit: str = "sym_int4",
+    max_num_batched_tokens: int = 10450,
 ) -> float:
     from vllm import SamplingParams
     from ipex_llm.vllm.cpu.engine import IPEXLLMClass as LLM
+    warm_prompt = "hi " * (1024 - 1)
+    warm_requests = [(warm_prompt, 1024, 1024)
+                    for _ in range(8)]
     llm = LLM(model=model,
               tokenizer=tokenizer,
               quantization=quantization,
@@ -93,6 +97,22 @@ def run_vllm(
               device=device,
               enable_prefix_caching=enable_prefix_caching,
               load_in_low_bit=load_in_low_bit)
+
+    for prompt, _, output_len in warm_requests:
+        sampling_params = SamplingParams(
+            n=n,
+            temperature=0.0 if use_beam_search else 1.0,
+            top_p=1.0,
+            use_beam_search=use_beam_search,
+            ignore_eos=True,
+            max_tokens=output_len,
+        )
+        llm._add_request(
+            prompt=prompt,
+            prompt_token_ids=None,
+            sampling_params=sampling_params,
+        )
+    llm._run_engine(use_tqdm=True)
 
     # Add the requests to the engine.
     for prompt, _, output_len in requests:
@@ -216,7 +236,9 @@ def main(args: argparse.Namespace):
             args.tensor_parallel_size, args.seed, args.n, args.use_beam_search,
             args.trust_remote_code, args.dtype, args.max_model_len,
             args.enforce_eager, args.kv_cache_dtype, args.device,
-            args.enable_prefix_caching, args.gpu_memory_utilization, args.load_in_low_bit)
+            args.enable_prefix_caching, args.gpu_memory_utilization, args.load_in_low_bit,
+            args.max_num_batched_tokens)
+
     elif args.backend == "hf":
         assert args.tensor_parallel_size == 1
         elapsed_time = run_hf(requests, args.model, tokenizer, args.n,
@@ -320,9 +342,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--load-in-low-bit",
         type=str,
-        choices=["sym_int4", "fp8", "fp16"],
+        choices=["sym_int4", "fp6", "fp8", "fp16"],
         default="sym_int4",
         help="Low-bit format quantization with IPEX-LLM")
+    parser.add_argument('--max-num-batched-tokens',
+        type=int,
+        default=10450,
+        help='maximum number of batched tokens per iteration')
+
     args = parser.parse_args()
     if args.tokenizer is None:
         args.tokenizer = args.model

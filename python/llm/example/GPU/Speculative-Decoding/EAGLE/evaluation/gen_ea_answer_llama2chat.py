@@ -47,7 +47,6 @@ from eagle.model.ea_model import EaModel
 from eagle.model.utils import *
 from eagle.model.kv_cache import initialize_past_key_values
 from eagle.model.choices import *
-import intel_extension_for_pytorch as ipex
 from ipex_llm import optimize_model
 
 def ea_forward(input_ids, model, tokenizer, tree_choices, logits_processor=None, max_steps=512):

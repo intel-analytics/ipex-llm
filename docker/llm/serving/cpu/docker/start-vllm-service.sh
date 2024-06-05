@@ -11,7 +11,7 @@ python -m ipex_llm.vllm.cpu.entrypoints.openai.api_server \
   --device cpu \
   --dtype bfloat16 \
   --enforce-eager \
-  --load-in-low-bit sym_int4 \
+  --load-in-low-bit bf16 \
   --max-model-len 4096 \
   --max-num-batched-tokens 10240 \
   --max-num-seqs 12 \
