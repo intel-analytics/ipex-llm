@@ -15,11 +15,13 @@ After installing conda, create a Python environment for IPEX-LLM:
 conda create -n llm python=3.11 # recommend to use Python 3.11
 conda activate llm
 
-pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu 
+pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+pip install intel_extension_for_pytorch==2.1.0 
 pip install -r requirements.txt
 pip install transformers==4.36.2
 pip install gradio==3.50.2
 pip install eagle-llm
+pip install "setuptools<70.0.0"
 ```
 
 ### 2. Configures IPEX-LLM environment variables for Linux
