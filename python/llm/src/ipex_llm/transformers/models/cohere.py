@@ -54,7 +54,7 @@ from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
 from transformers.models.cohere.modeling_cohere import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
 from ipex_llm.transformers.kv import DynamicFp8Cache
-from ipex_llm.transformers.models.qwen2 import should_use_fuse_rope
+from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from ipex_llm.utils.common import invalidInputError
 try:
@@ -313,7 +313,7 @@ def cohere_attention_forward_origin(
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
-    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    use_fuse_rope = should_use_fuse_rope(hidden_states, position_ids, self.training)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,

@@ -45,7 +45,7 @@ import torch.utils.checkpoint
 import warnings
 from typing import TYPE_CHECKING, Optional, Tuple, Union, Callable, List
 from ipex_llm.transformers.models.llama import repeat_kv
-from ipex_llm.transformers.models.qwen2 import should_use_fuse_rope
+from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
@@ -333,7 +333,7 @@ def qwen2moe_attention_forward_quantized(
             "Passing `padding_mask` is deprecated and will be removed in v4.37."
             "Please make sure use `attention_mask` instead.`"
         )
-    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    use_fuse_rope = should_use_fuse_rope(hidden_states, position_ids, self.training)
     bsz, q_len, _ = hidden_states.size()
 
     query_states = self.q_proj(hidden_states)
@@ -435,7 +435,7 @@ def qwen2moe_attention_forward_origin(
     use_cache: bool = False,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    use_fuse_rope = should_use_fuse_rope(hidden_states, position_ids, self.training)
 
     if "padding_mask" in kwargs:
         warnings.warn(
@@ -592,7 +592,7 @@ def qwen2moe_attention_forward_sdpa(
     use_cache: bool = False,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    use_fuse_rope = should_use_fuse_rope(hidden_states, position_ids, self.training)
 
     if "padding_mask" in kwargs:
         warnings.warn(
