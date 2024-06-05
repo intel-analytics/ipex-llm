@@ -1632,6 +1632,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         )
     elif model.config.model_type == 'minicpm':
         from ipex_llm.transformers.models.minicpm import minicpm_attention_forward
+        from ipex_llm.transformers.models.minicpm import minicpm_model_forward
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model,
@@ -1643,5 +1644,8 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MiniCPMAttention,
                         minicpm_attention_forward)
+        convert_forward(model,
+                        module.MiniCPMModel,
+                        minicpm_model_forward)
 
     return model
