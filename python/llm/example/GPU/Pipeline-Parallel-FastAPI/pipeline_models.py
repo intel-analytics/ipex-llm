@@ -291,6 +291,7 @@ class ModelRunner:
 
         self.streamer = {}
         self.token_cache = {}
+        self.print_len = {}
 
                 
     # def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
@@ -425,7 +426,7 @@ class ModelRunner:
             
             if cur_batch is None:
                 if not self.waiting_requests.empty():
-                    # await asyncio.sleep(0.01)
+                    await asyncio.sleep(0.01)
                     cur_batch = await self.add_request(tokenizer)
                     cur_input = self.input_ids_dict[cur_batch.batch_id]
                 else:
@@ -459,10 +460,28 @@ class ModelRunner:
                     remain = cur_batch.max_tokens - len(self.tokens[cur_id])
                     if self.token_cache.get(request_id, None) is None:
                         self.token_cache[request_id] = []
-                    self.token_cache[request_id].append(next_ids[index])
+                        self.print_len[request_id] = 0
+                    self.token_cache[request_id].extend(next_ids[index].tolist())
 
-                    cur_text = tokenizer.decode(next_ids[index])
-                    await self.streamer[request_id].put((remain, cur_text))
+                    text = tokenizer.decode(self.token_cache[request_id])
+                    if text.endswith("\n"):
+                        printable_text = text[self.print_len[request_id]:]
+                        self.token_cache[request_id] = []
+                        self.print_len[request_id] = 0
+                    elif len(text) > 0 and _is_chinese_char(ord(text[-1])):
+                        printable_text = text[self.print_len[request_id]:]
+                        self.print_len[request_id] += len(printable_text)
+                    else:
+                        printable_text = text[self.print_len[request_id] : text.rfind(" ") + 1]
+                        self.print_len[request_id] += len(printable_text)
+
+                    if remain > 0:
+                        await self.streamer[request_id].put((remain, printable_text))
+                    else:
+                        printable_text = printable_text + text[self.print_len[request_id]:]
+                        self.token_cache.pop(request_id, None)
+                        self.print_len.pop(request_id, None)
+                        await self.streamer[request_id].put((remain, printable_text))
                 
                 if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
                     # Finish a batch
@@ -526,3 +545,27 @@ class ModelRunner:
             self.on_going_batches[:-1] = self.on_going_batches[1:]
             self.on_going_batches[self.world_size - 1] = cur_batch
 
+
+def _is_chinese_char(cp):
+    """Checks whether CP is the codepoint of a CJK character."""
+    # This defines a "chinese character" as anything in the CJK Unicode block:
+    #   https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)
+    #
+    # Note that the CJK Unicode block is NOT all Japanese and Korean characters,
+    # despite its name. The modern Korean Hangul alphabet is a different block,
+    # as is Japanese Hiragana and Katakana. Those alphabets are used to write
+    # space-separated words, so they are not treated specially and handled
+    # like the all of the other languages.
+    if (
+        (cp >= 0x4E00 and cp <= 0x9FFF)
+        or (cp >= 0x3400 and cp <= 0x4DBF)  #
+        or (cp >= 0x20000 and cp <= 0x2A6DF)  #
+        or (cp >= 0x2A700 and cp <= 0x2B73F)  #
+        or (cp >= 0x2B740 and cp <= 0x2B81F)  #
+        or (cp >= 0x2B820 and cp <= 0x2CEAF)  #
+        or (cp >= 0xF900 and cp <= 0xFAFF)
+        or (cp >= 0x2F800 and cp <= 0x2FA1F)  #
+    ):  #
+        return True
+
+    return False
