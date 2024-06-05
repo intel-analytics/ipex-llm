@@ -1,10 +1,5 @@
 # minicpm
-
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on minicpm models. For illustration purposes, we utilize the [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) as a reference minicpm model.
-
-> **Note**: If you want to download the Hugging Face *Transformers* model, please refer to [here](https://huggingface.co/docs/hub/models-downloading#using-git).
->
-> IPEX-LLM optimizes the *Transformers* model in INT4 precision at runtime, and thus no explicit conversion is needed.
+In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate minicpm models. For illustration purposes, we utilize the [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) as a reference minicpm model.
 
 ## Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -55,16 +50,16 @@ source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py --prompt 'What is AI？'
+numactl -C 0-47 -m 0 python ./generate.py --prompt 'What is AI?'
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 
 #### 2.3 Arguments Info
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path`: str, argument defining the huggingface repo id for the minicpm model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-2B-sft-bf16'`.
-- `--prompt`: str, argument defining the prompt to be inferred (with integrated prompt format for chat). It is default to be `What is AI?`.
-- `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the minicpm model (e.g. `openbmb/MiniCPM-2B-sft-bf16`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-2B-sft-bf16'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
+- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 2.4 Sample Output
 #### [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16)
