@@ -1,55 +1,66 @@
 # Run IPEX-LLM on Multiple Intel GPUs in pipeline parallel fashion
 
-This example demonstrates how to run IPEX-LLM optimized low-bit model vertically partitioned on two [Intel GPUs](../README.md).
+This example demonstrates how to run IPEX-LLM optimized low-bit model vertically partitioned on two [Intel GPUs](../README.md) for Linux users.
 
 ## Requirements
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
 
+> [!NOTE]
+> To run IPEX-LLM on multiple Intel GPUs in pipeline parallel fashion, you will need to install Intel® oneAPI Base Toolkit 2024.1, which could be done through an offline installer:
+> ```bash
+> wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/fdc7a2bc-b7a8-47eb-8876-de6201297144/l_BaseKit_p_2024.1.0.596_offline.sh
+> 
+> sudo sh ./l_BaseKit_p_2024.1.0.596_offline.sh
+> ```
+
 ## Example:
 
-### 1.1 Install IPEX-LLM
+### 1. Installation
 
 ```bash
 conda create -n llm python=3.11
 conda activate llm
-# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-# you can install specific ipex/torch version for your need
-pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-# configures OneAPI environment variables
-source /opt/intel/oneapi/setvars.sh
 
-conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30+xpu oneccl_bind_pt==2.1.300+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
 
-### 1.2 Build and install patched version of Intel Extension for PyTorch (IPEX)
+### 2. Configures OneAPI environment variables
 
 ```bash
-conda activate llm
 source /opt/intel/oneapi/setvars.sh
-git clone https://github.com/intel/intel-extension-for-pytorch.git
-cd intel-extension-for-pytorch
-git checkout v2.1.10+xpu
-git submodule update --init --recursive
-git cherry-pick be8ea24078d8a271e53d2946ac533383f7a2aa78
-export USE_AOT_DEVLIST='ats-m150,pvc'
-python setup.py install
 ```
 
+### 3 Runtime Configurations
 
-> **Important**: IPEX 2.1.10+xpu requires Intel® oneAPI Base Toolkit's version == 2024.0. Please make sure you have installed the correct version.
+For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
 
-### 2. Run pipeline parallel inference on multiple GPUs
-Here, we provide example usages on different models and different hardwares. Please refer to the appropriate script based on your model and device:
+<details>
 
-### 3. Run
-
-For optimal performance on Arc, it is recommended to set several environment variables.
+<summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
 
 ```bash
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
 ```
 
+</details>
+
+<details>
+
+<summary>For Intel Data Center GPU Max Series</summary>
+
+```bash
+export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
+export ENABLE_SDP_FUSION=1
+```
+> Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
+</details>
+
+### 4. Running examples
 ```
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT --gpu-num GPU_NUM
 ```
@@ -61,7 +72,7 @@ Arguments info:
 - `--gpu-num GPU_NUM`: argument defining the number of GPU to use. It is default to be `2`.
 
 #### Sample Output
-#### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
+##### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
