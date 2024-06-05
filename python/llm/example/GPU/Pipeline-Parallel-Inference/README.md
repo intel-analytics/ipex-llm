@@ -6,7 +6,7 @@ This example demonstrates how to run IPEX-LLM optimized low-bit model vertically
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
 
 > [!NOTE]
-> To run IPEX-LLM on multiple Intel GPUs in pipeline parallel fashion, you will need to install Intel® oneAPI Base Toolkit 2024.1, which could be done through an offline installer:
+> To run IPEX-LLM on multiple Intel GPUs in pipeline parallel fashion, you will need to install **Intel® oneAPI Base Toolkit 2024.1**, which could be done through an offline installer:
 > ```bash
 > wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/fdc7a2bc-b7a8-47eb-8876-de6201297144/l_BaseKit_p_2024.1.0.596_offline.sh
 > 
@@ -30,6 +30,9 @@ pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2
 ```bash
 source /opt/intel/oneapi/setvars.sh
 ```
+
+> [!NOTE]
+> Please make sure you configure the environment variables for **oneAPI 2024.1**.
 
 ### 3 Runtime Configurations
 
@@ -57,7 +60,8 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 export SYCL_CACHE_PERSISTENT=1
 export ENABLE_SDP_FUSION=1
 ```
-> Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
+> [!NOTE]
+> Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
 </details>
 
 ### 4. Running examples
