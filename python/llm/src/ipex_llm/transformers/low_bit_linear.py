@@ -228,7 +228,6 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                 # quantize with importance matrix
                 imatrix = imatrix.data.data_ptr()
                 imatrix = ctypes.cast(imatrix, ctypes.POINTER(ctypes.c_float))
-            # print(f"quantize_tensor_with_weights: {n // in_features}, {in_features}")
             # pass nrow and n_per_row
             ggml.ggml_quantize_tensor_with_weights(src, dst, qtype,
                                                    n // in_features, in_features,
