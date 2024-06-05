@@ -21,6 +21,17 @@ import sys
 from ipex_llm.utils.common import log4Error
 
 
+# Save the original __import__ function
+original_import = builtins.__import__
+
+def custom_ipex_import(name, globals=None, locals=None, fromlist=(), level=0):
+    if name == "ipex" or name == "intel_extension_for_pytorch":
+        logging.error("ipex_llm will automatically import intel_extension_for_pytorch.")
+        log4Error.invalidInputError(False,
+                                    "Please don't import intel_extension_for_pytorch manually!")
+    return original_import(name, globals, locals, fromlist, level)
+
+
 class IPEXImporter:
     """
     Auto import Intel Extension for PyTorch as ipex,
@@ -63,10 +74,11 @@ class IPEXImporter:
             if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
                 logging.error("ipex_llm will automatically import intel_extension_for_pytorch.")
                 log4Error.invalidInputError(False,
-                                            "Please import ipex_llm before importing \
-                                                intel_extension_for_pytorch!")
+                                            "Please don't import intel_extension_for_pytorch manually!")
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
+            # Replace default importer
+            builtins.__import__ = custom_ipex_import
             logging.info("intel_extension_for_pytorch auto imported")
 
     def directly_import_ipex(self):
