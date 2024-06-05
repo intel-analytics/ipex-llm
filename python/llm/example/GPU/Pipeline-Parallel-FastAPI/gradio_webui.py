@@ -56,7 +56,9 @@ def predict(message, history):
     # Read and return generated text from response stream
     partial_message = ""
     for chunk in stream:
-        partial_message += (chunk.delta.content or "")
+        # import pdb
+        # pdb.set_trace()
+        partial_message += (chunk.delta['content'] or "")
         yield partial_message
 
 

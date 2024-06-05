@@ -88,3 +88,9 @@ python benchmark.py --prompt_length 1024 --max_concurrent_requests 1 2 3 --max_n
 ```
 
 This command sets the prompt length to 1024, tests concurrency levels of 1, 2, and 3, and configures the model to generate up to 128 new tokens per request. The results are saved in log files named according to the concurrency level (1.log, 2.log, 3.log).
+
+## 6. Gradio Web UI
+
+```bash
+python ./gradio_webui.py -m Llama-2-13b-chat-hf 
+```

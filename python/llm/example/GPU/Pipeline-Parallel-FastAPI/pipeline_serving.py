@@ -22,12 +22,12 @@ logger.info(f"rank: {my_rank}, size: {my_size}")
 
 import time
 from transformers import AutoTokenizer, AutoConfig, LlamaTokenizer
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import uvicorn
 import asyncio, uuid
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any, Callable
 import argparse
 
 def get_int_from_env(env_keys, default):
@@ -41,7 +41,7 @@ def get_int_from_env(env_keys, default):
 
 class PromptRequest(BaseModel):
     prompt: str
-    n_predict: int = 32
+    n_predict: Optional[int] = 128
 
 from openai.types.chat import ChatCompletionMessageParam
 class ChatCompletionRequest(BaseModel):
@@ -82,16 +82,19 @@ local_rank = my_rank
 async def stream_generator(local_model, token_queue, request_id):
     index = 0
     while True:
-        if not token_queue.empty():
-            with local_model.dict_lock:
-                remain, token = await token_queue.get()
+        # if not token_queue.empty():
+        if True:
+            # with local_model.dict_lock:
+            remain, token = await token_queue.get()
+            print(remain)
             response = {
                 "id": request_id,
                 "index": index,
                 "delta": {"role": "assistant", "content": token},
                 "finish_reason": None,
             }
-            yield json.dumps(response) + "\n"
+            # yield json.dumps(response) + "\n"
+            yield f"data: {json.dumps(response)}\n\n"
             index = index + 1
             if remain == 0:
                 response = {
@@ -100,7 +103,8 @@ async def stream_generator(local_model, token_queue, request_id):
                     "delta": {"role": "assistant", "content": None},
                     "finish_reason": "length",
                 }
-                yield json.dumps(response) + "\n"
+                # yield json.dumps(response) + "\n"
+                yield f"data: {json.dumps(response)}\n\n"
                 break
         else:
             await asyncio.sleep(0)
@@ -152,8 +156,9 @@ async def generate_stream(prompt_request: PromptRequest):
         await asyncio.sleep(0.1)
         cur_streamer = local_model.streamer.get(request_id, None)
         if cur_streamer is not None:
+            cur_generator = stream_generator(local_model, cur_streamer, request_id)
             return StreamingResponse(
-                stream_generator(local_model, cur_streamer, request_id), media_type="application/json"
+                content=cur_generator, media_type="text/event-stream"
             )
 
 
@@ -161,6 +166,7 @@ DEFAULT_SYSTEM_PROMPT = """\
 """
 
 def get_prompt(messages) -> str:
+    # For llama2 models
     prompt = ""
     for msg in messages:
         role = msg["role"]
@@ -177,16 +183,19 @@ def get_prompt(messages) -> str:
 
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest):
-
+    if request.max_tokens is None:
+        n_predict = 256
+    else:
+        n_predict = request.max_tokens
     prompt_request = PromptRequest(
         prompt=get_prompt(request.messages),
-        n_predict=request.max_tokens
+        n_predict=n_predict
     )
     if request.stream:
-        return generate_stream(prompt_request)
+        result = await generate_stream(prompt_request)
     else:
-        return generate(prompt_request)
-    
+        result = await generate(prompt_request)
+    return result
 
 def generate_text(prompt: List[str], n_predict = 32):
     while prompt[-1] == "":
@@ -196,7 +205,7 @@ def generate_text(prompt: List[str], n_predict = 32):
         
     inputs = tokenizer(prompt, return_tensors="pt", padding=True)
     input_ids = inputs.input_ids.to(f'xpu:{local_rank}')
-    print(inputs)
+    # print(inputs)
     attention_mask = inputs.attention_mask.to(f'xpu:{local_rank}')
     output = local_model.generate(input_ids,
                                   max_tokens=n_predict,
