@@ -19,7 +19,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     # Install Python 3.11
     apt-get install -y python3.11 && \
     # Remove the original /usr/bin/python3 symbolic link
-    rm /usr/bin/python3 && \
+    rm /usr/bin/python3 || true && \
     # Create a symbolic link pointing to Python 3.11 at /usr/bin/python3
     ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     # Create a symbolic link pointing to /usr/bin/python3 at /usr/bin/python
