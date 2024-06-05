@@ -724,12 +724,8 @@ class LowBitLinear(nn.Linear):
                         result = xe_batch.batch_forward(x_2d, self.weight.data,
                                                         self.weight.qtype)
                     else:
-                        if self.weight.qtype == FP6_K:
-                            import nacore
-                            result = nacore.linear_fp6_k(x_2d, self.weight.data, 0)
-                        else:
-                            result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                        input_seq_size)
+                        result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                       input_seq_size)
                     result = result.to(x.dtype)
                 else:
                     if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
@@ -737,12 +733,8 @@ class LowBitLinear(nn.Linear):
                         result = xe_batch.batch_forward(x_2d, self.weight.data,
                                                         self.weight.qtype)
                     else:
-                        if self.weight.qtype == FP6_K:
-                            import nacore
-                            result = nacore.linear_fp6_k(x_2d, self.weight.data, 0)
-                        else:
-                            result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                        input_seq_size)
+                        result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
+                                                       input_seq_size)
                 if do_empty_cache:
                     torch.xpu.empty_cache()
             result = result.view(new_shape)
