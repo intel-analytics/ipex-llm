@@ -173,21 +173,22 @@ jobs:
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437.yaml
           find . -name "*test*.csv" -delete
-          cd ../
-          rm -r test_batch1
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
+          cd ../
+          rm -r test_batch1
           # batch_size 2
           cd test_batch2
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test-batch2.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437-batch2.yaml
           find . -name "*test*.csv" -delete
-          cd ../
-          rm -r test_batch2
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
+          cd ../
+          rm -r test_batch2
+          
           
   llm-performance-test-on-spr:
     if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
