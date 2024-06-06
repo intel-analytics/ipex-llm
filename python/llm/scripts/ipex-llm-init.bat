@@ -109,7 +109,7 @@ if "%TMP%"=="" (
     SET TMPFILEPATH=%TMP%\tmp_ipex-llm-init_bat.tmp
 )
 
-python .\ipex-llm-init-support.py %MOD% %TMPFILEPATH% 2>nul
+python %~pd0ipex-llm-init-support.py %MOD% %TMPFILEPATH% 2>nul
 
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to run ipex-llm-init-support.py.
