@@ -1,4 +1,19 @@
-import os
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import sys
 import platform
 
@@ -79,7 +94,7 @@ def get_device_name():
         device_select_info.append("Only one XPU device mode is supported on windows at the moment, please select the device you want to use.")
         device_select_info.append(" ")
         device_select_info.append("Warning : Have multiple XPU devices on windows may cause 'RuntimeError: could not create a primitive'")
-        device_select_info.append("""Check https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/FAQ/faq.html#runtimeerror-could-not-create-a-primitive-on-windows to find hao to solve this problem.""")
+        device_select_info.append("""Check https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/FAQ/faq.html#runtimeerror-could-not-create-a-primitive-on-windows to find how to solve this problem.""")
 
     device_id = let_user_select(device_list, "device", 0, device_select_info)
     device = device_list[device_id]
