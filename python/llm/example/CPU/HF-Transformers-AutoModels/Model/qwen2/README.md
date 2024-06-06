@@ -69,33 +69,15 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-AI是什么？<|im_end|>
-<|im_start|>assistant
+AI是什么？
 -------------------- Output --------------------
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-AI是什么？<|im_end|>
-<|im_start|>assistant
-人工智能（AI）是指计算机科学的一个分支，旨在开发能够执行通常需要人类智能的任务的算法和系统。这些任务包括但不限于理解自然语言、
+AI，即人工智能（Artificial Intelligence），是一门研究、开发用于模拟、延伸和扩展人类智能的理论、方法、技术及应用系统的学科
 ```
 
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-What is AI?<|im_end|>
-<|im_start|>assistant
+What is AI?
 -------------------- Output --------------------
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-What is AI?<|im_end|>
-<|im_start|>assistant
-AI, or artificial intelligence, refers to the simulation of human intelligence in machines that are designed to perform tasks that typically require human cognition, such as learning, reasoning
+AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence. This includes things like speech recognition, decision
 ```
