@@ -5,10 +5,17 @@ ARG https_proxy
 ARG PIP_NO_CACHE_DIR=false
 ARG DEBIAN_FRONTEND=noninteractive
 
-USER user
 ENV PYTHONUNBUFFERED=1
 
 COPY ./start-notebook.sh /llm/start-notebook.sh
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends sudo && \
+    groupadd -r myuser && \
+    useradd -r -g myuser myuser && \
+    echo "myuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER myuser
 
 # Update the software sources
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
