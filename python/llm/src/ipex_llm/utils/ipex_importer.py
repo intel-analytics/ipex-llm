@@ -51,10 +51,9 @@ def custom_ipex_import(name, globals=None, locals=None, fromlist=(), level=0):
         return original_import(name, globals, locals, fromlist, level)
     # Only check ipex for main thread
     if name == "ipex" or name == "intel_extension_for_pytorch":
-        logging.error("intel_extension_for_pytorch has already been automatically imported. "
-            "Please avoid importing it again!")
         log4Error.invalidInputError(False,
-                                    "intel_extension_for_pytorch is imported multiple times!")
+                                    "intel_extension_for_pytorch has already been automatically imported. "
+                                    "Please avoid importing it again!")
     return original_import(name, globals, locals, fromlist, level)
 
 
@@ -98,10 +97,9 @@ class IPEXImporter:
         if self.is_xpu_version_installed():
             # Check if user import ipex manually
             if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
-                logging.error("intel_extension_for_pytorch has already been automatically imported. "
-                    "Please avoid importing it again!")                
                 log4Error.invalidInputError(False,
-                                            "intel_extension_for_pytorch is imported multiple times!")
+                                            "intel_extension_for_pytorch has already been automatically imported. "
+                                            "Please avoid importing it again!")
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
             # Replace default importer
