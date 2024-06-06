@@ -13,7 +13,8 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "liu-shaojun-patch-1" ]
+    
   schedule:
     - cron: '24 14 * * 0'
 
