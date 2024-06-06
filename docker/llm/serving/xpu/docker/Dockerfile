@@ -6,31 +6,36 @@ ARG https_proxy
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends sudo && \
+    groupadd -r ipex-llm && \
+    useradd -r -g ipex-llm ipex-llm && \
+    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER root
 
 # Install Serving Dependencies
-RUN cd /llm &&\
-    # Install ipex-llm[serving] only will update ipex_llm source code without updating
-    # bigdl-core-xe, which will lead to problems
-    apt-get update && \
-    apt-get install -y libfabric-dev wrk libaio-dev && \
+# Install ipex-llm[serving] only will update ipex_llm source code without updating
+# bigdl-core-xe, which will lead to problems
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev && \
     pip install --pre --upgrade ipex-llm[xpu,serving] && \
     pip install transformers==4.37.0 gradio==4.19.2 && \
     # Install vLLM-v2 dependencies
-    cd /llm && \
-    git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git && \
-    cd vllm && \
-    pip install -r requirements-xpu.txt && \
+    git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    pip install -r /llm/vllm/requirements-xpu.txt && \
     pip install --no-deps xformers && \
-    VLLM_BUILD_XPU_OPS=1 pip install --no-build-isolation -v -e . && \
+    VLLM_BUILD_XPU_OPS=1 pip install --no-build-isolation -v -e /llm/vllm && \
     pip install outlines==0.0.34 --no-deps && \
     pip install interegular cloudpickle diskcache joblib lark nest-asyncio numba scipy && \
     # For Qwen series models support
     pip install transformers_stream_generator einops tiktoken
 
-ADD ./vllm_offline_inference.py       /llm/
-ADD ./payload-1024.lua                /llm/
-ADD ./start-vllm-service.sh           /llm/
-ADD ./benchmark_vllm_throughput.py   /llm/
-ADD ./start-fastchat-service.sh       /llm/
+COPY ./vllm_offline_inference.py       /llm/
+COPY ./payload-1024.lua                /llm/
+COPY ./start-vllm-service.sh           /llm/
+COPY ./benchmark_vllm_throughput.py   /llm/
+COPY ./start-fastchat-service.sh       /llm/
 
 WORKDIR /llm/
+USER ipex-llm

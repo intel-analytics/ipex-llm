@@ -11,9 +11,9 @@ COPY ./start-notebook.sh /llm/start-notebook.sh
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends sudo && \
-    groupadd -r myuser && \
-    useradd -r -g myuser myuser && \
-    echo "myuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    groupadd -r ipex-llm && \
+    useradd -r -g ipex-llm ipex-llm && \
+    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER root
 
@@ -45,10 +45,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     chmod +x /llm/start-notebook.sh && \
 # Download all-in-one benchmark
     git clone https://github.com/intel-analytics/IPEX-LLM && \
-    cp -r ./IPEX-LLM/python/llm/dev/benchmark/ ./benchmark && \
+    cp -r ./IPEX-LLM/python/llm/dev/benchmark/ /llm/benchmark && \
 # Copy chat.py script
     pip install --upgrade colorama && \
-    cp -r ./IPEX-LLM/python/llm/portable-zip/ ./portable-zip && \
+    cp -r ./IPEX-LLM/python/llm/portable-zip/ /llm/portable-zip && \
 # Install all-in-one dependencies
     apt-get install -y --no-install-recommends numactl && \
     pip install --upgrade omegaconf && \
@@ -59,7 +59,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Add Qwen support
     pip install --upgrade transformers_stream_generator einops && \
 # Copy vLLM-Serving
-    cp -r ./IPEX-LLM/python/llm/example/CPU/vLLM-Serving/ ./vLLM-Serving && \
+    cp -r ./IPEX-LLM/python/llm/example/CPU/vLLM-Serving/ /llm/vLLM-Serving && \
     rm -rf ./IPEX-LLM && \
 # Fix vllm service 
     pip install pydantic==1.10.11 && \
@@ -72,5 +72,5 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ && \
     pip install transformers==4.36.2
     
-USER myuser
+USER ipex-llm
 ENTRYPOINT ["/bin/bash"]
