@@ -1064,6 +1064,20 @@ def _optimize_post(model, lightweight_bmm=False):
                             module.SelfAttention,
                             chatglm_attention_forward
                             )
+        elif (model.config.num_layers == 40 and hasattr(model.config, 'rope_ratio')
+                and model.config.rope_ratio == 500):
+             # glm-4-9b-chat
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from ipex_llm.transformers.models.chatglm4 import chatglm4_attention_forward
+            from ipex_llm.transformers.models.chatglm4 import chatglm4_model_forward
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm4_attention_forward)
+            convert_forward(model,
+                            module.ChatGLMModel,
+                            chatglm4_model_forward)
+
     elif "mpt" in model.config.model_type:
         if model.config.architectures is not None:
             modeling_module_name = model.__class__.__module__

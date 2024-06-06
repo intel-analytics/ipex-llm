@@ -21,6 +21,8 @@ import torch
 from typing import Optional, Tuple, Union, List, Callable, Dict, Any
 import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
+from transformers.modeling_outputs import BaseModelOutputWithPast
 
 
 import os
@@ -54,17 +56,104 @@ def split_tensor_along_last_dim(
 
     return tensor_list
 
+def chatglm4_model_forward(
+    self,
+    input_ids,
+    position_ids: Optional[torch.Tensor] = None,
+    attention_mask: Optional[torch.BoolTensor] = None,
+    full_attention_mask: Optional[torch.BoolTensor] = None,
+    past_key_values: Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]] = None,
+    inputs_embeds: Optional[torch.Tensor] = None,
+    use_cache: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, BaseModelOutputWithPast]:
+    from ipex_llm.transformers.kv import DynamicFp8Cache
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    if use_cache and use_quantize_kv_cache(self.encoder.layers[0].self_attention.query_key_value, input_ids):
+        if not isinstance(past_key_values, DynamicFp8Cache):
+            past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+    return chatglm4_model_forward_internal(
+        self=self,
+        input_ids=input_ids,
+        position_ids=position_ids,
+        attention_mask=attention_mask,
+        full_attention_mask=full_attention_mask,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+    )
+
+
+def chatglm4_model_forward_internal(
+        self,
+        input_ids,
+        position_ids: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.BoolTensor] = None,
+        full_attention_mask: Optional[torch.BoolTensor] = None,
+        past_key_values: Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]] = None,
+        inputs_embeds: Optional[torch.Tensor] = None,
+        use_cache: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+):
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    batch_size, seq_length = input_ids.shape
+
+    if inputs_embeds is None:
+        inputs_embeds = self.embedding(input_ids)
+
+    if full_attention_mask is None:
+        if (attention_mask is not None and not attention_mask.all()) or (past_key_values and seq_length != 1):
+            full_attention_mask = self.get_masks(input_ids, past_key_values, padding_mask=attention_mask)
+
+    # Rotary positional embeddings
+    rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
+    if position_ids is not None:
+        rotary_pos_emb = rotary_pos_emb[position_ids]
+    else:
+        rotary_pos_emb = rotary_pos_emb[None, :seq_length]
+
+    # Run encoder.
+    hidden_states, presents, all_hidden_states, all_self_attentions = self.encoder(
+        inputs_embeds, full_attention_mask, rotary_pos_emb=rotary_pos_emb,
+        kv_caches=past_key_values, use_cache=use_cache, output_hidden_states=output_hidden_states
+    )
+    if presents is not None and type(presents) is torch.Tensor:
+        presents = presents.split(1, dim=0)
+        presents = list(presents)
+        presents = [list(x.squeeze(0).split(1, dim=0)) for x in presents]
+        presents = [tuple([x.squeeze(0) for x in y]) for y in presents]
+        presents = tuple(presents)
+
+    if not return_dict:
+        return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions] if v is not None)
+
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=presents,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attentions,
+    )
+
 
 @torch.jit.script
 def apply_rotary_pos_emb(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Tensor:
-    # x: [sq, b, np, hn]
-    sq, b, np, hn = x.size(0), x.size(1), x.size(2), x.size(3)
+    # x: [b, np, sq, hn]
+    b, np, sq, hn = x.size(0), x.size(1), x.size(2), x.size(3)
     rot_dim = rope_cache.shape[-2] * 2
     x, x_pass = x[..., :rot_dim], x[..., rot_dim:]
     # truncate to support variable sizes
-    rope_cache = rope_cache[:sq]
-    xshaped = x.reshape(sq, -1, np, rot_dim // 2, 2)
-    rope_cache = rope_cache.view(sq, -1, 1, xshaped.size(3), 2)
+    rope_cache = rope_cache[:, :sq]
+    xshaped = x.reshape(b, np, sq, rot_dim // 2, 2)
+    rope_cache = rope_cache.view(-1, 1, sq, xshaped.size(3), 2)
     x_out2 = torch.stack(
         [
             xshaped[..., 0] * rope_cache[..., 0] - xshaped[..., 1] * rope_cache[..., 1],
@@ -76,7 +165,7 @@ def apply_rotary_pos_emb(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Ten
     return torch.cat((x_out2, x_pass), dim=-1)
 
 
-def chatglm2_32k_attention_forward(
+def chatglm4_attention_forward(
     self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
 ):
     # hidden_states: [sq, b, h]
@@ -121,41 +210,33 @@ def chatglm2_32k_attention_forward(
         # [sq, b, np, 3 * hn] --> 3 [sq, b, np, hn]
         (query_layer, key_layer, value_layer) = split_tensor_along_last_dim(mixed_x_layer, 3)
 
+    # [b, sq, np, hn] -> [b, np, sq, hn]
+    query_layer, key_layer, value_layer = [k.transpose(1, 2) for k in [query_layer, key_layer, value_layer]]
+
     # apply relative positional encoding (rotary embedding)
     if rotary_pos_emb is not None:
         query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
         key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
 
-    cur_length, batch_size = query_layer.shape[0], query_layer.shape[1]
-
-    if self.multi_query_attention:
-        key_length = key_layer.size(0)
-        query_group_size = self.num_attention_heads_per_partition // \
-            self.num_multi_query_groups_per_partition
-        key_layer = key_layer.permute(1, 2, 0, 3).unsqueeze(-3)  # [bs, nh/k, sl, hn]
-        key_layer = key_layer.expand(-1, -1, query_group_size, -1, -1)
-        key_layer = key_layer.contiguous().view((batch_size,
-                                                 self.num_attention_heads_per_partition,
-                                                 key_length,
-                                                 self.hidden_size_per_attention_head))
-        value_layer = value_layer.permute(1, 2, 0, 3).unsqueeze(-3)
-        value_layer = value_layer.expand(-1, -1, query_group_size, -1, -1)
-        value_layer = value_layer.contiguous().view((batch_size,
-                                                     self.num_attention_heads_per_partition,
-                                                     key_length,
-                                                     self.hidden_size_per_attention_head))
+    #print(query_layer.shape)
+    cur_length, batch_size = query_layer.shape[2], query_layer.shape[0]
 
     # adjust key and value for inference
-    if kv_cache is not None:
+    if kv_cache is not None and use_cache:
         cache_k, cache_v = kv_cache
-        cache_k = cache_k.permute(1, 2, 0, 3)
-        cache_v = cache_v.permute(1, 2, 0, 3)
+        # cache_k = cache_k.permute(1, 2, 0, 3)
+        # cache_v = cache_v.permute(1, 2, 0, 3)
         past_length = cache_k.size(2)
 
         if cache_k.stride()[1] < (past_length + cur_length) * cache_k.size(3):
+            print("extend: ", end='')
+            print(cache_k.stride()[1], end = " ")
+            print(cache_k.size(3), end = " ")
+            print(past_length, end = " ")
+            print(cur_length)
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_cache_k, new_cache_v = extend_kv_cache(batch_size,
-                                                       self.num_attention_heads_per_partition,
+                                                       key_layer.size(1),
                                                        self.hidden_size_per_attention_head,
                                                        past_length,
                                                        max_cache_length,
@@ -167,21 +248,20 @@ def chatglm2_32k_attention_forward(
             cache_v = new_cache_v
 
         key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
-    elif use_cache:
-        max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
-            + KV_CACHE_ALLOC_BLOCK_LENGTH
-        key_cache, value_cache = init_kv_cache(batch_size, self.num_attention_heads_per_partition,
-                                               self.hidden_size_per_attention_head, cur_length,
-                                               max_cache_length,
-                                               dtype=query_layer.dtype, device=device)
-        key_cache[:] = key_layer
-        value_cache[:] = value_layer
-        key_layer = key_cache
-        value_layer = value_cache
+    #elif use_cache:
+    #    max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
+    #        + KV_CACHE_ALLOC_BLOCK_LENGTH
+    #    key_cache, value_cache = init_kv_cache(batch_size, key_layer.size(1),
+    #                                           self.hidden_size_per_attention_head, cur_length,
+    #                                           max_cache_length,
+    #                                           dtype=query_layer.dtype, device=device)
+    #    key_cache[:] = key_layer
+    #    value_cache[:] = value_layer
+    #    key_layer = key_cache
+    #    value_layer = value_cache
 
-    key_layer = key_layer.permute(2, 0, 1, 3)
-    value_layer = value_layer.permute(2, 0, 1, 3)
-
+    #key_layer = key_layer.permute(2, 0, 1, 3)
+    #value_layer = value_layer.permute(2, 0, 1, 3)
     if use_cache:
         if kv_cache is None:
             kv_cache = torch.cat((key_layer.unsqueeze(0).unsqueeze(0),
@@ -190,6 +270,28 @@ def chatglm2_32k_attention_forward(
             kv_cache = (key_layer, value_layer)
     else:
         kv_cache = None
+
+    if self.multi_query_attention:
+        #print("Before: ", end='')
+        #print(key_layer.shape, end='   ')
+        #print(value_layer.shape)
+        key_layer = key_layer.unsqueeze(2)
+        key_layer = key_layer.expand(
+            -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1, -1
+        )
+        key_layer = key_layer.contiguous().view(
+            key_layer.size()[:1] + (self.num_attention_heads_per_partition,) + key_layer.size()[3:]
+        )
+        value_layer = value_layer.unsqueeze(2)
+        value_layer = value_layer.expand(
+            -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1, -1
+        )
+        value_layer = value_layer.contiguous().view(
+            value_layer.size()[:1] + (self.num_attention_heads_per_partition,) + value_layer.size()[3:]
+        )
+        #print("After: ", end='')
+        #print(key_layer.shape, end='   ')
+        #print(value_layer.shape)
 
     # ==================================
     # core attention computation
