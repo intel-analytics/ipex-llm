@@ -484,6 +484,10 @@ def run_transformer_int4_gpu(repo_id,
                     input_str = open(f"prompt/summarize/cnn_615.txt", 'r').read()
                 elif in_len == 2048:
                     input_str = open(f"prompt/summarize/cnn_824.txt", 'r').read()
+                elif in_len <= 256:
+                    input_str = open(f"prompt/summarize/cnn_64.txt", 'r').read()
+                else:
+                    input_str = open(f"prompt/summarize/cnn_5618.txt", 'r').read()
                 question = "Can you please summarize this article?"
                 prompt_format = "[INST] Article:```{}``` \n\n Question: {} \n\n [/INST]"
                 special_tokens_len = len(tokenizer.encode(prompt_format.format("", question), add_special_tokens=False))
@@ -502,7 +506,9 @@ def run_transformer_int4_gpu(repo_id,
                 elif in_len == 2048:
                     input_str = open(f"prompt/QA/orca_401.txt", 'r').read()
                 elif in_len == 4096:
-                    input_str = open(f"prompt/QA/orca_497.txt", 'r').read()                
+                    input_str = open(f"prompt/QA/orca_497.txt", 'r').read()
+                else:
+                    raise ValueError("No corresponding prompt available now, will be added later.")          
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")               
             true_str = tokenizer.batch_decode(input_ids)[0]
             input_list = [true_str] * batch_size
