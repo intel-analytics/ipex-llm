@@ -37,39 +37,20 @@
 # limitations under the License.
 
 """ PyTorch Qwen2MoE model."""
-import math
 import torch
 import torch.nn.functional as F
-import torch.nn as nn
 import torch.utils.checkpoint
-import warnings
-from typing import TYPE_CHECKING, Optional, Tuple, Union, Callable, List
-from ipex_llm.transformers.models.llama import repeat_kv
-from ipex_llm.transformers.models.utils import should_use_fuse_rope
-from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
-from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
-from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb
+from typing import Optional, Tuple, Union, List
 from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers.models.utils import decoding_fast_path_qtype_check
-from ipex_llm.transformers.models.utils import use_flash_attention
-from transformers.models.qwen2_moe.modeling_qwen2_moe import Qwen2MoeModel, apply_rotary_pos_emb
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
-from ipex_llm.transformers.kv import DynamicFp8Cache
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
+from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
 
-import os
-
-KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
-
-from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask_for_sdpa
-from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask
+from transformers.models.qwen2_moe.modeling_qwen2_moe import (
+    _prepare_4d_causal_attention_mask_for_sdpa, _prepare_4d_causal_attention_mask,
+    Qwen2MoeAttention,
+)
 from transformers.modeling_outputs import MoeModelOutputWithPast
-
-try:
-    from transformers.cache_utils import Cache, DynamicCache
-except ImportError:
-    Cache = Tuple[torch.Tensor]
-import logging
+from transformers.cache_utils import Cache, DynamicCache
 from transformers import logging
 
 
@@ -90,9 +71,12 @@ def qwen2moe_model_forward(
     return_dict: Optional[bool] = None,
 ):
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    if use_cache and use_quantize_kv_cache(self.layers[0].mlp.shared_expert.up_proj, input_ids):
-        if not isinstance(past_key_values, DynamicFp8Cache):
+    use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.shared_expert.up_proj, input_ids)
+    if use_cache:
+        if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+        if not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
+            past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
     return qwen2_moe_model_forward_internal(
         self=self,
         input_ids=input_ids,
@@ -290,452 +274,27 @@ def qwen2_moe_model_forward_internal(
         )
 
 
-def qwen2moe_attention_forward(
-    self,
-    hidden_states: torch.Tensor,
-    attention_mask: Optional[torch.Tensor] = None,
-    position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
-    output_attentions: bool = False,
-    use_cache: bool = False,
-    **kwargs,
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states):
-        forward_function = qwen2moe_attention_forward_quantized
-    elif hidden_states.device.type == "cpu":
-        forward_function = qwen2moe_attention_forward_sdpa
-    else:
-        forward_function = qwen2moe_attention_forward_origin
-    return forward_function(
-        self=self,
-        hidden_states=hidden_states,
-        attention_mask=attention_mask,
-        position_ids=position_ids,
-        past_key_value=past_key_value,
-        output_attentions=output_attentions,
-        use_cache=use_cache,
-        **kwargs,
-    )
+def merge_qkv(module: torch.nn.Module):
+    if isinstance(module, Qwen2MoeAttention):
+        new_weight = torch.cat([
+            module.q_proj.weight.data,
+            module.k_proj.weight.data,
+            module.v_proj.weight.data,
+        ], dim=0)
+        new_bias = torch.cat([
+            module.q_proj.bias.data,
+            module.k_proj.bias.data,
+            module.v_proj.bias.data,
+        ], dim=-1)
 
+        qkv_proj = torch.nn.Linear(0, 0, bias=True)
+        qkv_proj.weight = torch.nn.Parameter(new_weight, requires_grad=False)
+        qkv_proj.bias = torch.nn.Parameter(new_bias, requires_grad=False)
+        qkv_proj.in_features = new_weight.size(1)
+        qkv_proj.out_features = new_weight.size(0)
+        module.qkv_proj = qkv_proj
 
-def qwen2moe_attention_forward_quantized(
-    self,
-    hidden_states: torch.Tensor,
-    attention_mask: Optional[torch.Tensor] = None,
-    position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
-    output_attentions: bool = False,
-    use_cache: bool = False,
-    **kwargs,
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if "padding_mask" in kwargs:
-        warnings.warn(
-            "Passing `padding_mask` is deprecated and will be removed in v4.37."
-            "Please make sure use `attention_mask` instead.`"
-        )
-    use_fuse_rope = should_use_fuse_rope(hidden_states, position_ids, self.training)
-    bsz, q_len, _ = hidden_states.size()
-
-    query_states = self.q_proj(hidden_states)
-    key_states = self.k_proj(hidden_states)
-    value_states = self.v_proj(hidden_states)
-
-    query_states = query_states.view(bsz, q_len,
-                                     self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len,
-                                 self.num_key_value_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len,
-                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
-
-    kv_seq_len = key_states.shape[-2]
-    if past_key_value is not None:
-        invalidInputError(self.layer_idx is not None,
-                          "The cache structure has changed since version v4.36. "
-                          f"If you are using {self.__class__.__name__} "
-                          "for auto-regressive decoding with k/v caching, "
-                          "please make sure to initialize the attention class "
-                          "with a layer index.")
-        kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
-    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-
-    if use_fuse_rope:
-        query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states, key_states,
-                                                                       sin, cos, "qwen2_moe",
-                                                                       position_ids)
-    else:
-        query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                        cos, sin, position_ids)
-
-    if past_key_value is not None:
-        cache_kwargs = {"sin": sin, "cos": cos}  # Specific to RoPE models
-        key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs)
-    if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
-            and not hidden_states.requires_grad:
-        import xe_addons
-        attn_weights = xe_addons.query_key_fp8_matmul(query_states, key_states)
-    else:
-        key_states, value_states = restore_fp8_kv_cache(key_states,
-                                                        value_states, query_states.dtype)
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, self.num_key_value_groups)
-        value_states = repeat_kv(value_states, self.num_key_value_groups)
-
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
-
-    attn_weights = attn_weights / math.sqrt(self.head_dim)
-
-    invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
-                      ("Attention weights should be of size "
-                       f"{(bsz, self.num_heads, q_len, kv_seq_len)},"
-                       "but is {attn_weights.size()}"))
-
-    if attention_mask is not None:
-        invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
-                          (f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}"
-                           f" but is {attention_mask.size()}"))
-
-        attn_weights = attn_weights + attention_mask
-
-    # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                         dtype=torch.float32).to(query_states.dtype)
-    attn_weights = nn.functional.dropout(attn_weights,
-                                         p=self.attention_dropout, training=self.training)
-    if q_len == 1 and query_states.device.type == 'xpu' and not self.training \
-            and not hidden_states.requires_grad:
-        import xe_addons
-        attn_output = xe_addons.attn_value_fp8_matmul(attn_weights, value_states)
-    else:
-        attn_output = torch.matmul(attn_weights, value_states)
-
-    invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
-                      "`attn_output` should be of size "
-                      f"{(bsz, self.num_heads, q_len, self.head_dim)},"
-                      f" but is {attn_output.size()}")
-
-    attn_output = attn_output.transpose(1, 2).contiguous()
-    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-
-    attn_output = self.o_proj(attn_output)
-
-    if not output_attentions:
-        attn_weights = None
-
-    return attn_output, attn_weights, past_key_value
-
-
-def qwen2moe_attention_forward_origin(
-    self,
-    hidden_states: torch.Tensor,
-    attention_mask: Optional[torch.Tensor] = None,
-    position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
-    output_attentions: bool = False,
-    use_cache: bool = False,
-    **kwargs,
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    use_fuse_rope = should_use_fuse_rope(hidden_states, position_ids, self.training)
-
-    if "padding_mask" in kwargs:
-        warnings.warn(
-            "Passing `padding_mask` is deprecated and will be removed in v4.37. "
-            "Please make sure use `attention_mask` instead.`"
-        )
-    bsz, q_len, _ = hidden_states.size()
-    device = hidden_states.device
-
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
-
-    qtype_check = decoding_fast_path_qtype_check(self.q_proj)
-    decoding_fast_path = (qtype_check and use_fuse_rope
-                          and enough_kv_room and bsz * q_len == 1)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
-    if decoding_fast_path:
-        hidden_states = hidden_states.view(1, -1)
-        cache_k = past_key_value.key_cache[self.layer_idx]
-        cache_v = past_key_value.value_cache[self.layer_idx]
-        kv_seq_len = cache_k.shape[-2]
-        import xe_linear
-        args = [hidden_states, self.q_proj.weight, self.k_proj.weight, self.v_proj.weight,
-                self.q_proj.bias, self.k_proj.bias, self.v_proj.bias, position_ids, cache_k,
-                cache_v, self.q_proj.weight.qtype, self.v_proj.weight.qtype, kv_seq_len,
-                self.head_dim, self.rotary_emb.base]
-        query_states, key_states, value_states = xe_linear.forward_qkv_bias(*args)
-        kv_seq_len += 1
-        if self.layer_idx == 0:
-            past_key_value._seen_tokens = kv_seq_len
-        past_key_value.key_cache[self.layer_idx] = key_states
-        past_key_value.value_cache[self.layer_idx] = value_states
-    else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
-
-        query_states = query_states.view(bsz, q_len,
-                                         self.num_heads, self.head_dim).transpose(1, 2)
-        key_states = key_states.view(bsz, q_len,
-                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
-        value_states = value_states.view(bsz, q_len,
-                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
-
-        kv_seq_len = key_states.shape[-2]
-        if past_key_value is not None:
-            if self.layer_idx is None:
-                invalidInputError(
-                    False,
-                    "The cache structure has changed since version v4.36. "
-                    f"If you are using {self.__class__.__name__} "
-                    "for auto-regressive decoding with k/v caching, "
-                    "please make sure to initialize the attention class with a layer index."
-                )
-            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
-        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-        if use_fuse_rope:
-            query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states, key_states,
-                                                                           sin, cos, "qwen2_moe",
-                                                                           position_ids)
-        else:
-            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                            cos, sin, position_ids)
-        if past_key_value is not None:
-            if self.layer_idx == 0:
-                past_key_value._seen_tokens += key_states.shape[-2]
-
-            if len(past_key_value.key_cache) <= self.layer_idx:
-                past_key_value.key_cache.append(key_states)
-                past_key_value.value_cache.append(value_states)
-            else:
-                cache_k = past_key_value.key_cache[self.layer_idx]
-                cache_v = past_key_value.value_cache[self.layer_idx]
-
-                if not enough_kv_room:
-                    # allocate new
-                    new_c_k, new_c_v = extend_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
-
-                    new_c_k[:] = cache_k
-                    new_c_v[:] = cache_v
-                    cache_k = new_c_k
-                    cache_v = new_c_v
-
-                key_states, value_states = append_kv_cache(cache_k,
-                                                           cache_v,
-                                                           key_states,
-                                                           value_states)
-
-                # update past_key_value
-                past_key_value.key_cache[self.layer_idx] = key_states
-                past_key_value.value_cache[self.layer_idx] = value_states
-    # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
-
-    if not self.training and not hidden_states.requires_grad and \
-            use_flash_attention(query_states, key_states, attention_mask):
-        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
-                                                     key_states.to(device, dtype=torch.float16),
-                                                     value_states.to(device, dtype=torch.float16),
-                                                     is_causal=True)
-        attn_weights = None
-    else:
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-        invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
-                          ("Attention weights should be of size "
-                           f"{(bsz, self.num_heads, q_len, kv_seq_len)},"
-                           "but is {attn_weights.size()}"))
-
-        if attention_mask is not None:
-            invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
-                              (f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}"
-                               f" but is {attention_mask.size()}"))
-
-            attn_weights = attn_weights + attention_mask
-
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights,
-                                             dim=-1, dtype=torch.float32).to(query_states.dtype)
-        attn_weights = nn.functional.dropout(attn_weights,
-                                             p=self.attention_dropout, training=self.training)
-        attn_output = torch.matmul(attn_weights, value_states)
-
-    invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
-                      "`attn_output` should be of size "
-                      f"{(bsz, self.num_heads, q_len, self.head_dim)},"
-                      f" but is {attn_output.size()}")
-
-    attn_output = attn_output.transpose(1, 2).contiguous()
-    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-
-    attn_output = self.o_proj(attn_output)
-
-    if not output_attentions:
-        attn_weights = None
-
-    return attn_output.to(hidden_states.dtype), attn_weights, past_key_value
-
-
-def qwen2moe_attention_forward_sdpa(
-    self,
-    hidden_states: torch.Tensor,
-    attention_mask: Optional[torch.Tensor] = None,
-    position_ids: Optional[torch.LongTensor] = None,
-    past_key_value: Optional[Tuple[torch.Tensor]] = None,
-    output_attentions: bool = False,
-    use_cache: bool = False,
-    **kwargs,
-) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    use_fuse_rope = should_use_fuse_rope(hidden_states, position_ids, self.training)
-
-    if "padding_mask" in kwargs:
-        warnings.warn(
-            "Passing `padding_mask` is deprecated and will be removed in v4.37. "
-            "Please make sure use `attention_mask` instead.`"
-        )
-    bsz, q_len, _ = hidden_states.size()
-    device = hidden_states.device
-
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
-
-    qtype_check = decoding_fast_path_qtype_check(self.q_proj)
-    decoding_fast_path = (qtype_check and use_fuse_rope
-                          and enough_kv_room and bsz * q_len == 1)
-    decoding_fast_path = decoding_fast_path and not self.q_proj.enable_xetla
-    if decoding_fast_path:
-        hidden_states = hidden_states.view(1, -1)
-        cache_k = past_key_value.key_cache[self.layer_idx]
-        cache_v = past_key_value.value_cache[self.layer_idx]
-        kv_seq_len = cache_k.shape[-2]
-        import xe_linear
-        args = [hidden_states, self.q_proj.weight, self.k_proj.weight, self.v_proj.weight,
-                self.q_proj.bias, self.k_proj.bias, self.v_proj.bias, position_ids, cache_k,
-                cache_v, self.q_proj.weight.qtype, self.v_proj.weight.qtype, kv_seq_len,
-                self.head_dim, self.rotary_emb.base]
-        query_states, key_states, value_states = xe_linear.forward_qkv_bias(*args)
-        kv_seq_len += 1
-        if self.layer_idx == 0:
-            past_key_value._seen_tokens = kv_seq_len
-        past_key_value.key_cache[self.layer_idx] = key_states
-        past_key_value.value_cache[self.layer_idx] = value_states
-    else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
-
-        query_states = query_states.view(bsz, q_len,
-                                         self.num_heads, self.head_dim).transpose(1, 2)
-        key_states = key_states.view(bsz, q_len,
-                                     self.num_key_value_heads, self.head_dim).transpose(1, 2)
-        value_states = value_states.view(bsz, q_len,
-                                         self.num_key_value_heads, self.head_dim).transpose(1, 2)
-
-        kv_seq_len = key_states.shape[-2]
-        if past_key_value is not None:
-            if self.layer_idx is None:
-                invalidInputError(
-                    False,
-                    "The cache structure has changed since version v4.36. "
-                    f"If you are using {self.__class__.__name__} "
-                    "for auto-regressive decoding with k/v caching, "
-                    "please make sure to initialize the attention class with a layer index."
-                )
-            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
-        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
-        if use_fuse_rope:
-            query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(query_states, key_states,
-                                                                           sin, cos, "qwen2_moe",
-                                                                           position_ids)
-        else:
-            query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
-                                                            cos, sin, position_ids)
-        if past_key_value is not None:
-            if self.layer_idx == 0:
-                past_key_value._seen_tokens += key_states.shape[-2]
-
-            if len(past_key_value.key_cache) <= self.layer_idx:
-                past_key_value.key_cache.append(key_states)
-                past_key_value.value_cache.append(value_states)
-            else:
-                cache_k = past_key_value.key_cache[self.layer_idx]
-                cache_v = past_key_value.value_cache[self.layer_idx]
-
-                if not enough_kv_room:
-                    # allocate new
-                    new_c_k, new_c_v = extend_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
-
-                    new_c_k[:] = cache_k
-                    new_c_v[:] = cache_v
-                    cache_k = new_c_k
-                    cache_v = new_c_v
-
-                key_states, value_states = append_kv_cache(cache_k,
-                                                           cache_v,
-                                                           key_states,
-                                                           value_states)
-
-                # update past_key_value
-                past_key_value.key_cache[self.layer_idx] = key_states
-                past_key_value.value_cache[self.layer_idx] = value_states
-    # repeat k/v heads if n_kv_heads < n_heads
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
-
-    if output_attentions:
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-        invalidInputError(attn_weights.size() == (bsz, self.num_heads, q_len, kv_seq_len),
-                          ("Attention weights should be of size "
-                           f"{(bsz, self.num_heads, q_len, kv_seq_len)},"
-                           "but is {attn_weights.size()}"))
-
-        if attention_mask is not None:
-            invalidInputError(attention_mask.size() == (bsz, 1, q_len, kv_seq_len),
-                              (f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}"
-                               f" but is {attention_mask.size()}"))
-
-            attn_weights = attn_weights + attention_mask
-
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights,
-                                             dim=-1, dtype=torch.float32).to(query_states.dtype)
-        attn_weights = nn.functional.dropout(attn_weights,
-                                             p=self.attention_dropout, training=self.training)
-    else:
-        attn_weights = None
-
-    from torch.nn.functional import scaled_dot_product_attention as sdpa
-    attn_output = sdpa(query_states,
-                       key_states,
-                       value_states,
-                       attn_mask=attention_mask,
-                       dropout_p=self.attention_dropout if self.training else 0.0,
-                       is_causal=self.is_causal and attention_mask is None and q_len > 1)
-
-    invalidInputError(attn_output.size() == (bsz, self.num_heads, q_len, self.head_dim),
-                      "`attn_output` should be of size "
-                      f"{(bsz, self.num_heads, q_len, self.head_dim)},"
-                      f" but is {attn_output.size()}")
-
-    attn_output = attn_output.transpose(1, 2).contiguous()
-    attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
-
-    attn_output = self.o_proj(attn_output)
-
-    return attn_output, attn_weights, past_key_value
+        del module.q_proj, module.k_proj, module.v_proj
 
 
 def qwen2moe_moeblock_forward(self, hidden_states: torch.Tensor):
