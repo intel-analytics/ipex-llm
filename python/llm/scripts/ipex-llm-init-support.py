@@ -1,5 +1,6 @@
 import os
 import sys
+import platform
 
 #import torch 
 #import intel_extension_for_pytorch
@@ -32,10 +33,10 @@ def let_user_select(option_list: list[str], queryname: str, default : int = 0, i
     if len(option_list) == 0:
         return default
     while True:
-        print(f"Please select a {queryname} (default: {default} {option_list[default]}):")
         if info is not None:
             for line in info:
                 print(line)
+        print(f"Please select a {queryname} (default: {default} {option_list[default]}):")
         for i, option in enumerate(option_list):
             print(f"{i}: {option}")
         userinput = input("> ")
@@ -64,15 +65,36 @@ def get_device_name():
         sys.exit(1)
     
     if len(device_list) == 1:
-        return device_list[0], 0
+        device = device_list[0]
+        device_id = 0
+        print(f"Selected device: {device}")
+        print(f"Device ID: {device_id}")
+        device = get_xpu_device_type(device)
+        print(f"Device type: {device}")    
+        return device, device_id
     
-    device_id = let_user_select(device_list, "device")
-    return device_list[device_id], device_id
+    device_select_info = []
+    if platform.system() == "Windows":
+        device_select_info.append("Multiple XPU devices found")
+        device_select_info.append("Only one XPU device mode is supported on windows at the moment, please select the device you want to use.")
+        device_select_info.append(" ")
+        device_select_info.append("Warning : Have multiple XPU devices on windows may cause 'RuntimeError: could not create a primitive'")
+        device_select_info.append("""Check https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/FAQ/faq.html#runtimeerror-could-not-create-a-primitive-on-windows to find hao to solve this problem.""")
 
-    
+    device_id = let_user_select(device_list, "device", 0, device_select_info)
+    device = device_list[device_id]
+    print(f"Selected device: {device}")
+    print(f"Device ID: {device_id}")
+    device = get_xpu_device_type(device)
+    print(f"Device type: {device}")    
+    return device, device_id
+
+
+
 if mode == "select":
     modelist = ["cpu", "gpu"]
     infolist = []
+    infolist.append("Please select the mode you want to use")
     infolist.append("The cpu mode option will enable cpu support, while the gpu mode option enable gpu support.")
     infolist.append("If you choose gpu mode, please ensure you have torch and intel-extension-for-pytorch in your python environment.")
     mode = modelist[let_user_select(modelist, "mode", 0, infolist)]
@@ -97,10 +119,7 @@ if mode == "cpu":
     pass
 elif mode == "gpu":
     device, device_id = get_device_name()
-    print(f"Selected device: {device}")
-    print(f"Device ID: {device_id}")
-    device = get_xpu_device_type(device)
-    print(f"Device type: {device}")
+
 
 
 ONEAPI_DEVICE_SELECTOR = ""

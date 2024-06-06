@@ -114,7 +114,7 @@ python %~pd0ipex-llm-init-support.py %MOD% %TMPFILEPATH% 2>nul
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to run ipex-llm-init-support.py.
     echo Please check the error message above.
-    EXIT /B 1
+    EXIT /B %ERRORLEVEL%
 )
 
 SET ONEAPI_DEVICE_SELECTOR_=

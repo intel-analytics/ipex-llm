@@ -334,7 +334,7 @@ def setup_package():
             'Programming Language :: Python :: Implementation :: CPython'],
         scripts={
             'Linux': ['src/ipex_llm/cli/llm-cli', 'src/ipex_llm/cli/llm-chat', 'scripts/ipex-llm-init'],
-            'Windows': ['src/ipex_llm/cli/llm-cli.ps1', 'src/ipex_llm/cli/llm-chat.ps1', 'scripts/ipex-llm-init.bat'],
+            'Windows': ['src/ipex_llm/cli/llm-cli.ps1', 'src/ipex_llm/cli/llm-chat.ps1', 'scripts/ipex-llm-init.bat', 'scripts/ipex-llm-init-support.py'],
         }[platform_name],
         platforms=['windows']
     )
