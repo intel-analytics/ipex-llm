@@ -38,8 +38,7 @@
 #
 
 import math
-import warnings
-from typing import TYPE_CHECKING, Optional, Tuple, Union, Callable, List
+from typing import Optional, Tuple, Union, List
 
 import torch
 from torch.nn.functional import scaled_dot_product_attention as sdpa
@@ -74,7 +73,10 @@ def qwen2_model_forward(
     return_dict: Optional[bool] = None,
 ):
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids)
+    use_quantize_kv = (
+        self.config.hidden_size != 3584     # disable quantize kv in specific model
+        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids)
+    )
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
