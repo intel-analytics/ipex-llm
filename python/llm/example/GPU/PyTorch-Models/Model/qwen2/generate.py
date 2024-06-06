@@ -41,7 +41,8 @@ if __name__ == '__main__':
     from ipex_llm import optimize_model
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True,
-                                                 torch_dtype = torch.float16,
+                                                 torch_dtype = 'auto',
+                                                 low_cpu_mem_usage=True,
                                                  use_cache=True)
     model = optimize_model(model)
     model = model.to("xpu")

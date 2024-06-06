@@ -122,7 +122,7 @@ Inference time: xxxx s
 -------------------- Prompt --------------------
 AI是什么？
 -------------------- Output --------------------
-AI是人工智能（Artificial Intelligence）的缩写。人工智能是一种计算机科学技术，它使计算机系统能够执行通常需要人类智能才能完成的任务。这些
+AI是“人工智能”的缩写，指的是通过计算机程序和算法来模拟、延伸和扩展人类智能的一门技术。它涉及到许多不同的领域，
 ```
 
 ```log
@@ -130,5 +130,5 @@ Inference time: xxxx s
 -------------------- Prompt --------------------
 What is AI?
 -------------------- Output --------------------
-Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and work like humans. This includes the ability to learn from
+AI stands for Artificial Intelligence, which refers to the simulation of human intelligence in machines that are programmed to think and learn like humans do. This includes various techniques and
 ```
