@@ -227,10 +227,14 @@ class PipelineBaseModel(nn.Module):
 
 
 def load_model(checkpoint):
-    from llama_models import LlamaForCausalLM
     if 'llama' in checkpoint.lower():
+        from llama_models import LlamaForCausalLM
         model = LlamaForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
+    elif 'qwen' in checkpoint.lower():
+        from qwen2_models import Qwen2ForCausalLM
+        model = Qwen2ForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
     return model
+
 
 from pydantic import BaseModel
 class BatchTask(BaseModel):
@@ -265,8 +269,9 @@ class ModelRunner:
         end = time.perf_counter()
         logger.info(f"Time to load weights: {end - start:.2f}s")
         from ipex_llm import optimize_model
+        from ipex_llm.transformers.convert import _optimize_pre
 
-        model = optimize_model(model, low_bit=low_bit)
+        model = optimize_model(model, low_bit=low_bit, cpu_embedding=True)
         
         model = model.to(torch.float16).to(f'xpu:{rank}')
         self.model = model
