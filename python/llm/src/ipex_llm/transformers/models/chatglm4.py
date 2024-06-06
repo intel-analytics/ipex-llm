@@ -56,13 +56,14 @@ def split_tensor_along_last_dim(
 
     return tensor_list
 
+
 def chatglm4_model_forward(
     self,
     input_ids,
     position_ids: Optional[torch.Tensor] = None,
     attention_mask: Optional[torch.BoolTensor] = None,
     full_attention_mask: Optional[torch.BoolTensor] = None,
-    past_key_values: Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]] = None,
+    past_key_values: Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]]=None,
     inputs_embeds: Optional[torch.Tensor] = None,
     use_cache: Optional[bool] = None,
     output_hidden_states: Optional[bool] = None,
@@ -70,9 +71,10 @@ def chatglm4_model_forward(
 ) -> Union[Tuple, BaseModelOutputWithPast]:
     from ipex_llm.transformers.kv import DynamicFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    #if use_cache and use_quantize_kv_cache(self.encoder.layers[0].self_attention.query_key_value, input_ids):
-    #    if not isinstance(past_key_values, DynamicFp8Cache):
-    #        past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+    # if use_cache and use_quantize_kv_cache(
+    #         self.encoder.layers[0].self_attention.query_key_value, input_ids):
+    #     if not isinstance(past_key_values, DynamicFp8Cache):
+    #         past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return chatglm4_model_forward_internal(
         self=self,
         input_ids=input_ids,
@@ -93,14 +95,15 @@ def chatglm4_model_forward_internal(
         position_ids: Optional[torch.Tensor] = None,
         attention_mask: Optional[torch.BoolTensor] = None,
         full_attention_mask: Optional[torch.BoolTensor] = None,
-        past_key_values: Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]] = None,
+        past_key_values: Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]]=None,
         inputs_embeds: Optional[torch.Tensor] = None,
         use_cache: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
 ):
     output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        output_hidden_states if output_hidden_states is not None else
+        self.config.output_hidden_states
     )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
@@ -111,8 +114,11 @@ def chatglm4_model_forward_internal(
         inputs_embeds = self.embedding(input_ids)
 
     if full_attention_mask is None:
-        if (attention_mask is not None and not attention_mask.all()) or (past_key_values and seq_length != 1):
-            full_attention_mask = self.get_masks(input_ids, past_key_values, padding_mask=attention_mask)
+        if (attention_mask is not None and not attention_mask.all()) or\
+                (past_key_values and seq_length != 1):
+            full_attention_mask = self.get_masks(input_ids,
+                                                 past_key_values,
+                                                 padding_mask=attention_mask)
 
     use_fuse_rope = input_ids.device.type == "xpu"
     use_fuse_rope = use_fuse_rope and not self.training
@@ -147,7 +153,8 @@ def chatglm4_model_forward_internal(
         presents = tuple(presents)
 
     if not return_dict:
-        return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions] if v is not None)
+        return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions]
+                     if v is not None)
 
     return BaseModelOutputWithPast(
         last_hidden_state=hidden_states,
@@ -224,10 +231,11 @@ def chatglm4_attention_forward(
         (query_layer, key_layer, value_layer) = split_tensor_along_last_dim(mixed_x_layer, 3)
 
     # [b, sq, np, hn] -> [b, np, sq, hn]
-    query_layer, key_layer, value_layer = [k.transpose(1, 2) for k in [query_layer, key_layer, value_layer]]
+    query_layer, key_layer, value_layer = [k.transpose(1, 2)
+                                           for k in [query_layer, key_layer, value_layer]]
 
     # apply relative positional encoding (rotary embedding)
-    if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
+    if isinstance(rotary_pos_emb, tuple) and len(rotary_pos_emb) == 2:
         # use_fuse_rope, see chatglm2_model_forward
         cos, sin = rotary_pos_emb
         rot_dim = cos.shape[-1]
@@ -241,12 +249,9 @@ def chatglm4_attention_forward(
         torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
         query_layer = query_layer.transpose(1, 2)
         key_layer = key_layer.transpose(1, 2)
-    else:
+    elif rotary_pos_emb is not None:
         query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
         key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
-    #if rotary_pos_emb is not None:
-    #    query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
-    #    key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
 
     cur_length, batch_size = query_layer.shape[2], query_layer.shape[0]
 
@@ -283,17 +288,22 @@ def chatglm4_attention_forward(
     if self.multi_query_attention:
         key_layer = key_layer.unsqueeze(2)
         key_layer = key_layer.expand(
-            -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1, -1
+            -1, -1,
+            self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition,
+            -1, -1
         )
         key_layer = key_layer.contiguous().view(
             key_layer.size()[:1] + (self.num_attention_heads_per_partition,) + key_layer.size()[3:]
         )
         value_layer = value_layer.unsqueeze(2)
         value_layer = value_layer.expand(
-            -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1, -1
+            -1, -1,
+            self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition,
+            -1, -1
         )
         value_layer = value_layer.contiguous().view(
-            value_layer.size()[:1] + (self.num_attention_heads_per_partition,) + value_layer.size()[3:]
+            value_layer.size()[:1] +
+            (self.num_attention_heads_per_partition,) + value_layer.size()[3:]
         )
 
     # ==================================
