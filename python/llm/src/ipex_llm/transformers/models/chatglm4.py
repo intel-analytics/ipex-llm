@@ -218,22 +218,14 @@ def chatglm4_attention_forward(
         query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
         key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
 
-    #print(query_layer.shape)
     cur_length, batch_size = query_layer.shape[2], query_layer.shape[0]
 
     # adjust key and value for inference
     if kv_cache is not None and use_cache:
         cache_k, cache_v = kv_cache
-        # cache_k = cache_k.permute(1, 2, 0, 3)
-        # cache_v = cache_v.permute(1, 2, 0, 3)
         past_length = cache_k.size(2)
 
         if cache_k.stride()[1] < (past_length + cur_length) * cache_k.size(3):
-            print("extend: ", end='')
-            print(cache_k.stride()[1], end = " ")
-            print(cache_k.size(3), end = " ")
-            print(past_length, end = " ")
-            print(cur_length)
             max_cache_length = past_length + cur_length + KV_CACHE_ALLOC_BLOCK_LENGTH
             new_cache_k, new_cache_v = extend_kv_cache(batch_size,
                                                        key_layer.size(1),
@@ -248,20 +240,7 @@ def chatglm4_attention_forward(
             cache_v = new_cache_v
 
         key_layer, value_layer = append_kv_cache(cache_k, cache_v, key_layer, value_layer)
-    #elif use_cache:
-    #    max_cache_length = max(KV_CACHE_ALLOC_MIN_LENGTH, cur_length) \
-    #        + KV_CACHE_ALLOC_BLOCK_LENGTH
-    #    key_cache, value_cache = init_kv_cache(batch_size, key_layer.size(1),
-    #                                           self.hidden_size_per_attention_head, cur_length,
-    #                                           max_cache_length,
-    #                                           dtype=query_layer.dtype, device=device)
-    #    key_cache[:] = key_layer
-    #    value_cache[:] = value_layer
-    #    key_layer = key_cache
-    #    value_layer = value_cache
 
-    #key_layer = key_layer.permute(2, 0, 1, 3)
-    #value_layer = value_layer.permute(2, 0, 1, 3)
     if use_cache:
         if kv_cache is None:
             kv_cache = torch.cat((key_layer.unsqueeze(0).unsqueeze(0),
@@ -272,9 +251,6 @@ def chatglm4_attention_forward(
         kv_cache = None
 
     if self.multi_query_attention:
-        #print("Before: ", end='')
-        #print(key_layer.shape, end='   ')
-        #print(value_layer.shape)
         key_layer = key_layer.unsqueeze(2)
         key_layer = key_layer.expand(
             -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1, -1
@@ -289,9 +265,6 @@ def chatglm4_attention_forward(
         value_layer = value_layer.contiguous().view(
             value_layer.size()[:1] + (self.num_attention_heads_per_partition,) + value_layer.size()[3:]
         )
-        #print("After: ", end='')
-        #print(key_layer.shape, end='   ')
-        #print(value_layer.shape)
 
     # ==================================
     # core attention computation
