@@ -15,7 +15,7 @@ RUN apt-get update && \
     useradd -r -g myuser myuser && \
     echo "myuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-USER myuser
+USER root
 
 # Update the software sources
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -72,4 +72,5 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ && \
     pip install transformers==4.36.2
     
+USER myuser
 ENTRYPOINT ["/bin/bash"]
