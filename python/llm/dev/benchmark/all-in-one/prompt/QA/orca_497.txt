@@ -1,0 +1,101 @@
+<s>[INST] <<SYS>>
+You are an AI assistant. User will you give you a task. Your goal is to complete the task as faithfully as you can. While performing the task think step-by-step and justify your steps.
+<</SYS>>
+
+News article:
+
+(Carolyn Kaster/AP Photo) 
+  
+ Weary of waiting for an economic recovery worth its name, a frustrated American public has sent Barack Obama's job approval rating to a career low - with a majority in the latest ABC News/Washington Post poll favoring a Republican Congress to act as a check on his policies. 
+  
+ Registered voters by 53-39 percent in the national survey say they'd rather see the Republicans in control of Congress as a counterbalance to Obama's policies than a Democratic-led Congress to help support him. It was similar in fall 2010, when the Republicans took control of the House of Representatives and gained six Senate seats. 
+  
+ See PDF with full results and charts here. 
+  
+ Obama's job approval rating, after a slight winter rebound, has lost 5 points among all adults since March, to 41 percent, the lowest of his presidency by a single point. Fifty-two percent disapprove, with "strong" disapproval exceeding strong approval by 17 percentage points. He's lost ground in particular among some of his core support groups. 
+  
+ Economic discontent remains the driving element in political views in this survey, produced for ABC by Langer Research Associates. Americans rate the condition of the economy negatively by 71-29 percent - the least bad since November 2007, but still dismal by any measure. Only 28 percent think the economy's improving, down by 9 points since just before Obama won his second term. He gets just 42 percent approval for handling it. 
+  
+ Economic views are strongly related to political preferences. Among people who see the economy improving, 65 percent prefer Democratic control of Congress, while among those who see the economy as stagnant or worsening, 62 percent favor Republican control. Notably, economic views are linked with preferences for control of Congress regardless of people's partisan affiliation. 
+  
+ The results suggest the corrosive effects of the long downturn on the president's popularity: Among those who say the economy is in bad shape, Obama's overall approval rating has lost 20 points since February 2012, from 46 percent then to 26 percent now. 
+  
+ The president faces other challenges. While he's hailed insurance exchange sign-ups as a marker of the Affordable Care Act's success, the program and his rating for handling it have lost ground, both down from their levels late last month after the Healthcare.gov website was stabilized. The law gets 44 percent support, down 5 points; Obama has just 37 percent approval for its implementation, down 7. 
+  
+ One reason is that the law seems to have opened an avenue for public ire about health care costs to be directed at the administration. Six in 10 blame the ACA for increasing costs nationally, and 47 percent think it's caused their own health care expenses to rise. Regardless of whether or how much those costs would have risen otherwise, Obamacare is taking a heavy dose of the blame. 
+  
+ Separately, a current issue on the world stage offers no respite for Obama: Given continued tensions over Ukraine, just 34 percent of Americans approve of how he's handling that situation, 8 points fewer than early last month. Forty-six percent disapprove, with two in 10 withholding judgment. 
+  
+ DISCONTENT/MIDTERMS - With these and other problems - but chiefly the economy - the public by more than 2-1, 66-30 percent, says the country's headed seriously off on the wrong track. That's about where it's been lately, and more negative than a year ago. 
+  
+ General anti-incumbency results: Just 22 percent of Americans say they're inclined to re-elect their representative in Congress, unchanged from last month as the fewest in ABC/Post polls dating back 25 years. 
+  
+ Another outcome is risk for the president's party, in punishment for his handling of the helm. A single point divides Democratic and Republican candidates for the House in preference among registered voters, 45-44 percent. Among those who say they're certain to vote (with Republicans more apt to show up in midterms), that goes to 44-49 percent. 
+  
+ Independents, a sometimes swing-voting group, favor Republican House candidates by 55-32 percent (among those who say they're certain to vote). And, as with views on control of Congress, perceptions of the economy correlate with congressional vote preference, regardless of partisanship. 
+  
+ ISSUES - None of this means the GOP is home free. A robust improvement in the economy could change the equation. (As many, at least, say it's currently holding steady, 35 percent, as think it's getting worse, 36 percent.) And even as the brunt of economic unhappiness falls on the president, the public divides essentially evenly on which party they trust more to handle the economy - suggesting that the Republicans have yet to present a broadly appealing alternative. 
+  
+ In another example, for all of Obamacare's controversies, the Democrats hold a slight 8-point edge in trust to handle health care, again indicating that the Republicans have yet to seize the opportunity to present a compelling solution of their own. Indeed, the Democrats have a 6-point lead in trust to handle "the main problems the nation faces" - although, as with all others, that narrows among likely voters, in this case to 37-40 percent, a numerical (but not significant) GOP edge. 
+  
+ The Republicans have a 9-point advantage in trust to handle the federal deficit - an improvement for the party from last month. Similarly, Americans by a 7-point margin trust the Republicans over Obama to find the right mix of spending to cut and federal programs to maintain. The president had an 11-point lead on that question just after the partial government shutdown last fall. 
+  
+ The Democrats push back with two results that they're likely to stress as the November election draws closer: One is a broad, 20-point advantage, 52-32 percent, in trust over the Republicans to help the middle class (but again, this narrows among likely voters). The other is an even wider, 30-point lead, 55-25 percent, in trust to handle issues of particular concern to women. 
+  
+ The Republicans have some vulnerability in other areas, as well. Americans say the Democratic Party comes closer than the GOP to their positions on climate change, by 18 points; whether or not to raise the minimum wage, by 16 points; gay marriage, by 14 points; and the issue of abortion, by 8 points. On one remaining issue, gun control, the Republicans have a slight, 5-point edge. 
+  
+ HEALTH CARE - Obamacare, for its part, is a subject the Republicans have sought to turn to their advantage in the midterm elections, and the poll results show ample opportunity. 
+  
+ Costs are a particular target. As noted, 47 percent of Americans feel that their health care costs are rising as a result of the ACA; 58 percent say the same about the overall costs of health care nationally. Just 8 and 11 percent, respectively, say the law has decreased these costs. If there's a case to be made that costs would have risen anyway - or that they would have risen faster absent the ACA - it's yet to resonate with large segments of the population. 
+  
+ Other assessments also are critical. The public by a 20-point margin, 44-24 percent, is more apt to say the law has made the overall health care system worse rather than better (although the number who say it's made things better is up by 5 points from December). The rest, 29 percent, see no change. Americans by 29-14 percent likewise say the ACA has made their own care worse rather than better, with more, 53 percent, reporting no impact. 
+  
+ Despite the website's improvements, half say the law's implementation is going worse than they expected when it began, vs. 41 percent better - another sign of the persistent antipathy that's dogged Obamacare from the start. 
+  
+ The poll also shows both the striking partisan division on Obamacare and the extent to which, on several questions, independents side more with Republicans on the issue. Thirty-eight percent of Democrats, for instance, say the ACA has increased health care costs nationally; that soars to 67 percent of independents and 73 percent of Republicans. And while 47 percent of Democrats think it's made the health care system better, just 6 and 16 percent of Republicans and independents, respectively, agree. 
+  
+ OBAMA/GROUPS - Divisions among groups remain especially stark in terms of Obama's ratings; further, as noted, he's lost ground in some of his core support groups. The president's approval rating since early March has lost 14 points among liberals, 12 points among people with postgraduate degrees, 10 points among urban residents, 9 points among Democrats and 7 points among those with incomes less than $50,000. He's lost 9 points among independents as well. 
+  
+ With 41 percent approval overall (his previous low was 42 percent last November and the same in October 2011), Obama's at new lows among nonwhites (61-34 percent, approve-disapprove) and liberals (63-31 percent), and matches his lows among moderates (46-48 percent) and independents (33-59 percent). His rating among Democrats, 74-22 percent, is a single point from its low. 
+  
+ Other results also mark the extent of the difficulties facing Obama and his party alike. A form of statistical analysis called regression finds that, as noted above, views on the economy correlate both with congressional vote preference, and views on which party should control Congress, independently of partisan affiliation. That suggests that the Democrats are in serious need of a positive shift in economic views. 
+  
+ That may be hard to accomplish. While 50 percent of Democrats say the economy's in good shape, that plummets not only among Republicans but independents as well, to 12 and 22 percent, respectively. And while 46 percent of Democrats see improvement in the economy, again just 22 percent of independents, and 15 percent of Republicans, agree. 
+  
+ Preferences on which party controls Congress may reflect a general inclination in favor of divided government - and don't always predict outcomes, as in 2002, when more registered voters preferred Democratic control yet the GOP held its ground. It's striking, nonetheless, that this poll finds Republican control favored not only in the 2012 red states, by 56-36 percent, but also by 51-41 percent in the blue states that backed Obama fewer than two years ago. 
+  
+ METHODOLOGY - This ABC News/Washington Post poll was conducted by telephone April 24-27, 2014, in English and Spanish, among a random national sample of 1,000 adults, including landline and cell-phone-only respondents. Results have a margin of sampling error of 3.5 points, including design effect. Partisan divisions are 32-21-38 percent, Democrats-Republicans-independents. 
+  
+ The survey was produced for ABC News by Langer Research Associates of New York, N.Y., with sampling, data collection and tabulation by Abt-SRBI of New York, N.Y. ||||| President Obama’s approval rating fell to 41 percent, down from 46 percent through the first three months of the year and the lowest of his presidency in Washington Post-ABC News polls. (Charles Dharapak/AP) 
+  
+ Democrats face serious obstacles as they look to the November elections, with President Obama’s approval rating at a new low and a majority of voters saying they prefer a Congress in Republican hands to check the president’s agenda, according to a new Washington Post-ABC News poll. 
+  
+ Obama’s approval rating fell to 41 percent, down from 46 percent through the first three months of the year and the lowest of his presidency in Post-ABC News polls. Just 42 percent approve of his handling of the economy, 37 percent approve of how he is handling the implementation of the Affordable Care Act and 34 percent approve of his handling of the situation involving Ukraine and Russia. 
+  
+ Obama’s low rating could be a significant drag on Democratic candidates this fall — past elections suggest that when approval ratings are as low as Obama’s, the president’s party is almost certain to suffer at the ballot box in November. 
+  
+ Republicans are favored to maintain control of the House, with the focus now on whether they can take control of the Senate. One key question about November is who will vote. Turnout in midterm elections is always lower than in presidential elections, and at this point, key elements of the Republican coalition — namely white voters and older voters — say they are more certain to cast ballots this fall than are younger voters and minorities, two groups that Democrats and Obama relied on in 2008 and 2012. 
+  
+ Democrats are not without assets as the midterm election campaigns intensify. Americans trust Democrats over Republicans by 40 to 34 percent to handle the country’s main problems. By significant margins, Americans see Democrats as better for the middle class and on women’s issues. Americans favor the Democrats’ positions on raising the minimum wage, same-sex marriage and on the broad issue of dealing with global climate change. 
+  
+ View Graphic Obama receives low marks as Democrats face midterm turnout challenge 
+  
+ Led by Obama, Democrats have sought to use many of these issues to draw contrasts with Republicans, both nationally and in states with the most competitive races. As yet, however, there is little evidence that those assets outweigh either the normal midterm disadvantages of the party that holds the White House or the dissatisfaction with the general direction of the country and Obama’s leadership generally. 
+  
+ The Affordable Care Act is expected to be a major issue in the midterm elections. Obama recently urged Democrats to defend the law energetically, particularly after the administration announced that 8 million people signed up for it during the initial enrollment period. Republicans are confident that opposition to the new law will energize their supporters. 
+  
+ The Post-ABC poll found that 44 percent say they support the law while 48 percent say they oppose it, which is about where it was at the end of last year and in January. Half of all Americans also say they think implementation is worse than expected. 
+  
+ Last month, a Post-ABC poll found 49 percent of Americans saying they supported the new law compared with 48 percent who opposed it. That finding was more positive for the administration than most other polls at the time. Democrats saw it as a possible leading indicator of a shift in public opinion, but that has not materialized. 
+  
+ A 58 percent majority say the new law is causing higher costs overall, and 47 percent say it will make the health-care system worse. While a majority say the quality of the health care they receive will remain the same, a plurality expect it to result in higher personal costs for that care. 
+  
+ A number of Democratic strategists are urging their candidates to campaign on a message that calls for continued implementation of the law, with some fixes. These strategists say that message is more popular than the “repeal and replace” theme of the Republicans. A separate poll Tuesday from the Kaiser Family Foundation finds nearly six in 10 want Congress to improve the law rather than repeal it and replace it with something new. 
+  
+ Democrats are hoping to put Republicans on the defensive on the question of “what next” for the Affordable Care Act. Republicans say they remain confident that the health-care issue will help them more in November. 
+  
+ Pessimism about the economy also persists, with more than seven in 10 describing the economy in negative terms. Public attitudes about the future of the economy are anything but rosy. Just 28 percent say they think the economy is getting better, while 36 percent say it is getting worse and 35 percent say it’s staying the same. 
+  
+ Americans express continued discontent about the country’s direction, with two-thirds saying things are on the wrong track. Asked whether each party’s incumbents deserve relection, at least six in 10 say they do not. 
+  
+ Among registered voters, 45 percent intend to vote for the Democratic candidate in House elections this fall, and 44 percent for the Republican candidate. Based on past elections, that close margin is troubling news for Democrats.. What is a shorter version of the above article? [/INST]
