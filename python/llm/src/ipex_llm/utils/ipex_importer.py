@@ -26,6 +26,7 @@ original_import = builtins.__import__
 ipex_duplicate_import_error = "intel_extension_for_pytorch has already been automatically " + \
     "imported. Please avoid importing it again!"
 
+
 def get_calling_package():
     """
     Return calling package name, e.g., ipex_llm.transformers
