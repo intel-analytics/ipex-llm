@@ -9,12 +9,6 @@ ENV PYTHONUNBUFFERED=1
 
 COPY ./start-notebook.sh /llm/start-notebook.sh
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends sudo && \
-    groupadd -r ipex-llm && \
-    useradd -r -g ipex-llm ipex-llm && \
-    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
 USER root
 
 # Update the software sources
@@ -72,5 +66,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install oneccl_bind_pt==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/cpu/us/ && \
     pip install transformers==4.36.2
     
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends sudo && \
+    groupadd -r ipex-llm && \
+    useradd -r -g ipex-llm ipex-llm && \
+    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
 USER ipex-llm
 ENTRYPOINT ["/bin/bash"]

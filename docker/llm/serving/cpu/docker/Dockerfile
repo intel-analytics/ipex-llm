@@ -7,12 +7,6 @@ ARG TINI_VERSION=v0.18.0
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends sudo && \
-    groupadd -r ipex-llm && \
-    useradd -r -g ipex-llm ipex-llm && \
-    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
 USER root
 
 COPY ./model_adapter.py.patch /llm/model_adapter.py.patch
@@ -31,11 +25,11 @@ RUN wget -qO /sbin/tini https://github.com/krallin/tini/releases/download/${TINI
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini && \
     # Install vllm
-    git clone https://github.com/vllm-project/vllm.git /llm/vllm && \
-    git -C /llm/vllm checkout v0.4.2 && \
-    pip install wheel packaging ninja "setuptools>=49.4.0" numpy && \
-    pip install -v -r /llm/vllm/requirements-cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu && \
-    VLLM_TARGET_DEVICE=cpu python3 /llm/vllm/setup.py install
+    cd ./vllm && \
+    git checkout v0.4.2 && \
+    pip install wheel packaging ninja setuptools>=49.4.0 numpy && \
+    pip install -v -r requirements-cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu && \
+    VLLM_TARGET_DEVICE=cpu python3 setup.py install
 
 
 COPY ./vllm_offline_inference.py       /llm/
@@ -45,4 +39,11 @@ COPY ./benchmark_vllm_throughput.py    /llm/
 COPY ./start-fastchat-service.sh       /llm/
 
 WORKDIR /llm/
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends sudo && \
+    groupadd -r ipex-llm && \
+    useradd -r -g ipex-llm ipex-llm && \
+    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    
 USER ipex-llm
