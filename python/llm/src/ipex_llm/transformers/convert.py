@@ -1279,6 +1279,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2Attention,
                         qwen2_attention_forward)
+        convert_forward(model,
+                        module.Qwen2SdpaAttention,
+                        qwen2_attention_forward)
     elif model.config.model_type == "qwen2_moe":
         # for Qwen1.5-MOE-A2.7B
         modeling_module_name = model.__class__.__module__
