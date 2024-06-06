@@ -1307,6 +1307,9 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MoeAttention,
                         qwen2_attention_forward)
+        convert_forward(model,
+                        module.Qwen2MoeSdpaAttention,
+                        qwen2_attention_forward)
     elif model.config.model_type == "cohere":
         # for CohereForAI/c4ai-command-r-v01
         modeling_module_name = model.__class__.__module__
