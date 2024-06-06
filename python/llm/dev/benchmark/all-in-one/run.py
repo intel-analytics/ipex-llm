@@ -70,6 +70,42 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
                 result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                         actual_in_len, actual_out_len, load_time, model.peak_memory])
 
+def preprocess_prompt(tokenizer, in_len, task):
+    if task == 'summarize':
+        if in_len == 512:
+            input_str = open(f"prompt/summarize/cnn_239.txt", 'r').read()
+        elif in_len == 1024:
+            input_str = open(f"prompt/summarize/cnn_615.txt", 'r').read()
+        elif in_len == 2048:
+            input_str = open(f"prompt/summarize/cnn_824.txt", 'r').read()
+        elif in_len <= 256:
+            input_str = open(f"prompt/summarize/cnn_64.txt", 'r').read()
+        else:
+            input_str = open(f"prompt/summarize/cnn_5618.txt", 'r').read()
+        question = "Can you please summarize this article?"
+        prompt_format = "[INST] Article:```{}``` \n\n Question: {} \n\n [/INST]"
+        special_tokens_len = len(tokenizer.encode(prompt_format.format("", question), add_special_tokens=False))
+        max_article_len = in_len - special_tokens_len
+        article_ids = tokenizer.encode(input_str, add_special_tokens=False)
+        if len(article_ids) > max_article_len:
+            article_ids = article_ids[:max_article_len]
+        truncated_article_text = tokenizer.decode(article_ids, skip_special_tokens=True)
+        final_prompt = prompt_format.format(truncated_article_text, question)
+        input_ids = tokenizer.encode(final_prompt, return_tensors="pt", truncation=True, max_length=in_len)
+    elif task == 'QA':
+        if in_len == 512:
+            input_str = open(f"prompt/QA/orca_776.txt", 'r').read()
+        elif in_len == 1024:
+            input_str = open(f"prompt/QA/orca_99.txt", 'r').read()
+        elif in_len == 2048:
+            input_str = open(f"prompt/QA/orca_401.txt", 'r').read()
+        elif in_len == 4096:
+            input_str = open(f"prompt/QA/orca_497.txt", 'r').read()
+        else:
+            raise ValueError("No corresponding prompt available now, will be added later.")          
+        input_ids = tokenizer.encode(input_str, return_tensors="pt")    
+    return input_ids
+
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, n_gpu=2):
     # TODO: make a parameter
     result= {}
@@ -477,39 +513,8 @@ def run_transformer_int4_gpu(repo_id,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
                 input_ids = input_ids[:, :in_len]
-            elif conf['task'] == 'summarize':
-                if in_len == 512:
-                    input_str = open(f"prompt/summarize/cnn_239.txt", 'r').read()
-                elif in_len == 1024:
-                    input_str = open(f"prompt/summarize/cnn_615.txt", 'r').read()
-                elif in_len == 2048:
-                    input_str = open(f"prompt/summarize/cnn_824.txt", 'r').read()
-                elif in_len <= 256:
-                    input_str = open(f"prompt/summarize/cnn_64.txt", 'r').read()
-                else:
-                    input_str = open(f"prompt/summarize/cnn_5618.txt", 'r').read()
-                question = "Can you please summarize this article?"
-                prompt_format = "[INST] Article:```{}``` \n\n Question: {} \n\n [/INST]"
-                special_tokens_len = len(tokenizer.encode(prompt_format.format("", question), add_special_tokens=False))
-                max_article_len = in_len - special_tokens_len
-                article_ids = tokenizer.encode(input_str, add_special_tokens=False)
-                if len(article_ids) > max_article_len:
-                    article_ids = article_ids[:max_article_len]
-                truncated_article_text = tokenizer.decode(article_ids, skip_special_tokens=True)
-                final_prompt = prompt_format.format(truncated_article_text, question)
-                input_ids = tokenizer.encode(final_prompt, return_tensors="pt", truncation=True, max_length=in_len)
-            else: # conf['task'] == 'QA'
-                if in_len == 512:
-                    input_str = open(f"prompt/QA/orca_776.txt", 'r').read()
-                elif in_len == 1024:
-                    input_str = open(f"prompt/QA/orca_99.txt", 'r').read()
-                elif in_len == 2048:
-                    input_str = open(f"prompt/QA/orca_401.txt", 'r').read()
-                elif in_len == 4096:
-                    input_str = open(f"prompt/QA/orca_497.txt", 'r').read()
-                else:
-                    raise ValueError("No corresponding prompt available now, will be added later.")          
-                input_ids = tokenizer.encode(input_str, return_tensors="pt")               
+            elif conf['task'] == 'summarize' or conf['task'] == 'QA':
+                input_ids = preprocess_prompt(tokenizer, in_len, conf['task'])
             true_str = tokenizer.batch_decode(input_ids)[0]
             input_list = [true_str] * batch_size
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
