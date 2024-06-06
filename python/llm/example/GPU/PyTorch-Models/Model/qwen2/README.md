@@ -120,33 +120,15 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-AI是什么？<|im_end|>
-<|im_start|>assistant
+AI是什么？
 -------------------- Output --------------------
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-AI是什么？<|im_end|>
-<|im_start|>assistant
-AI（Artificial Intelligence）是指计算机科学的一个分支，其目标是创建能够理解、学习、推理和自我修正的智能机器。AI系统可以通过
+AI是人工智能（Artificial Intelligence）的缩写。人工智能是一种计算机科学技术，它使计算机系统能够执行通常需要人类智能才能完成的任务。这些
 ```
 
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-What is AI?<|im_end|>
-<|im_start|>assistant
+What is AI?
 -------------------- Output --------------------
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-What is AI?<|im_end|>
-<|im_start|>assistant
-AI stands for Artificial Intelligence, which is a field of computer science that focuses on creating intelligent machines that can perform tasks that typically require human intelligence, such as learning
+Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and work like humans. This includes the ability to learn from
 ```
