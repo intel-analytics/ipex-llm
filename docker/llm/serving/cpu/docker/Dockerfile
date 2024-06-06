@@ -16,9 +16,11 @@ RUN apt-get update && \
 USER root
 
 COPY ./model_adapter.py.patch /llm/model_adapter.py.patch
-COPY  https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
+
 # Install Serving Dependencies
-RUN mkdir -p /llm && \
+RUN wget -qO /sbin/tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini && \
+    chmod +x /sbin/tini && \
+    mkdir -p /llm && \
     apt-get update && \
     apt-get install -y --no-install-recommends wrk && \
     pip install --pre --upgrade ipex-llm[serving] && \

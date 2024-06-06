@@ -9,12 +9,6 @@ ENV PYTHONUNBUFFERED=1
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends sudo && \
-    groupadd -r ipex-llm && \
-    useradd -r -g ipex-llm ipex-llm && \
-    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
 USER root
 
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
@@ -72,4 +66,11 @@ COPY ./start-open-webui.sh /llm/scripts/start-open-webui.sh
 COPY ./benchmark_llama-cpp.sh /llm/scripts/benchmark_llama-cpp.sh
 
 WORKDIR /llm/
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends sudo && \
+    groupadd -r ipex-llm && \
+    useradd -r -g ipex-llm ipex-llm && \
+    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    
 USER ipex-llm
