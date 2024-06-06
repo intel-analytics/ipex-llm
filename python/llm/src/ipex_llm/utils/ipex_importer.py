@@ -19,12 +19,32 @@ import logging
 import builtins
 import sys
 from ipex_llm.utils.common import log4Error
-
+import inspect
 
 # Save the original __import__ function
 original_import = builtins.__import__
 
+
+def get_calling_package():
+    # Get the current stack frame
+    frame = inspect.currentframe()
+    # Get the caller's frame
+    caller_frame = frame.f_back.f_back
+    # Get the caller's module
+    module = inspect.getmodule(caller_frame)
+    if module:
+        # Return the module's package name
+        return module.__package__
+    return None
+
+
 def custom_ipex_import(name, globals=None, locals=None, fromlist=(), level=0):
+    # check import calling pacage
+    calling_package = get_calling_package()
+    if calling_package is not None:
+        print("origin import")
+        return original_import(name, globals, locals, fromlist, level)
+    # Only check ipex for main thread
     if name == "ipex" or name == "intel_extension_for_pytorch":
         logging.error("ipex_llm will automatically import intel_extension_for_pytorch.")
         log4Error.invalidInputError(False,
