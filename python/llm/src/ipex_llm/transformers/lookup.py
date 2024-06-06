@@ -148,7 +148,7 @@ class PromptLookupCandidateGenerator():
             windows = input_ids.unfold(dimension=1, size=ngram_size, step=1)
             for idx in range(windows.size(1)):
                 window = tensor2key(windows[0, idx])
-                if not self.lookup_table.get(window, None):
+                if window not in self.lookup_table:
                     self.lookup_table[window] = idx
 
     def update_look_up_table(self,
@@ -156,7 +156,7 @@ class PromptLookupCandidateGenerator():
         # Maintain a look up table
         window = tensor2key(new_input_ids[0, -self.max_matching_ngram_size:])
         for ngram_size in range(self.max_matching_ngram_size):
-            if not self.lookup_table.get(window[ngram_size:], None):
+            if window[ngram_size:] not in self.lookup_table:
                 self.lookup_table[window[ngram_size:]] = new_input_ids.size(1)-self.max_matching_ngram_size+ngram_size
 
     def get_n_gram_idx(self,
