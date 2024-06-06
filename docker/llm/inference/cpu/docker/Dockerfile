@@ -73,4 +73,4 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install transformers==4.36.2
     
 USER myuser
-ENTRYPOINT ["sudo", "/bin/bash"]
+ENTRYPOINT ["/bin/bash"]
