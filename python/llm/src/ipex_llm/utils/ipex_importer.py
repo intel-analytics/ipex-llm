@@ -26,6 +26,9 @@ original_import = builtins.__import__
 
 
 def get_calling_package():
+    """
+    Return calling package name, e.g., ipex_llm.transformers
+    """
     # Get the current stack frame
     frame = inspect.currentframe()
     # Get the caller's frame
@@ -39,10 +42,12 @@ def get_calling_package():
 
 
 def custom_ipex_import(name, globals=None, locals=None, fromlist=(), level=0):
+    """
+    Custom import function to avoid importing ipex again
+    """
     # check import calling pacage
     calling_package = get_calling_package()
     if calling_package is not None:
-        print("origin import")
         return original_import(name, globals, locals, fromlist, level)
     # Only check ipex for main thread
     if name == "ipex" or name == "intel_extension_for_pytorch":
