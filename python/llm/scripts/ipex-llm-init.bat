@@ -64,6 +64,7 @@ GOTO :eof
 
 :display-error-too-many-options
 echo Too Many Options: ipex-llm-init is not supposed to receive more than one option. 1>&2
+echo.
 Call :display-help
 GOTO :eof
 
