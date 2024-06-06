@@ -21,7 +21,7 @@ import torch
 from typing import Optional, Tuple, Union, List, Callable, Dict, Any
 import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache, apply_ipex_rotate_every_two
 from transformers.modeling_outputs import BaseModelOutputWithPast
 
 
@@ -70,9 +70,9 @@ def chatglm4_model_forward(
 ) -> Union[Tuple, BaseModelOutputWithPast]:
     from ipex_llm.transformers.kv import DynamicFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    if use_cache and use_quantize_kv_cache(self.encoder.layers[0].self_attention.query_key_value, input_ids):
-        if not isinstance(past_key_values, DynamicFp8Cache):
-            past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+    #if use_cache and use_quantize_kv_cache(self.encoder.layers[0].self_attention.query_key_value, input_ids):
+    #    if not isinstance(past_key_values, DynamicFp8Cache):
+    #        past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return chatglm4_model_forward_internal(
         self=self,
         input_ids=input_ids,
@@ -114,12 +114,25 @@ def chatglm4_model_forward_internal(
         if (attention_mask is not None and not attention_mask.all()) or (past_key_values and seq_length != 1):
             full_attention_mask = self.get_masks(input_ids, past_key_values, padding_mask=attention_mask)
 
+    use_fuse_rope = input_ids.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not self.training
+
     # Rotary positional embeddings
     rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
     if position_ids is not None:
         rotary_pos_emb = rotary_pos_emb[position_ids]
     else:
         rotary_pos_emb = rotary_pos_emb[None, :seq_length]
+    if use_fuse_rope:
+        # Repeat cos sin here, call only once for each token.
+        # Chatglm2's rotary embedding is similar to gptj's, is rotate_every_two.
+        # If put this to attension forward, it will generate too many times.
+        cos, sin = rotary_pos_emb.split(rotary_pos_emb.shape[-1] // 2, dim=-1)
+        cos = cos.squeeze(-1)
+        sin = sin.squeeze(-1)
+        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
+        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
+        rotary_pos_emb = (cos, sin)
 
     # Run encoder.
     hidden_states, presents, all_hidden_states, all_self_attentions = self.encoder(
@@ -214,9 +227,26 @@ def chatglm4_attention_forward(
     query_layer, key_layer, value_layer = [k.transpose(1, 2) for k in [query_layer, key_layer, value_layer]]
 
     # apply relative positional encoding (rotary embedding)
-    if rotary_pos_emb is not None:
+    if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
+        # use_fuse_rope, see chatglm2_model_forward
+        cos, sin = rotary_pos_emb
+        rot_dim = cos.shape[-1]
+        query_layer = query_layer.transpose(1, 2)
+        key_layer = key_layer.transpose(1, 2)
+        query_layer_cur = query_layer[..., :rot_dim]
+        key_layer_cur = key_layer[..., :rot_dim]
+        # ipex_llm's apply_rotary_embedding can change the origin storage,
+        # so query_layer will get the result directly.
+        torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
+        torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
+        query_layer = query_layer.transpose(1, 2)
+        key_layer = key_layer.transpose(1, 2)
+    else:
         query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
         key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
+    #if rotary_pos_emb is not None:
+    #    query_layer = apply_rotary_pos_emb(query_layer, rotary_pos_emb)
+    #    key_layer = apply_rotary_pos_emb(key_layer, rotary_pos_emb)
 
     cur_length, batch_size = query_layer.shape[2], query_layer.shape[0]
 
