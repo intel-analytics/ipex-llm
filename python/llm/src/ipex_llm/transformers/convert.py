@@ -680,6 +680,11 @@ def _optimize_pre(model):
             if model.lm_head.weight.data.device != "meta":
                 norm_weight = nn.functional.normalize(lm_head_weight_data)
                 model.lm_head.weight.data = norm_weight
+
+        # for baichuan2-7B
+        if model.config.hidden_size in [4096, 2048]:
+            from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
+            model.apply(pre_compute_inv_freq)
     # for yuan 2.0
     if model.config.model_type == "yuan":
         from ipex_llm.transformers.models.yuan import merge_qk
@@ -703,12 +708,6 @@ def _optimize_pre(model):
         model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.phi3 import split_mlp
         model.apply(split_mlp)
-    # for baichuan2
-    if model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
-        if model.config.hidden_size in [4096, 2048]:
-            # baichuan2-7B
-            from ipex_llm.transformers.models.baichuan2 import pre_compute_inv_freq
-            model.apply(pre_compute_inv_freq)
     # for qwen2
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.models.qwen2 import merge_qkv
@@ -1125,84 +1124,39 @@ def _optimize_post(model, lightweight_bmm=False):
                                         module.FalconAttention,
                                         falcon_attention_forward
                                         )
-
-    elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
-        # baichuan2
-        if model.config.hidden_size in [4096, 2048]:
-            # baichuan2-7B
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.baichuan2 import baichuan_attention_forward_7b
-            from ipex_llm.transformers.models.baichuan2 import baichuan_mlp_forward
-            convert_forward(model,
-                            module.Attention,
-                            baichuan_attention_forward_7b
-                            )
-            convert_forward(model,
-                            module.RMSNorm,
-                            llama_rms_norm_forward)
-            convert_forward(model,
-                            module.MLP,
-                            baichuan_mlp_forward)
-        elif model.config.hidden_size == 5120:
-            # baichuan2-13B
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
-            from ipex_llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
-            from ipex_llm.transformers.models.baichuan2 import baichuan_mlp_forward
-            from ipex_llm.transformers.models.baichuan2 import baichuan_13b_get_alibi_mask
-            convert_forward(model,
-                            module.BaichuanAttention,
-                            baichuan_attention_forward_13b
-                            )
-            # baichuan2-13B's RMSNorm is a little different
-            convert_forward(model,
-                            module.RMSNorm,
-                            baichuan_13b_rms_norm_forward)
-            convert_forward(model,
-                            module.MLP,
-                            baichuan_mlp_forward)
-            if hasattr(model.model, 'get_alibi_mask_orig'):
-                # deepspeed rewrite "get_alibi_mask" to support baichuan
-                # https://github.com/microsoft/DeepSpeed/pull/4721
-                replace_func(model,
-                             module.BaichuanModel,
-                             "get_alibi_mask_orig",
-                             baichuan_13b_get_alibi_mask)
-            else:
-                replace_func(model,
-                             module.BaichuanModel,
-                             "get_alibi_mask",
-                             baichuan_13b_get_alibi_mask)
     elif model.config.model_type == "baichuan":
-        # baichuan1
-        if model.config.hidden_size == 4096:
-            # baichuan-7B
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.baichuan import baichuan_mlp_forward
+        convert_forward(model, module.MLP, baichuan_mlp_forward)
+
+        if model.config.hidden_size in [4096, 2048]:
+            # baichuan-7B and baichuan2-7B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_7b
-            convert_forward(model,
-                            module.Attention,
-                            baichuan_attention_forward_7b
-                            )
-            convert_forward(model,
-                            module.RMSNorm,
-                            llama_rms_norm_forward)
+            convert_forward(model, module.Attention, baichuan_attention_forward_7b)
+            convert_forward(model, module.RMSNorm, llama_rms_norm_forward)
         elif model.config.hidden_size == 5120:
-            # baichuan-13B
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
+            # baichuan-13B and baichuan2-13B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_13b
-            from ipex_llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
-            convert_forward(model,
-                            module.BaichuanAttention,
-                            baichuan_attention_forward_13b
-                            )
-            # baichuan-13B's RMSNorm is a little different
-            convert_forward(model,
-                            module.RMSNorm,
-                            baichuan_13b_rms_norm_forward)
+            from ipex_llm.transformers.models.baichuan import baichuan_13b_rms_norm_forward
+            convert_forward(model, module.BaichuanAttention, baichuan_attention_forward_13b)
+            convert_forward(model, module.RMSNorm, baichuan_13b_rms_norm_forward)
+
+            if model.config.vocab_size == 125696:
+                # baichaun2-13B
+                from ipex_llm.transformers.models.baichuan import baichuan_13b_get_alibi_mask
+                if hasattr(model.model, 'get_alibi_mask_orig'):
+                    # deepspeed rewrite "get_alibi_mask" to support baichuan
+                    # https://github.com/microsoft/DeepSpeed/pull/4721
+                    replace_func(model,
+                                 module.BaichuanModel,
+                                 "get_alibi_mask_orig",
+                                 baichuan_13b_get_alibi_mask)
+                else:
+                    replace_func(model,
+                                 module.BaichuanModel,
+                                 "get_alibi_mask",
+                                 baichuan_13b_get_alibi_mask)
     elif model.config.model_type == "gpt_neox":
         from ipex_llm.transformers.models.gptneox import gptneox_attention_forward
         convert_forward(model,
