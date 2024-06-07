@@ -191,8 +191,8 @@ jobs:
               cp "$file" $CSV_SAVE_PATH/merged
           done
           cd ..
-          rm -r merged_temp
           python csv_to_html.py -f $CSV_SAVE_PATH/merged
+          rm -r merged_temp
 
       - name: Check and upload results to ftp
         shell: bash
