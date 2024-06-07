@@ -66,7 +66,7 @@ def _QWen_Attention_forward(
     qkv = self.c_attn(hidden_states).to(dtype=kv_cache.dtype)
     q, k, v = qkv.chunk(chunks=3, dim=-1)
     q, k = self.rotary_emb(positions, q, k)
-    attn_output = self.attn(q, k, v, kv_cache, attn_metadata, self.kv_scale)
+    attn_output = self.attn(q, k, v, kv_cache, attn_metadata)
     output = self.c_proj(attn_output)
     return output
 
@@ -142,14 +142,14 @@ _REPLACED_MLP_LAYERS = {
     LlamaMLP: _MLP_forward,
     Qwen2MLP: _MLP_forward,
     BaiChuanMLP: _MLP_forward,
-    QWenMLP: _QWen_MLP_forward,
+    # QWenMLP: _QWen_MLP_forward,
     GLMMLP: _ChatGLM_MLP_forward
 }
 
 _REPLACED_ATTENTION_LAYERS = {
     LlamaAttention: _Attention_forward,
     Qwen2Attention: _Qwen2_Attention_forward,
-    QWenAttention: _QWen_Attention_forward,
+    # QWenAttention: _QWen_Attention_forward,
     BaiChuanAttention: _Baichuan_Attention_forward,
     GLMAttention: _ChatGLM_Attention_forward
 }
@@ -159,7 +159,6 @@ _IPEX_LLM_SUPPORTED_MODELS = [
     "BaichuanForCausalLM",
     "ChatGLMForCausalLM",
     "Qwen2ForCausalLM",
-    "QWenLMHeadModel",
 ]
 
 
