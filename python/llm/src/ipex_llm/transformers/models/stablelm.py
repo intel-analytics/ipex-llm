@@ -131,7 +131,7 @@ def stablelm_attention_forward(
     query_states, key_states, value_states = qkv.split([self.num_heads,
                                                         self.num_key_value_heads,
                                                         self.num_key_value_heads], dim=1)
-    # For stablelm-2-12b's qk per norm
+    # For stablelm-2-12b's qk per-head norm
     if getattr(self, "qk_layernorm", False):
         query_states = self.q_layernorm(query_states)
         key_states = self.k_layernorm(key_states)
