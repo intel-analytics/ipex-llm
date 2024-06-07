@@ -155,7 +155,11 @@ _REPLACED_ATTENTION_LAYERS = {
 }
 
 _IPEX_LLM_SUPPORTED_MODELS = [
-    "llama", "baichuan", "chatglm", "qwen", "qwen2"
+    "LlamaForCausalLM",
+    "BaichuanForCausalLM",
+    "ChatGLMForCausalLM",
+    "Qwen2ForCausalLM",
+    "QWenLMHeadModel",
 ]
 
 
@@ -231,16 +235,15 @@ def _ipex_llm_rmsnorm_forward(
 
 def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
-        model_class = get_model_architecture(self.model_config)[0]
+        model_class = get_model_architecture(self.model_config)[1]
         cur_model_list = ", ".join(_IPEX_LLM_SUPPORTED_MODELS)
         if low_bit != "bf16":
-            invalidInputError(model_class not in _IPEX_LLM_SUPPORTED_MODELS,
-                              f"Currently IPEX-LLM vLLM convert only support \
-                              {cur_model_list} models.")
+            invalidInputError(model_class in _IPEX_LLM_SUPPORTED_MODELS,
+                              f"Currently IPEX-LLM vLLM convert only support {cur_model_list}.")
         else:
             if model_class not in _IPEX_LLM_SUPPORTED_MODELS:
                 logger.warning(
-                    f"Currently IPEX-LLM vLLM convert only support {cur_model_list} models."
+                    f"Currently IPEX-LLM vLLM convert only support {cur_model_list}."
                 )
 
         _model_mlp_convert()
