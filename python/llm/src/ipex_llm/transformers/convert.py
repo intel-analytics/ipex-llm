@@ -713,6 +713,9 @@ def _optimize_pre(model):
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.models.qwen2 import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "qwen2_moe":
+        from ipex_llm.transformers.models.qwen2_moe import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
@@ -1305,8 +1308,8 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_moeblock_forward
-        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_attention_forward
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_model_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
         convert_forward(model,
                         module.Qwen2MoeModel,
                         qwen2moe_model_forward)
@@ -1321,7 +1324,10 @@ def _optimize_post(model, lightweight_bmm=False):
                         llama_mlp_forward)
         convert_forward(model,
                         module.Qwen2MoeAttention,
-                        qwen2moe_attention_forward)
+                        qwen2_attention_forward)
+        convert_forward(model,
+                        module.Qwen2MoeSdpaAttention,
+                        qwen2_attention_forward)
     elif model.config.model_type == "cohere":
         # for CohereForAI/c4ai-command-r-v01
         modeling_module_name = model.__class__.__module__
