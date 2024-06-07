@@ -164,6 +164,35 @@ jobs:
           done
           cd ../../../../test/benchmark
           python csv_to_html.py -f $CSV_SAVE_PATH/batch_size_2
+      
+      - name: Merge and sort csv files of multiple batches and generate html 
+        shell: bash
+        run: |
+          cd python/llm/test/benchmark
+          mkdir merged_temp
+          # go through all the files and go to merged_temp
+          cd ../../dev/benchmark/all-in-one/test_batch1
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" ../../../../test/benchmark/merged_temp
+              fi
+          done
+          cd ../test_batch2
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" ../../../../test/benchmark/merged_temp
+              fi
+          done
+          cd ../../../../test/benchmark
+          python merge_csv_batch.py -f ./merged_temp
+          cd merged_temp
+          find . -name "*batch*.csv" -delete
+          for file in *.csv; do
+              cp "$file" $CSV_SAVE_PATH/merged
+          done
+          cd ..
+          python csv_to_html.py -f $CSV_SAVE_PATH/merged
+          rm -r merged_temp
 
       - name: Check and upload results to ftp
         shell: bash
