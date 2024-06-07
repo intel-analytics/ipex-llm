@@ -74,6 +74,21 @@ def _QWen_MLP_forward(self, x):
     return x
 
 
+def _Qwen2_Attention_forward(
+    self,
+    positions: torch.Tensor,
+    hidden_states: torch.Tensor,
+    kv_cache: torch.Tensor,
+    attn_metadata: AttentionMetadata,
+) -> torch.Tensor:
+    qkv = self.qkv_proj(hidden_states).to(dtype=kv_cache.dtype)
+    q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
+    q, k = self.rotary_emb(positions, q, k)
+    attn_output = self.attn(q, k, v, kv_cache, attn_metadata)
+    output = self.o_proj(attn_output)
+    return output
+
+
 def _ChatGLM_MLP_forward(self, hidden_states):
     # [s, b, 4hp]
     intermediate_parallel = self.dense_h_to_4h(hidden_states)
@@ -129,7 +144,7 @@ _REPLACED_MLP_LAYERS = {
 
 _REPLACED_ATTENTION_LAYERS = {
     LlamaAttention: _Attention_forward,
-    Qwen2Attention: _Attention_forward,
+    Qwen2Attention: _Qwen2_Attention_forward,
     QWenAttention: _QWen_Attention_forward,
     BaiChuanAttention: _Baichuan_Attention_forward,
     GLMAttention: _ChatGLM_Attention_forward
