@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
+        # The following code for generation is adapted from https://huggingface.co/Qwen/Qwen2-7B-Instruct#quickstart
         messages = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
