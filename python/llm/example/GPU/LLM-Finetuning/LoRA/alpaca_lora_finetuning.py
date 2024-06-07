@@ -259,6 +259,7 @@ def train(
     trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
     if deepspeed is not None:
+        # https://github.com/huggingface/transformers/issues/16971
         model = DataParallel(model)
         model.module.save_pretrained(output_dir)
     else:
