@@ -71,7 +71,7 @@ Inference time: xxxx s
 -------------------- Prompt --------------------
 AI是什么？
 -------------------- Output --------------------
-AI，即人工智能（Artificial Intelligence），是一门研究、开发用于模拟、延伸和扩展人类智能的理论、方法、技术及应用系统的学科
+AI，即人工智能（Artificial Intelligence），是一种计算机科学领域，旨在开发能够模拟、延伸和增强人类智能的算法和系统。人工 智能涉及许多
 ```
 
 ```log
@@ -79,5 +79,5 @@ Inference time: xxxx s
 -------------------- Prompt --------------------
 What is AI?
 -------------------- Output --------------------
-AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence. This includes things like speech recognition, decision
+AI stands for Artificial Intelligence, which is the simulation of human intelligence in machines that are programmed to think and learn like humans and mimic their actions. The term may
 ```
