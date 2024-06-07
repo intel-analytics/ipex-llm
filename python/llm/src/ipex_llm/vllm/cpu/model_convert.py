@@ -244,6 +244,15 @@ def get_load_function(low_bit):
                 logger.warning(
                     f"Currently IPEX-LLM vLLM convert only support {cur_model_list}."
                 )
+                self.model = get_model(
+                    model_config=self.model_config,
+                    load_config=self.load_config,
+                    device_config=self.device_config,
+                    vision_language_config=self.vision_language_config,
+                    lora_config=self.lora_config,
+                    parallel_config=self.parallel_config,
+                    scheduler_config=self.scheduler_config)
+                return
 
         _model_mlp_convert()
         _model_attention_convert()
@@ -260,19 +269,4 @@ def get_load_function(low_bit):
         from ipex_llm import optimize_model
         optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype)
 
-        if self.lora_config:
-            invalidInputError(hasattr(self.model, "supported_lora_modules")
-                              and self.model.supported_lora_modules,
-                              "Model does not support LoRA")
-            invalidInputError(hasattr(self.model, "embedding_modules"),
-                              "Model does not have embedding_modules")
-            invalidInputError(hasattr(self.model, "embedding_padding_modules"),
-                              "Model does not have embedding_padding_modules")
-            self.lora_manager = LRUCacheWorkerLoRAManager(
-                self.scheduler_config.max_num_seqs,
-                self.scheduler_config.max_num_batched_tokens +
-                self.scheduler_config.max_paddings, self.vocab_size,
-                self.lora_config, self.device, self.model.embedding_modules,
-                self.model.embedding_padding_modules)
-            self.model = self.lora_manager.create_lora_manager(self.model)
     return _ipex_llm_load_model
