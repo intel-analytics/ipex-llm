@@ -169,12 +169,28 @@ jobs:
         shell: bash
         run: |
           cd python/llm/test/benchmark
-          cp -r ../../dev/benchmark/all-in-one/test_batch1 merged_temp
-          cp -r ../../dev/benchmark/all-in-one/test_batch2 merged_temp
+          mkdir merged_temp
+          # go through all the files and go to merged_temp
+          cd test_batch1
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" ./merged_temp
+              fi
+          done
+          cd ../test_batch2
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" ./merged_temp
+              fi
+          done
+          cd ..
           python merge_csv_batch.py -f ./merged_temp
           cd merged_temp
           find . -name "*batch*.csv" -delete
-          cp -r ./ $CSV_SAVE_PATH/merged
+          for file in *.csv; do
+              cp "$file" $CSV_SAVE_PATH/merged
+          done
+          python csv_to_html.py -f $CSV_SAVE_PATH/merged
 
       - name: Check and upload results to ftp
         shell: bash
