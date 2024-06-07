@@ -29,5 +29,4 @@ mpirun -n 2 \
        --gradient_checkpointing True \
        --micro_batch_size 1 \
        --batch_size 128 \
-       --deepspeed ./deepspeed_zero2.json \
-       --saved_low_bit_model ./llama-2-7b-hf > training.log
+       --deepspeed ./deepspeed_zero2.json > training.log

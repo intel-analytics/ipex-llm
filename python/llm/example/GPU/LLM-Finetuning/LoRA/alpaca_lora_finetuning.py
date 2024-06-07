@@ -35,6 +35,7 @@ from typing import List
 
 import fire
 import torch
+from torch.nn import DataParallel
 import transformers
 from datasets import load_dataset
 import accelerate
@@ -257,7 +258,11 @@ def train(
 
     trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
-    model.save_pretrained(output_dir)
+    if deepspeed is not None:
+        model = DataParallel(model)
+        model.module.save_pretrained(output_dir)
+    else:
+        model.save_pretrained(output_dir)
 
     print(
         "\n If there's a warning about missing keys above, please disregard :)"
