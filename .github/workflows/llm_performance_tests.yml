@@ -190,6 +190,8 @@ jobs:
           for file in *.csv; do
               cp "$file" $CSV_SAVE_PATH/merged
           done
+          cd ..
+          rm -r merged_temp
           python csv_to_html.py -f $CSV_SAVE_PATH/merged
 
       - name: Check and upload results to ftp
