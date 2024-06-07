@@ -41,8 +41,7 @@ if __name__ == '__main__':
                                                  load_in_4bit=True,
                                                  optimize_model=True,
                                                  trust_remote_code=True,
-                                                 use_cache=True
-                                                 )
+                                                 use_cache=True)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
