@@ -23,7 +23,8 @@ import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, apply_ipex_rotate_every_two
 from ipex_llm.transformers.models.utils import use_sdp
-from ipex_llm.transformers.models.chatglm2 import should_split_qkv_tensor, split_tensor_along_last_dim
+from ipex_llm.transformers.models.chatglm2 import should_split_qkv_tensor
+from ipex_llm.transformers.models.chatglm2 import split_tensor_along_last_dim
 from transformers.modeling_outputs import BaseModelOutputWithPast
 
 
@@ -221,9 +222,6 @@ def chatglm4_attention_forward(
         key_layer_cur = key_layer[..., :rot_dim]
         # ipex_llm's apply_rotary_embedding can change the origin storage,
         # so query_layer will get the result directly.
-        #print(query_layer_cur)
-        #print(sin)
-        #print(cos)
         torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
         torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
         query_layer = query_layer.transpose(1, 2)
