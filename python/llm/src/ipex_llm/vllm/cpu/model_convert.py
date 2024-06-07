@@ -25,10 +25,13 @@ from vllm.model_executor.models.chatglm import GLMMLP, GLMAttention
 from vllm.attention import Attention, AttentionMetadata
 from vllm.lora.worker_manager import LRUCacheWorkerLoRAManager
 from vllm.config import DeviceConfig
+from vllm.logger import init_logger
 
 from vllm._C import ops
 from ipex_llm.utils.common import invalidInputError
 from typing import List, Optional, Tuple, Union
+
+logger = init_logger(__name__)
 
 
 def _MLP_forward(self, x):
@@ -60,7 +63,7 @@ def _QWen_Attention_forward(
     kv_cache: Tuple[torch.Tensor, torch.Tensor],
     attn_metadata: AttentionMetadata,
 ) -> torch.Tensor:
-    qkv = self.c_attn(hidden_states)
+    qkv = self.c_attn(hidden_states).to(dtype=kv_cache.dtype)
     q, k, v = qkv.chunk(chunks=3, dim=-1)
     q, k = self.rotary_emb(positions, q, k)
     attn_output = self.attn(q, k, v, kv_cache, attn_metadata, self.kv_scale)
@@ -106,7 +109,7 @@ def _Baichuan_Attention_forward(
     kv_cache: Tuple[torch.Tensor, torch.Tensor],
     attn_metadata: AttentionMetadata,
 ) -> torch.Tensor:
-    qkv = self.W_pack(hidden_states)
+    qkv = self.W_pack(hidden_states).to(dtype=kv_cache.dtype)
     q, k, v = qkv.chunk(chunks=3, dim=-1)
     if self.postion_embedding != "ALIBI":
         q, k = self.rotary_emb(positions, q, k)
@@ -122,7 +125,7 @@ def _ChatGLM_Attention_forward(
     kv_cache: Tuple[torch.Tensor, torch.Tensor],
     attn_metadata: AttentionMetadata,
 ) -> torch.Tensor:
-    qkv = self.query_key_value(hidden_states)
+    qkv = self.query_key_value(hidden_states).to(dtype=kv_cache.dtype)
     q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
     q, k = self.rotary_emb(position_ids, q, k)
     context_layer = self.attn(
@@ -230,8 +233,15 @@ def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
         model_class = get_model_architecture(self.model_config)[0]
         cur_model_list = ", ".join(_IPEX_LLM_SUPPORTED_MODELS)
-        invalidInputError(model_class not in _IPEX_LLM_SUPPORTED_MODELS,
-                          f"Currently IPEX-LLM vLLM convert only support {cur_model_list} models.")
+        if low_bit != "bf16":
+            invalidInputError(model_class not in _IPEX_LLM_SUPPORTED_MODELS,
+                              f"Currently IPEX-LLM vLLM convert only support \
+                              {cur_model_list} models.")
+        else:
+            if model_class not in _IPEX_LLM_SUPPORTED_MODELS:
+                logger.warning(
+                    f"Currently IPEX-LLM vLLM convert only support {cur_model_list} models."
+                )
 
         _model_mlp_convert()
         _model_attention_convert()
