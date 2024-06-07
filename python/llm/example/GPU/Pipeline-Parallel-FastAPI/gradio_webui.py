@@ -58,7 +58,8 @@ def predict(message, history):
     for chunk in stream:
         # import pdb
         # pdb.set_trace()
-        partial_message += (chunk.delta['content'] or "")
+        # partial_message += (chunk.delta['content'] or "")
+        partial_message += (chunk.choices[0].delta.content or "")
         yield partial_message
 
 

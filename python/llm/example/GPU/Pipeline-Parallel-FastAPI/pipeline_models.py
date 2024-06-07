@@ -293,6 +293,7 @@ class ModelRunner:
         self.token_cache = {}
         self.print_len = {}
         self.is_finish = {}
+        self.model_name = checkpoint
 
                 
     # def generate(self, input_ids=None, max_tokens=5, attention_mask=None):

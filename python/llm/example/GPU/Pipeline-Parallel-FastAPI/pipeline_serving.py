@@ -41,7 +41,7 @@ def get_int_from_env(env_keys, default):
 
 class PromptRequest(BaseModel):
     prompt: str
-    n_predict: Optional[int] = 128
+    n_predict: Optional[int] = 256
 
 from openai.types.chat import ChatCompletionMessageParam
 class ChatCompletionRequest(BaseModel):
@@ -77,34 +77,61 @@ local_rank = my_rank
 #             result_dict.pop(request_id)
 #             return {"generated_text": output_str}
 #         await asyncio.sleep(0)            
+from openai_protocol import (
+    ChatCompletionResponseStreamChoice,
+    ChatCompletionStreamResponse,
+    DeltaMessage,
+)
 
 
 async def stream_generator(local_model, token_queue, request_id):
+    model_name = local_model.model_name
     index = 0
     while True:
-        # if not token_queue.empty():
-        if True:
-            # with local_model.dict_lock:
-            remain, token = await token_queue.get()
-            print(remain)
-            response = {
-                "id": request_id,
-                "index": index,
-                "delta": {"role": "assistant", "content": token},
-                "finish_reason": None,
-            }
+        if not token_queue.empty():
+        # if True:
+            with local_model.dict_lock:
+                remain, token = await token_queue.get()
+            # print(remain)
+            choice_data = ChatCompletionResponseStreamChoice(
+                            index=index,
+                            delta=DeltaMessage(role="assistant", content=token),
+                            logprobs=None,
+                            finish_reason=None)
+            chunk = ChatCompletionStreamResponse( #fix
+                            id=request_id,
+                            choices=[choice_data],
+                            model=model_name)
+            data = chunk.model_dump_json(exclude_unset=True)
+            # response = {
+            #     "id": request_id,
+            #     "index": index,
+            #     "delta": {"role": "assistant", "content": token},
+            #     "finish_reason": None,
+            # }
             # yield json.dumps(response) + "\n"
-            yield f"data: {json.dumps(response)}\n\n"
+            yield f"data: {data}\n\n"
             index = index + 1
             if remain == 0:
-                response = {
-                    "id": request_id,
-                    "index": index,
-                    "delta": {"role": "assistant", "content": None},
-                    "finish_reason": "length",
-                }
-                # yield json.dumps(response) + "\n"
-                yield f"data: {json.dumps(response)}\n\n"
+                # response = {
+                #     "id": request_id,
+                #     "index": index,
+                #     "delta": {"role": "assistant", "content": None},
+                #     "finish_reason": "length",
+                # }
+                # # yield json.dumps(response) + "\n"
+                # yield f"data: {json.dumps(response)}\n\n"
+                choice_data = ChatCompletionResponseStreamChoice(
+                                index=index,
+                                delta=DeltaMessage(role="assistant", content=None),
+                                logprobs=None,
+                                finish_reason="length")
+                chunk = ChatCompletionStreamResponse(
+                                id=request_id,
+                                choices=[choice_data],
+                                model=model_name)
+                data = chunk.model_dump_json(exclude_unset=True)
+                yield f"data: {data}\n\n"
                 break
         else:
             await asyncio.sleep(0)
@@ -166,7 +193,6 @@ DEFAULT_SYSTEM_PROMPT = """\
 """
 
 def get_prompt(messages) -> str:
-    # For llama2 models
     prompt = ""
     for msg in messages:
         role = msg["role"]
@@ -205,7 +231,7 @@ def generate_text(prompt: List[str], n_predict = 32):
         
     inputs = tokenizer(prompt, return_tensors="pt", padding=True)
     input_ids = inputs.input_ids.to(f'xpu:{local_rank}')
-    # print(inputs)
+    print(inputs)
     attention_mask = inputs.attention_mask.to(f'xpu:{local_rank}')
     output = local_model.generate(input_ids,
                                   max_tokens=n_predict,
