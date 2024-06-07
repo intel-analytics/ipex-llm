@@ -16,6 +16,7 @@
 import torch
 from vllm.logger import init_logger
 from vllm.model_executor.model_loader import get_model
+from vllm.model_executor.model_loader.utils import get_model_architecture
 from vllm.model_executor.models.llama import LlamaMLP, LlamaAttention
 from vllm.model_executor.models.qwen2 import Qwen2MLP, Qwen2Attention
 from vllm.model_executor.models.qwen import QWenMLP, QWenAttention
@@ -109,7 +110,7 @@ def _Baichuan_Attention_forward(
     q, k, v = qkv.chunk(chunks=3, dim=-1)
     if self.postion_embedding != "ALIBI":
         q, k = self.rotary_emb(positions, q, k)
-    attn_output = self.attn(q, k, v, kv_cache, attn_metadata, self.kv_scale)
+    attn_output = self.attn(q, k, v, kv_cache, attn_metadata)
     output = self.o_proj(attn_output)
     return output
 
@@ -150,6 +151,10 @@ _REPLACED_ATTENTION_LAYERS = {
     GLMAttention: _ChatGLM_Attention_forward
 }
 
+_IPEX_LLM_SUPPORTED_MODELS = [
+    "llama", "baichuan", "chatglm", "qwen", "qwen2"
+]
+
 
 def _model_mlp_convert():
     for module, replaced_func in _REPLACED_MLP_LAYERS.items():
@@ -162,6 +167,8 @@ def _model_attention_convert():
 
 
 def _ipex_llm_convert(load_in_low_bit):
+    if load_in_low_bit is None:
+        return
     from vllm.worker.cpu_model_runner import CPUModelRunner
     import vllm.model_executor.model_loader as model_loader
     setattr(CPUModelRunner, "load_model", get_load_function(load_in_low_bit))
@@ -221,6 +228,11 @@ def _ipex_llm_rmsnorm_forward(
 
 def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
+        model_class = get_model_architecture(self.model_config)[0]
+        cur_model_list = ", ".join(_IPEX_LLM_SUPPORTED_MODELS)
+        invalidInputError(model_class not in _IPEX_LLM_SUPPORTED_MODELS,
+                          f"Currently IPEX-LLM vLLM convert only support {cur_model_list} models.")
+
         _model_mlp_convert()
         _model_attention_convert()
 

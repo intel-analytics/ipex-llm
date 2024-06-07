@@ -65,7 +65,7 @@ def parse_args():
     parser.add_argument(
         "--load-in-low-bit",
         type=str,
-        default="sym_int4",
+        default=None,
         help="Low-bit quantization for IPEX-LLM models")
     return parser.parse_args()
 
