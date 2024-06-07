@@ -213,7 +213,7 @@ def chatglm4_attention_forward(
 
     # apply relative positional encoding (rotary embedding)
     if isinstance(rotary_pos_emb, tuple) and len(rotary_pos_emb) == 2:
-        # use_fuse_rope, see chatglm2_model_forward
+        # use_fuse_rope, see chatglm4_model_forward
         cos, sin = rotary_pos_emb
         rot_dim = cos.shape[-1]
         query_layer = query_layer.transpose(1, 2)
