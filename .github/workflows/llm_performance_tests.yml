@@ -75,7 +75,7 @@ jobs:
         shell: bash
         run: |
           pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-          test_version_date =`date -d 'yesterday' '+%Y%m%d'`
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           if ! pip show ipex-llm | grep $test_version_date; then
             echo "Did not install ipex-llm with excepted version $test_version_date"
             exit 1
