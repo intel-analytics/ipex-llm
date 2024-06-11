@@ -85,7 +85,7 @@ def stablelm_norm_per_head_forward(self, hidden_states: torch.Tensor):
         weight = torch.stack([norm.weight.unsqueeze(0) for norm in self.norms]).unsqueeze(0)
         self.register_buffer("weight", weight, persistent=False)
         if self.norms[0].bias is not None:
-            bias = torch.stack([norm.bias.unsqueeze(0) for norm in self.norms]).unsqeeze(0)
+            bias = torch.stack([norm.bias.unsqueeze(0) for norm in self.norms]).unsqueeze(0)
         else:
             bias = None
         self.register_buffer("bias", bias, persistent=False)
