@@ -28,7 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/glm-4-9b-chat",
                         help='The huggingface repo id for the GLM-4 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--question', type=str, default="AI????",
+    parser.add_argument('--question', type=str, default="晚上睡不着应该怎么办",
                         help='Qustion you want to ask')
     parser.add_argument('--disable-stream', action="store_true",
                         help='Disable stream chat')
