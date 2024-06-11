@@ -719,10 +719,6 @@ def _optimize_pre(model):
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
         model.apply(merge_qkv)
-    # for internlm
-    if model.config.model_type == "internlm":
-        from ipex_llm.transformers.models.internlm import merge_qkv
-        model.apply(merge_qkv)
     # for internlm-xcomposer2-vl
     if model.config.model_type == "internlmxcomposer2":
         from ipex_llm.transformers.models.internlm import pre_process_attn_and_mlp
@@ -951,15 +947,27 @@ def _optimize_post(model, lightweight_bmm=False):
             # transformers version >= 4.36.0
             from ipex_llm.transformers.models.llama import llama_attention_forward_4_38
             if version.parse(trans_version) >= version.parse("4.38.0"):
-                from ipex_llm.transformers.models.llama import llama_model_forward_4_38
-                convert_forward(
-                    model,
-                    transformers.models.llama.modeling_llama.LlamaModel,
-                    llama_model_forward_4_38)
-                convert_forward(
-                    model,
-                    transformers.models.llama.modeling_llama.LlamaAttention,
-                    llama_attention_forward_4_38)
+                if version.parse(trans_version) >= version.parse("4.41.0"):
+                    from ipex_llm.transformers.models.llama import llama_model_forward_4_41
+                    from ipex_llm.transformers.models.llama import llama_attention_forward_4_41
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaModel,
+                        llama_model_forward_4_41)
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaAttention,
+                        llama_attention_forward_4_41)
+                else: 
+                    from ipex_llm.transformers.models.llama import llama_model_forward_4_38
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaModel,
+                        llama_model_forward_4_38)
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaAttention,
+                        llama_attention_forward_4_38)
             else:
                 from ipex_llm.transformers.models.llama import llama_model_forward_4_36
                 convert_forward(
@@ -1171,14 +1179,27 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.internlm import internlm_attention_forward
-        convert_forward(model, module.InternLMAttention, internlm_attention_forward)
-        convert_forward(model, module.InternLMRMSNorm, llama_rms_norm_forward)
-    elif model.config.model_type == "internlm2":
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.internlm import internlm2_attention_forward
-        convert_forward(model, module.InternLM2Attention, internlm2_attention_forward)
-        convert_forward(model, module.InternLM2RMSNorm, llama_rms_norm_forward)
+        try:
+            convert_forward(model,
+                            module.InternLM2Attention,
+                            internlm2_attention_forward
+                            )
+        except:
+            convert_forward(model,
+                            module.InternLMAttention,
+                            internlm_attention_forward
+                            )
+        try:
+            convert_forward(model,
+                            module.InternLM2RMSNorm,
+                            llama_rms_norm_forward
+                            )
+        except:
+            convert_forward(model,
+                            module.InternLMRMSNorm,
+                            llama_rms_norm_forward
+                            )
     elif model.config.model_type == "internlmxcomposer2":
         modeling_module_name = model.model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
