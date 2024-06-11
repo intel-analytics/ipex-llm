@@ -3,7 +3,8 @@ import torch.nn.parallel
 import torch.distributed as dist
 import os
 
-import intel_extension_for_pytorch as ipex
+import ipex_llm
+from ipex_llm.utils.common import invalidInputError
 import oneccl_bindings_for_pytorch
 import json
 
@@ -27,7 +28,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import uvicorn
 import asyncio, uuid
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any, Callable, Union
 import argparse
 
 def get_int_from_env(env_keys, default):
@@ -42,11 +43,19 @@ def get_int_from_env(env_keys, default):
 class PromptRequest(BaseModel):
     prompt: str
     n_predict: Optional[int] = 256
+    req_type: str = 'completion'
 
 from openai.types.chat import ChatCompletionMessageParam
 class ChatCompletionRequest(BaseModel):
     messages: List[ChatCompletionMessageParam]
     model: str
+    max_tokens: Optional[int] = None
+    stream: Optional[bool] = False
+
+
+class CompletionRequest(BaseModel):
+    model: str
+    prompt: Union[List[int], List[List[int]], str, List[str]]
     max_tokens: Optional[int] = None
     stream: Optional[bool] = False
 
@@ -62,65 +71,41 @@ streamer_dict = {}
 local_rank = my_rank
 
 
-# @app.post("/generate/")
-# async def generate(prompt_request: PromptRequest):
-#     request_id = str(uuid.uuid4())
-#     await local_model.waiting_requests.put((request_id, prompt_request))
-#     while True:
-#         if request_id in result_dict:
-#             with local_model.dict_lock:
-#                 output_str = result_dict[request_id]
-#             if len(output_str) == 0:
-#                 logger.info(f"Why? {request_id}")
-#                 # await asyncio.sleep(0.1)
-#                 # continue
-#             result_dict.pop(request_id)
-#             return {"generated_text": output_str}
-#         await asyncio.sleep(0)            
 from openai_protocol import (
     ChatCompletionResponseStreamChoice,
     ChatCompletionStreamResponse,
+    ChatCompletionResponseChoice,
+    ChatCompletionResponse,
+    ChatMessage,
     DeltaMessage,
+    CompletionResponseChoice,
+    CompletionResponse,
+    CompletionResponseStreamChoice,
+    CompletionStreamResponse,
 )
 
 
-async def stream_generator(local_model, token_queue, request_id):
+async def chat_stream_generator(local_model, delta_text_queue, request_id):
     model_name = local_model.model_name
     index = 0
     while True:
-        if not token_queue.empty():
-        # if True:
+        if not delta_text_queue.empty():
             with local_model.dict_lock:
-                remain, token = await token_queue.get()
+                remain, delta_text = await delta_text_queue.get()
             # print(remain)
             choice_data = ChatCompletionResponseStreamChoice(
                             index=index,
-                            delta=DeltaMessage(role="assistant", content=token),
+                            delta=DeltaMessage(role="assistant", content=delta_text),
                             logprobs=None,
                             finish_reason=None)
-            chunk = ChatCompletionStreamResponse( #fix
+            chunk = ChatCompletionStreamResponse( 
                             id=request_id,
                             choices=[choice_data],
                             model=model_name)
             data = chunk.model_dump_json(exclude_unset=True)
-            # response = {
-            #     "id": request_id,
-            #     "index": index,
-            #     "delta": {"role": "assistant", "content": token},
-            #     "finish_reason": None,
-            # }
-            # yield json.dumps(response) + "\n"
             yield f"data: {data}\n\n"
             index = index + 1
             if remain == 0:
-                # response = {
-                #     "id": request_id,
-                #     "index": index,
-                #     "delta": {"role": "assistant", "content": None},
-                #     "finish_reason": "length",
-                # }
-                # # yield json.dumps(response) + "\n"
-                # yield f"data: {json.dumps(response)}\n\n"
                 choice_data = ChatCompletionResponseStreamChoice(
                                 index=index,
                                 delta=DeltaMessage(role="assistant", content=None),
@@ -138,13 +123,50 @@ async def stream_generator(local_model, token_queue, request_id):
     local_model.streamer.pop(request_id, None)
 
 
-
-async def generator(local_model, token_queue, request_id):
+async def completion_stream_generator(local_model, delta_text_queue, request_id):
+    model_name = local_model.model_name
+    index = 0
     while True:
-        if not token_queue.empty():
+        if not delta_text_queue.empty():
             with local_model.dict_lock:
-                remain, token = await token_queue.get()
-            yield token
+                remain, delta_text = await delta_text_queue.get()
+            # print(remain)
+            choice_data = CompletionResponseStreamChoice(
+                            index=index,
+                            text=delta_text,
+                            logprobs=None,
+                            finish_reason=None)
+            chunk = CompletionStreamResponse(
+                            id=request_id,
+                            choices=[choice_data],
+                            model=model_name)
+            data = chunk.model_dump_json(exclude_unset=True)
+            yield f"data: {data}\n\n"
+            index = index + 1
+            if remain == 0:
+                choice_data = CompletionResponseStreamChoice(
+                                index=index,
+                                text=None,
+                                logprobs=None,
+                                finish_reason="length")
+                chunk = CompletionStreamResponse(
+                                id=request_id,
+                                choices=[choice_data],
+                                model=model_name)
+                data = chunk.model_dump_json(exclude_unset=True)
+                yield f"data: {data}\n\n"
+                break
+        else:
+            await asyncio.sleep(0)
+    local_model.streamer.pop(request_id, None)
+
+
+async def generator(local_model, delta_text_queue, request_id):
+    while True:
+        if not delta_text_queue.empty():
+            with local_model.dict_lock:
+                remain, delta_text = await delta_text_queue.get()
+            yield delta_text
             if remain == 0:
                 break
         else:
@@ -164,15 +186,7 @@ async def generate(prompt_request: PromptRequest):
             output_str = []
             async for item in generator(local_model, cur_streamer, request_id):
                 output_str.append(item)
-
-            return {
-                "index": 0,
-                "message": {
-                    "role": "assistant",
-                    "content": "".join(output_str),
-                },
-                "finish_reason": "stop",
-            }
+            return request_id, "".join(output_str)
 
 
 @app.post("/generate_stream/")
@@ -180,11 +194,17 @@ async def generate_stream(prompt_request: PromptRequest):
     request_id = str(uuid.uuid4()) + "stream"
     await local_model.waiting_requests.put((request_id, prompt_request))
     while True:
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
         cur_streamer = local_model.streamer.get(request_id, None)
         if cur_streamer is not None:
-            cur_generator = stream_generator(local_model, cur_streamer, request_id)
-            return StreamingResponse(
+            if prompt_request.req_type == 'completion':
+                cur_generator = completion_stream_generator(local_model, cur_streamer, request_id)
+            elif prompt_request.req_type == 'chat':
+                cur_generator = chat_stream_generator(local_model, cur_streamer, request_id)
+            else:
+                invalidInputError(False, "Invalid Request Type.")
+
+            return request_id, StreamingResponse(
                 content=cur_generator, media_type="text/event-stream"
             )
 
@@ -209,19 +229,58 @@ def get_prompt(messages) -> str:
 
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest):
+    model_name = local_model.model_name
     if request.max_tokens is None:
         n_predict = 256
     else:
         n_predict = request.max_tokens
     prompt_request = PromptRequest(
         prompt=get_prompt(request.messages),
-        n_predict=n_predict
+        n_predict=n_predict,
+        req_type="chat"
     )
     if request.stream:
-        result = await generate_stream(prompt_request)
+        request_id, result = await generate_stream(prompt_request)
     else:
-        result = await generate(prompt_request)
+        request_id, result = await generate(prompt_request)
+        choice_data = ChatCompletionResponseChoice(
+                        index=0,
+                        message=ChatMessage(role="assistant", content=result),
+                        logprobs=None,
+                        finish_reason="length")
+        result = ChatCompletionResponse( 
+                        id=request_id,
+                        choices=[choice_data],
+                        model=model_name)
     return result
+
+@app.post("/v1/completions")
+async def create_completion(request: CompletionRequest):
+    model_name = local_model.model_name
+    if request.max_tokens is None:
+        n_predict = 256
+    else:
+        n_predict = request.max_tokens
+    prompt_request = PromptRequest(
+        prompt=request.prompt,
+        n_predict=n_predict,
+        req_type="completion"
+    )
+    if request.stream:
+        request_id, result = await generate_stream(prompt_request)
+    else:
+        request_id, result = await generate(prompt_request)
+        choice_data = CompletionResponseChoice(
+                            index=0,
+                            text=result,
+                            logprobs=None,
+                            finish_reason="length")
+        result = CompletionResponse(
+                            id=request_id,
+                            choices=[choice_data],
+                            model=model_name)
+    return result
+
 
 def generate_text(prompt: List[str], n_predict = 32):
     while prompt[-1] == "":

@@ -297,7 +297,7 @@ class CompletionResponse(OpenAIBaseModel):
     created: int = Field(default_factory=lambda: int(time.time()))
     model: str
     choices: List[CompletionResponseChoice]
-    usage: UsageInfo
+    usage: Optional[UsageInfo] = Field(default=None)
 
 
 class CompletionResponseStreamChoice(OpenAIBaseModel):
@@ -342,7 +342,7 @@ class ChatCompletionResponse(OpenAIBaseModel):
     created: int = Field(default_factory=lambda: int(time.time()))
     model: str
     choices: List[ChatCompletionResponseChoice]
-    usage: UsageInfo
+    usage: Optional[UsageInfo] = Field(default=None)
 
 
 class DeltaMessage(OpenAIBaseModel):
