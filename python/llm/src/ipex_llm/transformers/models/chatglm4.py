@@ -22,8 +22,8 @@ from typing import Optional, Tuple, Union, List, Callable, Dict, Any
 import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, apply_ipex_rotate_every_two
-from ipex_llm.transformers.models.utils import use_sdp, use_flash_attention
-from ipex_llm.transformers.models.chatglm2 import should_split_qkv_tensor
+from ipex_llm.transformers.models.utils import use_sdp
+from ipex_llm.transformers.models.chatglm2 import should_split_qkv_tensor, sdpa
 from ipex_llm.transformers.models.chatglm2 import split_tensor_along_last_dim
 from transformers.modeling_outputs import BaseModelOutputWithPast
 
@@ -296,51 +296,6 @@ def chatglm4_attention_forward(
     output = self.dense(context_layer)
 
     return output, kv_cache
-
-
-def sdpa(query, key, value, attention_mask=None):
-    if torch.is_autocast_cpu_enabled():
-        query = query.to(torch.get_autocast_cpu_dtype())
-        key = key.to(torch.get_autocast_cpu_dtype())
-        value = value.to(torch.get_autocast_cpu_dtype())
-        attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
-    if use_flash_attention(query, key, attention_mask) or torch.is_autocast_cpu_enabled():
-        if attention_mask is None:
-            context_layer = F.scaled_dot_product_attention(query.to(key.dtype),
-                                                           key,
-                                                           value,
-                                                           is_causal=True).to(key.dtype)
-        else:
-            context_layer = F.scaled_dot_product_attention(query.to(key.dtype),
-                                                           key,
-                                                           value,
-                                                           attention_mask).to(key.dtype)
-    else:
-        if attention_mask is not None:
-            attn_bias = torch.zeros(attention_mask.shape, dtype=query.dtype,
-                                    device=query.device)
-            attention_mask = ~attention_mask
-            if attention_mask.dtype == torch.bool:
-                attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
-            else:
-                attn_bias += attention_mask
-        else:
-            attn_bias = None
-        if use_sdp(query.shape[2], key.shape[2],
-                   query.shape[-1], query):
-            import xe_addons
-            attn_output = xe_addons.sdp(query, key, value, attn_bias)
-            context_layer = attn_output.view(query.shape)
-        else:
-            head_dim = query.size(-1)
-            attn = torch.matmul(query.to(key.dtype),
-                                key.transpose(2, 3)) / math.sqrt(head_dim)
-            if attn_bias is not None:
-                attn += attn_bias
-            attn = F.softmax(attn, dim=-1,
-                             dtype=torch.float32).to(value.dtype)
-            context_layer = torch.matmul(attn, value)
-    return context_layer
 
 
 def core_attn_forward(query_layer, key_layer, value_layer, attention_mask):
