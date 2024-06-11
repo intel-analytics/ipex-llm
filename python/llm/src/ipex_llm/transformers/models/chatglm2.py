@@ -26,6 +26,7 @@ from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, a
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
     restore_fp8_kv_cache, use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import use_sdp
+from ipex_llm.transformers.models.chatglm4 import sdpa
 
 
 import os
@@ -271,19 +272,11 @@ def chatglm2_quantized_attention_forward_8eb45c(
             value_split = torch.split(value, block_size, dim=1)
             results = []
             for q, k, v in zip(query_split, key_split, value_split):
-                if attention_mask is None:
-                    result = F.scaled_dot_product_attention(q, k, v, is_causal=True)
-                else:
-                    result = F.scaled_dot_product_attention(q, k, v, attention_mask)
+                result = sdpa(q, k, v, attention_mask)
                 results.append(result)
             context_layer = torch.cat(results, dim=1)
         else:
-            if attention_mask is None:
-                context_layer = F.scaled_dot_product_attention(query_layer, key,
-                                                               value, is_causal=True)
-            else:
-                context_layer = F.scaled_dot_product_attention(query_layer, key,
-                                                               value, attention_mask)
+            context_layer = sdpa(query_layer, key, value, is_causal=True)
         context_layer = context_layer.to(query_layer.dtype)
 
         if use_cache:
@@ -535,145 +528,55 @@ def chatglm2_attention_forward_8eb45c(
 
 
 def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask):
-    pytorch_major_version = int(torch.__version__.split('.')[0])
-    if pytorch_major_version >= 2:
-        query_layer = query_layer.permute(1, 2, 0, 3)
-        L, S = query_layer.shape[2], key_layer.shape[2]
-        if attention_mask is None and L == S:
-            batch_size, n_head, seq_len, head_dim = query_layer.shape
-            if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
-                # split second dim to block size = 8
-                block_size = 8
-                query_split = torch.split(query_layer.to(key_layer.dtype), block_size, dim=1)
-                key_split = torch.split(key_layer, block_size, dim=1)
-                value_split = torch.split(value_layer, block_size, dim=1)
-                results = []
-                for q, k, v in zip(query_split, key_split, value_split):
-                    result = F.scaled_dot_product_attention(q, k, v, is_causal=True).to(k.dtype)
-                    results.append(result)
-                context_layer = torch.cat(results, dim=1)
-            else:
-                context_layer = F.scaled_dot_product_attention(query_layer.to(key_layer.dtype),
-                                                               key_layer,
-                                                               value_layer,
-                                                               is_causal=True).to(key_layer.dtype)
+    query_layer = query_layer.permute(1, 2, 0, 3)
+    L, S = query_layer.shape[2], key_layer.shape[2]
+    if attention_mask is None and L == S:
+        batch_size, n_head, seq_len, head_dim = query_layer.shape
+        if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
+            # split second dim to block size = 8
+            block_size = 8
+            query_split = torch.split(query_layer.to(key_layer.dtype), block_size, dim=1)
+            key_split = torch.split(key_layer, block_size, dim=1)
+            value_split = torch.split(value_layer, block_size, dim=1)
+            results = []
+            for q, k, v in zip(query_split, key_split, value_split):
+                result = sdpa(q, k, v, is_causal=True).to(k.dtype)
+                results.append(result)
+            context_layer = torch.cat(results, dim=1)
         else:
-            # attention_mask is not None only when past_key_value is not None and q_len > 1
-            if attention_mask is not None:
-                attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
-                                        device=query_layer.device)
-                attention_mask = ~attention_mask
-                if attention_mask.dtype == torch.bool:
-                    attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
-                else:
-                    attn_bias += attention_mask
-            else:
-                attn_bias = None
-
-            if use_sdp(query_layer.shape[2], key_layer.shape[2],
-                       query_layer.shape[-1], query_layer):
-                import xe_addons
-                attn_output = xe_addons.sdp(query_layer, key_layer, value_layer, attn_bias)
-                context_layer = attn_output.view(query_layer.shape)
-            else:
-                head_dim = query_layer.size(-1)
-                attn = torch.matmul(query_layer.to(key_layer.dtype),
-                                    key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-                if attn_bias is not None:
-                    attn += attn_bias
-                attn = F.softmax(attn, dim=-1,
-                                 dtype=torch.float32).to(value_layer.dtype)
-                context_layer = torch.matmul(attn, value_layer)
-        context_layer = context_layer.permute(2, 0, 1, 3)
-        new_context_layer_shape = context_layer.size()[:-2] + (-1,)
-        context_layer = context_layer.reshape(*new_context_layer_shape)
+            context_layer = sdpa(query_layer.to(key_layer.dtype),
+                                 key_layer,
+                                 value_layer,
+                                 is_causal=True).to(key_layer.dtype)
     else:
-        # Raw attention scores
-
-        # [b, np, sq, sk]
-        output_size = (query_layer.size(1), query_layer.size(2),
-                       query_layer.size(0), key_layer.size(2))
-
-        # [sq, b, np, hn] -> [sq, b * np, hn]
-        query_layer = query_layer.view(output_size[2], output_size[0] * output_size[1], -1)
-        # [sk, b, np, hn] -> [sk, b * np, hn]
-        key_layer = key_layer.view(output_size[0] * output_size[1], output_size[3], -1)
-
-        # preallocting input tensor: [b * np, sq, sk]
-        matmul_input_buffer = torch.empty(
-            output_size[0] * output_size[1],
-            output_size[2], output_size[3], dtype=query_layer.dtype,
-            device=query_layer.device
-        )
-
-        matmul_result = torch.empty(
-            output_size[0] * output_size[1],
-            output_size[2], output_size[3], dtype=query_layer.dtype,
-            device=query_layer.device
-        )
-
-        # Raw attention scores. [b * np, sq, sk]
-        torch.baddbmm(
-            matmul_input_buffer,
-            query_layer.transpose(0, 1),  # [b * np, sq, hn]
-            key_layer.transpose(1, 2),  # [b * np, hn, sk]
-            beta=0.0,
-            alpha=(1.0 / self.norm_factor),
-            out=matmul_result
-        )
-
-        # change view to [b, np, sq, sk]
-        attention_scores = matmul_result.view(*output_size)
-
-        # ===========================
-        # Attention probs and dropout
-        # ===========================
-
-        # attention scores and attention mask [b, np, sq, sk]
-        if self.attention_softmax_in_fp32:
-            attention_scores = attention_scores.float()
-        if self.coeff is not None:
-            attention_scores = attention_scores * self.coeff
-        if attention_mask is None and attention_scores.shape[2] == attention_scores.shape[3]:
-            attention_mask = torch.ones(output_size[0], 1, output_size[2], output_size[3],
-                                        device=attention_scores.device, dtype=torch.bool)
-            attention_mask.tril_()
-            attention_mask = ~attention_mask
+        # attention_mask is not None only when past_key_value is not None and q_len > 1
         if attention_mask is not None:
-            attention_scores = attention_scores.masked_fill(attention_mask, float("-inf"))
-        attention_probs = F.softmax(attention_scores, dim=-1)
-        attention_probs = attention_probs.type_as(value_layer)
+            attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
+                                    device=query_layer.device)
+            attention_mask = ~attention_mask
+            if attention_mask.dtype == torch.bool:
+                attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
+            else:
+                attn_bias += attention_mask
+        else:
+            attn_bias = None
 
-        # This is actually dropping out entire tokens to attend to, which might
-        # seem a bit unusual, but is taken from the original Transformer paper.
-        attention_probs = self.attention_dropout(attention_probs)
-        # =========================
-        # Context layer. [sq, b, hp]
-        # =========================
-
-        # value_layer -> context layer.
-        # [sk, b, np, hn] --> [b, np, sq, hn]
-
-        # context layer shape: [b, np, sq, hn]
-        output_size = (value_layer.size(0), value_layer.size(1),
-                       query_layer.size(0), value_layer.size(3))
-        # change view [sk, b * np, hn]
-        value_layer = value_layer.view(output_size[0] * output_size[1], value_layer.size(2), -1)
-        # change view [b * np, sq, sk]
-        attention_probs = attention_probs.view(output_size[0] * output_size[1], output_size[2], -1)
-        # matmul: [b * np, sq, hn]
-        context_layer = torch.empty(
-            output_size[0] * output_size[1],
-            output_size[2], value_layer.size(-1), dtype=value_layer.dtype,
-            device=value_layer.device,
-        )
-        torch.bmm(attention_probs, value_layer, out=context_layer)
-        # change view [b, np, sq, hn]
-        context_layer = context_layer.view(*output_size)
-        # [b, np, sq, hn] --> [sq, b, np, hn]
-        context_layer = context_layer.permute(2, 0, 1, 3).contiguous()
-        # [sq, b, np, hn] --> [sq, b, hp]
-        new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
-        context_layer = context_layer.view(*new_context_layer_shape)
+        if use_sdp(query_layer.shape[2], key_layer.shape[2],
+                   query_layer.shape[-1], query_layer):
+            import xe_addons
+            attn_output = xe_addons.sdp(query_layer, key_layer, value_layer, attn_bias)
+            context_layer = attn_output.view(query_layer.shape)
+        else:
+            head_dim = query_layer.size(-1)
+            attn = torch.matmul(query_layer.to(key_layer.dtype),
+                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
+            if attn_bias is not None:
+                attn += attn_bias
+            attn = F.softmax(attn, dim=-1,
+                             dtype=torch.float32).to(value_layer.dtype)
+            context_layer = torch.matmul(attn, value_layer)
+    context_layer = context_layer.permute(2, 0, 1, 3)
+    new_context_layer_shape = context_layer.size()[:-2] + (-1,)
+    context_layer = context_layer.reshape(*new_context_layer_shape)
 
     return context_layer
