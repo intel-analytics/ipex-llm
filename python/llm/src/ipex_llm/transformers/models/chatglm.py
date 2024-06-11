@@ -113,15 +113,19 @@ def attention_fn(
                                         dtype=torch.bool).tril(diagonal=0)
             attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
             attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
-            context_layer = sdpa(query_layer,
-                                 key_layer,
-                                 value_layer,
-                                 attention_mask)
+            query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
+            key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
+            value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
+                                                                             attention_mask,
+                                                                             is_causal=False)
         else:
             context_layer = sdpa(query_layer,
                                  key_layer,
                                  value_layer,
-                                 is_causal=True)
+                                 attention_mask)
     else:
         # attention_mask is not None only when past_key_value is not None and q_len > 1
         if attention_mask is not None:
