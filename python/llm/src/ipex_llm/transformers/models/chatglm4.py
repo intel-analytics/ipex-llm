@@ -302,7 +302,7 @@ def core_attn_forward(query_layer, key_layer, value_layer, attention_mask):
     L, S = query_layer.shape[2], key_layer.shape[2]
     batch_size, n_head, seq_len, head_dim = query_layer.shape
     if attention_mask is None and L == S and \
-        should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
+            should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
         # split second dim to block size = 8
         block_size = 8
         query_layer = query_layer.to(key_layer.dtype)
