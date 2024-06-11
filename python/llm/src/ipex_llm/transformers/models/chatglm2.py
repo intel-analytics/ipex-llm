@@ -320,7 +320,7 @@ def chatglm2_quantized_attention_forward_8eb45c(
                 results.append(result)
             context_layer = torch.cat(results, dim=1)
         else:
-            context_layer = sdpa(query_layer, key, value, is_causal=True)
+            context_layer = sdpa(query_layer, key, value)
         context_layer = context_layer.to(query_layer.dtype)
 
         if use_cache:
