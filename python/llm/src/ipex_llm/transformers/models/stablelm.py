@@ -79,6 +79,22 @@ def merge_qkv(module: torch.nn.Module):
         del module.q_proj, module.k_proj, module.v_proj
 
 
+def stablelm_norm_per_head_forward(self, hidden_states: torch.Tensor):
+    if not hasattr(self, "weight"):
+        self.eps = self.norms[0].eps
+        weight = torch.stack([norm.weight.unsqueeze(0) for norm in self.norms]).unsqueeze(0)
+        self.register_buffer("weight", weight, persistent=False)
+        if self.norms[0].bias is not None:
+            bias = torch.stack([norm.bias.unsqueeze(0) for norm in self.norms]).unsqeeze(0)
+        else:
+            bias = None
+        self.register_buffer("bias", bias, persistent=False)
+    if self.bias is None:
+        return torch.layer_norm(hidden_states, (self.dim,), eps=self.eps) * self.weight
+    else:
+        return torch.layer_norm(hidden_states, (self.dim,), eps=self.eps) * self.weight + self.bias
+
+
 def stablelm_model_forward(
     self,
     input_ids: torch.LongTensor = None,

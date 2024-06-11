@@ -1569,6 +1569,7 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.stablelm import stablelm_attention_forward
         from ipex_llm.transformers.models.stablelm import stablelm_model_forward
+        from ipex_llm.transformers.models.stablelm import stablelm_norm_per_head_forward
         convert_forward(model,
                         module.StableLmAttention,
                         stablelm_attention_forward
@@ -1580,6 +1581,8 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.StableLmModel,
                         stablelm_model_forward
                         )
+        # for stablelm2-12b's qk layernorm
+        convert_forward(model, module.StableLmLayerNormPerHead, stablelm_norm_per_head_forward)
     elif model.config.model_type == 'minicpm':
         from ipex_llm.transformers.models.minicpm import minicpm_attention_forward
         from ipex_llm.transformers.models.minicpm import minicpm_model_forward
