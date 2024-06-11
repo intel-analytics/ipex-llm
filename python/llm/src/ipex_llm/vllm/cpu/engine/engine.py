@@ -37,7 +37,7 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         engine_args: AsyncEngineArgs,
         start_engine_loop: bool = True,
         usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
-        load_in_low_bit: str = "sym_int4",
+        load_in_low_bit: Optional[str] = None,
     ) -> "AsyncLLMEngine":
         """Creates an async LLM engine from the engine arguments."""
         # Enable ipex-llm optimizations
@@ -97,7 +97,7 @@ class IPEXLLMClass(LLM):
         max_context_len_to_capture: Optional[int] = None,
         max_seq_len_to_capture: int = 8192,
         disable_custom_all_reduce: bool = False,
-        load_in_low_bit: str = "sym_int4",
+        load_in_low_bit: Optional[str] = None,
         **kwargs,
     ) -> None:
         if "disable_log_stats" not in kwargs:
@@ -136,8 +136,7 @@ class IPEXLLMLLMEngine(LLMEngine):
         cls,
         engine_args: EngineArgs,
         usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
-        load_in_low_bit: str = "sym_int4",
-        # ipex_llm_optimize_mode: str = 'NATIVE',
+        load_in_low_bit: Optional[str] = None,
     ) -> "LLMEngine":
         """Creates an LLM engine from the engine arguments."""
         # Create the engine configs.

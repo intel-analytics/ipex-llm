@@ -20,7 +20,6 @@ import argparse
 import numpy as np
 
 from transformers import AutoTokenizer, GenerationConfig
-import intel_extension_for_pytorch as ipex
 
 
 # you could tune the prompt based on your own model,

@@ -12,7 +12,7 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a phi-3 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
-We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://conda-forge.org/download/).
 
 After installing conda, create a Python environment for IPEX-LLM:
 
@@ -76,6 +76,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### 2.4 Sample Output
 #### [microsoft/Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct)
 ```log
+Inference time: xxxx s
 -------------------- Prompt --------------------
 <|user|>
 What is AI?<|end|>

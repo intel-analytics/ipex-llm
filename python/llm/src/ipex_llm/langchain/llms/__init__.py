@@ -32,7 +32,6 @@ __all__ = [
     "LlamaLLM",
     "BloomLLM",
     "GptneoxLLM",
-    "ChatGLMLLM",
     "StarcoderLLM",
     "TransformersLLM",
     "TransformersPipelineLLM"
@@ -43,7 +42,6 @@ type_to_cls_dict: Dict[str, Type[BaseLLM]] = {
     "LlamaLLM": LlamaLLM,
     "BloomLLM": BloomLLM,
     "GptneoxLLM": GptneoxLLM,
-    "ChatGLMLLM": ChatGLMLLM,
     "StarcoderLLM": StarcoderLLM,
     "TransformersPipelineLLM": TransformersPipelineLLM,
     "TransformersLLM": TransformersLLM

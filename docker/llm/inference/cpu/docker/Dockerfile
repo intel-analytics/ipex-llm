@@ -12,22 +12,20 @@ COPY ./start-notebook.sh /llm/start-notebook.sh
 # Update the software sources
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Install essential packages
-    apt install software-properties-common libunwind8-dev vim less -y && \
+    apt install libunwind8-dev vim less -y && \
 # Install git, curl, and wget
     apt-get install -y git curl wget && \
 # Install Python 3.11
-    # Add Python 3.11 PPA repository
-    add-apt-repository ppa:deadsnakes/ppa -y && \
     # Install Python 3.11
     apt-get install -y python3.11 && \
+    # Install Python 3.11 development and utility packages
+    apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
     # Remove the original /usr/bin/python3 symbolic link
     rm /usr/bin/python3 && \
     # Create a symbolic link pointing to Python 3.11 at /usr/bin/python3
     ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     # Create a symbolic link pointing to /usr/bin/python3 at /usr/bin/python
     ln -s /usr/bin/python3 /usr/bin/python && \
-    # Install Python 3.11 development and utility packages
-    apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
 # Download and install pip, install FastChat from source requires PEP 660 support
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
     python3 get-pip.py && \

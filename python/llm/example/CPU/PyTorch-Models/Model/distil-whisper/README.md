@@ -8,7 +8,7 @@ To run these examples with IPEX-LLM, we have some recommended requirements for y
 ## Example: Recognize Tokens using `generate()` API
 In the example [recognize.py](./recognize.py), we show a basic use case for a Distil-Whisper model to conduct transcription using `generate()` API, with IPEX-LLM INT4 optimizations.
 ### 1. Install
-We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://docs.conda.io/en/latest/miniconda.html#).
+We suggest using conda to manage the Python environment. For more information about conda installation, please refer to [here](https://conda-forge.org/download/).
 
 After installing conda, create a Python environment for IPEX-LLM:
 

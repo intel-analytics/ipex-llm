@@ -192,6 +192,9 @@ def train(
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
+    # For Llama family
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
     print(model)
 
     # Prepare a IPEX-LLM compatible Peft model

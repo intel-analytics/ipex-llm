@@ -16,7 +16,6 @@
 
 import torch, transformers
 import sys, os, time
-import intel_extension_for_pytorch as ipex
 import argparse
 from transformers import LlamaTokenizer
 from ipex_llm.transformers import AutoModelForCausalLM

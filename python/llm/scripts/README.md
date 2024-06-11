@@ -17,7 +17,7 @@ sudo apt install xpu-smi
   
 ### Usage
 
-* After installing `ipex-llm`, open a terminal (on Linux) or **Anaconda Prompt** (on Windows), and activate the conda environment you have created for running `ipex-llm`: 
+* After installing `ipex-llm`, open a terminal (on Linux) or **Miniforge Prompt** (on Windows), and activate the conda environment you have created for running `ipex-llm`: 
   ```
   conda activate llm
   ```

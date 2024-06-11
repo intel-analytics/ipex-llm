@@ -2,7 +2,6 @@ from pipeline_models import ModelRunner
 import torch.nn.parallel
 import torch.distributed as dist
 import os
-import intel_extension_for_pytorch as ipex
 
 import oneccl_bindings_for_pytorch
 

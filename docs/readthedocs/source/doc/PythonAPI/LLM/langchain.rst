@@ -31,25 +31,13 @@ IPEX-LLM provides ``TransformersLLM`` and ``TransformersPipelineLLM``, which imp
 Native Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For ``llama``/``chatglm``/``bloom``/``gptneox``/``starcoder`` model families, you could also use the following LLM wrappers with the native (cpp) implementation for maximum performance.
+For ``llama``/``bloom``/``gptneox``/``starcoder`` model families, you could also use the following LLM wrappers with the native (cpp) implementation for maximum performance.
 
 .. tabs::
 
     .. tab:: Llama
 
         .. autoclass:: ipex_llm.langchain.llms.LlamaLLM
-            :members:
-            :undoc-members:
-            :show-inheritance:
-            :exclude-members: ggml_model, ggml_module, client, model_path, kwargs
-
-            .. automethod:: validate_environment
-            .. automethod:: stream
-            .. automethod:: get_num_tokens
-
-    .. tab:: ChatGLM
-
-        .. autoclass:: ipex_llm.langchain.llms.ChatGLMLLM
             :members:
             :undoc-members:
             :show-inheritance:

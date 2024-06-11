@@ -1,4 +1,4 @@
-# Serve IPEX-LLM on Multiple Intel GPUs in multi-stage pipeline parallel fashion
+# Serve IPEX-LLM on Multiple Intel GPUs in Multi-Stage Pipeline Parallel Fashion
 
 This example demonstrates how to run IPEX-LLM serving on multiple [Intel GPUs](../README.md) with Pipeline Parallel.
 

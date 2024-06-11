@@ -31,7 +31,7 @@ You may also convert Hugging Face *Transformers* models into native INT4 format,
 ```eval_rst
 .. note::
 
-   * Currently only llama/bloom/gptneox/starcoder/chatglm model families are supported; for other models, you may use the Hugging Face ``transformers`` INT4 format as described `above <./langchain_api.html#using-hugging-face-transformers-int4-format>`_.
+   * Currently only llama/bloom/gptneox/starcoder model families are supported; for other models, you may use the Hugging Face ``transformers`` INT4 format as described `above <./langchain_api.html#using-hugging-face-transformers-int4-format>`_.
 
    * You may choose the corresponding API developed for specific native models to load the converted model.
 ```
@@ -41,9 +41,9 @@ from ipex_llm.langchain.llms import LlamaLLM
 from ipex_llm.langchain.embeddings import LlamaEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 
-# switch to ChatGLMEmbeddings/GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
+# switch to GptneoxEmbeddings/BloomEmbeddings/StarcoderEmbeddings to load other models
 embeddings = LlamaEmbeddings(model_path='/path/to/converted/model.bin')
-# switch to ChatGLMLLM/GptneoxLLM/BloomLLM/StarcoderLLM to load other models
+# switch to GptneoxLLM/BloomLLM/StarcoderLLM to load other models
 ipex_llm = LlamaLLM(model_path='/path/to/converted/model.bin')
 
 doc_chain = load_qa_chain(ipex_llm, ...)

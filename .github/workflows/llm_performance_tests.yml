@@ -97,11 +97,23 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
+          mkdir test_batch1
+          mkdir test_batch2
+          # batch_size 1
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           # change csv name
-          sed -i 's/{today}/{today}_test1/g' run.py
+          sed -i 's/{today}/{today}_test1_batch1/g' run.py
           python run.py
+          mv *.csv test_batch1
+          # batch_size 2
+          cd ../../../../../ 
+          cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/batch1/batch2/g' run.py
+          python run.py
+          mv *.csv test_batch2
 
       - name: Test on xpu(transformers==4.37.0)
         shell: bash
@@ -111,36 +123,101 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
           python -m pip install transformers==4.37.0
+          # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # change csv name
-          sed -i 's/test1/test2/g' run.py
+          sed -i 's/test1_batch2/test2_batch1/g' run.py
           python run.py
+          mv *.csv test_batch1
+          # batch_size 2
+          cd ../../../../../ 
+          cp python/llm/test/benchmark/arc-perf-transformers-437-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name 
+          sed -i 's/batch1/batch2/g' run.py
+          python run.py
+          mv *.csv test_batch2
 
       - name: Concat csv and generate html
         shell: bash
         run: |
-          cd python/llm/dev/benchmark/all-in-one
-          python ../../../test/benchmark/concat_csv.py
+          # batch_size 1 
+          cd python/llm/dev/benchmark/all-in-one/test_batch1
+          python ../../../../test/benchmark/concat_csv.py
           for file in *.csv; do
               if [[ $file != *test* ]]; then
-                  cp "$file" $CSV_SAVE_PATH
+                  cp "$file" $CSV_SAVE_PATH/batch_size_1
               fi
           done
           python -m pip install pandas==1.5.3
-          cd ../../../test/benchmark
-          python csv_to_html.py -f $CSV_SAVE_PATH
+          cd ../../../../test/benchmark
+          python csv_to_html.py -f $CSV_SAVE_PATH/batch_size_1
+          # batch_size 2
+          cd ../../../../
+          cd python/llm/dev/benchmark/all-in-one/test_batch2
+          python ../../../../test/benchmark/concat_csv.py
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" $CSV_SAVE_PATH/batch_size_2
+              fi
+          done
+          cd ../../../../test/benchmark
+          python csv_to_html.py -f $CSV_SAVE_PATH/batch_size_2
+      
+      - name: Merge and sort csv files of multiple batches and generate html 
+        shell: bash
+        run: |
+          cd python/llm/test/benchmark
+          mkdir merged_temp
+          # go through all the files and go to merged_temp
+          cd ../../dev/benchmark/all-in-one/test_batch1
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" ../../../../test/benchmark/merged_temp
+              fi
+          done
+          cd ../test_batch2
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" ../../../../test/benchmark/merged_temp
+              fi
+          done
+          cd ../../../../test/benchmark
+          python merge_csv_batch.py -f ./merged_temp
+          cd merged_temp
+          find . -name "*batch*.csv" -delete
+          for file in *.csv; do
+              cp "$file" $CSV_SAVE_PATH/merged
+          done
+          cd ..
+          python csv_to_html.py -f $CSV_SAVE_PATH/merged
+          rm -r merged_temp
 
       - name: Check and upload results to ftp
         shell: bash
         run: |
-          cd python/llm/dev/benchmark/all-in-one
-          python ../../../test/benchmark/check_results.py -c test1 -y ../../../test/benchmark/arc-perf-test.yaml
-          python ../../../test/benchmark/check_results.py -c test2 -y ../../../test/benchmark/arc-perf-transformers-437.yaml
+          # batch_size 1
+          cd python/llm/dev/benchmark/all-in-one/test_batch1
+          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test.yaml
+          python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437.yaml
           find . -name "*test*.csv" -delete
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
+          cd ../
+          rm -r test_batch1
+          # batch_size 2
+          cd test_batch2
+          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test-batch2.yaml
+          python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437-batch2.yaml
+          find . -name "*test*.csv" -delete
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          fi
+          cd ../
+          rm -r test_batch2
+          
           
   llm-performance-test-on-spr:
     if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
@@ -389,6 +466,14 @@ jobs:
 
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
+      - name: Add extra warmup for chatglm3-6b int4+fp32 for more stable results
+        shell: bash
+        run: |
+          sed -i '/^\s*result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)/ i\
+                  if repo_id in ["THUDM/chatglm3-6b"]:\
+                      run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)
+          ' python/llm/dev/benchmark/all-in-one/run.py
+
       - name: Prepare igpu perf test (32-32)
         shell: bash
         run: |
@@ -414,13 +499,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen1.5 (32-32)
+      - name: Prepare igpu perf test for transformers 4.37 (32-32)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32_437.yaml
 
-      - name: Test on igpu for Qwen1.5 (32-32)
+      - name: Test on igpu for transformers 4.37 (32-32)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -482,13 +567,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (1024-128)
+      - name: Test on igpu for transformers 4.37 (1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -549,13 +634,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (2048-256)
+      - name: Prepare igpu perf test for transformers 4.37 (2048-256)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (2048-256)
+      - name: Test on igpu for transformers 4.37 (2048-256)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -616,13 +701,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (load_low_bit 1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (load_low_bit 1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_loadlowbit_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (load_low_bit 1024-128)
+      - name: Test on igpu for transformers 4.37 (load_low_bit 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -681,13 +766,13 @@ jobs:
 
           call conda deactivate
 
-      - name: Prepare igpu perf test for Qwen 1.5 (int4+fp16 1024-128)
+      - name: Prepare igpu perf test for transformers 4.37 (int4+fp16 1024-128)
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_437.yaml
 
-      - name: Test on igpu for Qwen 1.5 (int4+fp16 1024-128)
+      - name: Test on igpu for transformers 4.37 (int4+fp16 1024-128)
         shell: cmd
         run: |
           call conda activate igpu-perf

@@ -16,7 +16,7 @@
 import os
 import time
 from pathlib import Path
-from ipex_llm.ggml.convert import _convert_to_ggml, _convert_chatglm
+from ipex_llm.ggml.convert import _convert_to_ggml
 from ipex_llm.ggml.quantize import quantize
 from ipex_llm.utils.common import invalidInputError
 import argparse
@@ -54,9 +54,9 @@ def convert_model(input_path: str,
     # make sure directory exists
     os.makedirs(output_path, exist_ok=True)
     # check input value
-    invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder', 'chatglm'],
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder'],
                       "Now we only support quantization of model \
-                       family('llama', 'bloom', 'gptneox', 'starcoder', 'chatglm')",
+                       family('llama', 'bloom', 'gptneox', 'starcoder')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isdir(output_path),
                       "The output_path {} was not a directory".format(output_path))
@@ -77,12 +77,6 @@ def convert_model(input_path: str,
                           "Now we only support int8 quantization of model \
                           family('llama', 'gptneox', 'starcoder')",
                           "{} is not in the list.".format(model_family))
-
-    # chatglm merges convertion and quantization into one operation.
-    if model_family == 'chatglm':
-        return _convert_chatglm(model_path=input_path,
-                                outfile_dir=output_path,
-                                outtype=dtype)
 
     if tmp_path is not None:
         model_name = Path(input_path).stem
