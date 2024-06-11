@@ -23,7 +23,7 @@ import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, apply_ipex_rotate_every_two
 from ipex_llm.transformers.models.utils import use_sdp
-from ipex_llm.transformers.models.chatglm2 import should_split_qkv_tensor, sdpa
+from ipex_llm.transformers.models.chatglm2 import should_split_qkv_tensor, glm_sdpa
 from ipex_llm.transformers.models.chatglm2 import split_tensor_along_last_dim
 from transformers.modeling_outputs import BaseModelOutputWithPast
 
@@ -300,53 +300,25 @@ def chatglm4_attention_forward(
 
 def core_attn_forward(query_layer, key_layer, value_layer, attention_mask):
     L, S = query_layer.shape[2], key_layer.shape[2]
-    if attention_mask is None and L == S:
-        batch_size, n_head, seq_len, head_dim = query_layer.shape
-        if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
-            # split second dim to block size = 8
-            block_size = 8
-            query_split = torch.split(query_layer.to(key_layer.dtype), block_size, dim=1)
-            key_split = torch.split(key_layer, block_size, dim=1)
-            value_split = torch.split(value_layer, block_size, dim=1)
-            results = []
-            for q, k, v in zip(query_split, key_split, value_split):
-                result = sdpa(q, k, v)
-                results.append(result)
-            context_layer = torch.cat(results, dim=1)
-        else:
-            context_layer = sdpa(query_layer,
-                                 key_layer,
-                                 value_layer)
+    batch_size, n_head, seq_len, head_dim = query_layer.shape
+    if attention_mask is None and L == S and \
+        should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
+        # split second dim to block size = 8
+        block_size = 8
+        query_layer = query_layer.to(key_layer.dtype)
+        query_split = torch.split(query_layer, block_size, dim=1)
+        key_split = torch.split(key_layer, block_size, dim=1)
+        value_split = torch.split(value_layer, block_size, dim=1)
+        results = []
+        for q, k, v in zip(query_split, key_split, value_split):
+            result = glm_sdpa(q, k, v)
+            results.append(result)
+        context_layer = torch.cat(results, dim=1)
     else:
-        context_layer = sdpa(query_layer,
-                             key_layer,
-                             value_layer)
-        # attention_mask is not None only when past_key_value is not None and q_len > 1
-        if attention_mask is not None:
-            attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
-                                    device=query_layer.device)
-            attention_mask = ~attention_mask
-            if attention_mask.dtype == torch.bool:
-                attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
-            else:
-                attn_bias += attention_mask
-        else:
-            attn_bias = None
-
-        if use_sdp(query_layer.shape[2], key_layer.shape[2],
-                   query_layer.shape[-1], query_layer):
-            import xe_addons
-            attn_output = xe_addons.sdp(query_layer, key_layer, value_layer, attn_bias)
-            context_layer = attn_output.view(query_layer.shape)
-        else:
-            head_dim = query_layer.size(-1)
-            attn = torch.matmul(query_layer.to(key_layer.dtype),
-                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-            if attn_bias is not None:
-                attn += attn_bias
-            attn = F.softmax(attn, dim=-1,
-                             dtype=torch.float32).to(value_layer.dtype)
-            context_layer = torch.matmul(attn, value_layer)
+        context_layer = glm_sdpa(query_layer,
+                                 key_layer,
+                                 value_layer,
+                                 attention_mask)
     context_layer = context_layer.transpose(1, 2).contiguous()
     new_context_layer_shape = context_layer.size()[:-2] + (-1,)
     context_layer = context_layer.reshape(*new_context_layer_shape)

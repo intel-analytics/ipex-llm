@@ -23,7 +23,7 @@ import torch.utils.checkpoint
 import torch.nn.functional as F
 from typing import Optional, Tuple
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from ipex_llm.transformers.models.chatglm2 import sdpa
+from ipex_llm.transformers.models.chatglm2 import glm_sdpa
 
 
 def rotate_half(x):
@@ -122,10 +122,10 @@ def attention_fn(
                                                                              attention_mask,
                                                                              is_causal=False)
         else:
-            context_layer = sdpa(query_layer,
-                                 key_layer,
-                                 value_layer,
-                                 attention_mask)
+            context_layer = glm_sdpa(query_layer,
+                                     key_layer,
+                                     value_layer,
+                                     attention_mask)
     else:
         # attention_mask is not None only when past_key_value is not None and q_len > 1
         if attention_mask is not None:
