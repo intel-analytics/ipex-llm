@@ -226,11 +226,76 @@ class PipelineBaseModel(nn.Module):
         )
 
 
-def load_model(checkpoint):
-    from llama_models import LlamaForCausalLM
-    if 'llama' in checkpoint.lower():
-        model = LlamaForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
+class DummyLayer(torch.nn.Module):
+    def __init__(self, *args):
+        super().__init__()
+        # to avoid AttributeError in https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/transformers/models/llama.py#L2076
+        self.weight = torch.randn(1,)
+
+    def forward(self, x):
+        return x
+
+
+class Dummy_MLPLayer(torch.nn.Module):
+    def __init__(self, *args):
+        super().__init__()
+        # to avoid AttributeError in https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/transformers/models/llama.py#L119
+        self.up_proj = DummyLayer()
+
+    def forward(self, x):
+        return x
+
+
+class Dummy_DecoderLayer(torch.nn.Module):
+    def __init__(self, *args):
+        super().__init__()
+        # to avoid AttributeError in https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/transformers/models/llama.py#L2076
+        self.input_layernorm = DummyLayer()
+        # to avoid AttributeError in https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/transformers/models/llama.py#L119
+        self.mlp = Dummy_MLPLayer()
+
+    def forward(self, hidden_states, past_key_value=None, use_cache=False, **kwargs):
+        outputs = (hidden_states,)
+        if use_cache:
+            outputs += (past_key_value,)
+        return outputs
+
+
+def load_model(model_path, my_rank, my_size, low_bit='sym_int4'):
+    # from llama_models import LlamaForCausalLM
+    # if 'llama' in checkpoint.lower():
+    #     model = LlamaForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
+    # return model
+    device = f"xpu:{my_rank}"
+    from ipex_llm.transformers import AutoModelForCausalLM
+    model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                 load_in_low_bit=low_bit,
+                                                 torch_dtype=torch.float16,
+                                                 optimize_model=True,
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
+    # print(model)
+
+    nr_slices = my_size
+    slice_size = (model.config.num_hidden_layers + nr_slices - 1) // nr_slices
+    layer_start = slice_size * my_rank
+    layer_end  = layer_start + min(slice_size, model.config.num_hidden_layers - layer_start)
+
+    for i in range(model.config.num_hidden_layers):
+        if i < layer_start or i >= layer_end:
+            model._modules['model'].layers[i] = Dummy_DecoderLayer()
+        else:
+            # align layer_idx and len(past_key_values), otherwise abnormal output
+            model._modules['model'].layers[i].self_attn.layer_idx = i - layer_start
+    if my_rank != 0:
+        model._modules['model'].embed_tokens = DummyLayer()
+    if my_rank != my_size - 1:
+        model._modules['model'].norm = DummyLayer()
+        model._modules['lm_head'] = DummyLayer()
+
+    model = model.to(f'xpu:{my_rank}')
     return model
+
 
 from pydantic import BaseModel
 class BatchTask(BaseModel):
@@ -261,14 +326,14 @@ class ModelRunner:
         self.pp_config = PPConfig(rank, world_size)
         
         start = time.perf_counter()
-        model = load_model(checkpoint)
+        model = self.load_model(checkpoint, rank, world_size, low_bit)
         end = time.perf_counter()
         logger.info(f"Time to load weights: {end - start:.2f}s")
-        from ipex_llm import optimize_model
+        # from ipex_llm import optimize_model
 
-        model = optimize_model(model, low_bit=low_bit)
+        # model = optimize_model(model, low_bit=low_bit)
         
-        model = model.to(torch.float16).to(f'xpu:{rank}')
+        # model = model.to(torch.float16).to(f'xpu:{rank}')
         self.model = model
         self.rank = rank
         self.world_size = world_size
@@ -295,44 +360,41 @@ class ModelRunner:
         self.is_finish = {}
         self.model_name = checkpoint
 
+        self.layer_start = 0
+
                 
-    # def generate(self, input_ids=None, max_tokens=5, attention_mask=None):
-    #     times = []
-    #     with torch.no_grad():
-    #         _input_ids = None
-    #         _past_key_values = None
-    #         bs = input_ids.shape[0]
-    #         output_ids = input_ids.clone()
-    #         for i in range(max_tokens):
-    #             start = time.perf_counter()
-    #             if _input_ids is None:
-    #                 _input_ids = input_ids
-    #             if self.rank == 0:
-    #                 outputs = self.model(input_ids=_input_ids, attention_mask=attention_mask, past_key_values=_past_key_values, use_cache=True)
-    #             else:
-    #                 inputs_embeds = torch.empty(_input_ids.shape + (self.hidden_size,) , device=f'xpu:{self.rank}', dtype=torch.float32)
-    #                 dist.recv(inputs_embeds, src=self.pre_rank)
-    #                 outputs = self.model(inputs_embeds=inputs_embeds, attention_mask=attention_mask, past_key_values=_past_key_values, use_cache=True)
-                
-    #             if self.rank == self.world_size - 1:
-    #                 logits = outputs.logits
-    #                 next_ids = torch.argmax(logits[:, -1:, :], dim=-1)
-    #                 assert next_ids.shape == (bs, 1)
-    #                 dist.broadcast(next_ids, src=self.rank)
-    #             else:
-    #                 dist.send(outputs.last_hidden_state, dst=self.next_rank)
-    #                 next_ids = torch.empty((bs, 1), device=f'xpu:{self.rank}', dtype=torch.int64)
-    #                 dist.broadcast(next_ids, src=self.world_size - 1)
-                
-    #             _input_ids = next_ids
-    #             output_ids = torch.cat([output_ids, next_ids], dim=-1)
-    #             _past_key_values = outputs.past_key_values
-    #             end = time.perf_counter()
-    #             times.append(end - start)
+    
+    def load_model(self, model_path, my_rank, my_size, low_bit='sym_int4'):
+        device = f"xpu:{my_rank}"
+        from ipex_llm.transformers import AutoModelForCausalLM
+        model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                    load_in_low_bit=low_bit,
+                                                    torch_dtype=torch.float16,
+                                                    optimize_model=True,
+                                                    trust_remote_code=True,
+                                                    use_cache=True)
+        # print(model)
+
+        nr_slices = my_size
+        slice_size = (model.config.num_hidden_layers + nr_slices - 1) // nr_slices
+        layer_start = slice_size * my_rank
         
-    #     if self.rank == 0:
-    #         logger.info(f"first token latency: {times[0]}, rest token avg latecy: {np.mean(times[1:])}")
-    #     return output_ids
+        layer_end  = layer_start + min(slice_size, model.config.num_hidden_layers - layer_start)
+
+        for i in range(model.config.num_hidden_layers):
+            if i < layer_start or i >= layer_end:
+                model._modules['model'].layers[i] = Dummy_DecoderLayer()
+            else:
+                # align layer_idx and len(past_key_values), otherwise abnormal output
+                model._modules['model'].layers[i].self_attn.layer_idx = i - layer_start
+        if my_rank != 0:
+            model._modules['model'].embed_tokens = DummyLayer()
+        if my_rank != my_size - 1:
+            model._modules['model'].norm = DummyLayer()
+            model._modules['lm_head'] = DummyLayer()
+
+        model = model.to(f'xpu:{my_rank}')
+        return model
 
 
     def model_step(self, input, cur_batch):
@@ -350,16 +412,34 @@ class ModelRunner:
         else:
             input_ids = None
             inputs_embeds = input
+        
+        # logger.info(f"{self.rank}, {_past_key_values}")
         output = self.model(
             input_ids=input_ids, 
             inputs_embeds=inputs_embeds,
             attention_mask=attention_mask, 
             past_key_values=_past_key_values,
-            use_cache=True
+            use_cache=True,
+            output_hidden_states=True,
         )
-        self.past_key_values_dict[cur_id] = output.past_key_values
+        if False and self.rank > 0:
+            _past_key_values = list(output.past_key_values)
+            slice_size = (self.model.config.num_hidden_layers + self.world_size - 1) // self.world_size
+            layer_start = slice_size * self.rank
+
+            # import pdb
+            # pdb.set_trace()
+            _past_key_values[0] = [torch.empty_like(output.past_key_values[layer_start][0])]
+            _past_key_values = tuple(_past_key_values)
+        else:
+            _past_key_values = output.past_key_values
+        self.past_key_values_dict[cur_id] = _past_key_values
+        # import pdb
+        # pdb.set_trace()
         if not self.pp_config.is_tail:
-            return output.last_hidden_state
+            # return output.last_hidden_state
+            # print(output.hidden_states[-1].shape)
+            return output.hidden_states[-1]
         else:
             # logger.info(f"logits: {output.logits.shape}")
             return output.logits
@@ -439,6 +519,8 @@ class ModelRunner:
                 cur_id = cur_batch.batch_id
                 next_ids = torch.empty((cur_batch.batch_size, 1,), device=f'xpu:{self.rank}', dtype=torch.int64)
                 # logger.info(f"rank: {self.rank}, recv: {next_ids.shape}")
+                # import pdb
+                # pdb.set_trace()
                 dist.recv(next_ids, src=self.pre_rank)
                 
                 if self.tokens.get(cur_id, None) is None:
@@ -462,9 +544,9 @@ class ModelRunner:
                         if self.streamer.get(request_id, None) is None:
                             self.streamer[request_id] = asyncio.Queue()
                             
-                        if next_ids[index].int() == tokenizer.eos_token_id:
-                            remain = 0
-                            self.is_finish[request_id] = True
+                        # if next_ids[index].int() == tokenizer.eos_token_id:
+                        #     remain = 0
+                        #     self.is_finish[request_id] = True
 
                         if self.token_cache.get(request_id, None) is None:
                             self.token_cache[request_id] = []
