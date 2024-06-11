@@ -446,7 +446,6 @@ def run_transformer_int4_gpu(repo_id,
                              lookahead=False):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -556,7 +555,6 @@ def run_optimize_model_gpu(repo_id,
                            batch_size):
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     from ipex_llm import optimize_model
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -635,7 +633,6 @@ def run_ipex_fp16_gpu(repo_id,
                       batch_size):
     from transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
@@ -707,7 +704,6 @@ def run_bigdl_fp16_gpu(repo_id,
                        batch_size):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
@@ -878,7 +874,6 @@ def run_transformer_int4_gpu_win(repo_id,
                                  streaming):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -983,7 +978,6 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                                       streaming):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -1092,7 +1086,6 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                                             streaming):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load BigDL-LLM optimized low bit model
     st = time.perf_counter()
@@ -1487,7 +1480,6 @@ def run_deepspeed_optimize_model_gpu(repo_id,
 
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     from ipex_llm import optimize_model
-    import intel_extension_for_pytorch as ipex
     import deepspeed
     from deepspeed.accelerator.cpu_accelerator import CPU_Accelerator
     from deepspeed.accelerator import set_accelerator, get_accelerator
@@ -1749,7 +1741,6 @@ def run_pipeline_parallel_gpu(repo_id,
                               n_gpu=2):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
