@@ -39,14 +39,19 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     # Load model
-    model = AutoModel.from_pretrained(model_path, trust_remote_code=True)
+    model = AutoModel.from_pretrained(model_path,
+                                      trust_remote_code=True,
+                                      torch_dtype = 'auto',
+                                      low_cpu_mem_usage=True,
+                                      use_cache=True)
 
     # With only one line to enable IPEX-LLM optimization on model
     model = optimize_model(model)
     model = model.to('xpu')
     
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path,
+                                              trust_remote_code=True)
     
     # Generate predicted tokens
     with torch.inference_mode():

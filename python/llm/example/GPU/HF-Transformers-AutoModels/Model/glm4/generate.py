@@ -43,10 +43,10 @@ if __name__ == '__main__':
     # which convert the relevant layers in the model into INT4 format
     model = AutoModel.from_pretrained(model_path,
                                       load_in_4bit=True,
-                                      trust_remote_code=True)
-    
-    model = model.to('xpu')
-
+                                      optimize_model=True,
+                                      trust_remote_code=True,
+                                      use_cache=True)
+    model = model.to("xpu")
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
