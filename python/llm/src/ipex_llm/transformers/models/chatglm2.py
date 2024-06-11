@@ -61,12 +61,7 @@ def split_tensor_along_last_dim(
 
 
 def sdpa(query, key, value, attention_mask=None):
-    if torch.is_autocast_cpu_enabled():
-        query = query.to(torch.get_autocast_cpu_dtype())
-        key = key.to(torch.get_autocast_cpu_dtype())
-        value = value.to(torch.get_autocast_cpu_dtype())
-        attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
-    if use_flash_attention(query, key, attention_mask) or torch.is_autocast_cpu_enabled():
+    if use_flash_attention(query, key, attention_mask):
         if attention_mask is None:
             context_layer = F.scaled_dot_product_attention(query.to(key.dtype),
                                                            key,
