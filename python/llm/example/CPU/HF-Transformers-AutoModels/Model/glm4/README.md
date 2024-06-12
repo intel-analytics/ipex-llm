@@ -19,7 +19,8 @@ conda activate llm
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
-pip install tiktoken  # additional package required for GLM-4 to conduct generation
+# install tiktoken required for GLM-4
+pip install tiktoken
 ```
 
 On Windows:
@@ -29,6 +30,9 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
+
+# install tiktoken required for GLM-4
+pip install tiktoken
 ```
 
 ### 2. Run
@@ -65,7 +69,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```
 
 #### 2.3 Sample Output
-#### [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat)
+##### [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
@@ -105,6 +109,9 @@ conda activate llm
 
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+
+# install tiktoken required for GLM-4
+pip install tiktoken
 ```
 
 On Windows:
@@ -114,6 +121,9 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
+
+# install tiktoken required for GLM-4
+pip install tiktoken
 ```
 
 ### 2. Run

@@ -20,7 +20,8 @@ conda activate llm
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
-pip install tiktoken  # additional package required for GLM-4 to conduct generation
+# install tiktoken required for GLM-4
+pip install tiktoken
 ```
 
 On Windows:
@@ -30,6 +31,9 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
+
+# install tiktoken required for GLM-4
+pip install tiktoken
 ```
 
 ### 2. Run
@@ -72,4 +76,13 @@ Inference time: xxxx s
 AI是什么？
 
 AI，即人工智能（Artificial Intelligence），是指由人创造出来的，能够模拟、延伸和扩展人的智能的计算机系统或机器。人工智能技术
+```
+
+```
+Inference time: xxxx s
+-------------------- Output --------------------
+
+What is AI?
+
+Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think like humans and mimic their actions. The term "art
 ```
