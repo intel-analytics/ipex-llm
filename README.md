@@ -12,14 +12,14 @@
 
 ## `ipex-llm` Demo
 
-See the demo of running [*llama.cpp*](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), [*Ollama*](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html), [*FastChat*](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html), [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html) *(on Intel 12-14gen iGPU, or Intel Core Ultra laptop, or Arc GPUs)* with `ipex-llm` below.
+See demos of running popular LLMs with various data types *on Intel 12-14gen iGPU, Intel Core Ultra laptop, or single-card Arc GPU, or multi-card Arc GPUs* using `ipex-llm` below.
 
 <table width="100%">
   <tr>
-    <td align="center" colspan="1"><strong>Intel Core 14-Gen Laptop</strong></td>
-    <td align="center" colspan="1"><strong>Intel Core Ultra Laptop</strong></td>
-    <td align="center" colspan="1"><strong>Single Intel Arc GPU</strong></td>
-    <td align="center" colspan="1"><strong>2 x Intel Arc GPUs</strong></td>
+    <td align="center" colspan="1"><strong>Intel Iris iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Arc dGPU</strong></td>
+    <td align="center" colspan="1"><strong>Multi-Card Intel Arc dGPUs</strong></td>
   </tr>
   <tr>
     <td>
@@ -45,16 +45,16 @@ See the demo of running [*llama.cpp*](https://ipex-llm.readthedocs.io/en/latest/
   </tr>
   <tr>
     <td align="center" width="25%">
-      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html">llama.cpp (Phi-3-mini)</a>
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html">llama.cpp (Phi-3-mini Q4_0)</a>
     </td>
     <td align="center" width="25%">
-      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html">Ollama (Mistral-7B) </a>
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html">Ollama (Mistral-7B Q4_K) </a>
     </td>
     <td align="center" width="25%">
-      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html">TextGeneration-WebUI (Llama3-8B) </a>
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html">TextGeneration-WebUI (Llama3-8B FP8) </a>
     </td>
     <td align="center" width="25%">
-      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html">FastChat (QWen1.5-32B)</a>
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html">FastChat (QWen1.5-32B FP6)</a>
     </td>  </tr>
 </table>
 
