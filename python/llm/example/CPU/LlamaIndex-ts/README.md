@@ -1,6 +1,6 @@
 # LlamaIndex-ts
 
-This folder contains examples showcasing how to use [**LlamaIndex-ts**](https://ts.llamaindex.ai/guides/agents/setup) with `ipex-llm`.
+This folder contains examples showcasing how to use [**LlamaIndex-ts**](https://ts.llamaindex.ai/guides/agents/setup) with `ipex-llm` on CPU.
 > [**LlamaIndex-ts**](https://ts.llamaindex.ai/guides/agents/setup) helps you unlock domain-specific data and then build powerful applications with it.
 
 ## Setting up Dependencies 
@@ -66,8 +66,12 @@ Run the [agent.ts](./agent.ts) by `npx tsx agent.ts`. Agent calls the tool and s
 ```
 
 ### RAG 
-
-Run the [rag.ts](./rag.ts) by `npx tsx rag.ts`. Save the related materials in pdf format under `data` folder. Document under `data` folder are transformed into embeddings and most relevant chunks are retrieved to augment generation. You will get similar output like below. 
+Save the related materials in pdf format under `data` folder by running the following commands. 
+```
+mkdir data
+wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
+```
+Run the [rag.ts](./rag.ts) by `npx tsx rag.ts`.  Document under `data` folder are transformed into embeddings and most relevant chunks are retrieved to augment generation. You will get similar output like below. 
 ```
 {
   response: {
