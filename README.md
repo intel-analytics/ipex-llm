@@ -12,7 +12,7 @@
 
 ## `ipex-llm` Demo
 
-See demos of running popular LLMs with various data types *on Intel 12-14gen iGPU, Intel Core Ultra laptop, or single-card Arc GPU, or multi-card Arc GPUs* using `ipex-llm` below.
+See demos of running popular LLMs with various data types *on Intel Iris iGPU, Intel Core Ultra iGPU, single-card Arc GPU, or multi-card Arc GPUs* using `ipex-llm` below.
 
 <table width="100%">
   <tr>
