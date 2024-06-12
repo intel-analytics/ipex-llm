@@ -125,7 +125,8 @@ def attention_fn(
             context_layer = glm_sdpa(query_layer,
                                      key_layer,
                                      value_layer,
-                                     attention_mask)
+                                     attention_mask,
+                                     is_causal=True)
     else:
         # attention_mask is not None only when past_key_value is not None and q_len > 1
         if attention_mask is not None:
