@@ -39,11 +39,14 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModel.from_pretrained(model_path,
                                       trust_remote_code=True,
                                       load_in_4bit=True,
                                       optimize_model=True,
-                                      use_cache=True)
+                                      use_cache=True,
+                                      cpu_embedding=True)
     
     model = model.to('xpu')
 
@@ -64,4 +67,3 @@ if __name__ == '__main__':
             for response, history in model.stream_chat(tokenizer, args.question, history=[]):
                 print(response.replace(response_, ""), end="")
                 response_ = response
-                

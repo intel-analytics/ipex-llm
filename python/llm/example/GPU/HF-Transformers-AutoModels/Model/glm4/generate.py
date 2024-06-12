@@ -41,6 +41,8 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModel.from_pretrained(model_path,
                                       load_in_4bit=True,
                                       optimize_model=True,
@@ -62,10 +64,7 @@ if __name__ == '__main__':
                                 max_new_tokens=args.n_predict)
 
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with IPEX-LLM INT4 optimizations
+
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         

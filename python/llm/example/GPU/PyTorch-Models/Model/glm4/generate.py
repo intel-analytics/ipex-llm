@@ -39,6 +39,8 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     # Load model
+    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModel.from_pretrained(model_path,
                                       trust_remote_code=True,
                                       torch_dtype = 'auto',
