@@ -21,6 +21,8 @@ import torch
 from torch import nn
 import torch.distributed as dist
 import os
+import time
+import numpy as np
 from typing import Callable, List, Optional
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
 
@@ -142,14 +144,23 @@ def pipeline_parallel_generate(self,
     pre_rank = (local_rank - 1) % self.pipeline_parallel_stages
     next_rank = (local_rank + 1) % self.pipeline_parallel_stages
 
+    self.first_token_time = 0
+    self.next_token_time = []
+
     _input_ids = None
     _past_key_values = None
     bs = inputs.shape[0]
     output_ids = inputs.clone()
-    for i in range(max_new_tokens):
+
+    step = 0
+    while True:
+        if step >= max_new_tokens:
+            break
+
         if _input_ids is None:
             _input_ids = inputs
 
+        tic = time.time()
         if local_rank == 0:
             outputs = self(input_ids=_input_ids, inputs_embeds=None,
                            past_key_values=_past_key_values, use_cache=True)
@@ -172,4 +183,13 @@ def pipeline_parallel_generate(self,
         _input_ids = next_ids
         output_ids = torch.cat([output_ids, next_ids], dim=-1)
         _past_key_values = outputs.past_key_values
+        toc = time.time()
+        if step == 0:
+            self.first_token_time = toc - tic
+        else:
+            self.next_token_time.append(toc - tic)
+        step += 1
+        if self.device.type == 'xpu':
+            torch.xpu.synchronize()
+    self.rest_cost_mean = np.mean(self.next_token_time)
     return output_ids

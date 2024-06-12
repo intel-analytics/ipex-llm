@@ -37,6 +37,7 @@ bash run_llama2_13b_arc_2_card.sh
 ##### [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf)
 ```log
 Inference time: xxxx s
+First token cost xxxx s and rest tokens cost average xxxx s
 -------------------- Prompt --------------------
 Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun
 -------------------- Output --------------------

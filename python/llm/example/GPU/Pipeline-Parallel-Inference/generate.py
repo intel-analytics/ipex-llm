@@ -69,6 +69,7 @@ if __name__ == '__main__':
         if local_rank == args.gpu_num - 1:
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
             print(f'Inference time: {end-st} s')
+            print(f"First token cost {model.first_token_time:.4f} s and rest tokens cost average {model.rest_cost_mean:.4f} s")
             print('-'*20, 'Prompt', '-'*20)
             print(args.prompt)
             print('-'*20, 'Output', '-'*20)
