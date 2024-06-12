@@ -72,7 +72,7 @@ Run the [agent.ts](./agent.ts) by `npx tsx agent.ts`. Agent calls the tool and s
 
 ### RAG 
 
-Run the [rag.ts](./rag.ts) by `npx tsx rag.ts`. Document under `data` are transformed into embeddings and most relevant chunks are retrieved to augment generation. You will get similar output like below. 
+Run the [rag.ts](./rag.ts) by `npx tsx rag.ts`. Save the related materials in pdf format under `data` folder. Document under `data` folder are transformed into embeddings and most relevant chunks are retrieved to augment generation. You will get similar output like below. 
 ```
 {
   response: {
