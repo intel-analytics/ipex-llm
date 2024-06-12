@@ -186,7 +186,7 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         q_embed = (q * cos) + (rotate_half(q) * sin)
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
-    elif model_family == "gptj":
+    elif model_family in ["gptj", "chatglm"]:
         q_embed = (q * cos) + (rotate_every_two(q) * sin)
         k_embed = (k * cos) + (rotate_every_two(k) * sin)
         return q_embed, k_embed
