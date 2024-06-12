@@ -79,9 +79,6 @@ def _prepare_decoder_attention_mask(self, attention_mask, input_shape, inputs_em
 
     return combined_attention_mask
 
-class DummyLayer(nn.Module):
-    pass
-
 
 class PipelineBaseModel(nn.Module):
     def __init__(self, config):
@@ -255,7 +252,9 @@ class Dummy_DecoderLayer(torch.nn.Module):
         # to avoid AttributeError in https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/src/ipex_llm/transformers/models/llama.py#L119
         self.mlp = Dummy_MLPLayer()
 
-    def forward(self, hidden_states, past_key_value=None, use_cache=False, **kwargs):
+    def forward(self, hidden_states, *args, **kwargs):
+        past_key_value = kwargs.get('past_key_value', None)
+        use_cache = kwargs.get('use_cache', False)
         outputs = (hidden_states,)
         if use_cache:
             outputs += (past_key_value,)
@@ -294,11 +293,7 @@ class ModelRunner:
         model = self.load_model(checkpoint, rank, world_size, low_bit)
         end = time.perf_counter()
         logger.info(f"Time to load weights: {end - start:.2f}s")
-        # from ipex_llm import optimize_model
 
-        # model = optimize_model(model, low_bit=low_bit)
-        
-        # model = model.to(torch.float16).to(f'xpu:{rank}')
         self.model = model
         self.rank = rank
         self.world_size = world_size
@@ -327,8 +322,7 @@ class ModelRunner:
 
         self.layer_start = 0
 
-                
-    
+
     def load_model(self, model_path, my_rank, my_size, low_bit='sym_int4'):
         device = f"xpu:{my_rank}"
         from ipex_llm.transformers import AutoModelForCausalLM
@@ -340,23 +334,45 @@ class ModelRunner:
                                                     use_cache=True)
         # print(model)
 
-        nr_slices = my_size
-        slice_size = (model.config.num_hidden_layers + nr_slices - 1) // nr_slices
-        layer_start = slice_size * my_rank
-        
-        layer_end  = layer_start + min(slice_size, model.config.num_hidden_layers - layer_start)
+        config_class = type(model.config).__name__
+        if config_class == 'ChatGLMConfig':
+            model.config.num_hidden_layers = model.config.num_layers
+            nr_slices = my_size
+            slice_size = (model.config.num_layers + nr_slices - 1) // nr_slices
+            layer_start = slice_size * my_rank
+            layer_end  = layer_start + min(slice_size, model.config.num_layers - layer_start)
 
-        for i in range(model.config.num_hidden_layers):
-            if i < layer_start or i >= layer_end:
-                model._modules['model'].layers[i] = Dummy_DecoderLayer()
-            else:
-                # align layer_idx and len(past_key_values), otherwise abnormal output
-                model._modules['model'].layers[i].self_attn.layer_idx = i - layer_start
-        if my_rank != 0:
-            model._modules['model'].embed_tokens = DummyLayer()
-        if my_rank != my_size - 1:
-            model._modules['model'].norm = DummyLayer()
-            model._modules['lm_head'] = DummyLayer()
+            for i in range(model.config.num_layers):
+                if i < layer_start or i >= layer_end:
+                    model.transformer.encoder.layers[i] = Dummy_DecoderLayer()
+                else:
+                    pass
+                    # align layer_idx and len(past_key_values), otherwise abnormal output
+                    # model._modules['encoder'].layers[i].self_attention.layer_idx = i - layer_start
+                    # model.transformer.encoder.layers[i].self_attention.layer_idx = i - layer_start
+
+                if my_rank != 0:
+                    model.transformer.embedding = DummyLayer()
+                if my_rank != my_size - 1:
+                    model.transformer.output_layer = DummyLayer()
+                    
+        else:
+            nr_slices = my_size
+            slice_size = (model.config.num_hidden_layers + nr_slices - 1) // nr_slices
+            layer_start = slice_size * my_rank
+            layer_end  = layer_start + min(slice_size, model.config.num_hidden_layers - layer_start)
+
+            for i in range(model.config.num_hidden_layers):
+                if i < layer_start or i >= layer_end:
+                    model._modules['model'].layers[i] = Dummy_DecoderLayer()
+                else:
+                    # align layer_idx and len(past_key_values), otherwise abnormal output
+                    model._modules['model'].layers[i].self_attn.layer_idx = i - layer_start
+            if my_rank != 0:
+                model._modules['model'].embed_tokens = DummyLayer()
+            if my_rank != my_size - 1:
+                model._modules['model'].norm = DummyLayer()
+                model._modules['lm_head'] = DummyLayer()
 
         model = model.to(f'xpu:{my_rank}')
         return model
