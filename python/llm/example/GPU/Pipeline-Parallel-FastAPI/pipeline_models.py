@@ -405,14 +405,17 @@ class ModelRunner:
         )
         use_legacy_cache = not isinstance(output.past_key_values, Cache)
         if use_legacy_cache and self.rank > 0:
-            _past_key_values = list(output.past_key_values)
-            slice_size = (self.model.config.num_hidden_layers + self.world_size - 1) // self.world_size
-            layer_start = slice_size * self.rank
+            if output.past_key_values[0] is None:
+                _past_key_values = list(output.past_key_values)
+                slice_size = (self.model.config.num_hidden_layers + self.world_size - 1) // self.world_size
+                layer_start = slice_size * self.rank
 
-            # import pdb
-            # pdb.set_trace()
-            _past_key_values[0] = [torch.empty_like(output.past_key_values[layer_start][0])]
-            _past_key_values = tuple(_past_key_values)
+                # import pdb
+                # pdb.set_trace()
+                _past_key_values[0] = [torch.empty_like(output.past_key_values[layer_start][0])]
+                _past_key_values = tuple(_past_key_values)
+            else:
+                _past_key_values = output.past_key_values
         else:
             _past_key_values = output.past_key_values
         self.past_key_values_dict[cur_id] = _past_key_values
