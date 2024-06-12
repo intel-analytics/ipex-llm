@@ -97,6 +97,7 @@ class LowBitEmbedding(torch.nn.Embedding):
                                 requires_grad=False,
                                 quantized=False, _shape=None, qtype=qtype)
         self.embedding_dim = embedding_dim
+        self.num_embeddings = num_embeddings
         self.torch_dtype = torch_dtype
 
     def forward(self, x: Tensor):
@@ -110,5 +111,6 @@ class LowBitEmbedding(torch.nn.Embedding):
                               "Please `pip install bigdl_core_xe` first.")
 
         result = xe_linear.dequantize_rows(x.contiguous(), self.weight.data,
-                                           self.weight.qtype, self.embedding_dim)
+                                           self.weight.qtype, self.embedding_dim,
+                                           self.num_embeddings)
         return result.to(self.torch_dtype)
