@@ -180,10 +180,9 @@ def chatglm2_32k_attention_forward(
         key_layer = key_cache
         value_layer = value_cache
 
-    key_layer = key_layer.permute(2, 0, 1, 3)
-    value_layer = value_layer.permute(2, 0, 1, 3)
-
     if use_cache:
+        key_layer = key_layer.permute(2, 0, 1, 3)
+        value_layer = value_layer.permute(2, 0, 1, 3)
         if kv_cache is None:
             kv_cache = torch.cat((key_layer.unsqueeze(0).unsqueeze(0),
                                   value_layer.unsqueeze(0).unsqueeze(0)), dim=1)
@@ -196,7 +195,6 @@ def chatglm2_32k_attention_forward(
     # core attention computation
     # ==================================
 
-    key_layer, value_layer = [k.permute(1, 2, 0, 3) for k in [key_layer, value_layer]]
     context_layer = core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask)
 
     # =================
