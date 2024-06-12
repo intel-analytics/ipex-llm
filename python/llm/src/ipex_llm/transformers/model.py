@@ -95,28 +95,6 @@ def save_low_bit(self, *args, **kwargs):
         self.to(origin_device)
 
 
-def pipeline_parallel(model, pipeline_parallel_stages):
-    model_layers = ['model.embed_tokens']
-    for i in range(model.config.num_hidden_layers):
-        model_layers.append(f'model.layers.{i}')
-    model_layers = model_layers + ['model.norm', 'lm_head']
-
-    device_map = {}
-    split_len = len(model_layers) // pipeline_parallel_stages
-    for i in range(pipeline_parallel_stages):
-        device_map.update({key: f'xpu:{i}' for key in
-                           model_layers[split_len * i: split_len * (i + 1)]})
-        if i == pipeline_parallel_stages - 1:
-            device_map.update({key: f'xpu:{i}' for key in
-                               model_layers[split_len * (i + 1):]})
-
-    from accelerate import dispatch_model
-    model = dispatch_model(
-        model, device_map=device_map, skip_keys=["past_key_value", "past_key_values"],
-    )
-    return model
-
-
 def _load_pre():
     from transformers import GPTJModel
     from ipex_llm.transformers.models.gptj import gptj_model_new_init
@@ -377,8 +355,16 @@ class _BaseAutoModelClass:
                     invalidInputError(False,
                                       f"Please do not set speculative=True"
                                       f" when using pipeline_parallel_stages")
+                invalidInputError(torch.distributed.get_world_size() == pipeline_parallel_stages,
+                                  "Please make sure you've called `init_pipeline_parallel()` "
+                                  "and world size is the same as `pipeline_parallel_stages`")
+                from .pipeline_parallel import pipeline_parallel, pipeline_parallel_generate
                 model = pipeline_parallel(model, pipeline_parallel_stages)
-
+                import types
+                # add pipeline_parallel_generate to pretrained model dynamically
+                model.pipeline_parallel_generate = types.MethodType(pipeline_parallel_generate,
+                                                                    model)
+                torch.distributed.barrier()
             if speculative:
                 from .speculative import speculative_generate, clear_benchmarks,\
                     _crop_past_key_values

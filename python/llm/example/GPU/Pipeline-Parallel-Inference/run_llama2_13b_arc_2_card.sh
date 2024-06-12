@@ -14,12 +14,17 @@
 # limitations under the License.
 #
 
+source /opt/intel/oneapi/setvars.sh
+export MASTER_ADDR=127.0.0.1
+export MASTER_PORT=9090
+export FI_PROVIDER=tcp
+export USE_XETLA=OFF
+export OMP_NUM_THREADS=6
+if [[ $KERNEL_VERSION != *"6.5"* ]]; then
+    export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+fi
+export TORCH_LLM_ALLREDUCE=0
 
-from .convert import ggml_convert_low_bit, get_enable_ipex
-from .model import AutoModelForCausalLM, AutoModel, AutoModelForSeq2SeqLM, \
-        AutoModelForSpeechSeq2Seq, AutoModelForQuestionAnswering, \
-        AutoModelForSequenceClassification, AutoModelForMaskedLM, \
-        AutoModelForNextSentencePrediction, AutoModelForMultipleChoice, \
-        AutoModelForTokenClassification
-from .modelling_bigdl import *
-from .pipeline_parallel import init_pipeline_parallel
+NUM_GPUS=2 # number of used GPU
+CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
+    generate.py --repo-id-or-model-path 'meta-llama/Llama-2-13b-chat-hf' --gpu-num $NUM_GPUS
