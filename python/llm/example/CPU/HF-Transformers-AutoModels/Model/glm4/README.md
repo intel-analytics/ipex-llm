@@ -18,6 +18,8 @@ conda activate llm
 
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+
+pip install tiktoken  # additional package required for GLM-4 to conduct generation
 ```
 
 On Windows:
