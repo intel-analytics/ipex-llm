@@ -5,6 +5,7 @@ import torch.distributed as dist
 from typing import List, Optional, Tuple, Union, Iterator
 import time
 from transformers import AutoTokenizer, AutoConfig
+from transformers.cache_utils import Cache
 from transformers.utils import logging
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 import numpy as np
@@ -261,42 +262,6 @@ class Dummy_DecoderLayer(torch.nn.Module):
         return outputs
 
 
-def load_model(model_path, my_rank, my_size, low_bit='sym_int4'):
-    # from llama_models import LlamaForCausalLM
-    # if 'llama' in checkpoint.lower():
-    #     model = LlamaForCausalLM.from_pretrained(checkpoint, low_cpu_mem_usage=True, torch_dtype=torch.float16)
-    # return model
-    device = f"xpu:{my_rank}"
-    from ipex_llm.transformers import AutoModelForCausalLM
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_low_bit=low_bit,
-                                                 torch_dtype=torch.float16,
-                                                 optimize_model=True,
-                                                 trust_remote_code=True,
-                                                 use_cache=True)
-    # print(model)
-
-    nr_slices = my_size
-    slice_size = (model.config.num_hidden_layers + nr_slices - 1) // nr_slices
-    layer_start = slice_size * my_rank
-    layer_end  = layer_start + min(slice_size, model.config.num_hidden_layers - layer_start)
-
-    for i in range(model.config.num_hidden_layers):
-        if i < layer_start or i >= layer_end:
-            model._modules['model'].layers[i] = Dummy_DecoderLayer()
-        else:
-            # align layer_idx and len(past_key_values), otherwise abnormal output
-            model._modules['model'].layers[i].self_attn.layer_idx = i - layer_start
-    if my_rank != 0:
-        model._modules['model'].embed_tokens = DummyLayer()
-    if my_rank != my_size - 1:
-        model._modules['model'].norm = DummyLayer()
-        model._modules['lm_head'] = DummyLayer()
-
-    model = model.to(f'xpu:{my_rank}')
-    return model
-
-
 from pydantic import BaseModel
 class BatchTask(BaseModel):
     batch_id: str
@@ -422,7 +387,8 @@ class ModelRunner:
             use_cache=True,
             output_hidden_states=True,
         )
-        if False and self.rank > 0:
+        use_legacy_cache = not isinstance(output.past_key_values, Cache)
+        if use_legacy_cache and self.rank > 0:
             _past_key_values = list(output.past_key_values)
             slice_size = (self.model.config.num_hidden_layers + self.world_size - 1) // self.world_size
             layer_start = slice_size * self.rank
