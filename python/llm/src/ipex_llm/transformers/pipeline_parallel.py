@@ -111,7 +111,7 @@ def generate(
     streamer: Optional["BaseStreamer"] = None,
     **kwargs,
 ):
-    if self.pipeline_parallel_stages > 1:
+    if hasattr(self, 'pipeline_parallel_stages') and self.pipeline_parallel_stages > 1:
         if generation_config is not None and generation_config.max_new_tokens is not None:
             max_new_tokens = generation_config.max_new_tokens
         else:
