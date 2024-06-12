@@ -18,6 +18,7 @@ npm install dotenv
     ```
     pip install --pre --upgrade ipex-llm[cpp]
     init-ollama
+    OLLAMA_HOST=0.0.0.0 ./ollama serve
     ```
 
 ## Examples
