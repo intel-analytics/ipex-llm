@@ -32,7 +32,6 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 
-# install tiktoken required for GLM-4
 pip install tiktoken
 ```
 
@@ -68,7 +67,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--n-predict`: int, argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 2.4 Sample Output
-#### [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat)
+##### [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat)
 ```log
 Inference time: xxxx s
 -------------------- Output --------------------

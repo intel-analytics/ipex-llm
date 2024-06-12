@@ -31,7 +31,6 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 
-# install tiktoken required for GLM-4
 pip install tiktoken
 ```
 
@@ -122,7 +121,6 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 
-# install tiktoken required for GLM-4
 pip install tiktoken
 ```
 
