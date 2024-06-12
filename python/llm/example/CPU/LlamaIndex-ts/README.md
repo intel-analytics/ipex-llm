@@ -25,7 +25,7 @@ npm install dotenv
 
 ### Agent
 
-Run the `agent.ts` by `npx tsx agent.ts`. Agent calls the tool and summarizes the result. You will get similar output like below. 
+Run the [agent.ts](./agent.ts) by `npx tsx agent.ts`. Agent calls the tool and summarizes the result. You will get similar output like below. 
 ```
 {
   toolCall: {
@@ -72,7 +72,7 @@ Run the `agent.ts` by `npx tsx agent.ts`. Agent calls the tool and summarizes th
 
 ### RAG 
 
-Run the `rag.ts` by `npx tsx rag.ts`. Document under `data` are transformed into embeddings and most relevant chunks are retrieved to augment generation. You will get similar output like below. 
+Run the [rag.ts](./rag.ts) by `npx tsx rag.ts`. Document under `data` are transformed into embeddings and most relevant chunks are retrieved to augment generation. You will get similar output like below. 
 ```
 {
   response: {
