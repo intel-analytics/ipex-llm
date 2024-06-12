@@ -19,7 +19,7 @@ See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, sing
     <td align="center" colspan="1"><strong>Intel Iris iGPU</strong></td>
     <td align="center" colspan="1"><strong>Intel Core Ultra iGPU</strong></td>
     <td align="center" colspan="1"><strong>Intel Arc dGPU</strong></td>
-    <td align="center" colspan="1"><strong>Multi-Card Intel Arc dGPUs</strong></td>
+    <td align="center" colspan="1"><strong>2-Card Intel Arc dGPUs</strong></td>
   </tr>
   <tr>
     <td>
