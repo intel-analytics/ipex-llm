@@ -77,6 +77,7 @@ def run_vllm(
     gpu_memory_utilization: float = 0.9,
     load_in_low_bit: str = "sym_int4",
     max_num_batched_tokens: int = 5000,
+    max_num_seqs: int = 256,
 ) -> float:
     from vllm import SamplingParams
     from ipex_llm.vllm.xpu.engine import IPEXLLMClass as LLM
@@ -94,7 +95,8 @@ def run_vllm(
               device=device,
               enable_prefix_caching=enable_prefix_caching,
               load_in_low_bit=load_in_low_bit,
-              max_num_batched_tokens=max_num_batched_tokens,)
+              max_num_batched_tokens=max_num_batched_tokens,
+              max_num_seqs=max_num_seqs,)
 
 
     # Add the requests to the engine.
@@ -238,7 +240,8 @@ def main(args: argparse.Namespace):
             args.tensor_parallel_size, args.seed, args.n, args.use_beam_search,
             args.trust_remote_code, args.dtype, args.max_model_len,
             args.enforce_eager, args.kv_cache_dtype, args.device,
-            args.enable_prefix_caching, args.gpu_memory_utilization, args.load_in_low_bit, args.max_num_batched_tokens)
+            args.enable_prefix_caching, args.gpu_memory_utilization, args.load_in_low_bit,
+            args.max_num_batched_tokens,args.max_num_seqs)
     elif args.backend == "hf":
         assert args.tensor_parallel_size == 1
         elapsed_time = run_hf(requests, args.model, tokenizer, args.n,
@@ -348,8 +351,14 @@ if __name__ == "__main__":
 
     parser.add_argument('--max-num-batched-tokens',
                         type=int,
-                        default=5000,
+                        default=4096,
                         help='maximum number of batched tokens per iteration')
+
+    parser.add_argument('--max-num-seqs',
+                        type=int,
+                        default=256,
+                        help='Maximum number of sequences per iteration.')
+
 
     args = parser.parse_args()
     if args.tokenizer is None:
