@@ -14,7 +14,7 @@ npm install dotenv
 ```
 
 ### Install Ollama
-* Origin Ollama: refer to [this page]() to install Ollama on CPU. 
+* Origin Ollama: refer to [this page](https://github.com/ollama/ollama) to install Ollama on CPU. 
 * Ollama enabled by IPEX-LLM: you can use commands below to install and run ollama. 
     ```
     pip install --pre --upgrade ipex-llm[cpp]
