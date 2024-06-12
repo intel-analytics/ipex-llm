@@ -16,7 +16,7 @@ See the demo of running [*llama.cpp*](https://ipex-llm.readthedocs.io/en/latest/
 
 <table width="100%">
   <tr>
-    <td align="center" colspan="1"><strong>Intel Core 12-14 gen Laptop</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core 14-Gen Laptop</strong></td>
     <td align="center" colspan="1"><strong>Intel Core Ultra Laptop</strong></td>
     <td align="center" colspan="1"><strong>Single Intel Arc GPU</strong></td>
     <td align="center" colspan="1"><strong>2 x Intel Arc GPUs</strong></td>
