@@ -69,3 +69,34 @@ Run the `agent.ts` by `npx tsx agent.ts`. Agent calls the tool and summarizes th
   sources: [Getter]
 }
 ```
+
+### RAG 
+
+Run the `rag.ts` by `npx tsx rag.ts`. Document under `data` are transformed into embeddings and most relevant chunks are retrieved to augment generation. You will get similar output like below. 
+```
+{
+  response: {
+    message: {
+      role: 'assistant',
+      content: '"""" \n' +
+        'Thought: I can answer without using any more tools.\n' +
+        'Answer: The authors of LLaMA 2 are Mitchell et al. and Anil et al., according to the model card provided in Table 52, as found through the paper_tool.\n' +
+        '"""""'
+    },
+    raw: {
+      model: 'llama3:latest',
+      created_at: '2024-06-12T05:55:07.790994558Z',
+      message: [Object],
+      done: true,
+      total_duration: 25089153823,
+      load_duration: 201696,
+      prompt_eval_count: 535,
+      prompt_eval_duration: 20316998000,
+      eval_count: 56,
+      eval_duration: 4769106000
+    }
+  },
+  sources: [Getter]
+}
+
+```
