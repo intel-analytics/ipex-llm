@@ -301,19 +301,24 @@ def chatglm4_attention_forward(
 def core_attn_forward(query_layer, key_layer, value_layer, attention_mask):
     L, S = query_layer.shape[2], key_layer.shape[2]
     batch_size, n_head, seq_len, head_dim = query_layer.shape
-    if attention_mask is None and L == S and \
-            should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
-        # split second dim to block size = 8
-        block_size = 8
-        query_layer = query_layer.to(key_layer.dtype)
-        query_split = torch.split(query_layer, block_size, dim=1)
-        key_split = torch.split(key_layer, block_size, dim=1)
-        value_split = torch.split(value_layer, block_size, dim=1)
-        results = []
-        for q, k, v in zip(query_split, key_split, value_split):
-            result = glm_sdpa(q, k, v)
-            results.append(result)
-        context_layer = torch.cat(results, dim=1)
+    if attention_mask is None and L == S:
+        if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
+            # split second dim to block size = 8
+            block_size = 8
+            query_layer = query_layer.to(key_layer.dtype)
+            query_split = torch.split(query_layer, block_size, dim=1)
+            key_split = torch.split(key_layer, block_size, dim=1)
+            value_split = torch.split(value_layer, block_size, dim=1)
+            results = []
+            for q, k, v in zip(query_split, key_split, value_split):
+                result = glm_sdpa(q, k, v, is_causal=True)
+                results.append(result)
+            context_layer = torch.cat(results, dim=1)
+        else:
+            context_layer = glm_sdpa(query_layer,
+                                     key_layer,
+                                     value_layer,
+                                     is_causal=True)
     else:
         context_layer = glm_sdpa(query_layer,
                                  key_layer,

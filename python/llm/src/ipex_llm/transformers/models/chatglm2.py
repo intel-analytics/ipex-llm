@@ -60,7 +60,7 @@ def split_tensor_along_last_dim(
     return tensor_list
 
 
-def glm_sdpa(query, key, value, attention_mask=None):
+def glm_sdpa(query, key, value, attention_mask=None, is_causal=False):
     if use_flash_attention(query, key, attention_mask):
         if attention_mask is None:
             context_layer = F.scaled_dot_product_attention(query.to(key.dtype),
@@ -82,6 +82,12 @@ def glm_sdpa(query, key, value, attention_mask=None):
                 attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
             else:
                 attn_bias += attention_mask
+        elif is_causal:
+            L, S = query.size(-2), key.size(-2)
+            attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
+            temp_mask = torch.ones(L, S, dtype=torch.bool, device=query.device).tril(diagonal=0)
+            attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
+            attn_bias.to(key.dtype)
         else:
             attn_bias = None
         if use_sdp(query.shape[2], key.shape[2],
@@ -312,11 +318,11 @@ def chatglm2_quantized_attention_forward_8eb45c(
             value_split = torch.split(value, block_size, dim=1)
             results = []
             for q, k, v in zip(query_split, key_split, value_split):
-                result = glm_sdpa(q, k, v, attention_mask)
+                result = glm_sdpa(q, k, v, is_causal=True)
                 results.append(result)
             context_layer = torch.cat(results, dim=1)
         else:
-            context_layer = glm_sdpa(query_layer, key, value, attention_mask)
+            context_layer = glm_sdpa(query_layer, key, value, is_causal=True)
         context_layer = context_layer.to(query_layer.dtype)
 
         if use_cache:
@@ -571,19 +577,24 @@ def core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask
     query_layer = query_layer.permute(1, 2, 0, 3)
     L, S = query_layer.shape[2], key_layer.shape[2]
     batch_size, n_head, seq_len, head_dim = query_layer.shape
-    if attention_mask is None and L == S and \
-            should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
-        # split second dim to block size = 8
-        block_size = 8
-        query_layer = query_layer.to(key_layer.dtype)
-        query_split = torch.split(query_layer, block_size, dim=1)
-        key_split = torch.split(key_layer, block_size, dim=1)
-        value_split = torch.split(value_layer, block_size, dim=1)
-        results = []
-        for q, k, v in zip(query_split, key_split, value_split):
-            result = glm_sdpa(q, k, v)
-            results.append(result)
-        context_layer = torch.cat(results, dim=1)
+    if attention_mask is None and L == S:
+        if should_split_qkv_tensor(query_layer, batch_size, n_head, seq_len):
+            # split second dim to block size = 8
+            block_size = 8
+            query_layer = query_layer.to(key_layer.dtype)
+            query_split = torch.split(query_layer, block_size, dim=1)
+            key_split = torch.split(key_layer, block_size, dim=1)
+            value_split = torch.split(value_layer, block_size, dim=1)
+            results = []
+            for q, k, v in zip(query_split, key_split, value_split):
+                result = glm_sdpa(q, k, v, is_causal=True)
+                results.append(result)
+            context_layer = torch.cat(results, dim=1)
+        else:
+            context_layer = glm_sdpa(query_layer,
+                                     key_layer,
+                                     value_layer,
+                                     is_causal=True)
     else:
         context_layer = glm_sdpa(query_layer,
                                  key_layer,
