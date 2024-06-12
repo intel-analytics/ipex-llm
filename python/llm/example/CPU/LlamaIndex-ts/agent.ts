@@ -67,7 +67,7 @@ async function main() {
     const agent = new ReActAgent({ tools });
 
     let response = await agent.chat({
-        message: "Add 101 and 303",
+        message: "Sum 100 and 201",
     })
 
     console.log(response)
