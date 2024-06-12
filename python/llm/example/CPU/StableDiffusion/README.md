@@ -24,9 +24,12 @@ python ./sdxl.py
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the stable diffusion xl model (e.g. `stabilityai/stable-diffusion-xl-base-1.0`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'stabilityai/stable-diffusion-xl-base-1.0'`.
-- `--prompt PROMPT`: argument defining the prompt to be infered. It is default to be `'A lovely dog on the table, detailed, 8k'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered. It is default to be `'An astronaut in the forest, detailed, 8k'`.
 - `--save-path`: argument defining the path to save the generated figure. It is default to be `sdxl-cpu.png`.
 - `--num-steps`: argument defining the number of inference steps. It is default to be `20`. 
+
+The sample output image looks like below. 
+![image](https://llm-assets.readthedocs.io/en/latest/_images/sdxl-cpu.png)
 
 #### 4.2 LCM-LoRA Example
 The example shows how to performing inference with LCM-LoRA on Intel CPU.

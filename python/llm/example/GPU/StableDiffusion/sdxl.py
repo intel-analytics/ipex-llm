@@ -37,7 +37,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Stable Diffusion")
     parser.add_argument('--repo-id-or-model-path', type=str, default="stabilityai/stable-diffusion-xl-base-1.0",
                         help='The huggingface repo id for the stable diffusion model checkpoint')
-    parser.add_argument('--prompt', type=str, default="A lovely dog on the table, detailed, 8k",
+    parser.add_argument('--prompt', type=str, default="An astronaut in the forest, detailed, 8k",
                         help='Prompt to infer')
     parser.add_argument('--save-path',type=str,default="sdxl-gpu.png",
                         help="Path to save the generated figure")
