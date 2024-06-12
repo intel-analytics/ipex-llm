@@ -11,6 +11,54 @@
 > - ***50+ models** have been optimized/verified on `ipex-llm` (including LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM, Baichuan, Qwen, RWKV, and more); see the complete list [here](#verified-models).*
 
 ## `ipex-llm` Demo
+
+See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, single-card Arc GPU, or multi-card Arc GPUs* using `ipex-llm` below.
+
+<table width="100%">
+  <tr>
+    <td align="center" colspan="1"><strong>Intel Iris iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Arc dGPU</strong></td>
+    <td align="center" colspan="1"><strong>2-Card Intel Arc dGPUs</strong></td>
+  </tr>
+  <tr>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/iris_phi3-3.8B_q4_0_llamacpp_long.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/iris_phi3-3.8B_q4_0_llamacpp_long.gif" width=100%; />
+      </a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" width=100%; />
+      </a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/arc_llama3-8B_fp8_textwebui.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/arc_llama3-8B_fp8_textwebui.gif" width=100%; />
+      </a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/2arc_qwen1.5-32B_fp6_fastchat.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/2arc_qwen1.5-32B_fp6_fastchat.gif" width=100%; />
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="25%">
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html">llama.cpp (Phi-3-mini Q4_0)</a>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html">Ollama (Mistral-7B Q4_K) </a>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html">TextGeneration-WebUI (Llama3-8B FP8) </a>
+    </td>
+    <td align="center" width="25%">
+      <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html">FastChat (QWen1.5-32B FP6)</a>
+    </td>  </tr>
+</table>
+
+<!--
 See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html), [*local RAG using LangChain-Chatchat*](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/chatchat_quickstart.html), [*llama.cpp*](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html) and [*Ollama*](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html) *(on either Intel Core Ultra laptop or Arc GPU)* with `ipex-llm`  below.
 
 <table width="100%">
@@ -46,7 +94,8 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
       <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html">Ollama</a>
     </td>  </tr>
 </table>
-       
+-->
+
 ## Latest Update 🔥 
 - [2024/05] You can now easily run `ipex-llm` inference, serving and finetuning using [Docker](#docker).
 - [2024/05] You can now install `ipex-llm` on Windows using just "*[one command](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-ipex-llm)*".
