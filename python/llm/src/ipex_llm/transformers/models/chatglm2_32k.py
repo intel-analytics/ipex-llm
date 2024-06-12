@@ -21,6 +21,7 @@ import torch
 from typing import Optional, Tuple, Union, List, Callable, Dict, Any
 import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from ipex_llm.transformers.models.chatglm2 import core_attn_forward_8eb45c
 
 
 import os
@@ -195,7 +196,8 @@ def chatglm2_32k_attention_forward(
     # core attention computation
     # ==================================
 
-    context_layer = self.core_attention(query_layer, key_layer, value_layer, attention_mask)
+    key_layer, value_layer = [k.permute(1, 2, 0, 3) for k in [key_layer, value_layer]]
+    context_layer = core_attn_forward_8eb45c(query_layer, key_layer, value_layer, attention_mask)
 
     # =================
     # Output. [sq, b, h]
