@@ -14,7 +14,8 @@ This folder contains examples of running IPEX-LLM on Intel GPU:
 - [PyTorch-Models](PyTorch-Models): running any PyTorch model on IPEX-LLM (with "one-line code change")
 - [Speculative-Decoding](Speculative-Decoding): running any ***Hugging Face Transformers*** model with ***self-speculative decoding*** on Intel GPUs
 - [ModelScope-Models](ModelScope-Models): running ***ModelScope*** model with IPEX-LLM on Intel GPUs
-- [Long-Context](Long-Context): running **long-context** generation with IPEX-LLM on Intel Arc™ A770 Graphics
+- [Long-Context](Long-Context): running **long-context** generation with IPEX-LLM on Intel Arc™ A770 Graphics.
+- [StableDiffusion](StableDiffusion): running **stable diffusion** with IPEX-LLM on Intel GPUs. 
 
 
 ## System Support
