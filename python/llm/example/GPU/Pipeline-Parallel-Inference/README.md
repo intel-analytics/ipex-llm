@@ -5,6 +5,11 @@ This example demonstrates how to run IPEX-LLM optimized low-bit model vertically
 ## Requirements
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
 
+## Verified Models
+- [Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
+- [Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf)
+- [Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct)
+
 ## Example: Run pipeline parallel inference on multiple GPUs
 
 ### 0. Prerequisites
