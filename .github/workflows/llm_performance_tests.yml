@@ -193,6 +193,12 @@ jobs:
           cd ..
           python csv_to_html.py -f $CSV_SAVE_PATH/merged
           rm -r merged_temp
+      
+      - name: Update html in parent folder
+        shell: bash
+        run: |
+          cd python/llm/test/benchmark
+          python update_html_in_parent_folder.py -f $CSV_SAVE_PATH
 
       - name: Check and upload results to ftp
         shell: bash
