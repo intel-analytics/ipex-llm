@@ -1,11 +1,11 @@
 # GLM-4
 In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on GLM-4 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat) as a reference InternLM model.
 
-### 0. Requirements
+## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-### 1. Install
-#### 1.1 Installation on Linux
+## 1. Install
+### 1.1 Installation on Linux
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.11
@@ -17,7 +17,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install tiktoken
 ```
 
-#### 1.2 Installation on Windows
+### 1.2 Installation on Windows
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.11 libuv
@@ -30,7 +30,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install tiktoken
 ```
 
-### 2. Configures OneAPI environment variables for Linux
+## 2. Configures OneAPI environment variables for Linux
 
 > [!NOTE]
 > Skip this step if you are running on Windows.
@@ -41,9 +41,9 @@ This is a required step on Linux for APT or offline installed oneAPI. Skip this 
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Runtime Configurations
+## 3. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
-#### 3.1 Configurations for Linux
+### 3.1 Configurations for Linux
 <details>
 
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
@@ -80,7 +80,7 @@ export BIGDL_LLM_XMX_DISABLED=1
 
 </details>
 
-#### 3.2 Configurations for Windows
+### 3.2 Configurations for Windows
 <details>
 
 <summary>For Intel iGPU</summary>
@@ -104,9 +104,9 @@ set SYCL_CACHE_PERSISTENT=1
 
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
-### 4. Running examples
+## 4. Running examples
 
-#### Example 1: Predict Tokens using `generate()` API
+### Example 1: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a GLM-4 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 
 ```
@@ -147,7 +147,7 @@ What is AI?
 Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think like humans and mimic their actions. The term "art
 ```
 
-#### Example 2: Stream Chat using `stream_chat()` API
+### Example 2: Stream Chat using `stream_chat()` API
 In the example [streamchat.py](./streamchat.py), we show a basic use case for a GLM-4 model to stream chat, with IPEX-LLM INT4 optimizations.
 
 **Stream Chat using `stream_chat()` API**:

@@ -4,8 +4,8 @@ In this directory, you will find examples on how you could use IPEX-LLM `optimiz
 ## Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-### 1. Install
-#### 1.1 Installation on Linux
+## 1. Install
+### 1.1 Installation on Linux
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.11
@@ -14,7 +14,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
 
-#### 1.2 Installation on Windows
+### 1.2 Installation on Windows
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.11 libuv
@@ -24,7 +24,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
 
-### 2. Configures OneAPI environment variables for Linux
+## 2. Configures OneAPI environment variables for Linux
 
 > [!NOTE]
 > Skip this step if you are running on Windows.
@@ -35,9 +35,9 @@ This is a required step on Linux for APT or offline installed oneAPI. Skip this 
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Runtime Configurations
+## 3. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
-#### 3.1 Configurations for Linux
+### 3.1 Configurations for Linux
 <details>
 
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
@@ -74,7 +74,7 @@ export BIGDL_LLM_XMX_DISABLED=1
 
 </details>
 
-#### 3.2 Configurations for Windows
+### 3.2 Configurations for Windows
 <details>
 
 <summary>For Intel iGPU</summary>
@@ -98,9 +98,9 @@ set SYCL_CACHE_PERSISTENT=1
 
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
-### 4. Running examples
+## 4. Running examples
 
-#### Example 1: Predict Tokens using `generate()` API
+### Example 1: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM3 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 
 ```bash
@@ -133,7 +133,7 @@ What is AI?
 AI stands for Artificial Intelligence. It refers to the development of computer systems or machines that can perform tasks that would normally require human intelligence, such as recognizing patterns
 ```
 
-#### Example 2: Stream Chat using `stream_chat()` API
+### Example 2: Stream Chat using `stream_chat()` API
 In the example [streamchat.py](./streamchat.py), we show a basic use case for a ChatGLM3 model to stream chat, with IPEX-LLM INT4 optimizations.
 
 **Stream Chat using `stream_chat()` API**:
