@@ -1008,26 +1008,21 @@ def _optimize_post(model, lightweight_bmm=False):
 
     if model.config.architectures is not None \
        and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
-        if (model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio')
-                and model.config.rope_ratio == 16):
-            # chatglm2-6b-32k
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.chatglm2_32k import chatglm2_32k_attention_forward
-            convert_forward(model,
-                            module.SelfAttention,
-                            chatglm2_32k_attention_forward)
-        elif hasattr(model.config, 'padded_vocab_size') and \
+        if hasattr(model.config, 'padded_vocab_size') and \
                 model.config.padded_vocab_size == 65024:
-            # chatglm2-6b
+            # chatglm2-6b, chatglm2-6b-32k, chatglm3-6b, chatglm3-6b-32k, chatglm3-6b-128k
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from ipex_llm.transformers.models.chatglm2 import chatglm2_attention_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
+            from ipex_llm.transformers.models.chatglm2 import chatglm2_encoder_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm2_model_forward
             convert_forward(model,
                             module.SelfAttention,
                             chatglm2_attention_forward)
+            convert_forward(model,
+                            module.GLMTransformer,
+                            chatglm2_encoder_forward)
             convert_forward(model,
                             module.ChatGLMModel,
                             chatglm2_model_forward)

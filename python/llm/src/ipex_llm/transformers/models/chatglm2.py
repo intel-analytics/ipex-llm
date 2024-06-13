@@ -145,6 +145,57 @@ def chatglm2_model_forward(
     )
 
 
+# remove code which stores first token's kv cache by tensor format
+# to fix chatglm2-32k and chatglm3-128k
+def chatglm2_encoder_forward(
+    self, hidden_states, attention_mask, rotary_pos_emb, kv_caches=None,
+    use_cache: Optional[bool] = True,
+    output_hidden_states: Optional[bool] = False,
+):
+    if not kv_caches:
+        kv_caches = [None for _ in range(self.num_layers)]
+    presents = () if use_cache else None
+    if self.gradient_checkpointing and self.training:
+        use_cache = False
+
+    all_self_attentions = None
+    all_hidden_states = () if output_hidden_states else None
+    for index in range(self.num_layers):
+        if output_hidden_states:
+            all_hidden_states = all_hidden_states + (hidden_states,)
+
+        layer = self._get_layer(index)
+        if self.gradient_checkpointing and self.training:
+            layer_ret = torch.utils.checkpoint.checkpoint(
+                layer,
+                hidden_states,
+                attention_mask,
+                rotary_pos_emb,
+                kv_caches[index],
+                use_cache
+            )
+        else:
+            layer_ret = layer(
+                hidden_states,
+                attention_mask,
+                rotary_pos_emb,
+                kv_cache=kv_caches[index],
+                use_cache=use_cache
+            )
+        hidden_states, kv_cache = layer_ret
+        if use_cache:
+            presents = presents + (kv_cache,)
+
+    if output_hidden_states:
+        all_hidden_states = all_hidden_states + (hidden_states,)
+
+    # Final layer norm.
+    if self.post_layer_norm:
+        hidden_states = self.final_layernorm(hidden_states)
+
+    return hidden_states, presents, all_hidden_states, all_self_attentions
+
+
 def chatglm2_attention_forward(
     self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
 ):
