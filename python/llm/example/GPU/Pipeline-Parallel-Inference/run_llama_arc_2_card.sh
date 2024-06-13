@@ -26,5 +26,15 @@ fi
 export TORCH_LLM_ALLREDUCE=0
 
 NUM_GPUS=2 # number of used GPU
+
+# To run Llama-2-7b-chat-hf
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'meta-llama/Llama-2-13b-chat-hf' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path 'meta-llama/Llama-2-7b-chat-hf' --gpu-num $NUM_GPUS
+
+# # To run Llama-2-13b-chat-hf
+# CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
+#     generate.py --repo-id-or-model-path 'meta-llama/Llama-2-13b-chat-hf' --gpu-num $NUM_GPUS
+
+# # To run Meta-Llama-3-8B-Instruct
+# CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
+#     generate.py --repo-id-or-model-path 'meta-llama/Meta-Llama-3-8B-Instruct' --gpu-num $NUM_GPUS
