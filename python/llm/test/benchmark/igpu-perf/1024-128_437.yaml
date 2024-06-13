@@ -1,5 +1,6 @@
 repo_id:
   - 'Qwen/Qwen1.5-7B-Chat'
+  - 'Qwen/Qwen2-7B-Instruct'
   - 'meta-llama/Meta-Llama-3-8B-Instruct'
   - '01-ai/Yi-6B-Chat'
   - 'microsoft/phi-2'
