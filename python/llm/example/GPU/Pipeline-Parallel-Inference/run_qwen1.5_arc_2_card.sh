@@ -26,5 +26,11 @@ fi
 export TORCH_LLM_ALLREDUCE=0
 
 NUM_GPUS=2 # number of used GPU
+
+# To run Qwen1.5-7B-Chat
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'Qwen/Qwen1.5-14B-Chat' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path 'Qwen/Qwen1.5-7B-Chat' --gpu-num $NUM_GPUS
+
+# # To run Qwen1.5-14B-Chat
+# CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
+#     generate.py --repo-id-or-model-path 'Qwen/Qwen1.5-14B-Chat' --gpu-num $NUM_GPUS

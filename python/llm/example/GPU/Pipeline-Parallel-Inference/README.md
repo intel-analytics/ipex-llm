@@ -9,7 +9,8 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - [meta-llama/Llama-2-7b-chat-hf](./run_llama_arc_2_card.sh)
 - [meta-llama/Llama-2-13b-chat-hf](./run_llama_arc_2_card.sh)
 - [meta-llama/Meta-Llama-3-8B-Instruct](./run_llama_arc_2_card.sh)
-- [Qwen/Qwen1.5-14B-Chat](./run_qwen1.5_14b_arc_2_card.sh)
+- [Qwen/Qwen1.5-7B-Chat](./run_qwen1.5_arc_2_card.sh)
+- [Qwen/Qwen1.5-14B-Chat](./run_qwen1.5_arc_2_card.sh)
 
 ## Example: Run pipeline parallel inference on multiple GPUs
 
@@ -49,15 +50,15 @@ bash run_llama_arc_2_card.sh
 </details>
 
 <details>
-  <summary> Show Qwen1.5-14B example </summary>
+  <summary> Show Qwen1.5 example </summary>
 
-#### Run Qwen1.5-14B-Chat on two Intel Arc A770
+#### Run Qwen1.5-7B-Chat / Qwen1.5-14B-Chat on two Intel Arc A770
 
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Qwen1.5 to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
 pip install transformers==4.37.0
-bash run_qwen1.5_14b_arc_2_card.sh
+bash run_qwen1.5_arc_2_card.sh
 ```
 
 </details>
