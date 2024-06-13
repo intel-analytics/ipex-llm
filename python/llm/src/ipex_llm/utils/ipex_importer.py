@@ -28,7 +28,7 @@ ipex_duplicate_import_error = "intel_extension_for_pytorch has already been auto
 
 
 def replace_import():
-     builtins.__import__ = custom_ipex_import
+    builtins.__import__ = custom_ipex_import
 
 
 def revert_import():
