@@ -98,6 +98,14 @@ def chatglm2_model_forward(
                                         dtype=torch.int64, device=inputs_embeds.device)
         position_ids = position_ids.repeat(batch_size, 1)
 
+    if getattr(self.rotary_pos_emb, "cached_dtype", None) != inputs_embeds.dtype:
+        rot_dim = self.rotary_pos_emb.dim
+        inv_freq = 1.0 / (10000 ** (torch.arange(0, rot_dim, 2,
+                                                 device=inputs_embeds.device,
+                                                 dtype=inputs_embeds.dtype) / rot_dim))
+        self.rotary_pos_emb.register_buffer("inv_freq", inv_freq, persistent=False)
+        self.rotary_pos_emb.cached_dtype = inputs_embeds.dtype
+
     # `full_attention_mask` is not None only when
     #  `past_key_values` is not None and `seq_length` > 1
     if full_attention_mask is not None:
@@ -208,6 +216,18 @@ def chatglm2_attention_forward(
         else:
             attn_output = xe_addons.sdp_causal(query_states, key_states, value_states,
                                                attention_mask)
+    elif query_states.device.type == "cpu":
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, n_head // n_kv_head)
+        value_states = repeat_kv(value_states, n_head // n_kv_head)
+        if q_len == kv_seq_len:
+            attn_output = torch.nn.functional.scaled_dot_product_attention(
+                query_states, key_states, value_states, is_causal=True
+            )
+        else:
+            attn_output = torch.nn.functional.scaled_dot_product_attention(
+                query_states, key_states, value_states, attention_mask
+            )
     else:
         if use_quantize_kv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
