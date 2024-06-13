@@ -73,9 +73,10 @@ def qwen2_model_forward(
     return_dict: Optional[bool] = None,
 ):
     use_cache = use_cache if use_cache is not None else self.config.use_cache
+    input = input_ids if input_ids is not None else inputs_embeds
     use_quantize_kv = (
         self.config.hidden_size != 3584     # disable quantize kv in specific model
-        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids)
+        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input)
     )
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
