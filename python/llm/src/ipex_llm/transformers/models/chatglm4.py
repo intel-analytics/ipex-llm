@@ -100,11 +100,10 @@ def chatglm4_model_forward_internal(
     # 1. replace `rotary_pos_emb` with `inv_freq` and `position_ids`
     # 2. generate `causal_mask` and replace `full_attention_mask` with it
     if position_ids is None:
-        print("position_ids is None")
         if past_key_values is None:
             position_ids = torch.arange(seq_length, dtype=torch.int64, device=inputs_embeds.device)
         else:
-            kv_length = past_key_values[0][0].size(0)
+            kv_length = past_key_values[0][0].size(2)
             position_ids = torch.arange(kv_length, kv_length + seq_length,
                                         dtype=torch.int64, device=inputs_embeds.device)
         position_ids = position_ids.repeat(batch_size, 1)
@@ -173,7 +172,6 @@ def chatglm4_model_forward_internal(
     )
 
 
-@torch.jit.script
 def apply_rotary_pos_emb(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Tensor:
     # x: [b, np, sq, hn]
     b, np, sq, hn = x.size(0), x.size(1), x.size(2), x.size(3)
@@ -211,13 +209,12 @@ def chatglm4_attention_forward(
     qkv = self.query_key_value(hidden_states)
     # [bs, q_len, np * 3 * hn] -> [bsz, n_head, seq_len, head_dim]
     qkv = qkv.view(bsz, q_len, n_head + 2 * n_kv_head, head_dim)
-    qkv = qkv.transpose(1, 2)
 
     query_states, key_states, value_states = qkv.split([n_head,
                                                         n_kv_head,
-                                                        n_kv_head], dim=1)
+                                                        n_kv_head], dim=2)
 
-    kv_seq_len = key_states.shape[2]
+    kv_seq_len = key_states.shape[1]
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[2]
     
@@ -225,8 +222,6 @@ def chatglm4_attention_forward(
         # use_fuse_rope, see chatglm4_model_forward
         cos, sin = rotary_pos_emb
         rot_dim = cos.shape[-1]
-        query_states = query_states.transpose(1, 2)
-        key_states = key_states.transpose(1, 2)
         query_layer_cur = query_states[..., :rot_dim]
         key_layer_cur = key_states[..., :rot_dim]
         # ipex_llm's apply_rotary_embedding can change the origin storage,
@@ -235,7 +230,11 @@ def chatglm4_attention_forward(
         torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
         query_states = query_states.transpose(1, 2)
         key_states = key_states.transpose(1, 2)
+        value_states = value_states.transpose(1, 2)
     elif rotary_pos_emb is not None:
+        query_states = query_states.transpose(1, 2)
+        key_states = key_states.transpose(1, 2)
+        value_states = value_states.transpose(1, 2)
         query_states = apply_rotary_pos_emb(query_states, rotary_pos_emb)
         key_states = apply_rotary_pos_emb(key_states, rotary_pos_emb)
 
@@ -292,7 +291,6 @@ def chatglm4_attention_forward(
         value_states = repeat_kv(value_states, n_head // n_kv_head)
         attn_weights = torch.matmul(query_states,
                                     key_states.transpose(2, 3)).to(value_states.dtype) / math.sqrt(head_dim)
-        #print(attn_weights)
         if attention_mask is not None:
             attn_weights = attn_weights + attention_mask
         attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
