@@ -112,16 +112,16 @@ See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, sing
     </tr>
     <tr>
       <td align="center" width="25%">
-        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html">llama.cpp (Phi-3-mini Q4_0)</a>
+        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html"><code>llama.cpp(Phi-3-mini Q4_0)</code></a>
       </td>
       <td align="center" width="25%">
-        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html">Ollama (Mistral-7B Q4_K) </a>
+        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html"><code>Ollama(Mistral-7B Q4_K)</code></a>
       </td>
       <td align="center" width="25%">
-        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html">TextGeneration-WebUI (Llama3-8B FP8) </a>
+        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html"><code>TextGeneration-WebUI(Llama3-8B FP8)</code></a>
       </td>
       <td align="center" width="25%">
-        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html">FastChat (QWen1.5-32B FP6)</a>
+        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html"><code>FastChat(QWen1.5-32B FP6)</code></a>
       </td>  </tr>
   </table>
 
