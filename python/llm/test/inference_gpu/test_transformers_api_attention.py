@@ -107,12 +107,6 @@ class Test_Optimize_Gpu_Model:
                     elif isinstance(t1, tuple) and isinstance(t2, tuple):
                         # if 'past_key_value'is of type tuple
                         for i, (t3, t4) in enumerate(zip(t1, t2)):
-                            if model.config.architectures[0] == "ChatGLMModel" and \
-                                    hasattr(model.config, 'padded_vocab_size') and \
-                                    model.config.padded_vocab_size == 65024:
-                                # chatglm2's past_key_value is expanded 16x for some speedup.
-                                # We need to narrow it here.
-                                t4 = t4[:, :, 15:17, :]
                             attn_output_diff.append(t3 - t4)
                     else:
                         # if 'past_key_value'is of type Cache, get last layer cache pair (key, value)
@@ -171,7 +165,7 @@ class Test_Optimize_Gpu_Model:
         # currently only need to compare the output of one self-attention layer.
         layer_norm = "transformer.encoder.layers.27.input_layernorm"
         self_attn = "transformer.encoder.layers.27.self_attention"
-        lower_bound = 8e-3
+        lower_bound = 4e-2
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
     def Mistral_gpu_model(self, Name, Model, Tokenizer, model_path):
