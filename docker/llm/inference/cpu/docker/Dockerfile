@@ -9,14 +9,6 @@ ENV PYTHONUNBUFFERED=1
 
 COPY ./start-notebook.sh /llm/start-notebook.sh
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends sudo && \
-    useradd -m -s /bin/bash ipex-llm && echo "ipex-llm:password" | chpasswd && \
-    usermod -aG sudo ipex-llm && \
-    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-USER ipex-llm
-
 # Update the software sources
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Install essential packages

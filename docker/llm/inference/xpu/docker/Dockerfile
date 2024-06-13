@@ -8,8 +8,6 @@ ENV PYTHONUNBUFFERED=1
 ENV USE_XETLA=OFF
 ENV SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
-USER root
-
 COPY chat.py /llm/chat.py
 COPY benchmark.sh /llm/benchmark.sh
 
@@ -74,11 +72,3 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
 
 
 WORKDIR /llm/
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends sudo && \
-    groupadd -r ipex-llm && \
-    useradd -r -g ipex-llm ipex-llm && \
-    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-
-USER ipex-llm

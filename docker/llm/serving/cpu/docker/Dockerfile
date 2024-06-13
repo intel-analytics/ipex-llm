@@ -7,8 +7,6 @@ ARG TINI_VERSION=v0.18.0
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-USER root
-
 COPY ./model_adapter.py.patch /llm/model_adapter.py.patch
 
 # Install Serving Dependencies
@@ -39,11 +37,3 @@ COPY ./benchmark_vllm_throughput.py    /llm/
 COPY ./start-fastchat-service.sh       /llm/
 
 WORKDIR /llm/
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends sudo && \
-    groupadd -r ipex-llm && \
-    useradd -r -g ipex-llm ipex-llm && \
-    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-    
-USER ipex-llm

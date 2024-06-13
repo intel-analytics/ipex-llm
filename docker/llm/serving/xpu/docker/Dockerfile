@@ -6,8 +6,6 @@ ARG https_proxy
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-USER root
-
 # Install Serving Dependencies
 # Install ipex-llm[serving] only will update ipex_llm source code without updating
 # bigdl-core-xe, which will lead to problems
@@ -32,11 +30,3 @@ COPY ./benchmark_vllm_throughput.py   /llm/
 COPY ./start-fastchat-service.sh       /llm/
 
 WORKDIR /llm/
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends sudo && \
-    groupadd -r ipex-llm && \
-    useradd -r -g ipex-llm ipex-llm && \
-    echo "ipex-llm ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-    
-USER ipex-llm
