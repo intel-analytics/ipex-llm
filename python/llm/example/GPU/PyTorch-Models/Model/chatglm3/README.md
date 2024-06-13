@@ -113,9 +113,8 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-Sample Output:
-
-[THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b)
+#### Sample Output
+#### [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b)
 ```log
 Inference time: xxxx s
 -------------------- Output --------------------

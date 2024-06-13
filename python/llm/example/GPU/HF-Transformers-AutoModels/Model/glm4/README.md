@@ -118,9 +118,8 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-Sample Output:
-
-[THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat)
+#### Sample Output
+#### [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
