@@ -19,12 +19,33 @@ import logging
 import builtins
 import sys
 from ipex_llm.utils.common import log4Error
-import inspect
+
 
 # Save the original __import__ function
-original_import = builtins.__import__
+RAW_IMPORT = builtins.__import__
 ipex_duplicate_import_error = "intel_extension_for_pytorch has already been automatically " + \
     "imported. Please avoid importing it again!"
+
+
+def replace_import():
+     builtins.__import__ = custom_ipex_import
+
+
+def revert_import():
+    builtins.__import__ = RAW_IMPORT
+
+
+def custom_ipex_import(name, globals=None, locals=None, fromlist=(), level=0):
+    """
+    Custom import function to avoid importing ipex again
+    """
+    if fromlist is not None or '.' in name:
+        return RAW_IMPORT(name, globals, locals, fromlist, level)
+    # Only check ipex for main thread
+    if name == "ipex" or name == "intel_extension_for_pytorch":
+        log4Error.invalidInputError(False,
+                                    ipex_duplicate_import_error)
+    return RAW_IMPORT(name, globals, locals, fromlist, level)
 
 
 class IPEXImporter:
@@ -71,6 +92,8 @@ class IPEXImporter:
                                             ipex_duplicate_import_error)
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
+            # Replace builtin import to avoid duplicate ipex import
+            replace_import()
             logging.info("intel_extension_for_pytorch auto imported")
 
     def directly_import_ipex(self):
