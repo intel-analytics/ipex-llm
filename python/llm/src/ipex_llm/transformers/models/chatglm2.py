@@ -98,14 +98,15 @@ def chatglm2_model_forward(
                                         dtype=torch.int64, device=inputs_embeds.device)
         position_ids = position_ids.repeat(batch_size, 1)
 
-    if getattr(self.rotary_pos_emb, "cached_dtype", None) != inputs_embeds.dtype:
+    if not getattr(self.rotary_pos_emb, "cached", False):
         rot_dim = self.rotary_pos_emb.dim
         base = 10000 * getattr(self.rotary_pos_emb, "rope_ratio", 1)
         inv_freq = 1.0 / (base ** (torch.arange(0, rot_dim, 2,
-                                                device=inputs_embeds.device,
-                                                dtype=inputs_embeds.dtype) / rot_dim))
+                                                dtype=torch.float,
+                                                device=inputs_embeds.device) / rot_dim))
+        inv_freq = inv_freq.to(inputs_embeds.dtype)
         self.rotary_pos_emb.register_buffer("inv_freq", inv_freq, persistent=False)
-        self.rotary_pos_emb.cached_dtype = inputs_embeds.dtype
+        self.rotary_pos_emb.cached = True
 
     # `full_attention_mask` is not None only when
     #  `past_key_values` is not None and `seq_length` > 1
