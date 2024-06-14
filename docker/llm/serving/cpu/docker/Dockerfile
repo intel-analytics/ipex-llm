@@ -8,11 +8,10 @@ ARG TINI_VERSION=v0.18.0
 ARG PIP_NO_CACHE_DIR=false
 
 COPY ./model_adapter.py.patch /llm/model_adapter.py.patch
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 
 # Install Serving Dependencies
-# RUN wget -qO /sbin/tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini && \
-RUN chmod +x /sbin/tini && \
+RUN wget -qO /sbin/tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini && \
+    chmod +x /sbin/tini && \
     cd /llm && \
     apt-get update && \
     apt-get install -y --no-install-recommends wrk patch g++ && \
