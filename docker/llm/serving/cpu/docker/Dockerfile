@@ -15,7 +15,7 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 RUN chmod +x /sbin/tini && \
     cd /llm && \
     apt-get update && \
-    apt-get install -y --no-install-recommends wrk patch && \
+    apt-get install -y --no-install-recommends wrk patch g++ && \
     pip install --pre --upgrade ipex-llm[serving] && \
     # Fix Trivy CVE Issues
     pip install Jinja2==3.1.3 transformers==4.36.2 gradio==4.19.2 cryptography==42.0.4 && \
