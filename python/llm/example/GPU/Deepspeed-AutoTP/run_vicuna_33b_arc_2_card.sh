@@ -30,6 +30,6 @@ if grep -q "Core" /proc/cpuinfo; then
     export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 fi
 export TORCH_LLM_ALLREDUCE=0 # Different from PVC
-
+export BIGDL_IMPORT_IPEX=0
 mpirun -np $NUM_GPUS --prepend-rank \
     python deepspeed_autotp.py --repo-id-or-model-path 'lmsys/vicuna-33b-v1.3' --low-bit 'sym_int4'

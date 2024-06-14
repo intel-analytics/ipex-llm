@@ -19,6 +19,7 @@ A model worker that executes the model based on BigDL-LLM.
 Relies on load_model method
 """
 
+import os
 import torch
 import torch.nn.functional as F
 import gc
@@ -323,7 +324,7 @@ class BigDLLLMWorker(BaseModelWorker):
         # Use TextIteratorStreamer for streaming output
         streamer = TextIteratorStreamer(
             tokenizer=self.tokenizer,
-            timeout=60,
+            timeout=int(os.getenv("FASTCHAT_WORKER_API_TIMEOUT", 60)),
             skip_prompt=True,
             skip_special_tokens=True,
         )

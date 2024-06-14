@@ -38,8 +38,7 @@
 #
 
 import math
-import warnings
-from typing import TYPE_CHECKING, Optional, Tuple, Union, Callable, List
+from typing import Optional, Tuple, Union, List
 
 import torch
 from torch.nn.functional import scaled_dot_product_attention as sdpa
@@ -74,7 +73,11 @@ def qwen2_model_forward(
     return_dict: Optional[bool] = None,
 ):
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids)
+    input = input_ids if input_ids is not None else inputs_embeds
+    use_quantize_kv = (
+        self.config.hidden_size != 3584     # disable quantize kv in specific model
+        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input)
+    )
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
@@ -324,6 +327,9 @@ def qwen2_attention_forward(
 
     attn_weights = None
     if query_states.device.type == "cpu":
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
         attn_output = sdpa(query_states,
                            key_states,
                            value_states,
@@ -332,6 +338,9 @@ def qwen2_attention_forward(
                            is_causal=self.is_causal and attention_mask is None and q_len > 1)
     elif not self.training and not hidden_states.requires_grad and \
             use_flash_attention(query_states, key_states, attention_mask):
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
         attn_output = sdpa(query_states.to(device, dtype=torch.float16),
                            key_states.to(device, dtype=torch.float16),
                            value_states.to(device, dtype=torch.float16),

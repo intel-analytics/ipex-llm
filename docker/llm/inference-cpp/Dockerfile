@@ -17,17 +17,17 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc" | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
     chmod 644 /usr/share/keyrings/intel-graphics.gpg && \
     apt-get update && \
-    apt-get install -y curl wget git gnupg gpg-agent sudo && \
+    apt-get install -y --no-install-recommends curl wget git gnupg gpg-agent sudo && \
     # Install PYTHON 3.11 and IPEX-LLM[xpu]
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install libunwind8-dev vim less -y && \
-    apt-get install -y python3.11 git curl wget && \
+    apt-get install -y --no-install-recommends python3.11 git curl wget && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    apt-get install -y --no-install-recommends python3-pip python3.11-dev python3-wheel python3.11-distutils && \
+    wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py && \
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
@@ -37,27 +37,24 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \
-    apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
+    apt-get install -y --no-install-recommends intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     # install nodejs and npm and get webui
     apt purge nodejs -y && \
     apt purge libnode-dev -y && \
     apt autoremove -y && \
     apt clean -y && \
-    curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
+    wget -qO- https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
     apt install -y nodejs && \
-    mkdir -p /llm/scripts && cd /llm && \
-    git clone https://github.com/open-webui/open-webui.git && \
-    cd /llm/open-webui/ && \
-    git checkout e29a999dc910afad91995221cb4bb7c274f87cd6 && \
-    cp -RPp .env.example .env && \
+    git clone https://github.com/open-webui/open-webui.git /llm/open-webui && \
+    git -C /llm/open-webui checkout e29a999dc910afad91995221cb4bb7c274f87cd6 && \
+    cp -RPp /llm/open-webui/.env.example /llm/open-webui/.env && \
     # Build frontend
-    npm i && \
-    npm run build && \
+    npm --prefix /llm/open-webui i && \
+    npm --prefix /llm/open-webui run build && \
     # Install Dependencies
-    cd ./backend && \
     # remove blinker to avoid error
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
-    pip install -r requirements.txt -U && \
+    pip install -r /llm/open-webui/backend/requirements.txt -U && \
     rm -rf /root/.cache/Cypress && \
     pip uninstall -y gunicorn python-jose PyMySQL
 

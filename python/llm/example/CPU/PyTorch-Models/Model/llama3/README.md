@@ -66,7 +66,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-#### 2.3 Sample Output
+#### 2.4 Sample Output
 #### [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct)
 ```log
 Inference time: xxxx s

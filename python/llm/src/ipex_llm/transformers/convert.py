@@ -37,6 +37,7 @@
 
 import platform
 import torch
+import torch.distributed
 import torch.nn as nn
 from accelerate import init_empty_weights
 import warnings
@@ -151,7 +152,10 @@ def is_linear_module(module):
                 get_tensor_model_parallel_group,
                 get_tensor_model_parallel_world_size
             )
-            tp_size = get_tensor_model_parallel_world_size()
+            if torch.distributed.is_initialized():
+                tp_size = get_tensor_model_parallel_world_size()
+            else:
+                tp_size = 1
         else:
             # For vllm cpu
             tp_size = 1
@@ -680,41 +684,15 @@ def _optimize_pre(model):
             if model.lm_head.weight.data.device != "meta":
                 norm_weight = nn.functional.normalize(lm_head_weight_data)
                 model.lm_head.weight.data = norm_weight
+
+        # for baichuan2-7B
+        if model.config.hidden_size in [4096, 2048]:
+            from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
+            model.apply(pre_compute_inv_freq)
     # for yuan 2.0
     if model.config.model_type == "yuan":
-        def merge_qk_proj_func(module):
-            if "YuanAttention" in module.__class__.__name__:
-                q_weight = module.q_proj.weight.data
-                k_weight = module.k_proj.weight.data
-                num_heads = module.num_heads
-                head_dim = module.head_dim
-                hidden_size = module.hidden_size
-
-                weight_q = torch.cat([
-                    q_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
-                    k_weight.view(num_heads, head_dim, hidden_size)[0::2, :, :],
-                ], dim=0).view(num_heads * head_dim, hidden_size)
-
-                weight_k = torch.cat([
-                    q_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
-                    k_weight.view(num_heads, head_dim, hidden_size)[1::2, :, :],
-                ], dim=0).view(num_heads * head_dim, hidden_size)
-
-                merged_q_proj = torch.nn.Linear(0, 0, False)
-                merged_q_proj.weight = torch.nn.Parameter(weight_q, requires_grad=False)
-                merged_q_proj.in_features = hidden_size
-                merged_q_proj.out_features = num_heads * head_dim
-                module.merged_q_proj = merged_q_proj
-
-                merged_k_proj = torch.nn.Linear(0, 0, False)
-                merged_k_proj.weight = torch.nn.Parameter(weight_k, requires_grad=False)
-                merged_k_proj.in_features = hidden_size
-                merged_k_proj.out_features = num_heads * head_dim
-                module.merged_k_proj = merged_k_proj
-
-                del module.q_proj
-                del module.k_proj
-        model.apply(merge_qk_proj_func)
+        from ipex_llm.transformers.models.yuan import merge_qk
+        model.apply(merge_qk)
     # for bge-large
     if model.config.model_type == 'bert' and (
         not model.config.is_decoder and
@@ -734,19 +712,20 @@ def _optimize_pre(model):
         model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.phi3 import split_mlp
         model.apply(split_mlp)
-    # for baichuan2
-    if model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
-        if model.config.hidden_size in [4096, 2048]:
-            # baichuan2-7B
-            from ipex_llm.transformers.models.baichuan2 import pre_compute_inv_freq
-            model.apply(pre_compute_inv_freq)
     # for qwen2
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.models.qwen2 import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "qwen2_moe":
+        from ipex_llm.transformers.models.qwen2_moe import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
+        model.apply(merge_qkv)
+    # for internlm
+    if model.config.model_type == "internlm":
+        from ipex_llm.transformers.models.internlm import merge_qkv
         model.apply(merge_qkv)
     # for internlm-xcomposer2-vl
     if model.config.model_type == "internlmxcomposer2":
@@ -822,7 +801,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
 
-    if hasattr(model, "config") and \
+    if hasattr(model, "config") and hasattr(model.config, "model_type") and \
             model.config.model_type == "qwen" and hasattr(model.config, "visual"):
         # for Qwen-VL-Chat
         # Due to issue https://github.com/intel/intel-extension-for-pytorch/issues/454,
@@ -1029,26 +1008,21 @@ def _optimize_post(model, lightweight_bmm=False):
 
     if model.config.architectures is not None \
        and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
-        if (model.config.num_layers == 28 and hasattr(model.config, 'rope_ratio')
-                and model.config.rope_ratio == 16):
-            # chatglm2-6b-32k
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.chatglm2_32k import chatglm2_32k_attention_forward
-            convert_forward(model,
-                            module.SelfAttention,
-                            chatglm2_32k_attention_forward)
-        elif hasattr(model.config, 'padded_vocab_size') and \
+        if hasattr(model.config, 'padded_vocab_size') and \
                 model.config.padded_vocab_size == 65024:
-            # chatglm2-6b
+            # chatglm2-6b, chatglm2-6b-32k, chatglm3-6b, chatglm3-6b-32k, chatglm3-6b-128k
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from ipex_llm.transformers.models.chatglm2 import chatglm2_attention_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
+            from ipex_llm.transformers.models.chatglm2 import chatglm2_encoder_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm2_model_forward
             convert_forward(model,
                             module.SelfAttention,
                             chatglm2_attention_forward)
+            convert_forward(model,
+                            module.GLMTransformer,
+                            chatglm2_encoder_forward)
             convert_forward(model,
                             module.ChatGLMModel,
                             chatglm2_model_forward)
@@ -1064,6 +1038,24 @@ def _optimize_post(model, lightweight_bmm=False):
                             module.SelfAttention,
                             chatglm_attention_forward
                             )
+        elif (model.config.num_layers == 40 and hasattr(model.config, 'rope_ratio')
+                and model.config.rope_ratio == 500):
+            # glm-4-9b-chat
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            from ipex_llm.transformers.models.chatglm4 import chatglm4_attention_forward
+            from ipex_llm.transformers.models.chatglm4 import chatglm4_model_forward
+            from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
+            convert_forward(model,
+                            module.SelfAttention,
+                            chatglm4_attention_forward)
+            convert_forward(model,
+                            module.ChatGLMModel,
+                            chatglm4_model_forward)
+            convert_forward(model,
+                            module.RMSNorm,
+                            chatglm_rms_norm_forward)
+
     elif "mpt" in model.config.model_type:
         if model.config.architectures is not None:
             modeling_module_name = model.__class__.__module__
@@ -1135,84 +1127,39 @@ def _optimize_post(model, lightweight_bmm=False):
                                         module.FalconAttention,
                                         falcon_attention_forward
                                         )
-
-    elif model.config.model_type == "baichuan" and model.config.vocab_size == 125696:
-        # baichuan2
-        if model.config.hidden_size in [4096, 2048]:
-            # baichuan2-7B
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.baichuan2 import baichuan_attention_forward_7b
-            from ipex_llm.transformers.models.baichuan2 import baichuan_mlp_forward
-            convert_forward(model,
-                            module.Attention,
-                            baichuan_attention_forward_7b
-                            )
-            convert_forward(model,
-                            module.RMSNorm,
-                            llama_rms_norm_forward)
-            convert_forward(model,
-                            module.MLP,
-                            baichuan_mlp_forward)
-        elif model.config.hidden_size == 5120:
-            # baichuan2-13B
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.baichuan2 import baichuan_attention_forward_13b
-            from ipex_llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
-            from ipex_llm.transformers.models.baichuan2 import baichuan_mlp_forward
-            from ipex_llm.transformers.models.baichuan2 import baichuan_13b_get_alibi_mask
-            convert_forward(model,
-                            module.BaichuanAttention,
-                            baichuan_attention_forward_13b
-                            )
-            # baichuan2-13B's RMSNorm is a little different
-            convert_forward(model,
-                            module.RMSNorm,
-                            baichuan_13b_rms_norm_forward)
-            convert_forward(model,
-                            module.MLP,
-                            baichuan_mlp_forward)
-            if hasattr(model.model, 'get_alibi_mask_orig'):
-                # deepspeed rewrite "get_alibi_mask" to support baichuan
-                # https://github.com/microsoft/DeepSpeed/pull/4721
-                replace_func(model,
-                             module.BaichuanModel,
-                             "get_alibi_mask_orig",
-                             baichuan_13b_get_alibi_mask)
-            else:
-                replace_func(model,
-                             module.BaichuanModel,
-                             "get_alibi_mask",
-                             baichuan_13b_get_alibi_mask)
     elif model.config.model_type == "baichuan":
-        # baichuan1
-        if model.config.hidden_size == 4096:
-            # baichuan-7B
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.baichuan import baichuan_mlp_forward
+        convert_forward(model, module.MLP, baichuan_mlp_forward)
+
+        if model.config.hidden_size in [4096, 2048]:
+            # baichuan-7B and baichuan2-7B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_7b
-            convert_forward(model,
-                            module.Attention,
-                            baichuan_attention_forward_7b
-                            )
-            convert_forward(model,
-                            module.RMSNorm,
-                            llama_rms_norm_forward)
+            convert_forward(model, module.Attention, baichuan_attention_forward_7b)
+            convert_forward(model, module.RMSNorm, llama_rms_norm_forward)
         elif model.config.hidden_size == 5120:
-            # baichuan-13B
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
+            # baichuan-13B and baichuan2-13B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_13b
-            from ipex_llm.transformers.models.baichuan2 import baichuan_13b_rms_norm_forward
-            convert_forward(model,
-                            module.BaichuanAttention,
-                            baichuan_attention_forward_13b
-                            )
-            # baichuan-13B's RMSNorm is a little different
-            convert_forward(model,
-                            module.RMSNorm,
-                            baichuan_13b_rms_norm_forward)
+            from ipex_llm.transformers.models.baichuan import baichuan_13b_rms_norm_forward
+            convert_forward(model, module.BaichuanAttention, baichuan_attention_forward_13b)
+            convert_forward(model, module.RMSNorm, baichuan_13b_rms_norm_forward)
+
+            if model.config.vocab_size == 125696:
+                # baichaun2-13B
+                from ipex_llm.transformers.models.baichuan import baichuan_13b_get_alibi_mask
+                if hasattr(model.model, 'get_alibi_mask_orig'):
+                    # deepspeed rewrite "get_alibi_mask" to support baichuan
+                    # https://github.com/microsoft/DeepSpeed/pull/4721
+                    replace_func(model,
+                                 module.BaichuanModel,
+                                 "get_alibi_mask_orig",
+                                 baichuan_13b_get_alibi_mask)
+                else:
+                    replace_func(model,
+                                 module.BaichuanModel,
+                                 "get_alibi_mask",
+                                 baichuan_13b_get_alibi_mask)
     elif model.config.model_type == "gpt_neox":
         from ipex_llm.transformers.models.gptneox import gptneox_attention_forward
         convert_forward(model,
@@ -1223,27 +1170,14 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.internlm import internlm_attention_forward
+        convert_forward(model, module.InternLMAttention, internlm_attention_forward)
+        convert_forward(model, module.InternLMRMSNorm, llama_rms_norm_forward)
+    elif model.config.model_type == "internlm2":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.internlm import internlm2_attention_forward
-        try:
-            convert_forward(model,
-                            module.InternLM2Attention,
-                            internlm2_attention_forward
-                            )
-        except:
-            convert_forward(model,
-                            module.InternLMAttention,
-                            internlm_attention_forward
-                            )
-        try:
-            convert_forward(model,
-                            module.InternLM2RMSNorm,
-                            llama_rms_norm_forward
-                            )
-        except:
-            convert_forward(model,
-                            module.InternLMRMSNorm,
-                            llama_rms_norm_forward
-                            )
+        convert_forward(model, module.InternLM2Attention, internlm2_attention_forward)
+        convert_forward(model, module.InternLM2RMSNorm, llama_rms_norm_forward)
     elif model.config.model_type == "internlmxcomposer2":
         modeling_module_name = model.model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1310,13 +1244,16 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2Attention,
                         qwen2_attention_forward)
+        convert_forward(model,
+                        module.Qwen2SdpaAttention,
+                        qwen2_attention_forward)
     elif model.config.model_type == "qwen2_moe":
         # for Qwen1.5-MOE-A2.7B
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_moeblock_forward
-        from ipex_llm.transformers.models.qwen2_moe import qwen2moe_attention_forward
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_model_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
         convert_forward(model,
                         module.Qwen2MoeModel,
                         qwen2moe_model_forward)
@@ -1331,7 +1268,10 @@ def _optimize_post(model, lightweight_bmm=False):
                         llama_mlp_forward)
         convert_forward(model,
                         module.Qwen2MoeAttention,
-                        qwen2moe_attention_forward)
+                        qwen2_attention_forward)
+        convert_forward(model,
+                        module.Qwen2MoeSdpaAttention,
+                        qwen2_attention_forward)
     elif model.config.model_type == "cohere":
         # for CohereForAI/c4ai-command-r-v01
         modeling_module_name = model.__class__.__module__

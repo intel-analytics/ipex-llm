@@ -22,17 +22,17 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc" | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
     chmod 644 /usr/share/keyrings/intel-graphics.gpg && \
     apt-get update && \
-    apt-get install -y curl wget git gnupg gpg-agent && \
+    apt-get install -y --no-install-recommends curl wget git gnupg gpg-agent && \
     # Install PYTHON 3.11 and IPEX-LLM[xpu]
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install libunwind8-dev vim less -y && \
-    apt-get install -y python3.11 git curl wget && \
+    apt-get install -y --no-install-recommends python3.11 git curl wget && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.11 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.11-dev python3-wheel python3.11-distutils && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    apt-get install -y --no-install-recommends python3-pip python3.11-dev python3-wheel python3.11-distutils && \
+    wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py && \
     # Install FastChat from source requires PEP 660 support
     python3 get-pip.py && \
     rm get-pip.py && \
@@ -43,7 +43,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \
-    apt-get install -y intel-opencl-icd intel-level-zero-gpu level-zero && \
+    apt-get install -y --no-install-recommends intel-opencl-icd intel-level-zero-gpu level-zero && \
     # Install related libary of chat.py
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
@@ -66,8 +66,9 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@0eb734b && \
     pip install mpi4py && \
     apt-get update && \
-    apt-get install -y google-perftools && \
+    apt-get install -y --no-install-recommends google-perftools && \
     ln -s /usr/local/lib/python3.11/dist-packages/ipex_llm/libs/libtcmalloc.so /lib/libtcmalloc.so && \
     rm -rf ./ipex-llm
+
 
 WORKDIR /llm/

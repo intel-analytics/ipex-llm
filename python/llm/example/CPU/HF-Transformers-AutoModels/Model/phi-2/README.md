@@ -25,6 +25,7 @@ conda activate llm
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install einops  # additional package required for phi-2 to conduct generation
+pip install transformers==4.37.0
 ```
 On Windows:
 
@@ -34,6 +35,7 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 pip install einops
+pip install transformers==4.37.0
 ```
 
 ### 2. Run

@@ -19,6 +19,12 @@ import logging
 import builtins
 import sys
 from ipex_llm.utils.common import log4Error
+import inspect
+
+# Save the original __import__ function
+original_import = builtins.__import__
+ipex_duplicate_import_error = "intel_extension_for_pytorch has already been automatically " + \
+    "imported. Please avoid importing it again!"
 
 
 class IPEXImporter:
@@ -61,10 +67,8 @@ class IPEXImporter:
         if self.is_xpu_version_installed():
             # Check if user import ipex manually
             if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
-                logging.error("ipex_llm will automatically import intel_extension_for_pytorch.")
                 log4Error.invalidInputError(False,
-                                            "Please import ipex_llm before importing \
-                                                intel_extension_for_pytorch!")
+                                            ipex_duplicate_import_error)
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
             logging.info("intel_extension_for_pytorch auto imported")
@@ -90,11 +94,6 @@ class IPEXImporter:
 
         Raises ImportError if cannot import Intel Extension for PyTorch
         """
-        if self.ipex_version is not None:
-            return self.ipex_version
-        # try to import Intel Extension for PyTorch and get version
-        self.directly_import_ipex()
-        self.ipex_version = ipex.__version__
         return self.ipex_version
 
 

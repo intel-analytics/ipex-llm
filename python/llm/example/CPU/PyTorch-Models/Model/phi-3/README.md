@@ -73,6 +73,7 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### 2.4 Sample Output
 #### [microsoft/Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct)
 ```log
+Inference time: xxxx s
 -------------------- Prompt --------------------
 <|user|>
 What is AI?<|end|>

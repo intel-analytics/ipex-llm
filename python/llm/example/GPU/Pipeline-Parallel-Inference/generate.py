@@ -19,34 +19,18 @@ import torch
 import time
 import argparse
 
-from ipex_llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM, init_pipeline_parallel
 from transformers import AutoTokenizer
 
-# you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
-DEFAULT_SYSTEM_PROMPT = """\
-"""
-
-def get_prompt(message: str, chat_history: list[tuple[str, str]],
-               system_prompt: str) -> str:
-    texts = [f'<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n']
-    # The first user input is _not_ stripped
-    do_strip = False
-    for user_input, response in chat_history:
-        user_input = user_input.strip() if do_strip else user_input
-        do_strip = True
-        texts.append(f'{user_input} [/INST] {response.strip()} </s><s>[INST] ')
-    message = message.strip() if do_strip else message
-    texts.append(f'{message} [/INST]')
-    return ''.join(texts)
+init_pipeline_parallel()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-13b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
@@ -66,35 +50,28 @@ if __name__ == '__main__':
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    local_rank = torch.distributed.get_rank()
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu:0')
+        input_ids = tokenizer.encode(args.prompt, return_tensors="pt").to(f'xpu:{local_rank}')
         # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
-                                do_sample=False,
-                                max_new_tokens=args.n_predict)
-        output = model.generate(input_ids,
-                                do_sample=False,
                                 max_new_tokens=args.n_predict)
 
         # start inference
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with IPEX-LLM INT4 optimizations
         output = model.generate(input_ids,
-                                do_sample=False,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()
         output = output.cpu()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        print(f'Inference time: {end-st} s')
-        print('-'*20, 'Prompt', '-'*20)
-        print(prompt)
-        print('-'*20, 'Output', '-'*20)
-        print(output_str)
+        if local_rank == args.gpu_num - 1:
+            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+            print(f'Inference time: {end-st} s')
+            print(f"First token cost {model.first_token_time:.4f} s and rest tokens cost average {model.rest_cost_mean:.4f} s")
+            print('-'*20, 'Prompt', '-'*20)
+            print(args.prompt)
+            print('-'*20, 'Output', '-'*20)
+            print(output_str)
 

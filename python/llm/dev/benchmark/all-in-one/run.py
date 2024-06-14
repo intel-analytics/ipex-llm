@@ -70,6 +70,42 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
                 result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                         actual_in_len, actual_out_len, load_time, model.peak_memory])
 
+def preprocess_prompt(tokenizer, in_len, task):
+    if task == 'summarize':
+        if in_len == 512:
+            input_str = open(f"prompt/summarize/cnn_239.txt", 'r').read()
+        elif in_len == 1024:
+            input_str = open(f"prompt/summarize/cnn_615.txt", 'r').read()
+        elif in_len == 2048:
+            input_str = open(f"prompt/summarize/cnn_824.txt", 'r').read()
+        elif in_len <= 256:
+            input_str = open(f"prompt/summarize/cnn_64.txt", 'r').read()
+        else:
+            input_str = open(f"prompt/summarize/cnn_5618.txt", 'r').read()
+        question = "Can you please summarize this article?"
+        prompt_format = "[INST] Article:```{}``` \n\n Question: {} \n\n [/INST]"
+        special_tokens_len = len(tokenizer.encode(prompt_format.format("", question), add_special_tokens=False))
+        max_article_len = in_len - special_tokens_len
+        article_ids = tokenizer.encode(input_str, add_special_tokens=False)
+        if len(article_ids) > max_article_len:
+            article_ids = article_ids[:max_article_len]
+        truncated_article_text = tokenizer.decode(article_ids, skip_special_tokens=True)
+        final_prompt = prompt_format.format(truncated_article_text, question)
+        input_ids = tokenizer.encode(final_prompt, return_tensors="pt", truncation=True, max_length=in_len)
+    elif task == 'QA':
+        if in_len == 512:
+            input_str = open(f"prompt/QA/orca_776.txt", 'r').read()
+        elif in_len == 1024:
+            input_str = open(f"prompt/QA/orca_99.txt", 'r').read()
+        elif in_len == 2048:
+            input_str = open(f"prompt/QA/orca_401.txt", 'r').read()
+        elif in_len == 4096:
+            input_str = open(f"prompt/QA/orca_497.txt", 'r').read()
+        else:
+            raise ValueError("No corresponding prompt available now, will be added later.")          
+        input_ids = tokenizer.encode(input_str, return_tensors="pt")    
+    return input_ids
+
 def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, n_gpu=2):
     # TODO: make a parameter
     result= {}
@@ -174,7 +210,7 @@ def run_native_int4(repo_id,
         in_out_len = in_out.split("-")
         in_len = int(in_out_len[0])
         out_len = int(in_out_len[1])
-        input_str = open(f"prompt/{in_len}.txt", 'r').read()
+        input_str = open(f"prompt/continuation/{in_len}.txt", 'r').read()
         # As different tokenizer has different encodings,
         # slice the input_ids to ensure the prompt length is required length.
         n_ctx = in_len + out_len if in_len + out_len > 512 else 512
@@ -236,7 +272,7 @@ def run_transformer_int4(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -301,7 +337,7 @@ def run_pytorch_autocast_bf16(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -372,7 +408,7 @@ def run_optimize_model(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -410,44 +446,53 @@ def run_transformer_int4_gpu(repo_id,
                              lookahead=False):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
+    if fp16:
+        torch_dtype = torch.float16
+    else:
+        torch_dtype = torch.float32
     st = time.perf_counter()
     origin_repo_id = repo_id.replace("-4bit", "")
     if origin_repo_id in CHATGLM_IDS:
         if "4bit" in repo_id:
             model = AutoModel.load_low_bit(model_path, optimize_model=True,
-                                            trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()  
+                                           trust_remote_code=True, use_cache=True,
+                                           cpu_embedding=cpu_embedding,
+                                           torch_dtype=torch_dtype).eval()  
         else:
             model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
-                                            trust_remote_code=True, use_cache=True).eval()
+                                              trust_remote_code=True, use_cache=True,
+                                              torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, cpu_embedding=cpu_embedding)
     elif origin_repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                     use_cache=True, cpu_embedding=cpu_embedding,
+                                                     torch_dtype=torch_dtype).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         if "4bit" in repo_id:
             model = AutoModelForCausalLM.load_low_bit(model_path, optimize_model=True,
-                                            trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                            trust_remote_code=True, use_cache=True,
+                                            cpu_embedding=cpu_embedding,
+                                            torch_dtype=torch_dtype).eval()
         else:
             if 'starcoder' in repo_id:
                 # Load starcoder-15.5b model in bf16 format to avoid CPU OOM.
                 model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                            trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding, torch_dtype=torch.bfloat16).eval()
+                                                            trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                                            torch_dtype=torch.bfloat16 if not fp16 else torch.float16).eval()
                 # Convert the low-bit model back to fp32 for performance considerations.
-                model = model.float()
+                if not fp16:
+                    model = model.float()
             else:
                 model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                            trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                            trust_remote_code=True, use_cache=True,
+                                                            cpu_embedding=cpu_embedding,
+                                                            torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    if fp16:
-        model = model.half()
-        print("Convert model to half precision")
-    
     model = model.to('xpu')
 
     end = time.perf_counter()
@@ -463,28 +508,22 @@ def run_transformer_int4_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
-                test_length = test_length * 2
-            # For the sequence length not in [32, 256, 1024, 2048, 8192], it will be truncated from 8192.txt.
-            test_length = min(test_length, 8192)
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
-            if lookahead:
-                question = "Can you please summarize this article?"
-                question_tokens = tokenizer.encode(question, return_tensors="pt")
-                max_article_len = in_len - question_tokens.size(1)
-                article_ids = tokenizer.encode(input_str, return_tensors="pt")
-                if article_ids.size(1) > max_article_len:
-                    article_ids = article_ids[:, :max_article_len]
-                input_ids = torch.cat((article_ids, question_tokens), dim=1)
-            else:
+            if not lookahead or conf['task'] == 'continuation':
+                # As different tokenizer has different encodings,
+                # in_len.txt maybe shorter than we need,
+                # use much longer context to make sure input length
+                test_length = min(in_len*2, 8192)
+                while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
+                    test_length = test_length * 2
+                # For the sequence length not in [32, 256, 1024, 2048, 8192], it will be truncated from 8192.txt.
+                test_length = min(test_length, 8192)
+                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
                 input_ids = input_ids[:, :in_len]
+            elif conf['task'] == 'summarize' or conf['task'] == 'QA':
+                input_ids = preprocess_prompt(tokenizer, in_len, conf['task'])
             true_str = tokenizer.batch_decode(input_ids)[0]
             input_list = [true_str] * batch_size
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
@@ -526,7 +565,6 @@ def run_optimize_model_gpu(repo_id,
                            batch_size):
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     from ipex_llm import optimize_model
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -567,7 +605,7 @@ def run_optimize_model_gpu(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -605,7 +643,6 @@ def run_ipex_fp16_gpu(repo_id,
                       batch_size):
     from transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
@@ -639,7 +676,7 @@ def run_ipex_fp16_gpu(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -677,7 +714,6 @@ def run_bigdl_fp16_gpu(repo_id,
                        batch_size):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
@@ -717,7 +753,7 @@ def run_bigdl_fp16_gpu(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -809,7 +845,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -848,7 +884,6 @@ def run_transformer_int4_gpu_win(repo_id,
                                  streaming):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -896,7 +931,7 @@ def run_transformer_int4_gpu_win(repo_id,
                 test_length = min(in_len*2, 8192)
                 while test_length not in [32, 256, 1024, 2048, 8192]:
                     test_length = test_length * 2
-                input_str = open(f"prompt/{test_length}.txt", 'r').read()
+                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -953,37 +988,36 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                                       streaming):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
-                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                          torch_dtype=torch.float16).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.half()
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
-                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                                     torch_dtype=torch.float16).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.half()
         model = model.to('xpu')
     elif repo_id in LLAVA_IDS:
         llava_repo_dir = os.environ.get('LLAVA_REPO_DIR')
         sys.path.append(rf"{llava_repo_dir}")
         from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
-                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                          torch_dtype=torch.float16).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.half()
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
-                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                                     torch_dtype=torch.float16).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        model = model.half()
         model = model.to('xpu')
     end = time.perf_counter()
     load_time = end - st
@@ -1005,7 +1039,7 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                 test_length = min(in_len*2, 8192)
                 while test_length not in [32, 256, 1024, 2048, 8192]:
                     test_length = test_length * 2
-                input_str = open(f"prompt/{test_length}.txt", 'r').read()
+                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1062,7 +1096,6 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                                             streaming):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load BigDL-LLM optimized low bit model
     st = time.perf_counter()
@@ -1109,7 +1142,7 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                 test_length = min(in_len*2, 8192)
                 while test_length not in [32, 256, 1024, 2048, 8192]:
                     test_length = test_length * 2
-                input_str = open(f"prompt/{test_length}.txt", 'r').read()
+                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1198,7 +1231,7 @@ def run_transformer_autocast_bf16( repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1269,7 +1302,7 @@ def run_bigdl_ipex_bf16(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1339,7 +1372,7 @@ def run_bigdl_ipex_int4(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1409,7 +1442,7 @@ def run_bigdl_ipex_int8(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1457,7 +1490,6 @@ def run_deepspeed_optimize_model_gpu(repo_id,
 
     from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     from ipex_llm import optimize_model
-    import intel_extension_for_pytorch as ipex
     import deepspeed
     from deepspeed.accelerator.cpu_accelerator import CPU_Accelerator
     from deepspeed.accelerator import set_accelerator, get_accelerator
@@ -1520,7 +1552,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1597,7 +1629,7 @@ def run_speculative_cpu(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1675,7 +1707,7 @@ def run_speculative_gpu(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1719,7 +1751,6 @@ def run_pipeline_parallel_gpu(repo_id,
                               n_gpu=2):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
-    import intel_extension_for_pytorch as ipex
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -1795,7 +1826,7 @@ def run_pipeline_parallel_gpu(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192]:
                 test_length = test_length * 2
-            input_str = open(f"prompt/{test_length}.txt", 'r').read()
+            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1827,6 +1858,7 @@ def run_pipeline_parallel_gpu(repo_id,
 
 if __name__ == '__main__':
     from omegaconf import OmegaConf
+    global conf
     conf = OmegaConf.load(f'{current_dir}/config.yaml')
     today = date.today()
     if 'exclude' in conf:
@@ -1844,17 +1876,22 @@ if __name__ == '__main__':
     import pandas as pd
     for api in conf.test_api:
         global csv_name
-        csv_name = f'{current_dir}/{api}-results-{today}.csv'
-        for model in conf.repo_id:
-            in_out_pairs = conf['in_out_pairs'].copy()
-            if excludes:
-                for in_out in conf['in_out_pairs']:
-                    model_id_input = model + ':' + in_out.split('-')[0]
-                    model_id_input_batch_size = model_id_input + ':' + str(conf['batch_size'])
-                    if model_id_input in excludes or model_id_input_batch_size in excludes:
-                        in_out_pairs.remove(in_out)
-            run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], conf['batch_size'], streaming, use_fp16_torch_dtype, n_gpu)
+        csv_name = f'{current_dir}/{api}-results-{today}.csv' 
+        if not OmegaConf.is_list(conf["batch_size"]):
+            batch_list = [conf["batch_size"]]
+        else:
+            batch_list = conf["batch_size"]
+        for batch_size in batch_list:
+            for model in conf.repo_id:
+                in_out_pairs = conf['in_out_pairs'].copy()
+                if excludes:
+                    for in_out in conf['in_out_pairs']:
+                        model_id_input = model + ':' + in_out.split('-')[0]
+                        model_id_input_batch_size = model_id_input + ':' + str(batch_size)
+                        if model_id_input in excludes or model_id_input_batch_size in excludes:
+                            in_out_pairs.remove(in_out)
+                run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, n_gpu)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])

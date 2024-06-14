@@ -247,7 +247,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 PROMPT_LENGTH = args.prompt_length
-PROMPT = open(f"prompt/{PROMPT_LENGTH}.txt", "r").read()
+PROMPT = open(f"prompt/continuation/{PROMPT_LENGTH}.txt", "r").read()
 MAX_TOKENS = args.max_new_tokens
 
 
