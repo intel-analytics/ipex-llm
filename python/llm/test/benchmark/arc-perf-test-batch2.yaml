@@ -9,7 +9,7 @@ repo_id:
   - 'bigcode/starcoder-15.5b-4bit'
   - 'databricks/dolly-v1-6b'
   - 'databricks/dolly-v2-7b'
-  - 'databricks/dolly-v2-12b'
+  # - 'databricks/dolly-v2-12b'
   - 'internlm/internlm-chat-7b'
   - 'Qwen/Qwen-7B-Chat'
   - 'BAAI/AquilaChat-7B'
