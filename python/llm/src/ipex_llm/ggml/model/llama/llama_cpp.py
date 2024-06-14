@@ -950,8 +950,9 @@ def ggml_quantize_tensor(
     n: ctypes.c_size_t,
     k: ctypes.c_int,
     hist,  # type: ctypes.Array[ctypes.c_int64] # type: ignore
+    scale_search: ctypes.c_bool,
 ) -> int:
-    return _lib.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+    return _lib.ggml_quantize_tensor(src, dst, qtype, n, k, hist, scale_search)
 
 
 _lib.ggml_quantize_tensor.argtypes = [
@@ -961,6 +962,7 @@ _lib.ggml_quantize_tensor.argtypes = [
     ctypes.c_size_t,
     ctypes.c_int,
     ctypes.POINTER(ctypes.c_int64),
+    ctypes.c_bool,
 ]
 _lib.ggml_quantize_tensor.restype = ctypes.c_size_t
 
