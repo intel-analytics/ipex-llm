@@ -107,6 +107,7 @@ def train(
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
     training_mode: str = "lora",
+    deepspeed_zero3: bool = False,
 ):
     invalidInputError(training_mode == "lora",
                       f"This example is for lora training mode, but got training_mode={training_mode}.")
@@ -136,6 +137,7 @@ def train(
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
             f"training_mode: {training_mode}\n"
+            f"deepspeed_zero3: {deepspeed_zero3}\n"
         )
     assert (
         base_model
@@ -154,28 +156,54 @@ def train(
     # Check if parameter passed or if set within environ
     use_wandb = wandb_check(wandb_project, wandb_watch, wandb_log_model)
 
+    if deepspeed_zero3:
+        deepspeed = deepspeed if deepspeed is not None else "./deepspeed_zero3.json"
+
     if saved_low_bit_model is not None:
         # Load the low bit optimized model if provide the saved path
-        model = AutoModelForCausalLM.load_low_bit(
-            saved_low_bit_model,
-            optimize_model=False,
-            torch_dtype=torch.bfloat16,
-            modules_to_not_convert=["lm_head"],
-            trust_remote_code=True,
-        )
+        if deepspeed_zero3:
+            import deepspeed as ds
+            with ds.zero.Init(config_dict_or_path=deepspeed):
+                model = AutoModelForCausalLM.load_low_bit(
+                    saved_low_bit_model,
+                    optimize_model=False,
+                    torch_dtype=torch.bfloat16,
+                    modules_to_not_convert=["lm_head"],
+                    trust_remote_code=True,
+                )
+        else:
+            model = AutoModelForCausalLM.load_low_bit(
+                saved_low_bit_model,
+                optimize_model=False,
+                torch_dtype=torch.bfloat16,
+                modules_to_not_convert=["lm_head"],
+                trust_remote_code=True,
+            )
     else:
-        model = AutoModelForCausalLM.from_pretrained(
-            base_model,
-            load_in_low_bit="bf16",
-            optimize_model=False,
-            torch_dtype=torch.bfloat16,
-            modules_to_not_convert=["lm_head"],
-            trust_remote_code=True,
-        )
-
-    print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
-    model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
-    print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
+        if deepspeed_zero3:
+            import deepspeed as ds
+            with ds.zero.Init(config_dict_or_path=deepspeed):
+                model = AutoModelForCausalLM.from_pretrained(
+                    base_model,
+                    load_in_low_bit="bf16",
+                    optimize_model=False,
+                    torch_dtype=torch.bfloat16,
+                    modules_to_not_convert=["lm_head"],
+                    trust_remote_code=True,
+                )
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                base_model,
+                load_in_low_bit="bf16",
+                optimize_model=False,
+                torch_dtype=torch.bfloat16,
+                modules_to_not_convert=["lm_head"],
+                trust_remote_code=True,
+            )
+    if not deepspeed_zero3:
+        print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
+        model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
+        print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
