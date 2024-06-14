@@ -22,6 +22,7 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 - RAM >= 16 GB
 - Disk >= 50 GB
 - Docker >= 24.0.0 & Docker Compose >= v2.26.1
+- Ollama service initialized
 
 ### 1 Initialize Ragflow
 
@@ -52,37 +53,52 @@ Clone the repo:
 $ git clone https://github.com/infiniflow/ragflow.git
 ```
 
-### 2. Initialize Ollama
+### 2. Start up Ragflow server from Docker
 
-Activate the `llm-cpp` conda environment and initialize Ollama by executing the commands below. A symbolic link to `ollama` will appear in your current directory.
+Build the pre-built Docker images and start up the server:
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+> Running the following commands automatically downloads the *dev* version RAGFlow Docker image. To download and run a specified Docker version, update `RAGFLOW_VERSION` in **docker/.env** to the intended version, for example `RAGFLOW_VERSION=v0.7.0`, before running the following commands.
 
-      .. code-block:: bash
-      
-         conda activate llm-cpp
-         init-ollama
-
-   .. tab:: Windows
-
-      Please run the following command with **administrator privilege in Miniforge Prompt**.
-
-      .. code-block:: bash
-      
-         conda activate llm-cpp
-         init-ollama.bat
-
+```bash
+$ export http_proxy=http://child-prc.intel.com:913
+$ export https_proxy=https://child-prc.intel.com:913
+$ export no_proxy=localhost,127.0.0.1
+$ cd ragflow/docker
+$ chmod +x ./entrypoint.sh
+$ docker compose up -d
 ```
 
-```eval_rst
-.. note::
 
-   If you have installed higher version ``ipex-llm[cpp]`` and want to upgrade your ollama binary file, don't forget to remove old binary files first and initialize again with ``init-ollama`` or ``init-ollama.bat``.
+> The core image is about 9 GB in size and may take a while to load.
+
+Check the server status after having the server up and running:
+
+```bash
+$ docker logs -f ragflow-server
 ```
 
-**Now you can use this executable file by standard ollama's usage.**
+_The following output confirms a successful launch of the system:_
+
+```bash
+    ____                 ______ __
+   / __ \ ____ _ ____ _ / ____// /____  _      __
+  / /_/ // __ `// __ `// /_   / // __ \| | /| / /
+ / _, _// /_/ // /_/ // __/  / // /_/ /| |/ |/ /
+/_/ |_| \__,_/ \__, //_/    /_/ \____/ |__/|__/
+              /____/
+
+* Running on all addresses (0.0.0.0)
+* Running on http://127.0.0.1:9380
+* Running on http://x.x.x.x:9380
+INFO:werkzeug:Press CTRL+C to quit
+```
+> If you skip this confirmation step and directly log in to RAGFlow, your browser may prompt a `network anomaly` error because, at that moment, your RAGFlow may not be fully initialized.  
+
+In your web browser, enter the IP address of your server and log in to RAGFlow.
+> With the default settings, you only need to enter `http://IP_OF_YOUR_MACHINE` (**sans** port number) as the default HTTP serving port `80` can be omitted when using the default configurations.
+In [service_conf.yaml](./docker/service_conf.yaml), select the desired LLM factory in `user_default_llm` and update the `API_KEY` field with the corresponding API key.
+
+> See [llm_api_key_setup](https://ragflow.io/docs/dev/llm_api_key_setup) for more information.
 
 ### 3 Run Ollama Serve
 
