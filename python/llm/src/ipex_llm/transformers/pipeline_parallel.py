@@ -193,7 +193,7 @@ def pipeline_parallel_generate(self,
         if not isinstance(outputs.past_key_values, (DynamicFp8Cache, DynamicNormalCache)):
             if local_rank != 0:
                 value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
-                past_key_values_placeholder = tuple (
+                past_key_values_placeholder = tuple(
                     (value_placeholder, value_placeholder) for _ in range(layer_start)
                 ) + (outputs.past_key_values)[layer_start:]
                 _past_key_values = past_key_values_placeholder
