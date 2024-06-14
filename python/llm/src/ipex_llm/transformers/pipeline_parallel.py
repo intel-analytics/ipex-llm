@@ -25,7 +25,6 @@ import time
 import numpy as np
 from typing import Callable, List, Optional
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
-from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
 
 # patch GenerationMixin.generate
 from transformers import GenerationMixin
@@ -190,7 +189,7 @@ def pipeline_parallel_generate(self,
         _input_ids = next_ids
         output_ids = torch.cat([output_ids, next_ids], dim=-1)
 
-        if not isinstance(outputs.past_key_values, (DynamicFp8Cache, DynamicNormalCache)):
+        if isinstance(outputs.past_key_values, tuple):
             if local_rank != 0:
                 value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
                 past_key_values_placeholder = tuple(
