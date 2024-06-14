@@ -1,15 +1,11 @@
-from torch import nn
 import torch
 import torch.distributed as dist
 
 from typing import List, Optional, Tuple, Union, Iterator
 import time
-from transformers import AutoTokenizer, AutoConfig
 from transformers.cache_utils import Cache
 from transformers.utils import logging
-from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 
-from ipex_llm.transformers.pipeline_parallel import DummyLayer, Dummy_MLPLayer, Dummy_DecoderLayer
 import numpy as np
 import asyncio, uuid
 import threading
@@ -147,7 +143,6 @@ class ModelRunner:
         
         cur_id = cur_batch.batch_id
         _past_key_values = self.past_key_values_dict.get(cur_id, None)
-        # attention_mask = self.attention_mask_dict[cur_id]
         attention_mask = make_attention_mask(cur_batch.prompt_lengths)
 
         if self.rank == 0:
@@ -263,9 +258,7 @@ class ModelRunner:
                     next_ids = next_ids.unsqueeze(0)
                 self.tokens[cur_id].append(next_ids)
                 self.token_times[cur_id].append(time.perf_counter())
-                # self.input_ids_dict[cur_id] += next_ids
                 cur_input = next_ids
-                # cur_batch.input_len += 1
                 cur_batch.input_len = 1
                 cur_batch.prompt_lengths = [x + 1 for x in cur_batch.prompt_lengths]
 
