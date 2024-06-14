@@ -189,15 +189,12 @@ def pipeline_parallel_generate(self,
         _input_ids = next_ids
         output_ids = torch.cat([output_ids, next_ids], dim=-1)
 
-        if isinstance(outputs.past_key_values, tuple):
-            if local_rank != 0:
-                value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
-                past_key_values_placeholder = tuple(
-                    (value_placeholder, value_placeholder) for _ in range(layer_start)
-                ) + (outputs.past_key_values)[layer_start:]
-                _past_key_values = past_key_values_placeholder
-            else:
-                _past_key_values = outputs.past_key_values
+        if isinstance(outputs.past_key_values, tuple) and local_rank != 0:
+            value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
+            past_key_values_placeholder = tuple(
+                (value_placeholder, value_placeholder) for _ in range(layer_start)
+            ) + (outputs.past_key_values)[layer_start:]
+            _past_key_values = past_key_values_placeholder
         else:
             _past_key_values = outputs.past_key_values
 
