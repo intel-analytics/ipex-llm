@@ -288,11 +288,7 @@ def convert_gptq(module, awq=False, llm_awq=False, act_order=False):
 
 
 def use_scale_search(model_config, qtype):
-    if qtype == ggml_tensor_qtype["fp6"] and model_config.model_type not in ["qwen"]:
-        if model_config.model_type == "llama" and model_config.vocab_size == 128256 and \
-            model_config._name_or_path.contains("instruct", na=False, case=False):
-            # llama3, instruct
-            return False
+    if qtype == ggml_tensor_qtype["fp6"] and model_config.model_type not in ["qwen2"]:
         return True
     return False
 
@@ -788,6 +784,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     model_config = getattr(model, "config", None)
 
     enable_scale_search = use_scale_search(model_config, qtype)
+    print(model_config)
 
     # mixed quantization needs model_config to choose custom quantization strategy
     model, has_been_replaced = _replace_with_low_bit_linear(
