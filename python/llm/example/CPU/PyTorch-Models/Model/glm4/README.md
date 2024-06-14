@@ -21,7 +21,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
 # install tiktoken required for GLM-4
-pip install tiktoken
+pip install "tiktoken>=0.7.0"
 ```
 
 On Windows:
@@ -32,7 +32,7 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 
-pip install tiktoken
+pip install "tiktoken>=0.7.0"
 ```
 
 ### 2. Run
