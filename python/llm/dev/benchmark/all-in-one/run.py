@@ -1818,7 +1818,7 @@ def run_pipeline_parallel_gpu(repo_id,
                 torch.xpu.empty_cache()
                 if i >= warm_up:
                     result[in_out].append([model.first_token_time, model.rest_cost_mean, 0,
-                                           actual_in_len, actual_out_len, load_time, 0, fp16])
+                                           actual_in_len, actual_out_len, load_time,])
     del model
     torch.xpu.empty_cache()
     return result
