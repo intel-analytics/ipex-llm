@@ -24,6 +24,52 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 - Docker >= 24.0.0 & Docker Compose >= v2.26.1
 - Ollama service initialized
 
+### 1. Install and Run Ollama Serve
+
+Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.html), and follow the steps 1) [Install IPEX-LLM for Ollama](./ollama_quickstart.html#install-ipex-llm-for-ollama), 2) [Initialize Ollama](./ollama_quickstart.html#initialize-ollama) 3) [Run Ollama Serve](./ollama_quickstart.html#run-ollama-serve) to install, init and start the Ollama Service. 
+
+
+```eval_rst
+
+.. tip::
+
+  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
+
+  .. code-block:: bash
+
+      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+```
+
+### 2. Pull and Prepare the Model
+
+#### 2.1 Pull Model 
+
+Now we need to pull a model for coding. Here we use [Qwen/Qwen2-7B](https://huggingface.co/Qwen/Qwen2-7B) model as an example. Open a new terminal window, run the following command to pull [`qwen2:latest`](https://ollama.com/library/qwen2). 
+
+
+```eval_rst
+.. tabs::
+   .. tab:: Linux
+
+      .. code-block:: bash
+
+         export no_proxy=localhost,127.0.0.1
+         ./ollama pull qwen2:latest
+
+   .. tab:: Windows
+
+      Please run the following command in Miniforge Prompt.
+
+      .. code-block:: cmd
+
+         set no_proxy=localhost,127.0.0.1
+         ollama pull qwen2:latest
+
+.. seealso::
+
+   Besides Qwen2, there are other coding models you might want to explore, such as Magicoder, Wizardcoder, Codellama, Codegemma, Starcoder, Starcoder2, and etc. You can find these models in the `Ollama model library <https://ollama.com/library>`_. Simply search for the model, pull it in a similar manner, and give it a try.
+```
+
 ### 1 Initialize Ragflow
 
 Ensure `vm.max_map_count` >= 262144:
@@ -60,8 +106,6 @@ Build the pre-built Docker images and start up the server:
 > Running the following commands automatically downloads the *dev* version RAGFlow Docker image. To download and run a specified Docker version, update `RAGFLOW_VERSION` in **docker/.env** to the intended version, for example `RAGFLOW_VERSION=v0.7.0`, before running the following commands.
 
 ```bash
-$ export http_proxy=http://child-prc.intel.com:913
-$ export https_proxy=https://child-prc.intel.com:913
 $ export no_proxy=localhost,127.0.0.1
 $ cd ragflow/docker
 $ chmod +x ./entrypoint.sh
