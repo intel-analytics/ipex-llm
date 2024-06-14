@@ -157,7 +157,7 @@ def train(
     use_wandb = wandb_check(wandb_project, wandb_watch, wandb_log_model)
 
     if deepspeed_zero3:
-        deepspeed = deepspeed if deepspeed is not None else "./deepspeed_zero3.json"
+        deepspeed = deepspeed if deepspeed is not None else "./deepspeed_zero3_config.json"
 
     if saved_low_bit_model is not None:
         # Load the low bit optimized model if provide the saved path
