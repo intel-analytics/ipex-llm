@@ -5,9 +5,7 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 ## 0. Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
-## Example 1: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
-### 1. Install
+## 1. Install
 We suggest using conda to manage environment:
 
 On Linux:
@@ -29,7 +27,11 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 ```
 
-### 2. Run
+## 2. Run
+
+### Example 1: Predict Tokens using `generate()` API
+In the example [generate.py](./generate.py), we show a basic use case for a ChatGLM2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations.
+
 ```
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
@@ -63,7 +65,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```
 
 #### 2.3 Sample Output
-#### [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b)
+##### [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
@@ -88,31 +90,9 @@ Inference time: xxxx s
 答： Artificial Intelligence (AI) refers to the ability of a computer or machine to perform tasks that typically require human-like intelligence, such as understanding language, recognizing patterns
 ```
 
-## Example 2: Stream Chat using `stream_chat()` API
+### Example 2: Stream Chat using `stream_chat()` API
 In the example [streamchat.py](./streamchat.py), we show a basic use case for a ChatGLM2 model to stream chat, with IPEX-LLM INT4 optimizations.
-### 1. Install
-We suggest using conda to manage environment:
 
-On Linux:
-
-```bash
-conda create -n llm python=3.11 # recommend to use Python 3.11
-conda activate llm
-
-# install the latest ipex-llm nightly build with 'all' option
-pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-```
-
-On Windows:
-
-```cmd
-conda create -n llm python=3.11
-conda activate llm
-
-pip install --pre --upgrade ipex-llm[all]
-```
-
-### 2. Run
 **Stream Chat using `stream_chat()` API**:
 ```
 python ./streamchat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --question QUESTION
