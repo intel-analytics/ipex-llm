@@ -25,6 +25,7 @@ import time
 import numpy as np
 from typing import Callable, List, Optional
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
+from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
 
 # patch GenerationMixin.generate
 from transformers import GenerationMixin
@@ -79,6 +80,9 @@ def pipeline_parallel(model, pipeline_parallel_stages):
         pipeline_parallel_stages
 
     local_rank = dist.get_rank()
+
+    global layer_start
+    global layer_end
     layer_start = slice_size * local_rank
     layer_end = layer_start + min(slice_size, model.config.num_hidden_layers - layer_start)
 
@@ -144,6 +148,9 @@ def pipeline_parallel_generate(self,
     pre_rank = (local_rank - 1) % self.pipeline_parallel_stages
     next_rank = (local_rank + 1) % self.pipeline_parallel_stages
 
+    global layer_start
+    global layer_end
+
     self.first_token_time = 0
     self.next_token_time = []
 
@@ -182,7 +189,19 @@ def pipeline_parallel_generate(self,
 
         _input_ids = next_ids
         output_ids = torch.cat([output_ids, next_ids], dim=-1)
-        _past_key_values = outputs.past_key_values
+
+        if not isinstance(outputs.past_key_values, (DynamicFp8Cache, DynamicNormalCache)):
+            if local_rank != 0:
+                value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
+                past_key_values_placeholder = tuple (
+                    (value_placeholder, value_placeholder) for _ in range(layer_start)
+                ) + (outputs.past_key_values)[layer_start:]
+                _past_key_values = past_key_values_placeholder
+            else:
+                _past_key_values = outputs.past_key_values
+        else:
+            _past_key_values = outputs.past_key_values
+
         toc = time.time()
         if step == 0:
             self.first_token_time = toc - tic
