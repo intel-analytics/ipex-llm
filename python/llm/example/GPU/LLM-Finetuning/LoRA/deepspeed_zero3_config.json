@@ -3,8 +3,7 @@
       "stage": 3,
       "contiguous_gradients": true,
       "overlap_comm": true,
-      "offload_optimizer": {"device": "cpu"},
-      "offload_param": {"device": "cpu"}
+      "offload_optimizer": {"device": "cpu"}
     },
     "bf16": {
       "enabled": true
