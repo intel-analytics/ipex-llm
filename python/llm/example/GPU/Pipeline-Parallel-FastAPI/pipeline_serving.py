@@ -5,17 +5,15 @@ import os
 
 import ipex_llm
 from ipex_llm.utils.common import invalidInputError
+from ipex_llm.transformers import init_pipeline_parallel
 import oneccl_bindings_for_pytorch
 import json
 
 from transformers.utils import logging
 logger = logging.get_logger(__name__)
 
-os.environ['MASTER_ADDR'] = '127.0.0.1'
-os.environ['MASTER_PORT'] = '29501'
+init_pipeline_parallel()
 
-backend = 'ccl'
-dist.init_process_group(backend)
 my_rank = dist.get_rank()
 my_size = dist.get_world_size()
 device = f"xpu:{my_rank}"
