@@ -166,7 +166,7 @@ def pipeline_parallel_generate(self,
                            past_key_values=_past_key_values, use_cache=True)
         else:
             inputs_embeds = torch.empty(_input_ids.shape + (self.config.hidden_size,),
-                                        device=f'xpu:{local_rank}', dtype=torch.float32)
+                                        device=f'xpu:{local_rank}', dtype=self.dtype)
             dist.recv(inputs_embeds, src=pre_rank)
             outputs = self(input_ids=None, inputs_embeds=inputs_embeds,
                            past_key_values=_past_key_values, use_cache=True)
@@ -176,7 +176,7 @@ def pipeline_parallel_generate(self,
             next_ids = torch.argmax(logits[:, -1:, :], dim=-1)
             dist.broadcast(next_ids, src=local_rank)
         else:
-            dist.send(outputs[0], dst=next_rank)
+            dist.send(outputs[0].to(self.dtype), dst=next_rank)
             next_ids = torch.empty((bs, 1), device=f'xpu:{local_rank}', dtype=torch.int64)
             dist.broadcast(next_ids, src=self.pipeline_parallel_stages - 1)
 

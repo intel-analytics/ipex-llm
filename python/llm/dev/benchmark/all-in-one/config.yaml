@@ -36,7 +36,6 @@ test_api:
 cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only available now for gpu win related test_api)
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
-n_gpu: 2 # number of GPUs to use (only available now for "pipeline_parallel_gpu" test_api)
 lookahead: 3
 max_matching_ngram_size: 2
 task: 'continuation' # when test_api is "transformer_int4_fp16_lookahead_gpu", task could be 'QA', 'continuation' or 'summarize' 
