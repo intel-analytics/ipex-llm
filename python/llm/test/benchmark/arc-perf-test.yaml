@@ -6,7 +6,7 @@ repo_id:
   - 'tiiuae/falcon-7b-instruct-with-patch'
   - 'mosaicml/mpt-7b-chat'
   - 'redpajama/gptneox-7b-redpajama-bf16'
-  # - 'bigcode/starcoder-15.5b-4bit'
+  - 'bigcode/starcoder-15.5b-4bit'
   - 'databricks/dolly-v1-6b'
   - 'databricks/dolly-v2-7b'
   - 'databricks/dolly-v2-12b'
