@@ -784,7 +784,6 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     model_config = getattr(model, "config", None)
 
     enable_scale_search = use_scale_search(model_config, qtype)
-    print(model_config)
 
     # mixed quantization needs model_config to choose custom quantization strategy
     model, has_been_replaced = _replace_with_low_bit_linear(
