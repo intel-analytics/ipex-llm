@@ -48,6 +48,7 @@ class Dummy_MLPLayer(nn.Module):
         # to avoid AttributeError in https://github.com/intel-analytics/ipex-llm/blob/main/
         # python/llm/src/ipex_llm/transformers/models/llama.py#L119
         self.up_proj = DummyLayer()
+        self.down_proj = DummyLayer()
 
     def forward(self, x):
         return x
