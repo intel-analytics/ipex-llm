@@ -221,8 +221,3 @@ Input your questions into the **Message Resume Assistant** textbox at the bottom
 #### Exit Open-Webui
 
 To shut down the open-webui server, use **Ctrl+C** in the terminal where the Ragflow server is runing, then close your browser tab.
-
-
-### 6. Troubleshooting
-
-##### Error 
