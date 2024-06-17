@@ -2,9 +2,9 @@
 
 [ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `ollama` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
-See the demo of running LLaMA2-7B on Intel Arc GPU below.
+See the demo of running Qwen2-7B on Intel Arc GPU below.
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
+<video src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-record.mp4" width="100%" controls></video>
 
 ```eval_rst
 .. note::
@@ -193,12 +193,38 @@ If the connection is successful, you will see the model listed down **Show more 
 #### Create Knowledge Base
 Go to **Knowledge Base** after clicking **Knowledge Base** at the top bar. Hit the **+Create knowledge base** button on the right. You will be prompted to input a name for the knowledge base. 
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings.png" width="100%" />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase.png" width="100%" />
 </a>
 
 #### Edit Knowledge Base
-After inputting a name, you will be directed to edit the knowledge base. Hit the **Dataset** on the left, and then hit **+ Add file -> Local files**. Choose the file you want to train, and hit the green start button marked to start parsing the file. It will show **SUCCESS** when the parsing is completed. Then you can go to **Configuration** and hit **Save** at the bottom to save the changes.
+After inputting a name, you will be directed to edit the knowledge base. Hit the **Dataset** on the left, and then hit **+ Add file -> Local files**. 
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase2.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase2.png" width="100%" />
+</a>
+
+Choose the file you want to train, and hit the green start button marked to start parsing the file. 
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase3.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase3.png" width="100%" />
+</a>
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase4.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase4.png" width="100%" />
+</a>
+
+It will show **SUCCESS** when the parsing is completed. 
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase5.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase5.png" width="100%" />
+</a>
+
+Then you can go to **Configuration** and hit **Save** at the bottom to save the changes.
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase6.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase6.png" width="100%" />
+</a>
 
 #### Chat with the Model
 
@@ -206,16 +232,19 @@ Start new conversations with **Chat** at the top navbar.
 
 On the left-side, create a conversation by clicking **Create an Assistant**. Under **Assistant Setting**, give it a name and select your Knowledgebases. Then go to **Model Setting**, choose your model added by Ollama. Make sure disable the **Max Tokens** toggle and hit **OK** to start.
 
-  <a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_select_model.png" target="_blank">
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_select_model.png" width="100%" />
-  </a> 
+  <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat.png" target="_blank">
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat.png" width="100%" />
+  </a>
 
+  <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat2.png" target="_blank">
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat2.png" width="100%" />
+  </a> 
 
 <br/>
 Input your questions into the **Message Resume Assistant** textbox at the bottom, and click the button on the right to get responses.
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_chat_2.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_chat_2.png" width="100%" />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat3.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat3.png" width="100%" />
 </a>
 
 #### Exit Open-Webui
