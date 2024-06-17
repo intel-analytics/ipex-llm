@@ -28,5 +28,7 @@ mpirun -n 2 \
        --output_dir "./ipex-llm-lora-alpaca" \
        --gradient_checkpointing True \
        --micro_batch_size 1 \
-       --batch_size 128 \
+       --batch_size 64 \
+       --cutoff_len 64 \
+       --save_checkpoint False \
        --deepspeed ./deepspeed_zero2.json > training.log
