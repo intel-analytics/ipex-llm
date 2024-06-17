@@ -13,6 +13,9 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - [Qwen/Qwen1.5-14B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [baichuan-inc/Baichuan2-7B-Chat](./run_baichuan2_arc_2_card.sh)
 - [baichuan-inc/Baichuan2-13B-Chat](./run_baichuan2_arc_2_card.sh)
+- [microsoft/Phi-3-mini-4k-instruct](./run_phi3_arc_2_card.sh)
+- [microsoft/Phi-3-medium-4k-instruct](./run_phi3_arc_2_card.sh)
+
 
 ## Example: Run pipeline parallel inference on multiple GPUs
 
@@ -77,6 +80,22 @@ You could specify `--repo-id-or-model-path` in the test script to be the hugging
 ```bash
 pip install transformers==4.37.0
 bash run_baichuan2_arc_2_card.sh
+```
+
+</details>
+
+</details>
+
+<details>
+  <summary> Show Phi3 example </summary>
+
+#### Run Phi-3-mini-4k-instruct / Phi-3-medium-4k-instruct on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Phi3 to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+pip install transformers==4.37.0
+bash run_phi3_arc_2_card.sh
 ```
 
 </details>
