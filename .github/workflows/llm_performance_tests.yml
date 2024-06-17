@@ -232,6 +232,12 @@ jobs:
                   cp "$file" ../../../../test/benchmark/merged_temp
               fi
           done
+          cd ../test_batch4
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" ../../../../test/benchmark/merged_temp
+              fi
+          done
           cd ../../../../test/benchmark
           python merge_csv_batch.py -f ./merged_temp
           cd merged_temp
