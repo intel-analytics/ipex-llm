@@ -152,7 +152,7 @@ In [service_conf.yaml](./docker/service_conf.yaml), select the desired LLM facto
 ```eval_rst
 .. note::
 
-  For detailed information about how to use Open WebUI, visit the README of `open-webui official repository <https://github.com/open-webui/open-webui>`_.
+  For detailed information about how to use RAGFlow, visit the README of `RAGFlow official repository <https://github.com/infiniflow/ragflow>`_.
 
 ```
 
@@ -251,4 +251,4 @@ Input your questions into the **Message Resume Assistant** textbox at the bottom
 
 #### Exit RAGFlow
 
-To shut down the open-webui server, use **Ctrl+C** in the terminal where the Ragflow server is runing, then close your browser tab.
+To shut down the RAGFlow server, use **Ctrl+C** in the terminal where the Ragflow server is runing, then close your browser tab.
