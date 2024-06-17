@@ -106,7 +106,7 @@ def preprocess_prompt(tokenizer, in_len, task):
         input_ids = tokenizer.encode(input_str, return_tensors="pt")    
     return input_ids
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False):
     # TODO: make a parameter
     result= {}
     if test_api == 'transformer_int4':
@@ -118,7 +118,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'transformer_int4_gpu':
         result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding)
     elif test_api == 'transformer_int4_fp16_gpu':
-        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=True)
+        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=True, lookahead=lookahead)
     elif test_api == 'optimize_model_gpu':
         result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'pytorch_autocast_bf16':
@@ -153,8 +153,6 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_speculative_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
     elif test_api == 'pipeline_parallel_gpu':
         result = run_pipeline_parallel_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=use_fp16_torch_dtype)
-    elif test_api == "transformer_int4_fp16_lookahead_gpu":
-        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=True, lookahead=True)
     else:
         invalidInputError(False, "Unknown test_api " + test_api + ", please check your config.yaml.")
 
@@ -163,7 +161,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
             results.append([repo_id,
                             round(np.mean(result[in_out_pair], axis=0)[0]*1000.0, 2),
                             round(np.mean(result[in_out_pair], axis=0)[1]*1000.0, 2),
-                            round(np.mean(result[in_out_pair], axis=0)[2]*1000.0, 2) if 'lookahead' not in test_api else 'N/A',
+                            round(np.mean(result[in_out_pair], axis=0)[2]*1000.0, 2) if not lookahead else 'N/A',
                             in_out_pair,
                             batch_size,
                             f'{int(np.mean(result[in_out_pair], axis=0)[3])}' +
@@ -172,7 +170,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             low_bit,
                             cpu_embedding,
                             round(result[in_out_pair][-1][5], 2),
-                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) else 'N/A',
+                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) and not lookahead else 'N/A',
                             streaming if 'win' in test_api else 'N/A',
                             use_fp16_torch_dtype if 'pipeline_parallel_gpu' in test_api else 'N/A'],
                             ) 
@@ -508,7 +506,7 @@ def run_transformer_int4_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            if not lookahead or conf['task'] == 'continuation':
+            if conf['task'] == 'continuation':
                 # As different tokenizer has different encodings,
                 # in_len.txt maybe shorter than we need,
                 # use much longer context to make sure input length
@@ -1837,6 +1835,7 @@ if __name__ == '__main__':
         streaming = conf['streaming']
     if 'use_fp16_torch_dtype' in conf:
         use_fp16_torch_dtype = conf['use_fp16_torch_dtype']
+    lookahead = False
     
     import pandas as pd
     for api in conf.test_api:
@@ -1855,8 +1854,10 @@ if __name__ == '__main__':
                         model_id_input_batch_size = model_id_input + ':' + str(batch_size)
                         if model_id_input in excludes or model_id_input_batch_size in excludes:
                             in_out_pairs.remove(in_out)
+                if conf['task'] in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
+                    lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype)
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
