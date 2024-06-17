@@ -282,8 +282,14 @@ def chatglm4v_attention_forward(
                                     key_states.transpose(2, 3)).to(value_states.dtype)
         if attention_mask is not None:
             attn_weights = attn_weights + attention_mask
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                   dtype=torch.float32).to(value_states.dtype)
+        if kv_seq_len >= 2048 or bsz >= 64:
+            # for memory considerations, do not upcast attention to fp32
+            # for long sequences or large batches
+            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
+        else:
+            # upcast attention to fp32
+            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                       dtype=torch.float32).to(value_states.dtype)
         attn_output = torch.matmul(attn_weights, value_states)
 
     # context_layer's shape: [bsz, n_head, seq_len, head_dim] -> [seq_len, bsz, n_head * head_dim]
@@ -311,8 +317,14 @@ def visual_attention_forward(self, x: "tensor(B, L, D)") -> "tensor(B, L, D)":
     else:
         attn_weights = torch.matmul(q / math.sqrt(head_dim),
                                     k.transpose(2, 3)).to(v.dtype)
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                   dtype=torch.float32).to(v.dtype)
+        if kv_seq_len >= 2048 or bsz >= 64:
+            # for memory considerations, do not upcast attention to fp32
+            # for long sequences or large batches
+            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
+        else:
+            # upcast attention to fp32
+            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                       dtype=torch.float32).to(v.dtype)
         out = torch.matmul(attn_weights, v)
     output = self.dense(out.transpose(1, 2).reshape(B, L, -1))
     output = self.output_dropout(output)
