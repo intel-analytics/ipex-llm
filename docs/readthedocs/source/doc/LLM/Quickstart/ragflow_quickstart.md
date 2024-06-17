@@ -249,6 +249,6 @@ Input your questions into the **Message Resume Assistant** textbox at the bottom
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat3.png" width="100%" />
 </a>
 
-#### Exit Open-Webui
+#### Exit RAGFlow
 
 To shut down the open-webui server, use **Ctrl+C** in the terminal where the Ragflow server is runing, then close your browser tab.
