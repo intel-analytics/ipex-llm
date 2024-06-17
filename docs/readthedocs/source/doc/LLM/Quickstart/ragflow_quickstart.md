@@ -230,11 +230,13 @@ Then you can go to **Configuration** and hit **Save** at the bottom to save the 
 
 Start new conversations with **Chat** at the top navbar. 
 
-On the left-side, create a conversation by clicking **Create an Assistant**. Under **Assistant Setting**, give it a name and select your Knowledgebases. Then go to **Model Setting**, choose your model added by Ollama. Make sure disable the **Max Tokens** toggle and hit **OK** to start.
+On the left-side, create a conversation by clicking **Create an Assistant**. Under **Assistant Setting**, give it a name and select your Knowledgebases. 
 
   <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat.png" target="_blank">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat.png" width="100%" />
   </a>
+
+Then go to **Model Setting**, choose your model added by Ollama. Make sure to disable the **Max Tokens** toggle and hit **OK** to start.
 
   <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat2.png" target="_blank">
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat2.png" width="100%" />
