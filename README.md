@@ -28,7 +28,7 @@ See the **Token Generation Speed** on *Intel Core Ultra* and *Intel Arc GPU* bel
   </tr>
 </table>
 
-You may follow the [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/benchmark_quickstart.html) to run `ipex-llm` performance benchmark youself.
+You may follow the [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/benchmark_quickstart.html) to run `ipex-llm` performance benchmark yourself.
 
 ## `ipex-llm` Demo
 
