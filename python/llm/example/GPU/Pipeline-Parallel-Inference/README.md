@@ -11,6 +11,8 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - [meta-llama/Meta-Llama-3-8B-Instruct](./run_llama_arc_2_card.sh)
 - [Qwen/Qwen1.5-7B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [Qwen/Qwen1.5-14B-Chat](./run_qwen1.5_arc_2_card.sh)
+- [baichuan-inc/Baichuan2-7B-Chat](./run_baichuan2_arc_2_card.sh)
+- [baichuan-inc/Baichuan2-13B-Chat](./run_baichuan2_arc_2_card.sh)
 
 ## Example: Run pipeline parallel inference on multiple GPUs
 
@@ -59,6 +61,22 @@ You could specify `--repo-id-or-model-path` in the test script to be the hugging
 ```bash
 pip install transformers==4.37.0
 bash run_qwen1.5_arc_2_card.sh
+```
+
+</details>
+
+</details>
+
+<details>
+  <summary> Show Baichuan2 example </summary>
+
+#### Run Baichuan2-7B-Chat / Baichuan2-13B-Chat on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Baichuan2 to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+pip install transformers==4.37.0
+bash run_baichuan2_arc_2_card.sh
 ```
 
 </details>

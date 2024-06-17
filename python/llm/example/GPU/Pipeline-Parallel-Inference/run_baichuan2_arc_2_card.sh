@@ -20,7 +20,6 @@ export MASTER_PORT=9090
 export FI_PROVIDER=tcp
 export USE_XETLA=OFF
 export OMP_NUM_THREADS=6
-export IPEX_LLM_QUANTIZE_KV_CACHE=1
 if [[ $KERNEL_VERSION != *"6.5"* ]]; then
     export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 fi
@@ -28,14 +27,10 @@ export TORCH_LLM_ALLREDUCE=0
 
 NUM_GPUS=2 # number of used GPU
 
-# To run Llama-2-7b-chat-hf
+# To run Baichuan2-7B-Chat
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'meta-llama/Llama-2-7b-chat-hf' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path 'baichuan-inc/Baichuan2-7B-Chat' --gpu-num $NUM_GPUS
 
-# # To run Llama-2-13b-chat-hf
+# # To run Baichuan2-13B-Chat
 # CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-#     generate.py --repo-id-or-model-path 'meta-llama/Llama-2-13b-chat-hf' --gpu-num $NUM_GPUS
-
-# # To run Meta-Llama-3-8B-Instruct
-# CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-#     generate.py --repo-id-or-model-path 'meta-llama/Meta-Llama-3-8B-Instruct' --gpu-num $NUM_GPUS
+#     generate.py --repo-id-or-model-path 'baichuan-inc/Baichuan2-13B-Chat' --gpu-num $NUM_GPUS
