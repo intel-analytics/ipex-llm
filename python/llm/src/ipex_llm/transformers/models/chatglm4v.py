@@ -23,6 +23,7 @@ from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, use_sdp_causal
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.chatglm2 import repeat_kv
+from ipex_llm.utils.common import invalidInputError
 from transformers.modeling_outputs import BaseModelOutputWithPast
 import math
 from typing import List
@@ -54,12 +55,14 @@ def chatglm4v_model_forward(
     # generate mode with past_key_values. the image features are already mapped
     if past_key_values is None:
         # not allow for inputs_embeds, because we want to process image feature
-        assert input_ids is not None and inputs_embeds is None, f"{input_ids} {inputs_embeds}"
+        invalidInputError(input_ids is not None and inputs_embeds is None,
+                          f"{input_ids} should not be None, {inputs_embeds} should be None.")
         if not is_empty(images):  # multi-modality
             image_size: int = self.config.vision_config['image_size']
             patch_size: int = self.config.vision_config['patch_size']
             num_patches = (image_size // patch_size // 2) ** 2
-            assert len(input_ids) == len(images), f"{len(input_ids)} {len(images)}"
+            invalidInputError(len(input_ids) == len(images),
+                              f"{len(input_ids)} should equal to {len(images)}")
             inputs_embeds = self.embedding(input_ids)
 
             images = images.to(dtype=inputs_embeds.dtype)
@@ -71,13 +74,19 @@ def chatglm4v_model_forward(
 
             for i in range(len(input_ids)):
                 input_id = input_ids[i].tolist()
-                boi_token_pos, eoi_token_pos = input_id.index(self.config.boi_token_id), input_id.index(
-                    self.config.eoi_token_id)
-                assert eoi_token_pos - boi_token_pos == 2
+                boi_token_pos = input_id.index(self.config.boi_token_id)
+                eoi_token_pos = input_id.index(self.config.eoi_token_id)
+                invalidInputError(eoi_token_pos - boi_token_pos == 2,
+                                  "eoi_token_pos - boi_token_pos should equal to 2, but got"
+                                  f"{eoi_token_pos} - {boi_token_pos} = "
+                                  f"{eoi_token_pos - boi_token_pos}")
                 new_input_embeds.append(torch.cat(
-                    (inputs_embeds[i, :boi_token_pos], images_features[i].to(inputs_embeds.device), inputs_embeds[i, eoi_token_pos + 1:])))
+                    (inputs_embeds[i, :boi_token_pos],
+                     images_features[i].to(inputs_embeds.device),
+                     inputs_embeds[i, eoi_token_pos + 1:])))
                 new_position_ids.append(torch.cat(
-                    (position_ids[i, :boi_token_pos + 1], position_ids[i, boi_token_pos + 1].repeat(num_patches),
+                    (position_ids[i, :boi_token_pos + 1],
+                     position_ids[i, boi_token_pos + 1].repeat(num_patches),
                      position_ids[i, eoi_token_pos:])
                 ))
             inputs_embeds = torch.stack(new_input_embeds, dim=0)
@@ -178,7 +187,7 @@ def chatglm4v_attention_forward(
     # past_key_value: [bsz, n_kv_head, seq_len, head_dim]
     past_key_value = None
     if kv_cache is not None:
-        if isinstance(kv_cache , tuple):
+        if isinstance(kv_cache, tuple):
             past_key_value = kv_cache
         else:
             past_key_value = (kv_cache[0][0], kv_cache[0][1])
@@ -289,17 +298,16 @@ def visual_attention_forward(self, x: "tensor(B, L, D)") -> "tensor(B, L, D)":
     qkv = self.query_key_value(x)
     qkv = qkv.reshape(B, L, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)  # 3, B, H, L, D
     q, k, v = qkv[0], qkv[1], qkv[2]
-    
+
     bsz, q_len, kv_seq_len, head_dim = q.shape
     if use_sdp(q_len, kv_seq_len, head_dim, q):
         import xe_addons
         out = xe_addons.sdp(q, k, v, None)
     elif q.device.type == "cpu":
-        out = torch.nn.functional.scaled_dot_product_attention(
-        q, k, v,
-        attn_mask=None,
-        dropout_p=0.,
-        is_causal=False)
+        out = torch.nn.functional.scaled_dot_product_attention(q, k, v,
+                                                               attn_mask=None,
+                                                               dropout_p=0.,
+                                                               is_causal=False)
     else:
         attn_weights = torch.matmul(q / math.sqrt(head_dim),
                                     k.transpose(2, 3)).to(v.dtype)
@@ -310,6 +318,7 @@ def visual_attention_forward(self, x: "tensor(B, L, D)") -> "tensor(B, L, D)":
     output = self.output_dropout(output)
     return output
 
+
 def patch_embedding_forward(self, images: "tensor(B, C, H, W)") -> "tensor(B, L, D)":
     x = self.proj(images)
     x = x.flatten(2).transpose(1, 2)
@@ -317,4 +326,3 @@ def patch_embedding_forward(self, images: "tensor(B, C, H, W)") -> "tensor(B, L,
     x = torch.cat((cls_token, x), dim=1)
     x += self.position_embedding.weight.unsqueeze(0).to(images.device)
     return x
-    
