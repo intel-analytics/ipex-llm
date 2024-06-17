@@ -160,13 +160,13 @@ In [service_conf.yaml](./docker/service_conf.yaml), select the desired LLM facto
 
 If this is your first time using it, you need to register. After registering, log in with the registered account to access the interface.
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_signup.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_signup.png" width="100%" />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login.png" width="100%" />
 </a>
 
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_login.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_login.png" width="100%" />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login2.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login2.png" width="100%" />
 </a>
 
 #### Configure `Ollama` service URL
@@ -174,14 +174,14 @@ If this is your first time using it, you need to register. After registering, lo
 Access the Ollama settings through **Settings -> Model Providers** in the menu. Fill out the  and **Base url**, and then hit the **OK** button at the bottom.
 
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings_0.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings_0.png" width="100%" />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-add-ollama.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-add-ollama.png" width="100%" />
 </a>
 
 If the connection is successful, you will see the model listed down **Show more models** as illustrated below.
 
-<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings.png" target="_blank">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_settings.png" width="100%" />
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-add-ollama2.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-add-ollama2.png" width="100%" />
 </a>
 
 ```eval_rst
