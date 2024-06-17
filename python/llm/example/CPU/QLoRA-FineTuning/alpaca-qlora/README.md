@@ -10,7 +10,6 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 pip install datasets transformers==4.36.0
 pip install fire peft==0.10.0
-pip install accelerate==0.23.0
 pip install bitsandbytes scipy
 ```
 

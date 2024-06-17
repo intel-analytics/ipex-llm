@@ -41,7 +41,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     rm -rf IPEX-LLM && \
     # install transformers & peft dependencies
     pip install transformers==4.36.0 && \
-    pip install peft==0.10.0 datasets accelerate==0.23.0 && \
+    pip install peft==0.10.0 datasets && \
     pip install bitsandbytes scipy fire && \
     # Prepare accelerate config
     mkdir -p /root/.cache/huggingface/accelerate && \

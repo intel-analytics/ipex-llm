@@ -50,7 +50,6 @@ RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     # install huggingface dependencies
     pip install datasets transformers==4.36.0 && \
     pip install fire peft==0.10.0 && \
-    pip install accelerate==0.23.0 && \
     pip install bitsandbytes && \
     # get qlora example code
     cd /ipex_llm && \
