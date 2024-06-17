@@ -52,6 +52,12 @@ bash lora_finetune_llama2_7b_pvc_1550_1_tile.sh
 bash lora_finetune_llama2_7b_pvc_1550_4_card.sh
 ```
 
+##### Finetuning ChatGLM3-6B on two Intel ARC 770
+
+```bash
+bash lora_finetune_chatglm3_6b_arc_2_card.sh
+```
+
 ### 4. (Optional) Resume Training
 **If you fail to complete the whole finetuning process, it is suggested to resume training from a previously saved checkpoint by specifying `resume_from_checkpoint` to the local checkpoint folder as following:**
 ```bash

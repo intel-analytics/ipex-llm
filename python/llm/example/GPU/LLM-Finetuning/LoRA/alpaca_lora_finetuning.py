@@ -71,7 +71,7 @@ def train(
     base_model: str = "meta-llama/Llama-2-7b-hf",  # the only required argument, default to be "meta-llama/Llama-2-7b-hf"
     saved_low_bit_model: str = None,  # optional, the path to the saved model with ipex-llm low-bit optimization
     data_path: str = "yahma/alpaca-cleaned",
-    output_dir: str = "./bigdl-qlora-alpaca",
+    output_dir: str = "./bigdl-lora-alpaca",
     # training hyperparams
     bf16: bool = True,  # default to bf16
     batch_size: int = 128,
@@ -107,6 +107,7 @@ def train(
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
     training_mode: str = "lora",
+    save_checkpoint: bool = True
 ):
     invalidInputError(training_mode == "lora",
                       f"This example is for lora training mode, but got training_mode={training_mode}.")
@@ -234,12 +235,12 @@ def train(
             logging_steps=1,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",
-            save_strategy="steps",
+            save_strategy="steps" if save_checkpoint else "no",
             eval_steps=100 if val_set_size > 0 else None,
             save_steps=100,
             output_dir=output_dir,
             save_total_limit=100,
-            load_best_model_at_end=True if val_set_size > 0 else False,
+            load_best_model_at_end=True if val_set_size > 0 and save_checkpoint else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
             report_to="wandb" if use_wandb else None,
