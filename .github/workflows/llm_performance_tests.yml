@@ -456,6 +456,7 @@ jobs:
 
           pip install pandas==1.5.3
           pip install Jinja2
+          pip install "numpy<2.0.0"
 
           call conda deactivate
 
