@@ -79,7 +79,7 @@ def preprocess_prompt(tokenizer, in_len, task):
         elif in_len == 2048:
             input_str = open(f"prompt/summarize/cnn_824.txt", 'r').read()
         elif in_len <= 256:
-            input_str = open(f"prompt/summarize/cnn_10.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_64.txt", 'r').read()
         else:
             input_str = open(f"prompt/summarize/cnn_5618.txt", 'r').read()
         question = "Can you please summarize this article?"
