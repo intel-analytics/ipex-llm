@@ -28,6 +28,7 @@ ipex_duplicate_import_error = "intel_extension_for_pytorch has already been auto
 
 
 def replace_import():
+    global RAW_IMPORT, IS_IMPORT_REPLACED
     # Avoid multiple replacement
     if not IS_IMPORT_REPLACED and RAW_IMPORT is None:
         # Save the original __import__ function
@@ -37,6 +38,7 @@ def replace_import():
 
 
 def revert_import():
+    global RAW_IMPORT, IS_IMPORT_REPLACED
     # Only revert once
     if RAW_IMPORT is not None and IS_IMPORT_REPLACED:
         builtins.__import__ = RAW_IMPORT
