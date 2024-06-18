@@ -37,7 +37,7 @@ VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip
 ORCA_AUTOML_DEP = ['ray[default]==1.9.2', 'aiohttp==3.9.0', 'async-timeout==4.0.1',
                    'aioredis==1.3.1', 'hiredis==2.0.0', 'setproctitle', 'psutil==5.9.5',
                    'prometheus-client==0.11.0', 'protobuf==3.19.5', 'ray[tune]==1.9.2',
-                   'scikit-learn', 'tensorboard']
+                   'scikit-learn>=1.5.0', 'tensorboard']
 TF_DEP = ["intel-tensorflow==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') \
           and platform_system!='Darwin'",
           "tensorflow==2.7.0; platform_machine=='x86_64' and platform_system=='Darwin'",
@@ -71,7 +71,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
-        install_requires=['pandas>=1.0.5, <=1.3.5', 'scikit-learn',
+        install_requires=['pandas>=1.0.5, <=1.3.5', 'scikit-learn>=1.5.0',
                           'bigdl-nano==' + VERSION],
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
                         'tensorflow': ['bigdl-nano=='+VERSION] + TF_DEP,
