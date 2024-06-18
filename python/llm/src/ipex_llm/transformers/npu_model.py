@@ -55,7 +55,7 @@ class _BaseAutoModelClass:
         The loaded model will run supported OPs on NPU, then run other OPs on CPU.
 
         Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
-        :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'sym_int8'`` and ``'fp32'``.
+        :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'sym_int8'``, ``'fp32'``.
                                 Relevant low bit optimizations will be applied to the model.
         :return: a model instance
         """
