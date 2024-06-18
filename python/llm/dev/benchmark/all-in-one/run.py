@@ -45,11 +45,11 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
-def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead, lookahead_num, max_matching_ngram_size):
+def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead):
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         if lookahead:
-            output_ids = model.generate(input_ids, lookahead=lookahead_num, do_sample=False, max_matching_ngram_size=max_matching_ngram_size, max_new_tokens=out_len,
+            output_ids = model.generate(input_ids, lookahead=3, do_sample=False, max_matching_ngram_size=2, max_new_tokens=out_len,
                                     min_new_tokens=out_len, num_beams=num_beams)
         else:
             output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
@@ -106,7 +106,7 @@ def preprocess_prompt(tokenizer, in_len, task):
         input_ids = tokenizer.encode(input_str, return_tensors="pt")    
     return input_ids
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation', lookahead_num=3, max_matching_ngram_size=2):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation'):
     # TODO: make a parameter
     result= {}
     if test_api == 'transformer_int4':
@@ -118,7 +118,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'transformer_int4_gpu':
         result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding)
     elif test_api == 'transformer_int4_fp16_gpu':
-        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=True, lookahead=lookahead, task=task, lookahead_num=lookahead_num, max_matching_ngram_size=max_matching_ngram_size)
+        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=True, lookahead=lookahead, task=task)
     elif test_api == 'optimize_model_gpu':
         result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'pytorch_autocast_bf16':
@@ -442,9 +442,7 @@ def run_transformer_int4_gpu(repo_id,
                              cpu_embedding,
                              fp16=False,
                              lookahead=False,
-                             task='continuation',
-                             lookahead_num=3,
-                             max_matching_ngram_size=2):
+                             task='continuation'):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     model_path = get_model_path(repo_id, local_model_hub)
@@ -530,7 +528,7 @@ def run_transformer_int4_gpu(repo_id,
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
-            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead, lookahead_num, max_matching_ngram_size))
+            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead))
             thread.start()
             thread.join()
 
@@ -1827,7 +1825,6 @@ def run_pipeline_parallel_gpu(repo_id,
 
 if __name__ == '__main__':
     from omegaconf import OmegaConf
-    global conf
     conf = OmegaConf.load(f'{current_dir}/config.yaml')
     today = date.today()
     if 'exclude' in conf:
@@ -1835,18 +1832,12 @@ if __name__ == '__main__':
     streaming = False
     use_fp16_torch_dtype = False
     task = 'continuation'
-    lookahead_num = 3
-    max_matching_ngram_size = 2
     if 'streaming' in conf:
         streaming = conf['streaming']
     if 'use_fp16_torch_dtype' in conf:
         use_fp16_torch_dtype = conf['use_fp16_torch_dtype']
     if 'task' in conf:
         task = conf['task']
-    if 'lookahead' in conf:
-        lookahead_num = conf['lookahead']
-    if 'max_matching_ngram_size' in conf:
-        max_matching_ngram_size = conf['max_matching_ngram_size']
     lookahead = False
     
     import pandas as pd
@@ -1869,7 +1860,7 @@ if __name__ == '__main__':
                 if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
                     lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, lookahead_num, max_matching_ngram_size)
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
