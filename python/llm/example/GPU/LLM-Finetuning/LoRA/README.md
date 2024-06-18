@@ -34,6 +34,12 @@ Here, we provide example usages on different hardware. Please refer to the appro
 bash lora_finetune_llama2_7b_arc_1_card.sh
 ```
 
+##### Finetuning ChatGLM3-6B on two Arc A770
+
+```bash
+bash lora_deepspeed_zero3_finetune_chatglm3_6b_arc_2_card.sh
+```
+
 ##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100
 
 ```bash

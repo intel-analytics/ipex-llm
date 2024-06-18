@@ -29,7 +29,7 @@ export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export TORCH_LLM_ALLREDUCE=0 # Different from PVC
 
-mpirun -n 2 \
+mpirun -n $NUM_GPUS \
     python ./alpaca_lora_finetuning.py \
        --base_model "THUDM/chatglm3-6b" \
        --data_path "yahma/alpaca-cleaned" \
