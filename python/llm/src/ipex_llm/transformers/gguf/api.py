@@ -30,6 +30,9 @@ qtype_map = {
 
 def load_gguf_model(fpath: str, dtype: torch.dtype = torch.float, low_bit: str = "sym_int4"):
     from .gguf import GGUFFileLoader
+    # Disable ipex duplicate import checker
+    from ipex_llm.utils.ipex_importer import revert_import
+    revert_import
 
     loader = GGUFFileLoader(fpath)
     model_family = loader.config["general.architecture"]
