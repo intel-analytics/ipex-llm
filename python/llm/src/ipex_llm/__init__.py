@@ -27,7 +27,9 @@ import sys
 import types
 
 # Default is false, set to true to auto importing Intel Extension for PyTorch.
+USE_NPU = os.getenv("BIGDL_USE_NPU", 'False').lower() in ('true', '1', 't')
 BIGDL_IMPORT_IPEX = os.getenv("BIGDL_IMPORT_IPEX", 'True').lower() in ('true', '1', 't')
+BIGDL_IMPORT_IPEX = not USE_NPU and BIGDL_IMPORT_IPEX
 if BIGDL_IMPORT_IPEX:
     # Import Intel Extension for PyTorch as ipex if XPU version is installed
     from .utils.ipex_importer import ipex_importer
