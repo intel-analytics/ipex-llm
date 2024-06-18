@@ -72,11 +72,42 @@ Latest update 🔥
    * [2023/09] ``ipex-llm`` now supports `Intel GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU>`_ (including iGPU, Arc, Flex and MAX).
    * [2023/09] ``ipex-llm`` `tutorial <https://github.com/intel-analytics/ipex-llm-tutorial>`_ is released.
 
+
+************************************************
+``ipex-llm`` Performance
+************************************************
+
+.. raw:: html
+
+  <p>
+      See the <strong>Token Generation Speed</strong> on <em>Intel Core Ultra</em> and <em>Intel Arc GPU</em> below <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup>
+       (and refer to <a href=https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-meta-llama3-with-intel-ai-solutions.html>[2]</a><a href=https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-microsoft-phi-3-models-intel-ai-soln.htm>[3]</a><a href=https://www.intel.com/content/www/us/en/developer/articles/technical/intel-ai-solutions-accelerate-alibaba-qwen2-llms.html>[4]</a> for more details).
+  </p>
+
+.. raw:: html
+    
+  <table width="100%">
+    <tr>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" width=100%; />
+        </a>
+      </td>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" width=100%; />
+        </a>
+      </td>
+    </tr>
+  </table>
+
+You may follow the `guide <doc/LLM/Quickstart/benchmark_quickstart.html>`_ to run ``ipex-llm`` performance benchmark yourself.
+
 ************************************************
 ``ipex-llm`` Demos
 ************************************************
 
-See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, single-card Arc GPU, or multi-card Arc GPUs* using `ipex-llm` below.
+See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, single-card Arc GPU, or multi-card Arc GPUs* using ``ipex-llm`` below.
 
 .. raw:: html
    
