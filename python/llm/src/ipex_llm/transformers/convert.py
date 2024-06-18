@@ -290,6 +290,13 @@ def convert_gptq(module, awq=False, llm_awq=False, act_order=False):
 def use_scale_search(model_config, qtype):
     if qtype == ggml_tensor_qtype["fp6"] and model_config.model_type not in ["qwen2"]:
         return True
+    elif qtype == ggml_tensor_qtype["fp8_e4m3"] and \
+            model_config.model_type not in ["qwen2", "baichuan"]:
+        if model_config.model_type == "llama" and model_config.vocab_size == 128256 and \
+                "instruct" in model_config._name_or_path.lower():
+            # Llama-3-instruct
+            return False
+        return True
     return False
 
 
