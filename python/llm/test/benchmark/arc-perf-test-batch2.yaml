@@ -36,4 +36,4 @@ exclude:
   # - 'databricks/dolly-v2-12b:2048'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
   - 'bigscience/bloomz-7b1:2048'
-task: 'continuation' # when task is 'continuation', the result is without lookahead. When task is 'QA' or 'summarize', the result is with lookahead
+task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
