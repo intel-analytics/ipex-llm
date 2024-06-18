@@ -41,6 +41,7 @@ test_api:
   - "transformer_int4_gpu"   # on Intel GPU, transformer-like API, (qtype=int4)
 cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only avaiable now for gpu win related test_api)
+task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
 ```
 
 Some parameters in the yaml file that you can configure:
@@ -61,6 +62,7 @@ Some parameters in the yaml file that you can configure:
 - `streaming`: Whether to output in a streaming way (only available for GPU Windows-related test_api).
 - `use_fp16_torch_dtype`: Whether to use fp16 for the non-linear layer (only available for "pipeline_parallel_gpu" test_api).
 - `n_gpu`: Number of GPUs to use (only available for "pipeline_parallel_gpu" test_api).
+- `task`: There are three tasks: `continuation`, `QA` and `summarize`. `continuation` refers to writing additional content based on prompt. `QA` refers to answering questions based on prompt. `summarize` refers to summarizing the prompt.
 
 
 ```eval_rst
