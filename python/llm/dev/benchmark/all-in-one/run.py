@@ -45,11 +45,11 @@ LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 results = []
 excludes = []
 
-def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead):
+def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead, lookahead_num, max_matching_ngram_size):
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         if lookahead:
-            output_ids = model.generate(input_ids, lookahead=conf.lookahead, do_sample=False, max_matching_ngram_size=conf.max_matching_ngram_size, max_new_tokens=out_len,
+            output_ids = model.generate(input_ids, lookahead=lookahead_num, do_sample=False, max_matching_ngram_size=max_matching_ngram_size, max_new_tokens=out_len,
                                     min_new_tokens=out_len, num_beams=num_beams)
         else:
             output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
@@ -106,7 +106,7 @@ def preprocess_prompt(tokenizer, in_len, task):
         input_ids = tokenizer.encode(input_str, return_tensors="pt")    
     return input_ids
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation', lookahead_num=3, max_matching_ngram_size=2):
     # TODO: make a parameter
     result= {}
     if test_api == 'transformer_int4':
@@ -118,7 +118,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'transformer_int4_gpu':
         result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding)
     elif test_api == 'transformer_int4_fp16_gpu':
-        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=True, lookahead=lookahead)
+        result = run_transformer_int4_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=True, lookahead=lookahead, task=task, lookahead_num=lookahead_num, max_matching_ngram_size=max_matching_ngram_size)
     elif test_api == 'optimize_model_gpu':
         result = run_optimize_model_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     elif test_api == 'pytorch_autocast_bf16':
@@ -441,7 +441,10 @@ def run_transformer_int4_gpu(repo_id,
                              batch_size,
                              cpu_embedding,
                              fp16=False,
-                             lookahead=False):
+                             lookahead=False,
+                             task='continuation',
+                             lookahead_num=3,
+                             max_matching_ngram_size=2):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
     model_path = get_model_path(repo_id, local_model_hub)
@@ -506,7 +509,7 @@ def run_transformer_int4_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            if conf['task'] == 'continuation':
+            if task == 'continuation':
                 # As different tokenizer has different encodings,
                 # in_len.txt maybe shorter than we need,
                 # use much longer context to make sure input length
@@ -520,14 +523,14 @@ def run_transformer_int4_gpu(repo_id,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
                 input_ids = input_ids[:, :in_len]
-            elif conf['task'] == 'summarize' or conf['task'] == 'QA':
-                input_ids = preprocess_prompt(tokenizer, in_len, conf['task'])
+            elif task in ['QA', 'summarize']:
+                input_ids = preprocess_prompt(tokenizer, in_len, task)
             true_str = tokenizer.batch_decode(input_ids)[0]
             input_list = [true_str] * batch_size
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
-            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead))
+            thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead, lookahead_num, max_matching_ngram_size))
             thread.start()
             thread.join()
 
@@ -1831,10 +1834,19 @@ if __name__ == '__main__':
         excludes = conf['exclude']
     streaming = False
     use_fp16_torch_dtype = False
+    task = 'continuation'
+    lookahead_num = 3
+    max_matching_ngram_size = 2
     if 'streaming' in conf:
         streaming = conf['streaming']
     if 'use_fp16_torch_dtype' in conf:
         use_fp16_torch_dtype = conf['use_fp16_torch_dtype']
+    if 'task' in conf:
+        task = conf['task']
+    if 'lookahead' in conf:
+        lookahead_num = conf['lookahead']
+    if 'max_matching_ngram_size' in conf:
+        max_matching_ngram_size = conf['max_matching_ngram_size']
     lookahead = False
     
     import pandas as pd
@@ -1854,10 +1866,10 @@ if __name__ == '__main__':
                         model_id_input_batch_size = model_id_input + ':' + str(batch_size)
                         if model_id_input in excludes or model_id_input_batch_size in excludes:
                             in_out_pairs.remove(in_out)
-                if conf['task'] in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
+                if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
                     lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead)
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, lookahead_num, max_matching_ngram_size)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])

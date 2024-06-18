@@ -36,3 +36,8 @@ exclude:
 #  - 'fnlp/moss-moon-003-sft-4bit:2048'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
   - 'bigscience/bloomz-7b1:2048'
+streaming: False # whether output in streaming way (only available now for gpu win related test_api)
+use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
+lookahead: 3
+max_matching_ngram_size: 2
+task: 'continuation' # when task is 'continuation', the result is without lookahead. When task is 'QA' or 'summarize', the result is with lookahead
