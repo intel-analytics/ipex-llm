@@ -246,7 +246,7 @@ wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/docker/llm/
 
 export MODEL="YOUR_MODEL"
 
-# You can change load-in-low-bit from values in [sym_int4, fp8, fp16]
+# You can change load-in-low-bit from values in [sym_int4, fp6, fp8, fp8_e4m3, fp16]
 
 python3 ./benchmark_throughput.py \
     --backend vllm \
