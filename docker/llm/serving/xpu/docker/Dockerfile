@@ -21,7 +21,8 @@ RUN apt-get update && \
     pip install outlines==0.0.34 --no-deps && \
     pip install interegular cloudpickle diskcache joblib lark nest-asyncio numba scipy && \
     # For Qwen series models support
-    pip install transformers_stream_generator einops tiktoken
+    pip install transformers_stream_generator einops tiktoken && \
+    pip uninstall -y deepspeed
 
 COPY ./vllm_offline_inference.py       /llm/
 COPY ./payload-1024.lua                /llm/

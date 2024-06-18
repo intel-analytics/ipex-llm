@@ -345,7 +345,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--load-in-low-bit",
         type=str,
-        choices=["sym_int4", "fp8", "fp16"],
+        choices=["sym_int4", "fp8", "fp8_e4m3", "fp16", "fp6"],
         default="sym_int4",
         help="Low-bit format quantization with IPEX-LLM")
 
