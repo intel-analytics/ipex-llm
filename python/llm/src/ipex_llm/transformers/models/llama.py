@@ -172,7 +172,7 @@ def llama_model_forward_4_41(
     input_ids: torch.LongTensor = None,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_values: Optional[Union[Cache, List[torch.FloatTensor]]] = None,
+    past_key_values: Optional[Union[Cache, List[torch.FloatTensor]]]=None,
     inputs_embeds: Optional[torch.FloatTensor] = None,
     use_cache: Optional[bool] = None,
     output_attentions: Optional[bool] = None,
@@ -2404,7 +2404,7 @@ def llama_model_forward_4_41_internal(
     input_ids: torch.LongTensor = None,
     attention_mask: Optional[torch.Tensor] = None,
     position_ids: Optional[torch.LongTensor] = None,
-    past_key_values: Optional[Union[Cache, List[torch.FloatTensor]]] = None,
+    past_key_values: Optional[Union[Cache, List[torch.FloatTensor]]]=None,
     inputs_embeds: Optional[torch.FloatTensor] = None,
     use_cache: Optional[bool] = None,
     output_attentions: Optional[bool] = None,
@@ -2424,8 +2424,8 @@ def llama_model_forward_4_41_internal(
 
     if (input_ids is None) ^ (inputs_embeds is not None):
         invalidInputError(False,
-                        f"You cannot specify both input_ids and inputs_embeds at the same time,"
-                        f" and must specify either one")
+                          f"You cannot specify both input_ids and inputs_embeds at the same time,"
+                          f" and must specify either one")
 
     if self.gradient_checkpointing and self.training and use_cache:
         logger.warning_once(
@@ -2517,8 +2517,8 @@ def llama_model_forward_4_41_internal(
         next_cache = next_cache.to_legacy_cache()
 
     if not return_dict:
-        return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] \
-                        if v is not None)
+        return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns]
+                     if v is not None)
     return BaseModelOutputWithPast(
         last_hidden_state=hidden_states,
         past_key_values=next_cache,
