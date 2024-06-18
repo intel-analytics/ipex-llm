@@ -61,7 +61,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
-        install_requires=['pandas>=1.0.5, <1.3.0', 'scikit-learn',
+        install_requires=['pandas>=1.0.5, <1.3.0', 'scikit-learn>=1.5.0',
                           'bigdl-nano==' + VERSION, 'numpy<=1.23.5'],
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
                         'tensorflow': ['bigdl-nano[tensorflow_27]=='+VERSION],
