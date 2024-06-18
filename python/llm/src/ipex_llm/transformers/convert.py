@@ -1400,15 +1400,23 @@ def _optimize_post(model, lightweight_bmm=False):
                             module.MistralRMSNorm,
                             llama_rms_norm_forward)
         else:
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
             if version.parse(trans_version) >= version.parse("4.36.0"):
-                modeling_module_name = model.__class__.__module__
-                module = importlib.import_module(modeling_module_name)
-                from ipex_llm.transformers.models.mistral import mistral_attention_forward_4_36
                 from ipex_llm.transformers.models.mistral import mistral_model_forward_4_36
-                convert_forward(model,
-                                module.MistralAttention,
-                                mistral_attention_forward_4_36
-                                )
+                if version.parse(trans_version) >= version.parse("4.39.0"):
+                    from ipex_llm.transformers.models.mistral import mistral_attention_forward_4_39
+                    convert_forward(model,
+                                    module.MistralAttention,
+                                    mistral_attention_forward_4_39
+                                    )
+                else:
+                    from ipex_llm.transformers.models.mistral import mistral_attention_forward_4_36
+
+                    convert_forward(model,
+                                    module.MistralAttention,
+                                    mistral_attention_forward_4_36
+                                    )
                 convert_forward(model,
                                 module.MistralModel,
                                 mistral_model_forward_4_36
@@ -1420,8 +1428,6 @@ def _optimize_post(model, lightweight_bmm=False):
                                 module.MistralMLP,
                                 llama_mlp_forward)
             else:
-                modeling_module_name = model.__class__.__module__
-                module = importlib.import_module(modeling_module_name)
                 from ipex_llm.transformers.models.mistral import mistral_attention_forward
                 convert_forward(model,
                                 module.MistralAttention,
