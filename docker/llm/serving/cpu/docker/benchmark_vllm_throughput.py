@@ -332,8 +332,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--device",
         type=str,
-        default="cuda",
-        choices=["cuda", "xpu"],
+        default="cpu",
+        choices=["cuda", "xpu", "cpu"],
         help='device type for vLLM execution, supporting CUDA only currently.')
     parser.add_argument(
         "--enable-prefix-caching",
@@ -342,8 +342,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--load-in-low-bit",
         type=str,
-        choices=["sym_int4", "fp6", "fp8", "fp16"],
-        default="sym_int4",
+        choices=["sym_int4", "fp6", "fp8", "bf16"],
+        default="bf16",
         help="Low-bit format quantization with IPEX-LLM")
     parser.add_argument('--max-num-batched-tokens',
         type=int,
