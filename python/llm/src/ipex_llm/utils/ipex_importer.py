@@ -68,7 +68,7 @@ def custom_ipex_import(name, globals=None, locals=None, fromlist=(), level=0):
     """
     if fromlist is not None or '.' in name:
         return RAW_IMPORT(name, globals, locals, fromlist, level)
-    # Avoid raise exception in submodule import
+    # Avoid errors in submodule import
     calling = get_calling_package()
     if calling is not None:
         return RAW_IMPORT(name, globals, locals, fromlist, level)
