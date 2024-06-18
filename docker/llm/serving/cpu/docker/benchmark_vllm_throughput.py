@@ -343,7 +343,7 @@ if __name__ == "__main__":
         "--load-in-low-bit",
         type=str,
         choices=["sym_int4", "fp6", "fp8", "bf16"],
-        default="sym_int4",
+        default="bf16",
         help="Low-bit format quantization with IPEX-LLM")
     parser.add_argument('--max-num-batched-tokens',
         type=int,
