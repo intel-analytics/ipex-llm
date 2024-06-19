@@ -1,6 +1,6 @@
 # Run RAGFlow with IPEX_LLM on Intel GPU
 
-RAGFlow[https://github.com/infiniflow/ragflow] is an open-source RAG (Retrieval-Augmented Generation) engine based on deep document understanding; by integrating it with [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily leverage local LLMs running on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max).
+[RAGFlow](https://github.com/infiniflow/ragflow) is an open-source RAG (Retrieval-Augmented Generation) engine based on deep document understanding; by integrating it with [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily leverage local LLMs running on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max).
 
 
 *See the demo of ragflow running Qwen2:7B on Intel Arc A770 below.*
@@ -264,6 +264,6 @@ Input your questions into the **Message Resume Assistant** textbox at the bottom
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-chat3.png" width="100%" />
 </a>
 
-#### Exit RAGFlow
+#### Exit
 
 To shut down the RAGFlow server, use **Ctrl+C** in the terminal where the Ragflow server is runing, then close your browser tab.
