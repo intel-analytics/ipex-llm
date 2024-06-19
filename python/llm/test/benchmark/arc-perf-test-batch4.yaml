@@ -1,5 +1,5 @@
 repo_id:
-  - 'meta-llama/Llama-2-7b-chat-hf'
+  - 'meta-llama/Llama-2-13b-chat-hf'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
@@ -13,4 +13,6 @@ in_out_pairs:
 test_api:
   - "transformer_int4_fp16_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+exclude:
+  - 'meta-llama/Llama-2-13b-chat-hf:2048'
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
