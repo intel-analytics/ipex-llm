@@ -20,3 +20,4 @@ cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu w
 exclude:
   - 'Qwen/Qwen1.5-7B-Chat:2048'
   - 'meta-llama/Meta-Llama-3-8B-Instruct:2048'
+task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
