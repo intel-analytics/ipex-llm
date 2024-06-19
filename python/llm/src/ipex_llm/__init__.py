@@ -26,14 +26,16 @@ from .llm_patching import llm_patch, llm_unpatch
 import sys
 import types
 
-# Default is false, set to true to auto importing Intel Extension for PyTorch.
+# Default is True, set to False to disable auto importing Intel Extension for PyTorch.
 USE_NPU = os.getenv("BIGDL_USE_NPU", 'False').lower() in ('true', '1', 't')
 BIGDL_IMPORT_IPEX = os.getenv("BIGDL_IMPORT_IPEX", 'True').lower() in ('true', '1', 't')
 BIGDL_IMPORT_IPEX = not USE_NPU and BIGDL_IMPORT_IPEX
 if BIGDL_IMPORT_IPEX:
     # Import Intel Extension for PyTorch as ipex if XPU version is installed
     from .utils.ipex_importer import ipex_importer
-    ipex_importer.import_ipex()
+    # Avoid duplicate import
+    if ipex_importer.get_ipex_version() is None:
+        ipex_importer.import_ipex()
 
 # Default is true, set to true to auto patching bigdl-llm to ipex_llm.
 BIGDL_COMPATIBLE_MODE = os.getenv("BIGDL_COMPATIBLE_MODE", 'True').lower() in ('true', '1', 't')

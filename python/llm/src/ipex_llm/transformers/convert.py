@@ -773,6 +773,9 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                     f"{list(gguf_mixed_qtype.keys())[index]} "
                     f"format......")
     modules_to_not_convert = [] if modules_to_not_convert is None else modules_to_not_convert
+    # Disable ipex duplicate import checker
+    from ipex_llm.utils.ipex_importer import revert_import
+    revert_import()
 
     # using ipex_llm optimizer before changing to bigdl linear
     _enable_ipex = get_enable_ipex()
