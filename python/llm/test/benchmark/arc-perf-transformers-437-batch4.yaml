@@ -1,6 +1,9 @@
 # For the models that require transformers 4.37.0
 repo_id:
   - 'Qwen/Qwen1.5-7B-Chat'
+  - 'microsoft/phi-2'
+  - 'microsoft/Phi-3-mini-4k-instruct'
+  - 'meta-llama/Meta-Llama-3-8B-Instruct' # mwj: need to test
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
@@ -14,6 +17,6 @@ in_out_pairs:
 test_api:
   - "transformer_int4_fp16_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
-exclude: 
+exclude:
   - 'Qwen/Qwen1.5-7B-Chat:2048'
-task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
+  - 'meta-llama/Meta-Llama-3-8B-Instruct:2048'
