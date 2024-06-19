@@ -117,8 +117,8 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 -->
 
 ## Model Accuracy
-Please see the Perplexity result below (tested on Wikitext using the script [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/dev/benchmark/perplexity)).
-|[Perplexity]               |sym_int4	|q4_k	  |fp6	  |fp8_e5m2 |fp8_e4m3 |fp16   |
+Please see the **Perplexity** result below (tested on Wikitext dataset using the script [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/dev/benchmark/perplexity)).
+|Perplexity                 |sym_int4	|q4_k	  |fp6	  |fp8_e5m2 |fp8_e4m3 |fp16   |
 |---------------------------|---------|-------|-------|---------|---------|-------|
 |Llama-2-7B-chat-hf	        |6.3638	  |6.2179	|6.0924	|6.1796	  |6.0980   |6.0963 | 
 |Mistral-7B-Instruct-v0.1	  |6.0025	  |5.9581	|5.8930	|5.8884	  |5.8820   |5.8734 | 
