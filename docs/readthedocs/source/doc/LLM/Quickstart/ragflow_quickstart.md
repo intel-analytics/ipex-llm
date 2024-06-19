@@ -1,4 +1,4 @@
-# Run RAGFlow with IPEX_LLM on Intel GPU
+# Run RAGFlow with IPEX-LLM on Intel GPU
 
 [RAGFlow](https://github.com/infiniflow/ragflow) is an open-source RAG (Retrieval-Augmented Generation) engine based on deep document understanding; by integrating it with [`ipex-llm`](https://github.com/intel-analytics/ipex-llm), users can now easily leverage local LLMs running on Intel GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max).
 
