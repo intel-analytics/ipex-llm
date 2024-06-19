@@ -29,6 +29,7 @@ def main():
 
     csv_files = []
     for file_name in os.listdir(args.folder_path):
+        print("This is the file_name\n",file_name)
         file_path = os.path.join(args.folder_path, file_name)
         if os.path.isfile(file_path) and file_name.endswith(".csv"):
             csv_files.append(file_path)
