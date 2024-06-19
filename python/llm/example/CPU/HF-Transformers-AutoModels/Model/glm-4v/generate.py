@@ -67,3 +67,4 @@ if __name__ == '__main__':
         output_str = tokenizer.decode(outputs[0])
         print('-'*20, 'Output', '-'*20)
         print(output_str)
+
