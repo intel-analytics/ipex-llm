@@ -1,22 +1,16 @@
 # Llama2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) and [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf) as reference Llama2 models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama2 models on [Intel NPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as reference Llama2 models.
 
 ## 0. Requirements
-To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
+To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
+Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
+Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
+Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
 ### 1. Install
-#### 1.1 Installation on Linux
-We suggest using conda to manage environment:
-```bash
-conda create -n llm python=3.10
-conda activate llm
-# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-```
-
-#### 1.2 Installation on Windows
+#### 1.1 Installation on Windows
 We suggest using conda to manage environment:
 ```bash
 conda create -n llm python=3.10 libuv
@@ -24,83 +18,28 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+# below command will install intel_npu_acceleration_library
+conda install cmake
+git clone https://github.com/intel/intel-npu-acceleration-library
+cd intel-npu-acceleration-library
+git checkout bcb1315
+python setup.py bdist_wheel
+pip install dist\intel_npu_acceleration_library-1.2.0-cp310-cp310-win_amd64.whl
 ```
 
-### 2. Configures OneAPI environment variables for Linux
-
-> [!NOTE]
-> Skip this step if you are running on Windows.
-
-This is a required step on Linux for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
-
-```bash
-source /opt/intel/oneapi/setvars.sh
-```
-
-### 3. Runtime Configurations
+### 2. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
-#### 3.1 Configurations for Linux
+#### 2.1 Configurations for Windows
 <details>
-
-<summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
-
-```bash
-export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-export SYCL_CACHE_PERSISTENT=1
-```
-
-</details>
-
-<details>
-
-<summary>For Intel Data Center GPU Max Series</summary>
-
-```bash
-export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-export SYCL_CACHE_PERSISTENT=1
-export ENABLE_SDP_FUSION=1
-```
-> Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
-</details>
-
-<details>
-
-<summary>For Intel iGPU</summary>
-
-```bash
-export SYCL_CACHE_PERSISTENT=1
-export BIGDL_LLM_XMX_DISABLED=1
-```
-
-</details>
-
-#### 3.2 Configurations for Windows
-<details>
-
-<summary>For Intel iGPU</summary>
 
 ```cmd
-set SYCL_CACHE_PERSISTENT=1
-set BIGDL_LLM_XMX_DISABLED=1
+set BIGDL_USE_NPU=1
 ```
 
 </details>
 
-<details>
-
-<summary>For Intel Arc™ A-Series Graphics</summary>
-
-```cmd
-set SYCL_CACHE_PERSISTENT=1
-```
-
-</details>
-
-> [!NOTE]
-> For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
-### 4. Running examples
+### 3. Running examples
 
 ```
 python ./generate.py
