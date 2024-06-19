@@ -31,15 +31,16 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--load_in_low_bit', type=str, default="sym_int8",
+                        help='Load in low bit to use')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # Comment
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
-                                                 load_in_low_bit='sym_int8')
+                                                 load_in_low_bit=args.load_in_low_bit)
     
     print(model)
 
