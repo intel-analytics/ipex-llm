@@ -27,7 +27,7 @@ Follow the steps in [Run Ollama with IPEX-LLM on Intel GPU Guide](./ollama_quick
 ```eval_rst
 .. important::
 
-   If the `Ragflow` is not deployed on the same machine where Ollama is running (which means `Ragflow` needs to connect to a remote Ollama service), you must configure the Ollama service to accept connections from any IP address. To achieve this, set or export the environment variable `OLLAMA_HOST=0.0.0.0` before executing the command `ollama serve`.
+   If the `RAGFlow` is not deployed on the same machine where Ollama is running (which means `RAGFlow` needs to connect to a remote Ollama service), you must configure the Ollama service to accept connections from any IP address. To achieve this, set or export the environment variable `OLLAMA_HOST=0.0.0.0` before executing the command `ollama serve`.
 
 .. tip::
 
@@ -66,10 +66,10 @@ Now we need to pull a model for RAG using Ollama. Here we use [Qwen/Qwen2-7B](ht
    Besides Qwen2, there are other LLM models you might want to explore, such as Llama3, Phi3, Mistral, etc. You can find all available models in the `Ollama model library <https://ollama.com/library>`_. Simply search for the model, pull it in a similar manner, and give it a try.
 ```
 
-### 3. Start `Ragflow` Service
+### 3. Start `RAGFlow` Service
 
 
-#### 3.1 Download `Ragflow`
+#### 3.1 Download `RAGFlow`
 
 You can either clone the repository or download the source zip from [github](https://github.com/infiniflow/ragflow/archive/refs/heads/main.zip):
 
@@ -99,7 +99,7 @@ To make the change permanent and ensure it persists after a reboot, add or updat
 vm.max_map_count=262144
 ```
 
-### 3.3 Start the `Ragflow` server using Docker
+### 3.3 Start the `RAGFlow` server using Docker
 
 Build the pre-built Docker images and start up the server:
 
@@ -148,7 +148,7 @@ INFO:werkzeug:Press CTRL+C to quit
 Open a browser and navigate to the URL displayed in the terminal logs. Look for messages like `Running on http://ip:port`. For local deployment, you can usually access the web portal at `http://127.0.0.1:9380`. For remote access, use `http://your_ip:9380`.
 
 
-### 4. Using `Ragflow`
+### 4. Using `RAGFlow`
 
 ```eval_rst
 .. note::
@@ -159,7 +159,7 @@ Open a browser and navigate to the URL displayed in the terminal logs. Look for 
 
 #### Log-in
 
-If this is your first time using Ragflow, you will need to register. After registering, log in with your new account to access the portal.
+If this is your first time using RAGFlow, you will need to register. After registering, log in with your new account to access the portal.
 
 <div style="display: flex; gap: 5px;">
   <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login.png" target="_blank" style="flex: 1;">
