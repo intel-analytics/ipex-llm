@@ -21,8 +21,8 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 # below command will install intel_npu_acceleration_library
 conda install cmake
-git clone https://github.com/intel/intel-npu-acceleration-library
-cd intel-npu-acceleration-library
+git clone https://github.com/intel/intel-npu-acceleration-library npu-library
+cd npu-library
 git checkout bcb1315
 python setup.py bdist_wheel
 pip install dist\intel_npu_acceleration_library-1.2.0-cp310-cp310-win_amd64.whl
@@ -31,9 +31,13 @@ pip install dist\intel_npu_acceleration_library-1.2.0-cp310-cp310-win_amd64.whl
 ### 2. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
 #### 2.1 Configurations for Windows
+<details>
+
 ```cmd
 set BIGDL_USE_NPU=1
 ```
+
+</details>
 
 ### 3. Running examples
 
@@ -42,7 +46,7 @@ python ./generate.py
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
