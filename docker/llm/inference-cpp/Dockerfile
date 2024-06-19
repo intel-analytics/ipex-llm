@@ -21,7 +21,9 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Install PYTHON 3.11 and IPEX-LLM[xpu]
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt install libunwind8-dev vim less -y && \
+    apt-get install -y --no-install-recommends libunwind8-dev vim less software-properties-common && \
+    # Add Python 3.11 PPA repository
+    add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y --no-install-recommends python3.11 git curl wget && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.11 /usr/bin/python3 && \
