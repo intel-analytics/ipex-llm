@@ -24,7 +24,8 @@ from ipex_llm.utils.common import log4Error
 
 
 # Default is True, set to False to disable IPEX duplicate checker
-IPEX_DUPLICATE_CHECKER = os.getenv("IPEX_DUPLICATE_CHECKER", 'True').lower() in ('true', '1', 't')
+BIGDL_CHECK_DUPLICATE_IMPORT = os.getenv("BIGDL_CHECK_DUPLICATE_IMPORT",
+                                         'True').lower() in ('true', '1', 't')
 RAW_IMPORT = None
 IS_IMPORT_REPLACED = False
 ipex_duplicate_import_error = "intel_extension_for_pytorch has already been automatically " + \
@@ -42,7 +43,7 @@ def replace_import():
 
 
 def revert_import():
-    if not IPEX_DUPLICATE_CHECKER:
+    if not BIGDL_CHECK_DUPLICATE_IMPORT:
         return
     global RAW_IMPORT, IS_IMPORT_REPLACED
     # Only revert once
@@ -129,7 +130,7 @@ class IPEXImporter:
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
             # Replace builtin import to avoid duplicate ipex import
-            if IPEX_DUPLICATE_CHECKER:
+            if BIGDL_CHECK_DUPLICATE_IMPORT:
                 replace_import()
             logging.info("intel_extension_for_pytorch auto imported")
 
