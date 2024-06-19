@@ -124,6 +124,7 @@ class _BaseAutoModelClass:
         os.makedirs(model_dir, exist_ok=True)
         model_name = "pytorch_npu_model.pt"
         model_path = os.path.join(model_dir, model_name)
+        del self.save_low_bit   # workaround a bug
         torch.save(self, model_path)
 
     @staticmethod
