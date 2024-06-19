@@ -291,7 +291,8 @@ if __name__ == '__main__':
     # Load model
     tokenizer, model, image_processor, _ = load_pretrained_model(model_path=model_path,
                                                                  model_base=None,
-                                                                 model_name=model_name)
+                                                                 model_name=model_name,
+                                                                 device_map=None)
 
     # With only one line to enable IPEX-LLM optimization on model
     model = optimize_model(model)
