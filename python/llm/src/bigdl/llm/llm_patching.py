@@ -15,6 +15,7 @@
 #
 
 import transformers
+import torch
 import importlib
 import sys
 from bigdl.llm.utils.common import invalidInputError
@@ -24,13 +25,34 @@ bigdl_patched = None  # None or 'Train' or 'Inference'
 attrs = []
 
 
+def _parse_pretrained(am_fn, map={'device_map': None}):
+    def mocked_am(self, *args, **kwargs):
+        kwargs['device_map'] = map.pop('device_map', None)
+        kwargs.update(map)
+        return am_fn(self, *args, **kwargs)
+    return mocked_am
+
+
+def _parse_to(to_fn, map={'device': 'xpu'}):
+    def mocked_to(self, *args, **kwargs):
+        device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
+        if device and 'cuda' in device.type:
+            if kwargs.get('device', None):
+                kwargs['device'] = map['device']
+            else:
+                args = list(args)
+                args[0] = map['device']
+        return to_fn(self, *args, **kwargs)
+    return mocked_to
+
+
 def replace_attr(obj, name: str, value):
     original_attr = getattr(obj, name)
     setattr(obj, name, value)
     attrs.append((obj, name, original_attr))
 
 
-def llm_patch(train=False):
+def llm_patch(train=False, device=None, load_in_low_bit=None):
     '''
     llm_patch is used to make users' LLM application benefit from BigDL-LLM optimization
     with only one-line code patch.
@@ -41,13 +63,28 @@ def llm_patch(train=False):
     if bigdl_patched:
         return
 
-    # Initial version of patch for llm finetuning, inference support TBD
-    if train:
-        from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
-        replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
-        replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
-        replace_attr(transformers, "AutoModel", AutoModel)
+    from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 
+    # patch bigdl pretrained
+    am_map = dict(device_map=None, load_in_low_bit=load_in_low_bit)
+    replace_attr(AutoModelForCausalLM, "from_pretrained",
+                 _parse_pretrained(AutoModelForCausalLM.from_pretrained, am_map))
+    replace_attr(AutoModel, "from_pretrained",
+                 _parse_pretrained(AutoModel.from_pretrained, am_map))
+
+    # patch transformers with bigdl
+    replace_attr(transformers, "AutoModelForCausalLM", AutoModelForCausalLM)
+    replace_attr(transformers, "LlamaForCausalLM", AutoModelForCausalLM)
+    replace_attr(transformers, "AutoModel", AutoModel)
+
+    # patch cuda with xpu
+    if hasattr(torch, "xpu"):
+        replace_attr(torch, "cuda", getattr(torch, "xpu"))
+        replace_attr(torch.nn.Module, "cuda", getattr(torch.nn.Module, "xpu"))
+        if not device:
+            device = "xpu"
+    replace_attr(torch.nn.Module, "to", _parse_to(torch.nn.Module.to, map={'device': 'xpu'}))
+    if train:
         import_peft_check = 'peft' in sys.modules or 'peft.utils' in sys.modules or \
             'peft.tuners' in sys.modules or 'peft.mapping' in sys.modules
         invalidInputError(not import_peft_check,
