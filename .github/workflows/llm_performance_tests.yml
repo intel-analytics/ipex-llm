@@ -258,7 +258,7 @@ jobs:
       - name: Check and upload results to ftp
         shell: bash
         run: |
-          batch_size 1
+          # batch_size 1
           cd python/llm/dev/benchmark/all-in-one/test_batch1
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test.yaml
           # python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437.yaml
