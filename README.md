@@ -6,7 +6,7 @@
 # 💫 Intel® LLM library for PyTorch*
 **`IPEX-LLM`** is a PyTorch library for running **LLM** on Intel CPU and GPU *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)* with very low latency[^1]. 
 > [!NOTE]
-> - *It runs on top of Intel Extension for PyTorch (**`IPEX`**), and is built on top of the excellent work of **`llama.cpp`**, **`transformers`**, **`bitsandbytes`**, **`vLLM`**, **`qlora`**, **`AutoGPTQ`**, **`AutoAWQ`**, etc.*
+> - *It is built on top of the excellent work of **`llama.cpp`**, **`transformers`**, **`bitsandbytes`**, **`vLLM`**, **`qlora`**, **`AutoGPTQ`**, **`AutoAWQ`**, etc.*
 > - *It provides seamless integration with [llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), [Ollama](https://ipex-llm.readthedocs.io/en/main/doc/LLM/Quickstart/ollama_quickstart.html), [Text-Generation-WebUI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html), [HuggingFace transformers](python/llm/example/GPU/HF-Transformers-AutoModels), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [vLLM](python/llm/example/GPU/vLLM-Serving), [FastChat](python/llm/src/ipex_llm/serving/fastchat), [Axolotl](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/axolotl_quickstart.html), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models), etc.* 
 > - ***50+ models** have been optimized/verified on `ipex-llm` (including LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM, Baichuan, Qwen, RWKV, and more); see the complete list [here](#verified-models).*
 
@@ -115,6 +115,14 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
     </td>  </tr>
 </table>
 -->
+
+## Model Accuracy
+Please see the Perplexity result below (tested on Wikitext using the script [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/dev/benchmark/perplexity)).
+|[Perplexity]               |sym_int4	|q4_k	  |fp6	  |fp8_e5m2 |fp8_e4m3 |fp16   |
+|---------------------------|---------|-------|-------|---------|---------|-------|
+|Llama-2-7B-chat-hf	        |6.3638	  |6.2179	|6.0924	|6.1796	  |6.0980   |6.0963 | 
+|Mistral-7B-Instruct-v0.1	  |6.0025	  |5.9581	|5.8930	|5.8884	  |5.8820   |5.8734 | 
+|Qwen1.5-7B-chat	           |8.8652	  |8.8163	|8.5573	|8.8463	  |8.5304   |8.6065 | 
 
 ## Latest Update 🔥 
 - [2024/05] You can now easily run `ipex-llm` inference, serving and finetuning using [Docker](#docker).
