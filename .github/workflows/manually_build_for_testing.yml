@@ -260,7 +260,7 @@ jobs:
 
   ipex-llm-serving-cpu:
     if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-cpu' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
+    runs-on: [self-hosted, Shire, AVX512]
 
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
