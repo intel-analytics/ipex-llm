@@ -185,7 +185,7 @@ jobs:
         shell: bash
         run: |
           # # batch_size 1 
-          cd python/llm/dev/benchmark/all-in-one/test_batch1
+          # cd python/llm/dev/benchmark/all-in-one/test_batch1
           # python ../../../../test/benchmark/concat_csv.py
           # for file in *.csv; do
           #     if [[ $file != *test* ]]; then
@@ -206,6 +206,9 @@ jobs:
           # done
           # cd ../../../../test/benchmark
           # python csv_to_html.py -f $CSV_SAVE_PATH/batch_size_2
+          ##### mwj add
+          cd python/llm/test/benchmark
+          ##### 
           # batch_size 4
           cd ../../../../
           cd python/llm/dev/benchmark/all-in-one/test_batch4
