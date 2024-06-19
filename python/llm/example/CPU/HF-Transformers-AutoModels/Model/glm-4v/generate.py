@@ -40,7 +40,6 @@ if __name__ == '__main__':
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 low_cpu_mem_usage=True,
                                                  trust_remote_code=True)
     
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
