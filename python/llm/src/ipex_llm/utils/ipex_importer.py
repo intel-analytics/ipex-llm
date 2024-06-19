@@ -18,10 +18,13 @@ from importlib.metadata import distribution, PackageNotFoundError
 import logging
 import builtins
 import sys
+import os
 import inspect
 from ipex_llm.utils.common import log4Error
 
 
+# Default is True, set to False to disable IPEX duplicate checker
+IPEX_DUPLICATE_CHECKER = os.getenv("IPEX_DUPLICATE_CHECKER", 'True').lower() in ('true', '1', 't')
 RAW_IMPORT = None
 IS_IMPORT_REPLACED = False
 ipex_duplicate_import_error = "intel_extension_for_pytorch has already been automatically " + \
@@ -39,6 +42,8 @@ def replace_import():
 
 
 def revert_import():
+    if not IPEX_DUPLICATE_CHECKER:
+        return
     global RAW_IMPORT, IS_IMPORT_REPLACED
     # Only revert once
     if RAW_IMPORT is not None and IS_IMPORT_REPLACED:
@@ -124,7 +129,8 @@ class IPEXImporter:
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
             # Replace builtin import to avoid duplicate ipex import
-            replace_import()
+            if IPEX_DUPLICATE_CHECKER:
+                replace_import()
             logging.info("intel_extension_for_pytorch auto imported")
 
     def directly_import_ipex(self):
