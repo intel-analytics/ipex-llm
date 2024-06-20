@@ -137,6 +137,24 @@ RUN apt-get update --fix-missing && \
 # python
     /opt/install-python-env.sh
 
+ADD ./loki-config.yaml /opt/loki-config.yaml
+ADD ./promtail-config.yaml /opt/promtail-config.yaml
+# grafana
+RUN cd /opt && \
+    wget https://dl.grafana.com/enterprise/release/grafana-enterprise-9.2.3.linux-amd64.tar.gz && \
+    tar -zxvf grafana-enterprise-9.2.3.linux-amd64.tar.gz && \
+# Loki
+    curl -O -L "https://github.com/grafana/loki/releases/download/v2.0.0/loki-linux-amd64.zip" && \
+    unzip "loki-linux-amd64.zip" && \
+    mv loki-linux-amd64 /usr/local/bin/loki && \
+# Promtail
+    curl -O -L "https://github.com/grafana/loki/releases/download/v2.0.0/promtail-linux-amd64.zip" && \
+    unzip promtail-linux-amd64.zip && \
+    mv promtail-linux-amd64 /usr/local/bin/promtail && \
+    rm loki-linux-amd64.zip && \
+    rm promtail-linux-amd64.zip && \
+    rm grafana-enterprise-9.2.3.linux-amd64.tar.gz
+
 RUN echo "source activate bigdl" > ~/.bashrc
 ENV PATH /usr/local/envs/bigdl/bin:$PATH
 
