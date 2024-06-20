@@ -6,13 +6,10 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4" width="100%" controls></video>
 
-```eval_rst
-.. note::
-
-  `ipex-llm[cpp]==2.5.0b20240527` is consistent with `c780e75 <https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452>`_ of llama.cpp.
-
-  Our current version is consistent with `62bfef5 <https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912>`_ of llama.cpp.
-```
+> [!NOTE]
+> `ipex-llm[cpp]==2.5.0b20240527` is consistent with [c780e75](https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452) of llama.cpp.
+>
+> Our latest version is consistent with [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) of llama.cpp.
 
 ## Quick Start
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
@@ -23,41 +20,35 @@ IPEX-LLM's support for `llama.cpp` now is available for Linux system and Windows
 #### Linux
 For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
-Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.html), follow [Install Intel GPU Driver](./install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](./install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
+Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md), follow [Install Intel GPU Driver](./install_linux_gpu.md#install-gpu-driver) and [Install oneAPI](./install_linux_gpu.md#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
 
 #### Windows (Optional)
 
 IPEX-LLM backend for llama.cpp only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output. 
 
-If you have lower GPU driver version, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](./install_windows_gpu.html), and follow [Update GPU driver](./install_windows_gpu.html#optional-update-gpu-driver).
+If you have lower GPU driver version, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](./install_windows_gpu.md), and follow [Update GPU driver](./install_windows_gpu.md#optional-update-gpu-driver).
 
 ### 1 Install IPEX-LLM for llama.cpp
 
 To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed.
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+- For **Linux users**:
+  
+  ```bash
+  conda create -n llm-cpp python=3.11
+  conda activate llm-cpp
+  pip install --pre --upgrade ipex-llm[cpp]
+  ```
 
-      .. code-block:: bash
+- For **Windows users**:
 
-         conda create -n llm-cpp python=3.11
-         conda activate llm-cpp
-         pip install --pre --upgrade ipex-llm[cpp]
+  Please run the following command in Miniforge Prompt.
 
-   .. tab:: Windows
-
-      .. note::
-
-      Please run the following command in Miniforge Prompt.
-
-      .. code-block:: cmd
-
-         conda create -n llm-cpp python=3.11
-         conda activate llm-cpp
-         pip install --pre --upgrade ipex-llm[cpp]
-
-```
+  ```cmd
+  conda create -n llm-cpp python=3.11
+  conda activate llm-cpp
+  pip install --pre --upgrade ipex-llm[cpp]
+  ```
 
 **After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
 
@@ -72,43 +63,34 @@ cd llama-cpp
 #### Initialize llama.cpp with IPEX-LLM
 
 Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
-```eval_rst
-.. tabs::
-   .. tab:: Linux
 
-      .. code-block:: bash
-      
-         init-llama-cpp
+- For **Linux users**:
+  
+  ```bash
+  init-llama-cpp
+  ```
 
-      After ``init-llama-cpp``, you should see many soft links of ``llama.cpp``'s executable files and a ``convert.py`` in current directory.
+  After `init-llama-cpp`, you should see many soft links of `llama.cpp`'s executable files and a `convert.py` in current directory.
 
-      .. image:: https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png
+  ![init_llama_cpp_demo_image](https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image.png)
 
-   .. tab:: Windows
+- For **Windows users**:
 
-      Please run the following command with **administrator privilege in Miniforge Prompt**.
+  Please run the following command with **administrator privilege in Miniforge Prompt**.
 
-      .. code-block:: bash
-      
-         init-llama-cpp.bat
+  ```cmd
+  init-llama-cpp.bat
+  ```
 
-      After ``init-llama-cpp.bat``, you should see many soft links of ``llama.cpp``'s executable files and a ``convert.py`` in current directory.
+  After `init-llama-cpp.bat`, you should see many soft links of `llama.cpp`'s executable files and a `convert.py` in current directory.
 
-      .. image:: https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image_windows.png
+  ![init_llama_cpp_demo_image_windows](https://llm-assets.readthedocs.io/en/latest/_images/init_llama_cpp_demo_image_windows.png)
 
-```
+> [!TIP]
+> `init-llama-cpp` will create soft links of llama.cpp's executable files to current directory, if you want to use these executable files in other places, don't forget to run above commands again.
 
-```eval_rst
-.. note::
-
-   ``init-llama-cpp`` will create soft links of llama.cpp's executable files to current directory, if you want to use these executable files in other places, don't forget to run above commands again.
-```
-
-```eval_rst
-.. note::
-
-   If you have installed higher version ``ipex-llm[cpp]`` and want to upgrade your binary file, don't forget to remove old binary files first and initialize again with ``init-llama-cpp`` or ``init-llama-cpp.bat``.
-```
+> [!NOTE]
+> If you have installed higher version `ipex-llm[cpp]` and want to upgrade your binary file, don't forget to remove old binary files first and initialize again with `init-llama-cpp` or `init-llama-cpp.bat`.
 
 **Now you can use these executable files by standard llama.cpp's usage.**
 
@@ -116,35 +98,27 @@ Then you can use following command to initialize `llama.cpp` with IPEX-LLM:
 
 To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+- For **Linux users**:
+  
+  ```bash
+  source /opt/intel/oneapi/setvars.sh
+  export SYCL_CACHE_PERSISTENT=1
+  ```
 
-      .. code-block:: bash
+- For **Windows users**:
 
-         source /opt/intel/oneapi/setvars.sh
-         export SYCL_CACHE_PERSISTENT=1
+  Please run the following command in Miniforge Prompt.
 
-   .. tab:: Windows
+  ```cmd
+  set SYCL_CACHE_PERSISTENT=1
+  ```
 
-      Please run the following command in Miniforge Prompt.
-
-      .. code-block:: bash
-
-         set SYCL_CACHE_PERSISTENT=1
-
-```
-
-```eval_rst
-.. tip::
-
-  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance:
-
-  .. code-block:: bash
-
-      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-
-```
+> [!TIP]
+> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance:
+>
+> ```bash
+> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+> ```
 
 ### 3 Example: Running community GGUF models with IPEX-LLM
 
@@ -155,30 +129,23 @@ Before running, you should download or copy community GGUF model to your current
 
 #### Run the quantized model
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+- For **Linux users**:
+  
+  ```bash
+  ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+  ```
 
-      .. code-block:: bash
-      
-         ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+  > **Note**: For more details about meaning of each parameter, you can use `./main -h`.
 
-      .. note::
+- For **Windows users**:
 
-      For more details about meaning of each parameter, you can use ``./main -h``.
+  Please run the following command in Miniforge Prompt.
 
-   .. tab:: Windows
+  ```cmd
+  main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+  ```
 
-      Please run the following command in Miniforge Prompt.
-
-      .. code-block:: bash
-
-         main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
-
-      .. note::
-
-      For more details about meaning of each parameter, you can use ``main -h``.
-```
+  > **Note**: For more details about meaning of each parameter, you can use `main -h`.
 
 #### Sample Output
 ```
@@ -325,7 +292,7 @@ If `-ngl` is set to 0, it means that the entire model will run on CPU. If `-ngl`
 #### How to specificy GPU
 If your machine has multi GPUs, `llama.cpp` will default use all GPUs which may slow down your inference for model which can run on single GPU. You can add `-sm none` in your command to use one GPU only.
 
-Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device before excuting your command, more details can refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/multi_gpus_selection.html#oneapi-device-selector).
+Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device before excuting your command, more details can refer to [here](../Overview/KeyFeatures/multi_gpus_selection.md#2-oneapi-device-selector).
 
 #### Program crash with Chinese prompt
 If you run the llama.cpp program on Windows and find that your program crashes or outputs abnormally when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.

@@ -39,13 +39,13 @@ conda activate llm
 
 With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
 
-- For **US**
+- For **US**:
 
   ```bash
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
   ```
 
-- For **CN**
+- For **CN**:
 
   ```bash
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
@@ -66,14 +66,14 @@ You can verify if `ipex-llm` is successfully installed following below steps.
 
 - Set the following environment variables according to your device:
 
-  - For **Intel iGPU**
+  - For **Intel iGPU**:
 
     ```cmd
     set SYCL_CACHE_PERSISTENT=1
     set BIGDL_LLM_XMX_DISABLED=1
     ```
 
-  - For **Intel Arc™ A770**
+  - For **Intel Arc™ A770**:
 
     ```cmd
     set SYCL_CACHE_PERSISTENT=1
@@ -125,7 +125,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 
 - Step 3: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
 
-  - For **loading model from Hugging Face**
+  - For **loading model from Hugging Face**:
     
     Create a new file named `demo.py` and insert the code snippet below to run [Qwen-1.8B-Chat](https://huggingface.co/Qwen/Qwen-1_8B-Chat) model with IPEX-LLM optimizations.
 
@@ -178,7 +178,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
          output_str = tokenizer.decode(output[0], skip_special_tokens=True)
          print(output_str)
       ```
-  - For **loading model ModelScopee**
+  - For **loading model ModelScopee**:
 
     Please first run following command in Miniforge Prompt to install ModelScope:
     ```cmd

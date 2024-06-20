@@ -176,13 +176,13 @@ conda activate llm
 
 With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
 
-- For **US**
+- For **US**:
 
   ```bash
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
   ```
 
-- For **CN**
+- For **CN**:
 
   ```bash
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
@@ -207,7 +207,7 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choo
 
 To use GPU acceleration on Linux, several environment variables are required or recommended before running a GPU example. Choose corresponding configurations based on your GPU device:
 
-- For **Intel Arc™ A-Series and Intel Data Center GPU Flex**
+- For **Intel Arc™ A-Series and Intel Data Center GPU Flex**:
 
   For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
 
@@ -222,7 +222,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
   export SYCL_CACHE_PERSISTENT=1
   ```
 
-- For **Intel Data Center GPU Max**
+- For **Intel Data Center GPU Max**:
 
   For Intel Data Center GPU Max Series, we recommend:
 
