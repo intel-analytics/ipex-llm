@@ -187,7 +187,7 @@ jobs:
           python -m pip install transformers==4.40.0
           python -m pip install trl
           # batch_size 1
-          cp python/llm/test/benchmark/arc-perf-moe.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cp python/llm/test/benchmark/arc-perf-transformers-440.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # change csv name
           sed -i 's/test2_batch4/test3_batch1/g' run.py
