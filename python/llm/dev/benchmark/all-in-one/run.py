@@ -698,7 +698,7 @@ def run_ipex_fp16_gpu(repo_id,
                 print(output[0])
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
-                                           actual_in_len, actual_out_len, load_time,model.peak_memory])
+                                           actual_in_len, actual_out_len, load_time, model.peak_memory])
     del model
     torch.xpu.empty_cache()
     return result
