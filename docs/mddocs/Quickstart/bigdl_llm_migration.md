@@ -4,10 +4,9 @@ This guide helps you migrate your `bigdl-llm` application to use `ipex-llm`.
 
 ## Upgrade `bigdl-llm` package to `ipex-llm`
 
-```eval_rst
-.. note::
-   This step assumes you have already installed `bigdl-llm`.
-```
+> [!NOTE]
+> This step assumes you have already installed `bigdl-llm`.
+
 You need to uninstall `bigdl-llm` and install `ipex-llm`With your `bigdl-llm` conda environment activated, execute the following command according to your device type and location:
 
 ### For CPU
@@ -19,22 +18,19 @@ pip install --pre --upgrade ipex-llm[all] # for cpu
 
 ### For GPU
 Choose either US or CN website for `extra-index-url`:
-```eval_rst
-.. tabs::
 
-   .. tab:: US
+#### US
 
-      .. code-block:: cmd
+```CMD
+pip uninstall -y bigdl-llm
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+```
 
-         pip uninstall -y bigdl-llm
-         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+#### CN
 
-   .. tab:: CN
-
-      .. code-block:: cmd
-
-         pip uninstall -y bigdl-llm
-         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+```cmd
+pip uninstall -y bigdl-llm
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 ```
 
 ## Migrate `bigdl-llm` code to `ipex-llm`
