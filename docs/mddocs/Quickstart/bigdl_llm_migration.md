@@ -21,14 +21,14 @@ Choose either US or CN website for `extra-index-url`:
 
 #### For **US**
 
-```CMD
+```bash
 pip uninstall -y bigdl-llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
 
 #### For **CN**
 
-```cmd
+```bash
 pip uninstall -y bigdl-llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
 ```

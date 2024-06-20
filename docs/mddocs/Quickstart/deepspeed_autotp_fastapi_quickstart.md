@@ -36,7 +36,6 @@ We provide example usage for `Llama-2-7b-chat-hf` model running on Arc A770
 Run Llama-2-7b-chat-hf on two Intel Arc A770:
 
 ```bash
-
 # Before run this script, you should adjust the YOUR_REPO_ID_OR_MODEL_PATH in last line
 # If you want to change server port, you can set port parameter in last line
 

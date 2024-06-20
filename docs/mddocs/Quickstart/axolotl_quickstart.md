@@ -18,7 +18,7 @@ Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md), fo
 
 Create a new conda env, and install `ipex-llm[xpu]`.
 
-```cmd
+```bash
 conda create -n axolotl python=3.11
 conda activate axolotl
 # install ipex-llm
@@ -27,7 +27,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 Install [axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) from git.
 
-```cmd
+```bash
 # install axolotl v0.4.0
 git clone https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0
 cd axolotl
@@ -62,13 +62,13 @@ For more technical details, please refer to [Llama 2](https://arxiv.org/abs/2307
 
 By default, Axolotl will automatically download models and datasets from Huggingface. Please ensure you have login to Huggingface.
 
-```cmd
+```bash
 huggingface-cli login
 ```
 
 If you prefer offline models and datasets, please download [Llama-2-7B](https://huggingface.co/meta-llama/Llama-2-7b) and [alpaca_2k_test](https://huggingface.co/datasets/mhenrichsen/alpaca_2k_test). Then, set `HF_HUB_OFFLINE=1` to avoid connecting to Huggingface.
 
-```cmd
+```bash
 export HF_HUB_OFFLINE=1
 ```
 
@@ -85,14 +85,14 @@ source /opt/intel/oneapi/setvars.sh
 
 Configure accelerate to avoid training with CPU. You can download a default `default_config.yaml` with `use_cpu: false`.
 
-```cmd
+```bash
 mkdir -p  ~/.cache/huggingface/accelerate/
 wget -O ~/.cache/huggingface/accelerate/default_config.yaml https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/default_config.yaml
 ```
 
 As an alternative, you can config accelerate based on your requirements.
 
-```cmd
+```bash
 accelerate config
 ```
 
@@ -104,7 +104,7 @@ After finishing accelerate config, check if `use_cpu` is disabled (i.e., `use_cp
 
 Prepare `lora.yml` for Axolotl LoRA finetune. You can download a template from github.
 
-```cmd
+```bash
 wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/lora.yml
 ```
 
@@ -134,13 +134,13 @@ lora_fan_in_fan_out:
 
 Launch LoRA training with the following command.
 
-```cmd
+```bash
 accelerate launch finetune.py lora.yml
 ```
 
 In Axolotl v0.4.0, you can use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
-```cmd
+```bash
 accelerate launch train.py lora.yml
 ```
 
@@ -148,7 +148,7 @@ accelerate launch train.py lora.yml
 
 Prepare `lora.yml` for QLoRA finetune. You can download a template from github.
 
-```cmd
+```bash
 wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/qlora.yml
 ```
 
@@ -179,13 +179,13 @@ lora_fan_in_fan_out:
 
 Launch LoRA training with the following command.
 
-```cmd
+```bash
 accelerate launch finetune.py qlora.yml
 ```
 
 In Axolotl v0.4.0, you can use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
-```cmd
+```bash
 accelerate launch train.py qlora.yml
 ```
 
@@ -197,7 +197,7 @@ Warning: this section will install axolotl main ([796a085](https://github.com/Op
 
 Axolotl main has lots of new dependencies. Please setup a new conda env for this version.
 
-```cmd
+```bash
 conda create -n llm python=3.11
 conda activate llm
 # install axolotl main
@@ -220,7 +220,7 @@ Based on [axolotl Llama-3 QLoRA example](https://github.com/OpenAccess-AI-Collec
 
 Prepare `llama3-qlora.yml` for QLoRA finetune. You can download a template from github.
 
-```cmd
+```bash
 wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/llama3-qlora.yml
 ```
 
@@ -253,19 +253,19 @@ lora_target_linear: true
 lora_fan_in_fan_out:
 ```
 
-```cmd
+```bash
 accelerate launch finetune.py llama3-qlora.yml
 ```
 
 You can also use `train.py` instead of `-m axolotl.cli.train` or `finetune.py`.
 
-```cmd
+```bash
 accelerate launch train.py llama3-qlora.yml
 ```
 
 Expected output
 
-```cmd
+```bash
 {'loss': 0.237, 'learning_rate': 1.2254711850265387e-06, 'epoch': 3.77}
 {'loss': 0.6068, 'learning_rate': 1.1692453482951115e-06, 'epoch': 3.77}
 {'loss': 0.2926, 'learning_rate': 1.1143322458989303e-06, 'epoch': 3.78}
@@ -288,7 +288,7 @@ Error message: `TypeError: argument of type 'PosixPath' is not iterable`
 
 This issue is related to [axolotl #1544](https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544). It can be fixed by downgrading datasets to 2.15.0.
 
-```cmd
+```bash
 pip install datasets==2.15.0
 ```
 

@@ -20,6 +20,7 @@ Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follo
 
 > [!TIP]
 > If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
+>
 > ```bash
 > export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 > ```
@@ -30,14 +31,14 @@ Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follo
 
 Now we need to pull a model for coding. Here we use [CodeQWen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat) model as an example. Open a new terminal window, run the following command to pull [`codeqwen:latest`](https://ollama.com/library/codeqwen). 
 
-- For **Linux users**
+- For **Linux users**:
 
   ```bash
   export no_proxy=localhost,127.0.0.1
   ./ollama pull codeqwen:latest
   ```
 
-- For **Windows users**
+- For **Windows users**:
 
   Please run the following command in Miniforge Prompt.
 
@@ -61,8 +62,8 @@ Start by creating a file named `Modelfile` with the following content:
 FROM codeqwen:latest
 PARAMETER num_ctx 4096
 ```
-Next, use the following commands in the terminal (Linux) or Miniforge Prompt (Windows) to create a new model in Ollama named `codeqwen:latest-continue`:
 
+Next, use the following commands in the terminal (Linux) or Miniforge Prompt (Windows) to create a new model in Ollama named `codeqwen:latest-continue`:
 
 ```bash
  ollama create codeqwen:latest-continue -f Modelfile

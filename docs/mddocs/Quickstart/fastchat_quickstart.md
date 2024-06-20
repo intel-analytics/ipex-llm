@@ -20,7 +20,6 @@ To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
 
 ```bash
 pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
 ```
 
 ## 2. Start the service

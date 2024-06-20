@@ -73,7 +73,7 @@ Some parameters in the yaml file that you can configure:
 
 Please refer to [here](../Overview/install_gpu.md#runtime-configuration) to configure oneAPI environment variables. Choose corresponding commands base on your device.
 
-- For **Intel iGPU**
+- For **Intel iGPU**:
 
   ```bash
   set SYCL_CACHE_PERSISTENT=1
@@ -82,14 +82,14 @@ Please refer to [here](../Overview/install_gpu.md#runtime-configuration) to conf
   python run.py
   ```
 
-- For **Intel Arc™ A300-Series or Pro A60**
+- For **Intel Arc™ A300-Series or Pro A60**:
 
   ```bash
   set SYCL_CACHE_PERSISTENT=1
   python run.py
   ```
 
-- For **Other Intel dGPU Series**
+- For **Other Intel dGPU Series**:
 
   ```bash
   # e.g. Arc™ A770
@@ -100,7 +100,7 @@ Please refer to [here](../Overview/install_gpu.md#runtime-configuration) to conf
 
 Please choose corresponding commands base on your device.
 
-- For **Intel Arc™ A-Series and Intel Data Center GPU Flex**
+- For **Intel Arc™ A-Series and Intel Data Center GPU Flex**:
 
   For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
   
@@ -108,7 +108,7 @@ Please choose corresponding commands base on your device.
   ./run-arc.sh
   ```
 
-- For **Intel iGPU**
+- For **Intel iGPU**:
 
   For Intel iGPU, we recommend:
   
@@ -116,7 +116,7 @@ Please choose corresponding commands base on your device.
   ./run-igpu.sh
   ```
 
-- For **Intel Data Center GPU Max**
+- For **Intel Data Center GPU Max**:
 
   Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` before running the benchmark script on Intel Data Center GPU Max Series.
   
@@ -124,7 +124,7 @@ Please choose corresponding commands base on your device.
   ./run-max-gpu.sh
   ```
 
-- For **Intel SPR**
+- For **Intel SPR**:
 
   For Intel SPR machine, we recommend:
   
@@ -134,7 +134,7 @@ Please choose corresponding commands base on your device.
 
   The scipt uses a default numactl strategy. If you want to customize it, please use ``lscpu`` or ``numactl -H`` to check how cpu indexs are assigned to numa node, and make sure the run command is binded to only one socket.
 
-- For **Intel HBM**
+- For **Intel HBM**:
 
   For Intel HBM machine, we recommend:
   
