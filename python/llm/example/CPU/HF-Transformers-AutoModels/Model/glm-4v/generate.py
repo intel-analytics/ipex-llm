@@ -7,7 +7,12 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
-
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 import os
 import time
@@ -17,7 +22,7 @@ import requests
 
 from PIL import Image
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoProcessor, AutoTokenizer
+from transformers import AutoTokenizer
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for THUDM/glm-4v-9b model')
@@ -36,24 +41,28 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
     device = "cpu"
+
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 trust_remote_code=True)
+                                                 optimize_model=True,
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
     
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     query = args.prompt
-    image = Image.open(args.image_url_or_path).convert('RGB')
-    inputs = tokenizer.apply_chat_template([{"role": "user", "image": image, "content": query}],
-                                        add_generation_prompt=True, tokenize=True, return_tensors="pt",
-                                        return_dict=True)  # chat mode
-    inputs = inputs.to(device)
     if os.path.exists(image_path):
        image = Image.open(image_path)
     else:
        image = Image.open(requests.get(image_path, stream=True).raw)
+    inputs = tokenizer.apply_chat_template([{"role": "user", "image": image, "content": query}],
+                                           add_generation_prompt=True,
+                                           tokenize=True,
+                                           return_tensors="pt",
+                                           return_dict=True)  # chat mode
+    inputs = inputs.to(device)
     
     # Generate predicted tokens
     with torch.inference_mode():
@@ -66,4 +75,3 @@ if __name__ == '__main__':
         output_str = tokenizer.decode(outputs[0])
         print('-'*20, 'Output', '-'*20)
         print(output_str)
-

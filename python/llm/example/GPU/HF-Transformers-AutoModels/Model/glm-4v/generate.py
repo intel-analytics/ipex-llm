@@ -22,7 +22,7 @@ import requests
 
 from PIL import Image
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoProcessor, AutoTokenizer
+from transformers import AutoTokenizer
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for THUDM/glm-4v-9b model')
@@ -48,20 +48,24 @@ if __name__ == '__main__':
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
-                                                 trust_remote_code=True).half().to('xpu')
+                                                 optimize_model=True,
+                                                 trust_remote_code=True,
+                                                 use_cache=True).half().to('xpu')
     
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     query = args.prompt
-    image = Image.open("./a.jpg").convert('RGB')
-    inputs = tokenizer.apply_chat_template([{"role": "user", "image": image, "content": query}],
-                                        add_generation_prompt=True, tokenize=True, return_tensors="pt",
-                                        return_dict=True)  # chat mode
-    inputs = inputs.to(device)
     if os.path.exists(image_path):
        image = Image.open(image_path)
     else:
        image = Image.open(requests.get(image_path, stream=True).raw)
+    inputs = tokenizer.apply_chat_template([{"role": "user", "image": image, "content": query}],
+                                           add_generation_prompt=True,
+                                           tokenize=True,
+                                           return_tensors="pt",
+                                           return_dict=True)  # chat mode
+    inputs = inputs.to(device)
+
     
     # Generate predicted tokens
     with torch.inference_mode():
@@ -74,4 +78,3 @@ if __name__ == '__main__':
         output_str = tokenizer.decode(outputs[0])
         print('-'*20, 'Output', '-'*20)
         print(output_str)
-
