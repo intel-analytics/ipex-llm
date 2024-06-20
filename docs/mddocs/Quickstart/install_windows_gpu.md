@@ -8,19 +8,13 @@ It applies to Intel Core Ultra and Core 11 - 14 gen integrated GPUs (iGPUs), as 
 
 ### (Optional) Update GPU Driver
 
-```eval_rst
-.. tip::
-
-   It is recommended to update your GPU driver, if you have driver version lower than ``31.0.101.5122``. Refer to `here <../Overview/install_gpu.html#prerequisites>`_ for more information.
-```
+> [!TIP]
+> It is recommended to update your GPU driver, if you have driver version lower than `31.0.101.5122`. Refer to [here](../Overview/install_gpu.md#prerequisites) for more information.
 
 Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
 
-```eval_rst
-.. note::
-
-   The process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the figure below
-```
+> [!NOTE]
+> The process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the figure below
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=100%; />
 
