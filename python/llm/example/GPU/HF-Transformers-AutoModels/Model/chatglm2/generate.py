@@ -35,16 +35,19 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
-
+    parser.add_argument('--low-bit', type=str, default='sym_int4', choices=['sym_int4', 'fp8'],
+                        help='The low bit precision option for optimization')
+    
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    low_bit = args.low_bit
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModel.from_pretrained(model_path,
-                                      load_in_4bit=True,
+                                      load_in_low_bit=low_bit,
                                       optimize_model=True,
                                       trust_remote_code=True,
                                       use_cache=True)
@@ -56,7 +59,11 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = CHATGLM_V2_PROMPT_FORMAT.format(prompt=args.prompt)
+        if not args.prompt.endswith('.txt'):
+            prompt = CHATGLM_V2_PROMPT_FORMAT.format(prompt=args.prompt)
+        else:
+            with open(args.prompt, 'r') as f:
+                prompt = f.read()
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
