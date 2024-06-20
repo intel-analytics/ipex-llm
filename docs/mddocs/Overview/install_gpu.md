@@ -198,96 +198,103 @@ IPEX-LLM GPU support on Linux has been verified on:
    - Step 2: Download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) with version 2024.0. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
       Intel® oneAPI Base Toolkit 2024.0 installation methods:
+      <details>
+      <summary> For <b>APT installer</b> </summary>
 
-      - For **APT installer**
+      - Step 1: Set up repository
 
-         - Step 1: Set up repository
+         ```bash
+         wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+         echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+         sudo apt update
+         ```
 
-            ```bash
-            wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-            echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-            sudo apt update
-            ```
+      - Step 2: Install the package
 
-         - Step 2: Install the package
-
-            ```bash
-            sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
-               intel-oneapi-common-oneapi-vars=2024.0.0-49406 \
-               intel-oneapi-diagnostics-utility=2024.0.0-49093 \
-               intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
-               intel-oneapi-dpcpp-ct=2024.0.0-49381 \
-               intel-oneapi-mkl=2024.0.0-49656 \
-               intel-oneapi-mkl-devel=2024.0.0-49656 \
-               intel-oneapi-mpi=2021.11.0-49493 \
-               intel-oneapi-mpi-devel=2021.11.0-49493 \
-               intel-oneapi-dal=2024.0.1-25 \
-               intel-oneapi-dal-devel=2024.0.1-25 \
-               intel-oneapi-ippcp=2021.9.1-5 \
-               intel-oneapi-ippcp-devel=2021.9.1-5 \
-               intel-oneapi-ipp=2021.10.1-13 \
-               intel-oneapi-ipp-devel=2021.10.1-13 \
-               intel-oneapi-tlt=2024.0.0-352 \
-               intel-oneapi-ccl=2021.11.2-5 \
-               intel-oneapi-ccl-devel=2021.11.2-5 \
-               intel-oneapi-dnnl-devel=2024.0.0-49521 \
-               intel-oneapi-dnnl=2024.0.0-49521 \
-               intel-oneapi-tcm-1.0=1.0.0-435
-            ```
-            > **Note**:
-            >
-            >   You can uninstall the package by running the following command:
-
-            ```bash
-            sudo apt autoremove intel-oneapi-common-vars
-            ```
-      - For **PIP installer**
-
-         - Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``.
-
-            ```bash
-            export PYTHONUSERBASE=~/intel/oneapi
-            pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 --user
-            ```
-            > **Note**:
-            >
-            >   The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is properly set.
-
-         - Step 2: Configure your working conda environment (e.g. with name ``llm``) to append oneAPI path (e.g. ``~/intel/oneapi/lib``) to the environment variable ``LD_LIBRARY_PATH``.
-
-            ```bash
-            conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
-            ```
-            > **Note**:
-            >
-            >   You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
-            >   You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
-
-            > **Note**:
-            >
-            >   You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
-            >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
-               
-            ```bash
-            rm -r ~/intel/oneapi
-            conda env config vars unset LD_LIBRARY_PATH -n llm
-            ```
-      - For **Offline installer**
-      
-         Using the offline installer allows you to customize the installation path.
-
-         ```bash      
-         wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh
-         sudo sh ./l_BaseKit_p_2024.0.0.49564_offline.sh
+         ```bash
+         sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
+            intel-oneapi-common-oneapi-vars=2024.0.0-49406 \
+            intel-oneapi-diagnostics-utility=2024.0.0-49093 \
+            intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
+            intel-oneapi-dpcpp-ct=2024.0.0-49381 \
+            intel-oneapi-mkl=2024.0.0-49656 \
+            intel-oneapi-mkl-devel=2024.0.0-49656 \
+            intel-oneapi-mpi=2021.11.0-49493 \
+            intel-oneapi-mpi-devel=2021.11.0-49493 \
+            intel-oneapi-dal=2024.0.1-25 \
+            intel-oneapi-dal-devel=2024.0.1-25 \
+            intel-oneapi-ippcp=2021.9.1-5 \
+            intel-oneapi-ippcp-devel=2021.9.1-5 \
+            intel-oneapi-ipp=2021.10.1-13 \
+            intel-oneapi-ipp-devel=2021.10.1-13 \
+            intel-oneapi-tlt=2024.0.0-352 \
+            intel-oneapi-ccl=2021.11.2-5 \
+            intel-oneapi-ccl-devel=2021.11.2-5 \
+            intel-oneapi-dnnl-devel=2024.0.0-49521 \
+            intel-oneapi-dnnl=2024.0.0-49521 \
+            intel-oneapi-tcm-1.0=1.0.0-435
          ```
          > **Note**:
          >
-         > You can also modify the installation or uninstall the package by running the following commands:
+         >   You can uninstall the package by running the following command:
 
          ```bash
-         cd /opt/intel/oneapi/installer
-         sudo ./installer
+         sudo apt autoremove intel-oneapi-common-vars
          ```
+      </details>
+
+      <details>
+      <summary> For <b>PIP installer</b> </summary>
+
+      - Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``.
+
+         ```bash
+         export PYTHONUSERBASE=~/intel/oneapi
+         pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 --user
+         ```
+         > **Note**:
+         >
+         >   The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is properly set.
+
+      - Step 2: Configure your working conda environment (e.g. with name ``llm``) to append oneAPI path (e.g. ``~/intel/oneapi/lib``) to the environment variable ``LD_LIBRARY_PATH``.
+
+         ```bash
+         conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
+         ```
+         > **Note**:
+         >
+         >   You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
+         >   You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
+
+         > **Note**:
+         >
+         >   You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
+         >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
+            
+         ```bash
+         rm -r ~/intel/oneapi
+         conda env config vars unset LD_LIBRARY_PATH -n llm
+         ```
+      </details>
+
+      <details>
+      <summary> For <b>Offline installer</b> </summary>
+      
+      Using the offline installer allows you to customize the installation path.
+
+      ```bash      
+      wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh
+      sudo sh ./l_BaseKit_p_2024.0.0.49564_offline.sh
+      ```
+      > **Note**:
+      >
+      > You can also modify the installation or uninstall the package by running the following commands:
+
+      ```bash
+      cd /opt/intel/oneapi/installer
+      sudo ./installer
+      ```
+      </details>
 - For **PyTorch 2.0** (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
 
    To enable IPEX-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
@@ -305,84 +312,92 @@ IPEX-LLM GPU support on Linux has been verified on:
 
       Intel® oneAPI Base Toolkit 2023.2 installation methods:
 
-      - For **APT installer**
+      <details>
+      <summary> For <b>APT installer</b> </summary>
 
-         - Step 1: Set up repository
-
-            ```bash
-            wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-            echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-            sudo apt update
-            ```
-
-         - Step 2: Install the packages
-
-            ```bash
-            sudo apt install -y intel-oneapi-common-vars=2023.2.0-49462 \
-               intel-oneapi-compiler-cpp-eclipse-cfg=2023.2.0-49495 intel-oneapi-compiler-dpcpp-eclipse-cfg=2023.2.0-49495 \
-               intel-oneapi-diagnostics-utility=2022.4.0-49091 \
-               intel-oneapi-compiler-dpcpp-cpp=2023.2.0-49495 \
-               intel-oneapi-mkl=2023.2.0-49495 intel-oneapi-mkl-devel=2023.2.0-49495 \
-               intel-oneapi-mpi=2021.10.0-49371 intel-oneapi-mpi-devel=2021.10.0-49371 \
-               intel-oneapi-tbb=2021.10.0-49541 intel-oneapi-tbb-devel=2021.10.0-49541\
-               intel-oneapi-ccl=2021.10.0-49084 intel-oneapi-ccl-devel=2021.10.0-49084\
-               intel-oneapi-dnnl-devel=2023.2.0-49516 intel-oneapi-dnnl=2023.2.0-49516
-            ```
-            > **Note**:
-            >
-            >   You can uninstall the package by running the following command:
-
-            ```bash
-            sudo apt autoremove intel-oneapi-common-vars
-            ```
-      - For **PIP installer**
-
-         - Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``
-
-            ```bash
-            export PYTHONUSERBASE=~/intel/oneapi
-            pip install dpcpp-cpp-rt==2023.2.0 mkl-dpcpp==2023.2.0 onednn-cpu-dpcpp-gpu-dpcpp==2023.2.0 --user
-            ```
-            > **Note**
-            >
-            >   The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is properly set.
-
-         - Step 2: Configure your working conda environment (e.g. with name ``llm``) to append oneAPI path (e.g. ``~/intel/oneapi/lib``) to the environment variable ``LD_LIBRARY_PATH``.
-
-            ```bash
-            conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
-            ```
-
-            > **Note**:
-            >
-            >   You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
-            >   You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
-
-            > **Note**:
-            >   
-            >   You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
-            >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
-               
-            ```bash
-            rm -r ~/intel/oneapi
-            conda env config vars unset LD_LIBRARY_PATH -n llm
-            ```
-      - For **Offline installer**
-      
-         Using the offline installer allows you to customize the installation path.
+      - Step 1: Set up repository
 
          ```bash
-            wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh
-            sudo sh ./l_BaseKit_p_2023.2.0.49397_offline.sh
+         wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+         echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+         sudo apt update
+         ```
+
+      - Step 2: Install the packages
+
+         ```bash
+         sudo apt install -y intel-oneapi-common-vars=2023.2.0-49462 \
+            intel-oneapi-compiler-cpp-eclipse-cfg=2023.2.0-49495 intel-oneapi-compiler-dpcpp-eclipse-cfg=2023.2.0-49495 \
+            intel-oneapi-diagnostics-utility=2022.4.0-49091 \
+            intel-oneapi-compiler-dpcpp-cpp=2023.2.0-49495 \
+            intel-oneapi-mkl=2023.2.0-49495 intel-oneapi-mkl-devel=2023.2.0-49495 \
+            intel-oneapi-mpi=2021.10.0-49371 intel-oneapi-mpi-devel=2021.10.0-49371 \
+            intel-oneapi-tbb=2021.10.0-49541 intel-oneapi-tbb-devel=2021.10.0-49541\
+            intel-oneapi-ccl=2021.10.0-49084 intel-oneapi-ccl-devel=2021.10.0-49084\
+            intel-oneapi-dnnl-devel=2023.2.0-49516 intel-oneapi-dnnl=2023.2.0-49516
          ```
          > **Note**:
          >
-         >   You can also modify the installation or uninstall the package by running the following commands:
+         >   You can uninstall the package by running the following command:
 
          ```bash
-         cd /opt/intel/oneapi/installer
-         sudo ./installer
+         sudo apt autoremove intel-oneapi-common-vars
          ```
+      </details>
+
+      <details>
+      <summary> For <b>PIP installer</b> </summary>
+
+      - Step 1: Install oneAPI in a user-defined folder, e.g., ``~/intel/oneapi``
+
+         ```bash
+         export PYTHONUSERBASE=~/intel/oneapi
+         pip install dpcpp-cpp-rt==2023.2.0 mkl-dpcpp==2023.2.0 onednn-cpu-dpcpp-gpu-dpcpp==2023.2.0 --user
+         ```
+         > **Note**
+         >
+         >   The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is properly set.
+
+      - Step 2: Configure your working conda environment (e.g. with name ``llm``) to append oneAPI path (e.g. ``~/intel/oneapi/lib``) to the environment variable ``LD_LIBRARY_PATH``.
+
+         ```bash
+         conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
+         ```
+
+         > **Note**:
+         >
+         >   You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
+         >   You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
+
+         > **Note**:
+         >   
+         >   You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
+         >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
+            
+         ```bash
+         rm -r ~/intel/oneapi
+         conda env config vars unset LD_LIBRARY_PATH -n llm
+         ```
+      </details>
+
+      <details>
+      <summary> For <b>Offline installer</b> </summary>
+      
+      Using the offline installer allows you to customize the installation path.
+
+      ```bash
+      wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh
+      sudo sh ./l_BaseKit_p_2023.2.0.49397_offline.sh
+      ```
+      > **Note**:
+      >
+      >   You can also modify the installation or uninstall the package by running the following commands:
+
+      ```bash
+      cd /opt/intel/oneapi/installer
+      sudo ./installer
+      ```
+      </details>
 
 ### Install IPEX-LLM
 #### Install IPEX-LLM From PyPI
