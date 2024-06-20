@@ -12,7 +12,7 @@ See the demo of finetuning LLaMA2-7B on Intel Arc GPU below.
 
 IPEX-LLM's support for [Axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0) is only available for Linux system. We recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
-Visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), follow [Install Intel GPU Driver](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-intel-gpu-driver) and [Install oneAPI](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
+Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md), follow [Install Intel GPU Driver](./install_linux_gpu.md#install-gpu-driver) and [Install oneAPI](./install_linux_gpu.md#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
 
 ### 1. Install IPEX-LLM for Axolotl
 
@@ -74,22 +74,13 @@ export HF_HUB_OFFLINE=1
 
 #### 2.2 Set Environment Variables
 
-```eval_rst
-.. note::
-
-   This is a required step on for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
-```
+> [!NOTE]
+> This is a required step on for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
 
 Configure oneAPI variables by running the following command:
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
-
-      .. code-block:: bash
-
-         source /opt/intel/oneapi/setvars.sh
-
+```bash
+source /opt/intel/oneapi/setvars.sh
 ```
 
 Configure accelerate to avoid training with CPU. You can download a default `default_config.yaml` with `use_cpu: false`.
@@ -291,7 +282,7 @@ Expected output
 
 ## Troubleshooting
 
-#### TypeError: PosixPath
+### TypeError: PosixPath
 
 Error message: `TypeError: argument of type 'PosixPath' is not iterable`
 
@@ -301,13 +292,13 @@ This issue is related to [axolotl #1544](https://github.com/OpenAccess-AI-Collec
 pip install datasets==2.15.0
 ```
 
-#### RuntimeError: out of device memory
+### RuntimeError: out of device memory
 
 Error message: `RuntimeError: Allocation is out of device memory on current platform.`
 
 This issue is caused by running out of GPU memory. Please reduce `lora_r` or `micro_batch_size` in `qlora.yml` or `lora.yml`, or reduce data using in training.
 
-#### OSError: libmkl_intel_lp64.so.2
+### OSError: libmkl_intel_lp64.so.2
 
 Error message: `OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or directory`
 
