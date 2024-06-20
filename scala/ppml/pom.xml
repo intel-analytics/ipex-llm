@@ -40,6 +40,10 @@
     </dependencyManagement>
 
     <dependencies>
+	<dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>synapseml-lightgbm_2.12</artifactId>
@@ -67,6 +71,14 @@
             <scope>${spark-scope}</scope>
 	    <exclusions>
 	       <exclusion>
+		    <groupId>org.codehaus.jackson</groupId>
+		    <artifactId>jackson-core-asl</artifactId>
+	       </exclusion>
+	       <exclusion>
+		     <groupId>org.codehaus.jackson</groupId>
+		     <artifactId>jackson-mapper-asl</artifactId>
+	       </exclusion>
+		<exclusion>
 		    <groupId>org.codehaus.jackson</groupId>
 		    <artifactId>jackson-core-asl</artifactId>
 	       </exclusion>
