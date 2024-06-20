@@ -203,11 +203,7 @@ Please refer to this [documentation](../Quickstart/ollama_quickstart.md#4-pull-m
 ### Running Open WebUI with Intel GPU
 
 Start the ollama and load the model first, then use the open-webui to chat.
-If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add 
-```bash
-export HF_ENDPOINT=https://hf-mirror.com
-```
-before running bash start.sh.
+If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `export HF_ENDPOINT=https://hf-mirror.com`before running bash start.sh.
 ```bash
 cd /llm/scripts/
 bash start-open-webui.sh
