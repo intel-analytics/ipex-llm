@@ -20,7 +20,6 @@ To add GPU support for FastChat, you may install **`ipex-llm`** as follows:
 
 ```bash
 pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
 ```
 
 ## 2. Start the service
@@ -61,7 +60,7 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "xpu"
 ```
 
-We have also provided an option `--load-low-bit-model` to load models that have been converted and saved into disk using the `save_low_bit` interface as introduced in this [document](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/hugging_face_format.html#save-load).
+We have also provided an option `--load-low-bit-model` to load models that have been converted and saved into disk using the `save_low_bit` interface as introduced in this [document](../Overview/KeyFeatures/hugging_face_format.md#save--load).
 
 Check the following examples:
 
@@ -72,7 +71,7 @@ python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path /Low/Bit/Model/
 
 #### For self-speculative decoding example:
 
-You can use IPEX-LLM to run `self-speculative decoding` example. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel MAX GPUs. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel CPUs.
+You can use IPEX-LLM to run `self-speculative decoding` example. Refer to [here](../../../python/llm/example/GPU/Speculative-Decoding) for more details on intel MAX GPUs. Refer to [here](../../../python/llm/example/CPU/Speculative-Decoding) for more details on intel CPUs.
 
 ```bash
 # Available low_bit format only including bf16 on CPU.
@@ -102,9 +101,9 @@ For a full list of accepted arguments, you can refer to the main method of the `
 
 #### IPEX-LLM vLLM worker
 
-We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/vLLM-Serving) engine for better hardware utilization.
+We also provide the `vllm_worker` which uses the vLLM engine (on [CPU](../../../python/llm/example/CPU/vLLM-Serving) / [GPU](../../../python/llm/example/GPU/vLLM-Serving)) for better hardware utilization.
 
-To run using the `vLLM_worker`,  we don't need to change model name, just simply uses the following command:
+To run using the `vLLM_worker`, we don't need to change model name, just simply uses the following command:
 
 ```bash
 # On CPU

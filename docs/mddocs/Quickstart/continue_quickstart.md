@@ -5,30 +5,25 @@
 
 Below is a demo of using `Continue` with [CodeQWen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat) running on Intel A770 GPU. This demo illustrates how a programmer used `Continue` to find a solution for the [Kaggle's _Titanic_ challenge](https://www.kaggle.com/competitions/titanic/), which involves asking `Continue` to complete the code for model fitting, evaluation, hyper parameter tuning, feature engineering, and explain generated code.
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/continue_demo_ollama_backend_arc.mp4" width="100%" controls></video>
+[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/continue_demo_ollama_backend_arc.png)](https://llm-assets.readthedocs.io/en/latest/_images/continue_demo_ollama_backend_arc.mp4)
 
 ## Quickstart
 
-This guide walks you through setting up and running **Continue** within _Visual Studio Code_, empowered by local large language models served via [Ollama](./ollama_quickstart.html) with `ipex-llm` optimizations.
+This guide walks you through setting up and running **Continue** within _Visual Studio Code_, empowered by local large language models served via [Ollama](./ollama_quickstart.md) with `ipex-llm` optimizations.
 
 ### 1. Install and Run Ollama Serve
 
-Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.html), and follow the steps 1) [Install IPEX-LLM for Ollama](./ollama_quickstart.html#install-ipex-llm-for-ollama), 2) [Initialize Ollama](./ollama_quickstart.html#initialize-ollama) 3) [Run Ollama Serve](./ollama_quickstart.html#run-ollama-serve) to install, init and start the Ollama Service. 
+Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follow the steps 1) [Install IPEX-LLM for Ollama](./ollama_quickstart.md#1-install-ipex-llm-for-ollama), 2) [Initialize Ollama](./ollama_quickstart.md#2-initialize-ollama) 3) [Run Ollama Serve](./ollama_quickstart.md#3-run-ollama-serve) to install, init and start the Ollama Service. 
 
+> [!IMPORTANT]
+> If the `Continue` plugin is not installed on the same machine where Ollama is running (which means `Continue` needs to connect to a remote Ollama service), you must configure the Ollama service to accept connections from any IP address. To achieve this, set or export the environment variable `OLLAMA_HOST=0.0.0.0` before executing the command `ollama serve`. 
 
-```eval_rst
-.. important::
-
-   If the `Continue` plugin is not installed on the same machine where Ollama is running (which means `Continue` needs to connect to a remote Ollama service), you must configure the Ollama service to accept connections from any IP address. To achieve this, set or export the environment variable `OLLAMA_HOST=0.0.0.0` before executing the command `ollama serve`. 
-
-.. tip::
-
-  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
-
-  .. code-block:: bash
-
-      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-```
+> [!TIP]
+> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
+>
+> ```bash
+> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+> ```
 
 ### 2. Pull and Prepare the Model
 
@@ -36,29 +31,24 @@ Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.html), and fol
 
 Now we need to pull a model for coding. Here we use [CodeQWen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat) model as an example. Open a new terminal window, run the following command to pull [`codeqwen:latest`](https://ollama.com/library/codeqwen). 
 
+- For **Linux users**:
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+  ```bash
+  export no_proxy=localhost,127.0.0.1
+  ./ollama pull codeqwen:latest
+  ```
 
-      .. code-block:: bash
+- For **Windows users**:
 
-         export no_proxy=localhost,127.0.0.1
-         ./ollama pull codeqwen:latest
+  Please run the following command in Miniforge Prompt.
 
-   .. tab:: Windows
+  ```cmd
+  set no_proxy=localhost,127.0.0.1
+  ollama pull codeqwen:latest
+  ```
 
-      Please run the following command in Miniforge Prompt.
-
-      .. code-block:: cmd
-
-         set no_proxy=localhost,127.0.0.1
-         ollama pull codeqwen:latest
-
-.. seealso::
-
-   Besides CodeQWen, there are other coding models you might want to explore, such as Magicoder, Wizardcoder, Codellama, Codegemma, Starcoder, Starcoder2, and etc. You can find these models in the `Ollama model library <https://ollama.com/library>`_. Simply search for the model, pull it in a similar manner, and give it a try.
-```
+> [!NOTE]
+> Besides CodeQWen, there are other coding models you might want to explore, such as Magicoder, Wizardcoder, Codellama, Codegemma, Starcoder, Starcoder2, and etc. You can find these models in the [`Ollama model library`](https://ollama.com/library). Simply search for the model, pull it in a similar manner, and give it a try.
 
 
 #### 2.2 Prepare the Model and Pre-load
@@ -72,8 +62,8 @@ Start by creating a file named `Modelfile` with the following content:
 FROM codeqwen:latest
 PARAMETER num_ctx 4096
 ```
-Next, use the following commands in the terminal (Linux) or Miniforge Prompt (Windows) to create a new model in Ollama named `codeqwen:latest-continue`:
 
+Next, use the following commands in the terminal (Linux) or Miniforge Prompt (Windows) to create a new model in Ollama named `codeqwen:latest-continue`:
 
 ```bash
  ollama create codeqwen:latest-continue -f Modelfile
@@ -86,8 +76,6 @@ Finally, preload the new model by executing the following command in a new termi
 ```bash
 ollama run codeqwen:latest-continue
 ```
-
-
 
 ### 3. Install `Continue` Extension
 

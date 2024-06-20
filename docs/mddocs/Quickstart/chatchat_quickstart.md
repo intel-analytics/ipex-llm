@@ -10,12 +10,13 @@
     <td align="center" width="50%">简体中文</td>
   </tr>
   <tr>
-    <td><video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4" width="100%" controls></video></td>
-    <td><video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.mp4" width="100%" controls></video></td>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.png"/></a></td>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.png"/></a></td>
 </tr>
 </table>
 
->You can change the UI language in the left-side menu. We currently support **English** and **简体中文** (see video demos below).
+> [!NOTE]
+> You can change the UI language in the left-side menu. We currently support **English** and **简体中文** (see video demos below).
 
 ## Langchain-Chatchat Architecture
 
@@ -66,7 +67,7 @@ You can now click `Dialogue` on the left-side menu to return to the chat UI. The
 
 <br/>
 
-For more information about how to use Langchain-Chatchat, refer to Official Quickstart guide in [English](./README_en.md#), [Chinese](./README_chs.md#), or the [Wiki](https://github.com/chatchat-space/Langchain-Chatchat/wiki/).
+For more information about how to use Langchain-Chatchat, refer to Official Quickstart guide in [English](https://github.com/chatchat-space/Langchain-Chatchat/blob/master/README_en.md#), [Chinese](https://github.com/chatchat-space/Langchain-Chatchat/blob/master/README.md#), or the [Wiki](https://github.com/chatchat-space/Langchain-Chatchat/wiki/).
 
 ### Trouble Shooting & Tips
 

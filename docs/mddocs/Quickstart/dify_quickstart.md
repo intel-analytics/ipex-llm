@@ -6,7 +6,7 @@
 
 *See the demo of a RAG workflow in Dify running LLaMA2-7B on Intel A770 GPU below.*
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.mp4" width="100%" controls></video>
+[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.png)](https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.mp4)
 
 
 ## Quickstart
@@ -99,13 +99,8 @@ NEXT_PUBLIC_PUBLIC_API_PREFIX=http://localhost:5001/api
 NEXT_PUBLIC_SENTRY_DSN=
 ```
 
-```eval_rst
-
-.. note::
-
-  If you encounter connection problems, you may run `export no_proxy=localhost,127.0.0.1` before starting API servcie, Worker service and frontend. 
-
-```
+> [!NOTE]
+> If you encounter connection problems, you may run `export no_proxy=localhost,127.0.0.1` before starting API servcie, Worker service and frontend. 
 
 
 ### 3. How to Use `Dify`
