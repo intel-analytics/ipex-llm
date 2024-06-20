@@ -51,7 +51,7 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 You may launch the Ollama service as below:
 
 - For **Linux users**:
-  
+
   ```bash
   export OLLAMA_NUM_GPU=999
   export no_proxy=localhost,127.0.0.1
