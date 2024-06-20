@@ -20,9 +20,9 @@ This quickstart guide walks you through installing and running `vLLM` with `ipex
 
 IPEX-LLM's support for `vLLM` now is available for only Linux system.
 
-Visit [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html) and follow the instructions in section [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-prerequisites) to isntall prerequisites that are needed for running code on Intel GPUs.
+Visit [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md) and follow the instructions in section [Install Prerequisites](./install_linux_gpu.md#install-prerequisites) to isntall prerequisites that are needed for running code on Intel GPUs.
 
-Then,follow instructions in section [Install ipex-llm](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-ipex-llm) to install `ipex-llm[xpu]` and setup the recommended runtime configurations.
+Then, follow instructions in section [Install ipex-llm](./install_linux_gpu.md#install-ipex-llm) to install `ipex-llm[xpu]` and setup the recommended runtime configurations.
 
 **After the installation, you should have created a conda environment, named `ipex-vllm` for instance, for running `vLLM` commands with IPEX-LLM.**
 
@@ -54,12 +54,10 @@ pip install transformers_stream_generator einops tiktoken
 
 To run offline inference using vLLM for a quick impression, use the following example.
 
-```eval_rst
-.. note::
-
-  Please modify the MODEL_PATH in offline_inference.py to use your chosen model. 
-  You can try modify load_in_low_bit to different values in **[sym_int4, fp6, fp8, fp8_e4m3, fp16]** to use different quantization dtype.
-```
+> [!NOTE]
+> Please modify the MODEL_PATH in offline_inference.py to use your chosen model.
+>
+> You can try modify load_in_low_bit to different values in **[sym_int4, fp6, fp8, fp8_e4m3, fp16]** to use different quantization dtype.
 
 ```bash
 #!/bin/bash
@@ -91,11 +89,8 @@ Prompt: 'The future of AI is', Generated text: " bright, but it's not without ch
 
 ### Service
 
-```eval_rst
-.. note::
-
-  Because of using JIT compilation for kernels. We recommend to send a few requests for warmup before using the service for the best performance.
-```
+> [!NOTE]
+> Because of using JIT compilation for kernels. We recommend to send a few requests for warmup before using the service for the best performance.
 
 To fully utilize the continuous batching feature of the `vLLM`, you can send requests to the service using `curl` or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same `forward` step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
@@ -168,20 +163,17 @@ Below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_i
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/vllm-curl-result.png" width=100%; />
 </a>
 
-```eval_rst
-.. tip::
-
-  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before starting the service:
-
-  .. code-block:: bash
-
-      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-
-```
+> [!TIP]
+> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before starting the service:
+>
+> ```bash
+> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+> ```
 
 ## 4. About Tensor parallel
 
-> Note: We recommend to use docker for tensor parallel deployment. Check our serving docker image `intelanalytics/ipex-llm-serving-xpu`.
+> [!NOTE]
+> We recommend to use docker for tensor parallel deployment. Check our serving docker image `intelanalytics/ipex-llm-serving-xpu`.
 
 We have also supported tensor parallel by using multiple Intel GPU cards. To enable tensor parallel, you will need to install `libfabric-dev` in your environment. In ubuntu, you can install it by:
 
@@ -268,9 +260,5 @@ The following figure shows the result of benchmarking `Llama-2-7b-chat-hf` using
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/vllm-benchmark-result.png" width=100%; />
 </a>
 
-
-```eval_rst
-.. tip::
-
-  To find the best config that fits your workload, you may need to start the service and use tools like `wrk` or `jmeter` to perform a stress tests.
-```
+> [!TIP]
+> To find the best config that fits your workload, you may need to start the service and use tools like `wrk` or `jmeter` to perform a stress tests.

@@ -4,7 +4,7 @@ The [oobabooga/text-generation-webui](https://github.com/oobabooga/text-generati
 
 See the demo of running LLaMA2-7B on an Intel Core Ultra laptop below.
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4" width="100%" controls></video>
+[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.png)](https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4)
 
 ## Quickstart
 This quickstart guide walks you through setting up and using the [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) with `ipex-llm`. 
@@ -18,12 +18,11 @@ A preview of the WebUI in action is shown below:
 
 ### 1 Install IPEX-LLM
 
-To use the WebUI, first ensure that IPEX-LLM is installed. Follow the instructions on the [IPEX-LLM Installation Quickstart for Windows with Intel GPU](install_windows_gpu.html). 
+To use the WebUI, first ensure that IPEX-LLM is installed. Follow the instructions on the [IPEX-LLM Installation Quickstart for Windows with Intel GPU](./install_windows_gpu.md). 
 
 **After the installation, you should have created a conda environment, named `llm` for instance, for running `ipex-llm` applications.**
 
 ### 2 Install the WebUI
-
 
 #### Download the WebUI
 Download the `text-generation-webui` with IPEX-LLM integrations from [this link](https://github.com/intel-analytics/text-generation-webui/archive/refs/heads/ipex-llm.zip). Unzip the content into a directory, e.g.,`C:\text-generation-webui`. 
@@ -41,26 +40,21 @@ pip install -r requirements_cpu_only.txt
 pip install -r extensions/openai/requirements.txt
 ```
 
-```eval_rst
-.. note::
-   
-   `extensions/openai/requirements.txt` is for API service. If you don't need the API service, you can omit this command. 
-```
+> [!NOTE]
+> `extensions/openai/requirements.txt` is for API service. If you don't need the API service, you can omit this command. 
 
 ### 3 Start the WebUI Server
 
 #### Set Environment Variables
 Configure oneAPI variables by running the following command in **Miniforge Prompt**:
 
-```eval_rst
-.. note::
-   
-   For more details about runtime configurations, refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#runtime-configuration>`_ 
-```
+> [!NOTE]
+> For more details about runtime configurations, refer to [this guide](../Overview/install_gpu.md#runtime-configuration).
 
 ```cmd
 set SYCL_CACHE_PERSISTENT=1
 ```
+
 If you're running on iGPU, set additional environment variables by running the following commands:
 ```cmd
 set BIGDL_LLM_XMX_DISABLED=1
@@ -70,31 +64,21 @@ set BIGDL_LLM_XMX_DISABLED=1
 In **Miniforge Prompt** with the conda environment `llm` activated, navigate to the `text-generation-webui` folder and execute the following commands (You can optionally lanch the server with or without the API service): 
 
 ##### without API service
-   ```cmd
-   python server.py --load-in-4bit
-   ```
+```cmd
+python server.py --load-in-4bit
+```
 ##### with API service
-  ```
-    python server.py --load-in-4bit --api --api-port 5000 --listen
-  ```
-```eval_rst
-.. note::
-
-   with ``--load-in-4bit`` option, the models will be optimized and run at 4-bit precision. For configuration for other formats and precisions, refer to `this link <https://github.com/intel-analytics/text-generation-webui?tab=readme-ov-file#32-optimizations-for-other-percisions>`_
+```cmd
+python server.py --load-in-4bit --api --api-port 5000 --listen
 ```
+> [!TIP]
+> With ``--load-in-4bit`` option, the models will be optimized and run at 4-bit precision. For configuration for other formats and precisions, refer to [this link](https://github.com/intel-analytics/text-generation-webui?tab=readme-ov-file#32-optimizations-for-other-percisions).
 
-```eval_rst
-.. note::
+> [!NOTE]
+> The API service allows user to access models using OpenAI-compatible API. For usage examples, refer to [this link](https://github.com/oobabooga/text-generation-webui/wiki/12-%E2%80%90-OpenAI-API#examples) 
 
-   The API service allows user to access models using OpenAI-compatible API. For usage examples, refer to [this link](https://github.com/oobabooga/text-generation-webui/wiki/12-%E2%80%90-OpenAI-API#examples)  
-```
-
-```eval_rst
-.. note::
-
-   The API server will by default use port ``5000``. To change the port, use ``--api-port 1234`` in the command above. You can also specify using SSL or API Key in the command. Please see `this guide <https://github.com/intel-analytics/text-generation-webui/blob/ipex-llm/docs/12%20-%20OpenAI%20API.md>`_ for the full list of arguments.
-```
-
+> [!NOTE]
+> The API server will by default use port ``5000``. To change the port, use ``--api-port 1234`` in the command above. You can also specify using SSL or API Key in the command. Please see `this guide <https://github.com/intel-analytics/text-generation-webui/blob/ipex-llm/docs/12%20-%20OpenAI%20API.md>`_ for the full list of arguments.
 
 #### Access the WebUI
 Upon successful launch, URLs to access the WebUI will be displayed in the terminal as shown below. Open the provided local URL in your browser to interact with the WebUI. 
@@ -129,11 +113,8 @@ If everything goes well, you will get a message as shown below.
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/webui_quickstart_load_model_success.png" width=100%; />
 </a>
 
-```eval_rst
-.. note::
-
-   Model loading might take a few minutes as it includes a **warm-up** phase. This `warm-up` step is used to improve the speed of subsequent model uses. 
-```
+> [!NOTE]
+> Model loading might take a few minutes as it includes a **warm-up** phase. This `warm-up` step is used to improve the speed of subsequent model uses. 
 
 #### Chat with the Model
 
