@@ -25,6 +25,7 @@ _torch_save = torch.save
 
 # To replace torch.save in ipex, you need to import and exec their __init__.py first.
 # And then you can replace torch.save with your customized function.
+'''
 try:
     from intel_pytorch_extension.ops.save import *
 except ImportError:
@@ -33,6 +34,7 @@ except ImportError:
     to get IPEX ready.")
     # process needs to stop here
     raise ImportError
+'''
 
 # Note that you need to temporarily store original torch.save,
 # because it will be modified in ipex.ops.save.
