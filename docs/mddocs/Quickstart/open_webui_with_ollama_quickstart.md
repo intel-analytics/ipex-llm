@@ -4,7 +4,7 @@
 
 *See the demo of running Mistral:7B on Intel Arc A770 below.*
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_demo.mp4" width="100%" controls></video>
+[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/open_webui_demo.png)](https://llm-assets.readthedocs.io/en/latest/_images/open_webui_demo.mp4)
 
 ## Quickstart
 

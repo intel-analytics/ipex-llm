@@ -4,7 +4,7 @@
 
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
+[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.png)](https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4)
 
 > [!NOTE]
 > `ipex-llm[cpp]==2.5.0b20240527` is consistent with [v0.1.34](https://github.com/ollama/ollama/releases/tag/v0.1.34) of ollama.

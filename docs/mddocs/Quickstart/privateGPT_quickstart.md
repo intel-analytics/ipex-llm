@@ -4,7 +4,7 @@
 
 *See the demo of privateGPT running Mistral:7B on Intel Arc A770 below.*
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.mp4" width="100%" controls></video>
+[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.png)](https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.mp4)
 
 ## Quickstart
 
