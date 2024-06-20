@@ -302,4 +302,4 @@ This issue is caused by running out of GPU memory. Please reduce `lora_r` or `mi
 
 Error message: `OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or directory`
 
-oneAPI environment is not correctly set. Please refer to [Set Environment Variables](#set-environment-variables).
+oneAPI environment is not correctly set. Please refer to [Set Environment Variables](#22-set-environment-variables).

@@ -72,7 +72,7 @@ python -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path /Low/Bit/Model/
 
 #### For self-speculative decoding example:
 
-You can use IPEX-LLM to run `self-speculative decoding` example. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel MAX GPUs. Refer to [here](https://github.com/intel-analytics/ipex-llm/tree/c9fac8c26bf1e1e8f7376fa9a62b32951dd9e85d/python/llm/example/GPU/Speculative-Decoding) for more details on intel CPUs.
+You can use IPEX-LLM to run `self-speculative decoding` example. Refer to [here](../../../python/llm/example/GPU/Speculative-Decoding) for more details on intel MAX GPUs. Refer to [here](../../../python/llm/example/CPU/Speculative-Decoding) for more details on intel CPUs.
 
 ```bash
 # Available low_bit format only including bf16 on CPU.
@@ -102,9 +102,9 @@ For a full list of accepted arguments, you can refer to the main method of the `
 
 #### IPEX-LLM vLLM worker
 
-We also provide the `vllm_worker` which uses the [vLLM](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/vLLM-Serving) engine for better hardware utilization.
+We also provide the `vllm_worker` which uses the vLLM engine (on [CPU](../../../python/llm/example/CPU/vLLM-Serving) / [GPU](../../../python/llm/example/GPU/vLLM-Serving)) for better hardware utilization.
 
-To run using the `vLLM_worker`,  we don't need to change model name, just simply uses the following command:
+To run using the `vLLM_worker`, we don't need to change model name, just simply uses the following command:
 
 ```bash
 # On CPU
