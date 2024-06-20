@@ -234,7 +234,8 @@ def phi3_model_forward_wrapper(origin_model_forward):
     ):
         # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
         use_cache = use_cache if use_cache is not None else self.config.use_cache
-        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids)
+        input = input_ids if input_ids is not None else inputs_embeds
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input)
         if use_cache:
             if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)

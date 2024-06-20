@@ -21,7 +21,7 @@ RUN echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] h
 RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     # Install python 3.11.1
     apt-get update && \
-    apt-get install -y curl wget gpg gpg-agent git gcc g++ make libunwind8-dev libbz2-dev zlib1g-dev libssl-dev libffi-dev && \
+    apt-get install -y curl wget gpg gpg-agent git gcc g++ make libunwind8-dev libbz2-dev zlib1g-dev libssl-dev libffi-dev xz-utils && \
     mkdir -p /opt/python && \
     cd /opt/python && \
     wget https://www.python.org/ftp/python/3.11.1/Python-3.11.1.tar.xz && \
@@ -29,7 +29,6 @@ RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     cd Python-3.11.1 && \
     ./configure --enable-optimizations --with-zlib && \
     make altinstall && \
-    rm /usr/bin/python3 && \
     # Create a symbolic link pointing to Python 3.11 at /usr/bin/python3
     ln -s /opt/python/Python-3.11.1/python /usr/bin/python3 && \
     # Create a symbolic link pointing to /usr/bin/python3 at /usr/bin/python
@@ -50,7 +49,6 @@ RUN mkdir -p /ipex_llm/data && mkdir -p /ipex_llm/model && \
     # install huggingface dependencies
     pip install datasets transformers==4.36.0 && \
     pip install fire peft==0.10.0 && \
-    pip install accelerate==0.23.0 && \
     pip install bitsandbytes && \
     # get qlora example code
     cd /ipex_llm && \

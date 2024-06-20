@@ -80,6 +80,7 @@ IQ1_S = ggml_tensor_qtype["gguf_iq1_s"]
 Q4_K = ggml_tensor_qtype["q4_k"]
 Q6_K = ggml_tensor_qtype["q6_k"]
 Q5_K = ggml_tensor_qtype["q5_k"]
+FP6_K = ggml_tensor_qtype["fp6_k"]
 
 
 # For sym_int4
@@ -200,7 +201,8 @@ def get_qk_size(qtype: int):
 def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                        device=None, convert_shape_only=False,
                        imatrix: torch.Tensor=None,
-                       in_features: int=None):
+                       in_features: int=None,
+                       enable_scale_search: bool=False):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
 
@@ -220,8 +222,8 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
-        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K]:
-            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
+        if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K, FP6_K]:
+            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)
         else:
             if imatrix is not None:
                 # quantize with importance matrix
@@ -244,7 +246,8 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5, Q4_K, Q6_K]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5,
+                 Q4_K, Q6_K, FP6_K]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -269,7 +272,8 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
-    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5, Q4_K, Q6_K]:
+    if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5,
+                 Q4_K, Q6_K, FP6_K]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
@@ -329,7 +333,7 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
         and output_len % 32 == 0
         and device in ["arc", "flex", "pvc", "mtl"]
         and qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, FP4,
-                      FP8E5, FP6, FP8E4]
+                      FP8E5, FP6, FP8E4, Q4_K, Q6_K]
         and batch_size <= 64
     )
     if hard_condition:
@@ -354,7 +358,8 @@ class FP4Params(torch.nn.Parameter):
                 qtype=None,
                 imatrix=None,
                 in_features=None,
-                enable_xetla=False,):
+                enable_xetla=False,
+                enable_scale_search=False):
         if data is None:
             data = torch.empty(0)
 
@@ -367,13 +372,15 @@ class FP4Params(torch.nn.Parameter):
         self.imatrix = imatrix
         self.in_features = in_features
         self.enable_xetla = enable_xetla
+        self.enable_scale_search = enable_scale_search
         return self
 
     def ggml_mse(self, w, ggml_qtype, device):
         from torch.nn.functional import mse_loss
         w_quant = ggml_convert_qtype(w, ggml_qtype,
                                      device=device,
-                                     convert_shape_only=self.convert_shape_only)
+                                     convert_shape_only=self.convert_shape_only,
+                                     enable_scale_search=self.enable_scale_search)
         w_dequant = ggml_convert_fp32(w_quant, w.shape,
                                       reduce(mul, w.shape, 1), ggml_qtype)
         mse = mse_loss(w_dequant, w)
@@ -386,7 +393,8 @@ class FP4Params(torch.nn.Parameter):
                 if device == 'meta':
                     w_quantized = ggml_convert_qtype(w, SYM_INT4,
                                                      device=device,
-                                                     convert_shape_only=self.convert_shape_only)
+                                                     convert_shape_only=self.convert_shape_only,
+                                                     enable_scale_search=self.enable_scale_search)
                     # TODO: should load from config, the current implementation doesn't support
                     # save/load
                     self.qtype = SYM_INT4
@@ -403,7 +411,8 @@ class FP4Params(torch.nn.Parameter):
                 if device == 'meta':
                     w_quantized = ggml_convert_qtype(w, SYM_INT8,
                                                      device=device,
-                                                     convert_shape_only=self.convert_shape_only)
+                                                     convert_shape_only=self.convert_shape_only,
+                                                     enable_scale_search=self.enable_scale_search)
                     # TODO: should load from config, the current implementation doesn't support
                     # save/load
                     self.qtype = SYM_INT8
@@ -421,7 +430,8 @@ class FP4Params(torch.nn.Parameter):
                                                  device=device,
                                                  convert_shape_only=self.convert_shape_only,
                                                  imatrix=self.imatrix,
-                                                 in_features=self.in_features)
+                                                 in_features=self.in_features,
+                                                 enable_scale_search=self.enable_scale_search)
                 self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
@@ -464,7 +474,8 @@ class FP4Params(torch.nn.Parameter):
                                   quantized=self.quantized,
                                   _shape=self._shape,
                                   qtype=self.qtype,
-                                  enable_xetla=self.enable_xetla)
+                                  enable_xetla=self.enable_xetla,
+                                  enable_scale_search=self.enable_scale_search)
             if self.enable_xetla:
                 device_type = get_xpu_device_type(new_param.data)
                 invalidInputError(device_type == "pvc",
@@ -478,7 +489,8 @@ class FP4Params(torch.nn.Parameter):
                                   quantized=self.quantized,
                                   _shape=self._shape,
                                   qtype=self.qtype,
-                                  enable_xetla=self.enable_xetla)
+                                  enable_xetla=self.enable_xetla,
+                                  enable_scale_search=self.enable_scale_search)
             if self.enable_xetla:
                 ggml_xpu = ipex_llm_xetla_to_ggml_xpu(new_param.data,
                                                       new_param._shape,
@@ -497,7 +509,8 @@ class FP4Params(torch.nn.Parameter):
                                   quantized=self.quantized,
                                   _shape=self._shape,
                                   qtype=self.qtype,
-                                  enable_xetla=self.enable_xetla)
+                                  enable_xetla=self.enable_xetla,
+                                  enable_scale_search=self.enable_scale_search)
             return new_param
 
 
@@ -604,12 +617,14 @@ class MatMulLowBitCPU(torch.autograd.Function):
 class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
                  conver_to_half=True, mp_group=None, enable_xetla=False,
-                 optimize_lm_head=False, act_order=False):
+                 optimize_lm_head=False, act_order=False,
+                 enable_scale_search=False):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
                                 quantized=False, _shape=None, qtype=qtype,
-                                enable_xetla=enable_xetla)
+                                enable_xetla=enable_xetla,
+                                enable_scale_search=enable_scale_search)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
@@ -810,14 +825,17 @@ class FP16Linear(nn.Linear):
             self.weight.data = self.weight.data.to(x.dtype)
 
         if not self.use_esimd_kernel(x):
-            if get_ipex_version() < "2.1.10+xpu":
+            if get_ipex_version() < "2.1.10+xpu" \
+                    or get_xpu_device_type(x) not in ["arc", "flex", "pvc"]:
                 if self.weight_type == 2:
-                    self.weight = self.weight.transpose(0, 1).contiguous()
+                    self.weight = torch.nn.Parameter(self.weight.transpose(0, 1).contiguous(),
+                                                     requires_grad=False)
                     self.weight_type = 1
                 result = F.linear(x, self.weight, self.bias)
             else:
                 if self.weight_type == 1:
-                    self.weight = self.weight.transpose(0, 1).contiguous()
+                    self.weight = torch.nn.Parameter(self.weight.transpose(0, 1).contiguous(),
+                                                     requires_grad=False)
                     self.weight_type = 2
                 result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
             if self.mp_group is not None:

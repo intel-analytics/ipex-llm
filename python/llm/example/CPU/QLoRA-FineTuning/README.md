@@ -22,7 +22,6 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 pip install transformers==4.36.0
 pip install peft==0.10.0
 pip install datasets
-pip install accelerate==0.23.0
 pip install bitsandbytes scipy
 ```
 

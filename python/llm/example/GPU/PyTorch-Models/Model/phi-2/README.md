@@ -16,6 +16,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install einops # additional package required for phi-2 to conduct generation
+pip install transformers==4.37.0
 ```
 
 #### 1.2 Installation on Windows
@@ -26,6 +27,7 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install transformers==4.37.0
 ```
 
 ### 2. Configures OneAPI environment variables for Linux

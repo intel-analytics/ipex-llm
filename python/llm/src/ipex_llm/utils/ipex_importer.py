@@ -18,7 +18,71 @@ from importlib.metadata import distribution, PackageNotFoundError
 import logging
 import builtins
 import sys
+import os
+import inspect
 from ipex_llm.utils.common import log4Error
+
+
+# Default is True, set to False to disable IPEX duplicate checker
+BIGDL_CHECK_DUPLICATE_IMPORT = os.getenv("BIGDL_CHECK_DUPLICATE_IMPORT",
+                                         'True').lower() in ('true', '1', 't')
+RAW_IMPORT = None
+IS_IMPORT_REPLACED = False
+ipex_duplicate_import_error = "intel_extension_for_pytorch has already been automatically " + \
+    "imported. Please avoid importing it again!"
+
+
+def replace_import():
+    global RAW_IMPORT, IS_IMPORT_REPLACED
+    # Avoid multiple replacement
+    if not IS_IMPORT_REPLACED and RAW_IMPORT is None:
+        # Save the original __import__ function
+        RAW_IMPORT = builtins.__import__
+        builtins.__import__ = custom_ipex_import
+        IS_IMPORT_REPLACED = True
+
+
+def revert_import():
+    if not BIGDL_CHECK_DUPLICATE_IMPORT:
+        return
+    global RAW_IMPORT, IS_IMPORT_REPLACED
+    # Only revert once
+    if RAW_IMPORT is not None and IS_IMPORT_REPLACED:
+        builtins.__import__ = RAW_IMPORT
+        IS_IMPORT_REPLACED = False
+
+
+def get_calling_package():
+    """
+    Return calling package name, e.g., ipex_llm.transformers
+    """
+    # Get the current stack frame
+    frame = inspect.currentframe()
+    # Get the caller's frame
+    caller_frame = frame.f_back.f_back
+    # Get the caller's module
+    module = inspect.getmodule(caller_frame)
+    if module:
+        # Return the module's package name
+        return module.__package__
+    return None
+
+
+def custom_ipex_import(name, globals=None, locals=None, fromlist=(), level=0):
+    """
+    Custom import function to avoid importing ipex again
+    """
+    if fromlist is not None or '.' in name:
+        return RAW_IMPORT(name, globals, locals, fromlist, level)
+    # Avoid errors in submodule import
+    calling = get_calling_package()
+    if calling is not None:
+        return RAW_IMPORT(name, globals, locals, fromlist, level)
+    # Only check ipex for main thread
+    if name == "ipex" or name == "intel_extension_for_pytorch":
+        log4Error.invalidInputError(False,
+                                    ipex_duplicate_import_error)
+    return RAW_IMPORT(name, globals, locals, fromlist, level)
 
 
 class IPEXImporter:
@@ -61,12 +125,13 @@ class IPEXImporter:
         if self.is_xpu_version_installed():
             # Check if user import ipex manually
             if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
-                logging.error("ipex_llm will automatically import intel_extension_for_pytorch.")
                 log4Error.invalidInputError(False,
-                                            "Please import ipex_llm before importing \
-                                                intel_extension_for_pytorch!")
+                                            ipex_duplicate_import_error)
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
+            # Replace builtin import to avoid duplicate ipex import
+            if BIGDL_CHECK_DUPLICATE_IMPORT:
+                replace_import()
             logging.info("intel_extension_for_pytorch auto imported")
 
     def directly_import_ipex(self):
@@ -90,11 +155,6 @@ class IPEXImporter:
 
         Raises ImportError if cannot import Intel Extension for PyTorch
         """
-        if self.ipex_version is not None:
-            return self.ipex_version
-        # try to import Intel Extension for PyTorch and get version
-        self.directly_import_ipex()
-        self.ipex_version = ipex.__version__
         return self.ipex_version
 
 

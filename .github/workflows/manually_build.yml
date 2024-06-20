@@ -16,7 +16,7 @@ on:
         - ipex-llm-serving-cpu
         - ipex-llm-serving-xpu
         - ipex-llm-finetune-lora-cpu
-        - ipex-llm-finetune-qlora-cpu-standalone
+        - ipex-llm-finetune-qlora-cpu
         - ipex-llm-finetune-qlora-cpu-k8s
         - ipex-llm-finetune-xpu
       tag:
@@ -74,8 +74,8 @@ jobs:
         sudo docker push ${image}:latest
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
-  ipex-llm-finetune-qlora-cpu-standalone:
-    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu-standalone' || inputs.artifact == 'all' }}
+  ipex-llm-finetune-qlora-cpu:
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -83,12 +83,12 @@ jobs:
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-      - name: ipex-llm-finetune-qlora-cpu-standalone
+      - name: ipex-llm-finetune-qlora-cpu
         run: |
           echo "##############################################################"
-          echo "####### ipex-llm-finetune-qlora-cpu-standalone ########"
+          echo "####### ipex-llm-finetune-qlora-cpu ########"
           echo "##############################################################"
-          export image=intelanalytics/ipex-llm-finetune-qlora-cpu-standalone
+          export image=intelanalytics/ipex-llm-finetune-qlora-cpu
           cd docker/llm/finetune/qlora/cpu/docker
           sudo docker build \
             --no-cache=true \
@@ -286,7 +286,7 @@ jobs:
 
   ipex-llm-serving-cpu:
     if: ${{ inputs.artifact == 'ipex-llm-serving-cpu' || inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
+    runs-on: [self-hosted, Shire, AVX512]
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
     - name: docker login

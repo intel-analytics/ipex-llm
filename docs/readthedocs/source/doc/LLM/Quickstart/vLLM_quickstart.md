@@ -58,7 +58,7 @@ To run offline inference using vLLM for a quick impression, use the following ex
 .. note::
 
   Please modify the MODEL_PATH in offline_inference.py to use your chosen model. 
-  You can try modify load_in_low_bit to different values in **[sym_int4, fp8, fp16]** to use different quantization dtype.
+  You can try modify load_in_low_bit to different values in **[sym_int4, fp6, fp8, fp8_e4m3, fp16]** to use different quantization dtype.
 ```
 
 ```bash
@@ -111,6 +111,7 @@ served_model_name="YOUR_MODEL_NAME"
  # --max-model-len, --max-num-batched-tokens, --max-num-seqs
  # to acquire the best performance
 
+ # Change value --load-in-low-bit to [fp6, fp8, fp8_e4m3, fp16] to use different low-bit formats
 python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --served-model-name $served_model_name \
   --port 8000 \
@@ -245,7 +246,7 @@ wget https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/docker/llm/
 
 export MODEL="YOUR_MODEL"
 
-# You can change load-in-low-bit from values in [sym_int4, fp8, fp16]
+# You can change load-in-low-bit from values in [sym_int4, fp6, fp8, fp8_e4m3, fp16]
 
 python3 ./benchmark_throughput.py \
     --backend vllm \

@@ -23,6 +23,7 @@ import torch.utils.checkpoint
 import torch.nn.functional as F
 from typing import Optional, Tuple
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
+from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
 
 
 def rotate_half(x):
@@ -37,6 +38,49 @@ def apply_rotary_pos_emb_index(q, k, cos, sin, position_id):
         F.embedding(position_id, sin.squeeze(1)).unsqueeze(2)
     q, k = (q * cos) + (rotate_half(q) * sin), (k * cos) + (rotate_half(k) * sin)
     return q, k
+
+
+def glm_sdpa(query, key, value, attention_mask=None, is_causal=False):
+    if use_flash_attention(query, key, attention_mask) or query.device.type == 'cpu':
+        context_layer = F.scaled_dot_product_attention(query.to(key.dtype),
+                                                       key,
+                                                       value,
+                                                       attention_mask,
+                                                       is_causal=is_causal).to(key.dtype)
+    else:
+        # attention_mask is not None only when past_key_value is not None and q_len > 1
+        if attention_mask is not None:
+            attn_bias = torch.zeros(attention_mask.shape, dtype=query.dtype,
+                                    device=query.device)
+            attention_mask = ~attention_mask
+            if attention_mask.dtype == torch.bool:
+                attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
+            else:
+                attn_bias += attention_mask
+        elif is_causal:
+            L, S = query.size(-2), key.size(-2)
+            attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
+            temp_mask = torch.ones(L, S, dtype=torch.bool, device=query.device).tril(diagonal=0)
+            attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
+            attn_bias.to(key.dtype)
+        else:
+            attn_bias = None
+        if use_sdp(query.shape[2], key.shape[2],
+                   query.shape[-1], query):
+            import xe_addons
+            attn_output = xe_addons.sdp(query, key, value, attn_bias)
+            context_layer = attn_output.view(query.shape)
+        else:
+            head_dim = query.size(-1)
+            attn = torch.matmul(query.to(key.dtype) / math.sqrt(head_dim),
+                                key.transpose(2, 3))
+            if attn_bias is not None:
+                attn += attn_bias
+            attn = F.softmax(attn, dim=-1,
+                             dtype=torch.float32).to(value.dtype)
+            context_layer = torch.matmul(attn, value)
+    return context_layer
+
 
 import os
 
@@ -103,156 +147,63 @@ def attention_fn(
     else:
         present = None
 
-    pytorch_major_version = int(torch.__version__.split('.')[0])
-    if pytorch_major_version >= 2:
-        query_layer = query_layer.permute(1, 2, 0, 3)
-        if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
+    query_layer = query_layer.permute(1, 2, 0, 3)
+    if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
 
-            if torch.is_autocast_cpu_enabled():
-                attention_mask = torch.ones(query_layer.shape[2],
-                                            key_layer.shape[2],
-                                            dtype=torch.bool).tril(diagonal=0)
-                attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
-                attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
-                query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
-                key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
-                value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
-                context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                                 key_layer,
-                                                                                 value_layer,
-                                                                                 attention_mask,
-                                                                                 is_causal=False)
-            else:
-                context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                                 key_layer,
-                                                                                 value_layer,
-                                                                                 attention_mask,
-                                                                                 is_causal=True)
+        if torch.is_autocast_cpu_enabled():
+            attention_mask = torch.ones(query_layer.shape[2],
+                                        key_layer.shape[2],
+                                        dtype=torch.bool).tril(diagonal=0)
+            attention_mask = attention_mask.masked_fill(~attention_mask, -float('inf'), )
+            attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
+            query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
+            key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
+            value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
+                                                                             attention_mask,
+                                                                             is_causal=False)
         else:
-            # attention_mask is not None only when past_key_value is not None and q_len > 1
-            if attention_mask is not None:
-                attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
-                                        device=query_layer.device)
-                attention_mask = ~attention_mask
-                if attention_mask.dtype == torch.bool:
-                    attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
-                else:
-                    attn_bias += attention_mask
-            else:
-                attn_bias = None
-            if torch.is_autocast_cpu_enabled():
-                query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
-                key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
-                value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
-                attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
-                context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                                 key_layer,
-                                                                                 value_layer,
-                                                                                 attention_mask)
-            else:
-                head_dim = query_layer.size(-1)
-                attn = torch.matmul(query_layer.to(key_layer.dtype),
-                                    key_layer.transpose(2, 3)) / math.sqrt(head_dim)
-                if attn_bias is not None:
-                    attn += attn_bias
-                attn = F.softmax(attn, dim=-1,
-                                 dtype=torch.float32).to(value_layer.dtype)
-                context_layer = torch.matmul(attn, value_layer)
-        context_layer = context_layer.permute(2, 0, 1, 3)
-        new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
-        context_layer = context_layer.reshape(*new_context_layer_shape)
-        attention_probs = None
-
+            context_layer = glm_sdpa(query_layer,
+                                     key_layer,
+                                     value_layer,
+                                     attention_mask,
+                                     is_causal=True)
     else:
-        query_key_layer_scaling_coeff = float(layer_id + 1)
-        if scaling_attention_score:
-            query_layer = query_layer / (math.sqrt(hidden_size) * query_key_layer_scaling_coeff)
-
-        # ===================================
-        # Raw attention scores. [b, np, s, s]
-        # ===================================
-
-        # [b, np, sq, sk]
-        output_size = (query_layer.size(1), query_layer.size(2),
-                       query_layer.size(0), key_layer.size(2))
-
-        # [sq, b, np, hn] -> [sq, b * np, hn]
-        query_layer = query_layer.view(output_size[2], output_size[0] * output_size[1], -1)
-        # [sk, b, np, hn] -> [sk, b * np, hn]
-        key_layer = key_layer.view(output_size[0] * output_size[1], output_size[3], -1)
-
-        matmul_input_buffer = torch.empty(
-            output_size[0] * output_size[1],
-            output_size[2], output_size[3], dtype=query_layer.dtype,
-            device=query_layer.device
-        )
-
-        matmul_result = torch.empty(
-            output_size[0] * output_size[1],
-            output_size[2], output_size[3], dtype=query_layer.dtype,
-            device=query_layer.device
-        )
-
-        torch.baddbmm(
-            matmul_input_buffer,
-            query_layer.transpose(0, 1),  # [b * np, sq, hn]
-            key_layer.transpose(1, 2),  # [b * np, hn, sk]
-            beta=0.0,
-            alpha=1.0,
-            out=matmul_result)
-
-        # change view to [b, np, sq, sk]
-        attention_scores = matmul_result.view(*output_size)
-
-        if self.scale_mask_softmax:
-            self.scale_mask_softmax.scale = query_key_layer_scaling_coeff
-            attention_probs = self.scale_mask_softmax(attention_scores,
-                                                      attention_mask.contiguous())
+        # attention_mask is not None only when past_key_value is not None and q_len > 1
+        if attention_mask is not None:
+            attn_bias = torch.zeros(attention_mask.shape, dtype=query_layer.dtype,
+                                    device=query_layer.device)
+            attention_mask = ~attention_mask
+            if attention_mask.dtype == torch.bool:
+                attn_bias.masked_fill_(attention_mask.logical_not(), float("-inf"))
+            else:
+                attn_bias += attention_mask
         else:
-            if not (attention_mask == 0).all():
-                # if auto-regressive, skip
-                attention_scores.masked_fill_(attention_mask, -10000.0)
-            dtype = attention_scores.dtype
-            attention_scores = attention_scores.float()
-            attention_scores = attention_scores * query_key_layer_scaling_coeff
-
-            attention_probs = F.softmax(attention_scores, dim=-1)
-
-            attention_probs = attention_probs.type(dtype)
-
-        # =========================
-        # Context layer. [sq, b, hp]
-        # =========================
-
-        # value_layer -> context layer.
-        # [sk, b, np, hn] --> [b, np, sq, hn]
-
-        # context layer shape: [b, np, sq, hn]
-        output_size = (value_layer.size(0), value_layer.size(1),
-                       query_layer.size(0), value_layer.size(3))
-
-        # change view [sk, b * np, hn]
-        value_layer = value_layer.view(output_size[0] * output_size[1], value_layer.size(2), -1)
-
-        # change view [b * np, sq, sk]
-        attention_probs = attention_probs.view(output_size[0] * output_size[1], output_size[2], -1)
-
-        # matmul: [b * np, sq, hn]
-        context_layer = torch.empty(
-            output_size[0] * output_size[1],
-            output_size[2], value_layer.size(-1), dtype=value_layer.dtype,
-            device=query_layer.device)
-        torch.bmm(attention_probs, value_layer, out=context_layer)
-
-        # change view [b, np, sq, hn]
-        context_layer = context_layer.view(*output_size)
-
-        # [b, np, sq, hn] --> [sq, b, np, hn]
-        context_layer = context_layer.permute(2, 0, 1, 3).contiguous()
-
-        # [sq, b, np, hn] --> [sq, b, hp]
-        new_context_layer_shape = context_layer.size()[:-2] + (hidden_size_per_partition,)
-        context_layer = context_layer.view(*new_context_layer_shape)
+            attn_bias = None
+        if torch.is_autocast_cpu_enabled():
+            query_layer = query_layer.to(torch.get_autocast_cpu_dtype())
+            key_layer = key_layer.to(torch.get_autocast_cpu_dtype())
+            value_layer = value_layer.to(torch.get_autocast_cpu_dtype())
+            attention_mask = attention_mask.to(torch.get_autocast_cpu_dtype())
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
+                                                                             attention_mask)
+        else:
+            head_dim = query_layer.size(-1)
+            attn = torch.matmul(query_layer.to(key_layer.dtype),
+                                key_layer.transpose(2, 3)) / math.sqrt(head_dim)
+            if attn_bias is not None:
+                attn += attn_bias
+            attn = F.softmax(attn, dim=-1,
+                             dtype=torch.float32).to(value_layer.dtype)
+            context_layer = torch.matmul(attn, value_layer)
+    context_layer = context_layer.permute(2, 0, 1, 3)
+    new_context_layer_shape = context_layer.size()[:-2] + (self.hidden_size_per_partition,)
+    context_layer = context_layer.reshape(*new_context_layer_shape)
+    attention_probs = None
 
     outputs = (context_layer, present, attention_probs)
 

@@ -28,6 +28,6 @@ NUM_GPUS=2 # number of used GPU
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export TORCH_LLM_ALLREDUCE=0 # Different from PVC
-
+export BIGDL_IMPORT_IPEX=0
 mpirun -np $NUM_GPUS --prepend-rank \
     python deepspeed_autotp.py --repo-id-or-model-path 'mistralai/Mistral-7B-Instruct-v0.1' --low-bit 'sym_int4'

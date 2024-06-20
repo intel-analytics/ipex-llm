@@ -57,34 +57,9 @@ jobs:
         ## linux ##
         bash python/llm/dev/release_default_linux.sh ${nb_version} true
 
-    - name: Create Job Badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: nb-python-build.json
-        type: job
-        job-name: python-build
-        runner-hosted-on: 'Shanghai'
-
   docker-build:
     if: ${{ github.event.schedule }} 
     uses: ./.github/workflows/manually_build.yml
     with:
       artifact: all
       tag: 2.1.0-SNAPSHOT
-
-  create-workflow-badge:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-    - name: create workflow badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${{env.GIST_ID}}
-        file-name: nightly-build.json
-        type: workflow

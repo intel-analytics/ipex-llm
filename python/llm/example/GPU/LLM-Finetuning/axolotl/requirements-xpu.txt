@@ -26,7 +26,7 @@ bert-score==0.3.13
 evaluate==0.4.0
 rouge-score==0.1.2
 scipy
-scikit-learn==1.2.2
+scikit-learn>=1.5.0
 pynvml
 art
 fschat

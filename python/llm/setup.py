@@ -54,8 +54,7 @@ libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 cpu_torch_version = ["torch==2.1.2+cpu;platform_system=='Linux'", "torch==2.1.2;platform_system=='Windows'"]
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
                'transformers == 4.36.2', 'sentencepiece', 'tokenizers == 0.15.2',
-               # TODO: Support accelerate 0.22.0
-               'accelerate == 0.21.0', 'tabulate'] + cpu_torch_version
+               'accelerate == 0.23.0', 'tabulate'] + cpu_torch_version
 
 SERVING_DEP = ['fschat[model_worker, webui] == 0.2.36', 'protobuf']
 windows_binarys = [

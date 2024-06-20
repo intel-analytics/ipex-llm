@@ -30,7 +30,7 @@
        <p>
          <ul>
             <li><em>
-               It runs on top of Intel Extension for PyTorch (<strong><code><span>IPEX</span></code></strong>), and is built on top of the excellent work of <strong><code><span>llama.cpp</span></code></strong>, <strong><code><span>transfromers</span></code></strong>, <strong><code><span>bitsandbytes</span></code></strong>, <strong><code><span>vLLM</span></code></strong>, <strong><code><span>qlora</span></code></strong>, <strong><code><span>AutoGPTQ</span></code></strong>, <strong><code><span>AutoAWQ</span></code></strong>, etc. 
+               It is built on top of the excellent work of <strong><code><span>llama.cpp</span></code></strong>, <strong><code><span>transfromers</span></code></strong>, <strong><code><span>bitsandbytes</span></code></strong>, <strong><code><span>vLLM</span></code></strong>, <strong><code><span>qlora</span></code></strong>, <strong><code><span>AutoGPTQ</span></code></strong>, <strong><code><span>AutoAWQ</span></code></strong>, etc. 
             </li></em>
             <li><em>
                It provides seamless integration with <a href=doc/LLM/Quickstart/llama_cpp_quickstart.html>llama.cpp</a>, <a href=doc/LLM/Quickstart/ollama_quickstart.html>ollama</a>, <a href=doc/LLM/Quickstart/webui_quickstart.html>Text-Generation-WebUI</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>HuggingFace transformers</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning>HuggingFace PEFT</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LangChain >LangChain</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LlamaIndex >LlamaIndex</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Deepspeed-AutoTP >DeepSpeed-AutoTP</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving >vLLM</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat>FastChat</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>HuggingFace TRL</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Applications/autogen >AutoGen</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models >ModeScope</a>, etc.
@@ -72,40 +72,89 @@ Latest update 🔥
    * [2023/09] ``ipex-llm`` now supports `Intel GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU>`_ (including iGPU, Arc, Flex and MAX).
    * [2023/09] ``ipex-llm`` `tutorial <https://github.com/intel-analytics/ipex-llm-tutorial>`_ is released.
 
+
+************************************************
+``ipex-llm`` Performance
+************************************************
+
+.. raw:: html
+
+  <p>
+      See the <strong>Token Generation Speed</strong> on <em>Intel Core Ultra</em> and <em>Intel Arc GPU</em> below <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup>
+       (and refer to <a href=https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-meta-llama3-with-intel-ai-solutions.html>[2]</a><a href=https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-microsoft-phi-3-models-intel-ai-soln.htm>[3]</a><a href=https://www.intel.com/content/www/us/en/developer/articles/technical/intel-ai-solutions-accelerate-alibaba-qwen2-llms.html>[4]</a> for more details).
+  </p>
+
+.. raw:: html
+    
+  <table width="100%">
+    <tr>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" width=100%; />
+        </a>
+      </td>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" width=100%; />
+        </a>
+      </td>
+    </tr>
+  </table>
+
+You may follow the `guide <doc/LLM/Quickstart/benchmark_quickstart.html>`_ to run ``ipex-llm`` performance benchmark yourself.
+
 ************************************************
 ``ipex-llm`` Demos
 ************************************************
 
-See the **optimized performance** of ``chatglm2-6b`` and ``llama-2-13b-chat`` models on 12th Gen Intel Core CPU and Intel Arc GPU below.
+See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, single-card Arc GPU, or multi-card Arc GPUs* using ``ipex-llm`` below.
 
 .. raw:: html
    
-   <table width="100%">
-      <tr>
-         <td align="center" colspan="2">12th Gen Intel Core CPU</td>
-         <td align="center" colspan="2">Intel Arc GPU</td>
-      </tr>
-      <tr>
-         <td>
-            <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-6b.gif" ></a>
-         </td>
-         <td>
-            <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-2-13b-chat.gif"></a>
-         </td>
-         <td>
-            <a href="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/chatglm2-arc.gif"></a>
-         </td>
-         <td>
-            <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama2-13b-arc.gif"></a>
-         </td>
-      </tr>
-      <tr>
-         <td align="center" width="25%"><code>chatglm2-6b</code></td>
-         <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
-         <td align="center" width="25%"><code>chatglm2-6b</code></td>
-         <td align="center" width="25%"><code>llama-2-13b-chat</code></td>
-      </tr>
-   </table>
+
+  <table width="100%">
+    <tr>
+      <td align="center" colspan="1"><strong>Intel Iris iGPU</strong></td>
+      <td align="center" colspan="1"><strong>Intel Core Ultra iGPU</strong></td>
+      <td align="center" colspan="1"><strong>Intel Arc dGPU</strong></td>
+      <td align="center" colspan="1"><strong>2-Card Intel Arc dGPUs</strong></td>
+    </tr>
+    <tr>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/iris_phi3-3.8B_q4_0_llamacpp_long.gif" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/iris_phi3-3.8B_q4_0_llamacpp_long.gif" width=100%; />
+        </a>
+      </td>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" width=100%; />
+        </a>
+      </td>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/arc_llama3-8B_fp8_textwebui.gif" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/arc_llama3-8B_fp8_textwebui.gif" width=100%; />
+        </a>
+      </td>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/2arc_qwen1.5-32B_fp6_fastchat.gif" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/2arc_qwen1.5-32B_fp6_fastchat.gif" width=100%; />
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" width="25%">
+        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html"><code>llama.cpp(Phi-3-mini Q4_0)</code></a>
+      </td>
+      <td align="center" width="25%">
+        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html"><code>Ollama(Mistral-7B Q4_K)</code></a>
+      </td>
+      <td align="center" width="25%">
+        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/webui_quickstart.html"><code>TextGeneration-WebUI(Llama3-8B FP8)</code></a>
+      </td>
+      <td align="center" width="25%">
+        <a href="https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html"><code>FastChat(QWen1.5-32B FP6)</code></a>
+      </td>  </tr>
+  </table>
 
 ************************************************
 ``ipex-llm`` Quickstart
@@ -258,6 +307,13 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/chatglm3">link</a></td>
        </tr>
        <tr>
+         <td>GLM-4</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/glm4">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/glm4">link</a></td>
+       </tr>
+       <tr>
          <td>Mistral</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mistral">link</a></td>
@@ -362,6 +418,13 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen1.5">link</a></td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen1.5">link</a></td>
+       </tr>
+       <tr>
+         <td>Qwen2</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen2">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen2">link</a></td>
        </tr>
        <tr>
          <td>Qwen-VL</td>
@@ -617,6 +680,13 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegeex2">link</a></td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/codegeex2">link</a></td>
+       </tr>
+       <tr>
+         <td>MiniCPM</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/minicpm">link</a></td>
        </tr>
      </tbody>
    </table>

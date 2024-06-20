@@ -14,5 +14,5 @@ if grep -q "Core" /proc/cpuinfo; then
     export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 fi
 export TORCH_LLM_ALLREDUCE=0 # Different from PVC
-
+export BIGDL_IMPORT_IPEX=0
 mpirun -np $NUM_GPUS --prepend-rank python run.py

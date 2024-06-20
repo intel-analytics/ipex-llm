@@ -38,8 +38,7 @@
 #
 
 import math
-import warnings
-from typing import TYPE_CHECKING, Optional, Tuple, Union, Callable, List
+from typing import Optional, Tuple, Union, List
 
 import torch
 from torch.nn.functional import scaled_dot_product_attention as sdpa
@@ -50,7 +49,8 @@ from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use
 from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
 from ipex_llm.utils.common import invalidInputError
 
-from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, apply_rotary_pos_emb, repeat_kv
+from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2MLP
+from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb, repeat_kv
 from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask_for_sdpa
 from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask
 from transformers.modeling_outputs import BaseModelOutputWithPast
@@ -74,7 +74,11 @@ def qwen2_model_forward(
     return_dict: Optional[bool] = None,
 ):
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids)
+    input = input_ids if input_ids is not None else inputs_embeds
+    use_quantize_kv = (
+        self.config.hidden_size != 3584     # disable quantize kv in specific model
+        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input)
+    )
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
@@ -285,6 +289,37 @@ def merge_qkv(module: torch.nn.Module):
         del module.q_proj, module.k_proj, module.v_proj
 
 
+def padding_mlp(module: torch.nn.Module):
+    # for qwen 1.5 14B
+    if isinstance(module, Qwen2MLP):
+        hidden_size = module.hidden_size
+        intermediate_size = module.intermediate_size
+        padding_intermediate_size = (intermediate_size + 256 - 1) // 256 * 256
+        if intermediate_size % 256 == 0:
+            return
+
+        gate_weight = module.gate_proj.weight.data
+        new_gate_weight = torch.zeros([padding_intermediate_size, hidden_size],
+                                      dtype=gate_weight.dtype, device=gate_weight.device)
+        new_gate_weight[:intermediate_size, :] = gate_weight
+        module.gate_proj.out_features = padding_intermediate_size
+        module.gate_proj.weight = torch.nn.Parameter(new_gate_weight, requires_grad=False)
+
+        up_weight = module.up_proj.weight.data
+        new_up_weight = torch.zeros([padding_intermediate_size, hidden_size],
+                                    dtype=up_weight.dtype, device=up_weight.device)
+        new_up_weight[:intermediate_size, :] = up_weight
+        module.up_proj.out_features = padding_intermediate_size
+        module.up_proj.weight = torch.nn.Parameter(new_up_weight, requires_grad=False)
+
+        down_weight = module.down_proj.weight.data
+        new_down_weight = torch.zeros([hidden_size, padding_intermediate_size],
+                                      dtype=down_weight.dtype, device=down_weight.device)
+        new_down_weight[:, :intermediate_size] = down_weight
+        module.down_proj.in_features = padding_intermediate_size
+        module.down_proj.weight = torch.nn.Parameter(new_down_weight, requires_grad=False)
+
+
 def qwen2_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -324,6 +359,9 @@ def qwen2_attention_forward(
 
     attn_weights = None
     if query_states.device.type == "cpu":
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
         attn_output = sdpa(query_states,
                            key_states,
                            value_states,
@@ -332,6 +370,9 @@ def qwen2_attention_forward(
                            is_causal=self.is_causal and attention_mask is None and q_len > 1)
     elif not self.training and not hidden_states.requires_grad and \
             use_flash_attention(query_states, key_states, attention_mask):
+        # repeat k/v heads if n_kv_heads < n_heads
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
         attn_output = sdpa(query_states.to(device, dtype=torch.float16),
                            key_states.to(device, dtype=torch.float16),
                            value_states.to(device, dtype=torch.float16),
