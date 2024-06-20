@@ -2,7 +2,7 @@
 
 This guide demonstrates how to install IPEX-LLM on Linux with Intel GPUs. It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU.
 
-IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#linux) page for more details.
+IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](../Overview/install_gpu.md#linux) page for more details.
 
 ## Install Prerequisites
 
@@ -98,7 +98,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 For Intel Core™ Ultra integrated GPU, please make sure level_zero version >= 1.3.28717. The level_zero version can be checked with `sycl-ls`, and verison will be tagged behind `[ext_oneapi_level_zero:gpu]`.
 
 Here are the sample output of `sycl-ls`:
-```
+```bash
 [opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device OpenCL 1.2  [2023.16.12.0.12_195853.xmain-hotfix]
 [opencl:cpu:1] Intel(R) OpenCL, Intel(R) Core(TM) Ultra 5 125H OpenCL 3.0 (Build 0) [2023.16.12.0.12_195853.xmain-hotfix]
 [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) Graphics OpenCL 3.0 NEO  [24.09.28717.12]
@@ -118,7 +118,7 @@ sudo dpkg -i *.deb
 ```
 
 ### Install oneAPI 
-  ```
+  ```bash
   wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
 
   echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
@@ -163,43 +163,34 @@ Download and install the Miniforge as follows if you don't have conda installed 
 You can use `conda --version` to verify you conda installation.
 
 After installation, create a new python environment `llm`:
-```cmd
+```bash
 conda create -n llm python=3.11
 ```
 Activate the newly created environment `llm`:
-```cmd
+```bash
 conda activate llm
 ```
 
 
 ## Install `ipex-llm`
 
-With the `llm` environment active, use `pip` to install `ipex-llm` for GPU.
-Choose either US or CN website for `extra-index-url`:
+With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
 
-```eval_rst
-.. tabs::
-   .. tab:: US
+- For **US**
+  ```bash
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  ```
+- For **CN**
+  ```bash
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  ```
 
-      .. code-block:: cmd
+> [!NOTE]
+> If you encounter network issues while installing IPEX, refer to [this guide](../Overview/install_gpu.md#install-ipex-llm-1) for troubleshooting advice.
 
-         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
-   .. tab:: CN
-
-      .. code-block:: cmd
-
-         pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-```
-
-```eval_rst
-.. note::
-
-  If you encounter network issues while installing IPEX, refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id3>`_ for troubleshooting advice.
-```
 
 ## Verify Installation
-* You can verify if `ipex-llm` is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
+- You can verify if `ipex-llm` is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
   ```bash
   source /opt/intel/oneapi/setvars.sh
 
@@ -210,61 +201,52 @@ Choose either US or CN website for `extra-index-url`:
 
 ## Runtime Configurations
 
-To use GPU acceleration on Linux, several environment variables are required or recommended before running a GPU example.
+To use GPU acceleration on Linux, several environment variables are required or recommended before running a GPU example. Choose corresponding configurations based on your GPU device:
 
-```eval_rst
-.. tabs::
-   .. tab:: Intel Arc™ A-Series and Intel Data Center GPU Flex
+- For **Intel Arc™ A-Series and Intel Data Center GPU Flex**
 
-      For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
+  For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
 
-      .. code-block:: bash
+  ```bash
+  # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+  source /opt/intel/oneapi/setvars.sh
 
-         # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-         # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-         source /opt/intel/oneapi/setvars.sh
-
-         # Recommended Environment Variables for optimal performance
-         export USE_XETLA=OFF
-         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-         export SYCL_CACHE_PERSISTENT=1
-
-   .. tab:: Intel Data Center GPU Max
-
-      For Intel Data Center GPU Max Series, we recommend:
-
-      .. code-block:: bash
-
-         # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-         # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
-         source /opt/intel/oneapi/setvars.sh
-
-         # Recommended Environment Variables for optimal performance
-         export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
-         export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-         export SYCL_CACHE_PERSISTENT=1
-         export ENABLE_SDP_FUSION=1
-
-      Please note that ``libtcmalloc.so`` can be installed by ``conda install -c conda-forge -y gperftools=2.10``
-
-```
-
-  ```eval_rst
-  .. seealso::
-
-     Please refer to `this guide <../Overview/install_gpu.html#id5>`_ for more details regarding runtime configuration.
+  # Recommended Environment Variables for optimal performance
+  export USE_XETLA=OFF
+  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+  export SYCL_CACHE_PERSISTENT=1
   ```
+- For **Intel Data Center GPU Max**
+
+  For Intel Data Center GPU Max Series, we recommend:
+  ```bash
+  # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
+  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+  source /opt/intel/oneapi/setvars.sh
+
+  # Recommended Environment Variables for optimal performance
+  export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+  export SYCL_CACHE_PERSISTENT=1
+  export ENABLE_SDP_FUSION=1
+  ```
+  Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`
+
+> [!NOTE]
+> Please refer to [this guide](../Overview/install_gpu.md#runtime-configuration-1) for more details regarding runtime configuration.
+
 
 ## A Quick Example
 
 Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for this demostration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
-* Step 1: Activate the Python environment `llm` you previously created: 
+- Step 1: Activate the Python environment `llm` you previously created: 
    ```bash
    conda activate llm
    ```
-* Step 2: Follow [Runtime Configurations Section](#runtime-configurations) above to prepare your runtime environment.  
-* Step 3: Create a new file named `demo.py` and insert the code snippet below.
+- Step 2: Follow [Runtime Configurations Section](#runtime-configurations) above to prepare your runtime environment.  
+- Step 3: Create a new file named `demo.py` and insert the code snippet below.
    ```python
    # Copy/Paste the contents to a new file demo.py
    import torch
@@ -290,21 +272,21 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
        print(output_str)
    ```
-   > Note: when running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
+   > **Note**: When running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
    > This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
 
-* Step 5. Run `demo.py` within the activated Python environment using the following command:
+- Step 5. Run `demo.py` within the activated Python environment using the following command:
   ```bash
   python demo.py
   ```
    
-   ### Example output
-  
-   Example output on a system equipped with an 11th Gen Intel Core i7 CPU and Iris Xe Graphics iGPU:
-   ```
-   Question:What is AI?
-   Answer: AI stands for Artificial Intelligence, which is the simulation of human intelligence in machines.
-   ```
+### Example output
+
+Example output on a system equipped with an 11th Gen Intel Core i7 CPU and Iris Xe Graphics iGPU:
+```
+Question:What is AI?
+Answer: AI stands for Artificial Intelligence, which is the simulation of human intelligence in machines.
+```
 
 ## Tips & Troubleshooting
 
