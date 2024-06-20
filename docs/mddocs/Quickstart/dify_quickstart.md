@@ -99,13 +99,8 @@ NEXT_PUBLIC_PUBLIC_API_PREFIX=http://localhost:5001/api
 NEXT_PUBLIC_SENTRY_DSN=
 ```
 
-```eval_rst
-
-.. note::
-
-  If you encounter connection problems, you may run `export no_proxy=localhost,127.0.0.1` before starting API servcie, Worker service and frontend. 
-
-```
+> [!NOTE]
+> If you encounter connection problems, you may run `export no_proxy=localhost,127.0.0.1` before starting API servcie, Worker service and frontend. 
 
 
 ### 3. How to Use `Dify`
