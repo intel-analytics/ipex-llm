@@ -6,13 +6,10 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4" width="100%" controls></video>
 
-```eval_rst
-.. note::
-
-  `ipex-llm[cpp]==2.5.0b20240527` is consistent with `v0.1.34 <https://github.com/ollama/ollama/releases/tag/v0.1.34>`_ of ollama.
-
-  Our current version is consistent with `v0.1.39 <https://github.com/ollama/ollama/releases/tag/v0.1.39>`_ of ollama.
-```
+> [!NOTE]
+> `ipex-llm[cpp]==2.5.0b20240527` is consistent with [v0.1.34](https://github.com/ollama/ollama/releases/tag/v0.1.34) of ollama.
+>
+> Our current version is consistent with [v0.1.39](https://github.com/ollama/ollama/releases/tag/v0.1.39) of ollama.
 
 ## Quickstart
 
@@ -20,7 +17,7 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 IPEX-LLM's support for `ollama` now is available for Linux system and Windows system.
 
-Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html), and follow the instructions in section [Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#prerequisites) to setup and section [Install IPEX-LLM cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with Ollama binaries.
+Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](./llama_cpp_quickstart.md), and follow the instructions in section [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites) to setup and section [Install IPEX-LLM cpp](./llama_cpp_quickstart.md#1-install-ipex-llm-for-llamacpp) to install the IPEX-LLM with Ollama binaries.
 
 **After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `ollama` commands with IPEX-LLM.**
 
@@ -28,31 +25,24 @@ Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](https://ipex-llm.readthed
 
 Activate the `llm-cpp` conda environment and initialize Ollama by executing the commands below. A symbolic link to `ollama` will appear in your current directory.
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+- For **Linux users**:
+  
+  ```bash
+  conda activate llm-cpp
+  init-ollama
+  ```
 
-      .. code-block:: bash
-      
-         conda activate llm-cpp
-         init-ollama
+- For **Windows users**:
 
-   .. tab:: Windows
+  Please run the following command with **administrator privilege in Miniforge Prompt**.
 
-      Please run the following command with **administrator privilege in Miniforge Prompt**.
+  ```cmd
+  conda activate llm-cpp
+  init-ollama.bat
+  ```
 
-      .. code-block:: bash
-      
-         conda activate llm-cpp
-         init-ollama.bat
-
-```
-
-```eval_rst
-.. note::
-
-   If you have installed higher version ``ipex-llm[cpp]`` and want to upgrade your ollama binary file, don't forget to remove old binary files first and initialize again with ``init-ollama`` or ``init-ollama.bat``.
-```
+> [!NOTE]
+> If you have installed higher version `ipex-llm[cpp]` and want to upgrade your ollama binary file, don't forget to remove old binary files first and initialize again with `init-ollama` or `init-ollama.bat`.
 
 **Now you can use this executable file by standard ollama's usage.**
 
@@ -60,57 +50,43 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
 You may launch the Ollama service as below:
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+- For **Linux users**:
+  
+  ```bash
+  export OLLAMA_NUM_GPU=999
+  export no_proxy=localhost,127.0.0.1
+  export ZES_ENABLE_SYSMAN=1
+  source /opt/intel/oneapi/setvars.sh
+  export SYCL_CACHE_PERSISTENT=1
 
-      .. code-block:: bash
+  ./ollama serve
+  ```
 
-         export OLLAMA_NUM_GPU=999
-         export no_proxy=localhost,127.0.0.1
-         export ZES_ENABLE_SYSMAN=1
-         source /opt/intel/oneapi/setvars.sh
-         export SYCL_CACHE_PERSISTENT=1
+- For **Windows users**:
 
-         ./ollama serve
+  Please run the following command in Miniforge Prompt.
 
-   .. tab:: Windows
+  ```cmd
+  set OLLAMA_NUM_GPU=999
+  set no_proxy=localhost,127.0.0.1
+  set ZES_ENABLE_SYSMAN=1
+  set SYCL_CACHE_PERSISTENT=1
 
-      Please run the following command in Miniforge Prompt.
+  ollama serve
+  ```
 
-      .. code-block:: bash
+> [!NOTE]
+> Please set environment variable `OLLAMA_NUM_GPU` to `999` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
 
-         set OLLAMA_NUM_GPU=999
-         set no_proxy=localhost,127.0.0.1
-         set ZES_ENABLE_SYSMAN=1
-         set SYCL_CACHE_PERSISTENT=1
+> [!TIP]
+> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
+>
+> ```bash
+> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+> ```
 
-         ollama serve
-
-```
-
-```eval_rst
-.. note::
-
-  Please set environment variable ``OLLAMA_NUM_GPU`` to ``999`` to make sure all layers of your model are running on Intel GPU, otherwise, some layers may run on CPU.
-```
-
-```eval_rst
-.. tip::
-
-  If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
-
-  .. code-block:: bash
-
-      export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-
-```
-
-```eval_rst
-.. note::
-
-  To allow the service to accept connections from all IP addresses, use `OLLAMA_HOST=0.0.0.0 ./ollama serve` instead of just `./ollama serve`.
-```
+> [!NOTE]
+> To allow the service to accept connections from all IP addresses, use `OLLAMA_HOST=0.0.0.0 ./ollama serve` instead of just `./ollama serve`.
 
 The console will display messages similar to the following:
 
@@ -134,34 +110,29 @@ Keep the Ollama service on and open another terminal and run `./ollama pull <mod
 Using `curl` is the easiest way to verify the API service and model. Execute the following commands in a terminal. **Replace the <model_name> with your pulled 
 model**, e.g. `dolphin-phi`.
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+- For **Linux users**:
+  
+   ```bash
+   curl http://localhost:11434/api/generate -d '
+   { 
+      "model": "<model_name>", 
+      "prompt": "Why is the sky blue?", 
+      "stream": false
+   }'
+   ```
 
-      .. code-block:: bash
+- For **Windows users**:
 
-         curl http://localhost:11434/api/generate -d '
-         { 
-            "model": "<model_name>", 
-            "prompt": "Why is the sky blue?", 
-            "stream": false
-         }'
+  Please run the following command in Miniforge Prompt.
 
-   .. tab:: Windows
-
-      Please run the following command in Miniforge Prompt.
-
-      .. code-block:: bash
-
-         curl http://localhost:11434/api/generate -d "
-         {
-            \"model\": \"<model_name>\",
-            \"prompt\": \"Why is the sky blue?\",
-            \"stream\": false
-         }"
-
-```
-
+   ```cmd
+   curl http://localhost:11434/api/generate -d "
+   {
+      \"model\": \"<model_name>\",
+      \"prompt\": \"Why is the sky blue?\",
+      \"stream\": false
+   }"
+   ```
 
 #### Using Ollama Run GGUF models
 
@@ -175,27 +146,23 @@ PARAMETER num_predict 64
 
 Then you can create the model in Ollama by `ollama create example -f Modelfile` and use `ollama run` to run the model directly on console.
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+- For **Linux users**:
+  
+  ```bash
+  export no_proxy=localhost,127.0.0.1
+  ./ollama create example -f Modelfile
+  ./ollama run example
+  ```
 
-      .. code-block:: bash
+- For **Windows users**:
 
-         export no_proxy=localhost,127.0.0.1
-         ./ollama create example -f Modelfile
-         ./ollama run example
+  Please run the following command in Miniforge Prompt.
 
-   .. tab:: Windows
-
-      Please run the following command in Miniforge Prompt.
-
-      .. code-block:: bash
-
-         set no_proxy=localhost,127.0.0.1
-         ollama create example -f Modelfile
-         ollama run example
-
-```
+  ```cmd
+  set no_proxy=localhost,127.0.0.1
+  ollama create example -f Modelfile
+  ollama run example
+  ```
 
 An example process of interacting with model with `ollama run example` looks like the following:
 

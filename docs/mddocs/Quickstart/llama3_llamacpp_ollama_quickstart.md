@@ -15,7 +15,7 @@ This quickstart guide walks you through how to run Llama 3 on Intel GPU using `l
 
 #### 1.1 Install IPEX-LLM for llama.cpp and Initialize
 
-Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](./llama_cpp_quickstart.md), and follow the instructions in section [Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#prerequisites) to setup and section [Install IPEX-LLM for llama.cpp](./llama_cpp_quickstart.md#1-install-ipex-llm-for-llamacpp) to install the IPEX-LLM with llama.cpp binaries, then follow the instructions in section [Initialize llama.cpp with IPEX-LLM](./llama_cpp_quickstart.md#initialize-llamacpp-with-ipex-llm) to initialize.
+Visit [Run llama.cpp with IPEX-LLM on Intel GPU Guide](./llama_cpp_quickstart.md), and follow the instructions in section [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites) to setup and section [Install IPEX-LLM for llama.cpp](./llama_cpp_quickstart.md#1-install-ipex-llm-for-llamacpp) to install the IPEX-LLM with llama.cpp binaries, then follow the instructions in section [Initialize llama.cpp with IPEX-LLM](./llama_cpp_quickstart.md#initialize-llamacpp-with-ipex-llm) to initialize.
 
 **After above steps, you should have created a conda environment, named `llm-cpp` for instance and have llama.cpp binaries in your current directory.**
 
@@ -96,7 +96,7 @@ Below is a sample output on Intel Arc GPU:
 
 #### 2.1 Install IPEX-LLM for Ollama and Initialize
 
-Visit [Run Ollama with IPEX-LLM on Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html), and follow the instructions in section [Install IPEX-LLM for llama.cpp](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html#install-ipex-llm-for-llama-cpp) to install the IPEX-LLM with Ollama binary, then follow the instructions in section [Initialize Ollama](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#initialize-ollama) to initialize.
+Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follow the instructions in section [Install IPEX-LLM for llama.cpp](./llama_cpp_quickstart.md#1-install-ipex-llm-for-llamacpp) to install the IPEX-LLM with Ollama binary, then follow the instructions in section [Initialize Ollama](./ollama_quickstart.md#2-initialize-ollama) to initialize.
 
 **After above steps, you should have created a conda environment, named `llm-cpp` for instance and have ollama binary file in your current directory.**
 
@@ -141,7 +141,6 @@ Launch the Ollama service:
 > ```bash
 > export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 > ```
-
 
 > [!NOTE]
 >
