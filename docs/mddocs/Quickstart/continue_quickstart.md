@@ -30,21 +30,21 @@ Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follo
 
 Now we need to pull a model for coding. Here we use [CodeQWen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat) model as an example. Open a new terminal window, run the following command to pull [`codeqwen:latest`](https://ollama.com/library/codeqwen). 
 
-##### Linux
+- For **Linux**
 
-```bash
-export no_proxy=localhost,127.0.0.1
-./ollama pull codeqwen:latest
-```
+  ```bash
+  export no_proxy=localhost,127.0.0.1
+  ./ollama pull codeqwen:latest
+  ```
 
-##### Windows
+- For **Windows**
 
-Please run the following command in Miniforge Prompt.
+  Please run the following command in Miniforge Prompt.
 
-```cmd
-set no_proxy=localhost,127.0.0.1
-ollama pull codeqwen:latest
-```
+  ```cmd
+  set no_proxy=localhost,127.0.0.1
+  ollama pull codeqwen:latest
+  ```
 
 > [!NOTE]
 > Besides CodeQWen, there are other coding models you might want to explore, such as Magicoder, Wizardcoder, Codellama, Codegemma, Starcoder, Starcoder2, and etc. You can find these models in the [`Ollama model library`](https://ollama.com/library). Simply search for the model, pull it in a similar manner, and give it a try.

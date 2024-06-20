@@ -19,14 +19,14 @@ pip install --pre --upgrade ipex-llm[all] # for cpu
 ### For GPU
 Choose either US or CN website for `extra-index-url`:
 
-#### US
+#### For **US**
 
 ```CMD
 pip uninstall -y bigdl-llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
 
-#### CN
+#### For **CN**
 
 ```cmd
 pip uninstall -y bigdl-llm

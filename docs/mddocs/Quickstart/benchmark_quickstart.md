@@ -71,90 +71,92 @@ Some parameters in the yaml file that you can configure:
 
 ## Run on Windows
 
-Please refer to [here](../Overview/install_gpu.md#runtime-configuration) to configure oneAPI environment variables.
+Please refer to [here](../Overview/install_gpu.md#runtime-configuration) to configure oneAPI environment variables. Choose corresponding commands base on your device.
 
-### Intel iGPU
+- For **Intel iGPU**
 
-```bash
-set SYCL_CACHE_PERSISTENT=1
-set BIGDL_LLM_XMX_DISABLED=1
+  ```bash
+  set SYCL_CACHE_PERSISTENT=1
+  set BIGDL_LLM_XMX_DISABLED=1
+  
+  python run.py
+  ```
 
-python run.py
-```
+- For **Intel Arc™ A300-Series or Pro A60**
 
-### Intel Arc™ A300-Series or Pro A60
+  ```bash
+  set SYCL_CACHE_PERSISTENT=1
+  python run.py
+  ```
 
-```bash
-set SYCL_CACHE_PERSISTENT=1
-python run.py
-```
+- For **Other Intel dGPU Series**
 
-### Other Intel dGPU Series
-
-```bash
-# e.g. Arc™ A770
-python run.py
-```
+  ```bash
+  # e.g. Arc™ A770
+  python run.py
+  ```
 
 ## Run on Linux
 
-### Intel Arc™ A-Series and Intel Data Center GPU Flex
+Please choose corresponding commands base on your device.
 
-For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
+- For **Intel Arc™ A-Series and Intel Data Center GPU Flex**
 
-```bash
-./run-arc.sh
-```
+  For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
+  
+  ```bash
+  ./run-arc.sh
+  ```
 
-### Intel iGPU
+- For **Intel iGPU**
 
-For Intel iGPU, we recommend:
+  For Intel iGPU, we recommend:
+  
+  ```bash
+  ./run-igpu.sh
+  ```
 
-```bash
-./run-igpu.sh
-```
+- For **Intel Data Center GPU Max**
 
-### Intel Data Center GPU Max
+  Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` before running the benchmark script on Intel Data Center GPU Max Series.
+  
+  ```bash
+  ./run-max-gpu.sh
+  ```
 
-Please note that you need to run ``conda install -c conda-forge -y gperftools=2.10`` before running the benchmark script on Intel Data Center GPU Max Series.
+- For **Intel SPR**
 
-```bash
-./run-max-gpu.sh
-```
+  For Intel SPR machine, we recommend:
+  
+  ```bash
+  ./run-spr.sh
+  ```
 
-### Intel SPR
+  The scipt uses a default numactl strategy. If you want to customize it, please use ``lscpu`` or ``numactl -H`` to check how cpu indexs are assigned to numa node, and make sure the run command is binded to only one socket.
 
-For Intel SPR machine, we recommend:
+- For **Intel HBM**
 
-```bash
-./run-spr.sh
-```
+  For Intel HBM machine, we recommend:
+  
+  ```bash
+  ./run-hbm.sh
+  ```
+  
+  The scipt uses a default numactl strategy. If you want to customize it, please use ``numactl -H`` to check how the index of hbm node and cpu are assigned.
 
-The scipt uses a default numactl strategy. If you want to customize it, please use ``lscpu`` or ``numactl -H`` to check how cpu indexs are assigned to numa node, and make sure the run command is binded to only one socket.
-
-### Intel HBM
-
-For Intel HBM machine, we recommend:
-
-```bash
-./run-hbm.sh
-```
-
-The scipt uses a default numactl strategy. If you want to customize it, please use ``numactl -H`` to check how the index of hbm node and cpu are assigned.
-
-For example:
-
-```bash
-node   0   1   2   3
-   0:  10  21  13  23
-   1:  21  10  23  13
-   2:  13  23  10  23
-   3:  23  13  23  10
-```
-
-here hbm node is the node whose distance from the checked node is 13, node 2 is node 0's hbm node.
-
-And make sure the run command is binded to only one socket.
+  For example:
+  
+  ```bash
+  node   0   1   2   3
+     0:  10  21  13  23
+     1:  21  10  23  13
+     2:  13  23  10  23
+     3:  23  13  23  10
+  ```
+  
+  here hbm node is the node whose distance from the checked node is 13, node 2 is node 0's hbm node.
+  
+  And make sure the run command is binded to only one socket.
 
 ## Result
 
