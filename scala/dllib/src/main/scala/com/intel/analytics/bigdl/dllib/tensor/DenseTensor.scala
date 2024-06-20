@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.dllib.tensor
 
 import java.util.Comparator
-
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
@@ -25,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error, Table}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
@@ -313,19 +313,41 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def bernoulli(p: Double): Tensor[T] = {
-
     if (this.isContiguous()) {
       var i = 0
       val total = this.nElement()
       val data = this.storage().array()
       val offset = this.storageOffset() - 1
-      while (i < total) {
-        data(offset + i) = if (RNG.bernoulli(p)) {
-          ev.fromType[Int](1)
-        } else {
-          ev.fromType[Int](0)
-        }
-        i += 1
+      this.getType() match {
+        case FloatType =>
+          val floatData = data.asInstanceOf[Array[Float]]
+          while (i < total) {
+            floatData(offset + i) = if (ThreadLocalRandom.current().nextFloat() <= p) {
+              1
+            } else {
+              0
+            }
+            i += 1
+          }
+        case DoubleType =>
+          val doubleData = data.asInstanceOf[Array[Double]]
+          while (i < total) {
+            doubleData(offset + i) = if (ThreadLocalRandom.current().nextFloat() <= p) {
+              1
+            } else {
+              0
+            }
+            i += 1
+          }
+        case _ =>
+          while (i < total) {
+            data(offset + i) = if (RNG.bernoulli(p)) {
+              ev.fromType[Int](1)
+            } else {
+              ev.fromType[Int](0)
+            }
+            i += 1
+          }
       }
     } else {
       val func = new TensorFunc2[T] {
