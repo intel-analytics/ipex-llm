@@ -1,5 +1,5 @@
 # Run LLama2 on Intel NPU
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama2 models on [Intel NPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as reference Llama2 models.
+In this directory, you will find examples on how you could apply run tinyllama on intel NPU devices.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
@@ -8,7 +8,7 @@ Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost
 Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a tinyllama model to predict the next N tokens using `generate()` API on Intel NPUs.
 ### 1. Install
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
