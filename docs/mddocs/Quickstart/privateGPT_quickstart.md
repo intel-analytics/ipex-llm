@@ -4,11 +4,9 @@
 
 *See the demo of privateGPT running Mistral:7B on Intel Arc A770 below.*
 
-
 <video src="https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.mp4" width="100%" controls></video>
 
 ## Quickstart
-
 
 ### 1. Install and Start `Ollama` Service on Intel GPU 
 
@@ -56,13 +54,8 @@ Below is an example of how `settings-ollama.yaml` should look.
 </a></p>
 
 
-```eval_rst
-
-.. note::
-
-  `settings-ollama.yaml` is loaded when the Ollama profile is specified in the PGPT_PROFILES environment variable. This can override configurations from the default `settings.yaml`.
-
-```
+> [!NOTE]
+> `settings-ollama.yaml` is loaded when the Ollama profile is specified in the PGPT_PROFILES environment variable. This can override configurations from the default `settings.yaml`.
 
 For more information on configuring PrivateGPT, please visit the [PrivateGPT Main Concepts](https://docs.privategpt.dev/installation/getting-started/main-concepts) page.
 
@@ -72,31 +65,24 @@ Please ensure that the Ollama server continues to run in a terminal while you're
 
 Run below commands to start the service in another terminal:
 
-```eval_rst
-.. tabs::
-  .. tab:: Linux
+- For **Linux users**:
+ 
+  ```bash
+  export no_proxy=localhost,127.0.0.1
+  PGPT_PROFILES=ollama make run
+  ```
 
-    .. code-block:: bash
+  > **Note**: Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
 
-       export no_proxy=localhost,127.0.0.1
-       PGPT_PROFILES=ollama make run
+- For **Windows users**:
 
-    .. note:
+  ```cmd
+  set no_proxy=localhost,127.0.0.1
+  set PGPT_PROFILES=ollama
+  make run
+  ```
 
-       Setting ``PGPT_PROFILES=ollama`` will load the configuration from ``settings.yaml`` and ``settings-ollama.yaml``.
-
-  .. tab:: Windows
-    
-    .. code-block:: bash
-       
-       set no_proxy=localhost,127.0.0.1
-       set PGPT_PROFILES=ollama
-       make run
-
-   .. note:
-
-       Setting ``PGPT_PROFILES=ollama`` will load the configuration from ``settings.yaml`` and ``settings-ollama.yaml``.
-```
+  > **Note**: Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
 
 Upon successful deployment, you will see logs in the terminal similar to the following:
 
