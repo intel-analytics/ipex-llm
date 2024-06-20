@@ -40,10 +40,13 @@ conda activate llm
 With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
 
 - For **US**
+
   ```bash
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
   ```
+
 - For **CN**
+
   ```bash
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
   ```
@@ -55,17 +58,23 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choo
 You can verify if `ipex-llm` is successfully installed following below steps.
 
 ### Step 1: Runtime Configurations
-- Open the **Miniforge Prompt** and activate the Python environment `llm` you previously created: 
+- Open the **Miniforge Prompt** and activate the Python environment `llm` you previously created:
+
    ```cmd
    conda activate llm
    ```
+
 - Set the following environment variables according to your device:
+
   - For **Intel iGPU**
+
     ```cmd
     set SYCL_CACHE_PERSISTENT=1
     set BIGDL_LLM_XMX_DISABLED=1
     ```
+
   - For **Intel Arc™ A770**
+
     ```cmd
     set SYCL_CACHE_PERSISTENT=1
     ```
@@ -76,7 +85,9 @@ You can verify if `ipex-llm` is successfully installed following below steps.
 ### Step 2: Run Python Code
 
 - Launch the Python interactive shell by typing `python` in the Miniforge Prompt window and then press Enter.
+
 - Copy following code to Miniforge Prompt **line by line** and press Enter **after copying each line**.
+
   ```python
   import torch 
   from ipex_llm.transformers import AutoModel,AutoModelForCausalLM    
@@ -84,12 +95,15 @@ You can verify if `ipex-llm` is successfully installed following below steps.
   tensor_2 = torch.randn(1, 1, 128, 40).to('xpu') 
   print(torch.matmul(tensor_1, tensor_2).size()) 
   ```
+
   It will output following content at the end:
+
   ```
   torch.Size([1, 1, 40, 40])
   ```
 
   > **Tip**: If you encounter any problem, please refer to [here](../Overview/install_gpu.md#troubleshooting) for help.
+
 - To exit the Python interactive shell, simply press Ctrl+Z then press Enter (or input `exit()` then press Enter).
 
 ## Monitor GPU Status
@@ -101,12 +115,16 @@ To monitor your GPU's performance and status (e.g. memory consumption, utilizati
 
 Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://huggingface.co/Qwen/Qwen-1_8B-Chat) model, a 1.8 billion parameter LLM for this demonstration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
-* Step 1: Follow [Runtime Configurations Section](#step-1-runtime-configurations) above to prepare your runtime environment.  
-* Step 2: Install additional package required for Qwen-1.8B-Chat to conduct:
+- Step 1: Follow [Runtime Configurations Section](#step-1-runtime-configurations) above to prepare your runtime environment.
+
+- Step 2: Install additional package required for Qwen-1.8B-Chat to conduct:
+
    ```cmd
    pip install tiktoken transformers_stream_generator einops
    ```
-* Step 3: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
+
+- Step 3: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
+
   - For **loading model from Hugging Face**
     
     Create a new file named `demo.py` and insert the code snippet below to run [Qwen-1.8B-Chat](https://huggingface.co/Qwen/Qwen-1_8B-Chat) model with IPEX-LLM optimizations.
@@ -166,6 +184,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
     ```cmd
     pip install modelscope==1.11.0
     ```
+
     Create a new file named `demo.py` and insert the code snippet below to run [Qwen-1.8B-Chat](https://www.modelscope.cn/models/qwen/Qwen-1_8B-Chat/summary) model with IPEX-LLM optimizations.
 
       ```python
@@ -226,7 +245,8 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 > When running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
 > This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
 
-* Step 4. Run `demo.py` within the activated Python environment using the following command:
+- Step 4. Run `demo.py` within the activated Python environment using the following command:
+
   ```cmd
   python demo.py
   ```

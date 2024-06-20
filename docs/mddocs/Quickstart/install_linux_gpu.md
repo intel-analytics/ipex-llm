@@ -177,10 +177,13 @@ conda activate llm
 With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
 
 - For **US**
+
   ```bash
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
   ```
+
 - For **CN**
+
   ```bash
   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
   ```
@@ -191,6 +194,7 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choo
 
 ## Verify Installation
 - You can verify if `ipex-llm` is successfully installed by simply importing a few classes from the library. For example, execute the following import command in the terminal:
+
   ```bash
   source /opt/intel/oneapi/setvars.sh
 
@@ -217,9 +221,11 @@ To use GPU acceleration on Linux, several environment variables are required or 
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   export SYCL_CACHE_PERSISTENT=1
   ```
+
 - For **Intel Data Center GPU Max**
 
   For Intel Data Center GPU Max Series, we recommend:
+
   ```bash
   # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
   # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
@@ -231,6 +237,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
   export SYCL_CACHE_PERSISTENT=1
   export ENABLE_SDP_FUSION=1
   ```
+
   Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`
 
 > [!NOTE]
@@ -241,12 +248,16 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
 Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface.co/microsoft/phi-1_5) model, a 1.3 billion parameter LLM for this demostration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
-- Step 1: Activate the Python environment `llm` you previously created: 
+- Step 1: Activate the Python environment `llm` you previously created:
+
    ```bash
    conda activate llm
    ```
-- Step 2: Follow [Runtime Configurations Section](#runtime-configurations) above to prepare your runtime environment.  
+
+- Step 2: Follow [Runtime Configurations Section](#runtime-configurations) above to prepare your runtime environment.
+
 - Step 3: Create a new file named `demo.py` and insert the code snippet below.
+
    ```python
    # Copy/Paste the contents to a new file demo.py
    import torch
@@ -272,10 +283,12 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
        print(output_str)
    ```
+
    > **Note**: When running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
    > This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
 
 - Step 5. Run `demo.py` within the activated Python environment using the following command:
+
   ```bash
   python demo.py
   ```
