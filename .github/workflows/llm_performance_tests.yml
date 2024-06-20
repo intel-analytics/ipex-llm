@@ -101,13 +101,13 @@ jobs:
           #   echo "Did not install ipex-llm with excepted version $test_version_date"
           #   exit 1
           # fi
-
+          
       - name: Test installed xpu version
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
-
+        
       - name: Test on xpu(transformers==4.36.2)
         shell: bash
         run: |
@@ -116,34 +116,34 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-      #     cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           mkdir test_batch1
           mkdir test_batch2
           mkdir test_batch4
-      #     # batch_size 1
-      #     # hide time info
+          # batch_size 1
+          # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
-      #     # change csv name
+          # change csv name
           sed -i 's/{today}/{today}_test1_batch1/g' run.py
-      #     python run.py
-      #     mv *.csv test_batch1
-      #     # batch_size 2
+          # python run.py
+          # mv *.csv test_batch1
+          # batch_size 2
           cd ../../../../../ 
-      #     cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
-      #     # change csv name
+          # change csv name
           sed -i 's/batch1/batch2/g' run.py
-      #     python run.py
-      #     mv *.csv test_batch2
-      #     # batch_size 4
+          # python run.py
+          # mv *.csv test_batch2
+          # batch_size 4
           cd ../../../../../ 
-      #     cp python/llm/test/benchmark/arc-perf-test-batch4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cp python/llm/test/benchmark/arc-perf-test-batch4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
-      #     # change csv name
+          # change csv name
           sed -i 's/batch2/batch4/g' run.py
-      #     python run.py
-      #     mv *.csv test_batch4
+          # python run.py
+          # mv *.csv test_batch4
 
       - name: Test on xpu(transformers==4.37.0)
         shell: bash
