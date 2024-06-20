@@ -117,7 +117,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             callbacks=None, validation_data=None, class_weight=None,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
             data_config=None, feature_cols=None,
-            label_cols=None):
+            label_cols=None, tops=None):
         """
         Train this tensorflow model with train data.
 
@@ -164,7 +164,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             steps_per_epoch=steps_per_epoch,
             validation_steps=validation_steps,
             validation_freq=validation_freq,
-            data_config=data_config
+            data_config=data_config,
+            tops=tops
         )
 
         from bigdl.orca.data import SparkXShards
