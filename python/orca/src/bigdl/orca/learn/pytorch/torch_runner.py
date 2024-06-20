@@ -603,8 +603,10 @@ class TorchRunner(BaseRunner):
                 params[arg] = config[arg]
 
         def predict_fn(shard):
-            if isinstance(partition, IterableDataset):
+            if isinstance(partition, IterableDataset):  #torch.DataSet
                 y = self._predict(shard, callbacks=callbacks)
+            elif isinstance(partition, DataLoader):
+                y = self._predict(iter(partition), callbacks=callbacks)
             else:
                 if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
                     tensors = [torch.from_numpy(arr) for arr in shard["x"]]
@@ -613,12 +615,15 @@ class TorchRunner(BaseRunner):
                 dataset = torch.utils.data.TensorDataset(*tensors)
                 data_loader = DataLoader(dataset, **params)
                 y = self._predict(iter(data_loader), callbacks=callbacks)
+
             return split_predict_cols(y)
 
         self.call_hook(callbacks, "before_pred_epoch")
         with self.timers.record("predict"):
             if isinstance(partition, IterableDataset):
                 new_part = [predict_fn(shard) for shard, shard_idx in partition]
+            elif isinstance(partition, DataLoader):
+                new_part = [predict_fn(shard) for shard in [partition]]
             else:
                 new_part = [predict_fn(shard) for shard in partition]
         self.call_hook(callbacks, "after_pred_epoch")
@@ -643,8 +648,8 @@ class TorchRunner(BaseRunner):
                 del self.batch
                 del self.batch_idx
                 del self.output
-
-        return index_concatenate(result, axis=0)
+        out = index_concatenate(result, axis=0)
+        return out
 
     def predict_batch(self, batch, callbacks=None):
 

@@ -413,9 +413,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
         return state_dict_b
 
     def _predict_spark_xshards(self, xshards, init_params, params):
+
         def transform_func(iter, init_param, param):
             partition_data = list(iter)
             # res = combine_in_partition(partition_data)
+
             param["data_creator"] = make_data_creator(partition_data)
             return PytorchPysparkWorker(**init_param).predict(**params)
 
@@ -424,7 +426,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         return pred_shards
 
     def predict(self,
-                data: Union['SparkXShards', 'SparkDataFrame'],
+                data: Union['SparkXShards', 'SparkDataFrame', 'DataLoader'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
                 output_cols: Optional[List[str]]=None,
@@ -434,7 +436,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         Using this PyTorch model to make predictions on the data.
 
-        :param data: An instance of SparkXShards or a Spark DataFrame
+        :param data: An instance of SparkXShards or a Spark DataFrame, or a Pytorch DataLoader
         :param batch_size: Total batch size for all workers used for inference. Each worker's batch
                size would be this value divide the total number of workers. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
@@ -497,11 +499,25 @@ class PyTorchPySparkEstimator(BaseEstimator):
             else:
                 pred_shards = self._predict_spark_xshards(xshards, init_params, params)
                 result = update_predict_xshards(data, pred_shards)
+                print("pred_shards---------")
+                print(pred_shards.collect())
+
+                print("result-----")
+                print(result.collect())
             # Uncache the original data since it is already included in the result
             data.uncache()
         else:
-            invalidInputError(False,
-                              "Only XShards or Spark DataFrame are supported for predict")
+            if not isinstance(data, types.FunctionType):
+                invalidInputError(False,
+                                  "data should be either an instance of SparkXShards or a "
+                                  "callable  function, but got type: {}".format(type(data)))
+            params["data_creator"] = data
+
+            def transform_func(iter, init_param, param):  # type:ignore
+                return PytorchPysparkWorker(**init_param).predict(**param)
+
+            result = self.workerRDD.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params))
 
         return result
 
@@ -597,7 +613,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
+                print("evaluate-------- estimator")
                 param["data_creator"] = partition_to_creator(partition_data)
+                print(param['data_creator'])
                 return PytorchPysparkWorker(**init_param).validate(**param)
 
             data_rdd = data.rdd  # type:ignore

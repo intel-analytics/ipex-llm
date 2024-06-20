@@ -47,6 +47,19 @@ np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
 
+class FeatureDataset(torch.utils.data.Dataset):
+    """y = a * x + b"""
+
+    def __init__(self, size=1000):
+        X1 = torch.randn(size // 2, 5)
+        X2 = torch.randn(size // 2, 5) + 1.5
+        self.x = torch.cat([X1, X2], dim=0)
+
+    def __getitem__(self, index):
+        return self.x[index, None]
+
+    def __len__(self):
+        return len(self.x)
 
 class LinearDataset(torch.utils.data.Dataset):
     """y = a * x + b"""
@@ -237,6 +250,15 @@ def val_data_loader(config, batch_size):
         batch_size=batch_size
     )
     return validation_loader
+
+
+def predict_data_loader(config, batch_size):
+    dataset = FeatureDataset(size=config.get("data_size", 1000))
+    loader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=batch_size
+    )
+    return loader
 
 
 def get_model(config):
@@ -741,6 +763,15 @@ class TestPyTorchEstimatorBasic(TestCase):
             os.remove(path)
 
         assert np.array_equal(expected_result, result_after)
+
+    def test_predict_data_loader(self):
+        estimator = get_estimator()
+        loader = predict_data_loader()
+        result = estimator.predict(loader, batch_size=2)
+        print(result.count())
+        assert result.count() == 1000
+
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
