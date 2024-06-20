@@ -16,6 +16,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Install git, curl, and wget
     apt-get install -y --no-install-recommends git curl wget && \
 # Install Python 3.11
+    # add-apt-repository requires gnupg, gpg-agent, software-properties-common
+    apt-get install -y --no-install-recommends gnupg gpg-agent software-properties-common && \
+    # Add Python 3.11 PPA repository
+    add-apt-repository ppa:deadsnakes/ppa -y && \
     # Install Python 3.11
     apt-get install -y --no-install-recommends python3.11 && \
     # Install Python 3.11 development and utility packages

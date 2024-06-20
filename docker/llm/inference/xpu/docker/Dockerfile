@@ -22,11 +22,14 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc" | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
     chmod 644 /usr/share/keyrings/intel-graphics.gpg && \
     apt-get update && \
-    apt-get install -y --no-install-recommends curl wget git gnupg gpg-agent && \
+    apt-get install -y --no-install-recommends curl wget git libunwind8-dev vim less && \
     # Install PYTHON 3.11 and IPEX-LLM[xpu]
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt install libunwind8-dev vim less -y && \
+    # add-apt-repository requires gnupg, gpg-agent, software-properties-common
+    apt-get install -y --no-install-recommends gnupg gpg-agent software-properties-common && \
+    # Add Python 3.11 PPA repository
+    add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y --no-install-recommends python3.11 git curl wget && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.11 /usr/bin/python3 && \

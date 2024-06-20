@@ -14,4 +14,5 @@ RUN mkdir -p /usr/local/src/git-source && \
     git \
     gnupg \
     numactl \
-    wget
+    wget \
+    software-properties-common
