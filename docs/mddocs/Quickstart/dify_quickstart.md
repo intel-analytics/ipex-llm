@@ -6,7 +6,7 @@
 
 *See the demo of a RAG workflow in Dify running LLaMA2-7B on Intel A770 GPU below.*
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.mp4" width="100%" controls></video>
+[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.png)](https://llm-assets.readthedocs.io/en/latest/_images/dify-rag-small.mp4)
 
 
 ## Quickstart

@@ -5,7 +5,7 @@
 
 Below is a demo of using `Continue` with [CodeQWen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat) running on Intel A770 GPU. This demo illustrates how a programmer used `Continue` to find a solution for the [Kaggle's _Titanic_ challenge](https://www.kaggle.com/competitions/titanic/), which involves asking `Continue` to complete the code for model fitting, evaluation, hyper parameter tuning, feature engineering, and explain generated code.
 
-<video src="https://llm-assets.readthedocs.io/en/latest/_images/continue_demo_ollama_backend_arc.mp4" width="100%" controls></video>
+[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/continue_demo_ollama_backend_arc.png)](https://llm-assets.readthedocs.io/en/latest/_images/continue_demo_ollama_backend_arc.mp4)
 
 ## Quickstart
 
@@ -30,14 +30,14 @@ Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follo
 
 Now we need to pull a model for coding. Here we use [CodeQWen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B-Chat) model as an example. Open a new terminal window, run the following command to pull [`codeqwen:latest`](https://ollama.com/library/codeqwen). 
 
-- For **Linux**
+- For **Linux users**
 
   ```bash
   export no_proxy=localhost,127.0.0.1
   ./ollama pull codeqwen:latest
   ```
 
-- For **Windows**
+- For **Windows users**
 
   Please run the following command in Miniforge Prompt.
 

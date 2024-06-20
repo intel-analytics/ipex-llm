@@ -10,8 +10,8 @@
     <td align="center" width="50%">简体中文</td>
   </tr>
   <tr>
-    <td><video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4" width="100%" controls></video></td>
-    <td><video src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.mp4" width="100%" controls></video></td>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.png"/></a></td>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.png"/></a></td>
 </tr>
 </table>
 
