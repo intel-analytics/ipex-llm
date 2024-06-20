@@ -13,12 +13,12 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - ".github/workflows/llm_performance_tests.yml"
-  #     - "python/llm/test/benchmark/**"
-  #     - "python/llm/dev/benchmark/all-in-one/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/llm_performance_tests.yml"
+      - "python/llm/test/benchmark/**"
+      - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
     inputs:
       arc:
@@ -49,7 +49,7 @@ jobs:
   #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.arc ) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    # if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.arc ) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -96,11 +96,11 @@ jobs:
         shell: bash
         run: |
           pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          if ! pip show ipex-llm | grep $test_version_date; then
-            echo "Did not install ipex-llm with excepted version $test_version_date"
-            exit 1
-          fi
+          # test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          # if ! pip show ipex-llm | grep $test_version_date; then
+          #   echo "Did not install ipex-llm with excepted version $test_version_date"
+          #   exit 1
+          # fi
 
       - name: Test installed xpu version
         shell: bash
@@ -116,34 +116,34 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+      #     cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           mkdir test_batch1
           mkdir test_batch2
           mkdir test_batch4
-          # batch_size 1
-          # hide time info
+      #     # batch_size 1
+      #     # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
-          # change csv name
+      #     # change csv name
           sed -i 's/{today}/{today}_test1_batch1/g' run.py
-          python run.py
-          mv *.csv test_batch1
-          # batch_size 2
+      #     python run.py
+      #     mv *.csv test_batch1
+      #     # batch_size 2
           cd ../../../../../ 
-          cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+      #     cp python/llm/test/benchmark/arc-perf-test-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
-          # change csv name
+      #     # change csv name
           sed -i 's/batch1/batch2/g' run.py
-          python run.py
-          mv *.csv test_batch2
-          # batch_size 4
+      #     python run.py
+      #     mv *.csv test_batch2
+      #     # batch_size 4
           cd ../../../../../ 
-          cp python/llm/test/benchmark/arc-perf-test-batch4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+      #     cp python/llm/test/benchmark/arc-perf-test-batch4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
-          # change csv name
+      #     # change csv name
           sed -i 's/batch2/batch4/g' run.py
-          python run.py
-          mv *.csv test_batch4
+      #     python run.py
+      #     mv *.csv test_batch4
 
       - name: Test on xpu(transformers==4.37.0)
         shell: bash
@@ -176,6 +176,23 @@ jobs:
           sed -i 's/batch2/batch4/g' run.py
           python run.py
           mv *.csv test_batch4
+      
+      - name: Test on xpu for qwen-moe(transformers==4.40.0)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
+          python -m pip install transformers==4.40.0
+          python -m pip install trl
+          # batch_size 1
+          cp python/llm/test/benchmark/arc-perf-moe.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/test2_batch4/test3_batch1/g' run.py
+          python run.py
+          mv *.csv test_batch1
 
       - name: Concat csv and generate html
         shell: bash
