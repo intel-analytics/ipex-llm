@@ -272,9 +272,6 @@ def get_stopping_criteria(conv, tokenizer, input_ids):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-
-
-if __name__ == '__main__':
         description='Predict Tokens using `generate()` API for LLaVA model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="liuhaotian/llava-v1.5-13b",
                         help='The huggingface repo id for the LLaVA model to be downloaded'
