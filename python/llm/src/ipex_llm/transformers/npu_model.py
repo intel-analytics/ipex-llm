@@ -23,8 +23,6 @@ from typing import List
 from unittest.mock import patch
 from transformers.dynamic_module_utils import get_imports
 
-import intel_npu_acceleration_library as npu_lib
-
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.transformers.utils import logger
 
@@ -69,31 +67,7 @@ class _BaseAutoModelClass:
         if kwargs.get('torch_dtype', None) not in [None, 'auto', torch.float]:
             warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
         kwargs['torch_dtype'] = torch.float
-
-        low_bit = kwargs.pop('load_in_low_bit', 'fp32')
-        try:
-            # for intel_npu_acceleration_library >= 1.1.0
-            from intel_npu_acceleration_library.dtypes import int8, int4
-            qtype_map = {
-                'sym_int4': int4,
-                'sym_int8': int8,
-                'fp16': torch.half,
-                'fp32': torch.float,
-            }
-        except ImportError as _e:
-            # for intel_npu_acceleration_library < 1.1.0
-            qtype_map = {
-                'sym_int8': torch.int8,
-                'fp16': torch.half,
-                'fp32': torch.float,
-            }
-        invalidInputError(low_bit in qtype_map.keys(),
-                          f"unsupported low_bit: {low_bit}, "
-                          f"only {list(qtype_map.keys())} are supported")
-        qtype = qtype_map[low_bit]
-
-        kwargs["low_cpu_mem_usage"] = True
-
+        
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
         ignore_argument(kwargs, "lightweight_bmm")
@@ -108,14 +82,48 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
-
+        
+        low_bit = kwargs.pop('load_in_low_bit', 'fp32')
+        kv_cache_len_max = kwargs.pop('kv_cache_len_max', 1024)
+        kwargs["low_cpu_mem_usage"] = True
+        
+        backend = kwargs.pop('npu_backend', 'intel_npu_acceleration_library')
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
+        
+        if backend == 'intel_npu_acceleration_library':
+            import intel_npu_acceleration_library as npu_lib
+            try:
+                # for intel_npu_acceleration_library >= 1.1.0
+                from intel_npu_acceleration_library.dtypes import int8, int4
+                qtype_map = {
+                    'sym_int4': int4,
+                    'sym_int8': int8,
+                    'fp16': torch.half,
+                    'fp32': torch.float,
+                }
+            except ImportError as _e:
+                # for intel_npu_acceleration_library < 1.1.0
+                qtype_map = {
+                    'sym_int8': torch.int8,
+                    'fp16': torch.half,
+                    'fp32': torch.float,
+                }
+            invalidInputError(low_bit in qtype_map.keys(),
+                            f"unsupported low_bit: {low_bit}, "
+                            f"only {list(qtype_map.keys())} are supported")
+            qtype = qtype_map[low_bit]
 
-        logger.info(f"Converting model, it may takes up to several minutes ...")
-        model = npu_lib.compile(model, qtype, False)
+            logger.info(f"Converting model, it may takes up to several minutes ...")
+            model = npu_lib.compile(model, qtype, False)
 
-        # add save_low_bit to pretrained model dynamically
-        model.save_low_bit = types.MethodType(cls.save_low_bit, model)
+            # add save_low_bit to pretrained model dynamically
+            model.save_low_bit = types.MethodType(cls.save_low_bit, model)
+        elif backend == "openvino":
+            import ipex_llm.transformers.npu.ov_lib as ov_lib
+            logger.info(f"Converting model, it may takes up to several minutes ...")
+            model = ov_lib.compile(model, torch.float16, kv_cache_len_max=kv_cache_len_max)
+        else:
+            invalidInputError(False, f"unsupported backend {backend}")
 
         return model
 
