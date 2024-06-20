@@ -41,10 +41,6 @@ if __name__ == '__main__':
                                                  npu_backend="openvino")
     
     print(model)
-    
-    from benchmark_util import BenchmarkWrapper
-
-    model = BenchmarkWrapper(model, do_print=True)
 
     with torch.inference_mode():
         input_ids = tokenizer.encode(args.prompt, return_tensors="pt")
