@@ -14,12 +14,18 @@ Follow the instructions in the [Offcial Docker Guide](https://www.docker.com/get
 
 ### Windows
 
-> [!TIP]
-> The installation requires at least 35GB of free disk space on C drive.
+```eval_rst
+.. tip::
 
-> [!NOTE]
-> Detailed installation instructions for Windows, including steps for enabling WSL2, can be found on the [Docker Desktop for Windows installation page](https://docs.docker.com/desktop/install/windows-install/).
+   The installation requires at least 35GB of free disk space on C drive.
 
+```
+```eval_rst
+.. note::
+
+   Detailed installation instructions for Windows, including steps for enabling WSL2, can be found on the [Docker Desktop for Windows installation page](https://docs.docker.com/desktop/install/windows-install/).
+
+```
 
 #### Install Docker Desktop for Windows 
 Follow the instructions in [this guide](https://docs.docker.com/desktop/install/windows-install/) to install **Docker Desktop for Windows**. Restart you machine after the installation is complete.
@@ -28,9 +34,11 @@ Follow the instructions in [this guide](https://docs.docker.com/desktop/install/
 
 Follow the instructions in [this guide](https://docs.microsoft.com/en-us/windows/wsl/install) to install **Windows Subsystem for Linux 2 (WSL2)**.
 
-> [!TIP]
-> You may verify WSL2 installation by running the command `wsl --list` in PowerShell or Command Prompt. If WSL2 is installed, you will see a list of installed Linux distributions.
+```eval_rst
+.. tip::
 
+  You may verify WSL2 installation by running the command `wsl --list` in PowerShell or Command Prompt. If WSL2 is installed, you will see a list of installed Linux distributions.
+```
 
 #### Enable Docker integration with WSL2
 
@@ -39,10 +47,11 @@ Open **Docker desktop**, and select `Settings`->`Resources`->`WSL integration`->
        <img src="https://llm-assets.readthedocs.io/en/latest/_images/docker_desktop_new.png" width=100%; />
      </a>
 
+```eval_rst
+.. tip::
 
-> [!TIP]
-> If you encounter **Docker Engine stopped** when opening Docker Desktop, you can reopen it in administrator mode.
-
+   If you encounter **Docker Engine stopped** when opening Docker Desktop, you can reopen it in administrator mode.
+```
 
  #### Verify Docker is enabled in WSL2
  
@@ -58,9 +67,11 @@ You can see the output similar to the following:
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/docker_wsl.png" width=100%; />
 </a>
 
+```eval_rst
+.. tip::
 
-> [!TIP]
-> During the use of Docker in WSL, Docker Desktop needs to be kept open all the time.
+   During the use of Docker in WSL, Docker Desktop needs to be kept open all the time.
+```
    
      
 ## IPEX-LLM Docker Containers
@@ -78,7 +89,7 @@ We have several docker images available for running LLMs on Intel GPUs. The foll
 | intelanalytics/ipex-llm-finetune-qlora-xpu:latest| GPU Finetuning|For fine-tuning LLMs using QLora/Lora, etc.|
 
 We have also provided several quickstarts for various usage scenarios:
-- [Run and develop LLM applications in PyTorch](./docker_pytorch_inference_gpu.md)
+- [Run and develop LLM applications in PyTorch](./docker_pytorch_inference_gpu.html)
 
 ... to be added soon.
 

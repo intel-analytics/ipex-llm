@@ -18,7 +18,7 @@ docker pull intelanalytics/ipex-llm-serving-cpu:latest
 ## Start Docker Container
 
 To fully use your Intel CPU to run vLLM inference and serving, you should 
-```bash
+```
 #/bin/bash
 export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:latest
 export CONTAINER_NAME=ipex-llm-serving-cpu-container
@@ -48,7 +48,7 @@ We have included multiple vLLM-related files in `/llm/`:
 3. `payload-1024.lua`: Used for testing request per second using 1k-128 request
 4. `start-vllm-service.sh`: Used for template for starting vLLM service
 
-Before performing benchmark or starting the service, you can refer to this [section](../Overview/install_cpu.md#environment-setup) to setup our recommended runtime configurations.
+Before performing benchmark or starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_cpu.html#environment-setup) to setup our recommended runtime configurations.
 
 ### Service
 
@@ -92,7 +92,7 @@ You can tune the service using these four arguments:
 - `--max-num-batched-token`
 - `--max-num-seq`
 
-You can refer to this [doc](../Quickstart/vLLM_quickstart.md#service) for a detailed explaination on these parameters.
+You can refer to this [doc](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#service) for a detailed explaination on these parameters.
 
 ### Benchmark
 

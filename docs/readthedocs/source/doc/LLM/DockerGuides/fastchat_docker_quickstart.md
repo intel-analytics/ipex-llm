@@ -4,7 +4,7 @@ This guide demonstrates how to run `FastChat` serving with `IPEX-LLM` on Intel G
 
 ## Install docker
 
-Follow the instructions in this [guide](./docker_windows_gpu.md#linux) to install Docker on Linux.
+Follow the instructions in this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html#linux) to install Docker on Linux.
 
 ## Pull the latest image
 
@@ -17,7 +17,7 @@ docker pull intelanalytics/ipex-llm-serving-xpu:latest
 
  To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. Change the `/path/to/models` to mount the models. 
 
-```bash
+```
 #/bin/bash
 export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
 export CONTAINER_NAME=ipex-llm-serving-xpu-container
@@ -54,9 +54,9 @@ root@arda-arc12:/# sycl-ls
 
 For convenience, we have provided a script named `/llm/start-fastchat-service.sh` for you to start the service.  
 
-However, the script only provide instructions for the most common scenarios. If this script doesn't meet your needs, you can always find the complete guidance for FastChat at [Serving using IPEX-LLM and FastChat](../Quickstart/fastchat_quickstart.md#2-start-the-service).
+However, the script only provide instructions for the most common scenarios. If this script doesn't meet your needs, you can always find the complete guidance for FastChat at [Serving using IPEX-LLM and FastChat](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#start-the-service).
 
-Before starting the service, you can refer to this [section](../Quickstart/install_linux_gpu.md#runtime-configurations) to setup our recommended runtime configurations.
+Before starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#runtime-configurations) to setup our recommended runtime configurations.
 
 Now we can start the FastChat service, you can use our provided script `/llm/start-fastchat-service.sh` like the following way:
 
@@ -105,10 +105,10 @@ The `vllm_worker` may start slowly than normal `ipex_llm_worker`.  The booted se
 </a>
 
 
-
-> [!note]
-> To verify/use the service booted by the script, follow the instructions in [this guide](../Quickstart/fastchat_quickstart.md#launch-restful-api-server).
-
+```eval_rst
+.. note::
+  To verify/use the service booted by the script, follow the instructions in `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#launch-restful-api-serve>`_.
+```
 
 After a request has been sent to the `openai_api_server`, the corresponding inference time latency can be found in the worker log as shown below:
 
