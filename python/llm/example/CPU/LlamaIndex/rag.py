@@ -168,7 +168,7 @@ def main(args):
     llm = IpexLLM.from_model_id(
         model_name=args.model_path,
         tokenizer_name=args.tokenizer_path,
-        context_window=512,
+        context_window=384,
         max_new_tokens=args.n_predict,
         generate_kwargs={"temperature": 0.7, "do_sample": False},
         model_kwargs={},
