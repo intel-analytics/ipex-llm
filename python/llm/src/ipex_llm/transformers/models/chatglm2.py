@@ -74,10 +74,12 @@ def chatglm2_model_forward(
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-    batch_size, seq_length = input_ids.shape
-
     if inputs_embeds is None:
+        batch_size, seq_length = input_ids.shape
         inputs_embeds = self.embedding(input_ids)
+    else:
+        inputs_embeds = inputs_embeds.transpose(0, 1).contiguous()
+        seq_length, batch_size, _ = inputs_embeds.shape
 
     if full_attention_mask is None:
         if (attention_mask is not None and not attention_mask.all()) or (
