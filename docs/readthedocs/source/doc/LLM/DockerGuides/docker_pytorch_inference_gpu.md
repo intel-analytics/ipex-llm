@@ -59,6 +59,8 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
   ```
 </details>
 
+---
+
 Access the container:
 ```
 docker exec -it $CONTAINER_NAME bash

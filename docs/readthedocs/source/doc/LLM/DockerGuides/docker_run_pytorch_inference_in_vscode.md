@@ -93,6 +93,7 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
   ```
 </details>
 
+---
 
 ## Run/Develop Pytorch Examples
 
