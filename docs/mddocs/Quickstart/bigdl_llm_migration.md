@@ -19,19 +19,19 @@ pip install --pre --upgrade ipex-llm[all] # for cpu
 ### For GPU
 Choose either US or CN website for `extra-index-url`:
 
-#### For **US**
+- For **US**:
 
-```bash
-pip uninstall -y bigdl-llm
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-```
+  ```bash
+  pip uninstall -y bigdl-llm
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  ```
 
-#### For **CN**
+- For **CN**:
 
-```bash
-pip uninstall -y bigdl-llm
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-```
+  ```bash
+  pip uninstall -y bigdl-llm
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  ```
 
 ## Migrate `bigdl-llm` code to `ipex-llm`
 There are two options to migrate `bigdl-llm` code to `ipex-llm`.
