@@ -1,10 +1,10 @@
 # Run IPEX-LLM serving on Multiple Intel GPUs using DeepSpeed AutoTP and FastApi
 
-This example demonstrates how to run IPEX-LLM serving on multiple [Intel GPUs](../README.md) by leveraging DeepSpeed AutoTP.
+This example demonstrates how to run IPEX-LLM serving on multiple [Intel GPUs](../../../python/llm/example/GPU/README.md) by leveraging DeepSpeed AutoTP.
 
 ## Requirements
 
-To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
+To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../python/llm/example/GPU/README.md#requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
 
 ## Example
 
@@ -24,7 +24,8 @@ pip install mpi4py fastapi uvicorn
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 ```
 
-> **Important**: IPEX 2.1.10+xpu requires Intel® oneAPI Base Toolkit's version == 2024.0. Please make sure you have installed the correct version.
+> [!IMPORTANT]
+> IPEX 2.1.10+xpu requires Intel® oneAPI Base Toolkit's version == 2024.0. Please make sure you have installed the correct version.
 
 ### 2. Run tensor parallel inference on multiple GPUs
 
@@ -52,7 +53,8 @@ If you successfully run the serving, you can get output like this:
 [0] INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 ```
 
-> **Note**: You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
+> [!NOTE]
+> You could change `NUM_GPUS` to the number of GPUs you have on your machine. And you could also specify other low bit optimizations through `--low-bit`.
 
 ### 3. Sample Input and Output
 
@@ -83,7 +85,8 @@ And you should get output like this:
 
 ```
 
-**Important**: The first token latency is much larger than rest token latency, you could use [our benchmark tool](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/dev/benchmark/README.md) to obtain more details about first and rest token latency.
+> [!IMPORTANT]
+> The first token latency is much larger than rest token latency, you could use [our benchmark tool](../../../python/llm/dev/benchmark/README.md) to obtain more details about first and rest token latency.
 
 ### 4. Benchmark with wrk
 
