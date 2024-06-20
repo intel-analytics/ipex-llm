@@ -69,6 +69,13 @@ Now we need to pull a model for RAG using Ollama. Here we use [Qwen/Qwen2-7B](ht
 ### 3. Start `RAGFlow` Service
 
 
+```eval_rst
+.. note::
+
+  The steps in section 3 is verified on Linux system only. 
+```
+
+
 #### 3.1 Download `RAGFlow`
 
 You can either clone the repository or download the source zip from [github](https://github.com/infiniflow/ragflow/archive/refs/heads/main.zip):
@@ -109,28 +116,13 @@ Build the pre-built Docker images and start up the server:
   Running the following commands automatically downloads the *dev* version RAGFlow Docker image. To download and run a specified Docker version, update `RAGFLOW_VERSION` in **docker/.env** to the intended version, for example `RAGFLOW_VERSION=v0.7.0`, before running the following commands.
 ```
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
 
-      .. code-block:: bash
-
-         export no_proxy=localhost,127.0.0.1
-         cd ragflow/docker
-         chmod +x ./entrypoint.sh
-         docker compose up -d
-
-   .. tab:: Windows
-
-      Please run the following command in Miniforge or Anaconda Prompt.
-
-      .. code-block:: cmd
-
-         set no_proxy=localhost,127.0.0.1
-         cd ragflow/docker
-         chmod +x ./entrypoint.sh
-         docker compose up -d
-
+```bash
+$ export no_proxy=localhost,127.0.0.1
+$ cd ragflow/docker
+$ chmod +x ./entrypoint.sh
+$ docker compose up -d
+```
 
 
 ```eval_rst
