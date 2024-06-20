@@ -13,7 +13,7 @@ This guide walks you through setting up and running **Continue** within _Visual 
 
 ### 1. Install and Run Ollama Serve
 
-Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follow the steps 1) [Install IPEX-LLM for Ollama](./ollama_quickstart.md#install-ipex-llm-for-ollama), 2) [Initialize Ollama](./ollama_quickstart.md#initialize-ollama) 3) [Run Ollama Serve](./ollama_quickstart.md#run-ollama-serve) to install, init and start the Ollama Service. 
+Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follow the steps 1) [Install IPEX-LLM for Ollama](./ollama_quickstart.md#1-install-ipex-llm-for-ollama), 2) [Initialize Ollama](./ollama_quickstart.md#2-initialize-ollama) 3) [Run Ollama Serve](./ollama_quickstart.md#3-run-ollama-serve) to install, init and start the Ollama Service. 
 
 > [!IMPORTANT]
 > If the `Continue` plugin is not installed on the same machine where Ollama is running (which means `Continue` needs to connect to a remote Ollama service), you must configure the Ollama service to accept connections from any IP address. To achieve this, set or export the environment variable `OLLAMA_HOST=0.0.0.0` before executing the command `ollama serve`. 
