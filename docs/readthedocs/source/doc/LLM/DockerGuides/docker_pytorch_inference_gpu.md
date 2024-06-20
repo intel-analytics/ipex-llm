@@ -2,16 +2,12 @@
 
 We can run PyTorch Inference Benchmark, Chat Service and PyTorch Examples on Intel GPUs within Docker (on Linux or WSL).
 
-```eval_rst
-.. note::
-
-   The current Windows + WSL + Docker solution only supports Arc series dGPU. For Windows users with MTL iGPU, it is recommended to install directly via pip install in Miniforge Prompt. Refer to `this guide <https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html>`_.
-
-```
+> [!NOTE]
+> The current Windows + WSL + Docker solution only supports Arc series dGPU. For Windows users with MTL iGPU, it is recommended to install directly via pip install in Miniforge Prompt. Refer to [this guide](../Quickstart/install_windows_gpu.md).
 
 ## Install Docker
 
-Follow the [Docker installation Guide](./docker_windows_gpu.html#install-docker) to install docker on either Linux or Windows.
+Follow the [Docker installation Guide](./docker_windows_gpu.md#install-docker) to install docker on either Linux or Windows.
 
 ## Launch Docker
 
@@ -20,19 +16,17 @@ Prepare ipex-llm-xpu Docker Image:
 docker pull intelanalytics/ipex-llm-xpu:latest
 ```
 
-Start ipex-llm-xpu Docker Container:
+Start ipex-llm-xpu Docker Container. Choose one of the following commands to start the container:
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+<details>
+<summary>For <strong>Linux</strong>:</summary>
 
-      .. code-block:: bash
+  ```bash
+  export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
+  export CONTAINER_NAME=my_container
+  export MODEL_PATH=/llm/models[change to your model path]
 
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
-        export CONTAINER_NAME=my_container
-        export MODEL_PATH=/llm/models[change to your model path]
-
-        docker run -itd \
+  docker run -itd \
             --net=host \
             --device=/dev/dri \
             --memory="32G" \
@@ -40,17 +34,19 @@ Start ipex-llm-xpu Docker Container:
             --shm-size="16g" \
             -v $MODEL_PATH:/llm/models \
             $DOCKER_IMAGE
+  ```
+</details>
 
-   .. tab:: Windows WSL
+<details>
+<summary>For <strong>Windows WSL</strong>:</summary>
 
-      .. code-block:: bash
+  ```bash
+  #/bin/bash
+  export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
+  export CONTAINER_NAME=my_container
+  export MODEL_PATH=/llm/models[change to your model path]
 
-         #/bin/bash
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
-        export CONTAINER_NAME=my_container
-        export MODEL_PATH=/llm/models[change to your model path]
-
-        sudo docker run -itd \
+  sudo docker run -itd \
                 --net=host \
                 --privileged \
                 --device /dev/dri \
@@ -60,8 +56,8 @@ Start ipex-llm-xpu Docker Container:
                 -v $MODEL_PATH:/llm/llm-models \
                 -v /usr/lib/wsl:/usr/lib/wsl \ 
                 $DOCKER_IMAGE
-```
-
+  ```
+</details>
 
 Access the container:
 ```
@@ -77,18 +73,13 @@ root@arda-arc12:/# sycl-ls
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
 
-```eval_rst
-.. tip::
-
-  You can run the Env-Check script to verify your ipex-llm installation and runtime environment.
-
-  .. code-block:: bash
-
-     cd /ipex-llm/python/llm/scripts
-     bash env-check.sh
-
-
-```
+> [!TIP]
+> You can run the Env-Check script to verify your ipex-llm installation and runtime environment.
+>
+> ```bash
+> cd /ipex-llm/python/llm/scripts
+> bash env-check.sh
+> ```
 
 ## Run Inference Benchmark 
 
