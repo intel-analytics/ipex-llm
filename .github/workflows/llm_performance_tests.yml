@@ -176,6 +176,23 @@ jobs:
           sed -i 's/batch2/batch4/g' run.py
           python run.py
           mv *.csv test_batch4
+      
+      - name: Test on xpu(transformers==4.40.0)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          # upgrade transformers for model Qwen/Qwen1.5-MoE-A2.7B-Chat
+          python -m pip install transformers==4.40.0
+          python -m pip install trl
+          # batch_size 1
+          cp python/llm/test/benchmark/arc-perf-transformers-440.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/test2_batch4/test3_batch1/g' run.py
+          python run.py
+          mv *.csv test_batch1
 
       - name: Concat csv and generate html
         shell: bash
@@ -262,6 +279,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one/test_batch1
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437.yaml
+          python ../../../../test/benchmark/check_results.py -c test3 -y ../../../../test/benchmark/arc-perf-transformers-440.yaml
           find . -name "*test*.csv" -delete
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
