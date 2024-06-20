@@ -13,12 +13,12 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm_performance_tests.yml"
-      - "python/llm/test/benchmark/**"
-      - "python/llm/dev/benchmark/all-in-one/**"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm_performance_tests.yml"
+  #     - "python/llm/test/benchmark/**"
+  #     - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
     inputs:
       arc:
@@ -49,7 +49,7 @@ jobs:
   #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    # if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.arc ) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.arc ) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -96,18 +96,18 @@ jobs:
         shell: bash
         run: |
           pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-          # test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          # if ! pip show ipex-llm | grep $test_version_date; then
-          #   echo "Did not install ipex-llm with excepted version $test_version_date"
-          #   exit 1
-          # fi
-          
+          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+          if ! pip show ipex-llm | grep $test_version_date; then
+            echo "Did not install ipex-llm with excepted version $test_version_date"
+            exit 1
+          fi
+
       - name: Test installed xpu version
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
           bash python/llm/test/run-llm-install-tests.sh
-        
+
       - name: Test on xpu(transformers==4.36.2)
         shell: bash
         run: |
@@ -177,13 +177,13 @@ jobs:
           python run.py
           mv *.csv test_batch4
       
-      - name: Test on xpu for qwen-moe(transformers==4.40.0)
+      - name: Test on xpu(transformers==4.40.0)
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
+          # upgrade transformers for model Qwen/Qwen1.5-MoE-A2.7B-Chat
           python -m pip install transformers==4.40.0
           python -m pip install trl
           # batch_size 1
