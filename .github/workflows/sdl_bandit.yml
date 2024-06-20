@@ -1,0 +1,34 @@
+name: Scanner-bandit
+on:
+#  schedule:
+#    - cron: '0 3 * * 0' # GMT time, 3:00 GMT == 11:00 China Every Sunday
+#  push:
+#    branches: [ "main" ]
+  pull_request:
+    branchs: [ main ]
+  workflow_dispatch:
+    inputs:
+      snyk_apitoken:
+        description: 'Snyk token'
+        required: false
+        type: string
+        default: 'monitor'
+      snyk_org:
+        description: 'Enter synk org: (eg- iags_mlp)'
+        required: true
+        type: string
+        default: 'iags_mlp'
+
+jobs:
+  bandit-python:
+    runs-on: [self-hosted, SDL]
+    steps:
+    - name: "bandit python"
+      run: |
+        source activate bigdl-bandit 
+        bandit -r python -f html -o /root/bandit_report.html -c /root/ipas_default.config
+    - name: HTML Preview
+      id: html_preview
+      uses: pavi2410/html-preview-action@v2
+      with:
+        html_file: '/root/bandit_report.html'
