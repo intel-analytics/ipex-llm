@@ -58,7 +58,6 @@ To run offline inference using vLLM for a quick impression, use the following ex
 > Please modify the MODEL_PATH in offline_inference.py to use your chosen model.
 >
 > You can try modify load_in_low_bit to different values in **[sym_int4, fp6, fp8, fp8_e4m3, fp16]** to use different quantization dtype.
-```
 
 ```bash
 #!/bin/bash
@@ -92,7 +91,6 @@ Prompt: 'The future of AI is', Generated text: " bright, but it's not without ch
 
 > [!NOTE]
 > Because of using JIT compilation for kernels. We recommend to send a few requests for warmup before using the service for the best performance.
-```
 
 To fully utilize the continuous batching feature of the `vLLM`, you can send requests to the service using `curl` or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same `forward` step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
 
