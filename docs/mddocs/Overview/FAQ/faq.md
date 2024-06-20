@@ -12,7 +12,7 @@ Please also refer to [here](https://github.com/intel-analytics/ipex-llm?tab=read
 ### Fail to install `ipex-llm` through `pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/` or `pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/`
 
 You could try to install IPEX-LLM dependencies for Intel XPU from source archives:
-- For Windows system, refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-ipex-llm-from-wheel) for the steps.
+- For Windows system, refer to [here](../../Overview/install_gpu.md#install-ipex-llm-from-wheel) for the steps.
 - For Linux system, refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id3) for the steps.
 
 ### PyTorch is not linked with support for xpu devices
