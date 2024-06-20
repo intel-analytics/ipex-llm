@@ -735,6 +735,8 @@ def _optimize_pre(model):
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.models.qwen2 import merge_qkv
         model.apply(merge_qkv)
+        from ipex_llm.transformers.models.qwen2 import padding_mlp
+        model.apply(padding_mlp)
     if model.config.model_type == "qwen2_moe":
         from ipex_llm.transformers.models.qwen2_moe import merge_qkv
         model.apply(merge_qkv)
