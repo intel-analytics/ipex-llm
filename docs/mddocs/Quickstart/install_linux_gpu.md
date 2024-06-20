@@ -186,7 +186,7 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choo
   ```
 
 > [!NOTE]
-> If you encounter network issues while installing IPEX, refer to [this guide](../Overview/install_gpu.md#install-ipex-llm-1) for troubleshooting advice.
+> If you encounter network issues while installing IPEX, refer to [this guide](../Overview/install_gpu.md#install-ipex-llm-from-wheel-1) for troubleshooting advice.
 
 
 ## Verify Installation
