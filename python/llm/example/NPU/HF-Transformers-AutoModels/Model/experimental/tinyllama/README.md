@@ -1,8 +1,8 @@
 # Run LLama2 on Intel NPU
-In this directory, you will find examples on how you could apply run tinyllama on intel NPU devices.
+In this directory, you will find examples on how to run tinyllama on intel NPU devices.
 
 ## 0. Requirements
-To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
+To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version (at least 32.0.100.2408) of Intel NPU.
 Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
 Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
@@ -24,7 +24,7 @@ pip install transformers==4.35.1
 ```
 
 ### 2. Runtime Configurations
-For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
+
 #### 2.1 Configurations for Windows
 <details>
 
