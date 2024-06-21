@@ -6,7 +6,7 @@
 
 IPEX-LLM supports running GGUF/AWQ/GPTQ models on both [CPU](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Advanced-Quantizations) and [GPU](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations). Please also refer to [here](https://github.com/intel-analytics/ipex-llm?tab=readme-ov-file#latest-update-) for our latest support. 
 
-## How to Resolve Errors 
+## How to Resolve Errors
 
 ### Fail to install `ipex-llm` through `pip install --pre --upgrade ipex-llm[xpu] --extra-index-urlhttps://pytorch-extension.intel.com/release-whl/stable/xpu/us/` or `pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/` 
 You could try to install IPEX-LLM dependencies for Intel XPU from source archives:
