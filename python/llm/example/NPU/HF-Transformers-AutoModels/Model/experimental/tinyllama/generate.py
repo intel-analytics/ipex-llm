@@ -29,7 +29,7 @@ if __name__ == '__main__':
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="Once upon a time, there is a little girl named Lily who lives in a small village.",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=512,
+    parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
