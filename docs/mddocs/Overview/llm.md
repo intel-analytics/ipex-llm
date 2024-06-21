@@ -17,13 +17,11 @@ model = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path="open
                                              load_in_4bit=True)
 ```
 
-```eval_rst
-.. tip::
+> [!TIP]
+> [open_llama_3b_v2](https://huggingface.co/openlm-research/open_llama_3b_v2) is a pretrained large language model hosted on Hugging Face. `openlm-research/open_llama_3b_v2` is its Hugging Face model id. `from_pretrained` will automatically download the model from Hugging Face to a local cache path (e.g. ``~/.cache/huggingface``), load the model, and converted it to `ipex-llm` INT4 format.
+>
+> It may take a long time to download the model using API. You can also download the model yourself, and set `pretrained_model_name_or_path` to the local path of the downloaded model. This way, `from_pretrained` will load and convert directly from local path without download.
 
-   `open_llama_3b_v2 <https://huggingface.co/openlm-research/open_llama_3b_v2>`_ is a pretrained large language model hosted on Hugging Face. ``openlm-research/open_llama_3b_v2`` is its Hugging Face model id. ``from_pretrained`` will automatically download the model from Hugging Face to a local cache path (e.g. ``~/.cache/huggingface``), load the model, and converted it to ``ipex-llm`` INT4 format.
-
-   It may take a long time to download the model using API. You can also download the model yourself, and set ``pretrained_model_name_or_path`` to the local path of the downloaded model. This way, ``from_pretrained`` will load and convert directly from local path without download.
-```
 ## Load Tokenizer
 
 You also need a tokenizer for inference. Just use the official `transformers` API to load `LlamaTokenizer`:

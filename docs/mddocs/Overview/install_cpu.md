@@ -4,33 +4,26 @@
 
 Install IPEX-LLM for CPU supports using pip through:
 
-```eval_rst	
-.. tabs::
+- For **Linux users**:
 
-   .. tab:: Linux
+  ```bash
+  pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+  ```
 
-      .. code-block:: bash
+- For **Windows users**:
 
-         pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-
-   .. tab:: Windows
-
-      .. code-block:: cmd
-
-         pip install --pre --upgrade ipex-llm[all]
-```
+  ```cmd
+  pip install --pre --upgrade ipex-llm[all]
+  ```
 
 Please refer to [Environment Setup](#environment-setup) for more information.
 
-```eval_rst
-.. note::
+> [!NOTE]
+> `all` option will trigger installation of all the dependencies for common LLM application development.
 
-   ``all`` option will trigger installation of all the dependencies for common LLM application development.
+> [!IMPORTANT]
+> `ipex-llm` is tested with Python 3.9, 3.10 and 3.11; Python 3.11 is recommended for best practices.
 
-.. important::
-
-   ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11; Python 3.11 is recommended for best practices.
-```
 
 ## Recommended Requirements
 
@@ -53,48 +46,39 @@ For optimal performance with LLM models using IPEX-LLM optimizations on Intel CP
 
 First we recommend using [Conda](https://conda-forge.org/download/) to create a python 3.11 enviroment:
 
-```eval_rst	
-.. tabs::
+- For **Linux users**:
 
-   .. tab:: Linux
+  ```bash
+  conda create -n llm python=3.11
+  conda activate llm
 
-      .. code-block:: bash
+  pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+  ```
 
-         conda create -n llm python=3.11
-         conda activate llm
+- For 
+```cmd
+conda create -n llm python=3.11
+conda activate llm
 
-         pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-
-   .. tab:: Windows
-
-      .. code-block:: cmd
-
-         conda create -n llm python=3.11
-         conda activate llm
-
-         pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade ipex-llm[all]
 ```
 
 Then for running a LLM model with IPEX-LLM optimizations (taking an `example.py` an example):
 
-```eval_rst	
-.. tabs::
+- For **running on Client**:
 
-   .. tab:: Client
+  It is recommended to run directly with full utilization of all CPU cores:
 
-      It is recommended to run directly with full utilization of all CPU cores:
+  ```bash
+  python example.py
+  ```
 
-      .. code-block:: bash
+- For **running on Server**:
 
-         python example.py
+  It is recommended to run with all the physical cores of a single socket:
 
-   .. tab:: Server
-
-      It is recommended to run with all the physical cores of a single socket:
-
-      .. code-block:: bash
-
-         # e.g. for a server with 48 cores per socket
-         export OMP_NUM_THREADS=48
-         numactl -C 0-47 -m 0 python example.py
-```
+  ```bash
+  # e.g. for a server with 48 cores per socket
+  export OMP_NUM_THREADS=48
+  numactl -C 0-47 -m 0 python example.py
+  ```
