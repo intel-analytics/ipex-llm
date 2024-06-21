@@ -89,7 +89,6 @@ bash run_qwen1.5_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Baichuan2 to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
-pip install transformers==4.37.0
 bash run_baichuan2_arc_2_card.sh
 ```
 
@@ -105,7 +104,6 @@ bash run_baichuan2_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Phi3 to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
-pip install transformers==4.37.0
 bash run_phi3_arc_2_card.sh
 ```
 
@@ -137,7 +135,6 @@ bash run_mistral_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Yi to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
-pip install transformers==4.37.0
 bash run_yi_arc_2_card.sh
 ```
 
@@ -153,7 +150,6 @@ bash run_yi_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Codellama to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
-pip install transformers==4.37.0
 bash run_codellama_arc_2_card.sh
 ```
 
@@ -169,7 +165,6 @@ bash run_codellama_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Solar to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
-pip install transformers==4.37.0
 bash run_solar_arc_2_card.sh
 ```
 
@@ -185,7 +180,6 @@ bash run_solar_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Vicuna to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
-pip install transformers==4.37.0
 bash run_vicuna_arc_2_card.sh
 ```
 
