@@ -17,10 +17,10 @@ pip install --pre --upgrade ipex-llm[all]
 Please refer to [Environment Setup](#environment-setup) for more information.
 
 > [!NOTE]
-> ``all`` option will trigger installation of all the dependencies for common LLM application development.
+> `all` option will trigger installation of all the dependencies for common LLM application development.
 
 > [!IMPORTANT]
-> ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11; Python 3.11 is recommended for best practices.
+> `ipex-llm` is tested with Python 3.9, 3.10 and 3.11; Python 3.11 is recommended for best practices.
 
 
 ## Recommended Requirements
@@ -44,15 +44,16 @@ For optimal performance with LLM models using IPEX-LLM optimizations on Intel CP
 
 First we recommend using [Conda](https://conda-forge.org/download/) to create a python 3.11 enviroment:
 
-### Setup on Linux
-```bash
-conda create -n llm python=3.11
-conda activate llm
+- For **Linux users**:
 
-pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-```
+  ```bash
+  conda create -n llm python=3.11
+  conda activate llm
 
-### Setup on Windows
+  pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+  ```
+
+- For 
 ```cmd
 conda create -n llm python=3.11
 conda activate llm
@@ -62,16 +63,20 @@ pip install --pre --upgrade ipex-llm[all]
 
 Then for running a LLM model with IPEX-LLM optimizations (taking an `example.py` an example):
 
-### Run on Client
-It is recommended to run directly with full utilization of all CPU cores:
-```bash
-python example.py
-```
+- For **running on Client**:
 
-### Run on Server
-It is recommended to run with all the physical cores of a single socket:
-```bash
-# e.g. for a server with 48 cores per socket
-export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python example.py
-```
+  It is recommended to run directly with full utilization of all CPU cores:
+
+  ```bash
+  python example.py
+  ```
+
+- For **running on Server**:
+
+  It is recommended to run with all the physical cores of a single socket:
+
+  ```bash
+  # e.g. for a server with 48 cores per socket
+  export OMP_NUM_THREADS=48
+  numactl -C 0-47 -m 0 python example.py
+  ```

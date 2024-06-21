@@ -46,7 +46,8 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
 
 The easiest ways to install `ipex-llm` is the following commands, choosing either US or CN website for `extra-index-url`:
 
-- For **US**
+- For **US**:
+
 ```cmd
 conda create -n llm python=3.11 libuv
 conda activate llm
@@ -54,7 +55,8 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
 
-- For **CN**
+- For **CN**:
+
 ```cmd
 conda create -n llm python=3.11 libuv
 conda activate llm
