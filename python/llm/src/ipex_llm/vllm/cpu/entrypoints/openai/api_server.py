@@ -175,7 +175,9 @@ if __name__ == "__main__":
         served_model_names = [args.model]
     engine_args = AsyncEngineArgs.from_cli_args(args)
     engine = IPEXLLMAsyncLLMEngine.from_engine_args(
-        engine_args, usage_context=UsageContext.OPENAI_API_SERVER)
+        engine_args, usage_context=UsageContext.OPENAI_API_SERVER,
+        load_in_low_bit=args.load_in_low_bit,
+    )
     openai_serving_chat = OpenAIServingChat(engine, served_model_names,
                                             args.response_role,
                                             args.lora_modules,
