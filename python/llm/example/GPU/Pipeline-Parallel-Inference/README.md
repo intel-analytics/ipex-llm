@@ -18,8 +18,8 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - [microsoft/Phi-3-medium-4k-instruct](./run_phi3_arc_2_card.sh)
 - [mistralai/Mistral-7B-v0.1](./run_mistral_arc_2_card.sh)
 - [mistralai/Mixtral-8x7B-Instruct-v0.1](./run_mistral_arc_2_card.sh)
-- [mistralai/01-ai/Yi-6B-Chat](./run_yi_arc_2_card.sh)
-- [mistralai/01-ai/Yi-34B-Chat](./run_yi_arc_2_card.sh)
+- [01-ai/Yi-6B-Chat](./run_yi_arc_2_card.sh)
+- [01-ai/Yi-34B-Chat](./run_yi_arc_2_card.sh)
 - [codellama/CodeLlama-7b-Instruct-hf](./run_codellama_arc_2_card.sh)
 - [codellama/CodeLlama-13b-Instruct-hf](./run_codellama_arc_2_card.sh)
 - [codellama/CodeLlama-34b-Instruct-hf](./run_codellama_arc_2_card.sh)
@@ -118,7 +118,7 @@ bash run_phi3_arc_2_card.sh
 
 #### Run Mistral-7B-v0.1 / Mixtral-8x7B-Instruct-v0.1 on two Intel Arc A770
 
-You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Mistral/Mixtral to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Mistral / Mixtral to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
 pip install transformers==4.37.0
