@@ -18,14 +18,14 @@ doc_chain = load_qa_chain(ipex_llm, ...)
 output = doc_chain.run(...) 
 ``` 
 
-> **Tip:** 
- See the examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain/transformers_int4). 
+> [!TIP] 
+> See the examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain/transformers_int4). 
  
  ## Using Native INT4 Format 
  
  You may also convert Hugging Face *Transformers* models into native INT4 format, and then run the converted models using the LangChain API as follows. 
  
- > **Note:** 
+> [!NOTE] 
  > * Currently only llama/bloom/gptneox/starcoder model families are supported; for other models, you may use the Hugging Face `transformers` INT4 format as described [above](./langchain_api.html#using-hugging-face-transformers-int4-format). 
  > * You may choose the corresponding API developed for specific native models to load the converted model. 
 
@@ -46,5 +46,5 @@ output = doc_chain.run(...)
  doc_chain = load_qa_chain(ipex_llm, ...) doc_chain.run(...) 
  ``` 
  
- > **Tip:** 
- > See the examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain/native_int4). 
+> [!TIP]
+> See the examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain/native_int4). 
