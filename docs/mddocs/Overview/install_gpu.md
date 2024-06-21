@@ -169,13 +169,13 @@ IPEX-LLM GPU support on Linux has been verified on:
 
    - Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend installing the latest version of intel-i915-dkms using apt.
 
-      > **Tip**
+      > **Tip**:
       >
       > Please refer to our [driver installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
       >
       > See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
 
-      > **Note**
+      > **Note**:
       >
       > For Intel Core™ Ultra integrated GPU, please make sure level_zero version >= 1.3.28717. The level_zero version can be checked with ``sycl-ls``, and verison will be tagged be ``[ext_oneapi_level_zero:gpu]``.         
       > ```
@@ -195,7 +195,7 @@ IPEX-LLM GPU support on Linux has been verified on:
       > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-opencl-icd-dbgsym_24.09.28717.12_amd64.ddeb
       > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-opencl-icd_24.09.28717.12_amd64.deb
       > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/libigdgmm12_22.3.17_amd64.deb
-      sudo dpkg -i *.deb
+      > sudo dpkg -i *.deb
       > ```
 
    - Step 2: Download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) with version 2024.0. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
@@ -238,7 +238,7 @@ IPEX-LLM GPU support on Linux has been verified on:
             intel-oneapi-tcm-1.0=1.0.0-435
          ```
 
-         > **Note**
+         > **Note**:
          >
          > You can uninstall the package by running the following command:
          >
@@ -257,7 +257,7 @@ IPEX-LLM GPU support on Linux has been verified on:
          pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 --user
          ```
 
-         > **Note**
+         > **Note**:
          >
          > The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is properly set.
 
@@ -267,12 +267,12 @@ IPEX-LLM GPU support on Linux has been verified on:
          conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
          ```
 
-         > **Note**
+         > **Note**:
          >
          > You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
          > You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
 
-         > **Note**
+         > **Note**:
          >
          > You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
          > You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
@@ -292,7 +292,7 @@ IPEX-LLM GPU support on Linux has been verified on:
       wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/20f4e6a1-6b0b-4752-b8c1-e5eacba10e01/l_BaseKit_p_2024.0.0.49564_offline.sh
       sudo sh ./l_BaseKit_p_2024.0.0.49564_offline.sh
       ```
-      > **Note**
+      > **Note**:
       >
       > You can also modify the installation or uninstall the package by running the following commands:
       >
@@ -309,7 +309,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 
    - Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
 
-      > **Tip**
+      > **Tip**:
       >
       >   Please refer to our [driver installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
       >
@@ -344,7 +344,7 @@ IPEX-LLM GPU support on Linux has been verified on:
             intel-oneapi-dnnl-devel=2023.2.0-49516 intel-oneapi-dnnl=2023.2.0-49516
          ```
 
-         > **Note**
+         > **Note**:
          >
          > You can uninstall the package by running the following command:
          >
@@ -363,7 +363,7 @@ IPEX-LLM GPU support on Linux has been verified on:
          pip install dpcpp-cpp-rt==2023.2.0 mkl-dpcpp==2023.2.0 onednn-cpu-dpcpp-gpu-dpcpp==2023.2.0 --user
          ```
 
-         > **Note**
+         > **Note**:
          >
          > The oneAPI packages are visible in ``pip list`` only if ``PYTHONUSERBASE`` is properly set.
 
@@ -373,12 +373,12 @@ IPEX-LLM GPU support on Linux has been verified on:
          conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/intel/oneapi/lib -n llm
          ```
 
-         > **Note**
+         > **Note**:
          >
          >   You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
          >   You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
 
-         > **Note**
+         > **Note**:
          >   
          >   You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
          >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).  
@@ -398,7 +398,7 @@ IPEX-LLM GPU support on Linux has been verified on:
       wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397_offline.sh
       sudo sh ./l_BaseKit_p_2023.2.0.49397_offline.sh
       ```
-      > **Note**
+      > **Note**:
       >
       > You can also modify the installation or uninstall the package by running the following commands:
       >
@@ -434,7 +434,7 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
       pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
       ```
 
-      > **Note**
+      > **Note**:
       >
       > The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
       >
@@ -451,7 +451,7 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
       pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
       ```
 
-      > **Note**
+      > **Note**:
       >
       > The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
       >
