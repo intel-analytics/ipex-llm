@@ -26,8 +26,7 @@ docker pull intelanalytics/ipex-llm-inference-cpp-xpu:latest
 
 Choose one of the following methods to start the container:
 
-<details>
-<Summary>For <strong>Linux</strong>:</summary>
+- For **Linux users**:
 
   To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. Select the device you are running(device type:(Max, Flex, Arc, iGPU)). And change the `/path/to/models` to mount the models. `bench_model` is used to benchmark quickly. If want to benchmark, make sure it on the `/path/to/models`
 
@@ -47,10 +46,8 @@ Choose one of the following methods to start the container:
                 --shm-size="16g" \
                 $DOCKER_IMAGE
   ```
-</details>
 
-<details>
-<summary>For <strong>Windows</strong>:</summary>
+- For **Windows users**:
 
   To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. And change the `/path/to/models` to mount the models. Then add `--privileged` and map the `/usr/lib/wsl` to the docker.
 
@@ -72,9 +69,6 @@ Choose one of the following methods to start the container:
                 --shm-size="16g" \
                 $DOCKER_IMAGE
   ```
-</details>
-
----
 
 After the container is booted, you could get into the container through `docker exec`.
 

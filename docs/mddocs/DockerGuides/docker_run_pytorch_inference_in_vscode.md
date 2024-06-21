@@ -51,8 +51,7 @@ docker pull intelanalytics/ipex-llm-xpu:latest
 
 Start ipex-llm-xpu Docker Container. Choose one of the following commands to start the container:
 
-<details>
-<summary>For <strong>Linux</strong>:</summary>
+- For **Linux users**:
 
   ```bash
 
@@ -69,10 +68,8 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
             -v $MODEL_PATH:/llm/models \
             $DOCKER_IMAGE
   ```
-</details>
 
-<details>
-<summary>For <strong>Windows WSL</strong>:</summary>
+- For **Windows WSL users**:
 
   ```bash
   #/bin/bash
@@ -91,9 +88,7 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
                 -v /usr/lib/wsl:/usr/lib/wsl \ 
                 $DOCKER_IMAGE
   ```
-</details>
 
----
 
 ## Run/Develop Pytorch Examples
 
@@ -108,10 +103,11 @@ Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/exa
 In this folder, we provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs.
 
 For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can navigate to llama2 directory, excute the following command to run example:
-  ```bash
-  cd <model_dir>
-  python ./generate.py --repo-id-or-model-path /llm/models/Llama-2-7b-chat-hf --prompt PROMPT --n-predict N_PREDICT
-  ```
+
+```bash
+cd <model_dir>
+python ./generate.py --repo-id-or-model-path /llm/models/Llama-2-7b-chat-hf --prompt PROMPT --n-predict N_PREDICT
+```
 
 
 Arguments info:

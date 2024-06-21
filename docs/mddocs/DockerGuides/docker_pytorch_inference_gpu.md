@@ -18,8 +18,7 @@ docker pull intelanalytics/ipex-llm-xpu:latest
 
 Start ipex-llm-xpu Docker Container. Choose one of the following commands to start the container:
 
-<details>
-<summary>For <strong>Linux</strong>:</summary>
+- For **Linux users**:
 
   ```bash
   export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
@@ -35,10 +34,8 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
             -v $MODEL_PATH:/llm/models \
             $DOCKER_IMAGE
   ```
-</details>
 
-<details>
-<summary>For <strong>Windows WSL</strong>:</summary>
+- For **Windows WSL users**:
 
   ```bash
   #/bin/bash
@@ -57,14 +54,12 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
                 -v /usr/lib/wsl:/usr/lib/wsl \ 
                 $DOCKER_IMAGE
   ```
-</details>
-
----
 
 Access the container:
 ```
 docker exec -it $CONTAINER_NAME bash
 ```
+
 To verify the device is successfully mapped into the container, run `sycl-ls` to check the result. In a machine with Arc A770, the sampled output is:
 
 ```bash
@@ -107,7 +102,6 @@ source ipex-llm-init --gpu --device <value>
 python run.py
 ```
 
-
 **Result Interpretation**
 
 After the benchmarking is completed, you can obtain a CSV result file under the current folder. You can mainly look at the results of columns `1st token avg latency (ms)` and `2+ avg latency (ms/token)` for the benchmark results. You can also check whether the column `actual input/output tokens` is consistent with the column `input/output tokens` and whether the parameters you specified in `config.yaml` have been successfully applied in the benchmarking.
@@ -135,10 +129,11 @@ Here is a demostration:
 We provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs
 
 For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can navigate to /examples/llama2 directory, excute the following command to run example:
-  ```bash
-  cd /examples/<model_dir>
-  python ./generate.py --repo-id-or-model-path /llm/models/Llama-2-7b-chat-hf --prompt PROMPT --n-predict N_PREDICT
-  ```
+
+```bash
+cd /examples/<model_dir>
+python ./generate.py --repo-id-or-model-path /llm/models/Llama-2-7b-chat-hf --prompt PROMPT --n-predict N_PREDICT
+```
 
 
 Arguments info:
