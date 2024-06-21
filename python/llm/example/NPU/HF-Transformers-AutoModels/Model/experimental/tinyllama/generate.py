@@ -29,7 +29,7 @@ if __name__ == '__main__':
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="Once upon a time, there is a little girl named Lily who lives in a small village.",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=32,
+    parser.add_argument('--n-predict', type=int, default=512,
                         help='Max tokens to predict')
 
     args = parser.parse_args()
@@ -40,19 +40,24 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
                                                  npu_backend="openvino")
     
+    from benchmark_util import BenchmarkWrapper
+    
+    model = BenchmarkWrapper(model, do_print=True)
+    
     print(model)
 
-    with torch.inference_mode():
-        input_ids = tokenizer.encode(args.prompt, return_tensors="pt")
-        print("finish to load")
-        print('input length:', len(input_ids[0]))
-        st = time.time()
-        output = model.generate(input_ids, do_sample=False, max_new_tokens=args.n_predict)
-        end = time.time()
-        print(f'Inference time: {end-st} s')
-        output_str = tokenizer.decode(output[0], skip_special_tokens=False)
-        print('-'*20, 'Output', '-'*20)
-        print(output_str)
+    for i in range(3):
+        with torch.inference_mode():
+            input_ids = tokenizer.encode(args.prompt, return_tensors="pt")
+            print("finish to load")
+            print('input length:', len(input_ids[0]))
+            st = time.time()
+            output = model.generate(input_ids, do_sample=False, max_new_tokens=args.n_predict)
+            end = time.time()
+            print(f'Inference time: {end-st} s')
+            output_str = tokenizer.decode(output[0], skip_special_tokens=False)
+            print('-'*20, 'Output', '-'*20)
+            print(output_str)
 
     print('-'*80)
     print('done')
