@@ -60,13 +60,13 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
   export MODEL_PATH=/llm/models[change to your model path]
 
   docker run -itd \
-            --net=host \
-            --device=/dev/dri \
-            --memory="32G" \
-            --name=$CONTAINER_NAME \
-            --shm-size="16g" \
-            -v $MODEL_PATH:/llm/models \
-            $DOCKER_IMAGE
+             --net=host \
+             --device=/dev/dri \
+             --memory="32G" \
+             --name=$CONTAINER_NAME \
+             --shm-size="16g" \
+             -v $MODEL_PATH:/llm/models \
+             $DOCKER_IMAGE
   ```
 
 - For **Windows WSL users**:
@@ -78,15 +78,15 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
   export MODEL_PATH=/llm/models[change to your model path]
 
   sudo docker run -itd \
-                --net=host \
-                --privileged \
-                --device /dev/dri \
-                --memory="32G" \
-                --name=$CONTAINER_NAME \
-                --shm-size="16g" \
-                -v $MODEL_PATH:/llm/llm-models \
-                -v /usr/lib/wsl:/usr/lib/wsl \ 
-                $DOCKER_IMAGE
+                  --net=host \
+                  --privileged \
+                  --device /dev/dri \
+                  --memory="32G" \
+                  --name=$CONTAINER_NAME \
+                  --shm-size="16g" \
+                  -v $MODEL_PATH:/llm/llm-models \
+                  -v /usr/lib/wsl:/usr/lib/wsl \ 
+                  $DOCKER_IMAGE
   ```
 
 

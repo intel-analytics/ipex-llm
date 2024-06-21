@@ -139,15 +139,12 @@ You can now open a browser and access the RAGflow web portal. With the default s
 
 If this is your first time using RAGFlow, you will need to register. After registering, log in with your new account to access the portal.
 
-<div style="display: flex; gap: 5px;">
-  <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login.png" target="_blank" style="flex: 1;">
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login.png" style="width: 100%;" />
-  </a>
-  <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login2.png" target="_blank" style="flex: 1;">
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login2.png" style="width: 100%;" />
-  </a>
-</div>
-
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login.png"><img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login.png"/></a></td>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login2.png"><img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-login2.png"/></a></td>
+</tr>
+</table>
 
 #### Configure `Ollama` service URL
 
@@ -180,26 +177,21 @@ Go to **Knowledge Base** by clicking on **Knowledge Base** in the top bar. Click
 
 After entering a name, you will be directed to edit the knowledge base. Click on **Dataset** on the left, then click **+ Add file -> Local files**. Upload your file in the pop-up window and click **OK**.
 
-<div style="display: flex; gap: 5px;">
-  <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase2.png" target="_blank" style="flex: 1;">
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase2.png" style="width: 100%;" />
-  </a>
-  <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase3.png" target="_blank" style="flex: 1;">
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase3.png" style="width: 100%;" />
-  </a>
-</div>
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase2.png"><img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase2.png"/></a></td>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase3.png"><img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase3.png"/></a></td>
+</tr>
+</table>
 
 After the upload is successful, you will see a new record in the dataset. The _**Parsing Status**_ column will show `UNSTARTED`. Click the green start button in the _**Action**_ column to begin file parsing. Once parsing is finished, the _**Parsing Status**_ column will change to **SUCCESS**.
 
-<div style="display: flex; gap: 5px;">
-  <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase4.png" target="_blank" style="flex: 1;">
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase4.png" style="width: 100%;" />
-  </a>
-  <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase5.png" target="_blank" style="flex: 1;">
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase5.png" style="width: 100%;" />
-  </a>
-</div>
-
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase4.pngg"><img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase4.png"/></a></td>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase5.png"><img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-knowledgebase5.png"/></a></td>
+</tr>
+</table>
 
 Next, go to **Configuration** on the left menu and click **Save** at the bottom to save the changes.
 

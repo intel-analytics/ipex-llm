@@ -66,7 +66,8 @@ You could choose to use [PyTorch API](./optimize_model.md) or [`transformers`-st
   model = model.to('xpu') # Important after obtaining the optimized model
   ```
 
-  > [!TIP]
+  > **Tip**:
+  >
   > When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the `from_pretrained` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
   >
   > See the [API doc](https://ipex-llm.readthedocs.io/en/latest/doc/PythonAPI/LLM/transformers.html) to find more information.
@@ -81,7 +82,8 @@ You could choose to use [PyTorch API](./optimize_model.md) or [`transformers`-st
 
   model = model.to('xpu') # Important after obtaining the optimized model
   ```
-  > [!TIP]
+
+  > **Tip**:
   >
   > When running saved optimized models on Intel iGPUs for Windows users, we also recommend setting `cpu_embedding=True` in the `load_low_bit` function.
 

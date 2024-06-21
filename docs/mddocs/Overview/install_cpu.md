@@ -55,13 +55,14 @@ First we recommend using [Conda](https://conda-forge.org/download/) to create a 
   pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
   ```
 
-- For 
-```cmd
-conda create -n llm python=3.11
-conda activate llm
+- For **Windows users**:
 
-pip install --pre --upgrade ipex-llm[all]
-```
+  ```cmd
+  conda create -n llm python=3.11
+  conda activate llm
+
+  pip install --pre --upgrade ipex-llm[all]
+  ```
 
 Then for running a LLM model with IPEX-LLM optimizations (taking an `example.py` an example):
 

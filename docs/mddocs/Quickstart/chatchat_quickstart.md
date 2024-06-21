@@ -20,7 +20,7 @@
 
 ## Langchain-Chatchat Architecture
 
-See the Langchain-Chatchat architecture below ([source](https://github.com/chatchat-space/Langchain-Chatchat/blob/master/img/langchain%2Bchatglm.png)).
+See the Langchain-Chatchat architecture below ([source](https://github.com/chatchat-space/Langchain-Chatchat/blob/master/docs/img/langchain%2Bchatglm.png)).
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-arch.png" height="50%" />
 

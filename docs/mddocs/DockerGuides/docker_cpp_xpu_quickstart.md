@@ -35,19 +35,19 @@ Choose one of the following methods to start the container:
   export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
   export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
   sudo docker run -itd \
-                --net=host \
-                --device=/dev/dri \
-                -v /path/to/models:/models \
-                -e no_proxy=localhost,127.0.0.1 \
-                --memory="32G" \
-                --name=$CONTAINER_NAME \
-                -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
-                -e DEVICE=Arc \
-                --shm-size="16g" \
-                $DOCKER_IMAGE
+                  --net=host \
+                  --device=/dev/dri \
+                  -v /path/to/models:/models \
+                  -e no_proxy=localhost,127.0.0.1 \
+                  --memory="32G" \
+                  --name=$CONTAINER_NAME \
+                  -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
+                  -e DEVICE=Arc \
+                  --shm-size="16g" \
+                  $DOCKER_IMAGE
   ```
 
-- For **Windows users**:
+- For **Windows WSL users**:
 
   To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. And change the `/path/to/models` to mount the models. Then add `--privileged` and map the `/usr/lib/wsl` to the docker.
 
@@ -56,18 +56,18 @@ Choose one of the following methods to start the container:
   export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
   export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
   sudo docker run -itd \
-                --net=host \
-                --device=/dev/dri \
-                --privileged \
-                -v /path/to/models:/models \
-                -v /usr/lib/wsl:/usr/lib/wsl \
-                -e no_proxy=localhost,127.0.0.1 \
-                --memory="32G" \
-                --name=$CONTAINER_NAME \
-                -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
-                -e DEVICE=Arc \
-                --shm-size="16g" \
-                $DOCKER_IMAGE
+                  --net=host \
+                  --device=/dev/dri \
+                  --privileged \
+                  -v /path/to/models:/models \
+                  -v /usr/lib/wsl:/usr/lib/wsl \
+                  -e no_proxy=localhost,127.0.0.1 \
+                  --memory="32G" \
+                  --name=$CONTAINER_NAME \
+                  -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
+                  -e DEVICE=Arc \
+                  --shm-size="16g" \
+                  $DOCKER_IMAGE
   ```
 
 After the container is booted, you could get into the container through `docker exec`.
