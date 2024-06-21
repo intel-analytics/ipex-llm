@@ -170,9 +170,10 @@ def load_low_bit(model, model_path):
         invalidInputError(isinstance(model, torch.nn.Module),
                           "model should be an instance of `torch.nn.Module`, "
                           f"but got {type(model)} at last.")
-        invalidInputError(model.device.type in ('cpu', 'meta'),
-                          "Expect model on device `cpu` or `meta`, "
-                          f"but got device type {model.device.type}")
+        if hasattr(model, 'device'):
+            invalidInputError(model.device.type in ('cpu', 'meta'),
+                              "Expect model on device `cpu` or `meta`, "
+                              f"but got device type {model.device.type}")
         qtype = ggml_tensor_qtype[low_bit]
         model = ggml_convert_low_bit(model, qtype=qtype, convert_shape_only=True)
 
