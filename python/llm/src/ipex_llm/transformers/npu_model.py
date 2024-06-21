@@ -109,8 +109,8 @@ class _BaseAutoModelClass:
                     'fp32': torch.float,
                 }
             invalidInputError(low_bit in qtype_map.keys(),
-                             f"unsupported low_bit: {low_bit}, "
-                             f"only {list(qtype_map.keys())} are supported")
+                              f"unsupported low_bit: {low_bit}, "
+                              f"only {list(qtype_map.keys())} are supported")
             qtype = qtype_map[low_bit]
 
             logger.info(f"Converting model, it may takes up to several minutes ...")
