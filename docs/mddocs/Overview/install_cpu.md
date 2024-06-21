@@ -56,12 +56,13 @@ First we recommend using [Conda](https://conda-forge.org/download/) to create a 
   ```
 
 - For **Windows users**:
-```cmd
-conda create -n llm python=3.11
-conda activate llm
 
-pip install --pre --upgrade ipex-llm[all]
-```
+  ```cmd
+  conda create -n llm python=3.11
+  conda activate llm
+
+  pip install --pre --upgrade ipex-llm[all]
+  ```
 
 Then for running a LLM model with IPEX-LLM optimizations (taking an `example.py` an example):
 
