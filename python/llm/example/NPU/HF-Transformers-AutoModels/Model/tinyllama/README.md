@@ -51,7 +51,7 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Output --------------------
-<s> Once upon a time, there is a little girl named Lily who lives in a small village. She loves to play with her friends and spend time with her family.<unk><unk><unk><unk><unk><unk><unk><unk><unk><unk><unk><unk><unk><unk><unk><unk><unk>
+<s> Once upon a time, there is a little girl named Lily who lives in a small village. She loves to play with her friends and spend time with her family. One day, Lily's father dies, and her mother is left to raise
 --------------------------------------------------------------------------------
 done
 ```
