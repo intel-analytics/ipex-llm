@@ -4,15 +4,17 @@
 
 Install IPEX-LLM for CPU supports using pip through:
 
-### Installation on Linux
-```bash
-pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-```
+- For **Linux users**:
 
-### Installation on Windows
-```cmd
-pip install --pre --upgrade ipex-llm[all]
-```
+  ```bash
+  pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+  ```
+
+- For **Windows users**:
+
+  ```cmd
+  pip install --pre --upgrade ipex-llm[all]
+  ```
 
 Please refer to [Environment Setup](#environment-setup) for more information.
 
