@@ -96,7 +96,9 @@ Press F1 to bring up the Command Palette and type in `Dev Containers: Attach t
 
 Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model/`.
 
-![Demo gif](https://llm-assets.readthedocs.io/en/latest/_images/run_example_in_vscode.gif)
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/run_example_in_vscode.gif" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/run_example_in_vscode.gif" width=100%; />
+</a>
 
 In this folder, we provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs.
 
