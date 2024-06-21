@@ -143,7 +143,7 @@ async def completion_stream_generator(local_model, delta_text_queue, request_id)
             if remain == 0:
                 choice_data = CompletionResponseStreamChoice(
                                 index=index,
-                                text=None,
+                                text="",
                                 logprobs=None,
                                 finish_reason="length")
                 chunk = CompletionStreamResponse(
