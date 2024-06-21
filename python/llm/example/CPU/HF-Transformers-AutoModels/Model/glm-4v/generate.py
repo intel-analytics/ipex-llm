@@ -40,7 +40,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
-    device = "cpu"
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -57,12 +56,14 @@ if __name__ == '__main__':
        image = Image.open(image_path)
     else:
        image = Image.open(requests.get(image_path, stream=True).raw)
+
+    # here the prompt tuning refers to https://huggingface.co/THUDM/glm-4v-9b/blob/main/README.md
     inputs = tokenizer.apply_chat_template([{"role": "user", "image": image, "content": query}],
                                            add_generation_prompt=True,
                                            tokenize=True,
                                            return_tensors="pt",
                                            return_dict=True)  # chat mode
-    inputs = inputs.to(device)
+    inputs = inputs.to('cpu')
     
     # Generate predicted tokens
     with torch.inference_mode():
