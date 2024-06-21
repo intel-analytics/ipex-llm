@@ -34,7 +34,7 @@ You could choose to use [PyTorch API](./optimize_model.md) or [`transformers`-st
   >
   > When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the `optimize_model` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
   >
-  > See the [API doc](https://ipex-llm.readthedocs.io/en/latest/doc/PythonAPI/LLM/optimize.html) for ``optimize_model`` to find more information.
+  > See the [API doc](../../PythonAPI/optimize.md) for ``optimize_model`` to find more information.
 
   Especially, if you have saved the optimized model following setps [here](./optimize_model.md#save), the loading process on Intel GPUs maybe as follows:
 
@@ -70,7 +70,7 @@ You could choose to use [PyTorch API](./optimize_model.md) or [`transformers`-st
   >
   > When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the `from_pretrained` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
   >
-  > See the [API doc](https://ipex-llm.readthedocs.io/en/latest/doc/PythonAPI/LLM/transformers.html) to find more information.
+  > See the [API doc](../../PythonAPI/transformers.md) to find more information.
 
   Especially, if you have saved the optimized model following setps [here](./hugging_face_format.md#save--load), the loading process on Intel GPUs maybe as follows:
 
