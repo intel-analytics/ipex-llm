@@ -65,8 +65,9 @@ Load a low bit optimized model (including INT4, INT5 and INT8) from a saved ckpt
 
 - **Parameters**:
   
-        - **pretrained_model_name_or_path**: `str` value, Path to load the optimized model ckpt.
-        - **optimize_model**: `boolean` value, Whether to further optimize the low_bit llm model.
-                               Default to be `True`.
+  - **pretrained_model_name_or_path**: `str` value, Path to load the optimized model ckpt.
+
+  - **optimize_model**: `boolean` value, Whether to further optimize the low_bit llm model.
+                          Default to be `True`.
 
 - **Returns**：A model instance
