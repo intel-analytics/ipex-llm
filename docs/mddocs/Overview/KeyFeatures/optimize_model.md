@@ -61,6 +61,6 @@ model = load_low_bit(model, saved_dir) # Load the optimized model
 
 
 > [!NOTE]
-> - Please refer to the [API documentation](https://ipex-llm.readthedocs.io/en/latest/doc/PythonAPI/LLM/optimize.html) for more details.
+> - Please refer to the [API documentation](../../PythonAPI/optimize.md) for more details.
 > - We also provide detailed examples on how to run PyTorch models (e.g., Openai Whisper, LLaMA2, ChatGLM2, Falcon, MPT, Baichuan2, etc.) using IPEX-LLM. See the complete CPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/PyTorch-Models) and GPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/PyTorch-Models)
 
