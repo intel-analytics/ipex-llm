@@ -115,4 +115,22 @@ wrk -t8 -c8 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --tim
 
 #### Offline benchmark through benchmark_vllm_throughput.py
 
-Please refer to this [section](../Quickstart/vLLM_quickstart.md#5performing-benchmark) on how to use `benchmark_vllm_throughput.py` for benchmarking.
+```bash
+cd /llm
+wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
+
+source ipex-llm-init -t
+export MODEL="YOUR_MODEL"
+
+python3 ./benchmark_vllm_throughput.py \
+    --backend vllm \
+    --dataset ./ShareGPT_V3_unfiltered_cleaned_split.json \
+    --model $MODEL \
+    --num-prompts 1000 \
+    --seed 42 \
+    --trust-remote-code \
+    --enforce-eager \
+    --dtype bfloat16 \
+    --device cpu \
+    --load-in-low-bit bf16
+```
