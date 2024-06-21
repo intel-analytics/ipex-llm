@@ -72,7 +72,9 @@ Run below commands to start the service in another terminal:
   PGPT_PROFILES=ollama make run
   ```
 
-  > **Note**: Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
+  > **Note**:
+  > 
+  > Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
 
 - For **Windows users**:
 
@@ -82,7 +84,9 @@ Run below commands to start the service in another terminal:
   make run
   ```
 
-  > **Note**: Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
+  > **Note**:
+  >
+  > Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
 
 Upon successful deployment, you will see logs in the terminal similar to the following:
 

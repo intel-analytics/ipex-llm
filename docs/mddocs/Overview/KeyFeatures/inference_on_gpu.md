@@ -30,7 +30,7 @@ You could choose to use [PyTorch API](./optimize_model.md) or [`transformers`-st
   model = model.to('xpu') # Important after obtaining the optimized model
   ```
 
-  > **Tip**"
+  > **Tip**:
   >
   > When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the `optimize_model` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
   >
