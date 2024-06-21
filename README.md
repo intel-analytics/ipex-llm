@@ -162,6 +162,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 ### Docker
 - [GPU Inference in C++](docs/mddocs/DockerGuides/docker_cpp_xpu_quickstart.md): running `llama.cpp`, `ollama`, `OpenWebUI`, etc., with `ipex-llm` on Intel GPU
 - [GPU Inference in Python](docs/mddocs/DockerGuides/docker_pytorch_inference_gpu.md) : running HuggingFace `transformers`, `LangChain`, `LlamaIndex`, `ModelScope`, etc. with `ipex-llm` on Intel GPU
+- [VSCode Guide on GPU](docs/readthedocs/source/doc/LLM/DockerGuides/docker_run_pytorch_inference_in_vscode.md): running and developing Python LLM applications using VSCode on Intel GPU
 - [vLLM on GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md): running `vLLM` serving with `ipex-llm` on Intel GPU 
 - [FastChat on GPU](docs/mddocs/DockerGuides/fastchat_docker_quickstart.md): running `FastChat` serving with `ipex-llm` on Intel GPU
 
@@ -219,6 +220,13 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [Tutorials](https://github.com/intel-analytics/ipex-llm-tutorial)
 
 
+## API Doc
+
+- [HuggingFace Transformers-style API (Auto Classes)](docs/mddocs/PythonAPI/transformers.md)
+- [API for arbitrary PyTorch Model](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/PythonAPI/optimize.md)
+
+## FAQ
+- [FAQ & Trouble Shooting](docs/mddocs/Overview/FAQ/faq.md)
 
 ## Verified Models
 Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM2/ChatGLM3, Baichuan/Baichuan2, Qwen/Qwen-1.5, InternLM* and more; see the list below.
