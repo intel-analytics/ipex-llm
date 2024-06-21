@@ -2520,7 +2520,7 @@ def llama_model_forward_4_41_internal(
             if not isinstance(next_decoder_cache, DynamicFp8Cache)
             else next_decoder_cache
         )
-        
+    
     if not return_dict:
         return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns]
                      if v is not None)
