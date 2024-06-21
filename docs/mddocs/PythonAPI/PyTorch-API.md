@@ -7,17 +7,31 @@ You can run any PyTorch model with `optimize_model` through only one-line code c
 
 A method to optimize any pytorch model.
     
-**Parameters:**
-- **model** – The original PyTorch model (nn.module) 
-- **low_bit** – str value, options are `'sym_int4'`, `'asym_int4'`, `'sym_int5'`, `'asym_int5'`, `'sym_int8'`, `'nf3'`, `'nf4'`, `'fp4'`, `'fp8'`, `'fp8_e4m3'`, `'fp8_e5m2'`, `'fp16'` or `'bf16'`, `'sym_int4'` means symmetric int 4, `'asym_int4'` means asymmetric int 4, `'nf4'` means 4-bit NormalFloat, etc. Relevant low bit optimizations will be applied to the model.
-- **optimize_llm** – Whether to further optimize llm model. Default to be `True`.
-- **modules_to_not_convert** – list of str value, modules (`nn.Module`) that are skipped when conducting model optimizations. Default to be `None`.
-- **cpu_embedding** – Whether to replace the Embedding layer, may need to set it to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
-- **lightweight_bmm** – Whether to replace the `torch.bmm` ops, may need to set it to `True` when running BigDL-LLM on GPU on Windows. Default to be `False`.
-  
-**Returns:** The optimized model.
+**Parameters**:
 
-**Example:**
+- **model**: The original PyTorch model (nn.module) 
+  
+- **low_bit**: str value, options are `'sym_int4'`, `'asym_int4'`, `'sym_int5'`, `'asym_int5'`, `'sym_int8'`, `'nf3'`, `'nf4'`, `'fp4'`, `'fp8'`, `'fp8_e4m3'`, `'fp8_e5m2'`, `'fp16'` or `'bf16'`, `'sym_int4'` means symmetric int 4, `'asym_int4'` means asymmetric int 4, `'nf4'` means 4-bit NormalFloat, etc. Relevant low bit optimizations will be applied to the model.
+  
+- **optimize_llm**: Whether to further optimize llm model. 
+ 
+    Default to be `True`.
+  
+- **modules_to_not_convert**: list of str value, modules (`nn.Module`) that are skipped when conducting model optimizations. 
+  
+    Default to be `None`.
+  
+- **cpu_embedding**: Whether to replace the Embedding layer, may need to set it to `True` when running BigDL-LLM on GPU on Windows. 
+  
+    Default to be `False`.
+  
+- **lightweight_bmm**: Whether to replace the `torch.bmm` ops, may need to set it to `True` when running BigDL-LLM on GPU on Windows. 
+  
+    Default to be `False`.
+  
+**Returns**: The optimized model.
+
+**Example**:
 ```python
 # Take OpenAI Whisper model as an example
 from ipex_llm import optimize_model
@@ -37,14 +51,16 @@ To avoid high resource consumption during the loading processes of the original 
 
 Load the optimized pytorch model.
 
-**Parameters:**
-**model** – The PyTorch model instance.
-**model_path** – The path of saved optimized model.
+**Parameters**:
+
+- **model**: The PyTorch model instance.
+  
+- **model_path**: The path of saved optimized model.
 
 
-**Returns:** The optimized model.
+**Returns**: The optimized model.
 
-**Example:**
+**Example**:
 ```python
 # Example 1:
 # Take ChatGLM2-6B model as an example
