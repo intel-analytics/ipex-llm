@@ -173,14 +173,13 @@ IPEX-LLM GPU support on Linux has been verified on:
 
       > **Note**:
       >
-      >   For Intel Core™ Ultra integrated GPU, please make sure level_zero version >= 1.3.28717. The level_zero version can be checked with ``sycl-ls``, and verison will be tagged be ``[ext_oneapi_level_zero:gpu]``.
-         
-      ```
-      [opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device OpenCL 1.2  [2023.16.12.0.12_195853.xmain-hotfix]
-      [opencl:cpu:1] Intel(R) OpenCL, Intel(R) Core(TM) Ultra 5 125H OpenCL 3.0 (Build 0) [2023.16.12.0.12_195853.xmain-hotfix]
-      [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) Graphics OpenCL 3.0 NEO  [24.09.28717.12]
-      [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) Graphics 1.3 [1.3.28717]
-      ```
+      >   For Intel Core™ Ultra integrated GPU, please make sure level_zero version >= 1.3.28717. The level_zero version can be checked with ``sycl-ls``, and verison will be tagged be ``[ext_oneapi_level_zero:gpu]``.         
+      > ```
+      > [opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device OpenCL 1.2  [2023.16.12.0.12_195853.xmain-hotfix]
+      > [opencl:cpu:1] Intel(R) OpenCL, Intel(R) Core(TM) Ultra 5 125H OpenCL 3.0 (Build 0) [2023.16.12.0.12_195853.xmain-hotfix]
+      > [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) Graphics OpenCL 3.0 NEO  [24.09.28717.12]
+      > [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) Graphics 1.3 [1.3.28717]
+      > ```
 
       If you have level_zero version < 1.3.28717, you could update as follows:
 
@@ -237,10 +236,9 @@ IPEX-LLM GPU support on Linux has been verified on:
          > **Note**:
          >
          >   You can uninstall the package by running the following command:
-
-         ```bash
-         sudo apt autoremove intel-oneapi-common-vars
-         ```
+         > ```bash
+         > sudo apt autoremove intel-oneapi-common-vars
+         > ```
       </details>
 
       <details>
@@ -269,12 +267,11 @@ IPEX-LLM GPU support on Linux has been verified on:
          > **Note**:
          >
          >   You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
-         >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
-            
-         ```bash
-         rm -r ~/intel/oneapi
-         conda env config vars unset LD_LIBRARY_PATH -n llm
-         ```
+         >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).  
+         > ```bash
+         > rm -r ~/intel/oneapi
+         > conda env config vars unset LD_LIBRARY_PATH -n llm
+         > ```
       </details>
 
       <details>
@@ -289,11 +286,10 @@ IPEX-LLM GPU support on Linux has been verified on:
       > **Note**:
       >
       > You can also modify the installation or uninstall the package by running the following commands:
-
-      ```bash
-      cd /opt/intel/oneapi/installer
-      sudo ./installer
-      ```
+      > ```bash
+      > cd /opt/intel/oneapi/installer
+      > sudo ./installer
+      > ```
       </details>
 - For **PyTorch 2.0** (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
 
@@ -339,10 +335,9 @@ IPEX-LLM GPU support on Linux has been verified on:
          > **Note**:
          >
          >   You can uninstall the package by running the following command:
-
-         ```bash
-         sudo apt autoremove intel-oneapi-common-vars
-         ```
+         > ```bash
+         > sudo apt autoremove intel-oneapi-common-vars
+         > ```
       </details>
 
       <details>
@@ -372,12 +367,11 @@ IPEX-LLM GPU support on Linux has been verified on:
          > **Note**:
          >   
          >   You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
-         >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).
-            
-         ```bash
-         rm -r ~/intel/oneapi
-         conda env config vars unset LD_LIBRARY_PATH -n llm
-         ```
+         >   You can uninstall the oneAPI package by simply deleting the package folder, and unsetting the configuration of your working conda environment (e.g., with name ``llm``).  
+         > ```bash
+         > rm -r ~/intel/oneapi
+         > conda env config vars unset LD_LIBRARY_PATH -n llm
+         > ```
       </details>
 
       <details>
@@ -392,11 +386,10 @@ IPEX-LLM GPU support on Linux has been verified on:
       > **Note**:
       >
       >   You can also modify the installation or uninstall the package by running the following commands:
-
-      ```bash
-      cd /opt/intel/oneapi/installer
-      sudo ./installer
-      ```
+      > ```bash
+      > cd /opt/intel/oneapi/installer
+      > sudo ./installer
+      > ```
       </details>
 
 ### Install IPEX-LLM
@@ -428,10 +421,9 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
       > **Note**:
       >
       >   The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
-
-      ```bash
-      pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-      ```
+      > ```bash
+      > pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/> xpu/us/
+      > ```
 
    - For **CN**
 
@@ -445,10 +437,9 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
       > **Note**:
       >
       >   The ``xpu`` option will install IPEX-LLM with PyTorch 2.1 by default, which is equivalent to
-
-      ```bash
-      pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-      ```
+      > ```bash
+      > pip install --pre --upgrade ipex-llm[xpu_2.1] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/> xpu/cn/
+      > ```
 
 - For **PyTorch 2.0** (deprecated for versions ``ipex-llm >= 2.1.0b20240511``)
 
