@@ -1,13 +1,13 @@
-# IPEX-LLM Key Features 
+# IPEX-LLM Key Features
 
-You may run the LLMs using `ipex-llm` through one of the following APIs: 
+You may run the LLMs using `ipex-llm` through one of the following APIs:
 
-* [PyTorch API](./optimize_model.html) 
-* [`transformers`-style API](./transformers_style_api.html) 
-  * [Hugging Face `transformers` Format](./hugging_face_format.html) 
-  * [Native Format](./native_format.html) 
-* [LangChain API](./langchain_api.html) 
-* [GPU Supports](./gpu_supports.html) 
-  * [Inference on GPU](./inference_on_gpu.html) 
-  * [Finetune (QLoRA)](./finetune.html) 
-  * [Multi GPUs selection](./multi_gpus_selection.html)
+* [PyTorch API](./optimize_model.md)
+* [`transformers`-style API](./transformers_style_api.md)
+  * [Hugging Face `transformers` Format](./hugging_face_format.md)
+  * [Native Format](./native_format.md)
+* [LangChain API](./langchain_api.md)
+* [GPU Supports](./gpu_supports.md)
+  * [Inference on GPU](./inference_on_gpu.md)
+  * [Finetune (QLoRA)](./finetune.md)
+  * [Multi GPUs selection](./multi_gpus_selection.md)
