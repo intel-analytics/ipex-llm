@@ -219,6 +219,13 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [Tutorials](https://github.com/intel-analytics/ipex-llm-tutorial)
 
 
+## API Doc
+
+- [HuggingFace Transformers-style API (Auto Classes)](docs/mddocs/PythonAPI/transformers.md)
+- [API for arbitrary PyTorch Model](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/PythonAPI/optimize.md)
+
+## FAQ
+- [FAQ & Trouble Shooting](docs/mddocs/FAQ/FAQ.md)
 
 ## Verified Models
 Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM2/ChatGLM3, Baichuan/Baichuan2, Qwen/Qwen-1.5, InternLM* and more; see the list below.
