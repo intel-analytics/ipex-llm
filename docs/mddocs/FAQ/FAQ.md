@@ -9,29 +9,38 @@ Please also refer to [here](https://github.com/intel-analytics/ipex-llm?tab=read
 
 ## How to Resolve Errors
 
-### Fail to install `ipex-llm` through `pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/` or `pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/`
+### Fail to install using `pip`
 
-You could try to install IPEX-LLM dependencies for Intel XPU from source archives:
-- For Windows system, refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#install-ipex-llm-from-wheel) for the steps.
-- For Linux system, refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id3) for the steps.
+If you encounter error when installing `ipex-llm` for Intel XPU using either
+```python
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+```
+or 
+```python
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+```
+
+You can try install from source archives:
+- For Windows system, refer to [here](docs/mddocs/Overview/install_gpu.md#install-ipex-llm-from-wheel) for the steps.
+- For Linux system, refer to [here](docs/mddocs/Overview/install_gpu.md#id3) for the steps.
 
 ### PyTorch is not linked with support for xpu devices
 
-1. Before running on Intel GPUs, please make sure you've prepared environment follwing [installation instruction](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html).
+1. Before running on Intel GPUs, please make sure you've prepared environment follwing [installation instruction](docs/mddocs/Overview/install_gpu.md).
 2. If you are using an older version of `ipex-llm` (specifically, older than 2.5.0b20240104), you need to manually add `import intel_extension_for_pytorch as ipex` at the beginning of your code.
 3. After optimizing the model with IPEX-LLM, you need to move model to GPU through `model = model.to('xpu')`.
-4. If you have mutil GPUs, you could refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/KeyFeatures/multi_gpus_selection.html) for details about GPU selection.
+4. If you have mutil GPUs, you could refer to [here](docs/mddocs/Overview/KeyFeatures/multi_gpus_selection.md) for details about GPU selection.
 5. If you do inference using the optimized model on Intel GPUs, you also need to set `to('xpu')` for input tensors.
 
 ### Import `intel_extension_for_pytorch` error on Windows GPU
 
-Please refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#error-loading-intel-extension-for-pytorch) for detailed guide. We list the possible missing requirements in environment which could lead to this error.
+Please refer to [here](docs/mddocs/Overview/install_gpu.md#error-loading-intel-extension-for-pytorch) for detailed guide. We list the possible missing requirements in environment which could lead to this error.
 
 ### XPU device count is zero
 
 It's recommended to reinstall driver:
-- For Windows system, refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#prerequisites) for the steps.
-- For Linux system, refer to [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html#id1) for the steps.
+- For Windows system, refer to [here](docs/mddocs/Overview/install_gpu.md#prerequisites) for the steps.
+- For Linux system, refer to [here](docs/mddocs/Overview/install_gpu.md#id1) for the steps.
 
 ### Error such as `The size of tensor a (33) must match the size of tensor b (17) at non-singleton dimension 2` duing attention forward function
 
