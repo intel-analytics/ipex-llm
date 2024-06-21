@@ -5,7 +5,7 @@
 You can apply IPEX-LLM optimizations on any Hugging Face Transformers models by using the standard AutoModel APIs.
 
 > [!NOTE]
-> Here we take `ipex_llm.transformers.AutoModelForCausalLM` as an example. The API documentation for the following class, including `ipex_llm.transformers.AutoModel` / `AutoModelForSpeechSeq2Seq` / `AutoModelForSeq2SeqLM` / `AutoModelForSequenceClassification` / `AutoModelForMaskedLM` / `AutoModelForQuestionAnswering` / `AutoModelForNextSentencePrediction` / `AutoModelForMultipleChoice` / `AutoModelForTokenClassification`, are the same.
+> Here we take `ipex_llm.transformers.AutoModelForCausalLM` as an example. The class method for the following class, including `ipex_llm.transformers.AutoModel` / `AutoModelForSpeechSeq2Seq` / `AutoModelForSeq2SeqLM` / `AutoModelForSequenceClassification` / `AutoModelForMaskedLM` / `AutoModelForQuestionAnswering` / `AutoModelForNextSentencePrediction` / `AutoModelForMultipleChoice` / `AutoModelForTokenClassification`, are the same.
 
 ### _`class`_ **`ipex_llm.transformers.AutoModelForCausalLM`**
 
@@ -35,7 +35,7 @@ Three new arguments are added to extend Hugging Face’s from_pretrained method 
 
   - **model_hub**: `str` value, options are `'huggingface'` and `'modelscope'`, specify the model hub. Default to be `'huggingface'`.
 
-  - **embedding_qtype**: `str` value, options are `'q2_k'`, `'q4_k'` now. Default to be None. Relevant low bit optimizations will be applied to `nn.Embedding` layer.
+  - **embedding_qtype**: `str` value, options are `'q2_k'`, `'q4_k'` now. Default to be `None`. Relevant low bit optimizations will be applied to `nn.Embedding` layer.
 
   - **mixed_precision**: `boolean` value, Whether to use mixed precision quantization. Default to be `False`. If set to `True`, we will use `sym_int8` for lm_head when `load_in_low_bit` is `sym_int4` or `asym_int4`.
 
