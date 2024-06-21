@@ -216,7 +216,6 @@ pip install -e .
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 # install transformers etc
-pip install accelerate==0.23.0
 # to avoid https://github.com/OpenAccess-AI-Collective/axolotl/issues/1544
 pip install datasets==2.15.0
 pip install transformers==4.37.0

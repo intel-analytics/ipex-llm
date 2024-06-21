@@ -381,7 +381,7 @@ jobs:
         shell: bash
         run: |
           python -m pip uninstall datasets -y
-          python -m pip install transformers==4.36.0 datasets peft==0.10.0 accelerate==0.23.0
+          python -m pip install transformers==4.36.0 datasets peft==0.10.0
           python -m pip install bitsandbytes scipy
           # Specific oneapi position on arc ut test machines
           if [[ "$RUNNER_OS" == "Linux" ]]; then

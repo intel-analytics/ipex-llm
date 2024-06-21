@@ -46,6 +46,7 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  trust_remote_code=True,
                                                  use_cache=True,
+                                                 torch_dtype=torch.float16,
                                                  pipeline_parallel_stages=args.gpu_num)
 
     # Load tokenizer

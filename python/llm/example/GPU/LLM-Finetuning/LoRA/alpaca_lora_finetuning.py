@@ -107,6 +107,8 @@ def train(
     gradient_checkpointing: bool = False,
     deepspeed: str = None,
     training_mode: str = "lora",
+    deepspeed_zero3: bool = False,
+    save_checkpoint: bool = True,
 ):
     invalidInputError(training_mode == "lora",
                       f"This example is for lora training mode, but got training_mode={training_mode}.")
@@ -136,6 +138,8 @@ def train(
             f"resume_from_checkpoint: {resume_from_checkpoint or False}\n"
             f"prompt template: {prompt_template_name}\n"
             f"training_mode: {training_mode}\n"
+            f"deepspeed_zero3: {deepspeed_zero3}\n"
+            f"save_checkpoint: {save_checkpoint}\n"
         )
     assert (
         base_model
@@ -169,13 +173,16 @@ def train(
             load_in_low_bit="bf16",
             optimize_model=False,
             torch_dtype=torch.bfloat16,
-            modules_to_not_convert=["lm_head"],
+             modules_to_not_convert=["lm_head"],
             trust_remote_code=True,
         )
 
-    print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
-    model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
-    print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
+    if deepspeed_zero3:
+        deepspeed = deepspeed if deepspeed is not None else "./deepspeed_zero3_config.json"
+    else:
+        print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
+        model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
+        print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
@@ -234,12 +241,12 @@ def train(
             logging_steps=1,
             optim="adamw_torch",
             evaluation_strategy="steps" if val_set_size > 0 else "no",
-            save_strategy="steps",
+            save_strategy="steps" if save_checkpoint else "no",
             eval_steps=100 if val_set_size > 0 else None,
             save_steps=100,
             output_dir=output_dir,
             save_total_limit=100,
-            load_best_model_at_end=True if val_set_size > 0 else False,
+            load_best_model_at_end=True if val_set_size > 0 and save_checkpoint else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
             report_to="wandb" if use_wandb else None,

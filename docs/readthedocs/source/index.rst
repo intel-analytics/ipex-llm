@@ -30,7 +30,7 @@
        <p>
          <ul>
             <li><em>
-               It runs on top of Intel Extension for PyTorch (<strong><code><span>IPEX</span></code></strong>), and is built on top of the excellent work of <strong><code><span>llama.cpp</span></code></strong>, <strong><code><span>transfromers</span></code></strong>, <strong><code><span>bitsandbytes</span></code></strong>, <strong><code><span>vLLM</span></code></strong>, <strong><code><span>qlora</span></code></strong>, <strong><code><span>AutoGPTQ</span></code></strong>, <strong><code><span>AutoAWQ</span></code></strong>, etc. 
+               It is built on top of the excellent work of <strong><code><span>llama.cpp</span></code></strong>, <strong><code><span>transfromers</span></code></strong>, <strong><code><span>bitsandbytes</span></code></strong>, <strong><code><span>vLLM</span></code></strong>, <strong><code><span>qlora</span></code></strong>, <strong><code><span>AutoGPTQ</span></code></strong>, <strong><code><span>AutoAWQ</span></code></strong>, etc. 
             </li></em>
             <li><em>
                It provides seamless integration with <a href=doc/LLM/Quickstart/llama_cpp_quickstart.html>llama.cpp</a>, <a href=doc/LLM/Quickstart/ollama_quickstart.html>ollama</a>, <a href=doc/LLM/Quickstart/webui_quickstart.html>Text-Generation-WebUI</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>HuggingFace transformers</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning>HuggingFace PEFT</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LangChain >LangChain</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LlamaIndex >LlamaIndex</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Deepspeed-AutoTP >DeepSpeed-AutoTP</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving >vLLM</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat>FastChat</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>HuggingFace TRL</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Applications/autogen >AutoGen</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models >ModeScope</a>, etc.
@@ -72,11 +72,42 @@ Latest update 🔥
    * [2023/09] ``ipex-llm`` now supports `Intel GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU>`_ (including iGPU, Arc, Flex and MAX).
    * [2023/09] ``ipex-llm`` `tutorial <https://github.com/intel-analytics/ipex-llm-tutorial>`_ is released.
 
+
+************************************************
+``ipex-llm`` Performance
+************************************************
+
+.. raw:: html
+
+  <p>
+      See the <strong>Token Generation Speed</strong> on <em>Intel Core Ultra</em> and <em>Intel Arc GPU</em> below <sup><a href="#footnote-perf" id="ref-perf">[1]</a></sup>
+       (and refer to <a href=https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-meta-llama3-with-intel-ai-solutions.html>[2]</a><a href=https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-microsoft-phi-3-models-intel-ai-soln.htm>[3]</a><a href=https://www.intel.com/content/www/us/en/developer/articles/technical/intel-ai-solutions-accelerate-alibaba-qwen2-llms.html>[4]</a> for more details).
+  </p>
+
+.. raw:: html
+    
+  <table width="100%">
+    <tr>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" width=100%; />
+        </a>
+      </td>
+      <td>
+        <a href="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" target="_blank">
+          <img src="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" width=100%; />
+        </a>
+      </td>
+    </tr>
+  </table>
+
+You may follow the `guide <doc/LLM/Quickstart/benchmark_quickstart.html>`_ to run ``ipex-llm`` performance benchmark yourself.
+
 ************************************************
 ``ipex-llm`` Demos
 ************************************************
 
-See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, single-card Arc GPU, or multi-card Arc GPUs* using `ipex-llm` below.
+See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, single-card Arc GPU, or multi-card Arc GPUs* using ``ipex-llm`` below.
 
 .. raw:: html
    

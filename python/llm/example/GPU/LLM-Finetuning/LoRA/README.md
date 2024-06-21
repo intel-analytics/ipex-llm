@@ -15,7 +15,6 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install transformers==4.36.0 datasets
 pip install fire peft==0.10.0
 pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ # necessary to run distributed finetuning
-pip install accelerate==0.23.0
 pip install bitsandbytes scipy
 ```
 
@@ -32,6 +31,12 @@ Here, we provide example usages on different hardware. Please refer to the appro
 
 ```bash
 bash lora_finetune_llama2_7b_arc_1_card.sh
+```
+
+##### Finetuning ChatGLM3-6B on two Arc A770
+
+```bash
+bash lora_deepspeed_zero3_finetune_chatglm3_6b_arc_2_card.sh
 ```
 
 ##### Finetuning LLaMA2-7B on four Intel Data Center GPU Max 1100

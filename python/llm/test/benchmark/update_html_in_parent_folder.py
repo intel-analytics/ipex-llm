@@ -24,13 +24,13 @@ from pathlib import Path
 def update_html_in_parent_folder(folder_path):
     
     current_folder = Path(folder_path)
-    folder_list = [current_folder/'batch_size_1/',current_folder/'batch_size_2/',current_folder/'merged/']
+    folder_list = [current_folder/'batch_size_1/',current_folder/'batch_size_2/',current_folder/'batch_size_4/',current_folder/'merged/']
     
     # List all html files under current folder and delete them
     for html_file in current_folder.glob('*.html'):
         html_file.unlink()
     for folder in folder_list:
-        # Find latest html file under batch1/batch2/merged folders
+        # Find latest html file under batch1/batch2/batch4/merged folders
         latest_html_file = max(Path(folder).glob('*.html'), key=os.path.getctime, default=None)
         # Copy the latest html file to parent folder
         if latest_html_file is not None:

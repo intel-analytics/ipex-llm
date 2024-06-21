@@ -20,6 +20,27 @@ on:
   #     - "python/llm/test/benchmark/**"
   #     - "python/llm/dev/benchmark/all-in-one/**"
   workflow_dispatch:
+    inputs:
+      arc:
+        description: "If trigger performance test on Arc"
+        required: false
+        type: boolean
+        default: true
+      spr:
+        description: "If trigger performance test on SPR"
+        required: false
+        type: boolean
+        default: true
+      core:
+        description: "If trigger performance test on Core"
+        required: false
+        type: boolean
+        default: true
+      igpu:
+        description: "If trigger performance test on iGPU"
+        required: false
+        type: boolean
+        default: true
   workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -28,7 +49,7 @@ jobs:
   #   uses: ./.github/workflows/llm-binary-build.yml
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.arc ) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -99,6 +120,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           mkdir test_batch1
           mkdir test_batch2
+          mkdir test_batch4
           # batch_size 1
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
@@ -114,6 +136,14 @@ jobs:
           sed -i 's/batch1/batch2/g' run.py
           python run.py
           mv *.csv test_batch2
+          # batch_size 4
+          cd ../../../../../ 
+          cp python/llm/test/benchmark/arc-perf-test-batch4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/batch2/batch4/g' run.py
+          python run.py
+          mv *.csv test_batch4
 
       - name: Test on xpu(transformers==4.37.0)
         shell: bash
@@ -127,7 +157,7 @@ jobs:
           cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # change csv name
-          sed -i 's/test1_batch2/test2_batch1/g' run.py
+          sed -i 's/test1_batch4/test2_batch1/g' run.py
           python run.py
           mv *.csv test_batch1
           # batch_size 2
@@ -138,6 +168,31 @@ jobs:
           sed -i 's/batch1/batch2/g' run.py
           python run.py
           mv *.csv test_batch2
+          # batch_size 4
+          cd ../../../../../ 
+          cp python/llm/test/benchmark/arc-perf-transformers-437-batch4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name 
+          sed -i 's/batch2/batch4/g' run.py
+          python run.py
+          mv *.csv test_batch4
+      
+      - name: Test on xpu(transformers==4.40.0)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          # upgrade transformers for model Qwen/Qwen1.5-MoE-A2.7B-Chat
+          python -m pip install transformers==4.40.0
+          python -m pip install trl
+          # batch_size 1
+          cp python/llm/test/benchmark/arc-perf-transformers-440.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/test2_batch4/test3_batch1/g' run.py
+          python run.py
+          mv *.csv test_batch1
 
       - name: Concat csv and generate html
         shell: bash
@@ -164,6 +219,17 @@ jobs:
           done
           cd ../../../../test/benchmark
           python csv_to_html.py -f $CSV_SAVE_PATH/batch_size_2
+          # batch_size 4
+          cd ../../../../
+          cd python/llm/dev/benchmark/all-in-one/test_batch4
+          python ../../../../test/benchmark/concat_csv.py
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" $CSV_SAVE_PATH/batch_size_4
+              fi
+          done
+          cd ../../../../test/benchmark
+          python csv_to_html.py -f $CSV_SAVE_PATH/batch_size_4
       
       - name: Merge and sort csv files of multiple batches and generate html 
         shell: bash
@@ -178,6 +244,12 @@ jobs:
               fi
           done
           cd ../test_batch2
+          for file in *.csv; do
+              if [[ $file != *test* ]]; then
+                  cp "$file" ../../../../test/benchmark/merged_temp
+              fi
+          done
+          cd ../test_batch4
           for file in *.csv; do
               if [[ $file != *test* ]]; then
                   cp "$file" ../../../../test/benchmark/merged_temp
@@ -207,6 +279,7 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one/test_batch1
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437.yaml
+          python ../../../../test/benchmark/check_results.py -c test3 -y ../../../../test/benchmark/arc-perf-transformers-440.yaml
           find . -name "*test*.csv" -delete
           if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
@@ -223,10 +296,20 @@ jobs:
           fi
           cd ../
           rm -r test_batch2
+          # batch_size 4
+          cd test_batch4
+          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test-batch4.yaml
+          python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437-batch4.yaml
+          find . -name "*test*.csv" -delete
+          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          fi
+          cd ../
+          rm -r test_batch4
           
           
   llm-performance-test-on-spr:
-    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.spr ) || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -298,7 +381,7 @@ jobs:
           done
 
   llm-performance-test-on-core:
-    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.core ) || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -371,7 +454,7 @@ jobs:
           fi
 
   llm-performance-test-on-igpu:
-    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.igpu ) || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     # needs: llm-cpp-build # please uncomment it for PR tests
     strategy:
       fail-fast: false
@@ -456,6 +539,7 @@ jobs:
 
           pip install pandas==1.5.3
           pip install Jinja2
+          pip install "numpy<2.0.0"
 
           call conda deactivate
 

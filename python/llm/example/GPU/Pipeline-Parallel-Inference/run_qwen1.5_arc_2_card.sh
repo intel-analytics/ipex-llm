@@ -34,3 +34,7 @@ CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $N
 # # To run Qwen1.5-14B-Chat
 # CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
 #     generate.py --repo-id-or-model-path 'Qwen/Qwen1.5-14B-Chat' --gpu-num $NUM_GPUS
+
+# # To run Qwen1.5-32B-Chat
+# CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
+#     generate.py --repo-id-or-model-path 'Qwen/Qwen1.5-32B-Chat' --gpu-num $NUM_GPUS
