@@ -135,7 +135,9 @@ Before running, you should download or copy community GGUF model to your current
   ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
   ```
 
-  > **Note**: For more details about meaning of each parameter, you can use `./main -h`.
+  > **Note**:
+  >
+  > For more details about meaning of each parameter, you can use `./main -h`.
 
 - For **Windows users**:
 
@@ -145,7 +147,9 @@ Before running, you should download or copy community GGUF model to your current
   main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
   ```
 
-  > **Note**: For more details about meaning of each parameter, you can use `main -h`.
+  > **Note**:
+  >
+  > For more details about meaning of each parameter, you can use `main -h`.
 
 #### Sample Output
 ```

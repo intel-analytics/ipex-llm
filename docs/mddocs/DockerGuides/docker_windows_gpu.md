@@ -35,9 +35,9 @@ Follow the instructions in [this guide](https://docs.microsoft.com/en-us/windows
 #### Enable Docker integration with WSL2
 
 Open **Docker desktop**, and select `Settings`->`Resources`->`WSL integration`->turn on `Ubuntu` button->`Apply & restart`.
-     <a href="https://llm-assets.readthedocs.io/en/latest/_images/docker_desktop_new.png">
-       <img src="https://llm-assets.readthedocs.io/en/latest/_images/docker_desktop_new.png" width=100%; />
-     </a>
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/docker_desktop_new.png">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/docker_desktop_new.png" width=100%; />
+</a>
 
 
 > [!TIP]
