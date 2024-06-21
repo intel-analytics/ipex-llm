@@ -32,13 +32,23 @@ def get_core():
     return core
 
 OV_CORE = get_core()
+
+compiler_args = [
+    "vertical-fusion=true",
+    "dpu-profiling=false",
+    "dma-profiling=false",
+    "sw-profiling=false",
+    "dump-task-stats=true",
+    "enable-schedule-trace=false",
+    "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"
+]
 NPU_CONFIG = {
             # "LOG_LEVEL": "LOG_DEBUG",
             "NPU_COMPILER_TYPE": "DRIVER",
             "NPU_COMPILATION_MODE": "DefaultHW",
             # "NPU_PLATFORM": "NPU4000",
             "PERF_COUNT": "NO",
-            "NPU_COMPILATION_MODE_PARAMS": "vertical-fusion=true dpu-profiling=false dma-profiling=false sw-profiling=false dump-task-stats=true enable-schedule-trace=false",
+            "NPU_COMPILATION_MODE_PARAMS": " ".join(compiler_args),
             "NPU_USE_ELF_COMPILER_BACKEND": "YES", # try this to create graph file
             # "PERF_COUNT": "YES",
             # "NPU_COMPILATION_MODE_PARAMS": "vertical-fusion=true dpu-profiling=true dma-profiling=true sw-profiling=true",
