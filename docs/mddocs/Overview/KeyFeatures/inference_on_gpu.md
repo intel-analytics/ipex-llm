@@ -6,7 +6,7 @@ Compared with running on Intel CPUs, some additional operations are required on 
 
 **Make sure you have prepared environment following instructions [here](../install_gpu.html).** 
 
-> **Note:** 
+> [!NOTE]
 > If you are using an older version of `ipex-llm` (specifically, older than 2.5.0b20240104), you need to manually add `import intel_extension_for_pytorch as ipex` at the beginning of your code. 
 
 ## Load and Optimize Model 
@@ -28,10 +28,11 @@ model = LlamaForCausalLM.from_pretrained('meta-llama/Llama-2-7b-chat-hf', torch_
 model = optimize_model(model) # With only one line to enable IPEX-LLM INT4 optimization 
 model = model.to('xpu') # Important after obtaining the optimized model 
 ``` 
-> **Tip:** 
+> [!TIP]
 > When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the `optimize_model` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU. 
 
-> **Note:** See the [API doc](../../../PythonAPI/LLM/optimize.html#ipex_llm.optimize_model) for `optimize_model` to find more information. 
+> [!NOTE] 
+> See the [API doc](../../../PythonAPI/LLM/optimize.html#ipex_llm.optimize_model) for `optimize_model` to find more information. 
 
 Especially, if you have saved the optimized model following steps [here](./optimize_model.html#save), the loading process on Intel GPUs may be as follows: 
 
@@ -62,10 +63,11 @@ model = AutoModelForCausalLM.from_pretrained('meta-llama/Llama-2-7b-chat-hf', lo
 
 model = model.to('xpu') # Important after obtaining the optimized model 
 ``` 
-> **Tip:** 
+> [!TIP]
 > When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the `from_pretrained` function. This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU. 
 
-> **Note:**  See the [API doc](../../../PythonAPI/LLM/transformers.html#hugging-face-transformers-automodel) to find more information. 
+> [!NOTE]  
+> See the [API doc](../../../PythonAPI/LLM/transformers.html#hugging-face-transformers-automodel) to find more information. 
 
 Especially, if you have saved the optimized model following steps [here](./hugging_face_format.html#save-load), the loading process on Intel GPUs may be as follows: 
 ```python 
@@ -77,7 +79,7 @@ model = AutoModelForCausalLM.load_low_bit(saved_dir) # Load the optimized model
 model = model.to('xpu') # Important after obtaining the optimized model 
 ``` 
 
-> **Tip:** 
+> [!TIP]
 > When running saved optimized models on Intel iGPUs for Windows users, we also recommend setting `cpu_embedding=True` in the `load_low_bit` function. 
 
 ## Run Optimized Model 
@@ -97,6 +99,8 @@ with torch.inference_mode():
             output_str = tokenizer.decode(output[0], skip_special_tokens=True) 
 ``` 
             
-> **Note:** The initial generation of optimized LLMs on Intel GPUs could be slow. Therefore, it's recommended to perform a **warm-up** run before the actual generation. 
+> [!NOTE] 
+> The initial generation of optimized LLMs on Intel GPUs could be slow. Therefore, it's recommended to perform a **warm-up** run before the actual generation. 
 
-> **Important:** If you are a Windows user, please also note that for **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
+> [!IMPORTANT] 
+> If you are a Windows user, please also note that for **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
