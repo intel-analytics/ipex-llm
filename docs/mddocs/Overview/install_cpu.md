@@ -55,7 +55,7 @@ First we recommend using [Conda](https://conda-forge.org/download/) to create a 
   pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
   ```
 
-- For 
+- For **Windows users**:
 ```cmd
 conda create -n llm python=3.11
 conda activate llm

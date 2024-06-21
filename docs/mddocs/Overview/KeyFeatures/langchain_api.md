@@ -19,7 +19,7 @@ output = doc_chain.run(...)
 ```
 
 > [!TIP]
-> See the examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain/transformers_int4)
+> See the examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain)
 
 ## Using Native INT4 Format
 
@@ -42,6 +42,3 @@ ipex_llm = LlamaLLM(model_path='/path/to/converted/model.bin')
 doc_chain = load_qa_chain(ipex_llm, ...)
 doc_chain.run(...)
 ```
-
-> [!TIP]
-> See the examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/LangChain/native_int4) for more information.
