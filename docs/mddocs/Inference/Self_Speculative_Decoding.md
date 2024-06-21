@@ -11,13 +11,13 @@ Please refer to IPEX-LLM self-speculative decoding code snippets below, and the 
 
 ```python 
 model = AutoModelForCausalLM.from_pretrained(model_path,
-            optimize_model=True,
-            torch_dtype=torch.float16, #use bfloat16 on cpu
-            load_in_low_bit="fp16", #use bf16 on cpu
-            speculative=True, #set speculative to true
-            trust_remote_code=True,
-            use_cache=True)
+                                             optimize_model=True,
+                                             torch_dtype=torch.float16, #use bfloat16 on cpu
+                                             load_in_low_bit="fp16", #use bf16 on cpu
+                                             speculative=True, #set speculative to true
+                                             trust_remote_code=True,
+                                             use_cache=True)
 output = model.generate(input_ids,
-            max_new_tokens=args.n_predict,
-            do_sample=False)
+                        max_new_tokens=args.n_predict,
+                        do_sample=False)
 ```
