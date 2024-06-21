@@ -17,9 +17,9 @@ CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $N
     generate.py --repo-id-or-model-path 'lmsys/vicuna-7b-v1.3' --gpu-num $NUM_GPUS
 
 # To run vicuna-13b-v1.3
-CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'lmsys/vicuna-13b-v1.3' --gpu-num $NUM_GPUS
+# CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
+#     generate.py --repo-id-or-model-path 'lmsys/vicuna-13b-v1.3' --gpu-num $NUM_GPUS
 
 # To run vicuna-33b-v1.3
-CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'lmsys/vicuna-33b-v1.3' --gpu-num $NUM_GPUS
+# CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
+#     generate.py --repo-id-or-model-path 'lmsys/vicuna-33b-v1.3' --gpu-num $NUM_GPUS

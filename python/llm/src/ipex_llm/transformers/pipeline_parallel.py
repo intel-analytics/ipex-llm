@@ -234,8 +234,8 @@ def pipeline_parallel_generate(self,
                                          "make sure that `pad_token_id` is defined.")
             next_ids = next_ids * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
 
-        #if isinstance(outputs.past_key_values, tuple) and local_rank != 0:
-        if self.config.model_type == "baichuan" and local_rank != 0:
+        # Temporarily specify as Baichuan and ChatGLM
+        if self.config.model_type in ["baichuan", "chatglm"] and local_rank != 0:
             value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
             past_key_values_placeholder = tuple(
                 (value_placeholder, value_placeholder) for _ in range(layer_start)
