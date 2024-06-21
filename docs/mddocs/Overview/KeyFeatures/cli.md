@@ -1,4 +1,4 @@
-# CLI (Command Line Interface) Tool 
+# CLI (Command Line Interface) Tool
 
 > [!NOTE] 
 > Currently `ipex-llm` CLI supports *LLaMA* (e.g., vicuna), *GPT-NeoX* (e.g., redpajama), *BLOOM* (e.g., pheonix) and *GPT2* (e.g., starcoder) model architecture; for other models, you may use the `transformers`-style or LangChain APIs.
@@ -17,7 +17,7 @@ llm-convert "/path/to/model/" --model-format pth --model-family "bloom" --outfil
 llm-convert "/path/to/model/" --model-format gptq --model-family "llama" --outfile "/path/to/output/"
 ```
 
-## Run Model 
+## Run Model
 
 You may run the converted model using `llm-cli` or `llm-chat` (built on top of `main.cpp` in [`llama.cpp`](https://github.com/ggerganov/llama.cpp))
 
