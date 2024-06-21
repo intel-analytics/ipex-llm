@@ -155,7 +155,9 @@ IPEX-LLM GPU support on Linux has been verified on:
 > [!IMPORTANT]
 > IPEX-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.
 > 
-> **Warning**: IPEX-LLM support for Pytorch 2.0 is deprecated as of ``ipex-llm >= 2.1.0b20240511``.
+> **Warning**
+> 
+> IPEX-LLM support for Pytorch 2.0 is deprecated as of ``ipex-llm >= 2.1.0b20240511``.
 
 > [!IMPORTANT]
 > We currently support the Ubuntu 20.04 operating system and later.
