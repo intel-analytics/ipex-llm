@@ -43,15 +43,16 @@ class NPUModel(nn.Module):
 
     def forward(self, hidden_states, attention_mask, position_ids, past_key_values, weights):
 
+        msg = "sanity check"
         for i in range(len(self.layers)):
             layer_weights = weights[i]
-            invalidInputError(layer_weights[0] is self.layers[i].self_attn.q_proj.weight)
-            invalidInputError(layer_weights[1] is self.layers[i].self_attn.k_proj.weight)
-            invalidInputError(layer_weights[2] is self.layers[i].self_attn.v_proj.weight)
-            invalidInputError(layer_weights[3] is self.layers[i].self_attn.o_proj.weight)
-            invalidInputError(layer_weights[4] is self.layers[i].mlp.gate_proj.weight)
-            invalidInputError(layer_weights[5] is self.layers[i].mlp.up_proj.weight)
-            invalidInputError(layer_weights[6] is self.layers[i].mlp.down_proj.weight)
+            invalidInputError(layer_weights[0] is self.layers[i].self_attn.q_proj.weight, msg)
+            invalidInputError(layer_weights[1] is self.layers[i].self_attn.k_proj.weight, msg)
+            invalidInputError(layer_weights[2] is self.layers[i].self_attn.v_proj.weight, msg)
+            invalidInputError(layer_weights[3] is self.layers[i].self_attn.o_proj.weight, msg)
+            invalidInputError(layer_weights[4] is self.layers[i].mlp.gate_proj.weight, msg)
+            invalidInputError(layer_weights[5] is self.layers[i].mlp.up_proj.weight, msg)
+            invalidInputError(layer_weights[6] is self.layers[i].mlp.down_proj.weight, msg)
 
         next_cache = []
         for i, layer in enumerate(self.layers):
