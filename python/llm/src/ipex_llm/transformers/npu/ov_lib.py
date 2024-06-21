@@ -19,15 +19,16 @@ import torch
 from ipex_llm.transformers.convert import convert_forward
 from ipex_llm.utils.common.log4Error import invalidInputError
 
+
 def compile(
     model: torch.nn.Module,
     dtype: torch.dtype = torch.float16,
     kv_cache_len_max: int = 1024
 ) -> torch.nn.Module:
-    
+
     invalidInputError(dtype == torch.float16,
                       f"only torch.float16 is supported, but got {dtype}")
-    
+
     if 'llama' in model.config.model_type:
         from ipex_llm.transformers.npu.llama import offload_llama_decoder_to_npu
         num_layers = model.config.num_hidden_layers
@@ -35,5 +36,5 @@ def compile(
                                              kv_cache_len_max=kv_cache_len_max)
     else:
         invalidInputError(f"model type not supported: {model.config.model_type}")
-    
+
     return model

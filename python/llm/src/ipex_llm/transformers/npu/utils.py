@@ -21,14 +21,13 @@ import torch
 import openvino as ov
 from openvino.runtime import Core
 
+
 def get_core():
     core = Core()
     core.set_property({'CACHE_DIR': "blob_npu"})
     core.set_property("NPU", {
-            # WARNING: MLIR DOES NOT WORK WITH PUBLIC OV
-            "NPU_COMPILER_TYPE": "DRIVER",
-            "PERFORMANCE_HINT": "LATENCY",
-        })
+        "NPU_COMPILER_TYPE": "DRIVER",
+        "PERFORMANCE_HINT": "LATENCY"})
     return core
 
 OV_CORE = get_core()
@@ -43,34 +42,24 @@ compiler_args = [
     "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"
 ]
 NPU_CONFIG = {
-            # "LOG_LEVEL": "LOG_DEBUG",
-            "NPU_COMPILER_TYPE": "DRIVER",
-            "NPU_COMPILATION_MODE": "DefaultHW",
-            # "NPU_PLATFORM": "NPU4000",
-            "PERF_COUNT": "NO",
-            "NPU_COMPILATION_MODE_PARAMS": " ".join(compiler_args),
-            "NPU_USE_ELF_COMPILER_BACKEND": "YES", # try this to create graph file
-            # "PERF_COUNT": "YES",
-            # "NPU_COMPILATION_MODE_PARAMS": "vertical-fusion=true dpu-profiling=true dma-profiling=true sw-profiling=true",
-            # "DEVICE_ID": "3720",
-            "PERFORMANCE_HINT": "LATENCY",
-            # "NPU_DPU_GROUPS": "2",
-            # "NPU_DMA_ENGINES": "2",
-            # "NPU_PRINT_PROFILING":"JSON",
-            # "NPU_PROFILING_OUTPUT_FILE":"profiling.json",
-            # "MODEL_PRIORITY": "LATENCY",
-            # "NPU_PROFILING_VERBOSITY":"MEDIUM",
-        }
+    "NPU_COMPILER_TYPE": "DRIVER",
+    "NPU_COMPILATION_MODE": "DefaultHW",
+    "PERF_COUNT": "NO",
+    "NPU_COMPILATION_MODE_PARAMS": " ".join(compiler_args),
+    "NPU_USE_ELF_COMPILER_BACKEND": "YES",
+    "PERFORMANCE_HINT": "LATENCY"}
+
 
 def get_npu_model(model, inputs, input_names, output_names, save_dir=None, quantize=False):
-    
+
     # create a temp directory to save the model
     with tempfile.TemporaryDirectory() as tmpdirname:
         if save_dir is None:
             save_dir = tmpdirname
         save_dir_path = Path(save_dir)
         # todo try to remove onnx export
-        torch.onnx.export(model, inputs, save_dir_path / 'model.onnx', input_names=input_names, output_names=output_names)
+        torch.onnx.export(model, inputs, save_dir_path / 'model.onnx',
+                          input_names=input_names, output_names=output_names)
         ov_model = ov.convert_model(save_dir_path / 'model.onnx')
         if quantize:
             from nncf.parameters import ModelType

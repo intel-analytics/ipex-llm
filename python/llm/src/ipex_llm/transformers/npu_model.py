@@ -67,7 +67,7 @@ class _BaseAutoModelClass:
         if kwargs.get('torch_dtype', None) not in [None, 'auto', torch.float]:
             warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
         kwargs['torch_dtype'] = torch.float
-        
+
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
         ignore_argument(kwargs, "lightweight_bmm")
@@ -82,14 +82,14 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
-        
+
         low_bit = kwargs.pop('load_in_low_bit', 'fp32')
         kv_cache_len_max = kwargs.pop('kv_cache_len_max', 1024)
         kwargs["low_cpu_mem_usage"] = True
-        
+
         backend = kwargs.pop('npu_backend', 'intel_npu_acceleration_library')
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
-        
+
         if backend == 'intel_npu_acceleration_library':
             import intel_npu_acceleration_library as npu_lib
             try:
@@ -109,8 +109,8 @@ class _BaseAutoModelClass:
                     'fp32': torch.float,
                 }
             invalidInputError(low_bit in qtype_map.keys(),
-                            f"unsupported low_bit: {low_bit}, "
-                            f"only {list(qtype_map.keys())} are supported")
+                             f"unsupported low_bit: {low_bit}, "
+                             f"only {list(qtype_map.keys())} are supported")
             qtype = qtype_map[low_bit]
 
             logger.info(f"Converting model, it may takes up to several minutes ...")
