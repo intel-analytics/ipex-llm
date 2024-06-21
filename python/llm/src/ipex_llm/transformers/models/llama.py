@@ -2512,10 +2512,15 @@ def llama_model_forward_4_41_internal(
     if output_hidden_states:
         all_hidden_states += (hidden_states,)
 
-    next_cache = next_decoder_cache if use_cache else None
-    if return_legacy_cache:
-        next_cache = next_cache.to_legacy_cache()
-
+    next_cache = None
+    from ipex_llm.transformers.kv import DynamicFp8Cache
+    if use_cache:
+        next_cache = (
+            next_decoder_cache.to_legacy_cache()
+            if not isinstance(next_decoder_cache, DynamicFp8Cache)
+            else next_decoder_cache
+        )
+        
     if not return_dict:
         return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns]
                      if v is not None)
