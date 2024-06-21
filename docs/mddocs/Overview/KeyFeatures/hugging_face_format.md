@@ -20,10 +20,10 @@ output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids) 
 ``` 
 
-> **See Also:** 
+> [!TIP]
 > The complete CPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels) and GPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels).
 
->**Note:** 
+> [!NOTE]
 > You may apply more low bit optimizations (including INT8, INT5, and INT4) as follows:
 
 
@@ -31,7 +31,7 @@ output = tokenizer.batch_decode(output_ids)
 model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5") 
 ``` 
 
->**Note:** 
+> [!NOTE]
 > See the CPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types) and GPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types). 
 
 ## Save & Load 
@@ -41,5 +41,5 @@ model.save_low_bit(model_path)
 
 new_model = AutoModelForCausalLM.load_low_bit(model_path) 
 ``` 
-> **See Also:** 
+> [!TIP]
 > The CPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load) and GPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Save-Load).
