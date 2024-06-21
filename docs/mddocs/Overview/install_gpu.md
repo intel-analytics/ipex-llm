@@ -14,7 +14,7 @@ To apply Intel GPU acceleration, please first verify your GPU driver version.
 > [!NOTE]
 > The GPU driver version of your device can be checked in the "Task Manager" -> GPU 0 (or GPU 1, etc.) -> Driver version.
 
-If you have driver version lower than `31.0.101.5122`, it is recommended to [**update your GPU driver to the latest**](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html):
+If you have driver version lower than `31.0.101.5122`, it is recommended to [**update your GPU driver to the latest**](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html).
 
 <!-- Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
@@ -48,21 +48,21 @@ The easiest ways to install `ipex-llm` is the following commands, choosing eithe
 
 - For **US**:
 
-```cmd
-conda create -n llm python=3.11 libuv
-conda activate llm
+   ```cmd
+   conda create -n llm python=3.11 libuv
+   conda activate llm
 
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-```
+   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+   ```
 
 - For **CN**:
 
-```cmd
-conda create -n llm python=3.11 libuv
-conda activate llm
+   ```cmd
+   conda create -n llm python=3.11 libuv
+   conda activate llm
 
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-```
+   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+   ```
 
 #### Install IPEX-LLM From Wheel
 
