@@ -36,6 +36,12 @@ bash lora_finetune_llama2_7b_arc_1_card.sh
 ##### Finetuning ChatGLM3-6B on two Arc A770
 
 ```bash
+# install deepspeed dependencies
+source /opt/intel/oneapi/setvars.sh # necessary to run before installing deepspeed
+pip install git+https://github.com/microsoft/DeepSpeed.git@78c518e
+pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@ec33277
+
+#start finetuning
 bash lora_deepspeed_zero3_finetune_chatglm3_6b_arc_2_card.sh
 ```
 
