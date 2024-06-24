@@ -90,7 +90,7 @@ class ModelRunner:
                                                     optimize_model=True,
                                                     trust_remote_code=True,
                                                     use_cache=True,
-                                                    pipeline_parallel_stages=my_size)
+                                                    pipeline_parallel_stages=my_size).eval()
         # print(model)
 
         # config_class = type(model.config).__name__
