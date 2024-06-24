@@ -328,8 +328,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             optimize_lm_head = False
             if is_lm_head(name, model_config, out_features):
                 model_type = getattr(model_config, "model_type", None)
-                if model_type in ["gptj", "llama"] and os.environ.get("BIGDL_OPTIMIZE_LM_HEAD",
-                                                                      None) == "1":
+                if model_type in ["gptj", "llama", "qwen2"] and \
+                        os.environ.get("IPEX_LLM_LAST_LM_HEAD", None) == "1":
                     optimize_lm_head = True
             with init_empty_weights():
                 new_linear = None
