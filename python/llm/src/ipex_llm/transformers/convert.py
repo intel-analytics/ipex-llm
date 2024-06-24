@@ -862,10 +862,10 @@ def convert_bigdl_other_module(model, dtype):
 
 
 def convert_forward(m, target_m, new_forward):
+    if m.__class__ == target_m:
+        bound_method = new_forward.__get__(m, m.__class__)
+        setattr(m, "forward", bound_method)
     for _, sub_m in m.named_children():
-        if sub_m.__class__ == target_m:
-            bound_method = new_forward.__get__(sub_m, sub_m.__class__)
-            setattr(sub_m, "forward", bound_method)
         convert_forward(sub_m, target_m, new_forward)
 
 
