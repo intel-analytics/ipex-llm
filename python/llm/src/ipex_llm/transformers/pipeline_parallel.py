@@ -73,6 +73,19 @@ class Dummy_DecoderLayer(nn.Module):
         return outputs
 
 
+class Dummy_GLMBlock(nn.Module):
+    def __init__(self, *args):
+        super().__init__()
+        # to avoid AttributeError
+        self.input_layernorm = DummyLayer()
+        self.mlp = Dummy_MLPLayer()
+
+    def forward(
+            self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True,
+    ):
+        return hidden_states, kv_cache
+
+
 def init_pipeline_parallel():
     import oneccl_bindings_for_pytorch
     os.environ["MASTER_ADDR"] = os.environ.get("MASTER_ADDR", "127.0.0.1")
@@ -81,28 +94,49 @@ def init_pipeline_parallel():
 
 
 def pipeline_parallel(model, pipeline_parallel_stages):
-    slice_size = (model.config.num_hidden_layers + pipeline_parallel_stages - 1) // \
-        pipeline_parallel_stages
+    global num_layers
+    if hasattr(model.config, 'num_hidden_layers'):
+        num_layers = model.config.num_hidden_layers
+    elif hasattr(model.config, 'num_layers'):
+        # for chatglm3-6b
+        num_layers = model.config.num_layers
+
+    slice_size = (num_layers + pipeline_parallel_stages - 1) // pipeline_parallel_stages
 
     local_rank = dist.get_rank()
 
     global layer_start
     global layer_end
     layer_start = slice_size * local_rank
-    layer_end = layer_start + min(slice_size, model.config.num_hidden_layers - layer_start)
+    layer_end = layer_start + min(slice_size, num_layers - layer_start)
 
-    for i in range(model.config.num_hidden_layers):
-        if i < layer_start or i >= layer_end:
-            model._modules['model'].layers[i] = Dummy_DecoderLayer()
-        else:
-            # align layer_idx and len(past_key_values), otherwise abnormal output
-            model._modules['model'].layers[i].self_attn.layer_idx = i - layer_start
+    if model.config.architectures is not None \
+       and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+        # for chatglm3-6b
+        for i in range(num_layers):
+            if i < layer_start or i >= layer_end:
+                model._modules['transformer'].encoder.layers[i] = Dummy_GLMBlock()
+            else:
+                model._modules['transformer'].encoder.layers[i].self_attention.num_layers = \
+                    i - layer_start
 
-    if local_rank != 0:
-        model._modules['model'].embed_tokens = DummyLayer()
-    if local_rank != pipeline_parallel_stages - 1:
-        model._modules['model'].norm = DummyLayer()
-        model._modules['lm_head'] = DummyLayer()
+        if local_rank != 0:
+            model._modules['transformer'].embedding = DummyLayer()
+        if local_rank != pipeline_parallel_stages - 1:
+            model._modules['transformer'].encoder.final_layernorm = DummyLayer()
+            model._modules['transformer'].output_layer = DummyLayer()
+    else:
+        for i in range(num_layers):
+            if i < layer_start or i >= layer_end:
+                model._modules['model'].layers[i] = Dummy_DecoderLayer()
+            else:
+                model._modules['model'].layers[i].self_attn.layer_idx = i - layer_start
+
+        if local_rank != 0:
+            model._modules['model'].embed_tokens = DummyLayer()
+        if local_rank != pipeline_parallel_stages - 1:
+            model._modules['model'].norm = DummyLayer()
+            model._modules['lm_head'] = DummyLayer()
 
     model.pipeline_parallel_stages = pipeline_parallel_stages
     model = model.to(f'xpu:{local_rank}')
@@ -178,6 +212,7 @@ def pipeline_parallel_generate(self,
 
     global layer_start
     global layer_end
+    global num_layers
 
     self.first_token_time = 0
     self.next_token_time = []
@@ -236,7 +271,8 @@ def pipeline_parallel_generate(self,
                                          "make sure that `pad_token_id` is defined.")
             next_ids = next_ids * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
 
-        if isinstance(outputs.past_key_values, tuple) and local_rank != 0:
+        # Temporarily specify as Baichuan and ChatGLM
+        if self.config.model_type in ["baichuan", "chatglm"] and local_rank != 0:
             value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
             past_key_values_placeholder = tuple(
                 (value_placeholder, value_placeholder) for _ in range(layer_start)

@@ -284,7 +284,9 @@ Now let's play with a real LLM. We'll be using the [phi-1.5](https://huggingface
        print(output_str)
    ```
 
-   > **Note**: When running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
+   > **Note**:
+   >
+   > When running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
    > This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
 
 - Step 5. Run `demo.py` within the activated Python environment using the following command:

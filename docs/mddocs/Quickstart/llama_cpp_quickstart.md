@@ -4,7 +4,14 @@
 
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
-[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.png)](https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4)
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.png"/></a></td>
+  </tr>
+  <tr>
+    <td align="center">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4">here</a> to watch the demo video.</td>
+  </tr>
+</table>
 
 > [!NOTE]
 > `ipex-llm[cpp]==2.5.0b20240527` is consistent with [c780e75](https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452) of llama.cpp.
@@ -135,7 +142,9 @@ Before running, you should download or copy community GGUF model to your current
   ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
   ```
 
-  > **Note**: For more details about meaning of each parameter, you can use `./main -h`.
+  > **Note**:
+  >
+  > For more details about meaning of each parameter, you can use `./main -h`.
 
 - For **Windows users**:
 
@@ -145,7 +154,9 @@ Before running, you should download or copy community GGUF model to your current
   main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
   ```
 
-  > **Note**: For more details about meaning of each parameter, you can use `main -h`.
+  > **Note**:
+  >
+  > For more details about meaning of each parameter, you can use `main -h`.
 
 #### Sample Output
 ```

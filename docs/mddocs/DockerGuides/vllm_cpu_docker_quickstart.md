@@ -18,7 +18,7 @@ docker pull intelanalytics/ipex-llm-serving-cpu:latest
 ## Start Docker Container
 
 To fully use your Intel CPU to run vLLM inference and serving, you should 
-```
+```bash
 #/bin/bash
 export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:latest
 export CONTAINER_NAME=ipex-llm-serving-cpu-container
@@ -48,7 +48,7 @@ We have included multiple vLLM-related files in `/llm/`:
 3. `payload-1024.lua`: Used for testing request per second using 1k-128 request
 4. `start-vllm-service.sh`: Used for template for starting vLLM service
 
-Before performing benchmark or starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_cpu.html#environment-setup) to setup our recommended runtime configurations.
+Before performing benchmark or starting the service, you can refer to this [section](../Overview/install_cpu.md#environment-setup) to setup our recommended runtime configurations.
 
 ### Service
 
@@ -92,7 +92,7 @@ You can tune the service using these four arguments:
 - `--max-num-batched-token`
 - `--max-num-seq`
 
-You can refer to this [doc](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#service) for a detailed explaination on these parameters.
+You can refer to this [doc](../Quickstart/vLLM_quickstart.md#service) for a detailed explaination on these parameters.
 
 ### Benchmark
 
@@ -115,4 +115,22 @@ wrk -t8 -c8 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --tim
 
 #### Offline benchmark through benchmark_vllm_throughput.py
 
-Please refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#performing-benchmark) on how to use `benchmark_vllm_throughput.py` for benchmarking.
+```bash
+cd /llm
+wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
+
+source ipex-llm-init -t
+export MODEL="YOUR_MODEL"
+
+python3 ./benchmark_vllm_throughput.py \
+    --backend vllm \
+    --dataset ./ShareGPT_V3_unfiltered_cleaned_split.json \
+    --model $MODEL \
+    --num-prompts 1000 \
+    --seed 42 \
+    --trust-remote-code \
+    --enforce-eager \
+    --dtype bfloat16 \
+    --device cpu \
+    --load-in-low-bit bf16
+```

@@ -4,7 +4,14 @@
 
 See the demo of finetuning LLaMA2-7B on Intel Arc GPU below.
 
-[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/axolotl-qlora-linux-arc.png)](https://llm-assets.readthedocs.io/en/latest/_images/axolotl-qlora-linux-arc.mp4)
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/axolotl-qlora-linux-arc.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/axolotl-qlora-linux-arc.png"/></a></td>
+  </tr>
+  <tr>
+    <td align="center">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/axolotl-qlora-linux-arc.mp4">here</a> to watch the demo video.</td>
+  </tr>
+</table>
 
 ## Quickstart
 

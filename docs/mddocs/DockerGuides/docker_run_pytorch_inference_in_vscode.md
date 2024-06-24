@@ -4,21 +4,18 @@ An IPEX-LLM container is a pre-configured environment that includes all necessar
 
 This guide provides steps to run/develop PyTorch examples in VSCode with Docker on Intel GPUs.
 
-```eval_rst
-.. note::
 
-   This guide assumes you have already installed VSCode in your environment. 
-   
-   To run/develop on Windows, install VSCode and then follow the steps below. 
-   
-   To run/develop on Linux, you might open VSCode first and SSH to a remote Linux machine, then proceed with the following steps.
-
-```
+> [!note]
+> This guide assumes you have already installed VSCode in your environment. 
+>  
+> To run/develop on Windows, install VSCode and then follow the steps below. 
+>  
+> To run/develop on Linux, you might open VSCode first and SSH to a remote Linux machine, then proceed with the following steps.
 
 
 ## Install Docker
 
-Follow the [Docker installation Guide](./docker_windows_gpu.html#install-docker) to install docker on either Linux or Windows.
+Follow the [Docker installation Guide](./docker_windows_gpu.md#install-docker) to install docker on either Linux or Windows.
 
 ## Install Extensions for VSCcode
 
@@ -52,47 +49,45 @@ Open the Terminal in VSCode (you can use the shortcut `` Ctrl+Shift+` ``), then 
 docker pull intelanalytics/ipex-llm-xpu:latest
 ```
 
-Start ipex-llm-xpu Docker Container:
+Start ipex-llm-xpu Docker Container. Choose one of the following commands to start the container:
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+- For **Linux users**:
 
-      .. code-block:: bash
+  ```bash
 
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
-        export CONTAINER_NAME=my_container
-        export MODEL_PATH=/llm/models[change to your model path]
+  export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
+  export CONTAINER_NAME=my_container
+  export MODEL_PATH=/llm/models[change to your model path]
 
-        docker run -itd \
-            --net=host \
-            --device=/dev/dri \
-            --memory="32G" \
-            --name=$CONTAINER_NAME \
-            --shm-size="16g" \
-            -v $MODEL_PATH:/llm/models \
-            $DOCKER_IMAGE
+  docker run -itd \
+             --net=host \
+             --device=/dev/dri \
+             --memory="32G" \
+             --name=$CONTAINER_NAME \
+             --shm-size="16g" \
+             -v $MODEL_PATH:/llm/models \
+             $DOCKER_IMAGE
+  ```
 
-   .. tab:: Windows WSL
+- For **Windows WSL users**:
 
-      .. code-block:: bash
+  ```bash
+  #/bin/bash
+  export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
+  export CONTAINER_NAME=my_container
+  export MODEL_PATH=/llm/models[change to your model path]
 
-         #/bin/bash
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
-        export CONTAINER_NAME=my_container
-        export MODEL_PATH=/llm/models[change to your model path]
-
-        sudo docker run -itd \
-                --net=host \
-                --privileged \
-                --device /dev/dri \
-                --memory="32G" \
-                --name=$CONTAINER_NAME \
-                --shm-size="16g" \
-                -v $MODEL_PATH:/llm/llm-models \
-                -v /usr/lib/wsl:/usr/lib/wsl \ 
-                $DOCKER_IMAGE
-```
+  sudo docker run -itd \
+                  --net=host \
+                  --privileged \
+                  --device /dev/dri \
+                  --memory="32G" \
+                  --name=$CONTAINER_NAME \
+                  --shm-size="16g" \
+                  -v $MODEL_PATH:/llm/llm-models \
+                  -v /usr/lib/wsl:/usr/lib/wsl \ 
+                  $DOCKER_IMAGE
+  ```
 
 
 ## Run/Develop Pytorch Examples
@@ -108,10 +103,11 @@ Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/exa
 In this folder, we provide several PyTorch examples that you could apply IPEX-LLM INT4 optimizations on models on Intel GPUs.
 
 For example, if your model is Llama-2-7b-chat-hf and mounted on /llm/models, you can navigate to llama2 directory, excute the following command to run example:
-  ```bash
-  cd <model_dir>
-  python ./generate.py --repo-id-or-model-path /llm/models/Llama-2-7b-chat-hf --prompt PROMPT --n-predict N_PREDICT
-  ```
+
+```bash
+cd <model_dir>
+python ./generate.py --repo-id-or-model-path /llm/models/Llama-2-7b-chat-hf --prompt PROMPT --n-predict N_PREDICT
+```
 
 
 Arguments info:

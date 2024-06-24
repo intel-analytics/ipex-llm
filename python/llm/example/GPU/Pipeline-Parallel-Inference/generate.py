@@ -19,7 +19,7 @@ import torch
 import time
 import argparse
 
-from ipex_llm.transformers import AutoModelForCausalLM, init_pipeline_parallel
+from ipex_llm.transformers import AutoModel, AutoModelForCausalLM, init_pipeline_parallel
 from transformers import AutoTokenizer
 
 init_pipeline_parallel()
@@ -41,13 +41,21 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 optimize_model=True,
-                                                 trust_remote_code=True,
-                                                 use_cache=True,
-                                                 torch_dtype=torch.float16,
-                                                 pipeline_parallel_stages=args.gpu_num)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                     load_in_4bit=True,
+                                                     optimize_model=True,
+                                                     trust_remote_code=True,
+                                                     use_cache=True,
+                                                     torch_dtype=torch.float16,
+                                                     pipeline_parallel_stages=args.gpu_num)
+    except:
+        model = AutoModel.from_pretrained(model_path,
+                                          load_in_4bit=True,
+                                          optimize_model=True,
+                                          trust_remote_code=True,
+                                          use_cache=True,
+                                          pipeline_parallel_stages=args.gpu_num)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)

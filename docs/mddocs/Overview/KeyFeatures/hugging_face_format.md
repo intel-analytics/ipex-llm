@@ -22,21 +22,18 @@ output_ids = model.generate(input_ids, ...)
 output = tokenizer.batch_decode(output_ids)
 ```
 
-```eval_rst
-.. seealso::
+> [!TIP]
+> See the complete CPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels) and GPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels).
 
-   See the complete CPU examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels>`_ and GPU examples `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>`_.
+> [!NOTE]
+> You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows:
+>
+> ```python
+> model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
+> ```
+>
+> See the CPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types) and GPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types).
 
-.. note::
-
-   You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows:
-
-   .. code-block:: python
-
-      model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
-
-   See the CPU example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types>`_ and GPU example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_.
-```
 
 ## Save & Load
 After the model is optimized using INT4 (or INT8/INT5), you may save and load the optimized model as follows:
@@ -47,8 +44,5 @@ model.save_low_bit(model_path)
 new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
 
-```eval_rst
-.. seealso::
-
-   See the CPU example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load>`_ and GPU example `here <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Save-Load>`_
-```
+> [!TIP]
+> See the complete CPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load) and GPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Save-Load).

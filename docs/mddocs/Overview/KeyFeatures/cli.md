@@ -1,11 +1,7 @@
 # CLI (Command Line Interface) Tool
 
-```eval_rst
-
-.. note:: 
-
-   Currently ``ipex-llm`` CLI supports *LLaMA* (e.g., vicuna), *GPT-NeoX* (e.g., redpajama), *BLOOM* (e.g., pheonix) and *GPT2* (e.g., starcoder) model architecture; for other models, you may use the ``transformers``-style or LangChain APIs.
-```
+> [!NOTE] 
+> Currently `ipex-llm` CLI supports *LLaMA* (e.g., vicuna), *GPT-NeoX* (e.g., redpajama), *BLOOM* (e.g., pheonix) and *GPT2* (e.g., starcoder) model architecture; for other models, you may use the `transformers`-style or LangChain APIs.
 
 ## Convert Model
 

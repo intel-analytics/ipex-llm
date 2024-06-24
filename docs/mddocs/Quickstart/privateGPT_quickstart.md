@@ -4,7 +4,14 @@
 
 *See the demo of privateGPT running Mistral:7B on Intel Arc A770 below.*
 
-[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.png)](https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.mp4)
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.png"/></a></td>
+  </tr>
+  <tr>
+    <td align="center">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/PrivateGPT-ARC.mp4">here</a> to watch the demo video.</td>
+  </tr>
+</table>
 
 ## Quickstart
 
@@ -72,7 +79,9 @@ Run below commands to start the service in another terminal:
   PGPT_PROFILES=ollama make run
   ```
 
-  > **Note**: Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
+  > **Note**:
+  > 
+  > Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
 
 - For **Windows users**:
 
@@ -82,7 +91,9 @@ Run below commands to start the service in another terminal:
   make run
   ```
 
-  > **Note**: Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
+  > **Note**:
+  >
+  > Setting `PGPT_PROFILES=ollama` will load the configuration from `settings.yaml` and `settings-ollama.yaml`.
 
 Upon successful deployment, you will see logs in the terminal similar to the following:
 

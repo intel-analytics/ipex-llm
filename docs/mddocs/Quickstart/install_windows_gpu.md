@@ -102,7 +102,9 @@ You can verify if `ipex-llm` is successfully installed following below steps.
   torch.Size([1, 1, 40, 40])
   ```
 
-  > **Tip**: If you encounter any problem, please refer to [here](../Overview/install_gpu.md#troubleshooting) for help.
+  > **Tip**:
+  >
+  > If you encounter any problem, please refer to [here](../Overview/install_gpu.md#troubleshooting) for help.
 
 - To exit the Python interactive shell, simply press Ctrl+Z then press Enter (or input `exit()` then press Enter).
 
@@ -239,7 +241,9 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
          output_str = tokenizer.decode(output[0], skip_special_tokens=True)
          print(output_str)
       ```
-      > **Note**: Please note that the repo id on ModelScope may be different from Hugging Face for some models.
+      > **Note**:
+      >
+      > Please note that the repo id on ModelScope may be different from Hugging Face for some models.
 
 > [!NOTE]
 > When running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.

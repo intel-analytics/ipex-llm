@@ -862,10 +862,10 @@ def convert_bigdl_other_module(model, dtype):
 
 
 def convert_forward(m, target_m, new_forward):
+    if m.__class__ == target_m:
+        bound_method = new_forward.__get__(m, m.__class__)
+        setattr(m, "forward", bound_method)
     for _, sub_m in m.named_children():
-        if sub_m.__class__ == target_m:
-            bound_method = new_forward.__get__(sub_m, sub_m.__class__)
-            setattr(sub_m, "forward", bound_method)
         convert_forward(sub_m, target_m, new_forward)
 
 
@@ -980,19 +980,32 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         transformers.models.llama.modeling_llama.LlamaDecoderLayer,
                         llama_decoder_forward)
+
         if version.parse(trans_version) >= version.parse("4.36.0"):
             # transformers version >= 4.36.0
             from ipex_llm.transformers.models.llama import llama_attention_forward_4_38
             if version.parse(trans_version) >= version.parse("4.38.0"):
-                from ipex_llm.transformers.models.llama import llama_model_forward_4_38
-                convert_forward(
-                    model,
-                    transformers.models.llama.modeling_llama.LlamaModel,
-                    llama_model_forward_4_38)
-                convert_forward(
-                    model,
-                    transformers.models.llama.modeling_llama.LlamaAttention,
-                    llama_attention_forward_4_38)
+                if version.parse(trans_version) >= version.parse("4.41.0"):
+                    from ipex_llm.transformers.models.llama import llama_model_forward_4_41
+                    from ipex_llm.transformers.models.llama import llama_attention_forward_4_41
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaModel,
+                        llama_model_forward_4_41)
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaAttention,
+                        llama_attention_forward_4_41)
+                else:
+                    from ipex_llm.transformers.models.llama import llama_model_forward_4_38
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaModel,
+                        llama_model_forward_4_38)
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaAttention,
+                        llama_attention_forward_4_38)
             else:
                 from ipex_llm.transformers.models.llama import llama_model_forward_4_36
                 convert_forward(
@@ -1285,9 +1298,13 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.qwen2 import qwen2_model_forward
         from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_causal_lm_forward
         convert_forward(model,
                         module.Qwen2Model,
                         qwen2_model_forward)
+        convert_forward(model,
+                        module.Qwen2ForCausalLM,
+                        qwen2_causal_lm_forward)
         convert_forward(model,
                         module.Qwen2RMSNorm,
                         llama_rms_norm_forward)
@@ -1306,10 +1323,14 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_moeblock_forward
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_model_forward
+        from ipex_llm.transformers.models.qwen2_moe import qwen2_moe_causal_lm_forward
         from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
         convert_forward(model,
                         module.Qwen2MoeModel,
                         qwen2moe_model_forward)
+        convert_forward(model,
+                        module.Qwen2MoeForCausalLM,
+                        qwen2_moe_causal_lm_forward)
         convert_forward(model,
                         module.Qwen2MoeRMSNorm,
                         llama_rms_norm_forward)

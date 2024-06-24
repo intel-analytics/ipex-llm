@@ -1,4 +1,4 @@
-## Run llama.cpp/Ollama/Open-WebUI on an Intel GPU via Docker
+# Run llama.cpp/Ollama/Open-WebUI on an Intel GPU via Docker
 
 ## Quick Start
 
@@ -6,11 +6,11 @@
 
 1. Linux Installation
 
-    Follow the instructions in this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html#linux) to install Docker on Linux.
+    Follow the instructions in this [guide](./docker_windows_gpu.md#linux) to install Docker on Linux.
 
 2. Windows Installation
 
-    For Windows installation, refer to this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html#install-docker-desktop-for-windows).
+    For Windows installation, refer to this [guide](./docker_windows_gpu.md#install-docker-desktop-for-windows).
 
 #### Setting Docker on windows
 
@@ -24,54 +24,51 @@ docker pull intelanalytics/ipex-llm-inference-cpp-xpu:latest
 
 ### Start Docker Container
 
-```eval_rst
-.. tabs::
-   .. tab:: Linux
+Choose one of the following methods to start the container:
 
-      To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. Select the device you are running(device type:(Max, Flex, Arc, iGPU)). And change the `/path/to/models` to mount the models. `bench_model` is used to benchmark quickly. If want to benchmark, make sure it on the `/path/to/models`
+- For **Linux users**:
 
-      .. code-block:: bash
+  To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. Select the device you are running(device type:(Max, Flex, Arc, iGPU)). And change the `/path/to/models` to mount the models. `bench_model` is used to benchmark quickly. If want to benchmark, make sure it on the `/path/to/models`
 
-        #/bin/bash
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
-        export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
-        sudo docker run -itd \
-                --net=host \
-                --device=/dev/dri \
-                -v /path/to/models:/models \
-                -e no_proxy=localhost,127.0.0.1 \
-                --memory="32G" \
-                --name=$CONTAINER_NAME \
-                -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
-                -e DEVICE=Arc \
-                --shm-size="16g" \
-                $DOCKER_IMAGE
-   
-   .. tab:: Windows
+  ```bash
+  #/bin/bash
+  export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
+  export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
+  sudo docker run -itd \
+                  --net=host \
+                  --device=/dev/dri \
+                  -v /path/to/models:/models \
+                  -e no_proxy=localhost,127.0.0.1 \
+                  --memory="32G" \
+                  --name=$CONTAINER_NAME \
+                  -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
+                  -e DEVICE=Arc \
+                  --shm-size="16g" \
+                  $DOCKER_IMAGE
+  ```
 
-      To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. And change the `/path/to/models` to mount the models. Then add `--privileged` and map the `/usr/lib/wsl` to the docker.
+- For **Windows WSL users**:
 
-      .. code-block:: bash
+  To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container. And change the `/path/to/models` to mount the models. Then add `--privileged` and map the `/usr/lib/wsl` to the docker.
 
-        #/bin/bash
-        export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
-        export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
-        sudo docker run -itd \
-                --net=host \
-                --device=/dev/dri \
-                --privileged \
-                -v /path/to/models:/models \
-                -v /usr/lib/wsl:/usr/lib/wsl \
-                -e no_proxy=localhost,127.0.0.1 \
-                --memory="32G" \
-                --name=$CONTAINER_NAME \
-                -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
-                -e DEVICE=Arc \
-                --shm-size="16g" \
-                $DOCKER_IMAGE
-
-```
-
+  ```bash
+  #/bin/bash
+  export DOCKER_IMAGE=intelanalytics/ipex-llm-inference-cpp-xpu:latest
+  export CONTAINER_NAME=ipex-llm-inference-cpp-xpu-container
+  sudo docker run -itd \
+                  --net=host \
+                  --device=/dev/dri \
+                  --privileged \
+                  -v /path/to/models:/models \
+                  -v /usr/lib/wsl:/usr/lib/wsl \
+                  -e no_proxy=localhost,127.0.0.1 \
+                  --memory="32G" \
+                  --name=$CONTAINER_NAME \
+                  -e bench_model="mistral-7b-v0.1.Q4_0.gguf" \
+                  -e DEVICE=Arc \
+                  --shm-size="16g" \
+                  $DOCKER_IMAGE
+  ```
 
 After the container is booted, you could get into the container through `docker exec`.
 
@@ -126,7 +123,7 @@ llama_print_timings:        eval time =     xxx ms /    31 runs   (   xxx ms per
 llama_print_timings:       total time =     xxx ms /    xxx tokens
 ```
 
-Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/llama_cpp_quickstart.html) for more details.
+Please refer to this [documentation](../Quickstart/llama_cpp_quickstart.md) for more details.
 
 
 ### Running Ollama serving with IPEX-LLM on Intel GPU
@@ -194,13 +191,13 @@ Sample output:
 ```
 
 
-Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/ollama_quickstart.html#pull-model) for more details.
+Please refer to this [documentation](../Quickstart/ollama_quickstart.md#4-pull-model) for more details.
 
 
 ### Running Open WebUI with Intel GPU
 
 Start the ollama and load the model first, then use the open-webui to chat.
-If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add export HF_ENDPOINT=https://hf-mirror.com before running bash start.sh.
+If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `export HF_ENDPOINT=https://hf-mirror.com`before running bash start.sh.
 ```bash
 cd /llm/scripts/
 bash start-open-webui.sh
@@ -218,4 +215,4 @@ INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_signup.png" width="100%" />
 </a>
 
-For how to log-in or other guide, Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/open_webui_with_ollama_quickstart.html) for more details.
+For how to log-in or other guide, Please refer to this [documentation](../Quickstart/open_webui_with_ollama_quickstart.md) for more details.

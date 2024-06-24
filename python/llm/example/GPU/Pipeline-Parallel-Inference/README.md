@@ -12,11 +12,22 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - [Qwen/Qwen1.5-7B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [Qwen/Qwen1.5-14B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [Qwen/Qwen1.5-32B-Chat](./run_qwen1.5_arc_2_card.sh)
+- [THUDM/chatglm3-6b](./run_chatglm_arc_2_card.sh)
 - [baichuan-inc/Baichuan2-7B-Chat](./run_baichuan2_arc_2_card.sh)
 - [baichuan-inc/Baichuan2-13B-Chat](./run_baichuan2_arc_2_card.sh)
 - [microsoft/Phi-3-mini-4k-instruct](./run_phi3_arc_2_card.sh)
 - [microsoft/Phi-3-medium-4k-instruct](./run_phi3_arc_2_card.sh)
-
+- [mistralai/Mistral-7B-v0.1](./run_mistral_arc_2_card.sh)
+- [mistralai/Mixtral-8x7B-Instruct-v0.1](./run_mistral_arc_2_card.sh)
+- [01-ai/Yi-6B-Chat](./run_yi_arc_2_card.sh)
+- [01-ai/Yi-34B-Chat](./run_yi_arc_2_card.sh)
+- [codellama/CodeLlama-7b-Instruct-hf](./run_codellama_arc_2_card.sh)
+- [codellama/CodeLlama-13b-Instruct-hf](./run_codellama_arc_2_card.sh)
+- [codellama/CodeLlama-34b-Instruct-hf](./run_codellama_arc_2_card.sh)
+- [upstage/SOLAR-10.7B-Instruct-v1.0](./run_solar_arc_2_card.sh)
+- [lmsys/vicuna-7b-v1.3](./run_vicuna_arc_2_card.sh)
+- [lmsys/vicuna-13b-v1.3](./run_vicuna_arc_2_card.sh)
+- [lmsys/vicuna-33b-v1.3](./run_vicuna_arc_2_card.sh)
 
 ## Example: Run pipeline parallel inference on multiple GPUs
 
@@ -72,6 +83,21 @@ bash run_qwen1.5_arc_2_card.sh
 </details>
 
 <details>
+  <summary> Show chatglm example </summary>
+
+#### Run chatglm3-6B on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for chatglm to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+bash run_chatglm_arc_2_card.sh
+```
+
+</details>
+
+</details>
+
+<details>
   <summary> Show Baichuan2 example </summary>
 
 #### Run Baichuan2-7B-Chat / Baichuan2-13B-Chat on two Intel Arc A770
@@ -79,7 +105,6 @@ bash run_qwen1.5_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Baichuan2 to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
-pip install transformers==4.37.0
 bash run_baichuan2_arc_2_card.sh
 ```
 
@@ -100,6 +125,83 @@ bash run_phi3_arc_2_card.sh
 ```
 
 </details>
+
+</details>
+
+<details>
+  <summary> Show Mistral/Mixtral example </summary>
+
+#### Run Mistral-7B-v0.1 / Mixtral-8x7B-Instruct-v0.1 on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Mistral / Mixtral to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+pip install transformers==4.37.0
+bash run_mistral_arc_2_card.sh
+```
+
+</details>
+
+</details>
+
+<details>
+  <summary> Show Yi example </summary>
+
+#### Run Yi-6B-Chat / Yi-34B-Chat on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Yi to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+bash run_yi_arc_2_card.sh
+```
+
+</details>
+
+</details>
+
+<details>
+  <summary> Show Codellama example </summary>
+
+#### Run CodeLlama-7b-Instruct-hf / CodeLlama-13b-Instruct-hf / CodeLlama-34b-Instruct-hf on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Codellama to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+bash run_codellama_arc_2_card.sh
+```
+
+</details>
+
+</details>
+
+<details>
+  <summary> Show Solar example </summary>
+
+#### Run SOLAR-10.7B-Instruct-v1.0 on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Solar to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+bash run_solar_arc_2_card.sh
+```
+
+</details>
+
+</details>
+
+<details>
+  <summary> Show Vicuna example </summary>
+
+#### Run vicuna-7b-v1.3 / vicuna-13b-v1.3 / vicuna-33b-v1.3 on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Vicuna to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+bash run_vicuna_arc_2_card.sh
+```
+
+</details>
+
 
 ### 3. Sample Output
 #### [meta-llama/Llama-2-13b-chat-hf](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf)
