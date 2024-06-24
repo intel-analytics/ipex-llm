@@ -106,6 +106,8 @@ jobs:
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
+          python -m pip install --upgrade pytest
+          python -m pip install --upgrade expecttest
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on xpu(transformers==4.36.2)
@@ -918,3 +920,4 @@ jobs:
       #   shell: cmd
       #   run: |
       #     call conda env remove -n igpu-perf -y
+      
