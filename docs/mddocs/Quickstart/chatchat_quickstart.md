@@ -14,7 +14,7 @@
     <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.png"/></a></td>
   </tr>
   <tr>
-    <td>You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4">English</a> or <a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.mp4">简体中文</a> to watch the demo videos.</td>
+    <td rowspan="2">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-en.mp4">English</a> or <a href="https://llm-assets.readthedocs.io/en/latest/_images/langchain-chatchat-cn.mp4">简体中文</a> to watch the demo videos.</td>
   </tr>
 </table>
 
