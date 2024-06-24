@@ -77,7 +77,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
-          python -m pip install --upgrade pytest
           python -m pip install --upgrade omegaconf
           python -m pip install --upgrade pandas
           python -m pip install --upgrade einops
@@ -107,6 +106,8 @@ jobs:
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
+          python -m pip install --upgrade pytest
+          python -m pip install --upgrade expecttest
           bash python/llm/test/run-llm-install-tests.sh
 
       - name: Test on xpu(transformers==4.36.2)
