@@ -6,7 +6,14 @@ Now, you can easily run Llama 3 on Intel GPU using `llama.cpp` and `Ollama` with
 
 See the demo of running Llama-3-8B-Instruct on Intel Arc GPU using `Ollama` below.
 
-[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/ollama-llama3-linux-arc.png)](https://llm-assets.readthedocs.io/en/latest/_images/ollama-llama3-linux-arc.mp4)
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama-llama3-linux-arc.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama-llama3-linux-arc.png"/></a></td>
+  </tr>
+  <tr>
+    <td align="center">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama-llama3-linux-arc.mp4">here</a> to watch the demo video.</td>
+  </tr>
+</table>
 
 ## Quick Start
 This quickstart guide walks you through how to run Llama 3 on Intel GPU using `llama.cpp` / `Ollama` with IPEX-LLM.
