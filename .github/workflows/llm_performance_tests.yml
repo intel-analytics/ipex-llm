@@ -562,7 +562,7 @@ jobs:
         shell: bash
         run: |
           sed -i '/^\s*result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)/ i\
-                  if repo_id in ["THUDM/chatglm3-6b"]:\
+                  if repo_id in ["THUDM/chatglm3-6b", "THUDM/glm-4-9b-chat"]:\
                       run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)
           ' python/llm/dev/benchmark/all-in-one/run.py
 
