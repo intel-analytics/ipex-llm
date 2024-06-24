@@ -13,7 +13,7 @@ on:
   schedule:
     - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
-  # pull_request:
+  pull_request:
   #   branches: [main]
   #   paths:
   #     - ".github/workflows/llm_performance_tests.yml"
