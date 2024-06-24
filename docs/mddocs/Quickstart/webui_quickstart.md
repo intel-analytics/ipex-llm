@@ -4,7 +4,14 @@ The [oobabooga/text-generation-webui](https://github.com/oobabooga/text-generati
 
 See the demo of running LLaMA2-7B on an Intel Core Ultra laptop below.
 
-[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.png)](https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4)
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.png"/></a></td>
+  </tr>
+  <tr>
+    <td align="center">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/webui-mtl.mp4">here</a> to watch the demo video.</td>
+  </tr>
+</table>
 
 ## Quickstart
 This quickstart guide walks you through setting up and using the [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) with `ipex-llm`. 

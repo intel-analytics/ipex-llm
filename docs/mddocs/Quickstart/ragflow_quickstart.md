@@ -5,7 +5,14 @@
 
 *See the demo of ragflow running Qwen2:7B on Intel Arc A770 below.*
 
-[![Demo video](https://llm-assets.readthedocs.io/en/latest/_images/ragflow-record.png)](https://llm-assets.readthedocs.io/en/latest/_images/ragflow-record.mp4)
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-record.mp4"><img src="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-record.png"/></a></td>
+  </tr>
+  <tr>
+    <td align="center">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/ragflow-record.mp4">here</a> to watch the demo video.</td>
+  </tr>
+</table>
 
 ## Quickstart
 
