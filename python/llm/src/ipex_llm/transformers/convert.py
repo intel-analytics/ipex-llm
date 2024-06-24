@@ -1298,9 +1298,13 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.qwen2 import qwen2_model_forward
         from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_causal_lm_forward
         convert_forward(model,
                         module.Qwen2Model,
                         qwen2_model_forward)
+        convert_forward(model,
+                        module.Qwen2ForCausalLM,
+                        qwen2_causal_lm_forward)
         convert_forward(model,
                         module.Qwen2RMSNorm,
                         llama_rms_norm_forward)
@@ -1319,10 +1323,14 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_moeblock_forward
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_model_forward
+        from ipex_llm.transformers.models.qwen2_moe import qwen2_moe_causal_lm_forward
         from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
         convert_forward(model,
                         module.Qwen2MoeModel,
                         qwen2moe_model_forward)
+        convert_forward(model,
+                        module.Qwen2MoeForCausalLM,
+                        qwen2_moe_causal_lm_forward)
         convert_forward(model,
                         module.Qwen2MoeRMSNorm,
                         llama_rms_norm_forward)
