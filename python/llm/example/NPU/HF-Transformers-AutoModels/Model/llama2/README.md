@@ -31,13 +31,12 @@ pip install dist\intel_npu_acceleration_library-1.2.0-cp310-cp310-win_amd64.whl
 ### 2. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
 #### 2.1 Configurations for Windows
-<details>
+
+**Following envrionment variables are required**:
 
 ```cmd
 set BIGDL_USE_NPU=1
 ```
-
-</details>
 
 ### 3. Running examples
 
