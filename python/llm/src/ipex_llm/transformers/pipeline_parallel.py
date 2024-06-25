@@ -90,6 +90,8 @@ class Dummy_GLMBlock(nn.Module):
     def forward(
             self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True,
     ):
+        if kv_cache is None:
+            return hidden_states, ()
         return hidden_states, kv_cache
 
 
@@ -123,9 +125,9 @@ def pipeline_parallel(model, pipeline_parallel_stages):
         for i in range(num_layers):
             if i < layer_start or i >= layer_end:
                 model._modules['transformer'].encoder.layers[i] = Dummy_GLMBlock()
-            else:
-                model._modules['transformer'].encoder.layers[i].self_attention.num_layers = \
-                    i - layer_start
+            # else:
+            #     model._modules['transformer'].encoder.layers[i].self_attention.num_layers = \
+            #         i - layer_start
 
         if local_rank != 0:
             model._modules['transformer'].embedding = DummyLayer()
@@ -278,15 +280,29 @@ def pipeline_parallel_generate(self,
                                          "make sure that `pad_token_id` is defined.")
             next_ids = next_ids * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
 
-        # Temporarily specify as Baichuan and ChatGLM
-        if self.config.model_type in ["baichuan", "chatglm"] and local_rank != 0:
-            value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
-            past_key_values_placeholder = tuple(
-                (value_placeholder, value_placeholder) for _ in range(layer_start)
-            ) + (outputs.past_key_values)[layer_start:]
-            _past_key_values = past_key_values_placeholder
-        else:
-            _past_key_values = outputs.past_key_values
+        # # Temporarily specify as Baichuan and ChatGLM
+        # if self.config.model_type in ["baichuan", "chatglm"] and local_rank != 0:
+        #     value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
+        #     past_key_values_placeholder = tuple(
+        #         (value_placeholder, value_placeholder) for _ in range(layer_start)
+        #     ) + (outputs.past_key_values)[layer_start:]
+        #     _past_key_values = past_key_values_placeholder
+        # else:
+        #     _past_key_values = outputs.past_key_values
+
+        if step == 0:
+            if local_rank == 0:
+                value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
+                past_key_values_placeholder = (outputs.past_key_values) + tuple(
+                    (value_placeholder, value_placeholder) for _ in range(20)
+                )
+                _past_key_values = past_key_values_placeholder
+            else:
+                value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
+                past_key_values_placeholder = tuple(
+                    (value_placeholder, value_placeholder) for _ in range(20)
+                ) + (outputs.past_key_values)
+                _past_key_values = past_key_values_placeholder
 
         toc = time.time()
         if step == 0:
