@@ -59,6 +59,7 @@ For optimal performance, it is recommended to set several environment variables.
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Llama2 / Llama3 to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
+pip install transformers==4.37.0
 bash run_llama_arc_2_card.sh
 ```
 
@@ -167,6 +168,7 @@ bash run_yi_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Codellama to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
+pip install transformers==4.37.0
 bash run_codellama_arc_2_card.sh
 ```
 
@@ -182,6 +184,7 @@ bash run_codellama_arc_2_card.sh
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Solar to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
+pip install transformers==4.37.0
 bash run_solar_arc_2_card.sh
 ```
 
