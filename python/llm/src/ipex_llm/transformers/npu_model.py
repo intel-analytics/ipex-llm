@@ -27,6 +27,7 @@ import intel_npu_acceleration_library as npu_lib
 
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.transformers.utils import logger
+from ipex_llm.transformers.npu_models.convert import optimize_llm
 
 
 def patch_flash_attn_import(filename: str) -> List[str]:
@@ -112,7 +113,23 @@ class _BaseAutoModelClass:
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
-        model = npu_lib.compile(model, qtype, False)
+        try:
+            # for intel_npu_acceleration_library >= 1.1.0
+            from intel_npu_acceleration_library.quantization import quantize_model
+            from intel_npu_acceleration_library.compiler import (
+                apply_horizontal_fusion, create_npu_kernels
+            )
+            with torch.no_grad():
+                optimize_llm(model)
+                apply_horizontal_fusion(model)
+                if not qtype.is_floating_point:
+                    model = quantize_model(model, qtype)
+                create_npu_kernels(model)
+            model = model.eval()
+        except ImportError as _e:
+            # for intel_npu_acceleration_library < 1.1.0
+            model = npu_lib.compile(model, qtype, False)
+        logger.info(f"Finish to convert model")
 
         # add save_low_bit to pretrained model dynamically
         model.save_low_bit = types.MethodType(cls.save_low_bit, model)
