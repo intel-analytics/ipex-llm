@@ -22,7 +22,7 @@ pip install mpi4py fastapi uvicorn openai
 pip install gradio # for gradio web UI
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 
-pip install transformers==4.31.0 # for llama2 models
+pip install transformers==4.37.0
 ```
 
 ### 2. Run pipeline parallel serving on multiple GPUs

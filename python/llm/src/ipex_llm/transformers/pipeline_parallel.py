@@ -64,7 +64,9 @@ class Dummy_DecoderLayer(nn.Module):
         self.input_layernorm = DummyLayer()
         self.mlp = Dummy_MLPLayer()
 
-    def forward(self, hidden_states, past_key_value=None, use_cache=False, **kwargs):
+    def forward(self, hidden_states, *args, **kwargs):
+        past_key_value = kwargs.get('past_key_value', None)
+        use_cache = kwargs.get('use_cache', False)
         outputs = (hidden_states,)
         if use_cache:
             outputs += (past_key_value,)

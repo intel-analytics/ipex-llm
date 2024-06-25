@@ -3,19 +3,16 @@ import torch.nn.parallel
 import torch.distributed as dist
 import os
 
-import ipex_llm
 from ipex_llm.utils.common import invalidInputError
+from ipex_llm.transformers import init_pipeline_parallel
 import oneccl_bindings_for_pytorch
 import json
 
 from transformers.utils import logging
 logger = logging.get_logger(__name__)
 
-os.environ['MASTER_ADDR'] = '127.0.0.1'
-os.environ['MASTER_PORT'] = '29501'
+init_pipeline_parallel()
 
-backend = 'ccl'
-dist.init_process_group(backend)
 my_rank = dist.get_rank()
 my_size = dist.get_world_size()
 device = f"xpu:{my_rank}"
@@ -146,7 +143,7 @@ async def completion_stream_generator(local_model, delta_text_queue, request_id)
             if remain == 0:
                 choice_data = CompletionResponseStreamChoice(
                                 index=index,
-                                text=None,
+                                text="",
                                 logprobs=None,
                                 finish_reason="length")
                 chunk = CompletionStreamResponse(
@@ -171,7 +168,6 @@ async def generator(local_model, delta_text_queue, request_id):
                 break
         else:
             await asyncio.sleep(0)
-    # streamer_dict.pop(request_id, None)
     local_model.streamer.pop(request_id, None)
 
 
@@ -280,29 +276,6 @@ async def create_completion(request: CompletionRequest):
                             choices=[choice_data],
                             model=model_name)
     return result
-
-
-def generate_text(prompt: List[str], n_predict = 32):
-    while prompt[-1] == "":
-        prompt = prompt[:-1]
-    if isinstance(n_predict, list):
-        n_predict = max(n_predict)
-        
-    inputs = tokenizer(prompt, return_tensors="pt", padding=True)
-    input_ids = inputs.input_ids.to(f'xpu:{local_rank}')
-    print(inputs)
-    attention_mask = inputs.attention_mask.to(f'xpu:{local_rank}')
-    output = local_model.generate(input_ids,
-                                  max_tokens=n_predict,
-                            # attention_mask=attention_mask,
-                            # max_new_tokens=n_predict,
-                            # min_new_tokens=n_predict,
-                            # do_sample=False,
-                            # use_cache=True
-                            )
-    torch.xpu.synchronize()
-
-    return output
 
 
 async def process_requests(local_model, result_dict):
