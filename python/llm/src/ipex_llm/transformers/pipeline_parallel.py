@@ -24,6 +24,7 @@ import os
 import time
 import numpy as np
 from typing import Callable, List, Optional
+from types import SimpleNamespace
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
 from ipex_llm.utils.common import invalidInputError
 import logging
@@ -52,6 +53,8 @@ class Dummy_MLPLayer(nn.Module):
         # python/llm/src/ipex_llm/transformers/models/llama.py#L119
         self.up_proj = DummyLayer()
         self.down_proj = DummyLayer()
+        self.shared_expert = SimpleNamespace()
+        self.shared_expert.up_proj = DummyLayer()
 
     def forward(self, x):
         return x
