@@ -160,7 +160,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 ## `ipex-llm` Quickstart
 
 ### Docker
-- [Installation on GPU](docs/mddocs/DockerGuides/docker_windows_gpu.md): installing `ipex-llm` in docker with Intel GPUs
+- [Installation on GPU](docs/mddocs/DockerGuides/docker_windows_gpu.md): installing `ipex-llm` in docker with Intel GPU
 - [GPU Inference in C++](docs/mddocs/DockerGuides/docker_cpp_xpu_quickstart.md): running `llama.cpp`, `ollama`, `OpenWebUI`, etc., with `ipex-llm` on Intel GPU
 - [GPU Inference in Python](docs/mddocs/DockerGuides/docker_pytorch_inference_gpu.md) : running HuggingFace `transformers`, `LangChain`, `LlamaIndex`, `ModelScope`, etc. with `ipex-llm` on Intel GPU
 - [VSCode Guide on GPU](docs/readthedocs/source/doc/LLM/DockerGuides/docker_run_pytorch_inference_in_vscode.md): running and developing Python LLM applications using VSCode on Intel GPU
