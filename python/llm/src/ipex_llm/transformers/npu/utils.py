@@ -50,7 +50,7 @@ NPU_CONFIG = {
     "PERFORMANCE_HINT": "LATENCY"}
 
 
-def get_npu_model(model, inputs, input_names, output_names, save_dir=None, quantize=False):
+def get_npu_model(model, inputs, input_names, output_names, save_dir=None, quantize=False, device="NPU"):
 
     # create a temp directory to save the model
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -66,7 +66,12 @@ def get_npu_model(model, inputs, input_names, output_names, save_dir=None, quant
             import nncf
             dataset = nncf.Dataset(torch.utils.data.DataLoader(inputs, batch_size=1))
             ov_model = nncf.quantize(ov_model, dataset, model_type=ModelType.TRANSFORMER)
-        compiled_model = OV_CORE.compile_model(ov_model, "NPU", config=NPU_CONFIG)
+        if device == "NPU":
+            compiled_model = OV_CORE.compile_model(ov_model, "NPU", config=NPU_CONFIG)
+        elif device == "GPU":
+            compiled_model = OV_CORE.compile_model(ov_model, "GPU")
+        else:
+            compiled_model = OV_CORE.compile_model(ov_model, "CPU")
     # ov.save_model(ov_model, save_dir_path / 'model.xml')
     # compiled_model = OV_CORE.compile_model(ov_model, "CPU")
     return compiled_model, OV_CORE
