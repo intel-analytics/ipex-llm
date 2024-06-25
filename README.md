@@ -163,7 +163,8 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [GPU Inference in C++](docs/mddocs/DockerGuides/docker_cpp_xpu_quickstart.md): running `llama.cpp`, `ollama`, `OpenWebUI`, etc., with `ipex-llm` on Intel GPU
 - [GPU Inference in Python](docs/mddocs/DockerGuides/docker_pytorch_inference_gpu.md) : running HuggingFace `transformers`, `LangChain`, `LlamaIndex`, `ModelScope`, etc. with `ipex-llm` on Intel GPU
 - [VSCode Guide on GPU](docs/readthedocs/source/doc/LLM/DockerGuides/docker_run_pytorch_inference_in_vscode.md): running and developing Python LLM applications using VSCode on Intel GPU
-- [vLLM on GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md): running `vLLM` serving with `ipex-llm` on Intel GPU 
+- [vLLM on GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md): running `vLLM` serving with `ipex-llm` on Intel GPU
+- [vLLM on CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md): running `vLLM` serving with `ipex-llm` on Intel CPU  
 - [FastChat on GPU](docs/mddocs/DockerGuides/fastchat_docker_quickstart.md): running `FastChat` serving with `ipex-llm` on Intel GPU
 
 ### Use
@@ -171,6 +172,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md): running **ollama** (*using C++ interface of `ipex-llm` as an accelerated backend for `ollama`*) on Intel GPU
 - [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md): running `ipex-llm` in **vLLM** on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving)
 - [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md): running `ipex-llm` in **FastChat** serving on on both Intel GPU and CPU
+- [Serving on multiple Intel GPUs](docs/mddocs/Quickstart/deepspeed_autotp_fastapi_quickstart.md): running `ipex-llm` serving on multiple Intel GPUs by leveraging DeepSpeed AutoTP and FastAPI
 - [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md): running `ipex-llm` in `oobabooga` **WebUI**
 - [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md): running `ipex-llm` in **Axolotl** for LLM finetuning
 - [Benchmarking](docs/mddocs/Quickstart/benchmark_quickstart.md): running  (latency and throughput) **benchmarks** for `ipex-llm` on Intel CPU and GPU
@@ -181,6 +183,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [Open WebUI](docs/mddocs/Quickstart/open_webui_with_ollama_quickstart.md): running `Open WebUI` with `ipex-llm`
 - [PrivateGPT](docs/mddocs/Quickstart/privateGPT_quickstart.md): running `PrivateGPT` to interact with documents with `ipex-llm`
 - [Dify platform](docs/mddocs/Quickstart/dify_quickstart.md): running `ipex-llm` in `Dify`(*production-ready LLM app development platform*)
+- [RAGFlow](docs/mddocs/Quickstart/ragflow_quickstart.md): running `RAGFlow` (*an open-source RAG engine*) with `ipex-llm`
 
 
 ### Install 
