@@ -16,11 +16,12 @@
 
 
 ## Table of Contents
->0. [Prerequisites](./ragflow_quickstart.md#0-prerequisites)
->1. [Install and Start Ollama Service on Intel GPU](./ragflow_quickstart.md#1-install-and-start-ollama-service-on-intel-gpu)
->2. [Pull Model](./ragflow_quickstart.md#2-pull-model)
->3. [Start `RAGFlow` Service](./ragflow_quickstart.md#3-start-ragflow-service)
->4. [Using `RAGFlow`](./ragflow_quickstart.md#4-using-ragflow)
+- [Prerequisites](./ragflow_quickstart.md#0-prerequisites)
+- [Install and Start Ollama Service on Intel GPU](./ragflow_quickstart.md#1-install-and-start-ollama-service-on-intel-gpu)
+- [Pull Model](./ragflow_quickstart.md#2-pull-model)
+- [Start `RAGFlow` Service](./ragflow_quickstart.md#3-start-ragflow-service)
+- [Using `RAGFlow`](./ragflow_quickstart.md#4-using-ragflow)
+
 ## Quickstart
 
 ### 0. Prerequisites
