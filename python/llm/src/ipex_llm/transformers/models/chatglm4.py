@@ -133,7 +133,7 @@ def chatglm4_attention_forward(
     # hidden_states: [b, sq, h]
     # torch.set_printoptions(edgeitems=hidden_states.numel())
     # print(f'On my rank {torch.distributed.get_rank()}, INPUT IS {hidden_states}, AND {attention_mask}, AND {rotary_pos_emb}, AND {kv_cache}')
-    print(f'ON ATTENTION FORWARD, INPUT IS {hidden_states}, AND {attention_mask}, AND {rotary_pos_emb}, AND {kv_cache}')
+    # print(f'ON ATTENTION FORWARD, INPUT IS {hidden_states}, AND {attention_mask}, AND {rotary_pos_emb}, AND {kv_cache}')
     bsz, q_len, _ = hidden_states.size()
 
     # past_key_value: [bsz, n_kv_head, seq_len, head_dim]
@@ -234,11 +234,11 @@ def chatglm4_attention_forward(
         attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
                                                    dtype=torch.float32).to(value_states.dtype)
         # print(f'On my rank {torch.distributed.get_rank()}, attn_weights IS {attn_weights}, AND value_states IS {value_states}')
-        print(f'ON ATTENTION FORWARD, attn_weights IS {attn_weights}, AND value_states IS {value_states}')
+        # print(f'ON ATTENTION FORWARD, attn_weights IS {attn_weights}, AND value_states IS {value_states}')
         attn_output = torch.matmul(attn_weights, value_states)
 
     # print(f'On my rank {torch.distributed.get_rank()}, ATTEN OUTPUT IS {attn_output}')
-    print(f'ON ATTENTION FORWARD, ATTEN OUTPUT IS {attn_output}')
+    # print(f'ON ATTENTION FORWARD, ATTEN OUTPUT IS {attn_output}')
     # context_layer's shape: [bsz, n_head, seq_len, head_dim] -> [seq_len, bsz, n_head * head_dim]
     attn_output = attn_output.transpose(1, 2).contiguous().view(bsz, q_len, n_head * head_dim)
     output = self.dense(attn_output)
