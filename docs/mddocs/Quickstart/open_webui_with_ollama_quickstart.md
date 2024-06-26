@@ -14,11 +14,11 @@
 </table>
 
 ## Table of Contents
->1. [Run Ollama with Intel GPU](./open_webui_with_ollama_quickstart.md#1-run-ollama-with-intel-gpu)
->2. [Install the Open-Webui](./open_webui_with_ollama_quickstart.md#2-install-the-open-webui)
->3. [Start the Open-WebUI](./open_webui_with_ollama_quickstart.md#3-start-the-open-webui)
->4. [Using the Open-Webui](./open_webui_with_ollama_quickstart.md#4-using-the-open-webui)
->5. [Troubleshooting](./open_webui_with_ollama_quickstart.md#5-troubleshooting)
+- [Run Ollama with Intel GPU](./open_webui_with_ollama_quickstart.md#1-run-ollama-with-intel-gpu)
+- [Install the Open-Webui](./open_webui_with_ollama_quickstart.md#2-install-the-open-webui)
+- [Start the Open-WebUI](./open_webui_with_ollama_quickstart.md#3-start-the-open-webui)
+- [Using the Open-Webui](./open_webui_with_ollama_quickstart.md#4-using-the-open-webui)
+- [Troubleshooting](./open_webui_with_ollama_quickstart.md#5-troubleshooting)
 
 ## Quickstart
 
