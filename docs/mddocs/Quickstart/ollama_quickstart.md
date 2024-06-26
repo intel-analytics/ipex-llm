@@ -18,9 +18,16 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 >
 > Our current version is consistent with [v0.1.39](https://github.com/ollama/ollama/releases/tag/v0.1.39) of ollama.
 
+## Table of Contents
+>1. [Install IPEX-LLM for Ollama](./ollama_quickstart.md#1-install-ipex-llm-for-ollama)
+>2. [Initialize Ollama](./ollama_quickstart.md#2-initialize-ollama)
+>3. [Run Ollama Serve](./ollama_quickstart.md#3-run-ollama-serve)
+>4. [Pull Model](./ollama_quickstart.md#4-pull-model)
+>5. [Using Ollama](./ollama_quickstart.md#5-using-ollama)
+
 ## Quickstart
 
-### 1 Install IPEX-LLM for Ollama
+### 1. Install IPEX-LLM for Ollama
 
 IPEX-LLM's support for `ollama` now is available for Linux system and Windows system.
 
@@ -53,7 +60,7 @@ Activate the `llm-cpp` conda environment and initialize Ollama by executing the 
 
 **Now you can use this executable file by standard ollama's usage.**
 
-### 3 Run Ollama Serve
+### 3. Run Ollama Serve
 
 You may launch the Ollama service as below:
 
@@ -102,7 +109,7 @@ The console will display messages similar to the following:
 </a>
 
 
-### 4 Pull Model
+### 4. Pull Model
 Keep the Ollama service on and open another terminal and run `./ollama pull <model_name>` in Linux (`ollama.exe pull <model_name>` in Windows) to automatically pull a model. e.g. `dolphin-phi:latest`:
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" target="_blank">
@@ -110,7 +117,7 @@ Keep the Ollama service on and open another terminal and run `./ollama pull <mod
 </a>
 
 
-### 5 Using Ollama
+### 5. Using Ollama
 
 #### Using Curl 
 
