@@ -16,8 +16,8 @@ See the demo of running Llama-3-8B-Instruct on Intel Arc GPU using `Ollama` belo
 </table>
 
 ## Table of Contents
->1. [Run Llama 3 using llama.cpp](./llama3_llamacpp_ollama_quickstart.md#1-run-llama-3-using-llamacpp)
->2. [Run Llama3 using Ollama](./llama3_llamacpp_ollama_quickstart.md#2-run-llama3-using-ollama)
+- [Run Llama 3 using llama.cpp](./llama3_llamacpp_ollama_quickstart.md#1-run-llama-3-using-llamacpp)
+- [Run Llama3 using Ollama](./llama3_llamacpp_ollama_quickstart.md#2-run-llama3-using-ollama)
 
 
 
