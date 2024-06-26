@@ -13,6 +13,15 @@ See the demo of finetuning LLaMA2-7B on Intel Arc GPU below.
   </tr>
 </table>
 
+## Table of Contents
+>0. [Prerequisites](./axolotl_quickstart.md#0-prerequisites)
+>1. [Install IPEX-LLM for Axolotl](./axolotl_quickstart.md#1-install-ipex-llm-for-axolotl)
+>2. [Example: Finetune Llama-2-7B with Axolotl](./axolotl_quickstart.md#2-example-finetune-llama-2-7b-with-axolotl)
+>3. [Finetune Llama-3-8B (Experimental)](./axolotl_quickstart.md#3-finetune-llama-3-8b-experimental)
+>4. [Troubleshooting](./axolotl_quickstart.md#troubleshooting)
+
+
+
 ## Quickstart
 
 ### 0. Prerequisites
