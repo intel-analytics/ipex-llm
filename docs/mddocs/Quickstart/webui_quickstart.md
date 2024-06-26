@@ -14,12 +14,12 @@ See the demo of running LLaMA2-7B on an Intel Core Ultra laptop below.
 </table>
 
 ## Table of Contents
->1. [Install IPEX-LLM](./webui_quickstart.md#1-install-ipex-llm)
->2. [Install the WebUI](./webui_quickstart.md#2-install-the-webui)
->3. [Start the WebUI Server](./webui_quickstart.md#3-start-the-webui-server)
->4. [Using the WebUI](./webui_quickstart.md#4-using-the-webui)
->5. [Advanced Usage](./webui_quickstart.md#5-advanced-usage)
->6. [Troubleshooting](./webui_quickstart.md#troubleshooting)
+- [Install IPEX-LLM](./webui_quickstart.md#1-install-ipex-llm)
+- [Install the WebUI](./webui_quickstart.md#2-install-the-webui)
+- [Start the WebUI Server](./webui_quickstart.md#3-start-the-webui-server)
+- [Using the WebUI](./webui_quickstart.md#4-using-the-webui)
+- [Advanced Usage](./webui_quickstart.md#5-advanced-usage)
+- [Troubleshooting](./webui_quickstart.md#troubleshooting)
 
 ## Quickstart
 This quickstart guide walks you through setting up and using the [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) with `ipex-llm`. 
