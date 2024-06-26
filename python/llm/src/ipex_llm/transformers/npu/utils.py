@@ -50,7 +50,7 @@ NPU_CONFIG = {
     "PERFORMANCE_HINT": "LATENCY"}
 
 
-def get_npu_model(model, inputs, input_names, output_names, save_dir=None, quantize=False, device="NPU"):
+def get_npu_model(model, inputs, input_names, output_names, save_dir=None, quantize=False, device="NPU", int4_indexes=None):
 
     # create a temp directory to save the model
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -61,6 +61,11 @@ def get_npu_model(model, inputs, input_names, output_names, save_dir=None, quant
         torch.onnx.export(model, inputs, save_dir_path / 'model.onnx',
                           input_names=input_names, output_names=output_names)
         ov_model = ov.convert_model(save_dir_path / 'model.onnx')
+        
+        if int4_indexes is not None:
+            for input_index in int4_indexes:
+                ov_model.get_parameters()[input_index].set_element_type(ov.runtime.Type.i4)
+
         if quantize:
             from nncf.parameters import ModelType
             import nncf

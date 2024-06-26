@@ -84,7 +84,8 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "pipeline_parallel_stages")
 
         low_bit = kwargs.pop('load_in_low_bit', 'fp32')
-        kv_cache_len_max = kwargs.pop('kv_cache_len_max', 1024)
+        max_prompt_size = kwargs.pop('max_prompt_tokens', 128)
+        max_new_tokens = kwargs.pop('max_new_tokens', 128)
         kwargs["low_cpu_mem_usage"] = True
 
         backend = kwargs.pop('npu_backend', 'intel_npu_acceleration_library')
@@ -121,7 +122,10 @@ class _BaseAutoModelClass:
         elif backend == "openvino":
             import ipex_llm.transformers.npu.ov_lib as ov_lib
             logger.info(f"Converting model, it may takes up to several minutes ...")
-            model = ov_lib.compile(model, torch.float16, kv_cache_len_max=kv_cache_len_max)
+            model = ov_lib.compile(model, torch.float16,
+                                   max_prompt_size=max_prompt_size,
+                                   max_output_size=max_new_tokens,
+                                   qtype = low_bit)
         else:
             invalidInputError(False, f"unsupported backend {backend}")
 

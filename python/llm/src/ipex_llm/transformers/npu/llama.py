@@ -34,6 +34,7 @@ from transformers.models.llama.modeling_llama import _prepare_4d_causal_attentio
 from ipex_llm.transformers.convert import convert_forward
 from ipex_llm.utils.common.log4Error import invalidInputError
 import transformers
+import time
 
 
 class NPUModelDecode(nn.Module):
@@ -43,16 +44,16 @@ class NPUModelDecode(nn.Module):
 
     def forward(self, hidden_states, attention_mask, position_ids, past_key_values, weights):
 
-        msg = "sanity check"
-        for i in range(len(self.layers)):
-            layer_weights = weights[i]
-            invalidInputError(layer_weights[0] is self.layers[i].self_attn.q_proj.weight, msg)
-            invalidInputError(layer_weights[1] is self.layers[i].self_attn.k_proj.weight, msg)
-            invalidInputError(layer_weights[2] is self.layers[i].self_attn.v_proj.weight, msg)
-            invalidInputError(layer_weights[3] is self.layers[i].self_attn.o_proj.weight, msg)
-            invalidInputError(layer_weights[4] is self.layers[i].mlp.gate_proj.weight, msg)
-            invalidInputError(layer_weights[5] is self.layers[i].mlp.up_proj.weight, msg)
-            invalidInputError(layer_weights[6] is self.layers[i].mlp.down_proj.weight, msg)
+        # msg = "sanity check"
+        # for i in range(len(self.layers)):
+        #     layer_weights = weights[i]
+        #     invalidInputError(layer_weights[0] is self.layers[i].self_attn.q_proj.weight, msg)
+        #     invalidInputError(layer_weights[1] is self.layers[i].self_attn.k_proj.weight, msg)
+        #     invalidInputError(layer_weights[2] is self.layers[i].self_attn.v_proj.weight, msg)
+        #     invalidInputError(layer_weights[3] is self.layers[i].self_attn.o_proj.weight, msg)
+        #     invalidInputError(layer_weights[4] is self.layers[i].mlp.gate_proj.weight, msg)
+        #     invalidInputError(layer_weights[5] is self.layers[i].mlp.up_proj.weight, msg)
+        #     invalidInputError(layer_weights[6] is self.layers[i].mlp.down_proj.weight, msg)
 
         next_cache = []
         for i, layer in enumerate(self.layers):
@@ -74,16 +75,16 @@ class NPUModelPrefill(nn.Module):
 
     def forward(self, hidden_states, attention_mask, position_ids, weights):
 
-        msg = "sanity check"
-        for i in range(len(self.layers)):
-            layer_weights = weights[i]
-            invalidInputError(layer_weights[0] is self.layers[i].self_attn.q_proj.weight, msg)
-            invalidInputError(layer_weights[1] is self.layers[i].self_attn.k_proj.weight, msg)
-            invalidInputError(layer_weights[2] is self.layers[i].self_attn.v_proj.weight, msg)
-            invalidInputError(layer_weights[3] is self.layers[i].self_attn.o_proj.weight, msg)
-            invalidInputError(layer_weights[4] is self.layers[i].mlp.gate_proj.weight, msg)
-            invalidInputError(layer_weights[5] is self.layers[i].mlp.up_proj.weight, msg)
-            invalidInputError(layer_weights[6] is self.layers[i].mlp.down_proj.weight, msg)
+        # msg = "sanity check"
+        # for i in range(len(self.layers)):
+        #     layer_weights = weights[i]
+        #     invalidInputError(layer_weights[0] is self.layers[i].self_attn.q_proj.weight, msg)
+        #     invalidInputError(layer_weights[1] is self.layers[i].self_attn.k_proj.weight, msg)
+        #     invalidInputError(layer_weights[2] is self.layers[i].self_attn.v_proj.weight, msg)
+        #     invalidInputError(layer_weights[3] is self.layers[i].self_attn.o_proj.weight, msg)
+        #     invalidInputError(layer_weights[4] is self.layers[i].mlp.gate_proj.weight, msg)
+        #     invalidInputError(layer_weights[5] is self.layers[i].mlp.up_proj.weight, msg)
+        #     invalidInputError(layer_weights[6] is self.layers[i].mlp.down_proj.weight, msg)
 
         next_cache = []
         for i, layer in enumerate(self.layers):
@@ -107,35 +108,82 @@ def flatten(inputs):
         return [inputs]
 
 
-def gather_weights_from_decoder(decoder):
-    return [
-        decoder.self_attn.q_proj.weight,
-        decoder.self_attn.k_proj.weight,
-        decoder.self_attn.v_proj.weight,
-        decoder.self_attn.o_proj.weight,
-        decoder.mlp.gate_proj.weight,
-        decoder.mlp.up_proj.weight,
-        decoder.mlp.down_proj.weight]
+def gather_weights_from_decoder(decoder, qtype):
+    attn = decoder.self_attn
+    mlp = decoder.mlp
+    if qtype in supporte_qtype:
+
+        return [
+            (attn.q_proj.weight, attn.q_proj.scale),
+            (attn.k_proj.weight, attn.k_proj.scale),
+            (attn.v_proj.weight, attn.v_proj.scale),
+            (attn.o_proj.weight, attn.o_proj.scale),
+            (mlp.gate_proj.weight, mlp.gate_proj.scale),
+            (mlp.up_proj.weight, mlp.up_proj.scale),
+            (mlp.down_proj.weight, mlp.down_proj.scale)
+        ]
+    else: 
+        return [
+            attn.q_proj.weight,
+            attn.k_proj.weight,
+            attn.v_proj.weight,
+            attn.o_proj.weight,
+            mlp.gate_proj.weight,
+            mlp.up_proj.weight,
+            mlp.down_proj.weight]
+
+from ipex_llm.transformers.npu.quantization import compress_to_i4
+import openvino as ov
+def set_weights_for_decoder(request, npu_decoder,
+                            weights, num_layers,
+                            weights_arg_offset,
+                            qtype=None):
+    if qtype in supporte_qtype:
+        for i in range(num_layers):
+            layer_weights = weights[i]
+            for j in range(7):
+                w, scale = layer_weights[j]
+                offset = weights_arg_offset + i * 7 * 2 + j * 2
+                w_port = npu_decoder.input(offset)
+                w_npu_tensor = request.get_tensor(w_port)
+                if qtype == "sym_int4":
+                    w_int4 = compress_to_i4(w)
+                    w = ov.Tensor(w_int4.numpy(), w.shape, ov.Type.i4)
+                w_npu_tensor.copy_from(w)
+
+                scale_port = npu_decoder.input(offset + 1)
+                scale_npu_tensor = request.get_tensor(scale_port)
+                scale_npu_tensor.copy_from(scale.numpy())
+    else:
+        for i in range(num_layers):
+            layer_weights = weights[i]
+            for j in range(7):
+                w = layer_weights[j]
+                w_port = npu_decoder.input(weights_arg_offset + i * 7 + j)
+                w_npu_tensor = request.get_tensor(w_port)
+                w_npu_tensor.copy_from(w.numpy())
 
 
-def set_weights_for_decoder(request, npu_decoder, weights, num_layers, weights_arg_offset):
-    for i in range(num_layers):
-        layer_weights = weights[i]
-        for j in range(7):
-            w = layer_weights[j]
-            w_port = npu_decoder.input(weights_arg_offset + i * 7 + j)
-            w_npu_tensor = request.get_tensor(w_port)
-            w_npu_tensor.copy_from(w.numpy())
+supporte_qtype = {"sym_int8", "sym_int4"}
 
-
-def offload_llama_decoder_to_npu(model, num_layers=None, kv_cache_len_max=None):
+def offload_llama_decoder_to_npu(model,
+                                 max_prompt_size,
+                                 max_output_size,
+                                 qtype=None,
+                                 num_layers=None):
+    
+    if qtype in supporte_qtype:
+        from ipex_llm.transformers.npu.quantization import lower_linear
+        start = time.perf_counter()
+        lower_linear(model.model.layers, qtype)
+        end = time.perf_counter()
+        print(f"done quantization, using time {end - start}s")
 
     llama_model = model.model
     if num_layers is None:
         num_layers = llama_model.config.num_hidden_layers
 
-    if kv_cache_len_max is None:
-        kv_cache_len_max = 1024
+    kv_cache_len_max = max_prompt_size + max_output_size
 
     hidden_size = llama_model.config.hidden_size
     num_heads = llama_model.config.num_attention_heads
@@ -144,7 +192,7 @@ def offload_llama_decoder_to_npu(model, num_layers=None, kv_cache_len_max=None):
     def get_decoder_model(layers, hidden_size, num_heads, head_dim, num_key_value_heads):
         with torch.no_grad():
             npu_torch_model = NPUModelDecode(layers)
-            layers_weights = [gather_weights_from_decoder(layers[i])
+            layers_weights = [gather_weights_from_decoder(layers[i], qtype=qtype)
                             for i in range(num_layers)]
             kv_cache = [(torch.randn(1, num_key_value_heads, kv_cache_len_max, head_dim,
                                     dtype=torch.float16),
@@ -159,44 +207,61 @@ def offload_llama_decoder_to_npu(model, num_layers=None, kv_cache_len_max=None):
                             )
             input_names = ["input", "attention_mask", "position_ids", "past_key_values", "weights"]
             output_names = ["output", "new_past_key_values"]
+            
+            # get int4 weights indexes in the inputs
+            weights_arg_offset = 3 + len(kv_cache) * 2
+            indexes = None
+            if qtype == "sym_int4":
+                indexes = [weights_arg_offset + i * 7 * 2 for i in range(num_layers)]
+            
             npu_decoder, core = get_npu_model(npu_torch_model, dummy_inputs,
                                             input_names, output_names, quantize=False,
-                                            device="NPU")
+                                            device="NPU", int4_indexes=indexes)
             infer_request = npu_decoder.create_infer_request()
-            weights_arg_offset = 3 + len(kv_cache) * 2
+            
             set_weights_for_decoder(infer_request, npu_decoder, layers_weights, num_layers,
-                                    weights_arg_offset=weights_arg_offset)
+                                    weights_arg_offset=weights_arg_offset, qtype=qtype)
         return infer_request, npu_decoder
     
     def get_prefill_model(layers, hidden_size, num_heads, head_dim, num_key_value_heads):
         with torch.no_grad():
             npu_torch_model = NPUModelPrefill(layers)
-            layers_weights = [gather_weights_from_decoder(layers[i])
+            layers_weights = [gather_weights_from_decoder(layers[i], qtype=qtype)
                             for i in range(num_layers)]
-            dummy_inputs = (torch.randn(1, kv_cache_len_max, hidden_size, dtype=torch.float16),
-                            torch.ones(1, 1, kv_cache_len_max, kv_cache_len_max, dtype=torch.float16),
-                            torch.ones(1, kv_cache_len_max, dtype=torch.long) * (kv_cache_len_max - 1),
+            dummy_inputs = (torch.ones(1, max_prompt_size, hidden_size, dtype=torch.float16) / 0,
+                            torch.ones(1, 1, max_prompt_size, max_prompt_size, dtype=torch.float16),
+                            torch.ones(1, max_prompt_size, dtype=torch.long) * (max_prompt_size - 1),
                             layers_weights,
                             )
             input_names = ["input", "attention_mask", "position_ids", "weights"]
             output_names = ["output", "new_past_key_values"]
+            
+            weights_arg_offset = 3
+            indexes = None
+            if qtype == "sym_int4":
+                indexes = [weights_arg_offset + i * 7 * 2 for i in range(num_layers)]
             npu_decoder, core = get_npu_model(npu_torch_model, dummy_inputs,
                                             input_names, output_names, quantize=False,
-                                            device="GPU")
+                                            device="NPU", int4_indexes=indexes)
             infer_request = npu_decoder.create_infer_request()
-            weights_arg_offset = 3
+            
             set_weights_for_decoder(infer_request, npu_decoder, layers_weights, num_layers,
-                                    weights_arg_offset=weights_arg_offset)
+                                    weights_arg_offset=weights_arg_offset, 
+                                    qtype=qtype)
         return infer_request, npu_decoder
     
     layers = llama_model.layers[:num_layers].to(torch.float16)
+    start = time.perf_counter()
     infer_request_prefill, npu_prefill_model = get_prefill_model(layers,
                                                                hidden_size, num_heads, head_dim, num_key_value_heads)
-    print("get prefill model")
+    end = time.perf_counter()
+    print(f"get prefill model, using time {end - start}s")
     
+    start = time.perf_counter()
     infer_request_decode, npu_decode_model = get_decoder_model(layers,
                                                                hidden_size, num_heads, head_dim, num_key_value_heads)
-    print("get decoder model")
+    end = time.perf_counter()
+    print(f"get decoder model, using time {end - start}s")
 
 
     def padding_decoder_inputs(hidden_states, attention_mask, position_ids,
@@ -269,7 +334,7 @@ def offload_llama_decoder_to_npu(model, num_layers=None, kv_cache_len_max=None):
         return npu_inference(npu_model=npu_prefill_model,
                              ov_infer_req=infer_request_prefill,
                       padding_fn=padding_prefill_inputs,
-                      get_pad_len_fn=lambda x: kv_cache_len_max - attention_mask.size(-1),
+                      get_pad_len_fn=lambda x: max_prompt_size - attention_mask.size(-1),
                       hidden_states=hidden_states,
                       attention_mask=attention_mask,
                       position_ids=position_ids,
@@ -434,3 +499,4 @@ def offload_llama_decoder_to_npu(model, num_layers=None, kv_cache_len_max=None):
                     transformers.models.llama.modeling_llama.LlamaModel,
                     llama_model_forward)
     return model
+

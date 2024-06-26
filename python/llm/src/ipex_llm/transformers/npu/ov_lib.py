@@ -23,7 +23,9 @@ from ipex_llm.utils.common.log4Error import invalidInputError
 def compile(
     model: torch.nn.Module,
     dtype: torch.dtype = torch.float16,
-    kv_cache_len_max: int = 1024
+    max_prompt_size: int = 128,
+    max_output_size: int = 128,
+    qtype: str = "fp32",
 ) -> torch.nn.Module:
 
     invalidInputError(dtype == torch.float16,
@@ -32,8 +34,11 @@ def compile(
     if 'llama' in model.config.model_type:
         from ipex_llm.transformers.npu.llama import offload_llama_decoder_to_npu
         num_layers = model.config.num_hidden_layers
-        model = offload_llama_decoder_to_npu(model, num_layers=num_layers,
-                                             kv_cache_len_max=kv_cache_len_max)
+        model = offload_llama_decoder_to_npu(model,
+                                             max_prompt_size=max_prompt_size,
+                                             max_output_size=max_output_size,
+                                             qtype=qtype,
+                                             num_layers=num_layers)
     else:
         invalidInputError(f"model type not supported: {model.config.model_type}")
 

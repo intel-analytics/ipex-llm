@@ -38,7 +38,10 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
-                                                 npu_backend="openvino", kv_cache_len_max=128)
+                                                 npu_backend="openvino",
+                                                 max_prompt_tokens=128,
+                                                 max_new_tokens=128,
+                                                 load_in_low_bit="sym_int4")
     
     from benchmark_util import BenchmarkWrapper
     
