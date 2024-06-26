@@ -10,6 +10,41 @@
 > - *It provides seamless integration with [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md), [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [HuggingFace transformers](python/llm/example/GPU/HF-Transformers-AutoModels), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models), etc.* 
 > - ***50+ models** have been optimized/verified on `ipex-llm` (including LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM, Baichuan, Qwen, RWKV, and more); see the complete list [here](#verified-models).*
 
+## Latest Update 🔥 
+- [2024/06] We added experimental **NPU** support for Intel Core Ultra processors; see the examples [here](python/llm/example/NPU/HF-Transformers-AutoModels). 
+- [2024/06] We added extensive support of **pipeline parallel** [inference](python/llm/example/GPU/Pipeline-Parallel-Inference), which makes it easy to run large-sized LLM using 2 or more Intel GPUs (such as Arc).
+- [2024/06] We added support for running **RAGFlow** with `ipex-llm` on Intel [GPU](docs/mddocs/Quickstart/ragflow_quickstart.md).
+- [2024/05] You can now easily run `ipex-llm` inference, serving and finetuning using the **Docker** [images](#docker).
+- [2024/05] You can now install `ipex-llm` on Windows using just "*[one command](docs/mddocs/Quickstart/install_windows_gpu.md#install-ipex-llm)*".
+- [2024/05] `ipex-llm` now supports **Axolotl** for LLM finetuning on Intel GPU; see the quickstart [here](docs/mddocs/Quickstart/axolotl_quickstart.md).
+
+<details><summary>More updates</summary>
+<br/>
+ 
+- [2024/04] You can now run **Open WebUI** on Intel GPU using `ipex-llm`; see the quickstart [here](docs/mddocs/Quickstart/open_webui_with_ollama_quickstart.md).
+- [2024/04] You can now run **Llama 3** on Intel GPU using `llama.cpp` and `ollama` with `ipex-llm`; see the quickstart [here](docs/mddocs/Quickstart/llama3_llamacpp_ollama_quickstart.md).
+- [2024/04] `ipex-llm` now supports **Llama 3** on both Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama3) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3).
+- [2024/04] `ipex-llm` now provides C++ interface, which can be used as an accelerated backend for running [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md) and [ollama](docs/mddocs/Quickstart/ollama_quickstart.md) on Intel GPU.
+- [2024/03] `bigdl-llm` has now become `ipex-llm` (see the migration guide [here](docs/mddocs/Quickstart/bigdl_llm_migration.md)); you may find the original `BigDL` project [here](https://github.com/intel-analytics/bigdl-2.x).
+- [2024/02] `ipex-llm` now supports directly loading model from [ModelScope](python/llm/example/GPU/ModelScope-Models) ([魔搭](python/llm/example/CPU/ModelScope-Models)).
+- [2024/02] `ipex-llm` added initial **INT2** support (based on llama.cpp [IQ2](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2) mechanism), which makes it possible to run large-sized LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
+- [2024/02] Users can now use `ipex-llm` through [Text-Generation-WebUI](https://github.com/intel-analytics/text-generation-webui) GUI.
+- [2024/02] `ipex-llm` now supports *[Self-Speculative Decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md)*, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel [GPU](python/llm/example/GPU/Speculative-Decoding) and [CPU](python/llm/example/CPU/Speculative-Decoding) respectively.
+- [2024/02] `ipex-llm` now supports a comprehensive list of LLM **finetuning** on Intel GPU (including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)).
+- [2024/01] Using `ipex-llm` [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), we managed to finetune LLaMA2-7B in **21 minutes** and LLaMA2-70B in **3.14 hours** on 8 Intel Max 1550 GPU for [Standford-Alpaca](python/llm/example/GPU/LLM-Finetuning/QLoRA/alpaca-qlora) (see the blog [here](https://www.intel.com/content/www/us/en/developer/articles/technical/finetuning-llms-on-intel-gpus-using-bigdl-llm.html)). 
+- [2023/12] `ipex-llm` now supports [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora) (see *["ReLoRA: High-Rank Training Through Low-Rank Updates"](https://arxiv.org/abs/2307.05695)*).
+- [2023/12] `ipex-llm` now supports [Mixtral-8x7B](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral) on both Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral). 
+- [2023/12] `ipex-llm` now supports [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) (see *["QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models"](https://arxiv.org/abs/2309.14717)*). 
+- [2023/12] `ipex-llm` now supports [FP8 and FP4 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types) on Intel ***GPU***.
+- [2023/11] Initial support for directly loading [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF), [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ) and [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ) models into `ipex-llm` is available.
+- [2023/11] `ipex-llm` now supports [vLLM continuous batching](python/llm/example/GPU/vLLM-Serving) on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving).
+- [2023/10] `ipex-llm` now supports [QLoRA finetuning](python/llm/example/GPU/LLM-Finetuning/QLoRA) on both Intel [GPU](python/llm/example/GPU/LLM-Finetuning/QLoRA) and [CPU](python/llm/example/CPU/QLoRA-FineTuning).
+- [2023/10] `ipex-llm` now supports [FastChat serving](python/llm/src/ipex_llm/llm/serving) on on both Intel CPU and GPU.
+- [2023/09] `ipex-llm` now supports [Intel GPU](python/llm/example/GPU) (including iGPU, Arc, Flex and MAX).
+- [2023/09] `ipex-llm` [tutorial](https://github.com/intel-analytics/ipex-llm-tutorial) is released.
+ 
+</details> 
+
 ## `ipex-llm` Performance
 See the **Token Generation Speed** on *Intel Core Ultra* and *Intel Arc GPU* below[^1] (and refer to [[2]](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-meta-llama3-with-intel-ai-solutions.html)[[3]](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-microsoft-phi-3-models-intel-ai-soln.html)[[4]](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-ai-solutions-accelerate-alibaba-qwen2-llms.html) for more details).
 
@@ -124,51 +159,17 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 |Mistral-7B-Instruct-v0.1	  |6.0025	  |5.9581	|5.8930	|5.8884	  |5.8820   |5.8734 | 
 |Qwen1.5-7B-chat	           |8.8652	  |8.8163	|8.5573	|8.8463	  |8.5304   |8.6065 | 
 
-## Latest Update 🔥 
-- [2024/06] We added experimental **NPU** support for Intel Core Ultra processors; see the examples [here](python/llm/example/NPU/HF-Transformers-AutoModels). 
-- [2024/06] We added extensive support of **pipeline parallel** [inference](python/llm/example/GPU/Pipeline-Parallel-Inference), which makes it easy to run large-sized LLM using 2 or more Intel GPUs (such as Arc).
-- [2024/05] You can now easily run `ipex-llm` inference, serving and finetuning using the **Docker** [images](#docker).
-- [2024/05] You can now install `ipex-llm` on Windows using just "*[one command](docs/mddocs/Quickstart/install_windows_gpu.md#install-ipex-llm)*".
-- [2024/05] `ipex-llm` now supports **Axolotl** for LLM finetuning on Intel GPU; see the quickstart [here](docs/mddocs/Quickstart/axolotl_quickstart.md).
-- [2024/04] You can now run **Open WebUI** on Intel GPU using `ipex-llm`; see the quickstart [here](docs/mddocs/Quickstart/open_webui_with_ollama_quickstart.md).
-- [2024/04] You can now run **Llama 3** on Intel GPU using `llama.cpp` and `ollama` with `ipex-llm`; see the quickstart [here](docs/mddocs/Quickstart/llama3_llamacpp_ollama_quickstart.md).
-- [2024/04] `ipex-llm` now supports **Llama 3** on both Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama3) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3).
-- [2024/04] `ipex-llm` now provides C++ interface, which can be used as an accelerated backend for running [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md) and [ollama](docs/mddocs/Quickstart/ollama_quickstart.md) on Intel GPU.
-- [2024/03] `bigdl-llm` has now become `ipex-llm` (see the migration guide [here](docs/mddocs/Quickstart/bigdl_llm_migration.md)); you may find the original `BigDL` project [here](https://github.com/intel-analytics/bigdl-2.x).
-- [2024/02] `ipex-llm` now supports directly loading model from [ModelScope](python/llm/example/GPU/ModelScope-Models) ([魔搭](python/llm/example/CPU/ModelScope-Models)).
-- [2024/02] `ipex-llm` added initial **INT2** support (based on llama.cpp [IQ2](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2) mechanism), which makes it possible to run large-sized LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
-- [2024/02] Users can now use `ipex-llm` through [Text-Generation-WebUI](https://github.com/intel-analytics/text-generation-webui) GUI.
-- [2024/02] `ipex-llm` now supports *[Self-Speculative Decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md)*, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel [GPU](python/llm/example/GPU/Speculative-Decoding) and [CPU](python/llm/example/CPU/Speculative-Decoding) respectively.
-- [2024/02] `ipex-llm` now supports a comprehensive list of LLM **finetuning** on Intel GPU (including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)).
-- [2024/01] Using `ipex-llm` [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), we managed to finetune LLaMA2-7B in **21 minutes** and LLaMA2-70B in **3.14 hours** on 8 Intel Max 1550 GPU for [Standford-Alpaca](python/llm/example/GPU/LLM-Finetuning/QLoRA/alpaca-qlora) (see the blog [here](https://www.intel.com/content/www/us/en/developer/articles/technical/finetuning-llms-on-intel-gpus-using-bigdl-llm.html)).
-<details><summary>More updates</summary>
-<br/>
- 
-- [2023/12] `ipex-llm` now supports [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora) (see *["ReLoRA: High-Rank Training Through Low-Rank Updates"](https://arxiv.org/abs/2307.05695)*).
-- [2023/12] `ipex-llm` now supports [Mixtral-8x7B](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral) on both Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral). 
-- [2023/12] `ipex-llm` now supports [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) (see *["QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models"](https://arxiv.org/abs/2309.14717)*). 
-- [2023/12] `ipex-llm` now supports [FP8 and FP4 inference](python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types) on Intel ***GPU***.
-- [2023/11] Initial support for directly loading [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF), [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ) and [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ) models into `ipex-llm` is available.
-- [2023/11] `ipex-llm` now supports [vLLM continuous batching](python/llm/example/GPU/vLLM-Serving) on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving).
-- [2023/10] `ipex-llm` now supports [QLoRA finetuning](python/llm/example/GPU/LLM-Finetuning/QLoRA) on both Intel [GPU](python/llm/example/GPU/LLM-Finetuning/QLoRA) and [CPU](python/llm/example/CPU/QLoRA-FineTuning).
-- [2023/10] `ipex-llm` now supports [FastChat serving](python/llm/src/ipex_llm/llm/serving) on on both Intel CPU and GPU.
-- [2023/09] `ipex-llm` now supports [Intel GPU](python/llm/example/GPU) (including iGPU, Arc, Flex and MAX).
-- [2023/09] `ipex-llm` [tutorial](https://github.com/intel-analytics/ipex-llm-tutorial) is released.
- 
-</details> 
-
 [^1]: Performance varies by use, configuration and other factors. `ipex-llm` may not optimize to the same degree for non-Intel products. Learn more at www.Intel.com/PerformanceIndex.
 
 ## `ipex-llm` Quickstart
 
 ### Docker
-- [Installation on GPU](docs/mddocs/DockerGuides/docker_windows_gpu.md): installing `ipex-llm` in docker with Intel GPU
 - [GPU Inference in C++](docs/mddocs/DockerGuides/docker_cpp_xpu_quickstart.md): running `llama.cpp`, `ollama`, `OpenWebUI`, etc., with `ipex-llm` on Intel GPU
 - [GPU Inference in Python](docs/mddocs/DockerGuides/docker_pytorch_inference_gpu.md) : running HuggingFace `transformers`, `LangChain`, `LlamaIndex`, `ModelScope`, etc. with `ipex-llm` on Intel GPU
-- [VSCode Guide on GPU](docs/readthedocs/source/doc/LLM/DockerGuides/docker_run_pytorch_inference_in_vscode.md): running and developing Python LLM applications using VSCode on Intel GPU
 - [vLLM on GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md): running `vLLM` serving with `ipex-llm` on Intel GPU
 - [vLLM on CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md): running `vLLM` serving with `ipex-llm` on Intel CPU  
 - [FastChat on GPU](docs/mddocs/DockerGuides/fastchat_docker_quickstart.md): running `FastChat` serving with `ipex-llm` on Intel GPU
+- [VSCode on GPU](docs/mddocs/DockerGuides/docker_run_pytorch_inference_in_vscode.md): running and developing `ipex-llm` applications in Python using VSCode on Intel GPU
 
 ### Use
 - [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): running **llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp`*) on Intel GPU
@@ -189,12 +190,10 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [Dify platform](docs/mddocs/Quickstart/dify_quickstart.md): running `ipex-llm` in `Dify`(*production-ready LLM app development platform*)
 - [RAGFlow](docs/mddocs/Quickstart/ragflow_quickstart.md): running `RAGFlow` (*an open-source RAG engine*) with `ipex-llm`
 
-
 ### Install 
 - [Windows GPU](docs/mddocs/Quickstart/install_windows_gpu.md): installing `ipex-llm` on Windows with Intel GPU
 - [Linux GPU](docs/mddocs/Quickstart/install_linux_gpu.md): installing `ipex-llm` on Linux with Intel GPU
 - *For more details, please refer to the [full installation guide](docs/mddocs/Overview/install.md)*
-
 
 ### Code Examples
 - Low bit inference
@@ -204,9 +203,12 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
   - [INT2 inference](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2): **INT2** LLM inference (based on llama.cpp IQ2 mechanism) on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2)
 - FP16/BF16 inference
   - **FP16** LLM inference on Intel [GPU](python/llm/example/GPU/Speculative-Decoding), with possible [self-speculative decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md) optimization
-  - **BF16** LLM inference on Intel [CPU](python/llm/example/CPU/Speculative-Decoding), with possible [self-speculative decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md) optimization 
+  - **BF16** LLM inference on Intel [CPU](python/llm/example/CPU/Speculative-Decoding), with possible [self-speculative decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md) optimization
+- Distributed inference
+  - **Pipeline Parallel** inference on Intel [GPU](python/llm/example/GPU/Pipeline-Parallel-Inference)
+  - **DeepSpeed AutoTP** inference on Intel [GPU](python/llm/example/GPU/Deepspeed-AutoTP)
 - Save and load
-  - [Low-bit models](python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load): saving and loading `ipex-llm` low-bit models
+  - [Low-bit models](python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load): saving and loading `ipex-llm` low-bit models (INT4/FP4/FP6/INT8/FP8/FP16/etc.)
   - [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF): directly loading GGUF models into `ipex-llm`
   - [AWQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ): directly loading AWQ models into `ipex-llm`
   - [GPTQ](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ): directly loading GPTQ models into `ipex-llm`
@@ -226,9 +228,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
   - [ModeScope](python/llm/example/GPU/ModelScope-Models)
 - [Tutorials](https://github.com/intel-analytics/ipex-llm-tutorial)
 
-
 ## API Doc
-
 - [HuggingFace Transformers-style API (Auto Classes)](docs/mddocs/PythonAPI/transformers.md)
 - [API for arbitrary PyTorch Model](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/PythonAPI/optimize.md)
 
