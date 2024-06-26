@@ -10,12 +10,10 @@ This section includes efficient guide to show you how to:
 - [``bigdl-llm`` Migration Guide](./bigdl_llm_migration.md)
 - [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md)
 - [Install IPEX-LLM on Windows with Intel GPU](./install_windows_gpu.md)
-- [Install IPEX-LLM in Docker on Windows with Intel GPU](./docker_windows_gpu.md)
 
 ## Inference
 
 - [Run Performance Benchmarking with IPEX-LLM](./benchmark_quickstart.md)
-- [Run PyTorch Inference on Intel GPU using Docker (on Linux or WSL)](./docker_benchmark_quickstart.md)
 - [Run Local RAG using Langchain-Chatchat on Intel GPU](./chatchat_quickstart.md)
 - [Run Text Generation WebUI on Intel GPU](./webui_quickstart.md)
 - [Run Open WebUI on Intel GPU](./open_webui_with_ollama_quickstart.md)
