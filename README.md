@@ -127,6 +127,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 ## Latest Update 🔥 
 - [2024/06] We added experimental **NPU** support for Intel Core Ultra processors; see the examples [here](python/llm/example/NPU/HF-Transformers-AutoModels). 
 - [2024/06] We added extensive support of **pipeline parallel** [inference](python/llm/example/GPU/Pipeline-Parallel-Inference), which makes it easy to run large-sized LLM using 2 or more Intel GPUs (such as Arc).
+- [2024/06] We added support for running **RAGFlow** with `ipex-llm` on Intel [GPU](docs/mddocs/Quickstart/ragflow_quickstart.md).
 - [2024/05] You can now easily run `ipex-llm` inference, serving and finetuning using the **Docker** [images](#docker).
 - [2024/05] You can now install `ipex-llm` on Windows using just "*[one command](docs/mddocs/Quickstart/install_windows_gpu.md#install-ipex-llm)*".
 - [2024/05] `ipex-llm` now supports **Axolotl** for LLM finetuning on Intel GPU; see the quickstart [here](docs/mddocs/Quickstart/axolotl_quickstart.md).
@@ -162,13 +163,12 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 ## `ipex-llm` Quickstart
 
 ### Docker
-- [Installation on GPU](docs/mddocs/DockerGuides/docker_windows_gpu.md): installing `ipex-llm` in docker with Intel GPU
 - [GPU Inference in C++](docs/mddocs/DockerGuides/docker_cpp_xpu_quickstart.md): running `llama.cpp`, `ollama`, `OpenWebUI`, etc., with `ipex-llm` on Intel GPU
 - [GPU Inference in Python](docs/mddocs/DockerGuides/docker_pytorch_inference_gpu.md) : running HuggingFace `transformers`, `LangChain`, `LlamaIndex`, `ModelScope`, etc. with `ipex-llm` on Intel GPU
-- [VSCode Guide on GPU](docs/readthedocs/source/doc/LLM/DockerGuides/docker_run_pytorch_inference_in_vscode.md): running and developing Python LLM applications using VSCode on Intel GPU
 - [vLLM on GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md): running `vLLM` serving with `ipex-llm` on Intel GPU
 - [vLLM on CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md): running `vLLM` serving with `ipex-llm` on Intel CPU  
 - [FastChat on GPU](docs/mddocs/DockerGuides/fastchat_docker_quickstart.md): running `FastChat` serving with `ipex-llm` on Intel GPU
+- [VSCode on GPU](docs/readthedocs/source/doc/LLM/DockerGuides/docker_run_pytorch_inference_in_vscode.md): running and developing `ipex-llm` applications in Python using VSCode on Intel GPU
 
 ### Use
 - [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): running **llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp`*) on Intel GPU
@@ -204,7 +204,10 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
   - [INT2 inference](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2): **INT2** LLM inference (based on llama.cpp IQ2 mechanism) on Intel [GPU](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2)
 - FP16/BF16 inference
   - **FP16** LLM inference on Intel [GPU](python/llm/example/GPU/Speculative-Decoding), with possible [self-speculative decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md) optimization
-  - **BF16** LLM inference on Intel [CPU](python/llm/example/CPU/Speculative-Decoding), with possible [self-speculative decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md) optimization 
+  - **BF16** LLM inference on Intel [CPU](python/llm/example/CPU/Speculative-Decoding), with possible [self-speculative decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md) optimization
+- Distributed inference
+  - Pipeline Parallel inference on Intel [GPU](python/llm/example/GPU/Pipeline-Parallel-Inference)
+  - DeepSpeed AutoTP inference on Intel [GPU](python/llm/example/GPU/Deepspeed-AutoTP)
 - Save and load
   - [Low-bit models](python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load): saving and loading `ipex-llm` low-bit models
   - [GGUF](python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF): directly loading GGUF models into `ipex-llm`
@@ -228,7 +231,6 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 
 
 ## API Doc
-
 - [HuggingFace Transformers-style API (Auto Classes)](docs/mddocs/PythonAPI/transformers.md)
 - [API for arbitrary PyTorch Model](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/PythonAPI/optimize.md)
 
