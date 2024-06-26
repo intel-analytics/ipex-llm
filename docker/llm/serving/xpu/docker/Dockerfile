@@ -21,12 +21,20 @@ RUN apt-get update && \
     pip install outlines==0.0.34 --no-deps && \
     pip install interegular cloudpickle diskcache joblib lark nest-asyncio numba scipy && \
     # For Qwen series models support
-    pip install transformers_stream_generator einops tiktoken
+    pip install transformers_stream_generator einops tiktoken && \
+    # For pipeline serving support
+    pip install mpi4py fastapi uvicorn openai && \
+    pip install gradio # for gradio web UI && \
+    git clone https://github.com/intel-analytics/ipex-llm /llm/ipex-llm && \
+    mkdir -p /llm/pp_serving && \
+    cp /llm/ipex-llm/python/llm/example/GPU/Pipeline-Parallel-FastAPI/*.py /llm/pp_serving
 
 COPY ./vllm_offline_inference.py       /llm/
 COPY ./payload-1024.lua                /llm/
 COPY ./start-vllm-service.sh           /llm/
 COPY ./benchmark_vllm_throughput.py   /llm/
 COPY ./start-fastchat-service.sh       /llm/
+COPY ./start-pp_serving-service.sh       /llm/
+
 
 WORKDIR /llm/
