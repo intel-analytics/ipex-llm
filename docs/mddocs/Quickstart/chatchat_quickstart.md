@@ -27,6 +27,11 @@ See the Langchain-Chatchat architecture below ([source](https://github.com/chatc
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-arch.png" height="50%" />
 
+## Table of Contents
+>1. [Install and Run](./chatchat_quickstart.md#install-and-run)
+>2. [How to Use RAG](./chatchat_quickstart.md#how-to-use-rag)
+>3. [Troubleshooting & Tips](./chatchat_quickstart.md#troubleshooting--tips)
+
 ## Quickstart
 
 ### Install and Run
@@ -72,7 +77,7 @@ You can now click `Dialogue` on the left-side menu to return to the chat UI. The
 
 For more information about how to use Langchain-Chatchat, refer to Official Quickstart guide in [English](https://github.com/chatchat-space/Langchain-Chatchat/blob/master/README_en.md#), [Chinese](https://github.com/chatchat-space/Langchain-Chatchat/blob/master/README.md#), or the [Wiki](https://github.com/chatchat-space/Langchain-Chatchat/wiki/).
 
-### Trouble Shooting & Tips
+### Troubleshooting & Tips
 
 #### 1. Version Compatibility
 
