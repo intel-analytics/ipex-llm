@@ -149,7 +149,9 @@ def set_weights_for_decoder(request, npu_decoder,
                 if qtype == "sym_int4":
                     w_int4 = compress_to_i4(w)
                     w = ov.Tensor(w_int4.numpy(), w.shape, ov.Type.i4)
-                w_npu_tensor.copy_from(w)
+                    w_npu_tensor.copy_from(w)
+                else:
+                    w_npu_tensor.copy_from(w.numpy())
 
                 scale_port = npu_decoder.input(offset + 1)
                 scale_npu_tensor = request.get_tensor(scale_port)
@@ -212,7 +214,7 @@ def offload_llama_decoder_to_npu(model,
             weights_arg_offset = 3 + len(kv_cache) * 2
             indexes = None
             if qtype == "sym_int4":
-                indexes = [weights_arg_offset + i * 7 * 2 for i in range(num_layers)]
+                indexes = [weights_arg_offset + i * 7 * 2 + j * 2 for j in range(7) for i in range(num_layers)]
             
             npu_decoder, core = get_npu_model(npu_torch_model, dummy_inputs,
                                             input_names, output_names, quantize=False,
@@ -239,7 +241,7 @@ def offload_llama_decoder_to_npu(model,
             weights_arg_offset = 3
             indexes = None
             if qtype == "sym_int4":
-                indexes = [weights_arg_offset + i * 7 * 2 for i in range(num_layers)]
+                indexes = [weights_arg_offset + i * 7 * 2 + j * 2 for j in range(7) for i in range(num_layers)]
             npu_decoder, core = get_npu_model(npu_torch_model, dummy_inputs,
                                             input_names, output_names, quantize=False,
                                             device="NPU", int4_indexes=indexes)

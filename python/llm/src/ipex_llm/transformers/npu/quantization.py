@@ -1,6 +1,7 @@
 from typing import Tuple
 import torch
 from typing import Union, Callable, Any, Optional
+import math
 
 def module_optimization(func: Callable) -> torch.nn.Module:
     """Optimize recursively a torch.nn.Module with a specific function.
@@ -118,7 +119,11 @@ class QuantizedLinear(torch.nn.Module):
             raise RuntimeError(
                 f"Quantized weight must be in torch.(u)int8 dtype instead of {self.weight.dtype}"
             )
-        self.scale = scale
+        self.outC, self.inC = self.weight.shape
+        if self.weight.dtype == torch.uint8:
+            # In case is Int4 we need to double the input channels because weights are compressed
+            self.inC *= 2
+        self.scale = scale * math.sqrt(self.inC)
         self.bias = bias
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -138,6 +143,7 @@ class QuantizedLinear(torch.nn.Module):
         # print(self.scale.shape)
         
         x_2d = x.view(-1, x.size(-1))
+        x_2d = x_2d * math.sqrt(1/self.inC)
         out = (x_2d @ self.weight.T.to(torch.float16)) * self.scale
         
         out = out.view(x.shape[:-1] + (out.size(-1),))
