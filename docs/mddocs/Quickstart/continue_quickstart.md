@@ -14,6 +14,13 @@ Below is a demo of using `Continue` with [CodeQWen1.5-7B](https://huggingface.co
   </tr>
 </table>
 
+## Table of Contents
+>1. [Install and Run Ollama Serve](./continue_quickstart.md#1-install-and-run-ollama-serve)
+>2. [Pull and Prepare the Model](./continue_quickstart.md#2-pull-and-prepare-the-model)
+>3. [Install `Continue` Extension](./continue_quickstart.md#3-install-continue-extension)
+>4. [`Continue` Configuration](./continue_quickstart.md#4-continue-configuration)
+>5. [How to Use `Continue`](./continue_quickstart.md#5-how-to-use-continue)
+
 ## Quickstart
 
 This guide walks you through setting up and running **Continue** within _Visual Studio Code_, empowered by local large language models served via [Ollama](./ollama_quickstart.md) with `ipex-llm` optimizations.
