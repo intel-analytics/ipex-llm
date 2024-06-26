@@ -16,9 +16,9 @@
 </table>
 
 ## Table of Contents
->1. [Install and Start Ollama Service on Intel GPU](./dify_quickstart.md#1-install-and-start-ollama-service-on-intel-gpu)
->2. [Install and Start Dify](./dify_quickstart.md#2-install-and-start-dify)
->2. [How to Use Dify](./dify_quickstart.md#3-how-to-use-dify)
+- [Install and Start Ollama Service on Intel GPU](./dify_quickstart.md#1-install-and-start-ollama-service-on-intel-gpu)
+- [Install and Start Dify](./dify_quickstart.md#2-install-and-start-dify)
+- [How to Use Dify](./dify_quickstart.md#3-how-to-use-dify)
 
 
 
