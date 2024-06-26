@@ -18,7 +18,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 pip install transformers==4.34.0
 BUILD_CUDA_EXT=0 pip install git+https://github.com/PanQiWei/AutoGPTQ.git@1de9ab6
-pip install optimum==0.14.0
+pip install optimum==1.14.0
 ```
 
 On Windows:
@@ -30,7 +30,7 @@ pip install --pre --upgrade ipex-llm[all]
 pip install transformers==4.34.0
 set BUILD_CUDA_EXT=0
 pip install git+https://github.com/PanQiWei/AutoGPTQ.git@1de9ab6
-pip install optimum==0.14.0
+pip install optimum==1.14.0
 ```
 
 ### 2. Run

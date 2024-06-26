@@ -734,7 +734,14 @@ def _optimize_pre(model):
     # for qwen2
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.models.qwen2 import merge_qkv
-        model.apply(merge_qkv)
+        # Skip merge_qkv if quant_method is 'gptq'
+        should_apply_merge_qkv = (
+            not hasattr(model.config, "quantization_config") or
+            not hasattr(model.config.quantization_config, "quant_method") or
+            model.config.quantization_config.quant_method != "gptq"
+        )
+        if should_apply_merge_qkv:
+            model.apply(merge_qkv)
         from ipex_llm.transformers.models.qwen2 import padding_mlp
         model.apply(padding_mlp)
     if model.config.model_type == "qwen2_moe":
