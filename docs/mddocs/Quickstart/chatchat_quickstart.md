@@ -28,9 +28,9 @@ See the Langchain-Chatchat architecture below ([source](https://github.com/chatc
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-arch.png" height="50%" />
 
 ## Table of Contents
->1. [Install and Run](./chatchat_quickstart.md#install-and-run)
->2. [How to Use RAG](./chatchat_quickstart.md#how-to-use-rag)
->3. [Troubleshooting & Tips](./chatchat_quickstart.md#troubleshooting--tips)
+- [Install and Run](./chatchat_quickstart.md#install-and-run)
+- [How to Use RAG](./chatchat_quickstart.md#how-to-use-rag)
+- [Troubleshooting & Tips](./chatchat_quickstart.md#troubleshooting--tips)
 
 ## Quickstart
 
