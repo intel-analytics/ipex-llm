@@ -34,16 +34,18 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--low-bit', type=str, default='sym_int4', help='The quantization type the model will convert to.')
     parser.add_argument('--gpu-num', type=int, default=2, help='GPU number to use')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+    low_bit = args.low_bit
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     try:
         model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                     load_in_4bit=True,
+                                                     load_in_low_bit=low_bit,
                                                      optimize_model=True,
                                                      trust_remote_code=True,
                                                      use_cache=True,
@@ -51,7 +53,7 @@ if __name__ == '__main__':
                                                      pipeline_parallel_stages=args.gpu_num)
     except:
         model = AutoModel.from_pretrained(model_path,
-                                          load_in_4bit=True,
+                                          load_in_low_bit=low_bit,
                                           optimize_model=True,
                                           trust_remote_code=True,
                                           use_cache=True,

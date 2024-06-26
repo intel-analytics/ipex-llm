@@ -29,8 +29,8 @@ NUM_GPUS=2 # number of used GPU
 
 # To run Baichuan2-7B-Chat
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'baichuan-inc/Baichuan2-7B-Chat' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path 'baichuan-inc/Baichuan2-7B-Chat' --gpu-num $NUM_GPUS --low-bit 'sym_int4'
 
 # # To run Baichuan2-13B-Chat
 # CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-#     generate.py --repo-id-or-model-path 'baichuan-inc/Baichuan2-13B-Chat' --gpu-num $NUM_GPUS
+#     generate.py --repo-id-or-model-path 'baichuan-inc/Baichuan2-13B-Chat' --gpu-num $NUM_GPUS --low-bit 'sym_int4'

@@ -30,4 +30,4 @@ NUM_GPUS=2 # number of used GPU
 
 # To run SOLAR-10.7B-Instruct-v1.0
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'upstage/SOLAR-10.7B-Instruct-v1.0' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path 'upstage/SOLAR-10.7B-Instruct-v1.0' --gpu-num $NUM_GPUS --low-bit 'sym_int4'

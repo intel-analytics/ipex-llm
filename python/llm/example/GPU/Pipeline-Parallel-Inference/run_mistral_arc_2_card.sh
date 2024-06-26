@@ -30,8 +30,8 @@ NUM_GPUS=2 # number of used GPU
 
 # To run Mistral-7B-v0.1
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'mistralai/Mistral-7B-v0.1' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path 'mistralai/Mistral-7B-v0.1' --gpu-num $NUM_GPUS --low-bit 'sym_int4'
 
 # To run Mixtral-8x7B-Instruct-v0.1
 # CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-#     generate.py --repo-id-or-model-path 'mistralai/Mixtral-8x7B-Instruct-v0.1' --gpu-num $NUM_GPUS
+#     generate.py --repo-id-or-model-path 'mistralai/Mixtral-8x7B-Instruct-v0.1' --gpu-num $NUM_GPUS --low-bit 'sym_int4'

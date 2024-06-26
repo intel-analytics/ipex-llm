@@ -29,4 +29,4 @@ NUM_GPUS=2 # number of used GPU
 
 # To run Qwen2-7B-Instruct
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'Qwen/Qwen2-7B-Instruct' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path 'Qwen/Qwen2-7B-Instruct' --gpu-num $NUM_GPUS --low-bit 'sym_int4'

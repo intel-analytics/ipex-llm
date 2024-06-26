@@ -28,4 +28,4 @@ export TORCH_LLM_ALLREDUCE=0
 NUM_GPUS=2 # number of used GPU
 # To run chatglm3-6b
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path 'THUDM/chatglm3-6b' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path 'THUDM/chatglm3-6b' --gpu-num $NUM_GPUS --low-bit 'sym_int4'
