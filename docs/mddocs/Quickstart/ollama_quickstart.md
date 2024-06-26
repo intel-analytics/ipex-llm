@@ -19,11 +19,11 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 > Our current version is consistent with [v0.1.39](https://github.com/ollama/ollama/releases/tag/v0.1.39) of ollama.
 
 ## Table of Contents
->1. [Install IPEX-LLM for Ollama](./ollama_quickstart.md#1-install-ipex-llm-for-ollama)
->2. [Initialize Ollama](./ollama_quickstart.md#2-initialize-ollama)
->3. [Run Ollama Serve](./ollama_quickstart.md#3-run-ollama-serve)
->4. [Pull Model](./ollama_quickstart.md#4-pull-model)
->5. [Using Ollama](./ollama_quickstart.md#5-using-ollama)
+- [Install IPEX-LLM for Ollama](./ollama_quickstart.md#1-install-ipex-llm-for-ollama)
+- [Initialize Ollama](./ollama_quickstart.md#2-initialize-ollama)
+- [Run Ollama Serve](./ollama_quickstart.md#3-run-ollama-serve)
+- [Pull Model](./ollama_quickstart.md#4-pull-model)
+- [Using Ollama](./ollama_quickstart.md#5-using-ollama)
 
 ## Quickstart
 
