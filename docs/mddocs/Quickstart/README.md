@@ -1,7 +1,7 @@
 # IPEX-LLM Quickstart
 
 > [!NOTE]
-> We are adding more Quickstart guide.
+> We are adding more Quickstart guides.
 
 This section includes efficient guide to show you how to:
 
