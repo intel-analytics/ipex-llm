@@ -12,11 +12,11 @@ Currently, IPEX-LLM integrated vLLM only supports the following models:
 - Baichuan series models
 
 ## Table of Contents
->1. [Install IPEX-LLM for vLLM](./vLLM_quickstart.md#1-install-ipex-llm-for-vllm)
->2. [Install vLLM](./vLLM_quickstart.md#2-install-vllm)
->3. [Offline Inference/Service](./vLLM_quickstart.md#3-offline-inferenceservice)
->4. [About Tensor Parallel](./vLLM_quickstart.md#4-about-tensor-parallel)
->5. [Performing Benchmark](./vLLM_quickstart.md#5-performing-benchmark)
+- [Install IPEX-LLM for vLLM](./vLLM_quickstart.md#1-install-ipex-llm-for-vllm)
+- [Install vLLM](./vLLM_quickstart.md#2-install-vllm)
+- [Offline Inference/Service](./vLLM_quickstart.md#3-offline-inferenceservice)
+- [About Tensor Parallel](./vLLM_quickstart.md#4-about-tensor-parallel)
+- [Performing Benchmark](./vLLM_quickstart.md#5-performing-benchmark)
 
 
 ## Quick Start
