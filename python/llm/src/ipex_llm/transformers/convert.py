@@ -146,20 +146,6 @@ def is_linear_module(module):
         global _VLLM_VERSION
         if _VLLM_VERSION is None:
             _VLLM_VERSION = get_package_version('vllm')
-        if 'xpu' in _VLLM_VERSION:
-            # For vllm xpu
-            from vllm.model_executor.parallel_utils.parallel_state import (
-                get_tensor_model_parallel_group,
-                get_tensor_model_parallel_world_size
-            )
-            if torch.distributed.is_initialized():
-                tp_size = get_tensor_model_parallel_world_size()
-            else:
-                tp_size = 1
-        else:
-            # For vllm cpu
-            tp_size = 1
-
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
@@ -168,6 +154,19 @@ def is_linear_module(module):
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         ]
         if is_module_in_classes(module, VLLM_LINEAR_LIST):
+            if 'xpu' in _VLLM_VERSION:
+                # For vllm xpu
+                from vllm.model_executor.parallel_utils.parallel_state import (
+                    get_tensor_model_parallel_group,
+                    get_tensor_model_parallel_world_size
+                )
+                if torch.distributed.is_initialized():
+                    tp_size = get_tensor_model_parallel_world_size()
+                else:
+                    tp_size = 1
+            else:
+                # For vllm cpu
+                tp_size = 1
             in_features = module.input_size
             out_features = module.output_size
             result = True
