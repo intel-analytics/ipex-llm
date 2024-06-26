@@ -18,7 +18,7 @@ import torch
 import time
 import argparse
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer, GPTQConfig
+from transformers import AutoTokenizer, AutoTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/georgesung/llama2_7b_chat_uncensored#prompt-style
@@ -48,9 +48,11 @@ if __name__ == '__main__':
                                                  torch_dtype=torch.float,
                                                  trust_remote_code=True,).to("xpu")
     
-    print(model)
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    if "qwen" in model_path.lower():
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    else:
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     
     # Generate predicted tokens
     with torch.inference_mode():
