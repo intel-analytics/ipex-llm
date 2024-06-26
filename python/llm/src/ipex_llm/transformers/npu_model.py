@@ -116,12 +116,9 @@ class _BaseAutoModelClass:
         try:
             # for intel_npu_acceleration_library >= 1.1.0
             from intel_npu_acceleration_library.quantization import quantize_model
-            from intel_npu_acceleration_library.compiler import (
-                apply_horizontal_fusion, create_npu_kernels
-            )
+            from intel_npu_acceleration_library.compiler import create_npu_kernels
             with torch.no_grad():
                 optimize_llm(model)
-                apply_horizontal_fusion(model)
                 if not qtype.is_floating_point:
                     model = quantize_model(model, qtype)
                 create_npu_kernels(model)

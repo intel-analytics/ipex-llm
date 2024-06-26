@@ -29,6 +29,11 @@ def optimize_llm(model: torch.nn.Module):
     if model.config.model_type == "llama":
         from ipex_llm.transformers.npu_models.llama import merge_qkv
         model.apply(merge_qkv)
+        from ipex_llm.transformers.npu_models.llama import merge_mlp
+        model.apply(merge_mlp)
         from ipex_llm.transformers.npu_models.llama import llama_attention_forward
         from transformers.models.llama.modeling_llama import LlamaAttention
         convert_forward(model, LlamaAttention, llama_attention_forward)
+        from ipex_llm.transformers.npu_models.llama import llama_mlp_forward
+        from transformers.models.llama.modeling_llama import LlamaMLP
+        convert_forward(model, LlamaMLP, llama_mlp_forward)
