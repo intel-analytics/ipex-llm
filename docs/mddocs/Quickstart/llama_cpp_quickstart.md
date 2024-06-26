@@ -23,7 +23,7 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 >1. [Install IPEX-LLM for llama.cpp](./llama_cpp_quickstart.md#1-install-ipex-llm-for-llamacpp)
 >2. [Setup for running llama.cpp](./llama_cpp_quickstart.md#2-setup-for-running-llamacpp)
 >3. [Example: Running community GGUF models with IPEX-LLM](./llama_cpp_quickstart.md#3-example-running-community-gguf-models-with-ipex-llm)
->4. [Troubleshooting](./llama_cpp_quickstart.md#troubleshootings)
+>4. [Troubleshooting](./llama_cpp_quickstart.md#troubleshooting)
 
 
 
