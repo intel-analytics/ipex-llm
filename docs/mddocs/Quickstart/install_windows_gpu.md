@@ -4,6 +4,15 @@ This guide demonstrates how to install IPEX-LLM on Windows with Intel GPUs.
 
 It applies to Intel Core Ultra and Core 11 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
+## Table of Contents
+>1. [(Optional) Update GPU Driver](./install_windows_gpu.md#optional-update-gpu-driver)
+>2. [Setup Python Environment](./install_windows_gpu.md#setup-python-environment)
+>3. [Install ipex-llm](./install_windows_gpu.md#install-ipex-llm)
+>4. [Verify Installation](./install_windows_gpu.md#verify-installation)
+>5. [Monitor GPU Status](./install_windows_gpu.md#monitor-gpu-status)
+>6. [A Quick Example](./install_windows_gpu.md#a-quick-example)
+>7. [Tips & Troubleshooting](./install_windows_gpu.md#tips--troubleshooting)
+
 ## Install Prerequisites
 
 ### (Optional) Update GPU Driver
