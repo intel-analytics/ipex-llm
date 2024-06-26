@@ -36,33 +36,31 @@ from typing import Optional, Tuple
 from transformers.cache_utils import Cache
 
 import torch
-from transformers.models.llama.modeling_llama import LlamaAttention, repeat_kv, apply_rotary_pos_emb
+from transformers.models.llama.modeling_llama import repeat_kv, apply_rotary_pos_emb
+from transformers.models.llama.modeling_llama import LlamaAttention, LlamaMLP
+
+from ipex_llm.transformers.npu_models.common import merge_linear
 
 
 def merge_qkv(module: torch.nn.Module):
     if isinstance(module, LlamaAttention):
-        new_weight = torch.cat([
-            module.q_proj.weight.data,
-            module.k_proj.weight.data,
-            module.v_proj.weight.data,
-        ], dim=0)
-
-        if module.q_proj.bias is not None:
-            qkv_proj = torch.nn.Linear(0, 0, bias=True)
-            new_bias = torch.cat([
-                module.q_proj.bias.data,
-                module.k_proj.bias.data,
-                module.v_proj.bias.data,
-            ], dim=0)
-            qkv_proj.bias = torch.nn.Parameter(new_bias, requires_grad=False)
-        else:
-            qkv_proj = torch.nn.Linear(0, 0, bias=False)
-        qkv_proj.weight = torch.nn.Parameter(new_weight, requires_grad=False)
-        qkv_proj.in_features = new_weight.size(1)
-        qkv_proj.out_features = new_weight.size(0)
+        qkv_proj = merge_linear([
+            module.q_proj,
+            module.k_proj,
+            module.v_proj,
+        ])
         module.qkv_proj = qkv_proj
-
         del module.q_proj, module.k_proj, module.v_proj
+
+
+def merge_mlp(module: torch.nn.Module):
+    if isinstance(module, LlamaMLP):
+        gate_up_proj = merge_linear([
+            module.gate_proj,
+            module.up_proj,
+        ])
+        module.gate_up_proj = gate_up_proj
+        del module.gate_proj, module.up_proj
 
 
 def llama_attention_forward(
@@ -121,3 +119,10 @@ def llama_attention_forward(
         attn_weights = None
 
     return attn_output, attn_weights, past_key_value
+
+
+def llama_mlp_forward(self, x):
+    gate_up_proj = self.gate_up_proj(x)
+    gate_proj, up_proj = gate_up_proj.chunk(2, dim=-1)
+    down_proj = self.down_proj(self.act_fn(gate_proj) * up_proj)
+    return down_proj
