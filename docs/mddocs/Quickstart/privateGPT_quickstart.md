@@ -13,6 +13,12 @@
   </tr>
 </table>
 
+## Table of Contents
+>1. [Install and Start `Ollama` Service on Intel GPU](./privateGPT_quickstart.md#1-install-and-start-ollama-service-on-intel-gpu)
+>2. [Install PrivateGPT](./privateGPT_quickstart.md#2-install-privategpt)
+>3. [Start PrivateGPT](./privateGPT_quickstart.md#3-start-privategpt)
+>4. [Using PrivateGPT](./privateGPT_quickstart.md#4-using-privategpt)
+
 ## Quickstart
 
 ### 1. Install and Start `Ollama` Service on Intel GPU 
