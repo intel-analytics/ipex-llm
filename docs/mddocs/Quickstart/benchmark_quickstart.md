@@ -2,6 +2,13 @@
 
 We can perform benchmarking for IPEX-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
 
+## Table of Contents
+>0. [Prepare The Environment](./benchmark_quickstart.md#prepare-the-environment)
+>1. [Prepare The Scripts](./benchmark_quickstart.md#prepare-the-scripts)
+>2. [Run On Windows](./benchmark_quickstart.md#run-on-windows)
+>3. [Run On Linux](./benchmark_quickstart.md#run-on-linux)
+>4. [Result](./benchmark_quickstart.md#result)
+
 ## Prepare The Environment
 
 You can refer to [here](../Overview/install.md) to install IPEX-LLM in your environment. The following dependencies are also needed to run the benchmark scripts.
@@ -21,7 +28,7 @@ git clone https://github.com/intel-analytics/ipex-llm.git
 cd ipex-llm/python/llm/dev/benchmark/all-in-one/
 ```
 
-## config.yaml
+### config.yaml
 
 
 ```yaml
