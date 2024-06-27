@@ -5,11 +5,6 @@ This example demonstrates how to run IPEX-LLM serving on multiple [Intel GPUs](.
 ## Table of Contents
 - [Requirements](./deepspeed_autotp_fastapi_quickstart.md#requirements)
 - [Example](./deepspeed_autotp_fastapi_quickstart.md#example)
-<!-- 
->>1. [Install](./deepspeed_autotp_fastapi_quickstart.md#1-install)
->>2. [Run tensor parallel inference on multiple GPUs](./deepspeed_autotp_fastapi_quickstart.md#2-run-tensor-parallel-inference-on-multiple-gpus)
->>3. [Sample Input and Output](./deepspeed_autotp_fastapi_quickstart.md#3-sample-input-and-output)
->>4. [Benchmark with wrk](./deepspeed_autotp_fastapi_quickstart.md#4-benchmark-with-wrk) -->
 
 
 ## Requirements
