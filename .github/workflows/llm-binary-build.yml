@@ -71,7 +71,7 @@ jobs:
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          yum install -y gcc-toolset-11 cmake git
+          yum install --nogpgcheck -y gcc-toolset-11 cmake git
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
@@ -139,7 +139,7 @@ jobs:
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          yum install -y gcc-toolset-11 cmake git
+          yum install --nogpgcheck -y gcc-toolset-11 cmake git
           conda remove -n python39 --all -y
           conda create -n python39 python=3.9 -y
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
@@ -241,7 +241,7 @@ jobs:
         run: |
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
-          yum install -y gcc-toolset-11 cmake git
+          yum install --nogpgcheck -y gcc-toolset-11 cmake git
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: "intel-analytics/llm.cpp"
