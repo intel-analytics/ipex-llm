@@ -1849,11 +1849,10 @@ if __name__ == '__main__':
     for api in conf.test_api:
         global csv_name
         csv_name = f'{current_dir}/{api}-results-{today}.csv'
-        if api in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
-            try:
-                line_counter = len(open(csv_name).readlines())
-            except:
-                line_counter = 0
+        try:
+            line_counter = len(open(csv_name).readlines())
+        except:
+            line_counter = 0
         if not OmegaConf.is_list(conf["batch_size"]):
             batch_list = [conf["batch_size"]]
         else:
@@ -1874,6 +1873,11 @@ if __name__ == '__main__':
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
+        df.index += max(line_counter-1, 0)
         if api not in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
-            df.to_csv(csv_name, mode='a')
+            if line_counter == 0:
+                df.to_csv(csv_name, mode='a')
+            else:
+                df.to_csv(csv_name, mode='a', header=None)
+        line_counter += len(df.index)
         results = []
