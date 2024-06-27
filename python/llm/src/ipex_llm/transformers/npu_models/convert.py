@@ -31,6 +31,9 @@ def optimize_llm(model: torch.nn.Module):
         model.apply(merge_qkv)
         from ipex_llm.transformers.npu_models.llama import merge_mlp
         model.apply(merge_mlp)
+        from ipex_llm.transformers.npu_models.llama import llama_model_forward
+        from transformers.models.llama.modeling_llama import LlamaModel
+        convert_forward(model, LlamaModel, llama_model_forward)
         from ipex_llm.transformers.npu_models.llama import llama_attention_forward
         from transformers.models.llama.modeling_llama import LlamaAttention
         convert_forward(model, LlamaAttention, llama_attention_forward)
