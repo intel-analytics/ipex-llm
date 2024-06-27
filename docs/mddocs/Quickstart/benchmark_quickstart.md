@@ -3,10 +3,10 @@
 We can perform benchmarking for IPEX-LLM on Intel CPUs and GPUs using the benchmark scripts we provide.
 
 ## Table of Contents
-- [Prepare The Environment](./benchmark_quickstart.md#prepare-the-environment)
-- [Prepare The Scripts](./benchmark_quickstart.md#prepare-the-scripts)
-- [Run On Windows](./benchmark_quickstart.md#run-on-windows)
-- [Run On Linux](./benchmark_quickstart.md#run-on-linux)
+- [Prepare the Environment](./benchmark_quickstart.md#prepare-the-environment)
+- [Prepare the Scripts](./benchmark_quickstart.md#prepare-the-scripts)
+- [Run on Windows](./benchmark_quickstart.md#run-on-windows)
+- [Run on Linux](./benchmark_quickstart.md#run-on-linux)
 - [Result](./benchmark_quickstart.md#result)
 
 ## Prepare The Environment
