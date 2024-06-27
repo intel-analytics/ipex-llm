@@ -124,9 +124,10 @@ class IPEXImporter:
         """
         if self.is_xpu_version_installed():
             # Check if user import ipex manually
-            if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
-                log4Error.invalidInputError(False,
-                                            ipex_duplicate_import_error)
+            if BIGDL_CHECK_DUPLICATE_IMPORT:
+                if 'ipex' in sys.modules or 'intel_extension_for_pytorch' in sys.modules:
+                    log4Error.invalidInputError(False,
+                                                ipex_duplicate_import_error)
             self.directly_import_ipex()
             self.ipex_version = ipex.__version__
             # Replace builtin import to avoid duplicate ipex import
