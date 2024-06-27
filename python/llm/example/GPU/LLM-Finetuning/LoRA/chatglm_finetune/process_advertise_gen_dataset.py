@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # This is ported from https://github.com/THUDM/ChatGLM3/blob/main/finetune_demo/lora_finetune.ipynb
-
+# L60 is changed to enable users to finish all operations under one working directory
 
 import json
 from typing import Union

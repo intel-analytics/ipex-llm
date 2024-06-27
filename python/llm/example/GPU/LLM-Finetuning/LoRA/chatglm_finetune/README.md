@@ -41,7 +41,6 @@ Then, './AdvertiseGen' will be converted to './AdvertiseGen_fix'. Now, we have p
 
 Start the fine-tuning by:
 
-
 ```bash
 bash lora_finetuning_on_chatglm3_6b_with_1_arc_card.sh
 ```

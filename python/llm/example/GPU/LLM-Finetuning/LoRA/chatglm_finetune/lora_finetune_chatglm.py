@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Some parts of this file is adapted from
-# https://github.com/tloen/alpaca-lora/blob/main/finetune.py
-#
-# Copyright 2023 Rohan Taori, Ishaan Gulrajani, Tianyi Zhang, Yann Dubois, Xuechen Li
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,7 +26,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # This example is ported from https://github.com/THUDM/ChatGLM3/blob/main/finetune_demo/finetune_hf.py
-
+# L415-L427 are modified to enable the example on Intel Arc
 
 import os
 import jieba
@@ -413,6 +409,8 @@ def load_tokenizer_and_model(
                 config=config,
             )
         if peft_config.peft_type.name == "LORA":
+            # Modified below to adapt to ipex-llm, which is different from
+            # https://github.com/THUDM/ChatGLM3/blob/main/finetune_demo/finetune_hf.py#L400-L406
             from ipex_llm.transformers import AutoModelForCausalLM
             from ipex_llm.transformers.qlora import get_peft_model
             import os
