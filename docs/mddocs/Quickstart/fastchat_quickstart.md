@@ -7,11 +7,6 @@ IPEX-LLM can be easily integrated into FastChat so that user can use `IPEX-LLM` 
 ## Table of Contents
 - [Install IPEX-LLM with FastChat](./fastchat_quickstart.md#1-install-ipex-llm-with-fastchat)
 - [Start the Service](./fastchat_quickstart.md#2-start-the-service)
-<!-- >>>1. [Launch controller](./fastchat_quickstart.md#launch-controller)
->>2. [Launch model worker(s) and load models](./fastchat_quickstart.md#launch-model-workers-and-load-models)
->>>- [Launch Gradio web server](./fastchat_quickstart.md#launch-gradio-web-server)
->>>-  [Launch TGI Style API server](./fastchat_quickstart.md#launch-tgi-style-api-server)
->>>-  [Launch RESTful API server](./fastchat_quickstart.md#launch-restful-api-server) -->
 
 
 ## Quick Start
