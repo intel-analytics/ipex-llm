@@ -6,9 +6,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
 
 ## Table of Contents
-- [Install GPU Driver](./install_linux_gpu.md#install-gpu-driver)
-- [Install oneAPI](./install_linux_gpu.md#install-oneapi)
-- [Setup Python Environment](./install_linux_gpu.md#setup-python-environment)
+- [Install Prerequisites](./install_linux_gpu.md#install-prerequisites)
 - [Install ipex-llm](./install_linux_gpu.md#install-ipex-llm)
 - [Verify Installation](./install_linux_gpu.md#verify-installation)
 - [Runtime Configurations](./install_linux_gpu.md#runtime-configurations)
