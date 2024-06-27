@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-source /opt/intel/oneapi/setvars.sh
 export no_proxy=localhost
 export FI_PROVIDER=tcp
 export OMP_NUM_THREADS=32

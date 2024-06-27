@@ -301,11 +301,11 @@ async def main():
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`, `meta-llama/Llama-2-13b-chat-hf` and `meta-llama/Llama-2-70b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--low-bit', type=str, default='sym_int4',
-                    help='The quantization type the model will convert to.')
+                        help='The quantization type the model will convert to.')
     parser.add_argument('--port', type=int, default=8000,
-                    help='The port number on which the server will run.')
+                        help='The port number on which the server will run.')
     parser.add_argument('--max-num-seqs', type=int, default=8,
-                    help='Max num sequences in a batch.')
+                        help='Max num sequences in a batch.')
     
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path

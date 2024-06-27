@@ -332,6 +332,14 @@ class BatchTask(BaseModel):
     stopped: bool
 
 
+def make_attention_mask(prompt_lengths):
+    max_length = max(prompt_lengths)
+    attention_mask = torch.zeros((len(prompt_lengths), max_length), dtype=torch.int64)
+    for i, length in enumerate(prompt_lengths):
+        attention_mask[i, max_length - length:] = 1
+    return attention_mask
+
+
 class ModelRunner:
     """Implementation for pipeline parallel multi-stage serving."""
     def __init__(self, checkpoint, rank, world_size, low_bit, max_num_seqs,
@@ -386,12 +394,14 @@ class ModelRunner:
         model = model.eval()
         return model
 
+    @torch.no_grad()
     def model_step(self, input, cur_batch):
         if cur_batch is None or cur_batch.stopped or input is None:
             return None
 
         cur_id = cur_batch.batch_id
         _past_key_values = self.past_key_values_dict.get(cur_id, None)
+        attention_mask = make_attention_mask(cur_batch.prompt_lengths).to(f'xpu:{self.rank}')
 
         if self.rank == 0:
             input_ids = input
@@ -400,9 +410,11 @@ class ModelRunner:
             input_ids = None
             inputs_embeds = input
 
+        torch.xpu.empty_cache()
         output = self.model(input_ids=input_ids,
                             inputs_embeds=inputs_embeds,
                             past_key_values=_past_key_values,
+                            attention_mask=attention_mask,
                             use_cache=True,)
 
         if self.model.config.model_type in ["baichuan", "chatglm"] and self.rank > 0:
@@ -414,6 +426,7 @@ class ModelRunner:
         else:
             _past_key_values = output.past_key_values
         self.past_key_values_dict[cur_id] = _past_key_values
+        torch.xpu.synchronize()
         if not self.pp_config.is_tail:
             return output[0].to(self.dtype)
         else:
