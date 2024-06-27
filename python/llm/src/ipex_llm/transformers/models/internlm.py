@@ -469,7 +469,7 @@ def internlm_xcomposser2_chat(
         for k, v in inputs.items() if torch.is_tensor(v)
     }
     im_mask = im_mask.to(self.device)
-    #ipex-llm changes end
+    # ipex-llm changes end
 
     # also add end-of-assistant token in eos token id to avoid unnecessary generation
     eos_token_id = [
