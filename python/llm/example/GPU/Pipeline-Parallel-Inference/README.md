@@ -52,6 +52,8 @@ pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.
 
 For optimal performance, it is recommended to set several environment variables. We provide example usages as following:
 
+> Note: INT4 optimization is applied to the model by default. You could specify other low bit optimizations (such as 'fp8' and 'fp6') through `--low-bit`.
+
 </details>
 
 <details>

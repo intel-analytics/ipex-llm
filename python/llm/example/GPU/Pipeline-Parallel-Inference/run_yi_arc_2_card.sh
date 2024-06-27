@@ -30,8 +30,8 @@ NUM_GPUS=2 # number of used GPU
 
 # To run Yi-6B-Chat
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    generate.py --repo-id-or-model-path '01-ai/Yi-6B-Chat' --gpu-num $NUM_GPUS
+    generate.py --repo-id-or-model-path '01-ai/Yi-6B-Chat' --gpu-num $NUM_GPUS --low-bit 'sym_int4'
 
 # To run Yi-34B-Chat
 # CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-#     generate.py --repo-id-or-model-path '01-ai/Yi-34B-Chat' --gpu-num $NUM_GPUS
+#     generate.py --repo-id-or-model-path '01-ai/Yi-34B-Chat' --gpu-num $NUM_GPUS --low-bit 'sym_int4'
