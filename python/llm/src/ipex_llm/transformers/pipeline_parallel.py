@@ -401,7 +401,7 @@ class ModelRunner:
 
         cur_id = cur_batch.batch_id
         _past_key_values = self.past_key_values_dict.get(cur_id, None)
-        attention_mask = make_attention_mask(cur_batch.prompt_lengths).to(f'xpu:{self.rank}')
+        attention_mask = make_attention_mask(cur_batch.prompt_lengths).to(input.device)
 
         if self.rank == 0:
             input_ids = input
