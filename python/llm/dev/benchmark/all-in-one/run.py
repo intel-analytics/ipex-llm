@@ -540,12 +540,17 @@ def run_transformer_int4_gpu(repo_id,
                 actual_input_output_tokens = f'{int(np.mean(result[in_out], axis=0)[3])}' + f'-{int(np.mean(result[in_out], axis=0)[4])}'
                 load_time = round(result[in_out][-1][5], 2)
                 peak_mem = result[in_out][-1][6]
+                streaming = 'N/A'
+                use_fp16_torch_dtype = 'N/A'
                 with open(csv_name, mode='a', newline='') as file:
                     csv_writer = csv.writer(file)
                     file.seek(0, os.SEEK_END)
+                    global line_counter
                     if file.tell() == 0:
-                        csv_writer.writerow(["","model","1st token avg latency (ms)","2+ avg latency (ms/token)","encoder time (ms)","input/output tokens", "batch_size", "actual input/output tokens","num_beams","low_bit","cpu_embedding","model loading time (s)","peak mem (GB)"])
-                    csv_writer.writerow(['', repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', load_time, peak_mem])
+                        csv_writer.writerow(["", "model", "1st token avg latency (ms)", "2+ avg latency (ms/token)", "encoder time (ms)", "input/output tokens", "batch_size", "actual input/output tokens", "num_beams", "low_bit", "cpu_embedding", "model loading time (s)", "peak mem (GB)", "streaming", "use_fp16_torch_dtype"])
+                        line_counter +=1
+                    csv_writer.writerow([line_counter-1, repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', load_time, peak_mem, streaming, use_fp16_torch_dtype])
+                    line_counter += 1
 
     model.to('cpu')
     torch.xpu.synchronize()
@@ -1843,7 +1848,12 @@ if __name__ == '__main__':
     import pandas as pd
     for api in conf.test_api:
         global csv_name
-        csv_name = f'{current_dir}/{api}-results-{today}.csv' 
+        csv_name = f'{current_dir}/{api}-results-{today}.csv'
+        if api in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
+            try:
+                line_counter = len(open(csv_name).readlines())
+            except:
+                line_counter = 0
         if not OmegaConf.is_list(conf["batch_size"]):
             batch_list = [conf["batch_size"]]
         else:
@@ -1864,5 +1874,6 @@ if __name__ == '__main__':
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
-        df.to_csv(csv_name)
+        if api not in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
+            df.to_csv(csv_name, mode='a')
         results = []
