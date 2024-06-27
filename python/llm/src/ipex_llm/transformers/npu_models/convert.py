@@ -15,6 +15,49 @@
 
 
 import torch
+from intel_npu_acceleration_library.nn import QuantizedLinear
+
+
+def module_optimization(func) -> torch.nn.Module:
+    """Optimize recursively a torch.nn.Module with a specific function.
+
+    The function `func` get called recursively to every module in the network.
+
+    Args:
+        func (Callable): optimization function
+
+    Returns:
+        torch.nn.Module: optimized module
+    """
+
+    def wrapper(model: torch.nn.Module, *args, **kwargs):
+        """Recursively apply the optimization function.
+
+        Args:
+            model (torch.nn.Module): original module
+            args (Any): positional arguments
+            kwargs (Any): keyword arguments
+
+        """
+        for name, layer in model.named_children():
+            new_layer = func(name, layer, *args, **kwargs)
+            if new_layer:
+                model.add_module(name, new_layer)
+                wrapper(new_layer, *args, **kwargs)
+            else:
+                wrapper(layer, *args, **kwargs)
+
+    return wrapper
+
+@module_optimization
+def replace_with_QuantizedLinear(layer, qtype):
+    from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
+    from ipex_llm.ggml.quantize import ggml_tensor_qtype
+    iqtype = ggml_tensor_qtype[qtype]
+    if isinstance(layer, torch.nn.Linear):
+        qweights, scale = ggml_convert_qtype(layer, iqtype, 'cpu')
+        return QuantizedLinear(qweights, scale, layer.bias)
+
 
 
 def convert_forward(m, target_m, new_forward):

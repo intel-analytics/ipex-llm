@@ -81,6 +81,7 @@ Q4_K = ggml_tensor_qtype["q4_k"]
 Q6_K = ggml_tensor_qtype["q6_k"]
 Q5_K = ggml_tensor_qtype["q5_k"]
 FP6_K = ggml_tensor_qtype["fp6_k"]
+SYM_INT8_RTN = ggml_tensor_qtype["sym_int8_rtn"]
 
 
 # For sym_int4
@@ -218,12 +219,21 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     dst_size = (n // QK) * block_size_in_bytes
     dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
                              device=device)
+    if qtype in [SYM_INT8_RTN]:
+        scale = torch.empty(n // k, dtype=torch.float32,
+                            device=device)
+        print(scale)
 
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
         if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K, FP6_K]:
-            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)
+            if qtype in [SYM_INT8_RTN]:
+                scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
+                ggml.ggml_rtn_quantize_tensor(src, dst, scale_ptr, qtype, n, k, hist, enable_scale_search)
+                return dst_tensor, scale
+            else:
+                ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)
         else:
             if imatrix is not None:
                 # quantize with importance matrix
