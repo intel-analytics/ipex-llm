@@ -32,6 +32,8 @@ pip install transformers==4.37.0
 bash run.sh
 ```
 
+> Note: INT4 optimization is applied to the model by default. You could specify other low bit optimizations (such as 'fp8' and 'fp6') through `--low-bit`. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
 
 ### 3. Sample Input and Output
 

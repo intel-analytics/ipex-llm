@@ -1,10 +1,25 @@
-from pipeline_models import ModelRunner
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import torch.nn.parallel
 import torch.distributed as dist
 import os
 
 from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers import init_pipeline_parallel
+from ipex_llm.transformers import init_pipeline_parallel, ModelRunner
 import oneccl_bindings_for_pytorch
 import json
 
@@ -19,7 +34,7 @@ device = f"xpu:{my_rank}"
 logger.info(f"rank: {my_rank}, size: {my_size}")
 
 import time
-from transformers import AutoTokenizer, AutoConfig, LlamaTokenizer
+from transformers import AutoTokenizer
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -27,14 +42,6 @@ import uvicorn
 import asyncio, uuid
 from typing import Dict, List, Optional, Any, Callable, Union
 import argparse
-
-def get_int_from_env(env_keys, default):
-    """Returns the first positive env value found in the `env_keys` list or the default."""
-    for e in env_keys:
-        val = int(os.environ.get(e, -1))
-        if val >= 0:
-            return val
-    return int(default)
 
 
 class PromptRequest(BaseModel):
@@ -294,11 +301,11 @@ async def main():
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`, `meta-llama/Llama-2-13b-chat-hf` and `meta-llama/Llama-2-70b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--low-bit', type=str, default='sym_int4',
-                    help='The quantization type the model will convert to.')
+                        help='The quantization type the model will convert to.')
     parser.add_argument('--port', type=int, default=8000,
-                    help='The port number on which the server will run.')
+                        help='The port number on which the server will run.')
     parser.add_argument('--max-num-seqs', type=int, default=8,
-                    help='Max num sequences in a batch.')
+                        help='Max num sequences in a batch.')
     
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
