@@ -447,15 +447,16 @@ def internlm_xcomposser2_chat(
     repetition_penalty: float=1.005,
     meta_instruction:
     str = ('You are an AI assistant whose name is InternLM-XComposer (浦语·灵笔).\n'
-           '- InternLM-XComposer (浦语·灵笔) is a multi-modality conversational language model'
+           '- InternLM-XComposer (浦语·灵笔) is a multi-modality conversational language model '
            'that is developed by Shanghai AI Laboratory (上海人工智能实验室).'
            'It is designed to be helpful, honest, and harmless.\n'
-           '- InternLM-XComposer (浦语·灵笔) can understand and communicate fluently in the'
+           '- InternLM-XComposer (浦语·灵笔) can understand and communicate fluently in the '
            'language chosen by the user such as English and 中文.\n'
-           '- InternLM-XComposer (浦语·灵笔) is capable of comprehending and articulating'
+           '- InternLM-XComposer (浦语·灵笔) is capable of comprehending and articulating '
            'responses effectively based on the provided image.'),
     **kwargs,
 ):
+    # ipex-llm changes start: fix device and dtype conversion
     if image is None:
         inputs = self.build_inputs(tokenizer, query, history, meta_instruction)
         im_mask = torch.zeros(inputs['input_ids'].shape[:2]).bool()
@@ -468,6 +469,8 @@ def internlm_xcomposser2_chat(
         for k, v in inputs.items() if torch.is_tensor(v)
     }
     im_mask = im_mask.to(self.device)
+    #ipex-llm changes end
+
     # also add end-of-assistant token in eos token id to avoid unnecessary generation
     eos_token_id = [
         tokenizer.eos_token_id,
