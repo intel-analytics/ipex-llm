@@ -21,16 +21,19 @@
 > [!NOTE]
 > You can change the UI language in the left-side menu. We currently support **English** and **简体中文** (see video demos below).
 
+## Table of Contents
+- [Langchain-Chatchat Architecture](./chatchat_quickstart.md#langchain-chatchat-architecture)
+- [Install and Run](./chatchat_quickstart.md#install-and-run)
+- [How to Use RAG](./chatchat_quickstart.md#how-to-use-rag)
+- [Troubleshooting & Tips](./chatchat_quickstart.md#troubleshooting--tips)
+
+
 ## Langchain-Chatchat Architecture
 
 See the Langchain-Chatchat architecture below ([source](https://github.com/chatchat-space/Langchain-Chatchat/blob/master/docs/img/langchain%2Bchatglm.png)).
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/langchain-arch.png" height="50%" />
 
-## Table of Contents
-- [Install and Run](./chatchat_quickstart.md#install-and-run)
-- [How to Use RAG](./chatchat_quickstart.md#how-to-use-rag)
-- [Troubleshooting & Tips](./chatchat_quickstart.md#troubleshooting--tips)
 
 ## Quickstart
 
