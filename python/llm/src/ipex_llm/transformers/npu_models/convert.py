@@ -30,7 +30,7 @@ def module_optimization(func) -> torch.nn.Module:
         torch.nn.Module: optimized module
     """
 
-    def wrapper(model: torch.nn.Module, *args, **kwargs):
+    def wrapper(model: torch.nn.Module, qtype, *args, **kwargs):
         """Recursively apply the optimization function.
 
         Args:
@@ -40,7 +40,7 @@ def module_optimization(func) -> torch.nn.Module:
 
         """
         for name, layer in model.named_children():
-            new_layer = func(name, layer, *args, **kwargs)
+            new_layer = func(layer, qtype, *args, **kwargs)
             if new_layer:
                 model.add_module(name, new_layer)
                 wrapper(new_layer, *args, **kwargs)
