@@ -6,11 +6,6 @@ This guide helps you migrate your `bigdl-llm` application to use `ipex-llm`.
 - [Upgrade `bigdl-llm` package to `ipex-llm`](./bigdl_llm_migration.md#1-upgrade-bigdl-llm-code-to-ipex-llm)
 - [Migrate `bigdl-llm` code to `ipex-llm`](./bigdl_llm_migration.md#migrate-bigdl-llm-code-to-ipex-llm)
 
-<!-- >>>1. [Upgrade bigdl-llm code to ipex-llm](./bigdl_llm_migration.md#upgrade-bigdl-llm-package-to-ipex-llm)
->>2. [2. Run bigdl-llm code in compatible mode (experimental)](./bigdl_llm_migration.md#2-run-bigdl-llm-code-in-compatible-mode-experimental) -->
-
-
-
 
 ## Upgrade `bigdl-llm` package to `ipex-llm`
 
