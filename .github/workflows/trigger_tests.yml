@@ -1,0 +1,29 @@
+name: Initial Trigger test
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-llm-unittest-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Controls when the action will run.
+on:
+  pull_request_target:
+    branches: [main]
+    paths:
+      - ".github/workflows/trigger_tests.yml"
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  initial-trigger-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.CICD_REPO_TOKEN }}
+          repository: intel-analytics/ipex-llm-workflow
+          event-type: initial-trigger-test
+          client-payload: '{"test": "abcd"}'
