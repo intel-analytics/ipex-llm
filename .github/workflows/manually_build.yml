@@ -241,6 +241,7 @@ jobs:
         echo "##############################################################"
         echo "####### ipex-llm-cpu ########"
         echo "##############################################################"
+        docker pull intelanalytics/ipex-llm-cpu:test
         docker push intelanalytics/ipex-llm-cpu:test
         export image=intelanalytics/ipex-llm-cpu
         export TAG=test
