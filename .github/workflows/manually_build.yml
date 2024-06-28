@@ -36,6 +36,7 @@ on:
         required: true
         default: '2.1.0-SNAPSHOT'
         type: string
+  pull_request:
 
 env:
   TAG: ${{ inputs.tag }}
@@ -225,8 +226,8 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-cpu:
-    if: ${{ inputs.artifact == 'ipex-llm-cpu' || inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Shire]
+    # if: ${{ inputs.artifact == 'ipex-llm-cpu' || inputs.artifact == 'all' }}
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
