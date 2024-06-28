@@ -47,6 +47,7 @@ jobs:
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+        SOURCEFORGE_PW: ${{ secrets.SOURCEFORGE_PW }}
       run: |
         # export TIMESTAMP=`date '+%Y%m%d'`
         export TIMESTAMP=20240102

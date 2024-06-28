@@ -242,6 +242,7 @@ jobs:
         echo "####### ipex-llm-cpu ########"
         echo "##############################################################"
         export image=intelanalytics/ipex-llm-cpu
+        export TAG=latest
         cd docker/llm/inference/cpu/docker
         sudo docker build \
           --no-cache=true \
