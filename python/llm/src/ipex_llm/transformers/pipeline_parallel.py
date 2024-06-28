@@ -126,7 +126,7 @@ def pipeline_parallel(model, pipeline_parallel_stages):
             if i < layer_start or i >= layer_end:
                 model._modules['transformer'].encoder.layers[i] = Dummy_GLMBlock()
             else:
-                model._modules['transformer'].encoder.layers[i].self_attention.layer_number = \
+                model._modules['transformer'].encoder.layers[i].self_attention.num_layers = \
                     i - layer_start
 
         if local_rank != 0:
@@ -431,7 +431,20 @@ class ModelRunner:
                             attention_mask=attention_mask,
                             use_cache=True,)
 
-        if self.model.config.model_type in ["baichuan", "chatglm"] and self.rank > 0:
+        if self.model.config.model_type == "chatglm" and self.model.config.num_layers == 40:
+            # for glm-4-9b-chat
+            if self.past_key_values_dict.get(cur_id, None) is None:
+                value_placeholder = torch.empty_like((output.past_key_values)[-1][0])
+                past_key_values_placeholder = tuple(
+                    (value_placeholder, value_placeholder) for _ in range(layer_start)
+                ) + (output.past_key_values)[: layer_end - layer_start] + tuple(
+                    (value_placeholder, value_placeholder) for _ in range(layer_end, num_layers)
+                )
+                _past_key_values = past_key_values_placeholder
+            else:
+                _past_key_values = output.past_key_values
+        elif self.model.config.model_type in ["baichuan", "chatglm"] and self.rank > 0:
+            # for baichuan2 and chatglm3
             value_placeholder = torch.empty_like((output.past_key_values)[-1][0])
             past_key_values_placeholder = tuple(
                 (value_placeholder, value_placeholder) for _ in range(layer_start)

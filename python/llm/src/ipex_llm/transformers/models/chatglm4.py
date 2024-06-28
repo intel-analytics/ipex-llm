@@ -23,7 +23,6 @@ from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, use_sdp_causal
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.chatglm2 import repeat_kv
-import torch.distributed
 from transformers.modeling_outputs import BaseModelOutputWithPast
 import math
 
@@ -286,8 +285,11 @@ def chatglm4_encoder_forward(
                 if len(presents) == 0:
                     presents = kv_cache
                 else:
+                    # bigdl-llm change starts
+                    # to fix first token's kv cache error of tensor format in pipeline parallel fashion
                     if isinstance(kv_cache, tuple):
                         kv_cache = torch.tensor(kv_cache, dtype=hidden_states.dtype).to(hidden_states.device)
+                    # bigdl-llm change ends
                     presents = torch.cat((presents, kv_cache.to(presents.device)), dim=0)
 
     if output_hidden_states:
