@@ -74,10 +74,10 @@ if [ ${upload} == true ]; then
     # upload to pypi
     upload_to_pypi_command="twine upload dist/ipex_llm-${ipex_llm_version}-*-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_to_pypi_command"
-    $upload_to_pypi_command
+    # $upload_to_pypi_command
 
     # upload to sourceforge
-    rsync -avzr -e \
+    rsync -avzr -e --verbose \
     "sshpass -p '${SOURCEFORGE_PW}' ssh -o StrictHostKeyChecking=no" \
     ./dist/ipex_llm-${ipex_llm_version}-*-${verbose_pname}.whl \
     intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/ipex-llm-whl/ipex-llm/${ipex_llm_version}/
