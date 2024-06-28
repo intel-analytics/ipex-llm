@@ -235,7 +235,7 @@ jobs:
     #   run: |
     #     docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
     - name: Log in to Docker Hub
-      run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u intelanalytics --password-stdin
     - name: ipex-llm-cpu
       run: |
         echo "##############################################################"
@@ -245,13 +245,10 @@ jobs:
         cd docker/llm/inference/cpu/docker
         sudo docker build \
           --no-cache=true \
-          --build-arg http_proxy=${HTTP_PROXY} \
-          --build-arg https_proxy=${HTTPS_PROXY} \
-          --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        # sudo docker push 10.239.45.10/arda/${image}:${TAG}
         # tag 'latest'
         sudo docker tag ${image}:${TAG} ${image}:latest
         sudo docker push ${image}:latest
