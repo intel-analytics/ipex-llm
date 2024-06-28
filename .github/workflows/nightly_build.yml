@@ -1,7 +1,7 @@
 name: Nightly Build
 
 on:
-  # pull_request:
+  push:
   #   branches: [ main ]
   #   paths:
   #     - '.github/workflows/nightly_build.yml'
@@ -17,14 +17,14 @@ permissions:
 
 jobs:
   
-  llm-cpp-build:
-    uses: ./.github/workflows/llm-binary-build.yml
+  # llm-cpp-build:
+  #   uses: ./.github/workflows/llm-binary-build.yml
 
   ipex-llm-build:
     # python build can only be published once a day, please do not publish it manually
-    if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' }} 
-    runs-on: [self-hosted, Bree]
-    needs: llm-cpp-build
+    # if: ${{ github.event.schedule || github.event_name == 'workflow_dispatch' }} 
+    runs-on: ubuntu-latest
+    # needs: llm-cpp-build
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
 
@@ -40,13 +40,16 @@ jobs:
         pip install wheel
         pip install twine
 
-    - name: Download llm binary
-      uses: ./.github/actions/llm/download-llm-binary
+    # - name: Download llm binary
+    #   uses: ./.github/actions/llm/download-llm-binary
 
     - name: Build package
+      env:
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       run: |
-        export TIMESTAMP=`date '+%Y%m%d'`
-        # export TIMESTAMP=20240323
+        # export TIMESTAMP=`date '+%Y%m%d'`
+        export TIMESTAMP=20240102
         export PYPI_VERSION=2.1.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
@@ -57,9 +60,9 @@ jobs:
         ## linux ##
         bash python/llm/dev/release_default_linux.sh ${nb_version} true
 
-  docker-build:
-    if: ${{ github.event.schedule }} 
-    uses: ./.github/workflows/manually_build.yml
-    with:
-      artifact: all
-      tag: 2.1.0-SNAPSHOT
+  # docker-build:
+  #   if: ${{ github.event.schedule }} 
+  #   uses: ./.github/workflows/manually_build.yml
+  #   with:
+  #     artifact: all
+  #     tag: 2.1.0-SNAPSHOT
