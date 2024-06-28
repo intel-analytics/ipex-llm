@@ -232,7 +232,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K, FP6_K]:
             if qtype in [SYM_INT8_RTN]:
                 scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
-                ggml.ggml_rtn_quantize_tensor(src, dst, scale_ptr, qtype, n, k, hist, enable_scale_search)
+                ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n, k, hist, enable_scale_search)
                 dst_tensor = dst_tensor.reshape_as(tensor)
                 return dst_tensor, scale.type(torch.float16)
             else:
