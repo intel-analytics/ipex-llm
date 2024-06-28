@@ -24,10 +24,7 @@ RUN apt-get update && \
     pip install transformers_stream_generator einops tiktoken && \
     # For pipeline serving support
     pip install mpi4py fastapi uvicorn openai && \
-    pip install gradio # for gradio web UI && \
-    git clone https://github.com/intel-analytics/ipex-llm /llm/ipex-llm && \
-    mkdir -p /llm/pp_serving && \
-    cp /llm/ipex-llm/python/llm/example/GPU/Pipeline-Parallel-FastAPI/*.py /llm/pp_serving
+    pip install gradio # for gradio web UI
 
 COPY ./vllm_offline_inference.py       /llm/
 COPY ./payload-1024.lua                /llm/
