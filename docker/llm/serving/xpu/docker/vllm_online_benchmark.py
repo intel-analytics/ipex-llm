@@ -22,21 +22,10 @@ PROMPT_32 = "Once upon a time, there existed a little girl who liked to have adv
 
 PROMPT_128 = "In a distant future, humanity has expanded across the galaxy, establishing colonies on numerous planets. The interstellar community thrives under the guidance of the United Galactic Federation, which ensures peace and prosperity. However, a new threat emerges from the unknown regions of space, challenging the stability and security of the galaxy. Brave explorers and seasoned warriors must unite to uncover the secrets of this mysterious force and protect the future of all sentient beings.  Please continue the above story as long as possible, preferably more than 1000 tokens."
 
-#PROMPT_1024 = ""
-
-#with open('prompt.json', 'r') as rf:
-#    data = json.load(rf)
-#    quest = data['qwen']['1024']
-#    quest = quest[:4229]
-#    PROMPT_1024 = quest
-
-#print(PROMPT_1024)
-#sys.exit(0)
-
 PROMPT_1024 = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun. However, her parents were always telling her to stay close to home, to be careful, and to avoid any danger. But the little girl was stubborn, and she wanted to see what was on the other side of the mountain. So she sneaked out of the house one night, leaving a note for her parents, and set off on her journey. As she climbed the mountain, the little girl felt a sense of excitement and wonder. She had never been this far away from home before, and she couldnt wait to see what she would find on the other side. She climbed higher and higher, her lungs burning from the thin air, until she finally reached the top of the mountain. And there, she found a beautiful meadow filled with wildflowers and a sparkling stream. The little girl danced and played in the meadow, feeling free and alive. She knew she had to return home eventually, but for now, she was content to enjoy her adventure. As the sun began to set, the little girl reluctantly made her way back down the mountain, but she knew that she would never forget her adventure and the joy of discovering something new and exciting. And whenever she felt scared or unsure, she would remember the thrill of climbing the mountain and the beauty of the meadow on the other side, and she would know that she could face any challenge that came her way, with courage and determination. She carried the memories of her journey in her heart, a constant reminder of the strength she possessed. The little girl returned home to her worried parents, who had discovered her note and anxiously awaited her arrival. They scolded her for disobeying their instructions and venturing into the unknown. But as they looked into her sparkling eyes and saw the glow on her face, their anger softened. They realized that their little girl had grown, that she had experienced something extraordinary. The little girl shared her tales of the mountain and the meadow with her parents, painting vivid pictures with her words. She spoke of the breathtaking view from the mountaintop, where the world seemed to stretch endlessly before her. She described the delicate petals of the wildflowers, vibrant hues that danced in the gentle breeze. And she recounted the soothing melody of the sparkling stream, its waters reflecting the golden rays of the setting sun. Her parents listened intently, captivated by her story. They realized that their daughter had discovered a part of herself on that journey—a spirit of curiosity and a thirst for exploration. They saw that she had learned valuable lessons about independence, resilience, and the beauty that lies beyond ones comfort zone. From that day forward, the little girls parents encouraged her to pursue her dreams and embrace new experiences. They understood that while there were risks in the world, there were also rewards waiting to be discovered. They supported her as she continued to embark on adventures, always reminding her to stay safe but never stifling her spirit. As the years passed, the little girl grew into a remarkable woman, fearlessly exploring the world and making a difference wherever she went. The lessons she had learned on that fateful journey stayed with her, guiding her through challenges and inspiring her to live life to the fullest. And so, the once timid little girl became a symbol of courage and resilience, a reminder to all who knew her that the greatest joys in life often lie just beyond the mountains we fear to climb. Her story spread far and wide, inspiring others to embrace their own journeys and discover the wonders that awaited them. In the end, the little girls adventure became a timeless tale, passed down through generations, reminding us all that sometimes, the greatest rewards come to those who dare to step into the unknown and follow their hearts. With each passing day, the little girls story continued to inspire countless individuals, igniting a spark within their souls and encouraging them to embark on their own extraordinary adventures. The tale of her bravery and determination resonated deeply with people from all walks of life, reminding them of the limitless possibilities that awaited them beyond the boundaries of their comfort zones. People marveled at the little girls unwavering spirit and her unwavering belief in the power of dreams. They saw themselves reflected in her journey, finding solace in the knowledge that they too could overcome their fears and pursue their passions. The little girl\'s story became a beacon of hope, a testament to the human spirit"
 
 PROMPT_2048 = "“You’re an idiot,” she said.\nI smiled and leaned back in the chair, looking at her over my glasses. “No, I’m not.”\n“If you were smart you would have learned to dance years ago. You’ve got two left feet.” She held up both of her hands with four fingers extended then made a circular motion that looked like an airplane.\nI leaned forward and put my glasses on the table in front of me, reaching for her hands as I did so, grabbing them before they could leave mine. “The next time you do something like this, call me. The phone number is right here,” I said as I pointed at a piece of paper under a stack of papers on my desk.\n“Fine,” she huffed and turned to leave the room. But she stopped at the doorway when she saw the bookshelves that lined one wall. “What are these for?” She stepped closer, tilting her head back and forth as she looked up. The shelves were three stories high with stacks of books on every level.\n“Books.” I smiled again. “I have a lot of books.”\nShe didn’t respond to that so I continued: “And there are more in the basement.”\n“But you can’t move them all here, right? This place is just too small for all those books. Maybe we should look for a bigger office building.” She looked back at me but said nothing as she took another few steps towards the door and then stopped again when she saw my grandfather clock on the wall.\n“And this?” she pointed to the clock, which had been in the family for over seventy years. “It’s just a clock isn’t it?”\nI laughed. “You can say that, but I know better.” It was then that I told her my grandfather’s story. He made that clock, and it was his favorite possession. When he died she inherited the clock; or at least she thought she did. After a few weeks of trying to sell it on eBay, she gave up because no one would pay what she felt it was worth.\n“You should have had an auction,” she suggested, leaning in towards me again. “Then maybe you could get more for it.”\n“No,” I shook my head. “I don’t want to sell the clock.”\nShe smiled, but this time it didn’t reach her eyes. She took a step back and looked at me again, not saying anything, just staring. The only sound was the ticking of the grandfather clock in the background as she waited for my next words.\n“My grandfather made this clock. He did everything by hand.” I could see that she had no idea what to say or do so I continued: “It’s his favorite possession, and it means more to me than anything else he ever owned. So, if you want the books, you can have them…” I looked at her face for just a second before continuing, “but you won’t take the clock.”\nShe finally responded with: “But what about the money?” She looked around again and said, “I think we could make more selling these books than you would get from all of them. You must have thousands of books here!”\nI took another step forward and put my hand on her shoulder as I spoke to her in a very low voice. “You’ve got it all wrong,” I told her. “There are only two or three hundred books. I’m not looking for money – I’m looking for someone who understands how important this clock is.”\n“How much do you want for the books?” she asked, still staring at me intently as she waited for my answer.\n“Forget about the money,” I said again. “If you really want to buy them, we can take our time and talk more later. But if you just want their value in paperbacks, that’s not what they’re worth.” She still seemed confused by everything I had said so far, so I tried to simplify my words as much as possible: “The books are mine; the clock is my grandfather’s. These books have been passed down through several generations of our family and are irreplaceable. Do you understand?”\n“I guess not,” she answered as she walked away from me, still looking at me but not saying a word. She took two more steps before turning around to say one last thing: “Well, good luck with the books, then.” With that, she went back into her house and out of sight, still walking without talking.\nAfter a few minutes, I slowly walked back toward my grandfather’s home. As I got closer, I could see the roof in the distance; the white crosses on the top of it were hard to miss. It seemed as if the entire town had gathered around there at that moment – people were all over the road around us, watching the commotion and chattering about what was going on.\nWhen my grandfather first saw me, he looked up from his chair with a smile on his face: “There you are.” He looked down at his hands, then back toward me as I walked forward to talk to him for the first time in years: “It’s been too long since we last spoke; it’s good to see you again.”\n“And you,” I said. Then, looking past my grandfather and directly into the face of the man who was sitting next to him (my mother’s father), I said, “I see he got your clock back for you, too. How is he?” My grandfather smiled as he looked up at me again:\n“He’s fine,” he answered, still smiling as he watched my mother’s family and mine chat with one another in the middle of all these people – a situation that I had never seen before. “Come on inside.” He stood up from his chair to do just that; my mom and her sister were already walking out of the building. “I have things for you.”\nMy grandfather led us inside, down some steps where he used to serve as the pastor in his church; there was a big room full of chairs at the bottom with pictures on the wall – all kinds of pictures, from when my family first started coming here to visit and other pictures we took while staying here over the years. All these photographs were all around us as I followed my grandfather through the building:\n“My house is just up the street,” he said. He stopped at a picture on the wall that was taken in the summer when we came to visit, smiling as he looked toward it with his arms folded – the picture was of him and his wife and two of their daughters, all standing together by one of the trees outside; there were other pictures around this one, some from much earlier than when my grandfather first started serving here. “We used to sit in a booth in that restaurant right over there – you remember?” I nodded as we went past it.\nMy grandfather stopped at another picture on the wall: it was of him and his wife with two other families, all sitting around a table together, smiling. He looked down at this one for a moment; then he said, “We used to do things like this every year, when we came to visit.” It was an older picture than the last one my grandfather had stopped in front of; I didn’t know it before but now I realized how much he has aged.\nMy grandparents have lived together for many years. They used to live in a house right next door, so they could walk over whenever they wanted; that is what they have done here all these years – as my grandfather said, “we’ve come here every summer since I was eleven.” But he and his wife are getting old now. He isn’t able to walk much anymore, but it makes him happy when he does: “My health has not been good lately,” he said.\n“You will never have a better time in your life than this one right now; you will never be as happy as you are now.” And for the first time since I have known him – since I was very little and started coming here every summer – my grandfather smiled at me, his eyes sparkling with excitement.\n“I know,” I said. “That’s why I’m really looking forward to it. It will be a lot of fun.” Then he turned back to the picture again; “See this?” he asked, pointing. “I remember that day, all sixteen of us there together. I was eleven then – my dad had taken me and my brother for our first trip away from home – and that was when we used to go to the cottage.” He stared at it for a while longer; he had tears in his eyes. “I loved this picture,” he said, turning it over again with one hand so I could see the back of it.\n“This is my best memory,” he explained. “It was taken on my birthday. That’s what makes me happiest.” He pointed to a man who had a pipe in his mouth. “That’s my uncle,” he said. “He gave all of us kids cigars for our birthdays, and we used to take turns lighting them – then everyone would sit around outside in the sunshine and smoke together like that. It was such a good time.” Then he held up his hand, as if to say, that’s enough now; and he went on, “Anyway, I don’"
-ZE_AFFINITY_MASK=0
+
 from typing import AsyncGenerator, List, Tuple
 from transformers import PreTrainedTokenizerBase
 from vllm.transformers_utils.tokenizer import get_tokenizer
@@ -113,7 +102,6 @@ def perform_request(session, url, payload, headers):
                 if data.startswith('data: '):
                     data = data[len('data: '):]
                     i = i + 1
-                    # print()
                     # print(i, " ", data)
                     try:
                         json_data = json.loads(data)
@@ -137,7 +125,6 @@ def perform_request(session, url, payload, headers):
 
         # 返回第一个token和后续token的latency
         end_time = time.perf_counter()
-        # print()
         # print("length: ", len(next_token_time))
 
         return first_token_time, np.mean(next_token_time), end_time - start_time, first_token_inference_time, next_token_inference_time
@@ -150,14 +137,6 @@ def extend_list_to_length(lst, target_length):
     times = target_length // len(lst)
     # 计算不能整除的剩余部分
     remainder = target_length % len(lst)
-
-    # tmp_list = [[tmp] * times for tmp in lst]
-    # for i in range(remainder):
-    #     tmp_list[i].append(tmp_list[i][0])
-    # ret = []
-    # for tmp in tmp_list:
-    #     ret = ret + tmp
-    # return ret
 
     # 生成新列表：重复整个列表times次，再加上前remainder个元素
     extended_list = lst * times + lst[:remainder]
@@ -197,14 +176,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
             cur_len = len(cur_llm_urls)
             if dataset is None:
                 payload = {
-                    #"model": "chatglm3-6b",
-                    #"model": "Llama-2-7b-chat-hf",
-                    #"model": "Meta-Llama-3-8B-Instruct",
                     "model": model_name,
-                    #"model": "Qwen1.5-14B-Chat",
-                    #"model": "glm-4-9b-chat",
-                    #"model": "Llama-2-7b-chat-hf",
-                    #"model": "chatglm3-6b",
                     "prompt": prompt,
                     "n": 1,
                     "best_of": 1,
@@ -221,8 +193,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
                 for index in range(num_requests):
                     prompt, prompt_len, output_len = sampled_requests[index]
                     payload = {
-                        #"model": "chatglm3-6b",
-                        #"model": model,
+                        "model": model_name,
                         "prompt": prompt,
                         "n": 1,
                         "best_of": 1,
@@ -240,10 +211,6 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
 
 
             start_time = time.perf_counter()
-
-            # 提交所有请求到线程池并行执行
-            # futures = [executor.submit(perform_request, session, cur_llm_urls[index % cur_len], payload[index], headers) for index in range(num_requests)]
-            # futures = [executor.submit(perform_request, session, llm_url, payload, headers) for index in range(num_requests)]
 
             if is_warmup:
                 phase = "Warm Up"
@@ -301,39 +268,15 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
 
 # 设置benchmark参数
 LLM_URLS = [f"http://localhost:{PORT}/v1/completions" for PORT in [8000]]
-LLM_URLS = [f"http://localhost:{PORT}/v1/completions" for PORT in [7999]]
 
-MODEL = "/llm/models/Qwen1.5-7B-Chat/Qwen1.5-7B-Chat"
-MODEL = "/llm/models/Qwen1.5-14B-Chat"
-MODEL = "/llm/models/Llama-2-13b-chat-hf"
-MODEL = "/llm/models/glm-4-9b-chat"
-MODEL = "/llm/models/chatglm3-6b"
-MODEL = "/llm/models/Llama-2-7b-chat-hf"
-MODEL = "/llm/models/Meta-Llama-3-8B-Instruct"
-#MODEL = "/llm/models/Llama-2-13b-chat-hf"
-MODEL = "/llm/models/glm-4-9b-chat"
+
 MODEL = "llm/models/" + model_name
-#MODEL = "/llm/models/chatglm3-6b"
 MAX_TOKENS = 512
 
-
-#for MAX_CONCURRENT_REQUESTS in [1,2,4,8,10,12,14,16]:
-#    NUM_WARMUP = 2 * MAX_CONCURRENT_REQUESTS
-#    NUM_REQUESTS = 10 * MAX_CONCURRENT_REQUESTS  # 总请求次数
-#
-#    benchmark(LLM_URLS, MODEL, PROMPT, NUM_WARMUP, MAX_CONCURRENT_REQUESTS, MAX_TOKENS, is_warmup = True)
-#
-#    # 运行benchmark
-#    benchmark(LLM_URLS, MODEL, PROMPT, NUM_REQUESTS, MAX_CONCURRENT_REQUESTS, MAX_TOKENS)
-
 PROMPT = PROMPT_1024
-#benchmark(LLM_URLS, MODEL, PROMPT, 8, 8, MAX_TOKENS, is_warmup = True)
 
-#max_batch=115
-max_batch=8
 max_batch=int(max_seq)
-#max_batch=536
-#max_batch=123
+
 for MAX_CONCURRENT_REQUESTS in [max_batch]:
     NUM_WARMUP = 2 * MAX_CONCURRENT_REQUESTS
     NUM_REQUESTS = 5 * MAX_CONCURRENT_REQUESTS  # 总请求次数
