@@ -217,11 +217,14 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                       f"Last dim of input tensor must be multiple of {QK}")
 
     dst_size = (n // QK) * block_size_in_bytes
-    dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
-                             device=device)
     if qtype in [SYM_INT8_RTN]:
+        dst_tensor = torch.empty(dst_size, dtype=torch.int8,
+                                device=device)
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
+    else:
+        dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                                device=device)
 
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
