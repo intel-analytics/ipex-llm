@@ -25,9 +25,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 # This example is ported from https://github.com/THUDM/ChatGLM3/blob/main/finetune_demo/finetune_hf.py
-# L415-L427 are modified to enable the example on Intel Arc
+# L33, L34 and L417 are modified to enable the example on Intel Arc
 
+# Below 2 lines different from the original example, where transformers are patched with IPEX LLM
+from ipex_llm import llm_patch
+llm_patch(train=True)
 import os
 import jieba
 import dataclasses as dc
@@ -409,20 +413,13 @@ def load_tokenizer_and_model(
                 config=config,
             )
         if peft_config.peft_type.name == "LORA":
-            # Modified below to adapt to ipex-llm, which is different from
-            # https://github.com/THUDM/ChatGLM3/blob/main/finetune_demo/finetune_hf.py#L400-L406
-            from ipex_llm.transformers import AutoModelForCausalLM
-            from ipex_llm.transformers.qlora import get_peft_model
-            import os
+            # Add below L417 to enable accelerator to schedule model to Intel Arc XPU
             os.environ["ACCELERATE_USE_XPU"] = "true"
             model = AutoModelForCausalLM.from_pretrained(
                 model_dir,
                 trust_remote_code=True,
-                load_in_low_bit="bf16",
-                optimize_model=False,
                 empty_init=False,
-                use_cache=False,
-                torch_dtype=torch.bfloat16
+                use_cache=False
             )
 
             model = get_peft_model(model, peft_config)
