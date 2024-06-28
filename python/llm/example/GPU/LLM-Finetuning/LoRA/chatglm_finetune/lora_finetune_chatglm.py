@@ -25,13 +25,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# This example is ported from https://github.com/THUDM/ChatGLM3/blob/main/finetune_demo/finetune_hf.py
-# L33, L34, L417, L474 and L544-L546 are modified to enable the example on Intel Arc
 
 # Below 2 lines different from the original example, where transformers are patched with IPEX LLM
 from ipex_llm import llm_patch
 llm_patch(train=True)
+
+# This below example is ported from https://github.com/THUDM/ChatGLM3/blob/main/finetune_demo/finetune_hf.py
+# L417, L474 and L544-L546 are modified to enable the example on Intel Arc
 import os
 import jieba
 import dataclasses as dc
