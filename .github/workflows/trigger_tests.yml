@@ -11,7 +11,7 @@ permissions:
 # Controls when the action will run.
 on:
   pull_request_target:
-    branches: [main]
+    branches: [trigger-test]
     paths:
       - ".github/workflows/trigger_tests.yml"
 
