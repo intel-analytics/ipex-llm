@@ -231,9 +231,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-    - name: docker login
-      run: |
-        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    # - name: docker login
+    #   run: |
+    #     docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: Log in to Docker Hub
+      run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
     - name: ipex-llm-cpu
       run: |
         echo "##############################################################"
