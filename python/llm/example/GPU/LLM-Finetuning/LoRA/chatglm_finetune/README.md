@@ -138,3 +138,11 @@ Training completed. Do not forget to share your model on huggingface.co/models =
   Batch size = 4
 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 268/268 [xx:xx<00:00,  x.xxs/it]
 ```
+
+#### 3.2. Fine-Tune with 2 Arc Cards
+
+Start the data-parallel fine-tuning on 2 Intel Arc XPU cards by:
+
+```bash
+bash lora_finetuning_on_chatglm3_6b_with_2_arc_cards.sh
+```

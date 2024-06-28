@@ -27,7 +27,7 @@
 # limitations under the License.
 #
 # This example is ported from https://github.com/THUDM/ChatGLM3/blob/main/finetune_demo/finetune_hf.py
-# L33, L34 and L417 are modified to enable the example on Intel Arc
+# L33, L34, L417, L474 and L544-L546 are modified to enable the example on Intel Arc
 
 # Below 2 lines different from the original example, where transformers are patched with IPEX LLM
 from ipex_llm import llm_patch
@@ -419,7 +419,8 @@ def load_tokenizer_and_model(
                 model_dir,
                 trust_remote_code=True,
                 empty_init=False,
-                use_cache=False
+                use_cache=False,
+                torch_dtype=torch.bfloat16
             )
 
             model = get_peft_model(model, peft_config)
@@ -469,11 +470,12 @@ def main(
             ),
         ],
         config_file: Annotated[str, typer.Argument(help='')],
+        # Add below L474, which is path of deepspeed config file to enable finetuning on 2 Intel Arc XPU cards
+        deepspeed_config_file: Annotated[str, typer.Argument(default='', help='if specified, will apply data parallel')]
         auto_resume_from_checkpoint: str = typer.Argument(
             default='',
             help='If entered as yes, automatically use the latest save checkpoint. If it is a numerical example 12 15, use the corresponding save checkpoint. If the input is no, restart training'
-        ),
-
+        )
 ):
     ft_config = FinetuningConfig.from_file(config_file)
     tokenizer, model = load_tokenizer_and_model(model_dir, peft_config=ft_config.peft_config)
@@ -537,6 +539,11 @@ def main(
     use_tokenizer = True
     if ft_config.peft_config is not None:
         use_tokenizer = False if ft_config.peft_config.peft_type == "LORA" else True
+
+    # Add below L544-L546 to enable finetuning on 2 Intel Arc XPU cards on top of oneccl and deepspeed
+    if deepspeed_config_file is not '':
+        ft_config.training_args.ddp_backend = "ccl"
+        ft_config.training_args.deepspeed = deepspeed_config_file
 
     trainer = Seq2SeqTrainer(
         model=model,
