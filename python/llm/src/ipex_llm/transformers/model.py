@@ -534,6 +534,9 @@ class _BaseAutoModelClass:
         :param pretrained_model_name_or_path: str value, Path to load the optimized model ckpt.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be True.
+        :param pipeline_parallel_stages: int value, the number of GPUs allocated for
+            pipeline parallel. Default to be ``1``. Please set pipeline_parallel_stages > 1
+            to run pipeline parallel inference on multiple GPUs.
 
         :return: a model instance
         """
@@ -579,6 +582,8 @@ class _BaseAutoModelClass:
         torch_dtype = kwargs.pop("torch_dtype", "auto")
         embedding_qtype = kwargs.pop("embedding_qtype", None)
         sharded_metadata = None
+
+        pipeline_parallel_stages = kwargs.pop("pipeline_parallel_stages", 1)
 
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
@@ -750,6 +755,16 @@ class _BaseAutoModelClass:
         # rwkv model linear layers has been rescaled
         if model.config.model_type == "rwkv":
             model.rwkv.layers_are_rescaled = True
+
+        if pipeline_parallel_stages > 1:
+            from .pipeline_parallel import pipeline_parallel, pipeline_parallel_generate
+            model = pipeline_parallel(model, pipeline_parallel_stages)
+            import types
+            # add pipeline_parallel_generate to pretrained model dynamically
+            model.pipeline_parallel_generate = types.MethodType(pipeline_parallel_generate,
+                                                                model)
+            torch.distributed.barrier()
+
         return model
 
 
