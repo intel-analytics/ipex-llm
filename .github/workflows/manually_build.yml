@@ -241,23 +241,23 @@ jobs:
         echo "##############################################################"
         echo "####### ipex-llm-cpu ########"
         echo "##############################################################"
-        docker pull intelanalytics/ipex-llm-cpu:test
-        docker push intelanalytics/ipex-llm-cpu:test
+        # docker pull intelanalytics/ipex-llm-cpu:test
+        # docker push intelanalytics/ipex-llm-cpu:test
         export image=intelanalytics/ipex-llm-cpu
         export TAG=test
         cd docker/llm/inference/cpu/docker
-        sudo docker build \
+        docker build \
           --no-cache=true \
           -t ${image}:${TAG} -f ./Dockerfile .
         docker login
         docker images
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        # sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        docker push ${image}:${TAG}
+        docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        # docker push 10.239.45.10/arda/${image}:${TAG}
         # tag 'latest'
-        sudo docker tag ${image}:${TAG} ${image}:latest
-        sudo docker push ${image}:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+        docker tag ${image}:${TAG} ${image}:latest
+        docker push ${image}:latest
+        docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
 
   ipex-llm-serving-xpu:
     if: ${{ inputs.artifact == 'ipex-llm-serving-xpu' || inputs.artifact == 'all' }}
