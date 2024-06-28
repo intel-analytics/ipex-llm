@@ -23,7 +23,7 @@ jobs:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.CICD_REPO_TOKEN }}
+          token: ${{ secrets.TEST_TOKEN }}
           repository: intel-analytics/ipex-llm-workflow
           event-type: initial-trigger-test
           client-payload: '{"test": "abcd"}'
