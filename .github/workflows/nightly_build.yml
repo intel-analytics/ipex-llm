@@ -40,8 +40,8 @@ jobs:
         pip install wheel
         pip install twine
 
-    - name: Download llm binary
-      uses: ./.github/actions/llm/download-llm-binary
+    # - name: Download llm binary
+    #   uses: ./.github/actions/llm/download-llm-binary
 
     - name: Build package
       run: |
