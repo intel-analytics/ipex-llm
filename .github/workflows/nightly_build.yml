@@ -50,7 +50,7 @@ jobs:
         SOURCEFORGE_PW: ${{ secrets.SOURCEFORGE_PW }}
       run: |
         # export TIMESTAMP=`date '+%Y%m%d'`
-        export TIMESTAMP=20240102
+        export TIMESTAMP=20240103
         export PYPI_VERSION=2.1.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
