@@ -992,7 +992,7 @@ _lib.ggml_quantize_tensor_with_weights.restype = ctypes.c_size_t
 
 
 # GGML API
-def ggml_rtn_quantize_tensor(
+def ggml_quantize_tensor_rtn(
     src,  # type: ctypes.Array[ctypes.c_float] # type: ignore
     dst: ctypes.c_void_p,
     scale_ptr, # type: ctypes.Array[ctypes.c_float] # type: ignore
@@ -1002,12 +1002,10 @@ def ggml_rtn_quantize_tensor(
     hist,  # type: ctypes.Array[ctypes.c_int64] # type: ignore
     scale_search: ctypes.c_bool,
 ) -> int:
-    print(type(scale_ptr))
-    print(type(src))
-    return _lib.ggml_rtn_quantize_tensor(src, dst, scale_ptr, qtype, n, k, hist, scale_search)
+    return _lib.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n, k, hist, scale_search)
 
 
-_lib.ggml_rtn_quantize_tensor.argtypes = [
+_lib.ggml_quantize_tensor_rtn.argtypes = [
     ctypes.POINTER(ctypes.c_float),
     ctypes.c_void_p,
     ctypes.POINTER(ctypes.c_float),
@@ -1017,7 +1015,7 @@ _lib.ggml_rtn_quantize_tensor.argtypes = [
     ctypes.POINTER(ctypes.c_int64),
     ctypes.c_bool,
 ]
-_lib.ggml_rtn_quantize_tensor.restype = ctypes.c_size_t
+_lib.ggml_quantize_tensor_rtn.restype = ctypes.c_size_t
 
 
 def ggml_type_size(qtype: ctypes.c_int) -> int:
