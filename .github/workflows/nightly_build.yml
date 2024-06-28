@@ -44,6 +44,9 @@ jobs:
     #   uses: ./.github/actions/llm/download-llm-binary
 
     - name: Build package
+      env:
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       run: |
         # export TIMESTAMP=`date '+%Y%m%d'`
         export TIMESTAMP=20240102
