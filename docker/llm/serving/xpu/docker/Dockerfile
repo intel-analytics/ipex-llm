@@ -23,6 +23,7 @@ RUN apt-get update && \
     # For Qwen series models support
     pip install transformers_stream_generator einops tiktoken
 
+COPY ./vllm_online_benchmark.py        /llm/
 COPY ./vllm_offline_inference.py       /llm/
 COPY ./payload-1024.lua                /llm/
 COPY ./start-vllm-service.sh           /llm/
