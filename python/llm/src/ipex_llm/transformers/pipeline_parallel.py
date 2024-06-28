@@ -126,7 +126,7 @@ def pipeline_parallel(model, pipeline_parallel_stages):
             if i < layer_start or i >= layer_end:
                 model._modules['transformer'].encoder.layers[i] = Dummy_GLMBlock()
             else:
-                model._modules['transformer'].encoder.layers[i].self_attention.num_layers = \
+                model._modules['transformer'].encoder.layers[i].self_attention.layer_number = \
                     i - layer_start
 
         if local_rank != 0:
