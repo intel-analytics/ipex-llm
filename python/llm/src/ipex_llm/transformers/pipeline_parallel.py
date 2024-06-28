@@ -337,6 +337,7 @@ class BatchTask(BaseModel):
     partial_prefilling: int
 
 
+
 def make_attention_mask(prompt_lengths):
     max_length = max(prompt_lengths)
     attention_mask = torch.zeros((len(prompt_lengths), max_length), dtype=torch.int64)
@@ -376,6 +377,8 @@ class ModelRunner:
         self.print_len = {}
         self.is_finish = {}
         self.model_name = checkpoint
+        # self.layer_start = 0
+        # self.layer_end = 0
 
         self.max_prefilled_seqs = max_prefilled_seqs
         self.partial_output_dict = {}
@@ -459,14 +462,17 @@ class ModelRunner:
             if tmp_past_key_values is None:
                 tmp_past_key_values = output.past_key_values
             else:
-                num_layers = self.model.layer_end - self.model.layer_start
-                for layer_idx in range(num_layers):
-                    tmp_past_key_values.key_cache[layer_idx] = \
-                        torch.cat([tmp_past_key_values.key_cache[layer_idx],
-                                   output.past_key_values.key_cache[layer_idx]], dim=0)
-                    tmp_past_key_values.value_cache[layer_idx] = \
-                        torch.cat([tmp_past_key_values.value_cache[layer_idx],
-                                   output.past_key_values.value_cache[layer_idx]], dim=0)
+                if self.model.config.model_type in ["baichuan", "chatglm"]:
+                    tmp_past_key_values = torch.cat((tmp_past_key_values, output.past_key_values), dim=0)
+                else:
+                    num_layers = self.model.layer_end - self.model.layer_start
+                    for layer_idx in range(num_layers):
+                        tmp_past_key_values.key_cache[layer_idx] = \
+                            torch.cat([tmp_past_key_values.key_cache[layer_idx],
+                                    output.past_key_values.key_cache[layer_idx]], dim=0)
+                        tmp_past_key_values.value_cache[layer_idx] = \
+                            torch.cat([tmp_past_key_values.value_cache[layer_idx],
+                                    output.past_key_values.value_cache[layer_idx]], dim=0)
 
             self.past_key_values_dict[cur_id] = tmp_past_key_values
 
@@ -539,6 +545,9 @@ class ModelRunner:
         self.token_times.pop(cur_id, None)
         self.past_key_values_dict.pop(cur_id, None)
 
+        self.is_finish.pop(cur_id, None)
+        self.partial_output_dict.pop(cur_id, None)
+
     async def process_step(self, tokenizer, result_dict):
         cur_batch = None
 
@@ -564,11 +573,9 @@ class ModelRunner:
                 cur_id = cur_batch.batch_id
                 cur_batch = self.prepare_batch(cur_batch)
                 if cur_batch.partial_prefilling > 0:
-                    next_ids = torch.empty((cur_batch.partial_prefilling, 1,),
-                                            device=f'xpu:{self.rank}', dtype=torch.int64)
+                    next_ids = torch.empty((cur_batch.partial_prefilling, 1,), device=f'xpu:{self.rank}', dtype=torch.int64)
                 else:
-                    next_ids = torch.empty((cur_batch.batch_size, 1,),
-                                            device=f'xpu:{self.rank}', dtype=torch.int64)
+                    next_ids = torch.empty((cur_batch.batch_size, 1,), device=f'xpu:{self.rank}', dtype=torch.int64)
 
                 # logger.info(f"recv {self.rank} {next_ids.shape}")
                 dist.recv(next_ids, src=self.pre_rank)
@@ -667,11 +674,9 @@ class ModelRunner:
                     cur_batch = self.prepare_batch(cur_batch)
                     cur_len = cur_batch.input_len
                     if cur_batch.partial_prefilling:
-                        cur_input = torch.empty((cur_batch.partial_prefilling, cur_len, self.hidden_size,),
-                                                 device=f'xpu:{self.rank}', dtype=self.dtype)
+                        cur_input = torch.empty((cur_batch.partial_prefilling, cur_len, self.hidden_size,), device=f'xpu:{self.rank}', dtype=self.dtype)
                     else:
-                        cur_input = torch.empty((cur_batch.batch_size, cur_len, self.hidden_size,),
-                                                 device=f'xpu:{self.rank}', dtype=self.dtype)
+                        cur_input = torch.empty((cur_batch.batch_size, cur_len, self.hidden_size,), device=f'xpu:{self.rank}', dtype=self.dtype)
                     # logger.info(f"recv {self.rank} {cur_input.shape}")
                     dist.recv(cur_input, src=self.pre_rank)
 
