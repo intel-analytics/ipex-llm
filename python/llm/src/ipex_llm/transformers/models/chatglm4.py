@@ -286,9 +286,10 @@ def chatglm4_encoder_forward(
                     presents = kv_cache
                 else:
                     # bigdl-llm change starts
-                    # to fix first token's kv cache error of tensor format in pipeline parallel fashion
+                    # to fix first token's kv cache error of tensor format in pipeline parallel
                     if isinstance(kv_cache, tuple):
-                        kv_cache = torch.tensor(kv_cache, dtype=hidden_states.dtype).to(hidden_states.device)
+                        kv_cache = torch.tensor(kv_cache,
+                                                dtype=hidden_states.dtype).to(hidden_states.device)
                     # bigdl-llm change ends
                     presents = torch.cat((presents, kv_cache.to(presents.device)), dim=0)
 
