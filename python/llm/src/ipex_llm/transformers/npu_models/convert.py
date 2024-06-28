@@ -43,11 +43,12 @@ def module_optimization(func) -> torch.nn.Module:
             new_layer = func(layer, qtype, *args, **kwargs)
             if new_layer:
                 model.add_module(name, new_layer)
-                wrapper(new_layer, *args, **kwargs)
+                wrapper(new_layer, qtype, *args, **kwargs)
             else:
-                wrapper(layer, *args, **kwargs)
+                wrapper(layer, qtype, *args, **kwargs)
 
     return wrapper
+
 
 @module_optimization
 def replace_with_QuantizedLinear(layer, qtype):
@@ -55,9 +56,8 @@ def replace_with_QuantizedLinear(layer, qtype):
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
     if isinstance(layer, torch.nn.Linear):
-        qweights, scale = ggml_convert_qtype(layer, iqtype, 'cpu')
+        qweights, scale = ggml_convert_qtype(layer.weight.data, iqtype, 'cpu')
         return QuantizedLinear(qweights, scale, layer.bias)
-
 
 
 def convert_forward(m, target_m, new_forward):

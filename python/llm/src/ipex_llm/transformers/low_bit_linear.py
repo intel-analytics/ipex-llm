@@ -222,7 +222,6 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if qtype in [SYM_INT8_RTN]:
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
-        print(scale)
 
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
@@ -231,7 +230,8 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
             if qtype in [SYM_INT8_RTN]:
                 scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
                 ggml.ggml_rtn_quantize_tensor(src, dst, scale_ptr, qtype, n, k, hist, enable_scale_search)
-                return dst_tensor, scale
+                dst_tensor = dst_tensor.reshape_as(tensor)
+                return dst_tensor, scale.type(torch.float16)
             else:
                 ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)
         else:
