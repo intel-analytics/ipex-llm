@@ -14,12 +14,12 @@ if [[ $KERNEL_VERSION != *"6.5"* ]]; then
 fi
 export TORCH_LLM_ALLREDUCE=0
 
-export NUM_GPUS=2
+export num_gpus=2
 export IPEX_LLM_QUANTIZE_KV_CACHE=1
 
-export MODEL_PATH="/llm/models/Llama-2-7b-chat-hf"
+export model_path="/llm/models/Llama-2-7b-chat-hf"
 export low_bit="fp8"
 # max requests = max_num * rank_num
-export max_num="4"
+export max_num_seqs="4"
 cd /llm/pp_serving
-CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS pipeline_serving.py --repo-id-or-model-path $MODEL_PATH --low-bit $low_bit --max-num-seqs $max_num
+CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $num_gpus pipeline_serving.py --repo-id-or-model-path $model_path --low-bit $low_bit --max-num-seqs $max_num_seqs
