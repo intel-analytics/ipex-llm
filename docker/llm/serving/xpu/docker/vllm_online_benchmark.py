@@ -252,7 +252,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
                 print(f"Average first token latency: {average_first_token_latency * 1000} milliseconds.")
                 print(f"P90 first token latency: {p90_first_token_latency * 1000} milliseconds.")
                 print(f"P95 first token latency: {p95_first_token_latency * 1000} milliseconds.")
-                print(f"Average first token inference latency: {average_first_token_inference_latency * 1000} milliseconds.")
+                #print(f"Average first token inference latency: {average_first_token_inference_latency * 1000} milliseconds.")
                 print()
             if next_token_latencies:
                 average_next_token_latency = sum(next_token_latencies) / len(next_token_latencies)
@@ -262,7 +262,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
                 print(f"Average next token latency: {average_next_token_latency * 1000} milliseconds.")
                 print(f"P90 next token latency: {p90_next_token_latency * 1000} milliseconds.")
                 print(f"P95 next token latency: {p95_next_token_latency * 1000} milliseconds.")
-                print(f"Average next token inference latency: {average_next_token_inference_latency * 1000} milliseconds.")
+                #print(f"Average next token inference latency: {average_next_token_inference_latency * 1000} milliseconds.")
                 print()
 
 
