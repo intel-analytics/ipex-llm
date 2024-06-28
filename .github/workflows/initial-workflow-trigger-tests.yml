@@ -27,6 +27,8 @@ on:
   #   paths:
   #     - ".github/workflows/initial-workflow-trigger-tests.yml"
   pull_request_target:
+    types:
+      - opened
     branches: [main]
     paths:
       - ".github/workflows/initial-workflow-trigger-tests.yml"
