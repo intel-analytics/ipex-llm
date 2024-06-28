@@ -242,12 +242,13 @@ jobs:
         echo "####### ipex-llm-cpu ########"
         echo "##############################################################"
         export image=intelanalytics/ipex-llm-cpu
-        export TAG=latest
+        export TAG=test
         cd docker/llm/inference/cpu/docker
         sudo docker build \
           --no-cache=true \
           -t ${image}:${TAG} -f ./Dockerfile .
         docker login
+        docker images
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
         # sudo docker push 10.239.45.10/arda/${image}:${TAG}
