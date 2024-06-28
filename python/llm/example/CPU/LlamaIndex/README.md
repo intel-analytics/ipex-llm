@@ -26,6 +26,7 @@ Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](ht
         ```bash
         sudo apt-get install postgresql-client
         sudo apt-get install postgresql
+        sudo pgxn install vector
         ```
     * Initialization:
 
