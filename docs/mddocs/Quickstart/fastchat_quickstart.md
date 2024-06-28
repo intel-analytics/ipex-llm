@@ -4,6 +4,11 @@ FastChat is an open platform for training, serving, and evaluating large languag
 
 IPEX-LLM can be easily integrated into FastChat so that user can use `IPEX-LLM` as a serving backend in the deployment.
 
+## Table of Contents
+- [Install IPEX-LLM with FastChat](./fastchat_quickstart.md#1-install-ipex-llm-with-fastchat)
+- [Start the Service](./fastchat_quickstart.md#2-start-the-service)
+
+
 ## Quick Start
 
 This quickstart guide walks you through installing and running `FastChat` with `ipex-llm`.

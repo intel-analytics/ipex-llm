@@ -11,6 +11,13 @@ Currently, IPEX-LLM integrated vLLM only supports the following models:
 - ChatGLM series models
 - Baichuan series models
 
+## Table of Contents
+- [Install IPEX-LLM for vLLM](./vLLM_quickstart.md#1-install-ipex-llm-for-vllm)
+- [Install vLLM](./vLLM_quickstart.md#2-install-vllm)
+- [Offline Inference/Service](./vLLM_quickstart.md#3-offline-inferenceservice)
+- [About Tensor Parallel](./vLLM_quickstart.md#4-about-tensor-parallel)
+- [Performing Benchmark](./vLLM_quickstart.md#5-performing-benchmark)
+
 
 ## Quick Start
 
@@ -48,9 +55,9 @@ pip install transformers_stream_generator einops tiktoken
 
 **Now you are all set to use vLLM with IPEX-LLM**
 
-## 3. Offline inference/Service
+### 3. Offline Inference/Service
 
-### Offline inference
+#### Offline inference
 
 To run offline inference using vLLM for a quick impression, use the following example.
 
@@ -87,7 +94,7 @@ Prompt: 'The capital of France is', Generated text: ' Paris.\nThe capital of Fra
 Prompt: 'The future of AI is', Generated text: " bright, but it's not without challenges. As AI continues to evolve,"
 ```
 
-### Service
+#### Service
 
 > [!NOTE]
 > Because of using JIT compilation for kernels. We recommend to send a few requests for warmup before using the service for the best performance.
@@ -170,7 +177,7 @@ Below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_i
 > export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 > ```
 
-## 4. About Tensor parallel
+### 4. About Tensor Parallel
 
 > [!NOTE]
 > We recommend to use docker for tensor parallel deployment. Check our serving docker image `intelanalytics/ipex-llm-serving-xpu`.
@@ -223,7 +230,7 @@ If the service have booted successfully, you should see the output similar to th
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/start-vllm-service.png" width=100%; />
 </a>
 
-## 5.Performing benchmark
+### 5. Performing Benchmark
 
 To perform benchmark, you can use the **benchmark_throughput** script that is originally provided by vLLM repo.
 

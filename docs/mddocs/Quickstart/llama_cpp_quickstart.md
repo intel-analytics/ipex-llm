@@ -18,6 +18,15 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 >
 > Our latest version is consistent with [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) of llama.cpp.
 
+## Table of Contents
+- [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites)
+- [Install IPEX-LLM for llama.cpp](./llama_cpp_quickstart.md#1-install-ipex-llm-for-llamacpp)
+- [Setup for running llama.cpp](./llama_cpp_quickstart.md#2-setup-for-running-llamacpp)
+- [Example: Running community GGUF models with IPEX-LLM](./llama_cpp_quickstart.md#3-example-running-community-gguf-models-with-ipex-llm)
+- [Troubleshooting](./llama_cpp_quickstart.md#troubleshooting)
+
+
+
 ## Quick Start
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
 
@@ -35,7 +44,7 @@ IPEX-LLM backend for llama.cpp only supports the more recent GPU drivers. Please
 
 If you have lower GPU driver version, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](./install_windows_gpu.md), and follow [Update GPU driver](./install_windows_gpu.md#optional-update-gpu-driver).
 
-### 1 Install IPEX-LLM for llama.cpp
+### 1. Install IPEX-LLM for llama.cpp
 
 To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed.
 
@@ -59,7 +68,7 @@ To use `llama.cpp` with IPEX-LLM, first ensure that `ipex-llm[cpp]` is installed
 
 **After the installation, you should have created a conda environment, named `llm-cpp` for instance, for running `llama.cpp` commands with IPEX-LLM.**
 
-### 2 Setup for running llama.cpp
+### 2. Setup for running llama.cpp
 
 First you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp` directory and enter it.
 ```cmd
@@ -127,7 +136,7 @@ To use GPU acceleration, several environment variables are required or recommend
 > export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 > ```
 
-### 3 Example: Running community GGUF models with IPEX-LLM
+### 3. Example: Running community GGUF models with IPEX-LLM
 
 Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 

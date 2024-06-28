@@ -4,6 +4,15 @@ This guide demonstrates how to install IPEX-LLM on Linux with Intel GPUs. It app
 
 IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](../Overview/install_gpu.md#linux) page for more details.
 
+
+## Table of Contents
+- [Install Prerequisites](./install_linux_gpu.md#install-prerequisites)
+- [Install ipex-llm](./install_linux_gpu.md#install-ipex-llm)
+- [Verify Installation](./install_linux_gpu.md#verify-installation)
+- [Runtime Configurations](./install_linux_gpu.md#runtime-configurations)
+- [A Quick Example](./install_linux_gpu.md#a-quick-example)
+- [Tips & Troubleshooting](./install_linux_gpu.md#tips--troubleshooting)
+
 ## Install Prerequisites
 
 ### Install GPU Driver
