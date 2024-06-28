@@ -22,12 +22,14 @@ on:
       - ".github/actions/llm/cli-test-linux/action.yml"
       - ".github/actions/llm/cli-test-windows/action.yml"
       - ".github/actions/llm/download-llm-binary/action.yml"
-  pull_request:
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/initial-workflow-trigger-tests.yml"
+  pull_request_target:
     branches: [main]
     paths:
       - ".github/workflows/initial-workflow-trigger-tests.yml"
-  workflow_dispatch:
-  workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -37,7 +39,7 @@ jobs:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.WORKFLOW_TOKEN }}
+          token: ${{ secrets.CICD_REPO_TOKEN }}
           repository: intel-analytics/ipex-llm-workflow
           event-type: initial-trigger-test
           client-payload: '{"test": "abcd"}'
