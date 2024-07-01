@@ -32,7 +32,11 @@ logger = logging.getLogger(__name__)
 import asyncio
 import uuid
 import threading
-from pydantic import BaseModel
+try:
+    from pydantic import BaseModel
+except ImportError:
+    from abc import ABCMeta
+    BaseModel = ABCMeta
 
 # patch GenerationMixin.generate
 from transformers import GenerationMixin
