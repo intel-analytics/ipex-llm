@@ -611,7 +611,9 @@ class ModelRunner:
 
             if (cur_batch is not None) and (not cur_batch.stopped) and (cur_input is None):
                 cur_id = cur_batch.batch_id
-                cur_batch = self.prepare_batch(cur_batch)
+                # cur_batch = self.prepare_batch(cur_batch)
+                if cur_batch.prefilled_index >= cur_batch.batch_size:
+                    cur_batch.partial_prefilling = 0
                 if cur_batch.partial_prefilling > 0:
                     next_ids = torch.empty((cur_batch.partial_prefilling, 1,), device=f'xpu:{self.rank}', dtype=torch.int64)
                 else:
