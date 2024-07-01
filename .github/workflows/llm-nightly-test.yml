@@ -10,17 +10,23 @@ permissions:
 
 # Controls when the action will run.
 on:
-  schedule:
-    - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm-nightly-test.yml"
-      - ".github/actions/llm/setup-llm-env/action.yml"
-      - ".github/actions/llm/remove-llm-env/action.yml"
-      - ".github/actions/llm/convert-test/action.yml"
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  # schedule:
+  #   - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm-nightly-test.yml"
+  #     - ".github/actions/llm/setup-llm-env/action.yml"
+  #     - ".github/actions/llm/remove-llm-env/action.yml"
+  #     - ".github/actions/llm/convert-test/action.yml"
+  # # Allows you to run this workflow manually from the Actions tab
+  # workflow_dispatch:
+  workflow_call:
+    inputs:
+      checkout-ref:
+        description: 'ref for checking out, including branch, tag or SHA'
+        required: true
+        type: string
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -69,6 +75,9 @@ jobs:
           echo "BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_q4_0.bin" >> "$GITHUB_ENV"
           echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_starcoder_q4_0.bin" >> "$GITHUB_ENV"
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: 'intel-analytics/ipex-llm'
+          ref: ${{ github.event.inputs.checkout-ref }}
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -108,6 +117,10 @@ jobs:
   llm-unit-tests:
     needs: llm-cpp-build
     uses: ./.github/workflows/llm_unit_tests.yml
+    with:
+      checkout-ref: ${{ github.event.inputs.checkout-ref }}
   llm-example-test:
     needs: llm-cpp-build
     uses: ./.github/workflows/llm_example_tests.yml
+    with:
+      checkout-ref: ${{ github.event.inputs.checkout-ref }}

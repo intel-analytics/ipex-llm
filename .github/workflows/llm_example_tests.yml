@@ -12,19 +12,24 @@ permissions:
 on:
   # schedule:
   #   - cron: '00 13 * * *' # GMT time, 13:00 GMT == 21:00 China
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '.github/workflows/llm_example_tests.yml'
-      - '.github/workflows/llm-binary-build.yml'
-      - '.github/actions/llm/example-test/action.yml'
-      - '.github/actions/llm/setup-llm-env/action.yml'
-      - '.github/actions/llm/remove-llm-env/action.yml'
-      - '.github/actions/llm/download-llm-binary/action.yml'
-      - 'python/llm/dev/test/run-example-tests.sh'
-      - 'python/llm/example/**'
-  workflow_dispatch:
+  # pull_request:
+  #   branches: [ main ]
+  #   paths:
+  #     - '.github/workflows/llm_example_tests.yml'
+  #     - '.github/workflows/llm-binary-build.yml'
+  #     - '.github/actions/llm/example-test/action.yml'
+  #     - '.github/actions/llm/setup-llm-env/action.yml'
+  #     - '.github/actions/llm/remove-llm-env/action.yml'
+  #     - '.github/actions/llm/download-llm-binary/action.yml'
+  #     - 'python/llm/dev/test/run-example-tests.sh'
+  #     - 'python/llm/example/**'
+  # workflow_dispatch:
   workflow_call:
+    inputs:
+      checkout-ref:
+        description: 'ref for checking out, including branch, tag or SHA'
+        required: true
+        type: string
 
 env:
   INT4_CKPT_DIR: ./llm/ggml-actions/stable
@@ -46,6 +51,9 @@ jobs:
       THREAD_NUM: 24
     steps:
       - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # actions/checkout@v2
+        with:
+          repository: 'intel-analytics/ipex-llm'
+          ref: ${{ github.event.inputs.checkout-ref }}
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
