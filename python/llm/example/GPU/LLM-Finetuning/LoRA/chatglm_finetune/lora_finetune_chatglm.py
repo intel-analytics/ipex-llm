@@ -474,7 +474,7 @@ def main(
         config_file: Annotated[str, typer.Argument(help='')],
         # Add below L474, which is path of deepspeed config file to enable finetuning on 2 Intel Arc XPU cards
         deepspeed_config_file: str = typer.Argument(
-            default=None,
+            default='',
             help='if specified, will apply data parallel'
         ),
         auto_resume_from_checkpoint: str = typer.Argument(
