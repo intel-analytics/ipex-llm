@@ -10,8 +10,8 @@ permissions:
 
 # Controls when the action will run.
 on:
-  schedule:
-    - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
+  # schedule:
+  #   - cron: "30 16 * * *" # GMT time, 16:30 GMT == 00:30 China
   # please uncomment it for PR tests
   # pull_request:
   #   branches: [main]
@@ -19,8 +19,34 @@ on:
   #     - ".github/workflows/llm_performance_tests.yml"
   #     - "python/llm/test/benchmark/**"
   #     - "python/llm/dev/benchmark/all-in-one/**"
-  workflow_dispatch:
+  # workflow_dispatch:
+  #   inputs:
+  #     arc:
+  #       description: "If trigger performance test on Arc"
+  #       required: false
+  #       type: boolean
+  #       default: true
+  #     spr:
+  #       description: "If trigger performance test on SPR"
+  #       required: false
+  #       type: boolean
+  #       default: true
+  #     core:
+  #       description: "If trigger performance test on Core"
+  #       required: false
+  #       type: boolean
+  #       default: true
+  #     igpu:
+  #       description: "If trigger performance test on iGPU"
+  #       required: false
+  #       type: boolean
+  #       default: true
+  workflow_call:
     inputs:
+      checkout-ref:
+        description: 'ref for checking out, including branch, tag or SHA'
+        required: true
+        type: string
       arc:
         description: "If trigger performance test on Arc"
         required: false
@@ -41,7 +67,6 @@ on:
         required: false
         type: boolean
         default: true
-  workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -64,6 +89,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: 'intel-analytics/ipex-llm'
+          ref: ${{ github.event.inputs.checkout-ref }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -324,6 +352,9 @@ jobs:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: 'intel-analytics/ipex-llm'
+          ref: ${{ github.event.inputs.checkout-ref }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -401,6 +432,9 @@ jobs:
       CSV_SAVE_PATH: ${{ (github.event.schedule || github.event_name == 'workflow_dispatch') && 'D:/action-runners/nightly_perf_core_' || 'D:/action-runners/pr_perf_core_' }}${{ matrix.platform }}/
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: 'intel-analytics/ipex-llm'
+          ref: ${{ github.event.inputs.checkout-ref }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -469,6 +503,9 @@ jobs:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: 'intel-analytics/ipex-llm'
+          ref: ${{ github.event.inputs.checkout-ref }}
 
       # TODO: Put the ipex-llm related install process for win gpu into a action function
 
