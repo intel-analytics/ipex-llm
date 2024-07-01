@@ -17,7 +17,7 @@ This folder contains examples of running different training mode with IPEX-LLM o
 |------------|-----------------------------------------------------------------|-----------------------------------------------------------------|
 | LLaMA 2/3    |   [LoRA](LoRA), [QLoRA](QLoRA), [QA-LoRA](QA-LoRA), [ReLora](ReLora)  | [HF-PEFT](HF-PEFT), [axolotl](axolotl) |
 | Mistral | [LoRA](DPO), [QLoRA](DPO) | [DPO](DPO) |
-| ChatGLM 3 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
+| ChatGLM 3 | [LoRA](LoRA/chatglm_finetune#lora-fine-tuning-on-chatglm3-6b-with-ipex-llm), [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
 | Qwen-1.5 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
 | Baichuan2 | [QLoRA](QLoRA/alpaca-qlora#3-qlora-finetune) | HF-PEFT |
 
