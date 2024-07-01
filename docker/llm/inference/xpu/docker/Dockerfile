@@ -46,7 +46,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \
-    apt-get install -y --no-install-recommends intel-opencl-icd intel-level-zero-gpu level-zero && \
+    apt-get install -y --no-install-recommends intel-opencl-icd=23.35.27191.42-775~22.04 intel-level-zero-gpu=1.3.27191.42-775~22.04 level-zero=1.14.0-744~22.04 && \
     # Install related libary of chat.py
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
