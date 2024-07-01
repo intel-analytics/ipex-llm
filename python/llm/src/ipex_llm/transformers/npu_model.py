@@ -121,8 +121,9 @@ class _BaseAutoModelClass:
                 optimize_llm(model)
                 if qtype == "sym_int8_rtn":
                     cls.load_convert(qtype, model, *args, **kwargs)
-                elif not qtype.is_floating_point:
-                    model = quantize_model(model, qtype)
+                else:
+                    if not qtype.is_floating_point:
+                        model = quantize_model(model, qtype)
                     create_npu_kernels(model)
             model = model.eval()
         except ImportError as _e:
