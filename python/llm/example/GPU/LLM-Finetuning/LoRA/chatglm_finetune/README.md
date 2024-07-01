@@ -17,6 +17,8 @@ pip install typer
 pip install sentencepiece
 pip install nltk
 pip install "numpy<2.0.0"
+pip install "deepspeed==0.13.1"
+pip install "mpi4py>=3.1.5"
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
