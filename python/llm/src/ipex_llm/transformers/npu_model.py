@@ -76,7 +76,7 @@ class _BaseAutoModelClass:
             # for intel_npu_acceleration_library >= 1.1.0
             from intel_npu_acceleration_library.dtypes import int8, int4
             qtype_map = {
-                'sym_int4': int4,
+                'sym_int4': "sym_int4_rtn",
                 'sym_int8': "sym_int8_rtn",
                 'fp16': torch.half,
                 'fp32': torch.float,
@@ -119,7 +119,7 @@ class _BaseAutoModelClass:
             from intel_npu_acceleration_library.compiler import create_npu_kernels
             with torch.no_grad():
                 optimize_llm(model)
-                if qtype == "sym_int8_rtn":
+                if qtype in ["sym_int8_rtn", "sym_int4_rtn"]:
                     cls.load_convert(qtype, model, *args, **kwargs)
                 else:
                     if not qtype.is_floating_point:
