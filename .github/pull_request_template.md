@@ -19,7 +19,7 @@
 
 ### 4. How to test?
 - [ ] N/A
-- [ ] Unit test
+- [ ] Unit test: Please manually trigger the Unit test [here](https://github.com/intel-analytics/ipex-llm-workflow/actions/workflows/llm-unit-tests.yml) by inputting the full commit ID (SHA value) of your last commit (e.g., `a1b2c3d4e5f6g7h8i9j0`). And paste your action link here.
 - [ ] Application test
 - [ ] Document test
 - [ ] ...
