@@ -21,6 +21,8 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 # below command will install intel_npu_acceleration_library
 pip install intel-npu-acceleration-library==1.3
+
+pip install transformers==4.40
 ```
 
 ### 2. Runtime Configurations
