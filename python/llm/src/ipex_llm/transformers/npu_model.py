@@ -77,7 +77,7 @@ class _BaseAutoModelClass:
             from intel_npu_acceleration_library.dtypes import int8, int4
             qtype_map = {
                 'sym_int4': int4,
-                'sym_int8': int8,
+                'sym_int8': "sym_int8_rtn",
                 'fp16': torch.half,
                 'fp32': torch.float,
             }
@@ -119,9 +119,12 @@ class _BaseAutoModelClass:
             from intel_npu_acceleration_library.compiler import create_npu_kernels
             with torch.no_grad():
                 optimize_llm(model)
-                if not qtype.is_floating_point:
-                    model = quantize_model(model, qtype)
-                create_npu_kernels(model)
+                if qtype == "sym_int8_rtn":
+                    cls.load_convert(qtype, model, *args, **kwargs)
+                else:
+                    if not qtype.is_floating_point:
+                        model = quantize_model(model, qtype)
+                    create_npu_kernels(model)
             model = model.eval()
         except ImportError as _e:
             # for intel_npu_acceleration_library < 1.1.0
@@ -132,6 +135,11 @@ class _BaseAutoModelClass:
         model.save_low_bit = types.MethodType(cls.save_low_bit, model)
 
         return model
+
+    @classmethod
+    def load_convert(cls, q_k, optimize_model, *arg, **kwarg):
+        from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear
+        replace_with_QuantizedLinear(optimize_model, q_k)
 
     @staticmethod
     def save_low_bit(self, model_dir: str, *args, **kwargs):
