@@ -995,7 +995,7 @@ _lib.ggml_quantize_tensor_with_weights.restype = ctypes.c_size_t
 def ggml_quantize_tensor_rtn(
     src,  # type: ctypes.Array[ctypes.c_float] # type: ignore
     dst: ctypes.c_void_p,
-    scale_ptr, # type: ctypes.Array[ctypes.c_float] # type: ignore
+    scale_ptr,  # type: ctypes.Array[ctypes.c_float] # type: ignore
     qtype: ctypes.c_int,
     n: ctypes.c_size_t,
     k: ctypes.c_int,

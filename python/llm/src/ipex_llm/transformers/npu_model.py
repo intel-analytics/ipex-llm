@@ -134,7 +134,7 @@ class _BaseAutoModelClass:
         model.save_low_bit = types.MethodType(cls.save_low_bit, model)
 
         return model
-    
+
     @classmethod
     def load_convert(cls, q_k, optimize_model, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear

@@ -219,12 +219,12 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     dst_size = (n // QK) * block_size_in_bytes
     if qtype in [SYM_INT8_RTN]:
         dst_tensor = torch.empty(dst_size, dtype=torch.int8,
-                                device=device)
+                                 device=device)
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
     else:
         dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
-                                device=device)
+                                 device=device)
 
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
@@ -232,7 +232,8 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K, FP6_K]:
             if qtype in [SYM_INT8_RTN]:
                 scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
-                ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n, k, hist, enable_scale_search)
+                ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n,
+                                              k, hist, enable_scale_search)
                 dst_tensor = dst_tensor.reshape_as(tensor)
                 return dst_tensor, scale.type(torch.float16)
             else:
