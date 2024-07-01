@@ -11,30 +11,35 @@ permissions:
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [main]
-    paths:
-      - "python/llm/**"
-      - ".github/workflows/llm_unit_tests.yml"
-      - ".github/workflows/llm-binary-build.yml"
-      - ".github/actions/llm/setup-llm-env/action.yml"
-      - ".github/actions/llm/remove-llm-env/action.yml"
-      - ".github/actions/llm/cli-test-linux/action.yml"
-      - ".github/actions/llm/cli-test-windows/action.yml"
-      - ".github/actions/llm/download-llm-binary/action.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "python/llm/**"
-      - ".github/workflows/llm_unit_tests.yml"
-      - ".github/workflows/llm-binary-build.yml"
-      - ".github/actions/llm/setup-llm-env/action.yml"
-      - ".github/actions/llm/remove-llm-env/action.yml"
-      - ".github/actions/llm/cli-test-linux/action.yml"
-      - ".github/actions/llm/cli-test-windows/action.yml"
-      - ".github/actions/llm/download-llm-binary/action.yml"
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "python/llm/**"
+  #     - ".github/workflows/llm_unit_tests.yml"
+  #     - ".github/workflows/llm-binary-build.yml"
+  #     - ".github/actions/llm/setup-llm-env/action.yml"
+  #     - ".github/actions/llm/remove-llm-env/action.yml"
+  #     - ".github/actions/llm/cli-test-linux/action.yml"
+  #     - ".github/actions/llm/cli-test-windows/action.yml"
+  #     - ".github/actions/llm/download-llm-binary/action.yml"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - "python/llm/**"
+  #     - ".github/workflows/llm_unit_tests.yml"
+  #     - ".github/workflows/llm-binary-build.yml"
+  #     - ".github/actions/llm/setup-llm-env/action.yml"
+  #     - ".github/actions/llm/remove-llm-env/action.yml"
+  #     - ".github/actions/llm/cli-test-linux/action.yml"
+  #     - ".github/actions/llm/cli-test-windows/action.yml"
+  #     - ".github/actions/llm/download-llm-binary/action.yml"
   workflow_dispatch:
   workflow_call:
+    inputs:
+      checkout-ref:
+        description: 'ref for checking out, including branch, tag or SHA'
+        required: true
+        type: string
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -111,6 +116,8 @@ jobs:
           echo "STARCODER_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_santacoder_1b_q4_0.bin" >> "$GITHUB_ENV"
           echo "CHATGLM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/chatglm2-6b-q4_0.bin" >> "$GITHUB_ENV"
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.checkout-ref }}
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -267,7 +274,8 @@ jobs:
           echo "VICUNA_7B_1_3_ORIGIN_PATH=${ORIGIN_DIR}/vicuna-7b-v1.3" >> "$GITHUB_ENV"
       - name: Checkout repo
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
-
+        with:
+          ref: ${{ github.event.inputs.checkout-ref }}
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
