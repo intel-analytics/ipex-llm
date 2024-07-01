@@ -340,24 +340,23 @@ jobs:
           python -m pip install --upgrade einops
           python -m pip install --upgrade tiktoken
           python -m pip install --upgrade transformers_stream_generator
-          python -m pip install --upgrade pydantic
 
       # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
-      # - name: Download llm binary
-      #   uses: ./.github/actions/llm/download-llm-binary
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
 
-      # - name: Run LLM install (all) test
-      #   uses: ./.github/actions/llm/setup-llm-env
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
 
-      - name: Install IPEX-LLM from Pypi
-        shell: bash
-        run: |
-          pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          if ! pip show ipex-llm | grep $test_version_date; then
-            echo "Did not install ipex-llm with excepted version $test_version_date"
-            exit 1
-          fi
+      # - name: Install IPEX-LLM from Pypi
+      #   shell: bash
+      #   run: |
+      #     pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+      #     test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+      #     if ! pip show ipex-llm | grep $test_version_date; then
+      #       echo "Did not install ipex-llm with excepted version $test_version_date"
+      #       exit 1
+      #     fi
 
       - name: Test on cpu
         shell: bash
@@ -415,24 +414,23 @@ jobs:
           python -m pip install --upgrade wheel
           python -m pip install --upgrade omegaconf pandas
           python -m pip install --upgrade tiktoken einops transformers_stream_generator
-          python -m pip install --upgrade pydantic
     
       # please uncomment it and comment the "Install IPEX-LLM from Pypi" part for PR tests
-      # - name: Download llm binary
-      #   uses: ./.github/actions/llm/download-llm-binary
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
 
-      # - name: Run LLM install (all) test
-      #   uses: ./.github/actions/llm/setup-llm-env
+      - name: Run LLM install (all) test
+        uses: ./.github/actions/llm/setup-llm-env
 
-      - name: Install IPEX-LLM from Pypi
-        shell: bash
-        run: |
-          pip install --pre --upgrade ipex-llm[all]
-          test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          if ! pip show ipex-llm | grep $test_version_date; then
-            echo "Did not install ipex-llm with excepted version $test_version_date"
-            exit 1
-          fi
+      # - name: Install IPEX-LLM from Pypi
+      #   shell: bash
+      #   run: |
+      #     pip install --pre --upgrade ipex-llm[all]
+      #     test_version_date=`date -d 'yesterday' '+%Y%m%d'`
+      #     if ! pip show ipex-llm | grep $test_version_date; then
+      #       echo "Did not install ipex-llm with excepted version $test_version_date"
+      #       exit 1
+      #     fi
 
 
       - name: Test on core ${{ matrix.platform }}

@@ -259,7 +259,7 @@ def setup_package():
             raise FileNotFoundError(
                 f'Could not find package dependency file: {file_path}')
 
-    all_requires = ['py-cpuinfo', 'protobuf',
+    all_requires = ['py-cpuinfo', 'protobuf', 'pydantic',
                     "intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
                     'mpmath==1.3.0' # fix AttributeError: module 'mpmath' has no attribute 'rational'
                     ]
