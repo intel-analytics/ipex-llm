@@ -329,7 +329,7 @@ def use_sdp(q_len, kv_len, head_dim, query_states):
     return (
         query_states.device.type == "xpu"
         and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
-        and head_dim in [64, 96, 128]
+        and head_dim in [64, 80, 96, 128]
         and q_len != kv_len     # next token
         and q_len <= 32         # lookup
     )
@@ -347,7 +347,7 @@ def use_sdp_fp8(q_len, kv_len, query_states):
 def use_sdp_causal(q_len, kv_len, head_dim, query_states, training):
     return (
         q_len == kv_len     # first token
-        and head_dim in [64, 96, 128]           # for now
+        and head_dim in [64, 80, 96, 128]           # for now
         and query_states.device.type == "xpu"   # GPU
         and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
         and not query_states.requires_grad and not training     # not training

@@ -93,7 +93,7 @@ def stablelm_model_forward(
 ):
     # IPEX-LLM OPT: kv cache and quantize kv cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    use_quantize_kv = (self.layers[0].self_attn.head_dim in [64, 96, 128]
+    use_quantize_kv = (self.layers[0].self_attn.head_dim in [64, 80, 96, 128]
                        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids))
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
