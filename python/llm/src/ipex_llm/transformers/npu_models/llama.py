@@ -106,7 +106,7 @@ def llama_model_forward(
     from ipex_llm.transformers.kv import DynamicNormalCache
     if use_cache and not isinstance(past_key_values, DynamicNormalCache):
         past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
-        past_seen_tokens = past_key_values.set_seq_length()
+        past_seen_tokens = past_key_values.get_seq_length()
 
     if cache_position is None:
         cache_position = torch.arange(past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1],
