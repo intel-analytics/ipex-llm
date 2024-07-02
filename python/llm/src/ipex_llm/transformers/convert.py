@@ -1487,6 +1487,11 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.GemmaMLP,
                         gemma_mlp_forward)
+        convert_forward(model,
+                        module.GemmaRMSNorm,
+                        gemma_mlp_forward)
+        from ipex_llm.transformers.models.gemma import GemmaRotaryEmbeddingCached
+        replace_RotaryEmbed(model, module.GemmaRotaryEmbedding, GemmaRotaryEmbeddingCached)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
