@@ -117,7 +117,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
+      - name: Install IPEX-LLM from source
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/setup-llm-env
         with:
@@ -381,7 +381,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
+      - name: Install IPEX-LLM from source
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/setup-llm-env
 
@@ -461,7 +461,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/download-llm-binary
 
-      - name: Run LLM install (all) test
+      - name: Install IPEX-LLM from source
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/setup-llm-env
 
