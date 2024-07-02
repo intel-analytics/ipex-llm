@@ -51,6 +51,8 @@ def chatglm4_model_forward(
         inputs_embeds = self.embedding(input_ids)
     else:
         batch_size, seq_length, _ = inputs_embeds.shape
+        input_ids = torch.empty((batch_size, seq_length),
+                                dtype=inputs_embeds.dtype, device=inputs_embeds.device)
 
     if full_attention_mask is None:
         if (attention_mask is not None and not attention_mask.all()) or\
