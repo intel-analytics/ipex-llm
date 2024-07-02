@@ -11,26 +11,26 @@ permissions:
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm-binary-build.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm-binary-build.yml"
-  workflow_dispatch:
-    inputs:
-      llmcpp-ref:
-        description: 'Ref of llm.cpp code'
-        default: ''
-        required: false
-        type: string
-      platform:
-        description: 'Platforms to built on'
-        default: '["Windows", "Linux"]'
-        required: false
-        type: string
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm-binary-build.yml"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm-binary-build.yml"
+  # workflow_dispatch:
+  #   inputs:
+  #     llmcpp-ref:
+  #       description: 'Ref of llm.cpp code'
+  #       default: ''
+  #       required: false
+  #       type: string
+  #     platform:
+  #       description: 'Platforms to built on'
+  #       default: '["Windows", "Linux"]'
+  #       required: false
+  #       type: string
   workflow_call:
     inputs:
       llmcpp-ref:

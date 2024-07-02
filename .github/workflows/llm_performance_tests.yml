@@ -71,8 +71,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
-    if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
     uses: ./.github/workflows/llm-binary-build.yml
+    with: ${{ (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main')) && 'Windows,Linux' || 'Dummy' }}
 
   llm-performance-test-on-arc:
     if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && (github.event.inputs.arc == 'true')) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
@@ -501,7 +501,7 @@ jobs:
 
   llm-performance-test-on-igpu:
     if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && (github.event.inputs.igpu == 'true')) || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
-    # needs: llm-cpp-build # please uncomment it for PR tests
+    needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
