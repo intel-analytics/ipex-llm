@@ -72,7 +72,8 @@ on:
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-    with: ${{ (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main')) && 'Windows,Linux' || 'Dummy' }}
+    with:
+      platform: ${{ (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main')) && 'Windows,Linux' || 'Dummy' }}
 
   llm-performance-test-on-arc:
     if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && (github.event.inputs.arc == 'true')) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
