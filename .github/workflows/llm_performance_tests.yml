@@ -50,33 +50,33 @@ on:
       arc:
         description: "If trigger performance test on Arc"
         required: false
-        type: string
-        default: 'true'
+        type: boolean
+        default: true
       spr:
         description: "If trigger performance test on SPR"
         required: false
-        type: string
-        default: 'true'
+        type: boolean
+        default: true
       core:
         description: "If trigger performance test on Core"
         required: false
-        type: string
-        default: 'true'
+        type: boolean
+        default: true
       igpu:
         description: "If trigger performance test on iGPU"
         required: false
-        type: string
-        default: 'true'
+        type: boolean
+        default: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
     with:
-      platform: ${{ (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main')) && 'Windows,Linux' || 'Dummy' }}
+      platform: ${{ (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main')) && 'Windows,Linux' || 'Dummy' }}
 
   llm-performance-test-on-arc:
-    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && (github.event.inputs.arc == 'true')) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.arc ) || github.event.inputs.artifact == 'llm-performance-test-on-arc' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -87,13 +87,13 @@ jobs:
       OMP_NUM_THREADS: 16
       THREAD_NUM: 16
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      CSV_SAVE_PATH: ${{ (github.event.schedule || (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref == 'main'))) && '/mnt/disk1/nightly_perf_gpu/' || '/mnt/disk1/pr_perf_gpu/' }}
+      CSV_SAVE_PATH: ${{ (github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'main'))) && '/mnt/disk1/nightly_perf_gpu/' || '/mnt/disk1/pr_perf_gpu/' }}
 
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: 'intel-analytics/ipex-llm'
-          ref: ${{ github.event.inputs.checkout-ref }}
+          ref: ${{ inputs.checkout-ref }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -115,17 +115,17 @@ jobs:
 
       # specific for test on certain commits
       - name: Download llm binary
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/download-llm-binary
 
       - name: Install IPEX-LLM from source
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/setup-llm-env
         with:
           extra-dependency: "xpu_2.1"
 
       - name: Install IPEX-LLM from Pypi
-        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref == 'main')) }}
+        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'main')) }}
         shell: bash
         run: |
           pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
@@ -316,7 +316,9 @@ jobs:
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437.yaml
           python ../../../../test/benchmark/check_results.py -c test3 -y ../../../../test/benchmark/arc-perf-transformers-440.yaml
           find . -name "*test*.csv" -delete
-          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
+          if [[ ${{ github.event_name }} == "schedule" ]]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          elif [[ ${{ github.event_name }} == "workflow_dispatch" ]] && [[ ${{ inputs.checkout-ref }} == "main" ]]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
           cd ../
@@ -326,7 +328,9 @@ jobs:
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test-batch2.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437-batch2.yaml
           find . -name "*test*.csv" -delete
-          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
+          if [[ ${{ github.event_name }} == "schedule" ]]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          elif [[ ${{ github.event_name }} == "workflow_dispatch" ]] && [[ ${{ inputs.checkout-ref }} == "main" ]]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
           cd ../
@@ -336,7 +340,9 @@ jobs:
           python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test-batch4.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437-batch4.yaml
           find . -name "*test*.csv" -delete
-          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
+          if [[ ${{ github.event_name }} == "schedule" ]]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
+          elif [[ ${{ github.event_name }} == "workflow_dispatch" ]] && [[ ${{ inputs.checkout-ref }} == "main" ]]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/gpu/
           fi
           cd ../
@@ -344,7 +350,7 @@ jobs:
           
           
   llm-performance-test-on-spr:
-    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && (github.event.inputs.spr == 'true')) || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.spr ) || github.event.inputs.artifact == 'llm-performance-test-on-spr' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -359,7 +365,7 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: 'intel-analytics/ipex-llm'
-          ref: ${{ github.event.inputs.checkout-ref }}
+          ref: ${{ inputs.checkout-ref }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -379,15 +385,15 @@ jobs:
 
       # specific for test on certain commits
       - name: Download llm binary
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/download-llm-binary
 
       - name: Install IPEX-LLM from source
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/setup-llm-env
 
       - name: Install IPEX-LLM from Pypi
-        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref == 'main')) }}
+        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'main')) }}
         shell: bash
         run: |
           pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
@@ -422,7 +428,7 @@ jobs:
           done
 
   llm-performance-test-on-core:
-    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && (github.event.inputs.core == 'true')) || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.core ) || github.event.inputs.artifact == 'llm-performance-test-on-core' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -437,12 +443,12 @@ jobs:
     runs-on: [self-hosted, "${{ matrix.os }}", llm, perf-core, "${{ matrix.platform }}"]
     env:
       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      CSV_SAVE_PATH: ${{ (github.event.schedule || (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref == 'main'))) && 'D:/action-runners/nightly_perf_core_' || 'D:/action-runners/pr_perf_core_' }}${{ matrix.platform }}/
+      CSV_SAVE_PATH: ${{ (github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'main'))) && 'D:/action-runners/nightly_perf_core_' || 'D:/action-runners/pr_perf_core_' }}${{ matrix.platform }}/
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: 'intel-analytics/ipex-llm'
-          ref: ${{ github.event.inputs.checkout-ref }}
+          ref: ${{ inputs.checkout-ref }}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -459,15 +465,15 @@ jobs:
     
       # specific for test on certain commits
       - name: Download llm binary
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/download-llm-binary
 
       - name: Install IPEX-LLM from source
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/setup-llm-env
 
       - name: Install IPEX-LLM from Pypi
-        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref == 'main')) }}
+        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'main')) }}
         shell: bash
         run: |
           pip install --pre --upgrade ipex-llm[all]
@@ -496,12 +502,14 @@ jobs:
           python -m pip install pandas==1.5.3
           python csv_to_html.py -f $CSV_SAVE_PATH
           cd ../../dev/benchmark/all-in-one/
-          if [ ${{ github.event_name }} == "schedule" ] || [ ${{ github.event_name }} == "workflow_dispatch" ]; then
+          if [[ ${{ github.event_name }} == "schedule" ]]; then
+            curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/core_${{ matrix.platform }}/
+          elif [[ ${{ github.event_name }} == "workflow_dispatch" ]] && [[ ${{ inputs.checkout-ref }} == "main" ]]; then
             curl -T ./*.csv ${LLM_FTP_URL}/llm/nightly_perf/core_${{ matrix.platform }}/
           fi
 
   llm-performance-test-on-igpu:
-    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && (github.event.inputs.igpu == 'true')) || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.igpu ) || github.event.inputs.artifact == 'llm-performance-test-on-igpu' || github.event.inputs.artifact == 'all' }} # please comment it for PR tests
     needs: llm-cpp-build
     strategy:
       fail-fast: false
@@ -516,17 +524,17 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: 'intel-analytics/ipex-llm'
-          ref: ${{ github.event.inputs.checkout-ref }}
+          ref: ${{ inputs.checkout-ref }}
 
       # TODO: Put the ipex-llm related install process for win gpu into a action function
 
       # specific for test on certain commits
       - name: Download llm binary
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         uses: ./.github/actions/llm/download-llm-binary
 
       - name: Prepare for install ipex-llm from source
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         shell: bash
         run: |
           sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
@@ -535,7 +543,7 @@ jobs:
           sed -i 's/"bigdl-core-xe-esimd-21==" + CORE_XE_VERSION/"bigdl-core-xe-esimd-21"/g' python/llm/setup.py
 
       - name: Install ipex-llm and other related packages (install from source)
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref != 'main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         shell: cmd
         run: |
           call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
@@ -558,14 +566,14 @@ jobs:
           call conda deactivate
 
       - name: Determine desired ipex-llm version
-        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref == 'main')) }}
+        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'main')) }}
         shell: bash
         run: |
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
           echo "TEST_VERSION_DATE=${test_version_date}" >> "$GITHUB_ENV"
 
       - name: Install ipex-llm and other related packages (install from pypi)
-        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (github.event.inputs.checkout-ref == 'main')) }}
+        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'main')) }}
         shell: cmd
         run: |
           call conda create -n igpu-perf python=${{ matrix.python-version }} libuv -y
@@ -603,7 +611,7 @@ jobs:
         run: |
           if [[ ${{ github.event_name }} == "schedule" ]]; then
             echo "CSV_SAVE_PATH=${CSV_NIGHTLY_PATH}" >> "$GITHUB_ENV"
-          elif [[ ${{ github.event_name }} == "workflow_dispatch" ]] && [[ ${{ github.event.inputs.checkout-ref }} == "main" ]]; then
+          elif [[ ${{ github.event_name }} == "workflow_dispatch" ]] && [[ ${{ inputs.checkout-ref }} == "main" ]]; then
             echo "CSV_SAVE_PATH=${CSV_NIGHTLY_PATH}" >> "$GITHUB_ENV"
           else
             echo "CSV_SAVE_PATH=${CSV_PR_PATH}" >> "$GITHUB_ENV"
@@ -965,8 +973,10 @@ jobs:
             )
           )
           IF "${{ github.event_name }}"=="workflow_dispatch" (
-            for %%f in (*.html) do (
-                curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
+            IF "${{ inputs.checkout-ref }}"=="main" (
+              for %%f in (*.html) do (
+                  curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
+              )
             )
           )
       # for test on machine when encountering error
