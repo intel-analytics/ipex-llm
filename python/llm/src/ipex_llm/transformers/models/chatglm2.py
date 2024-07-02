@@ -80,6 +80,7 @@ def chatglm2_model_forward(
     else:
         inputs_embeds = inputs_embeds.transpose(0, 1).contiguous()
         seq_length, batch_size, _ = inputs_embeds.shape
+        input_ids = torch.empty((batch_size, seq_length), device=inputs_embeds.device)
 
     if full_attention_mask is None:
         if (attention_mask is not None and not attention_mask.all()) or (
