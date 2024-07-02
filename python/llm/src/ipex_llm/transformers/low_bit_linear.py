@@ -239,7 +239,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                 scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
                 ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n,
                                               k, hist, enable_scale_search)
-                dst_tensor = dst_tensor.reshape_as(tensor)
+                dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK)
                 return dst_tensor, scale.type(torch.float16)
             else:
                 ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)
