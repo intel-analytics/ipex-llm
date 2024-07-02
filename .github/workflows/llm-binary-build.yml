@@ -442,3 +442,12 @@ jobs:
           name: windows-avx
           path: |
             release
+
+  # to make llm-binary-build optionally skippable
+  dummpy-step:
+    if: ${{ inputs.platform == 'Dummy' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: dummpy echo
+        run: |
+          echo "dummy step"
