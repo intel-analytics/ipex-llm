@@ -15,6 +15,7 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - [Qwen/Qwen1.5-32B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [Qwen/Qwen1.5-MoE-A2.7B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [Qwen/CodeQwen1.5-7B-Chat](./run_qwen1.5_arc_2_card.sh)
+- [THUDM/glm-4-9b-chat](./run_chatglm_arc_2_card.sh)
 - [THUDM/chatglm3-6b](./run_chatglm_arc_2_card.sh)
 - [baichuan-inc/Baichuan2-7B-Chat](./run_baichuan2_arc_2_card.sh)
 - [baichuan-inc/Baichuan2-13B-Chat](./run_baichuan2_arc_2_card.sh)
@@ -116,11 +117,12 @@ bash run_qwen1.5_arc_2_card.sh
 <details>
   <summary> Show chatglm example </summary>
 
-#### Run chatglm3-6B on two Intel Arc A770
+#### Run glm-4-9b-chat / chatglm3-6B on two Intel Arc A770
 
 You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for chatglm to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
 
 ```bash
+pip install transformers==4.37.0 "tiktoken>=0.7.0"
 bash run_chatglm_arc_2_card.sh
 ```
 

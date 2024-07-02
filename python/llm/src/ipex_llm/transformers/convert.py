@@ -1118,6 +1118,7 @@ def _optimize_post(model, lightweight_bmm=False):
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_attention_forward
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_model_forward
                 from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
+                from ipex_llm.transformers.models.chatglm4 import chatglm4_encoder_forward
                 convert_forward(model,
                                 module.SelfAttention,
                                 chatglm4_attention_forward)
@@ -1127,6 +1128,9 @@ def _optimize_post(model, lightweight_bmm=False):
                 convert_forward(model,
                                 module.RMSNorm,
                                 chatglm_rms_norm_forward)
+                convert_forward(model,
+                                module.GLMTransformer,
+                                chatglm4_encoder_forward)
 
     elif "mpt" in model.config.model_type:
         if model.config.architectures is not None:
