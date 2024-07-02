@@ -40,9 +40,7 @@ Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md), fo
 
 #### Windows (Optional)
 
-IPEX-LLM backend for llama.cpp only supports the more recent GPU drivers. Please make sure your GPU driver version is equal or newer than `31.0.101.5333`, otherwise you might find gibberish output. 
-
-If you have lower GPU driver version, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](./install_windows_gpu.md), and follow [Update GPU driver](./install_windows_gpu.md#optional-update-gpu-driver).
+Please make sure your GPU driver version is equal or newer than `31.0.101.5333`. If it is not, follow the instructions in [this section](./install_windows_gpu.md#optional-update-gpu-driver) to update your GPU driver; otherwise, you might encounter gibberish output. 
 
 ### 1. Install IPEX-LLM for llama.cpp
 
