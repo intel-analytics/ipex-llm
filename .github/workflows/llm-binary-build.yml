@@ -444,10 +444,10 @@ jobs:
             release
 
   # to make llm-binary-build optionally skippable
-  dummpy-step:
+  dummy-step:
     if: ${{ inputs.platform == 'Dummy' }}
     runs-on: ubuntu-latest
     steps:
-      - name: dummpy echo
+      - name: dummy echo
         run: |
           echo "dummy step"
