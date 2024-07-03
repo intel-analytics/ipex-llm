@@ -10,6 +10,7 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - meta-llama/Llama-2-7b-chat-hf
 - meta-llama/Llama-2-13b-chat-hf
 - meta-llama/Meta-Llama-3-8B-Instruct
+- meta-llama/Meta-Llama-3-70B-Instruct(Four xpu cards)
 - codellama/CodeLlama-13b-hf
 - Qwen/Qwen2-7B-Instruct
 - Qwen/Qwen1.5-7B-Chat
@@ -23,6 +24,7 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - baichuan-inc/Baichuan2-13B-Chat
 - microsoft/Phi-3-mini-4k-instruct
 - mistralai/Mistral-7B-v0.1
+- mistralai/Mixtral-8x7B-Instruct-v0.1
 - 01-ai/Yi-6B-Chat
 
 ## Example
