@@ -482,7 +482,7 @@ class ModelRunner:
                 tmp_past_key_values = _past_key_values
                 _past_key_values = None
 
-        torch.xpu.empty_cache()
+        # torch.xpu.empty_cache()
         output = self.model(input_ids=input_ids,
                             inputs_embeds=inputs_embeds,
                             past_key_values=_past_key_values,
@@ -497,7 +497,7 @@ class ModelRunner:
                 tmp_past_key_values = self.cat_kv_cache(self.model.config.model_type,
                                                         tmp_past_key_values,
                                                         output.past_key_values)
-                torch.xpu.empty_cache()
+                # torch.xpu.empty_cache()
 
             if cur_batch.prefilled_index == cur_batch.batch_size:
                 if self.model.config.model_type in ["baichuan", "chatglm"] and self.rank > 0:
@@ -603,6 +603,7 @@ class ModelRunner:
 
             if cur_batch is None:
                 if not self.waiting_requests.empty():
+                    # wait more requests to be put in self.waiting_requests
                     await asyncio.sleep(0.01)
                     cur_batch = await self.add_request(tokenizer)
                     cur_input = self.input_ids_dict[cur_batch.batch_id]
