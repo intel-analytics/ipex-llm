@@ -18,7 +18,7 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - Qwen/Qwen1.5-MoE-A2.7B-Chat
 - Qwen/CodeQwen1.5-7B-Chat
 - THUDM/chatglm3-6b
-- THUDM/chatglm4-9b
+- THUDM/glm-4-9b-chat
 - baichuan-inc/Baichuan2-7B-Chat
 - baichuan-inc/Baichuan2-13B-Chat
 - microsoft/Phi-3-mini-4k-instruct
@@ -41,8 +41,12 @@ pip install mpi4py fastapi uvicorn openai
 pip install gradio # for gradio web UI
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 
-# for different models, need to install appropriate version of transformers
 pip install transformers==4.37.0
+
+# only for Qwen1.5-MoE-A2.7B
+pip install transformers==4.40.0
+pip install trl==0.8.1
+# For other unverified models, also need to install the appropriate transformers version
 ```
 
 ### 2. Run pipeline parallel serving on multiple GPUs
