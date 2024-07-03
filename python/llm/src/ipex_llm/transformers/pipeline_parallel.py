@@ -123,9 +123,21 @@ def pipeline_parallel(model, pipeline_parallel_stages):
     layer_start = slice_size * local_rank
     layer_end = layer_start + min(slice_size, num_layers - layer_start)
 
-    if model.config.architectures is not None \
+    if model.config.model_type == "qwen" and hasattr(model.config, "visual"):
+        # for Qwen-VL-Chat
+        for i in range(num_layers):
+            if i < layer_start or i >= layer_end:
+                model._modules['transformer'].h[i] = Dummy_DecoderLayer()
+        if local_rank != 0:
+            model._modules['transformer'].wte = DummyLayer()
+            model._modules['transformer'].drop = DummyLayer()
+        if local_rank != pipeline_parallel_stages - 1:
+            model._modules['transformer'].ln_f = DummyLayer()
+            model._modules['ln_f'] = DummyLayer()
+            model._modules['lm_head'] = DummyLayer()
+    elif model.config.architectures is not None \
        and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
-        # for chatglm3-6b
+        # for chatglm3-6b, glm-4-9b-chat
         for i in range(num_layers):
             if i < layer_start or i >= layer_end:
                 model._modules['transformer'].encoder.layers[i] = Dummy_GLMBlock()
@@ -296,13 +308,16 @@ def pipeline_parallel_generate(self,
                 _past_key_values = past_key_values_placeholder
             else:
                 _past_key_values = outputs.past_key_values
-        elif self.config.model_type in ["baichuan", "chatglm"] and local_rank != 0:
-            # for baichuan2 and chatglm3
-            value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
-            past_key_values_placeholder = tuple(
-                (value_placeholder, value_placeholder) for _ in range(layer_start)
-            ) + (outputs.past_key_values)[layer_start:]
-            _past_key_values = past_key_values_placeholder
+        elif self.config.model_type in ["baichuan", "chatglm"] or hasattr(self.config, "visual"):
+            # for baichuan2, chatglm3, Qwen-VL-Chat
+            if local_rank != 0:
+                value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
+                past_key_values_placeholder = tuple(
+                    (value_placeholder, value_placeholder) for _ in range(layer_start)
+                ) + (outputs.past_key_values)[layer_start:]
+                _past_key_values = past_key_values_placeholder
+            else:
+                _past_key_values = outputs.past_key_values
         else:
             _past_key_values = outputs.past_key_values
 
