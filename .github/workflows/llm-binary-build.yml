@@ -48,7 +48,7 @@ on:
 jobs:
   check-linux-avxvnni-artifact:
     if: ${{contains(inputs.platform, 'Linux')}}
-    runs-on: ubuntu-latest
+    runs-on: [Shire]
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
@@ -116,7 +116,7 @@ jobs:
 
   check-linux-avx512-artifact:
     if: ${{contains(inputs.platform, 'Linux')}}
-    runs-on: ubuntu-latest
+    runs-on: [Shire]
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
@@ -218,7 +218,7 @@ jobs:
 
   check-linux-amx-artifact:
     if: ${{contains(inputs.platform, 'Linux')}}
-    runs-on: ubuntu-latest
+    runs-on: [Shire]
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
@@ -278,7 +278,7 @@ jobs:
           
   check-windows-avx2-artifact:
     if: ${{contains(inputs.platform, 'Windows')}}
-    runs-on: ubuntu-latest
+    runs-on: [Shire]
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
@@ -323,7 +323,7 @@ jobs:
 
   check-windows-avx-vnni-artifact:
     if: ${{contains(inputs.platform, 'Windows')}}
-    runs-on: ubuntu-latest
+    runs-on: [Shire]
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
@@ -388,7 +388,7 @@ jobs:
 
   check-windows-avx-artifact:
     if: ${{contains(inputs.platform, 'Windows')}}
-    runs-on: ubuntu-latest
+    runs-on: [Shire]
     outputs:
       if-exists: ${{steps.check_artifact.outputs.exists}}
     steps:
