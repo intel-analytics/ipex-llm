@@ -39,7 +39,7 @@ jobs:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         repository: 'intel-analytics/ipex-llm'
-        ref: ${{ github.event.inputs.checkout-ref }}
+        ref: ${{ inputs.checkout-ref }}
 
     - name: Set up Python 
       uses: actions/setup-python@v2
@@ -58,12 +58,12 @@ jobs:
 
     - name: set release version
       run: |
-        if [[ "${{ github.event.inputs.schedule-event }}" == "true" ]]; then
+        if [[ "${{ inputs.schedule-event }}" == "true" ]]; then
           export TIMESTAMP=`date '+%Y%m%d'`
           export PYPI_VERSION=2.1.0
           export RELEASE_VERSION=${PYPI_VERSION}b${TIMESTAMP}
         else
-          export RELEASE_VERSION=${{ github.event.inputs.release-version }}
+          export RELEASE_VERSION=${{ inputs.release-version }}
         fi
         echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
 

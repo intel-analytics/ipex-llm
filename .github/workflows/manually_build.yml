@@ -31,7 +31,7 @@ on:
   workflow_call:
     inputs:
       checkout-ref:
-        description: 'commit id (SHA-1 hash)'
+        description: 'ref for checking out, including branch, tag or SHA'
         required: true
         type: string
       artifact:
