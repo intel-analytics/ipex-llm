@@ -6,6 +6,25 @@ This example demonstrates how to run IPEX-LLM serving on multiple [Intel GPUs](.
 
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information. For this particular example, you will need at least two GPUs on your machine.
 
+## Verified Models
+- meta-llama/Llama-2-7b-chat-hf
+- meta-llama/Llama-2-13b-chat-hf
+- meta-llama/Meta-Llama-3-8B-Instruct
+- codellama/CodeLlama-13b-hf
+- Qwen/Qwen2-7B-Instruct
+- Qwen/Qwen1.5-7B-Chat
+- Qwen/Qwen1.5-14B-Chat
+- Qwen/Qwen1.5-32B-Chat
+- Qwen/Qwen1.5-MoE-A2.7B-Chat
+- Qwen/CodeQwen1.5-7B-Chat
+- THUDM/chatglm3-6b
+- THUDM/chatglm4-9b
+- baichuan-inc/Baichuan2-7B-Chat
+- baichuan-inc/Baichuan2-13B-Chat
+- microsoft/Phi-3-mini-4k-instruct
+- mistralai/Mistral-7B-v0.1
+- 01-ai/Yi-6B-Chat
+
 ## Example
 
 ### 1. Install
@@ -22,6 +41,7 @@ pip install mpi4py fastapi uvicorn openai
 pip install gradio # for gradio web UI
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 
+# for different models, need to install appropriate version of transformers
 pip install transformers==4.37.0
 ```
 
