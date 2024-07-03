@@ -94,6 +94,8 @@ class Dummy_GLMBlock(nn.Module):
     def forward(
             self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True,
     ):
+        if kv_cache is None:
+            return hidden_states, ()
         return hidden_states, kv_cache
 
 
@@ -282,8 +284,20 @@ def pipeline_parallel_generate(self,
                                          "make sure that `pad_token_id` is defined.")
             next_ids = next_ids * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
 
-        # Temporarily specify as Baichuan and ChatGLM
-        if self.config.model_type in ["baichuan", "chatglm"] and local_rank != 0:
+        if self.config.model_type == "chatglm" and self.config.num_layers == 40:
+            # for glm-4-9b-chat
+            if step == 0:
+                value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
+                past_key_values_placeholder = tuple(
+                    (value_placeholder, value_placeholder) for _ in range(layer_start)
+                ) + (outputs.past_key_values)[: layer_end - layer_start] + tuple(
+                    (value_placeholder, value_placeholder) for _ in range(layer_end, num_layers)
+                )
+                _past_key_values = past_key_values_placeholder
+            else:
+                _past_key_values = outputs.past_key_values
+        elif self.config.model_type in ["baichuan", "chatglm"] and local_rank != 0:
+            # for baichuan2 and chatglm3
             value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
             past_key_values_placeholder = tuple(
                 (value_placeholder, value_placeholder) for _ in range(layer_start)
@@ -421,7 +435,20 @@ class ModelRunner:
                             attention_mask=attention_mask,
                             use_cache=True,)
 
-        if self.model.config.model_type in ["baichuan", "chatglm"] and self.rank > 0:
+        if self.model.config.model_type == "chatglm" and self.model.config.num_layers == 40:
+            # for glm-4-9b-chat
+            if self.past_key_values_dict.get(cur_id, None) is None:
+                value_placeholder = torch.empty_like((output.past_key_values)[-1][0])
+                past_key_values_placeholder = tuple(
+                    (value_placeholder, value_placeholder) for _ in range(layer_start)
+                ) + (output.past_key_values)[: layer_end - layer_start] + tuple(
+                    (value_placeholder, value_placeholder) for _ in range(layer_end, num_layers)
+                )
+                _past_key_values = past_key_values_placeholder
+            else:
+                _past_key_values = output.past_key_values
+        elif self.model.config.model_type in ["baichuan", "chatglm"] and self.rank > 0:
+            # for baichuan2 and chatglm3
             value_placeholder = torch.empty_like((output.past_key_values)[-1][0])
             past_key_values_placeholder = tuple(
                 (value_placeholder, value_placeholder) for _ in range(layer_start)
