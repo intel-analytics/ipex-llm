@@ -47,13 +47,8 @@ on:
       public:
         description: "if the docker image push to public docker hub"
         required: true
-<<<<<<< HEAD
         type: string
         default: 'true'
-=======
-        type: boolean
-        default: true
->>>>>>> 1bad4752b94cf48a00c73f61452e69768d1ad44b
 
 env:
   TAG: ${{ inputs.tag }}
