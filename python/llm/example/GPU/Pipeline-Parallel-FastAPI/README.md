@@ -10,7 +10,7 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - meta-llama/Llama-2-7b-chat-hf
 - meta-llama/Llama-2-13b-chat-hf
 - meta-llama/Meta-Llama-3-8B-Instruct
-- meta-llama/Meta-Llama-3-70B-Instruct(Four xpu cards)
+- meta-llama/Meta-Llama-3-70B-Instruct
 - codellama/CodeLlama-13b-hf
 - Qwen/Qwen2-7B-Instruct
 - Qwen/Qwen1.5-7B-Chat
@@ -48,7 +48,6 @@ pip install transformers==4.37.0
 # only for Qwen1.5-MoE-A2.7B
 pip install transformers==4.40.0
 pip install trl==0.8.1
-# For other unverified models, also need to install the appropriate transformers version
 ```
 
 ### 2. Run pipeline parallel serving on multiple GPUs
