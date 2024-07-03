@@ -1,31 +1,39 @@
 name: Manually Build
 
 on:
-  workflow_dispatch:
-    inputs:
-      artifact:
-        description: 'select which job to run("all" will make all jobs run)'
-        required: true
-        default: 'all'
-        type: choice
-        options:
-        - all
-        - ipex-llm-cpu
-        - ipex-llm-xpu
-        - ipex-llm-inference-cpp-xpu
-        - ipex-llm-serving-cpu
-        - ipex-llm-serving-xpu
-        - ipex-llm-finetune-lora-cpu
-        - ipex-llm-finetune-qlora-cpu
-        - ipex-llm-finetune-qlora-cpu-k8s
-        - ipex-llm-finetune-xpu
-      tag:
-        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
-        required: true
-        default: '2.1.0-SNAPSHOT'
-        type: string
+  # workflow_dispatch:
+  #   inputs:
+  #     checkout-ref:
+  #       description: 'commit id (SHA-1 hash)'
+  #       required: true
+  #       type: string
+  #     artifact:
+  #       description: 'select which job to run("all" will make all jobs run)'
+  #       required: true
+  #       default: 'all'
+  #       type: choice
+  #       options:
+  #       - all
+  #       - ipex-llm-cpu
+  #       - ipex-llm-xpu
+  #       - ipex-llm-inference-cpp-xpu
+  #       - ipex-llm-serving-cpu
+  #       - ipex-llm-serving-xpu
+  #       - ipex-llm-finetune-lora-cpu
+  #       - ipex-llm-finetune-qlora-cpu
+  #       - ipex-llm-finetune-qlora-cpu-k8s
+  #       - ipex-llm-finetune-xpu
+  #     tag:
+  #       description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+  #       required: true
+  #       default: '2.1.0-SNAPSHOT'
+  #       type: string
   workflow_call:
     inputs:
+      checkout-ref:
+        description: 'commit id (SHA-1 hash)'
+        required: true
+        type: string
       artifact:
         description: 'select which job to run("all" will make all jobs run)'
         required: true
@@ -36,6 +44,11 @@ on:
         required: true
         default: '2.1.0-SNAPSHOT'
         type: string
+      public:
+        description: "if the docker image push to public docker hub"
+        required: true
+        type: boolean
+        default: true
 
 env:
   TAG: ${{ inputs.tag }}
@@ -50,6 +63,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      with:
+        repository: 'intel-analytics/ipex-llm'
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -66,13 +82,18 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        # tag 'latest'
-        sudo docker tag ${image}:${TAG} ${image}:latest
-        sudo docker push ${image}:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+        # push docker image to public hub
+        if [[ "${{ inputs.public }}" == "true" ]]; then
+          sudo docker push ${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} ${image}:latest
+        else
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        fi
 
   ipex-llm-finetune-qlora-cpu:
     if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu' || inputs.artifact == 'all' }}
@@ -80,6 +101,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: 'intel-analytics/ipex-llm'
+          ref: ${{ inputs.checkout-ref }}
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -96,13 +120,18 @@ jobs:
             --build-arg https_proxy=${HTTPS_PROXY} \
             --build-arg no_proxy=${NO_PROXY} \
             -t ${image}:${TAG} -f ./Dockerfile .
-          sudo docker push ${image}:${TAG}
-          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-          sudo docker push 10.239.45.10/arda/${image}:${TAG}
-          # tag 'latest'
-          sudo docker tag ${image}:${TAG} ${image}:latest
-          sudo docker push ${image}:latest
-          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+          # push docker image to public hub
+          if [[ "${{ inputs.public }}" == "true" ]]; then
+            sudo docker push ${image}:${TAG}
+            # tag 'latest'
+            sudo docker tag ${image}:${TAG} ${image}:latest
+            sudo docker push ${image}:latest
+            sudo docker rmi -f ${image}:${TAG} ${image}:latest
+          else
+            sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+            sudo docker push 10.239.45.10/arda/${image}:${TAG}
+            sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          fi
 
   ipex-llm-finetune-qlora-cpu-k8s:
     if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu-k8s' || inputs.artifact == 'all' }}
@@ -110,6 +139,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: 'intel-analytics/ipex-llm'
+          ref: ${{ inputs.checkout-ref }}
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -126,13 +158,18 @@ jobs:
             --build-arg https_proxy=${HTTPS_PROXY} \
             --build-arg no_proxy=${NO_PROXY} \
             -t ${image}:${TAG} -f ./Dockerfile.k8s .
-          sudo docker push ${image}:${TAG}
-          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-          sudo docker push 10.239.45.10/arda/${image}:${TAG}
-          # tag 'latest'
-          sudo docker tag ${image}:${TAG} ${image}:latest
-          sudo docker push ${image}:latest
-          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+          # push docker image to public hub
+          if [[ "${{ inputs.public }}" == "true" ]]; then
+            sudo docker push ${image}:${TAG}
+            # tag 'latest'
+            sudo docker tag ${image}:${TAG} ${image}:latest
+            sudo docker push ${image}:latest
+            sudo docker rmi -f ${image}:${TAG} ${image}:latest
+          else
+            sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+            sudo docker push 10.239.45.10/arda/${image}:${TAG}
+            sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          fi
 
   ipex-llm-finetune-xpu:
     if: ${{ inputs.artifact == 'ipex-llm-finetune-xpu' || inputs.artifact == 'all' }}
@@ -140,6 +177,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      with:
+        repository: 'intel-analytics/ipex-llm'
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -156,13 +196,18 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        # tag 'latest'
-        sudo docker tag ${image}:${TAG} ${image}:latest
-        sudo docker push ${image}:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+        # push docker image to public hub
+        if [[ "${{ inputs.public }}" == "true" ]]; then
+          sudo docker push ${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} ${image}:latest
+        else
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        fi
 
   ipex-llm-xpu:
     if: ${{ inputs.artifact == 'ipex-llm-xpu' || inputs.artifact == 'all' }}
@@ -170,6 +215,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      with:
+        repository: 'intel-analytics/ipex-llm'
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -186,13 +234,18 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        # tag 'latest'
-        sudo docker tag ${image}:${TAG} ${image}:latest
-        sudo docker push ${image}:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+        # push docker image to public hub
+        if [[ "${{ inputs.public }}" == "true" ]]; then
+          sudo docker push ${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} ${image}:latest
+        else
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        fi
 
   ipex-llm-inference-cpp-xpu:
     if: ${{ inputs.artifact == 'ipex-llm-inference-cpp-xpu' || inputs.artifact == 'all' }}
@@ -200,6 +253,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      with:
+        repository: 'intel-analytics/ipex-llm'
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -216,13 +272,18 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        # tag 'latest'
-        sudo docker tag ${image}:${TAG} ${image}:latest
-        sudo docker push ${image}:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+        # push docker image to public hub
+        if [[ "${{ inputs.public }}" == "true" ]]; then
+          sudo docker push ${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} ${image}:latest
+        else
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        fi
 
   ipex-llm-cpu:
     if: ${{ inputs.artifact == 'ipex-llm-cpu' || inputs.artifact == 'all' }}
@@ -230,6 +291,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      with:
+        repository: 'intel-analytics/ipex-llm'
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -246,13 +310,18 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        # tag 'latest'
-        sudo docker tag ${image}:${TAG} ${image}:latest
-        sudo docker push ${image}:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+        # push docker image to public hub
+        if [[ "${{ inputs.public }}" == "true" ]]; then
+          sudo docker push ${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} ${image}:latest
+        else
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        fi
 
   ipex-llm-serving-xpu:
     if: ${{ inputs.artifact == 'ipex-llm-serving-xpu' || inputs.artifact == 'all' }}
@@ -260,6 +329,9 @@ jobs:
     
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      with:
+        repository: 'intel-analytics/ipex-llm'
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -276,19 +348,27 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        # tag 'latest'
-        sudo docker tag ${image}:${TAG} ${image}:latest
-        sudo docker push ${image}:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+        # push docker image to public hub
+        if [[ "${{ inputs.public }}" == "true" ]]; then
+          sudo docker push ${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} ${image}:latest
+        else
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        fi
 
   ipex-llm-serving-cpu:
     if: ${{ inputs.artifact == 'ipex-llm-serving-cpu' || inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire, AVX512]
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      with:
+        repository: 'intel-analytics/ipex-llm'
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -305,11 +385,16 @@ jobs:
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
-        sudo docker push ${image}:${TAG}
-        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
-        sudo docker push 10.239.45.10/arda/${image}:${TAG}
-        # tag 'latest'
-        sudo docker tag ${image}:${TAG} ${image}:latest
-        sudo docker push ${image}:latest
-        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG} ${image}:latest
+        # push docker image to public hub
+        if [[ "${{ inputs.public }}" == "true" ]]; then
+          sudo docker push ${image}:${TAG}
+          # tag 'latest'
+          sudo docker tag ${image}:${TAG} ${image}:latest
+          sudo docker push ${image}:latest
+          sudo docker rmi -f ${image}:${TAG} ${image}:latest
+        else
+          sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+          sudo docker push 10.239.45.10/arda/${image}:${TAG}
+          sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        fi
 

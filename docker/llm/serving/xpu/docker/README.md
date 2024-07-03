@@ -45,6 +45,13 @@ After the container is booted, you could get into the container through `docker 
 
 Currently, we provide two different serving engines in the image, which are FastChat serving engine and vLLM serving engine.
 
+#### Pipeline parallel serving engine
+
+To run Pipeline parallel serving using `IPEX-LLM` as backend, you can refer to this [readme](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Pipeline-Parallel-FastAPI).
+
+For convenience, we have included a file `/llm/start-pp_serving-service.sh` in the image.
+
+
 #### FastChat serving engine
 
 To run model-serving using `IPEX-LLM` as backend using FastChat, you can refer to this [quickstart](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#).
@@ -67,7 +74,33 @@ We have included multiple example files in `/llm/`:
 
 We can benchmark the api_server to get an estimation about TPS (transactions per second).  To do so, you need to start the service first according to the instructions in this [section](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md#service).
 
+###### Online benchmark through benchmark_util
 
+After starting vllm service, Sending reqs through `vllm_online_benchmark.py`
+```bash
+python vllm_online_benchmark.py $model_name $max_seqs
+```
+
+And it will output like this:
+```bash
+model_name: Qwen1.5-14B-Chat
+max_seq: 12
+Warm Up: 100%|█████████████████████████████████████████████████████| 24/24 [01:36<00:00,  4.03s/req]
+Benchmarking: 100%|████████████████████████████████████████████████| 60/60 [04:03<00:00,  4.05s/req]
+Total time for 60 requests with 12 concurrent requests: xxx seconds.
+Average responce time: xxx
+Token throughput: xxx
+
+Average first token latency: xxx milliseconds.
+P90 first token latency: xxx milliseconds.
+P95 first token latency: xxx milliseconds.
+
+Average next token latency: xxx milliseconds.
+P90 next token latency: xxx milliseconds.
+P95 next token latency: xxx milliseconds.
+```
+
+###### Online benchmark through wrk
 In container, do the following:
 1. modify the `/llm/payload-1024.lua` so that the "model" attribute is correct.  By default, we use a prompt that is roughly 1024 token long, you can change it if needed.
 2. Start the benchmark using `wrk` using the script below:
@@ -77,8 +110,8 @@ cd /llm
 # You can change -t and -c to control the concurrency.
 # By default, we use 12 connections to benchmark the service.
 wrk -t12 -c12 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
-
 ```
+
 #### Offline benchmark through benchmark_vllm_throughput.py
 
 We have included the benchmark_throughput script provied by `vllm` in our image as `/llm/benchmark_vllm_throughput.py`.  To use the benchmark_throughput script, you will need to download the test dataset through:

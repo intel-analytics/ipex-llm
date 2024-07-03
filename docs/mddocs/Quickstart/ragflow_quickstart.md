@@ -14,9 +14,17 @@
   </tr>
 </table>
 
+
+## Table of Contents
+- [Prerequisites](./ragflow_quickstart.md#0-prerequisites)
+- [Install and Start Ollama Service on Intel GPU](./ragflow_quickstart.md#1-install-and-start-ollama-service-on-intel-gpu)
+- [Pull Model](./ragflow_quickstart.md#2-pull-model)
+- [Start `RAGFlow` Service](./ragflow_quickstart.md#3-start-ragflow-service)
+- [Using `RAGFlow`](./ragflow_quickstart.md#4-using-ragflow)
+
 ## Quickstart
 
-### 0 Prerequisites
+### 0. Prerequisites
 
 - CPU >= 4 cores
 - RAM >= 16 GB
@@ -95,7 +103,7 @@ To make the change permanent and ensure it persists after a reboot, add or updat
 vm.max_map_count=262144
 ```
 
-### 3.3 Start the `RAGFlow` server using Docker
+#### 3.3 Start the `RAGFlow` server using Docker
 
 Build the pre-built Docker images and start up the server:
 

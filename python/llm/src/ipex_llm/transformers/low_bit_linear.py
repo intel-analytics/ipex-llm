@@ -81,6 +81,12 @@ Q4_K = ggml_tensor_qtype["q4_k"]
 Q6_K = ggml_tensor_qtype["q6_k"]
 Q5_K = ggml_tensor_qtype["q5_k"]
 FP6_K = ggml_tensor_qtype["fp6_k"]
+SYM_INT4_RTN = ggml_tensor_qtype["sym_int4_rtn"]
+SYM_INT8_RTN = ggml_tensor_qtype["sym_int8_rtn"]
+RTN_DTYPE = {
+    SYM_INT4_RTN: torch.uint8,
+    SYM_INT8_RTN: torch.int8,
+}
 
 
 # For sym_int4
@@ -216,14 +222,27 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                       f"Last dim of input tensor must be multiple of {QK}")
 
     dst_size = (n // QK) * block_size_in_bytes
-    dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
-                             device=device)
+    if qtype in [SYM_INT8_RTN, SYM_INT4_RTN]:
+        dst_tensor = torch.empty(dst_size, dtype=RTN_DTYPE[qtype],
+                                 device=device)
+        scale = torch.empty(n // k, dtype=torch.float32,
+                            device=device)
+    else:
+        dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
+                                 device=device)
 
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
         if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K, FP6_K]:
-            ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)
+            if qtype in [SYM_INT8_RTN, SYM_INT4_RTN]:
+                scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
+                ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n,
+                                              k, hist, enable_scale_search)
+                dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK)
+                return dst_tensor, scale.type(torch.float16)
+            else:
+                ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)
         else:
             if imatrix is not None:
                 # quantize with importance matrix
@@ -729,25 +748,24 @@ class LowBitLinear(nn.Linear):
                 do_empty_cache = self.low_memory_mode and x_2d.shape[0] >= 1024
                 if do_empty_cache:
                     torch.xpu.empty_cache()
-                if self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32 and \
-                        not use_xmx(x_2d, self.weight.qtype):
+
+                if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
+                    import xe_batch
+                    result = xe_batch.batch_forward(x_2d, self.weight.data, self.weight.qtype)
+                elif (
+                    self.conver_to_half
+                    and x_2d.shape[0] > 1
+                    and x_2d.dtype == torch.float32
+                    and not use_xmx(x_2d, self.weight.qtype)
+                ):
                     x_2d = x_2d.half()
-                    if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
-                        import xe_batch
-                        result = xe_batch.batch_forward(x_2d, self.weight.data,
-                                                        self.weight.qtype)
-                    else:
-                        result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                       input_seq_size)
+                    result = xe_linear.forward_new(x_2d, self.weight.data,
+                                                   self.weight.qtype, input_seq_size)
                     result = result.to(x.dtype)
                 else:
-                    if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
-                        import xe_batch
-                        result = xe_batch.batch_forward(x_2d, self.weight.data,
-                                                        self.weight.qtype)
-                    else:
-                        result = xe_linear.forward_new(x_2d, self.weight.data, self.weight.qtype,
-                                                       input_seq_size)
+                    result = xe_linear.forward_new(x_2d, self.weight.data,
+                                                   self.weight.qtype, input_seq_size)
+
                 if do_empty_cache:
                     torch.xpu.empty_cache()
             result = result.view(new_shape)

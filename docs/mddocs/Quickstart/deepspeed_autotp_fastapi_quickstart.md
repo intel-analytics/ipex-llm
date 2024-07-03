@@ -2,6 +2,11 @@
 
 This example demonstrates how to run IPEX-LLM serving on multiple [Intel GPUs](../../../python/llm/example/GPU/README.md) by leveraging DeepSpeed AutoTP.
 
+## Table of Contents
+- [Requirements](./deepspeed_autotp_fastapi_quickstart.md#requirements)
+- [Example](./deepspeed_autotp_fastapi_quickstart.md#example)
+
+
 ## Requirements
 
 To run this example with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../python/llm/example/GPU/README.md#requirements) for more information. For this particular example, you will need at least two GPUs on your machine.

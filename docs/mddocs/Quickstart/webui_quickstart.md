@@ -13,6 +13,14 @@ See the demo of running LLaMA2-7B on an Intel Core Ultra laptop below.
   </tr>
 </table>
 
+## Table of Contents
+- [Install IPEX-LLM](./webui_quickstart.md#1-install-ipex-llm)
+- [Install the WebUI](./webui_quickstart.md#2-install-the-webui)
+- [Start the WebUI Server](./webui_quickstart.md#3-start-the-webui-server)
+- [Using the WebUI](./webui_quickstart.md#4-using-the-webui)
+- [Advanced Usage](./webui_quickstart.md#5-advanced-usage)
+- [Troubleshooting](./webui_quickstart.md#troubleshooting)
+
 ## Quickstart
 This quickstart guide walks you through setting up and using the [Text Generation WebUI](https://github.com/intel-analytics/text-generation-webui) with `ipex-llm`. 
 
@@ -23,13 +31,13 @@ A preview of the WebUI in action is shown below:
 </a>
 
 
-### 1 Install IPEX-LLM
+### 1. Install IPEX-LLM
 
 To use the WebUI, first ensure that IPEX-LLM is installed. Follow the instructions on the [IPEX-LLM Installation Quickstart for Windows with Intel GPU](./install_windows_gpu.md). 
 
 **After the installation, you should have created a conda environment, named `llm` for instance, for running `ipex-llm` applications.**
 
-### 2 Install the WebUI
+### 2. Install the WebUI
 
 #### Download the WebUI
 Download the `text-generation-webui` with IPEX-LLM integrations from [this link](https://github.com/intel-analytics/text-generation-webui/archive/refs/heads/ipex-llm.zip). Unzip the content into a directory, e.g.,`C:\text-generation-webui`. 
@@ -50,7 +58,7 @@ pip install -r extensions/openai/requirements.txt
 > [!NOTE]
 > `extensions/openai/requirements.txt` is for API service. If you don't need the API service, you can omit this command. 
 
-### 3 Start the WebUI Server
+### 3. Start the WebUI Server
 
 #### Set Environment Variables
 Configure oneAPI variables by running the following command in **Miniforge Prompt**:

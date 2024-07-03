@@ -165,6 +165,7 @@ def benchmark(
 
             total_time = time.perf_counter() - start_time
             log_file = f"{max_concurrent_requests}.log"
+            num_requests = num_requests - num_warmup_requests
 
             with open(log_file, "w") as file:
                 print(

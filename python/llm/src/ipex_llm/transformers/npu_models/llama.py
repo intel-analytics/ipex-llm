@@ -34,6 +34,7 @@
 
 from typing import Optional, Tuple, List, Union
 
+import math
 import torch
 from transformers.cache_utils import Cache
 from transformers.modeling_outputs import BaseModelOutputWithPast
@@ -106,7 +107,7 @@ def llama_model_forward(
     from ipex_llm.transformers.kv import DynamicNormalCache
     if use_cache and not isinstance(past_key_values, DynamicNormalCache):
         past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
-        past_seen_tokens = past_key_values.set_seq_length()
+        past_seen_tokens = past_key_values.get_seq_length()
 
     if cache_position is None:
         cache_position = torch.arange(past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1],
@@ -230,14 +231,14 @@ def llama_attention_forward(
             is_causal=self.is_causal and causal_mask is None and q_len > 1,
         )
     else:
-        # second+ token
-        attn_output = torch.nn.functional.scaled_dot_product_attention(
-            query_states,
-            key_states,
-            value_states,
-            attn_mask=causal_mask,
-            is_causal=self.is_causal and causal_mask is None and q_len > 1,
-        )
+        attn_weights = torch.matmul(query_states,
+                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        if causal_mask is not None:
+            attn_weights = attn_weights + causal_mask
+
+        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                   dtype=torch.float32).to(value_states.dtype)
+        attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()
 
