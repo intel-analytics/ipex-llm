@@ -47,8 +47,8 @@ on:
       public:
         description: "if the docker image push to public docker hub"
         required: true
-        type: string
-        default: 'true'
+        type: boolean
+        default: true
 
 env:
   TAG: ${{ inputs.tag }}
@@ -65,7 +65,7 @@ jobs:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         repository: 'intel-analytics/ipex-llm'
-        ref: ${{ github.event.inputs.checkout-ref }}
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -83,7 +83,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         # push docker image to public hub
-        if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+        if [[ "${{ inputs.public }}" == "true" ]]; then
           sudo docker push ${image}:${TAG}
           # tag 'latest'
           sudo docker tag ${image}:${TAG} ${image}:latest
@@ -103,7 +103,7 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: 'intel-analytics/ipex-llm'
-          ref: ${{ github.event.inputs.checkout-ref }}
+          ref: ${{ inputs.checkout-ref }}
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -121,7 +121,7 @@ jobs:
             --build-arg no_proxy=${NO_PROXY} \
             -t ${image}:${TAG} -f ./Dockerfile .
           # push docker image to public hub
-          if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+          if [[ "${{ inputs.public }}" == "true" ]]; then
             sudo docker push ${image}:${TAG}
             # tag 'latest'
             sudo docker tag ${image}:${TAG} ${image}:latest
@@ -141,7 +141,7 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
         with:
           repository: 'intel-analytics/ipex-llm'
-          ref: ${{ github.event.inputs.checkout-ref }}
+          ref: ${{ inputs.checkout-ref }}
       - name: docker login
         run: |
           docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -159,7 +159,7 @@ jobs:
             --build-arg no_proxy=${NO_PROXY} \
             -t ${image}:${TAG} -f ./Dockerfile.k8s .
           # push docker image to public hub
-          if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+          if [[ "${{ inputs.public }}" == "true" ]]; then
             sudo docker push ${image}:${TAG}
             # tag 'latest'
             sudo docker tag ${image}:${TAG} ${image}:latest
@@ -179,7 +179,7 @@ jobs:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         repository: 'intel-analytics/ipex-llm'
-        ref: ${{ github.event.inputs.checkout-ref }}
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -197,7 +197,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         # push docker image to public hub
-        if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+        if [[ "${{ inputs.public }}" == "true" ]]; then
           sudo docker push ${image}:${TAG}
           # tag 'latest'
           sudo docker tag ${image}:${TAG} ${image}:latest
@@ -217,7 +217,7 @@ jobs:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         repository: 'intel-analytics/ipex-llm'
-        ref: ${{ github.event.inputs.checkout-ref }}
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -235,7 +235,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         # push docker image to public hub
-        if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+        if [[ "${{ inputs.public }}" == "true" ]]; then
           sudo docker push ${image}:${TAG}
           # tag 'latest'
           sudo docker tag ${image}:${TAG} ${image}:latest
@@ -255,7 +255,7 @@ jobs:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         repository: 'intel-analytics/ipex-llm'
-        ref: ${{ github.event.inputs.checkout-ref }}
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -273,7 +273,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         # push docker image to public hub
-        if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+        if [[ "${{ inputs.public }}" == "true" ]]; then
           sudo docker push ${image}:${TAG}
           # tag 'latest'
           sudo docker tag ${image}:${TAG} ${image}:latest
@@ -293,7 +293,7 @@ jobs:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         repository: 'intel-analytics/ipex-llm'
-        ref: ${{ github.event.inputs.checkout-ref }}
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -311,7 +311,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         # push docker image to public hub
-        if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+        if [[ "${{ inputs.public }}" == "true" ]]; then
           sudo docker push ${image}:${TAG}
           # tag 'latest'
           sudo docker tag ${image}:${TAG} ${image}:latest
@@ -331,7 +331,7 @@ jobs:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         repository: 'intel-analytics/ipex-llm'
-        ref: ${{ github.event.inputs.checkout-ref }}
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -349,7 +349,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         # push docker image to public hub
-        if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+        if [[ "${{ inputs.public }}" == "true" ]]; then
           sudo docker push ${image}:${TAG}
           # tag 'latest'
           sudo docker tag ${image}:${TAG} ${image}:latest
@@ -368,7 +368,7 @@ jobs:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
       with:
         repository: 'intel-analytics/ipex-llm'
-        ref: ${{ github.event.inputs.checkout-ref }}
+        ref: ${{ inputs.checkout-ref }}
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -386,7 +386,7 @@ jobs:
           --build-arg no_proxy=${NO_PROXY} \
           -t ${image}:${TAG} -f ./Dockerfile .
         # push docker image to public hub
-        if [[ "${{ github.event.inputs.public }}" == "true" ]]; then
+        if [[ "${{ inputs.public }}" == "true" ]]; then
           sudo docker push ${image}:${TAG}
           # tag 'latest'
           sudo docker tag ${image}:${TAG} ${image}:latest
