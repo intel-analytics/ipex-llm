@@ -564,7 +564,7 @@ class ModelRunner:
                     _pre_output = torch.cat((_pre_output, tmp_output), dim=0)
                 self.partial_output_dict[cur_id] = _pre_output
         else:
-            _past_key_values = self.update_kv_cache(_past_key_values, cur_id)
+            _past_key_values = self.update_kv_cache(output.past_key_values, cur_id)
             self.past_key_values_dict[cur_id] = _past_key_values
         torch.xpu.synchronize()
         if not self.pp_config.is_tail:
