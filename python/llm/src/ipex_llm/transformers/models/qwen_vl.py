@@ -34,6 +34,7 @@ from ipex_llm.transformers.models.utils import extend_kv_cache, init_kv_cache, a
 from ipex_llm.transformers.models.utils import rotate_half
 from ipex_llm.transformers.models.utils import use_sdp
 from transformers.modeling_outputs import BaseModelOutputWithPast
+from ipex_llm.utils.common import invalidInputError
 import os
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
@@ -267,19 +268,21 @@ def qwen_vl_model_forward(
     if past_key_values is None and torch.any(input == self.config.visual['image_start_id']):
         bos_pos = torch.where(input == self.config.visual['image_start_id'])
         eos_pos = torch.where(input == self.config.visual['image_start_id'] + 1)
-        assert (bos_pos[0] == eos_pos[0]).all()
+        invalidInputError((bos_pos[0] == eos_pos[0]).all(),
+                          'bos_pos[0] should be same as eos_pos[0]')
         img_pos = torch.stack((bos_pos[0], bos_pos[1], eos_pos[1]), dim=1)
         images = []
         for i, a, b in img_pos:
-            image = input[i][a + 1 : b - 1].tolist()
-            image = image[ : image.index(self.config.visual['image_start_id'] + 2)]
+            image = input[i][a + 1: b - 1].tolist()
+            image = image[: image.index(self.config.visual['image_start_id'] + 2)]
             images.append(bytes(image).decode('utf-8'))
 
         images = self.visual.encode(images)
-        assert images.shape[0] == len(images)
+        invalidInputError(images.shape[0] == len(images),
+                          'images.shape[0] should be same as len(images)')
         fake_images = None
     elif self.training:
-        fake_images=torch.zeros(1,3,224,224).to(
+        fake_images = torch.zeros(1, 3, 224, 224).to(
             dtype=self.visual.conv1.weight.dtype, device=self.visual.conv1.weight.device)
         images = self.visual(fake_images)
     else:
@@ -302,9 +305,8 @@ def qwen_vl_model_forward(
     )
 
     if input_ids is not None and inputs_embeds is not None:
-        raise ValueError(
-            "You cannot specify both input_ids and inputs_embeds at the same time"
-        )
+        invalidInputError(False,
+                          "You cannot specify both input_ids and inputs_embeds at the same time")
     elif input_ids is not None:
         input_shape = input_ids.size()
         input_ids = input_ids.view(-1, input_shape[-1])
@@ -313,7 +315,7 @@ def qwen_vl_model_forward(
         input_shape = inputs_embeds.size()[:-1]
         batch_size = inputs_embeds.shape[0]
     else:
-        raise ValueError("You have to specify either input_ids or inputs_embeds")
+        invalidInputError(False, "You have to specify either input_ids or inputs_embeds")
 
     device = input_ids.device if input_ids is not None else inputs_embeds.device
 
@@ -344,7 +346,7 @@ def qwen_vl_model_forward(
         inputs_embeds = self.wte(input_ids)
 
     if batch_size <= 0:
-        raise ValueError("batch_size has to be defined and > 0")
+        invalidInputError(False, "batch_size has to be defined and > 0")
     attention_mask = self._prepare_decoder_attention_mask(
         attention_mask, input_shape, inputs_embeds, past_length
     )
@@ -375,14 +377,11 @@ def qwen_vl_model_forward(
         hidden_states = hidden_states + images.mean()*0
     elif images is not None:
         for idx, (i, a, b) in enumerate(img_pos):
-            hidden_states[i][a + 1 : b] = images[idx]
+            hidden_states[i][a + 1: b] = images[idx]
     output_shape = input_shape + (hidden_states.size(-1),)
 
     if self.gradient_checkpointing and self.training:
         if use_cache:
-            logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
-            )
             use_cache = False
 
     presents = () if use_cache else None

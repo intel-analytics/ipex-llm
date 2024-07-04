@@ -135,8 +135,7 @@ def pipeline_parallel(model, pipeline_parallel_stages):
             model._modules['transformer'].ln_f = DummyLayer()
             model._modules['ln_f'] = DummyLayer()
             model._modules['lm_head'] = DummyLayer()
-    elif model.config.architectures is not None \
-       and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+    elif model.config.model_type == "chatglm":
         # for chatglm3-6b, glm-4-9b-chat
         for i in range(num_layers):
             if i < layer_start or i >= layer_end:
@@ -308,7 +307,8 @@ def pipeline_parallel_generate(self,
                 _past_key_values = past_key_values_placeholder
             else:
                 _past_key_values = outputs.past_key_values
-        elif self.config.model_type in ["baichuan", "chatglm"] or hasattr(self.config, "visual"):
+        elif self.config.model_type in ["baichuan", "chatglm"] or \
+                (self.config.model_type == "qwen" and hasattr(self.config, "visual")):
             # for baichuan2, chatglm3, Qwen-VL-Chat
             if local_rank != 0:
                 value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
