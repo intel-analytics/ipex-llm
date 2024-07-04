@@ -1,23 +1,12 @@
 repo_id:
   - 'THUDM/chatglm3-6b'
-  - 'THUDM/chatglm2-6b'
   - 'THUDM/glm-4-9b-chat'
   - 'baichuan-inc/Baichuan2-7B-Chat'
   - 'baichuan-inc/Baichuan2-13B-Chat'
-  - 'internlm/internlm-chat-7b'
-  - 'Qwen/Qwen-7B-Chat'
-  - 'BAAI/AquilaChat2-7B'
   # - '01-ai/Yi-6B'
   - 'meta-llama/Llama-2-7b-chat-hf'
   - 'meta-llama/Llama-2-13b-chat-hf'
-  - 'WisdomShell/CodeShell-7B-Chat'
-  - 'tiiuae/falcon-7b-instruct-with-patch'
-  - 'mosaicml/mpt-7b-chat'
 #  - 'liuhaotian/llava-v1.5-7b' # Cannot load using AutoModelForCausalLM in 4.36+
-  - 'RWKV/rwkv-4-world-7b'
-  - 'RWKV/rwkv-5-world-7b'
-  - 'IEITYuan/Yuan2-2B-hf'
-  - 'mistralai/Mistral-7B-Instruct-v0.1'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3
