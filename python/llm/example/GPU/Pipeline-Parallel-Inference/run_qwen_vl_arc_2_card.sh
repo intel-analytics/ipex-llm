@@ -29,4 +29,4 @@ NUM_GPUS=2 # number of used GPU
 
 # To run Qwen-VL-Chat
 CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS \
-    chat.py --repo-id-or-model-path '/mnt/disk1/models/Qwen-VL-Chat' --gpu-num $NUM_GPUS --low-bit 'sym_int4'
+    chat.py --repo-id-or-model-path 'Qwen/Qwen-VL-Chat' --gpu-num $NUM_GPUS --low-bit 'sym_int4'
