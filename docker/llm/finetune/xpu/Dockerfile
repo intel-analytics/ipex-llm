@@ -4,6 +4,9 @@ ARG https_proxy
 ENV TZ=Asia/Shanghai
 ARG PIP_NO_CACHE_DIR=false
 
+# When cache is enabled SYCL runtime will try to cache and reuse JIT-compiled binaries. 
+ENV SYCL_CACHE_PERSISTENT=1
+
 # retrive oneapi repo public key
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " | tee /etc/apt/sources.list.d/oneAPI.list && \
