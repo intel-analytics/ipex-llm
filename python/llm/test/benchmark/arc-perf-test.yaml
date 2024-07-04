@@ -8,7 +8,7 @@ repo_id:
   - 'deepseek-ai/deepseek-coder-6.7b-instruct'
   - 'THUDM/glm-4-9b-chat'
   - 'openbmb/MiniCPM-2B-sft-bf16'
-  - 'Qwen/Qwen-VL-Chat'
+  #- 'Qwen/Qwen-VL-Chat'
   #- 'SmerkyG/rwkv-5-world-7b' #this model only fp32 is supported for now, fp16 and bf16 are not supported
   - '01-ai/Yi-6B-Chat'
 local_model_hub: '/mnt/disk1/models'
