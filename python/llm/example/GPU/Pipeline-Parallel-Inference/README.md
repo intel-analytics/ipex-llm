@@ -14,6 +14,7 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - [Qwen/Qwen1.5-14B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [Qwen/Qwen1.5-32B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [Qwen/Qwen1.5-MoE-A2.7B-Chat](./run_qwen1.5_arc_2_card.sh)
+- [Qwen/Qwen-VL-Chat](./run_qwen_vl_arc_2_card.sh)
 - [Qwen/CodeQwen1.5-7B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [THUDM/glm-4-9b-chat](./run_chatglm_arc_2_card.sh)
 - [THUDM/chatglm3-6b](./run_chatglm_arc_2_card.sh)
@@ -108,6 +109,22 @@ You could specify `--repo-id-or-model-path` in the test script to be the hugging
 ```bash
 pip install transformers==4.40.0 trl==0.8.1
 bash run_qwen1.5_arc_2_card.sh
+```
+
+</details>
+
+</details>
+
+<details>
+  <summary> Show Qwen-VL example </summary>
+
+#### Run Qwen-VL-Chat on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for Qwen-VL to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+pip install transformers==4.32.0 tiktoken einops transformers_stream_generator==0.0.4 scipy torchvision pillow tensorboard matplotlib
+bash run_qwen_vl_arc_2_card.sh
 ```
 
 </details>
@@ -249,4 +266,12 @@ Once upon a time, there existed a little girl who liked to have adventures. She 
 Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun. She was always asking her parents to take her on trips, but they were always too busy or too tired.
 
 One day, the little girl
+```
+
+#### [Qwen/Qwen-VL-Chat](https://huggingface.co/Qwen/Qwen-VL-Chat)
+```log
+-------------------- Input --------------------
+Message: [{'image': 'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'}, {'text': '这是什么？'}]
+-------------------- Output --------------------
+这是一张图片，展现了一个穿着粉色条纹连衣裙的小女孩，她正拿着一只穿粉色裙子的白色玩具小熊。
 ```
