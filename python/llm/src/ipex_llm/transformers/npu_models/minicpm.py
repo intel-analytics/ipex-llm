@@ -123,7 +123,7 @@ def minicpm_model_causal_lm_forward(
 
     hidden_states = outputs[0]
     logits = self.lm_head(hidden_states /
-                            (self.config.hidden_size / self.config.dim_model_base))
+                          (self.config.hidden_size / self.config.dim_model_base))
 
     # ipex-llm changes start: truncate logits to fix vocab size and remove logits.float()
     logits = logits[..., :self.config.vocab_size]
