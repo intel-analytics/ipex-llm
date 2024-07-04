@@ -71,15 +71,32 @@ def convert_forward(m, target_m, new_forward):
 def optimize_llm(model: torch.nn.Module):
     if model.config.model_type == "llama":
         from ipex_llm.transformers.npu_models.llama import merge_qkv
-        model.apply(merge_qkv)
         from ipex_llm.transformers.npu_models.llama import merge_mlp
+        model.apply(merge_qkv)
         model.apply(merge_mlp)
+
         from ipex_llm.transformers.npu_models.llama import llama_model_forward
-        from transformers.models.llama.modeling_llama import LlamaModel
-        convert_forward(model, LlamaModel, llama_model_forward)
         from ipex_llm.transformers.npu_models.llama import llama_attention_forward
-        from transformers.models.llama.modeling_llama import LlamaAttention
-        convert_forward(model, LlamaAttention, llama_attention_forward)
         from ipex_llm.transformers.npu_models.llama import llama_mlp_forward
+        from transformers.models.llama.modeling_llama import LlamaModel
+        from transformers.models.llama.modeling_llama import LlamaAttention
         from transformers.models.llama.modeling_llama import LlamaMLP
+        convert_forward(model, LlamaModel, llama_model_forward)
+        convert_forward(model, LlamaAttention, llama_attention_forward)
         convert_forward(model, LlamaMLP, llama_mlp_forward)
+
+    elif model.config.model_type == "qwen2":
+        from ipex_llm.transformers.npu_models.qwen2 import merge_qkv
+        from ipex_llm.transformers.npu_models.qwen2 import merge_mlp
+        model.apply(merge_qkv)
+        model.apply(merge_mlp)
+
+        from ipex_llm.transformers.npu_models.qwen2 import qwen2_model_forward
+        from ipex_llm.transformers.npu_models.qwen2 import qwen2_attention_forward
+        from ipex_llm.transformers.npu_models.qwen2 import qwen2_mlp_forward
+        from transformers.models.qwen2.modeling_qwen2 import Qwen2Model
+        from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention
+        from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP
+        convert_forward(model, Qwen2Model, qwen2_model_forward)
+        convert_forward(model, Qwen2Attention, qwen2_attention_forward)
+        convert_forward(model, Qwen2MLP, qwen2_mlp_forward)
