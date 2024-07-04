@@ -15,6 +15,7 @@
 
 
 import torch
+import importlib
 from intel_npu_acceleration_library.nn import QuantizedLinear
 
 
@@ -95,8 +96,26 @@ def optimize_llm(model: torch.nn.Module):
         from ipex_llm.transformers.npu_models.qwen2 import qwen2_attention_forward
         from ipex_llm.transformers.npu_models.qwen2 import qwen2_mlp_forward
         from transformers.models.qwen2.modeling_qwen2 import Qwen2Model
-        from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention
+        from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2SdpaAttention
         from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP
         convert_forward(model, Qwen2Model, qwen2_model_forward)
         convert_forward(model, Qwen2Attention, qwen2_attention_forward)
+        convert_forward(model, Qwen2SdpaAttention, qwen2_attention_forward)
         convert_forward(model, Qwen2MLP, qwen2_mlp_forward)
+
+    elif model.config.model_type == "minicpm":
+        from ipex_llm.transformers.npu_models.minicpm import merge_qkv
+        from ipex_llm.transformers.npu_models.minicpm import merge_mlp
+        from ipex_llm.transformers.npu_models.minicpm import padding_lm_head
+        model.apply(merge_qkv)
+        model.apply(merge_mlp)
+        model.apply(padding_lm_head)
+
+        from ipex_llm.transformers.npu_models.minicpm import minicpm_model_causal_lm_forward
+        from ipex_llm.transformers.npu_models.minicpm import minicpm_attention_forward
+        from ipex_llm.transformers.npu_models.minicpm import minicpm_mlp_forward
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        convert_forward(model, module.MiniCPMForCausalLM, minicpm_model_causal_lm_forward)
+        convert_forward(model, module.MiniCPMAttention, minicpm_attention_forward)
+        convert_forward(model, module.MiniCPMMLP, minicpm_mlp_forward)
