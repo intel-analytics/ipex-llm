@@ -15,8 +15,7 @@
 
 
 import torch
-import importlib
-from intel_npu_acceleration_library.nn import QuantizedLinear
+from ipex_llm.transformers.npu_models.linear import QuantizedLinear
 
 
 def module_optimization(func) -> torch.nn.Module:
@@ -31,7 +30,7 @@ def module_optimization(func) -> torch.nn.Module:
         torch.nn.Module: optimized module
     """
 
-    def wrapper(model: torch.nn.Module, qtype, *args, **kwargs):
+    def wrapper(model: torch.nn.Module, qtype, device, *args, **kwargs):
         """Recursively apply the optimization function.
 
         Args:
@@ -41,23 +40,23 @@ def module_optimization(func) -> torch.nn.Module:
 
         """
         for name, layer in model.named_children():
-            new_layer = func(layer, qtype, *args, **kwargs)
+            new_layer = func(layer, qtype, device, *args, **kwargs)
             if new_layer:
                 model.add_module(name, new_layer)
-                wrapper(new_layer, qtype, *args, **kwargs)
+                wrapper(new_layer, qtype, device, *args, **kwargs)
             else:
-                wrapper(layer, qtype, *args, **kwargs)
+                wrapper(layer, qtype, device, *args, **kwargs)
 
     return wrapper
 
 
 @module_optimization
-def replace_with_QuantizedLinear(layer, qtype):
+def replace_with_QuantizedLinear(layer, qtype, device):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
     if isinstance(layer, torch.nn.Linear):
-        qweights, scale = ggml_convert_qtype(layer.weight.data, iqtype, 'cpu')
+        qweights, scale = ggml_convert_qtype(layer.weight.data, iqtype, device=device)
         return QuantizedLinear(qweights, scale, layer.bias)
 
 

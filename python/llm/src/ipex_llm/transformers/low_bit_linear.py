@@ -225,6 +225,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
     if qtype in [SYM_INT8_RTN, SYM_INT4_RTN]:
         dst_tensor = torch.empty(dst_size, dtype=RTN_DTYPE[qtype],
                                  device=device)
+        dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK)
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
     else:
@@ -239,7 +240,6 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                 scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
                 ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n,
                                               k, hist, enable_scale_search)
-                dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK)
                 return dst_tensor, scale.type(torch.float16)
             else:
                 ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)
@@ -252,7 +252,10 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
             ggml.ggml_quantize_tensor_with_weights(src, dst, qtype,
                                                    n // in_features, in_features,
                                                    hist, imatrix)
-    return dst_tensor
+    if qtype in [SYM_INT8_RTN, SYM_INT4_RTN]:
+        return dst_tensor, scale.type(torch.float16)
+    else:
+        return dst_tensor
 
 
 def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int):
