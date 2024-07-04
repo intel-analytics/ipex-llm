@@ -5,8 +5,9 @@ ARG https_proxy
 
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
-ENV USE_XETLA=OFF
-ENV SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+
+# When cache is enabled SYCL runtime will try to cache and reuse JIT-compiled binaries. 
+ENV SYCL_CACHE_PERSISTENT=1
 
 COPY chat.py /llm/chat.py
 COPY benchmark.sh /llm/benchmark.sh

@@ -25,7 +25,7 @@ Available images in hub are:
 | intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT | CPU Serving|
 | intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT | GPU Serving|
 | intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT | CPU Finetuning via Docker|
-|intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT|CPU Finetuning via Kubernetes|
+| intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT|CPU Finetuning via Kubernetes|
 | intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT| GPU Finetuning|
 
 #### Run a Container

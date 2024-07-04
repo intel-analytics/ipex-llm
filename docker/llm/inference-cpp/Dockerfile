@@ -6,6 +6,9 @@ ARG https_proxy
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
 
+# When cache is enabled SYCL runtime will try to cache and reuse JIT-compiled binaries. 
+ENV SYCL_CACHE_PERSISTENT=1
+
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
