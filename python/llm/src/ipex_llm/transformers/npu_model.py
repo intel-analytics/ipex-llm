@@ -234,7 +234,7 @@ class _BaseAutoModelClass:
         invalidInputError(qtype in ["sym_int8_rtn", "sym_int4_rtn"],
                           f"Unknown bigdl_transformers_low_bit value: {qtype},"
                           f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
-        
+
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
         has_local_code = type(config) in cls.HF_Model._model_mapping.keys()
         trust_remote_code = resolve_trust_remote_code(
