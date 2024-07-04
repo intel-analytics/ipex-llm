@@ -3,6 +3,8 @@ repo_id:
   - 'Qwen/Qwen1.5-7B-Chat'
   - 'microsoft/Phi-3-mini-4k-instruct'
   - 'meta-llama/Meta-Llama-3-8B-Instruct' # mwj: need to test
+  - 'microsoft/phi-3-vision-128k-instruct'
+  - 'Qwen/Qwen2-7B-Instruct'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
