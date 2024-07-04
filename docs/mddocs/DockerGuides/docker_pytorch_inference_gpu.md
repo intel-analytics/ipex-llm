@@ -78,6 +78,32 @@ root@arda-arc12:/# sycl-ls
 > bash env-check.sh
 > ```
 
+> [!NOTE]
+> For optimal performance, it is recommended to set several environment variables according to your hardware environment.
+> 
+> ```bash
+> # Disable code related to XETLA; only Intel Data Center GPU Max Series supports XETLA, so non-Max machines should set this to OFF.
+> # Recommended for use on Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series.
+> export USE_XETLA=OFF
+> 
+> # Enable immediate command lists mode for the Level Zero plugin. Improves performance on Intel Arc™ A-Series Graphics and Intel Data Center GPU Max Series; however, it depends on the Linux Kernel, and some Linux kernels may not necessarily provide acceleration.
+> # Recommended for use on Intel Arc™ A-Series Graphics and Intel Data Center GPU Max Series, but it depends on the Linux kernel version.
+> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+> 
+> # Controls persistent device compiled code cache. Set to '1' to turn on and '0' to turn off.
+> # Recommended for all hardware environments. This environment variable is already set by default in Docker images.
+> export SYCL_CACHE_PERSISTENT=1
+> 
+> # Reduce memory accesses by fusing SDP ops.
+> # Recommended for use on Intel Data Center GPU Max Series.
+> export ENABLE_SDP_FUSION=1
+> 
+> # Disable XMX computation.
+> # Recommended for use on integrated GPUs.
+> export BIGDL_LLM_XMX_DISABLED=1
+> ```
+
+
 ## Run Inference Benchmark 
 
 Navigate to benchmark directory, and modify the `config.yaml` under the `all-in-one` folder for benchmark configurations.
