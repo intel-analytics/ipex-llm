@@ -1196,15 +1196,15 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
 
 
 def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
-                                            local_model_hub,
-                                            in_out_pairs,
-                                            warm_up,
-                                            num_trials,
-                                            num_beams,
-                                            low_bit,
-                                            cpu_embedding,
-                                            batch_size,
-                                            streaming):
+                                                 local_model_hub,
+                                                 in_out_pairs,
+                                                 warm_up,
+                                                 num_trials,
+                                                 num_beams,
+                                                 low_bit,
+                                                 cpu_embedding,
+                                                 batch_size,
+                                                 streaming):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, TextStreamer
     model_path = get_model_path(repo_id, local_model_hub)
@@ -1212,27 +1212,27 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
-                                       torch_dtype=torch.float16, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                       use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
-        model = model.to('xpu')
+        model = model.half().to('xpu')
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
-                                                  torch_dtype=torch.float16, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                  use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
-        model = model.to('xpu')
+        model = model.half().to('xpu')
     elif repo_id in LLAVA_IDS:
         llava_repo_dir = os.environ.get('LLAVA_REPO_DIR')
         sys.path.append(rf"{llava_repo_dir}")
         from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
-                                                  torch_dtype=torch.float16, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                  use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
-        model = model.to('xpu')
+        model = model.half().to('xpu')
     else:
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
-                                                  torch_dtype=torch.float16, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                  use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
-        model = model.to('xpu')
+        model = model.half().to('xpu')
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
