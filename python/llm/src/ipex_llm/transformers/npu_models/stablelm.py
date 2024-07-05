@@ -38,10 +38,10 @@ import math
 import torch
 from transformers.cache_utils import Cache
 from transformers.models.stablelm.modeling_stablelm import repeat_kv, apply_rotary_pos_emb
-from transformers.models.stablelm.modeling_stablelm import StableLmAttention, StableLmMLP, StableLmModel
+from transformers.models.stablelm.modeling_stablelm import StableLmAttention, StableLmMLP, \
+    StableLmModel
 
 from ipex_llm.transformers.npu_models.common import merge_linear
-
 
 
 def merge_qkv(module: torch.nn.Module):
@@ -157,7 +157,8 @@ def stablelm_attention_forward(
     if past_key_value is not None:
         # Specific to RoPE models with partial rotation
         cache_kwargs = {"sin": sin, "cos": cos, "partial_rotation_size": self.rotary_emb.dim}
-        key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx, cache_kwargs)
+        key_states, value_states = past_key_value.update(key_states, value_states,
+                                                         self.layer_idx, cache_kwargs)
 
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups)
@@ -171,7 +172,7 @@ def stablelm_attention_forward(
 
     # upcast attention to fp32
     attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                dtype=torch.float32).to(value_states.dtype)
+                                               dtype=torch.float32).to(value_states.dtype)
     attn_weights = self.attention_dropout(attn_weights)
     attn_output = torch.matmul(attn_weights, value_states)
 
