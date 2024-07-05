@@ -58,6 +58,7 @@ from ipex_llm.transformers.models.llama import should_use_fuse_rope, should_use_
 from ipex_llm.transformers.models.llama import fuse_qkv_weight_xetla, repeat_kv, native_sdp
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
 from ipex_llm.transformers.models.llama import should_split_qkv_tensor, should_split_qkv_tensor
+from ipex_llm.transformers.models.llama import llama_rms_norm_forward
 
 try:
     from transformers.cache_utils import Cache, DynamicCache
@@ -236,12 +237,9 @@ def minicpm_attention_forward_original(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             if cache_position is not None:
                 # for transformers 4.38.0
@@ -308,7 +306,6 @@ def minicpm_attention_forward_original(
                                                      is_causal=True)
         attn_weights = None
     elif not self.training and not hidden_states.requires_grad and \
-            self.layer_idx > 0 and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
@@ -445,12 +442,9 @@ def minicpm_attention_forward_quantized(
                 )
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             if cache_position is not None:
                 # for transformers 4.38.0
@@ -750,7 +744,7 @@ def minicpm_model_forward_internal(
         if output_attentions:
             all_self_attns += (layer_outputs[1],)
 
-    hidden_states = self.norm(hidden_states)
+    hidden_states = llama_rms_norm_forward(self.norm, hidden_states)
 
     # add hidden states from the last decoder layer
     if output_hidden_states:
