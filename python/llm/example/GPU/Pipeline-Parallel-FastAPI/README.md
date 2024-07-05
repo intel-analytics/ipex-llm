@@ -32,8 +32,12 @@ pip install transformers==4.37.0
 bash run.sh
 ```
 
-> Note: INT4 optimization is applied to the model by default. You could specify other low bit optimizations (such as 'fp8' and 'fp6') through `--low-bit`. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+### Command Line Arguments in `run.sh`
+> Note: INT4 optimization is applied to the model by default. You could specify other low bit optimizations (such as 'fp8' and 'fp6') through `--low-bit`. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine. Other relative settings are listed below:
 
+- `--low-bit`: Sets the low bit optimizations (such as 'sym_int4', 'fp16', 'fp8' and 'fp6') for the model.
+- `--max-num-seqs`: Sets the maximum batch size on a single card during pipeline parallel serving.
+- `--max-prefilled-seqs`: Sets the maximum batch size for prefilled sequences. Use `0` to disable partial prefetching and process all requests in a single batch.
 
 ### 3. Sample Input and Output
 
