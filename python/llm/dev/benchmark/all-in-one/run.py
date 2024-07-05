@@ -174,7 +174,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             low_bit,
                             cpu_embedding,
                             round(result[in_out_pair][-1][5], 2),
-                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) and not lookahead else 'N/A',
+                            result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'int4__fp16_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) and not lookahead else 'N/A',
                             streaming if 'win' in test_api else 'N/A',
                             use_fp16_torch_dtype if 'pipeline_parallel_gpu' in test_api else 'N/A'],
                             ) 
@@ -1212,12 +1212,12 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
-                                       torch_dtype=torch.bfloat16, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                       torch_dtype=torch.float16, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
-                                                  torch_dtype=torch.bfloat16, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                  torch_dtype=torch.float16, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAVA_IDS:
@@ -1225,12 +1225,12 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
         sys.path.append(rf"{llava_repo_dir}")
         from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
-                                                  torch_dtype=torch.bfloat16, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                  torch_dtype=torch.float16, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
-                                                  torch_dtype=torch.bfloat16, use_cache=True, cpu_embedding=cpu_embedding).eval()
+                                                  torch_dtype=torch.float16, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.to('xpu')
     end = time.perf_counter()
