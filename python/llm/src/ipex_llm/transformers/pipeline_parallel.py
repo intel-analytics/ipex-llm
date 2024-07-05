@@ -25,6 +25,7 @@ import time
 import numpy as np
 from typing import Callable, List, Optional
 from types import SimpleNamespace
+import transformers
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
 from ipex_llm.utils.common import invalidInputError
 import logging
@@ -106,6 +107,17 @@ def init_pipeline_parallel():
     dist.init_process_group('ccl')
 
 
+def low_mem_convert(model):
+    from ipex_llm.transformers.convert import convert_forward
+    if 'llama' in model.config.model_type:
+        from ipex_llm.transformers.models.llama import llama_causallm_forward_4_37_lowmem
+        convert_forward(
+            model,
+            transformers.models.llama.modeling_llama.LlamaForCausalLM,
+            llama_causallm_forward_4_37_lowmem)
+    return model
+
+
 def pipeline_parallel(model, pipeline_parallel_stages):
     global num_layers
     if hasattr(model.config, 'num_hidden_layers'):
@@ -161,6 +173,11 @@ def pipeline_parallel(model, pipeline_parallel_stages):
         if local_rank != pipeline_parallel_stages - 1:
             model._modules['model'].norm = DummyLayer()
             model._modules['lm_head'] = DummyLayer()
+
+    _enable_lowmem = os.getenv('_IPEXLLM_PP_LOWMEM')
+    _enable_lowmem = (_enable_lowmem is not None) and (_enable_lowmem.lower() == "true")
+    if _enable_lowmem:
+        model = low_mem_convert(model)
 
     model.pipeline_parallel_stages = pipeline_parallel_stages
     model.layer_start = layer_start

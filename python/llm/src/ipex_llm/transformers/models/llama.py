@@ -39,6 +39,7 @@ from typing import Optional, Tuple, Union, List
 import math
 import os
 import torch.nn.functional as F
+from torch.nn import CrossEntropyLoss
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import SILU
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
@@ -49,7 +50,7 @@ from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_fp8
 from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
-from transformers.modeling_outputs import BaseModelOutputWithPast
+from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 from transformers.models.llama.modeling_llama import LlamaModel
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
@@ -2966,4 +2967,79 @@ def llama_model_forward(
         past_key_values=next_cache,
         hidden_states=all_hidden_states,
         attentions=all_self_attns,
+    )
+
+
+def llama_causallm_forward_4_37_lowmem(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    labels: Optional[torch.LongTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+) -> Union[Tuple, CausalLMOutputWithPast]:
+
+    output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions  # noqa
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states  # noqa
+    )
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
+    outputs = self.model(
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_attentions=output_attentions,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+    )
+
+    hidden_states = outputs[0]
+
+    # ipex-llm change starts
+
+    if self.config.pretraining_tp > 1:
+        lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp, dim=0)  # noqa
+        logits = [F.linear(hidden_states, lm_head_slices[i]) for i in range(self.config.pretraining_tp)]  # noqa
+        logits = torch.cat(logits, dim=-1)
+    else:
+        torch.xpu.empty_cache()
+        logits = self.lm_head(hidden_states)
+        torch.xpu.empty_cache()
+    # logits = logits.float()
+
+    # ipex-llm change ends
+
+    loss = None
+    if labels is not None:
+        # Shift so that tokens < n predict n
+        shift_logits = logits[..., :-1, :].contiguous()
+        shift_labels = labels[..., 1:].contiguous()
+        # Flatten the tokens
+        loss_fct = CrossEntropyLoss()
+        shift_logits = shift_logits.view(-1, self.config.vocab_size)
+        shift_labels = shift_labels.view(-1)
+        # Enable model parallelism
+        shift_labels = shift_labels.to(shift_logits.device)
+        loss = loss_fct(shift_logits, shift_labels)
+
+    if not return_dict:
+        output = (logits,) + outputs[1:]
+        return (loss,) + output if loss is not None else output
+
+    return CausalLMOutputWithPast(
+        loss=loss,
+        logits=logits,
+        past_key_values=outputs.past_key_values,
+        hidden_states=outputs.hidden_states,
+        attentions=outputs.attentions,
     )
