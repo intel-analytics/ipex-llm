@@ -118,3 +118,18 @@ def optimize_llm(model: torch.nn.Module):
         convert_forward(model, module.MiniCPMForCausalLM, minicpm_model_causal_lm_forward)
         convert_forward(model, module.MiniCPMAttention, minicpm_attention_forward)
         convert_forward(model, module.MiniCPMMLP, minicpm_mlp_forward)
+    elif model.config.model_type == "stablelm":
+        from ipex_llm.transformers.npu_models.stablelm import merge_qkv
+        from ipex_llm.transformers.npu_models.stablelm import merge_mlp
+        model.apply(merge_qkv)
+        model.apply(merge_mlp)
+
+        from ipex_llm.transformers.npu_models.stablelm import stablelm_model_forward
+        from ipex_llm.transformers.npu_models.stablelm import stablelm_attention_forward
+        from ipex_llm.transformers.npu_models.stablelm import stablelm_mlp_forward
+        from transformers.models.stablelm.modeling_stablelm import StableLmModel
+        from transformers.models.stablelm.modeling_stablelm import StableLmAttention
+        from transformers.models.stablelm.modeling_stablelm import StableLmMLP
+        convert_forward(model, StableLmModel, stablelm_model_forward)
+        convert_forward(model, StableLmAttention, stablelm_attention_forward)
+        convert_forward(model, StableLmMLP, stablelm_mlp_forward)
