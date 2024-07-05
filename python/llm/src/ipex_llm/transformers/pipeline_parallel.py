@@ -107,7 +107,7 @@ def init_pipeline_parallel():
     dist.init_process_group('ccl')
 
 
-def _check_quantize_kv_cache(model, idx, batch_size) -> bool:
+def _check_quantize_kv_cache(model, idx, batch_size):
     # align use_quantize_kv_cache setting for different GPU in pipeline parallel
     pp_quantize_kv_cache = (os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) == "1") or \
         (os.environ.get("IPEX_LLM_QUANTIZE_KV_CACHE", None) == "1") or \
