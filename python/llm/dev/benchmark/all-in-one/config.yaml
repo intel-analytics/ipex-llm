@@ -17,6 +17,7 @@ test_api:
   # - "transformer_int4_gpu"                # on Intel GPU, transformer-like API, (qtype=int4), (dtype=fp32)
   # - "transformer_int4_gpu_win"            # on Intel GPU for Windows, transformer-like API, (qtype=int4), (dtype=fp32)
   # - "transformer_int4_loadlowbit_gpu_win" # on Intel GPU for Windows, transformer-like API, (qtype=int4), use load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
+  # - "transformer_int4_fp16_loadlowbit_gpu_win" # on Intel GPU for Windows, transformer-like API, (qtype=int4), (dtype=fp16), use load_low_bit API. Please make sure you have used the save.py to save the converted low bit model
   # - "bigdl_fp16_gpu"                      # on Intel GPU, use ipex-llm transformers API, (dtype=fp16), (qtype=fp16)
   # - "optimize_model_gpu"                  # on Intel GPU, can optimize any pytorch models include transformer model
   # - "deepspeed_optimize_model_gpu"        # on Intel GPU, deepspeed autotp inference
