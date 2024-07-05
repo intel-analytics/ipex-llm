@@ -120,9 +120,9 @@ def _check_quantize_kv_cache(model, idx, batch_size) -> bool:
         linear = model._modules['transformer'].encoder.layers[idx].self_attention.query_key_value
     else:
         linear = model._modules['model'].layers[idx].mlp.up_proj
-    pp_quantize_kv_cache = pp_quantize_kv_cache or (1 < batch_size and batch_size <= 8 and \
-                                                    hasattr(linear, "qtype") and \
-                                                    linear.qtype != ggml_tensor_qtype["fp16"] and \
+    pp_quantize_kv_cache = pp_quantize_kv_cache or (1 < batch_size and batch_size <= 8 and
+                                                    hasattr(linear, "qtype") and
+                                                    linear.qtype != ggml_tensor_qtype["fp16"] and
                                                     linear.qtype != ggml_tensor_qtype["bf16"])
     if pp_quantize_kv_cache:
         os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] = "1"
