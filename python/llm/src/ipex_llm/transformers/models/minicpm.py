@@ -58,7 +58,6 @@ from ipex_llm.transformers.models.llama import should_use_fuse_rope, should_use_
 from ipex_llm.transformers.models.llama import fuse_qkv_weight_xetla, repeat_kv, native_sdp
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
 from ipex_llm.transformers.models.llama import should_split_qkv_tensor, should_split_qkv_tensor
-from ipex_llm.transformers.models.llama import llama_rms_norm_forward
 
 try:
     from transformers.cache_utils import Cache, DynamicCache
@@ -744,7 +743,7 @@ def minicpm_model_forward_internal(
         if output_attentions:
             all_self_attns += (layer_outputs[1],)
 
-    hidden_states = llama_rms_norm_forward(self.norm, hidden_states)
+    hidden_states = self.norm(hidden_states)
 
     # add hidden states from the last decoder layer
     if output_hidden_states:
