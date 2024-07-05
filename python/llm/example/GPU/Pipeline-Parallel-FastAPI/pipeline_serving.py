@@ -306,18 +306,21 @@ async def main():
                         help='The port number on which the server will run.')
     parser.add_argument('--max-num-seqs', type=int, default=8,
                         help='Max num sequences in a batch.')
+    parser.add_argument('--max-prefilled-seqs', type=int, default=0,
+                        help='Max num sequences in a batch during prefilling.')
     
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     low_bit = args.low_bit
     max_num_seqs = args.max_num_seqs
+    max_prefilled_seqs = args.max_prefilled_seqs
 
     # serialize model initialization so that we do not run out of CPU memory
     for i in range(my_size):
         if my_rank == i:
             logger.info("start model initialization")
             global local_model
-            local_model = ModelRunner(model_path, my_rank, my_size, low_bit, max_num_seqs)
+            local_model = ModelRunner(model_path, my_rank, my_size, low_bit, max_num_seqs, max_prefilled_seqs)
             logger.info("model initialized")
         dist.barrier()
     # Load tokenizer

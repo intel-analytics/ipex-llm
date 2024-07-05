@@ -24,11 +24,13 @@ source $basekit_root/setvars.sh --force
 source $basekit_root/ccl/latest/env/vars.sh --force
 
 export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
+if [[ $KERNEL_VERSION != *"6.5"* ]]; then
+    export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+fi
 export TORCH_LLM_ALLREDUCE=0
 
 export MODEL_PATH=YOUR_MODEL_PATH
 export NUM_GPUS=2
 export IPEX_LLM_QUANTIZE_KV_CACHE=1
 
-CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS pipeline_serving.py --repo-id-or-model-path $MODEL_PATH --low-bit fp8 --max-num-seqs 4
+CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS pipeline_serving.py --repo-id-or-model-path $MODEL_PATH --low-bit fp8 --max-num-seqs 4 --max-prefilled-seqs 0
