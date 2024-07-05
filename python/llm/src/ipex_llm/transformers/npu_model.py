@@ -131,9 +131,11 @@ class _BaseAutoModelClass:
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
 
+        from intel_npu_acceleration_library.compiler import create_npu_kernels
         with torch.no_grad():
             optimize_llm(model)
             cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
+            create_npu_kernels(model)
 
         model = model.eval()
 
@@ -291,9 +293,11 @@ class _BaseAutoModelClass:
         # Loading args may differ based on their usage
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         logger.info(f"Converting model, it may takes up to several minutes ...")
+        from intel_npu_acceleration_library.compiler import create_npu_kernels
         with torch.no_grad():
             optimize_llm(model)
             cls.load_convert(qtype, model, quant_device, *model_args, **kwargs)
+            create_npu_kernels(model)
 
         model = model.eval()
 
