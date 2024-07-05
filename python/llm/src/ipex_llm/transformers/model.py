@@ -332,6 +332,11 @@ class _BaseAutoModelClass:
                 else:
                     kwargs["pretraining_tp"] = 1
             q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
+
+            invalidInputError(q_k not in ["sym_int4_rtn", "sym_int8_rtn"],
+                              f"The dtype {q_k} is specified for NPU"
+                              "and cannot be used on CPU and GPU")
+
             imatrix_file = kwargs.pop("imatrix", None)
             if q_k in ["gguf_iq2_xxs", "gguf_iq2_xs", "gguf_iq1_s"]:
                 invalidInputError(imatrix_file is not None,
