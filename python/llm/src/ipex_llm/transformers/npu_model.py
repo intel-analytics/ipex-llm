@@ -25,8 +25,6 @@ from unittest.mock import patch
 from transformers.dynamic_module_utils import get_imports
 from transformers.configuration_utils import PretrainedConfig
 
-import intel_npu_acceleration_library as npu_lib
-
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.transformers.utils import logger
 from ipex_llm.transformers.npu_models.convert import optimize_llm
