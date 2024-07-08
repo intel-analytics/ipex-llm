@@ -18,7 +18,7 @@ python ./transformers_low_bit_pipeline.py --repo-id-or-model-path meta-llama/Lla
 ```
 arguments info:
 - `--repo-id-or-model-path`: str value, argument defining the huggingface repo id for the large language model to be downloaded, or the path to the huggingface checkpoint folder, the value is `meta-llama/Llama-2-7b-chat-hf` by default.
-- `--low-bit`: str value, options are fp8, sym_int8, fp4, sym_int4, mixed_fp8 or mixed_fp4. Relevant low bit optimizations will be applied to the model.
+- `--low-bit`: str value, options are fp8, fp6, sym_int8, fp4, sym_int4, mixed_fp8 or mixed_fp4. Relevant low bit optimizations will be applied to the model.
 - `--save-path`: str value, the path to save the low-bit model. Then you can load the low-bit directly.
 - `--load-path`: optional str value. The path to load low-bit model.
 
