@@ -10,6 +10,7 @@ repo_id:
   - 'openbmb/MiniCPM-1B-sft-bf16'
   - 'openbmb/MiniCPM-2B-sft-bf16'
   - 'deepseek-ai/deepseek-coder-7b-instruct-v1.5'
+  - 'RWKV/v5-Eagle-7B-HF'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3
