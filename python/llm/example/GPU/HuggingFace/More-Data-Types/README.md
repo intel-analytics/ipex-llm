@@ -1,6 +1,6 @@
-# IPEX-LLM Transformers Low-Bit Inference Pipeline (FP8, FP4, INT4 and more)
+# IPEX-LLM Transformers Low-Bit Inference Pipeline (FP8, FP6, FP4, INT4 and more)
 
-In this example, we show a pipeline to apply IPEX-LLM low-bit optimizations (including **FP8/INT8/MixedFP8/FP4/INT4/MixedFP4**) to any Hugging Face Transformers model, and then run inference on the optimized low-bit model.
+In this example, we show a pipeline to apply IPEX-LLM low-bit optimizations (including **FP8/INT8/FP6/FP4/INT4**) to any Hugging Face Transformers model, and then run inference on the optimized low-bit model.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
