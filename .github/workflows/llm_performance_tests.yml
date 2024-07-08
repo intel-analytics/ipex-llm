@@ -104,6 +104,7 @@ jobs:
         shell: bash
         # pip install transformers_stream_generator for model internlm-chat-7b-8k
         # pip install tiktoken for model Qwen-7B-Chat-10-12
+        # pip install matplotlib for model Qwen-VL-Chat
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
@@ -112,6 +113,7 @@ jobs:
           python -m pip install --upgrade einops
           python -m pip install --upgrade transformers_stream_generator
           python -m pip install --upgrade tiktoken
+          python -m pip install --upgrade matplotlib
 
       # specific for test on certain commits
       - name: Download llm binary
