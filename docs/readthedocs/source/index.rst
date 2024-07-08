@@ -33,7 +33,7 @@
                It is built on top of the excellent work of <strong><code><span>llama.cpp</span></code></strong>, <strong><code><span>transfromers</span></code></strong>, <strong><code><span>bitsandbytes</span></code></strong>, <strong><code><span>vLLM</span></code></strong>, <strong><code><span>qlora</span></code></strong>, <strong><code><span>AutoGPTQ</span></code></strong>, <strong><code><span>AutoAWQ</span></code></strong>, etc. 
             </li></em>
             <li><em>
-               It provides seamless integration with <a href=doc/LLM/Quickstart/llama_cpp_quickstart.html>llama.cpp</a>, <a href=doc/LLM/Quickstart/ollama_quickstart.html>ollama</a>, <a href=doc/LLM/Quickstart/webui_quickstart.html>Text-Generation-WebUI</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>HuggingFace transformers</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning>HuggingFace PEFT</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LangChain >LangChain</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LlamaIndex >LlamaIndex</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Deepspeed-AutoTP >DeepSpeed-AutoTP</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving >vLLM</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat>FastChat</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>HuggingFace TRL</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Applications/autogen >AutoGen</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models >ModeScope</a>, etc.
+               It provides seamless integration with <a href=doc/LLM/Quickstart/llama_cpp_quickstart.html>llama.cpp</a>, <a href=doc/LLM/Quickstart/ollama_quickstart.html>ollama</a>, <a href=doc/LLM/Quickstart/webui_quickstart.html>Text-Generation-WebUI</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace>HuggingFace transformers</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning>HuggingFace PEFT</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LangChain >LangChain</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LlamaIndex >LlamaIndex</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Deepspeed-AutoTP >DeepSpeed-AutoTP</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving >vLLM</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat>FastChat</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>HuggingFace TRL</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Applications/autogen >AutoGen</a>, <a href=https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models >ModeScope</a>, etc.
             </li></em>
             <li><em>
                <strong>50+ models</strong> have been optimized/verified on <code><span>ipex-llm</span></code> (including LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM, Baichuan, Qwen, RWKV, and more); see the complete list <a href=#verified-models>here</a>.
@@ -47,11 +47,11 @@ Latest update 🔥
 * [2024/05] ``ipex-llm`` now supports **Axolotl** for LLM finetuning on Intel GPU; see the quickstart `here <doc/LLM/Quickstart/axolotl_quickstart.html>`_.
 * [2024/04] You can now run **Open WebUI** on Intel GPU using ``ipex-llm``; see the quickstart `here <doc/LLM/Quickstart/open_webui_with_ollama_quickstart.html>`_.
 * [2024/04] You can now run **Llama 3** on Intel GPU using ``llama.cpp`` and ``ollama``; see the quickstart `here <doc/LLM/Quickstart/llama3_llamacpp_ollama_quickstart.html>`_.
-* [2024/04] ``ipex-llm`` now supports **Llama 3** on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama3>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3>`_.
+* [2024/04] ``ipex-llm`` now supports **Llama 3** on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/llama3>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3>`_.
 * [2024/04] ``ipex-llm`` now provides C++ interface, which can be used as an accelerated backend for running `llama.cpp <doc/LLM/Quickstart/llama_cpp_quickstart.html>`_ and `ollama <doc/LLM/Quickstart/ollama_quickstart.html>`_ on Intel GPU.
 * [2024/03] ``bigdl-llm`` has now become ``ipex-llm`` (see the migration guide `here <doc/LLM/Quickstart/bigdl_llm_migration.html>`_); you may find the original ``BigDL`` project `here <https://github.com/intel-analytics/bigdl-2.x>`_.
 * [2024/02] ``ipex-llm`` now supports directly loading model from `ModelScope <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/ModelScope-Models>`_ (`魔搭 <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/ModelScope-Models>`_).
-* [2024/02] ``ipex-llm`` added inital **INT2** support (based on llama.cpp `IQ2 <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2>`_ mechanism), which makes it possible to run large-size LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
+* [2024/02] ``ipex-llm`` added inital **INT2** support (based on llama.cpp `IQ2 <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF-IQ2>`_ mechanism), which makes it possible to run large-size LLM (e.g., Mixtral-8x7B) on Intel GPU with 16GB VRAM.
 * [2024/02] Users can now use ``ipex-llm`` through `Text-Generation-WebUI <https://github.com/intel-analytics/text-generation-webui>`_ GUI.
 * [2024/02] ``ipex-llm`` now supports `Self-Speculative Decoding <doc/LLM/Inference/Self_Speculative_Decoding.html>`_, which in practice brings **~30% speedup** for FP16 and BF16 inference latency on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Speculative-Decoding>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Speculative-Decoding>`_ respectively.
 * [2024/02] ``ipex-llm`` now supports a comprehensive list of LLM finetuning on Intel GPU (including `LoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/LoRA>`_, `QLoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA>`_, `DPO <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/DPO>`_, `QA-LoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QA-LoRA>`_ and `ReLoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/ReLora>`_).
@@ -62,10 +62,10 @@ Latest update 🔥
    :color: primary
 
    * [2023/12] ``ipex-llm`` now supports `ReLoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/ReLora>`_ (see `"ReLoRA: High-Rank Training Through Low-Rank Updates" <https://arxiv.org/abs/2307.05695>`_).
-   * [2023/12] ``ipex-llm`` now supports `Mixtral-8x7B <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral>`_ on both Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral>`_.
+   * [2023/12] ``ipex-llm`` now supports `Mixtral-8x7B <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/mixtral>`_ on both Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/mixtral>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral>`_.
    * [2023/12] ``ipex-llm`` now supports `QA-LoRA <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QA-LoRA>`_ (see `"QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models" <https://arxiv.org/abs/2309.14717>`_).
-   * [2023/12] ``ipex-llm`` now supports `FP8 and FP4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_ on Intel **GPU**.
-   * [2023/11] Initial support for directly loading `GGUF <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF>`_, `AWQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ>`_ and `GPTQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ>`_ models in to ``ipex-llm`` is available.
+   * [2023/12] ``ipex-llm`` now supports `FP8 and FP4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/More-Data-Types>`_ on Intel **GPU**.
+   * [2023/11] Initial support for directly loading `GGUF <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF>`_, `AWQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/AWQ>`_ and `GPTQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GPTQ>`_ models in to ``ipex-llm`` is available.
    * [2023/11] ``ipex-llm`` now supports `vLLM continuous batching <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving>`_ on both Intel `GPU  <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/vLLM-Serving>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/vLLM-Serving>`_.
    * [2023/10] ``ipex-llm`` now supports `QLoRA finetuning <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA>`_ on both Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/QLoRA>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/QLoRA-FineTuning>`_.
    * [2023/10] ``ipex-llm`` now supports `FastChat serving <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex-llm/llm/serving>`_ on on both Intel CPU and GPU.
@@ -197,10 +197,10 @@ Code Examples
 ============================================
 * Low bit inference
 
-  * `INT4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model>`_: **INT4** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model>`_
-  * `FP8/FP4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_: **FP8** and **FP4** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_
-  * `INT8 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_: **INT8** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types>`_
-  * `INT2 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2>`_: **INT2** LLM inference (based on llama.cpp IQ2 mechanism) on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF-IQ2>`_
+  * `INT4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM>`_: **INT4** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model>`_
+  * `FP8/FP4 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/More-Data-Types>`_: **FP8** and **FP4** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/More-Data-Types>`_
+  * `INT8 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/More-Data-Types>`_: **INT8** LLM inference on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/More-Data-Types>`_ and `CPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types>`_
+  * `INT2 inference <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF-IQ2>`_: **INT2** LLM inference (based on llama.cpp IQ2 mechanism) on Intel `GPU <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF-IQ2>`_
 
 * FP16/BF16 inference
 
@@ -210,9 +210,9 @@ Code Examples
 * Save and load
 
   * `Low-bit models <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load>`_: saving and loading ``ipex-llm`` low-bit models
-  * `GGUF <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GGUF>`_: directly loading GGUF models into ``ipex-llm``
-  * `AWQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/AWQ>`_: directly loading AWQ models into ``ipex-llm``
-  * `GPTQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations/GPTQ>`_: directly loading GPTQ models into ``ipex-llm``
+  * `GGUF <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF>`_: directly loading GGUF models into ``ipex-llm``
+  * `AWQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/AWQ>`_: directly loading AWQ models into ``ipex-llm``
+  * `GPTQ <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GPTQ>`_: directly loading GPTQ models into ``ipex-llm``
 
 * Finetuning
 
@@ -221,7 +221,7 @@ Code Examples
 
 * Integration with community libraries
 
-  * `HuggingFace transformers <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels>`_
+  * `HuggingFace transformers <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace>`_
   * `Standard PyTorch model <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/PyTorch-Models>`_
   * `DeepSpeed-AutoTP <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Deepspeed-AutoTP>`_
   * `HuggingFace PEFT <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/LLM-Finetuning/HF-PEFT>`_
@@ -267,8 +267,8 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Native-Models">link1</a>,
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/vicuna">link2</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/vicuna">link</a>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/vicuna">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/vicuna">link</a>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/vicuna">link</a></td>
        </tr>
        <tr>
          <td>LLaMA 2</td>
@@ -276,15 +276,15 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Native-Models">link1</a>,
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2">link2</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama2">link</a>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/llama2">link</a>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/llama2">link</a></td>
        </tr>
        <tr>
          <td>LLaMA 3</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/llama3">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/llama3">link</a></td>
        </tr>
        <tr>
          <td>ChatGLM</td>
@@ -297,77 +297,77 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/chatglm2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/chatglm2">link</a></td>
        </tr>
        <tr>
          <td>ChatGLM3</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm3">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/chatglm3">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/chatglm3">link</a></td>
        </tr>
        <tr>
          <td>GLM-4</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/glm4">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/glm4">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/glm4">link</a></td>
        </tr>
        <tr>
          <td>GLM-4V</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/glm-4v">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/glm-4v">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Multimodal/glm-4v">link</a></td>
        </tr>
        <tr>
          <td>Mistral</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mistral">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/mistral">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/mistral">link</a></td>
        </tr>
        <tr>
          <td>Mixtral</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/mixtral">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/mixtral">link</a></td>
        </tr>
        <tr>
          <td>Falcon</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/falcon">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/falcon">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/falcon">link</a></td>
        </tr>
        <tr>
          <td>MPT</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mpt">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/mpt">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/mpt">link</a></td>
        </tr>
        <tr>
          <td>Dolly-v1</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v1">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/dolly-v1">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/dolly-v1">link</a></td>
        </tr>
        <tr>
          <td>Dolly-v2</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/dolly-v2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/dolly-v2">link</a></td>
        </tr>
        <tr>
          <td>Replit Code</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/replit">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/replit">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/replit">link</a></td>
        </tr>
        <tr>
          <td>RedPajama</td>
@@ -389,70 +389,70 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/Native-Models">link1</a>,
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/starcoder">link2</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/starcoder">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/starcoder">link</a></td>
        </tr>
        <tr>
          <td>Baichuan</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/baichuan">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/baichuan">link</a></td>
        </tr>
        <tr>
          <td>Baichuan2</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/baichuan2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/baichuan2">link</a></td>
        </tr>
        <tr>
          <td>InternLM</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/internlm">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/internlm">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/internlm">link</a></td>
        </tr>
        <tr>
          <td>Qwen</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/qwen">link</a></td>
        </tr>
        <tr>
          <td>Qwen1.5</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen1.5">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen1.5">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/qwen1.5">link</a></td>
        </tr>
        <tr>
          <td>Qwen2</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/qwen2">link</a></td>
        </tr>
        <tr>
          <td>Qwen-VL</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen-vl">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/qwen-vl">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl">link</a></td>
        </tr>
        <tr>
          <td>Aquila</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/aquila">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/aquila">link</a></td>
        </tr>
        <tr>
          <td>Aquila2</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/aquila2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/aquila2">link</a></td>
        </tr>
        <tr>
          <td>MOSS</td>
@@ -465,21 +465,21 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/whisper">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/whisper">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Multimodal/whisper">link</a></td>
        </tr>
        <tr>
          <td>Phi-1_5</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/phi-1_5">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/phi-1_5">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/phi-1_5">link</a></td>
        </tr>
        <tr>
          <td>Flan-t5</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/flan-t5">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/flan-t5">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/flan-t5">link</a></td>
        </tr>
        <tr>
          <td>LLaVA</td>
@@ -493,7 +493,7 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/codellama">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/codellama">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/codellama">link</a></td>
        </tr>
        <tr>
          <td>Skywork</td>
@@ -530,21 +530,21 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/distil-whisper">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/distil-whisper">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Multimodal/distil-whisper">link</a></td>
        </tr>
        <tr>
          <td>Yi</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/yi">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/yi">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/yi">link</a></td>
        </tr>
        <tr>
          <td>BlueLM</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/bluelm">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/bluelm">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/bluelm">link</a></td>
        </tr>
        <tr>
          <td>Mamba</td>
@@ -558,33 +558,33 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/solar">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/solar">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/solar">link</a></td>
        </tr>
        <tr>
          <td>Phixtral</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/phixtral">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/phixtral">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/phixtral">link</a></td>
        </tr>
        <tr>
          <td>InternLM2</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/internlm2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/internlm2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/internlm2">link</a></td>
        </tr>
        <tr>
          <td>RWKV4</td>
          <td></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/rwkv4">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/rwkv4">link</a></td>
        </tr>
        <tr>
          <td>RWKV5</td>
          <td></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/rwkv5">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/rwkv5">link</a></td>
        </tr>
        <tr>
          <td>Bark</td>
@@ -616,84 +616,84 @@ Verified Models
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/phi-2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/phi-2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/phi-2">link</a></td>
        </tr>
        <tr>
          <td>Phi-3</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/phi-3">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/phi-3">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/phi-3">link</a></td>
        </tr>
        <tr>
          <td>Phi-3-vision</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/phi-3-vision">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/phi-3-vision">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Multimodal/phi-3-vision">link</a></td>
        </tr>
        <tr>
          <td>Yuan2</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/yuan2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/yuan2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/yuan2">link</a></td>
        </tr>
        <tr>
          <td>Gemma</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/gemma">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/gemma">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/gemma">link</a></td>
        </tr>
        <tr>
          <td>DeciLM-7B</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/deciLM-7b">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/deciLM-7b">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/deciLM-7b">link</a></td>
        </tr>
        <tr>
          <td>Deepseek</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/deepseek">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/deepseek">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/deepseek">link</a></td>
        </tr>
        <tr>
          <td>StableLM</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/stablelm">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/stablelm">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/stablelm">link</a></td>
        </tr>
        <tr>
          <td>CodeGemma</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegemma">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/codegemma">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/codegemma">link</a></td>
        </tr>
        <tr>
          <td>Command-R/cohere</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/cohere">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/cohere">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/cohere">link</a></td>
        </tr>
        <tr>
          <td>CodeGeeX2</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegeex2">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/codegeex2">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/codegeex2">link</a></td>
        </tr>
        <tr>
          <td>MiniCPM</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm">link</a></td>
          <td>
-           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Model/minicpm">link</a></td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/minicpm">link</a></td>
        </tr>
      </tbody>
    </table>
