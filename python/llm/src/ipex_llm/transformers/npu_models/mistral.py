@@ -14,10 +14,15 @@
 # limitations under the License.
 #
 # Some parts of this file is adapted from
-# https://github.com/huggingface/transformers/blob/v4.40.0/src/transformers/models/llama/modeling_llama.py
+# https://github.com/huggingface/transformers/blob/v4.40.0/src/transformers/models/mistral/modeling_mistral.py
 # which is licensed under Apache License 2.0:
 #
-# Copyright 2021 The HuggingFace Inc. team. All rights reserved.
+# Copyright 2023 Mistral AI and the HuggingFace Inc. team. All rights reserved.
+#
+# This code is based on EleutherAI's GPT-NeoX library and the GPT-NeoX
+# and OPT implementations in this library. It has been modified from its
+# original forms to accommodate minor architectural differences compared
+# to GPT-NeoX and OPT used by the Meta AI team that trained the model.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,15 +43,16 @@ import math
 import torch
 from transformers.cache_utils import Cache
 from transformers.modeling_outputs import BaseModelOutputWithPast
-from transformers.models.llama.modeling_llama import repeat_kv, apply_rotary_pos_emb
-from transformers.models.llama.modeling_llama import LlamaAttention, LlamaMLP
+from transformers.models.mistral.modeling_mistral import repeat_kv, apply_rotary_pos_emb
+from transformers.models.mistral.modeling_mistral import MistralAttention, MistralMLP
+from transformers.models.mistral.modeling_mistral import _prepare_4d_causal_attention_mask
 
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.transformers.npu_models.common import merge_linear
 
 
 def merge_qkv(module: torch.nn.Module):
-    if isinstance(module, LlamaAttention):
+    if isinstance(module, MistralAttention):
         qkv_proj = merge_linear([
             module.q_proj,
             module.k_proj,
@@ -57,7 +63,7 @@ def merge_qkv(module: torch.nn.Module):
 
 
 def merge_mlp(module: torch.nn.Module):
-    if isinstance(module, LlamaMLP):
+    if isinstance(module, MistralMLP):
         gate_up_proj = merge_linear([
             module.gate_proj,
             module.up_proj,
@@ -66,7 +72,7 @@ def merge_mlp(module: torch.nn.Module):
         del module.gate_proj, module.up_proj
 
 
-def llama_model_forward(
+def mistral_model_forward(
     self,
     input_ids: torch.LongTensor = None,
     attention_mask: Optional[torch.Tensor] = None,
@@ -94,33 +100,47 @@ def llama_model_forward(
         invalidInputError(False,
                           ("You cannot specify both input_ids and inputs_embeds at the same time, "
                            "and must specify either one"))
+    elif input_ids is not None:
+        batch_size, seq_length = input_ids.shape
+    elif inputs_embeds is not None:
+        batch_size, seq_length, _ = inputs_embeds.shape
 
     if self.gradient_checkpointing and self.training and use_cache:
         use_cache = False
 
-    if inputs_embeds is None:
-        inputs_embeds = self.embed_tokens(input_ids)
-
-    past_seen_tokens = 0
+    past_key_values_length = 0
 
     # ipex-llm changes start
     from ipex_llm.transformers.kv import DynamicNormalCache
     if use_cache and not isinstance(past_key_values, DynamicNormalCache):
         past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
-        past_seen_tokens = past_key_values.get_seq_length()
-
-    if cache_position is None:
-        cache_position = torch.arange(past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1],
-                                      device=inputs_embeds.device)
+        past_key_values_length = past_key_values.get_seq_length()
     # ipex-llm changes end
 
     if position_ids is None:
-        position_ids = cache_position.unsqueeze(0)
+        device = input_ids.device if input_ids is not None else inputs_embeds.device
+        position_ids = torch.arange(
+            past_key_values_length, seq_length + past_key_values_length,
+            dtype=torch.long, device=device
+        )
+        position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+    else:
+        position_ids = position_ids.view(-1, seq_length).long()
 
-    causal_mask = self._update_causal_mask(attention_mask, inputs_embeds,
-                                           cache_position, past_seen_tokens)
+    if inputs_embeds is None:
+        inputs_embeds = self.embed_tokens(input_ids)
 
-    # embed positions
+    # ipex-llm changes start
+    # 4d mask is passed through the layers
+    attention_mask = _prepare_4d_causal_attention_mask(
+        attention_mask,
+        (batch_size, seq_length),
+        inputs_embeds,
+        past_key_values_length,
+        sliding_window=self.config.sliding_window,
+    )
+    # ipex-llm changes end
+
     hidden_states = inputs_embeds
 
     # decoder layers
@@ -136,22 +156,20 @@ def llama_model_forward(
             layer_outputs = self._gradient_checkpointing_func(
                 decoder_layer.__call__,
                 hidden_states,
-                causal_mask,
+                attention_mask,
                 position_ids,
                 past_key_values,
                 output_attentions,
                 use_cache,
-                cache_position,
             )
         else:
             layer_outputs = decoder_layer(
                 hidden_states,
-                attention_mask=causal_mask,
+                attention_mask=attention_mask,
                 position_ids=position_ids,
                 past_key_value=past_key_values,
                 output_attentions=output_attentions,
                 use_cache=use_cache,
-                cache_position=cache_position,
             )
 
         hidden_states = layer_outputs[0]
@@ -171,6 +189,7 @@ def llama_model_forward(
     # ipex-llm changes start
     next_cache = next_decoder_cache if use_cache else None
     # ipex-llm changes end
+
     if not return_dict:
         return tuple(v for v in [hidden_states, next_cache,
                                  all_hidden_states, all_self_attns] if v is not None)
@@ -182,7 +201,7 @@ def llama_model_forward(
     )
 
 
-def llama_attention_forward(
+def mistral_attention_forward(
     self,
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,
@@ -202,23 +221,19 @@ def llama_attention_forward(
                                                         self.num_key_value_heads,
                                                         self.num_key_value_heads], dim=1)
 
-    past_key_value = getattr(self, "past_key_value", past_key_value)
-    cos, sin = self.rotary_emb(value_states, position_ids)
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
-
+    kv_seq_len = q_len
     if past_key_value is not None:
-        # sin and cos are specific to RoPE models; cache_position needed for the static cache
-        cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
+        kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
+    query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
+                                                    cos, sin, position_ids)
+    if past_key_value is not None:
+        cache_kwargs = {"sin": sin, "cos": cos}  # Specific to RoPE models
         key_states, value_states = past_key_value.update(key_states, value_states,
                                                          self.layer_idx, cache_kwargs)
 
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
-
-    if attention_mask is not None:
-        causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
-    else:
-        causal_mask = None
 
     if query_states.size(2) == key_states.size(2):
         # first token
@@ -227,18 +242,20 @@ def llama_attention_forward(
             query_states,
             key_states,
             value_states,
-            attn_mask=causal_mask,
-            is_causal=self.is_causal and causal_mask is None and q_len > 1,
+            attn_mask=attention_mask,
+            is_causal=attention_mask is None and bsz == 1 and q_len > 1,
         )
         attn_weights = None
     else:
         attn_weights = torch.matmul(query_states,
                                     key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-        if causal_mask is not None:
-            attn_weights = attn_weights + causal_mask
+        if attention_mask is not None:
+            attn_weights = attn_weights + attention_mask
 
         attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
                                                    dtype=torch.float32).to(value_states.dtype)
+        attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                                   training=self.training)
         attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()
@@ -253,7 +270,7 @@ def llama_attention_forward(
     return attn_output, attn_weights, past_key_value
 
 
-def llama_mlp_forward(self, x):
+def mistral_mlp_forward(self, x):
     gate_up_proj = self.gate_up_proj(x)
     gate_proj, up_proj = gate_up_proj.chunk(2, dim=-1)
     down_proj = self.down_proj(self.act_fn(gate_proj) * up_proj)
