@@ -6,6 +6,10 @@ repo_id:
   - 'meta-llama/Llama-2-7b-chat-hf'
   - 'meta-llama/Llama-2-13b-chat-hf'
   - 'meta-llama/Meta-Llama-3-8B-Instruct'
+  - 'mistralai/Mistral-7B-Instruct-v0.2'
+  - 'openbmb/MiniCPM-1B-sft-bf16'
+  - 'openbmb/MiniCPM-2B-sft-bf16'
+  - 'deepseek-ai/deepseek-coder-7b-instruct-v1.5'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3
