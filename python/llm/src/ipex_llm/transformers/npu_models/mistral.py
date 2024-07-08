@@ -17,7 +17,12 @@
 # https://github.com/huggingface/transformers/blob/v4.40.0/src/transformers/models/mistral/modeling_mistral.py
 # which is licensed under Apache License 2.0:
 #
-# Copyright 2021 The HuggingFace Inc. team. All rights reserved.
+# Copyright 2023 Mistral AI and the HuggingFace Inc. team. All rights reserved.
+#
+# This code is based on EleutherAI's GPT-NeoX library and the GPT-NeoX
+# and OPT implementations in this library. It has been modified from its
+# original forms to accommodate minor architectural differences compared
+# to GPT-NeoX and OPT used by the Meta AI team that trained the model.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
