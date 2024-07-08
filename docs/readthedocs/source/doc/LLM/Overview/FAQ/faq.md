@@ -4,7 +4,7 @@
 
 ### GGUF format usage with IPEX-LLM?
 
-IPEX-LLM supports running GGUF/AWQ/GPTQ models on both [CPU](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Advanced-Quantizations) and [GPU](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Advanced-Quantizations).
+IPEX-LLM supports running GGUF/AWQ/GPTQ models on both [CPU](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Advanced-Quantizations) and [GPU](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Advanced-Quantizations).
 Please also refer to [here](https://github.com/intel-analytics/ipex-llm?tab=readme-ov-file#latest-update-) for our latest support.
 
 ## How to Resolve Errors

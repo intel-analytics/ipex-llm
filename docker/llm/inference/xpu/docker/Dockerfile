@@ -53,7 +53,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Download all-in-one benchmark and examples
     git clone https://github.com/intel-analytics/ipex-llm && \
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
-    cp -r ./ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model ./examples && \
+    cp -r ./ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model ./examples && \
     # Install vllm dependencies
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \

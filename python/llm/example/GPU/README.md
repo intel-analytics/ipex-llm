@@ -3,7 +3,7 @@
 This folder contains examples of running IPEX-LLM on Intel GPU:
 
 - [Applications](Applications): running LLM applications (such as autogen) on IPEX-LLM
-- [HF-Transformers-AutoModels](HF-Transformers-AutoModels): running any ***Hugging Face Transformers*** model on IPEX-LLM (using the standard AutoModel APIs)
+- [HF-Transformers-AutoModels](HF-Transformers-AutoModels): running any ***Hugging Face Transformers*** model on IPEX-LLM (using the standard AutoModel APIs), including language models and multimodal models.
 - [LLM-Finetuning](LLM-Finetuning): running ***finetuning*** (such as LoRA, QLoRA, QA-LoRA, etc) using IPEX-LLM on Intel GPUs
 - [vLLM-Serving](vLLM-Serving): running ***vLLM*** serving framework on intel GPUs (with IPEX-LLM low-bit optimized models)
 - [Deepspeed-AutoTP](Deepspeed-AutoTP): running distributed inference using ***DeepSpeed AutoTP*** (with IPEX-LLM low-bit optimized models) on Intel GPUs
@@ -15,7 +15,6 @@ This folder contains examples of running IPEX-LLM on Intel GPU:
 - [Speculative-Decoding](Speculative-Decoding): running any ***Hugging Face Transformers*** model with ***self-speculative decoding*** on Intel GPUs
 - [ModelScope-Models](ModelScope-Models): running ***ModelScope*** model with IPEX-LLM on Intel GPUs
 - [Long-Context](Long-Context): running **long-context** generation with IPEX-LLM on Intel Arc™ A770 Graphics.
-- [StableDiffusion](StableDiffusion): running **stable diffusion** with IPEX-LLM on Intel GPUs. 
 
 
 ## System Support

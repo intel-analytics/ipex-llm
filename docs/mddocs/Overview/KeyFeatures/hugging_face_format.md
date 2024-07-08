@@ -32,7 +32,7 @@ output = tokenizer.batch_decode(output_ids)
 > model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
 > ```
 >
-> See the CPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types) and GPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/More-Data-Types).
+> See the CPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types) and GPU example [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/More-Data-Types).
 
 
 ## Save & Load
@@ -45,4 +45,4 @@ new_model = AutoModelForCausalLM.load_low_bit(model_path)
 ```
 
 > [!TIP]
-> See the complete CPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load) and GPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Save-Load).
+> See the complete CPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load) and GPU examples [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Save-Load).

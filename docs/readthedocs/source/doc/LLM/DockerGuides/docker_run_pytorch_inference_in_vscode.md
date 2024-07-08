@@ -99,7 +99,7 @@ Start ipex-llm-xpu Docker Container:
 
 Press F1 to bring up the Command Palette and type in `Dev Containers: Attach to Running Container...` and select it and then select `my_container`
 
-Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/Model/`.
+Now you are in a running Docker Container, Open folder `/ipex-llm/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/`.
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/run_example_in_vscode.gif" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/run_example_in_vscode.gif" width=100%; />
