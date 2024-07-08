@@ -86,6 +86,22 @@ def optimize_llm(model: torch.nn.Module):
         convert_forward(model, LlamaAttention, llama_attention_forward)
         convert_forward(model, LlamaMLP, llama_mlp_forward)
 
+    elif model.config.model_type == "mistral":
+        from ipex_llm.transformers.npu_models.mistral import merge_qkv
+        from ipex_llm.transformers.npu_models.mistral import merge_mlp
+        model.apply(merge_qkv)
+        model.apply(merge_mlp)
+
+        from ipex_llm.transformers.npu_models.mistral import mistral_model_forward
+        from ipex_llm.transformers.npu_models.mistral import mistral_attention_forward
+        from ipex_llm.transformers.npu_models.mistral import mistral_mlp_forward
+        from transformers.models.mistral.modeling_mistral import MistralModel
+        from transformers.models.mistral.modeling_mistral import MistralAttention
+        from transformers.models.mistral.modeling_mistral import MistralMLP
+        convert_forward(model, MistralModel, mistral_model_forward)
+        convert_forward(model, MistralAttention, mistral_attention_forward)
+        convert_forward(model, MistralMLP, mistral_mlp_forward)
+
     elif model.config.model_type == "qwen2":
         from ipex_llm.transformers.npu_models.qwen2 import merge_qkv
         from ipex_llm.transformers.npu_models.qwen2 import merge_mlp
