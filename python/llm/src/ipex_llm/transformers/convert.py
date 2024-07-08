@@ -1480,21 +1480,32 @@ def _optimize_post(model, lightweight_bmm=False):
                                 module.MistralMLP,
                                 llama_mlp_forward)
     elif model.config.model_type == "gemma":
+        invalidInputError(version.parse(trans_version) >= version.parse("4.38.0"),
+                          "Please upgrade transformers to 4.38.0 or higher version "
+                          "to run Mixtral models.")
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.gemma import gemma_attention_forward
+        if version.parse(trans_version) >= version.parse("4.39.0"):
+            from ipex_llm.transformers.models.gemma import gemma_attention_forward_4_39
+            convert_forward(model,
+                            module.GemmaAttention,
+                            gemma_attention_forward_4_39
+                            )
+        else:
+            from ipex_llm.transformers.models.gemma import gemma_attention_forward
+            convert_forward(model,
+                            module.GemmaAttention,
+                            gemma_attention_forward,
+                            )
         from ipex_llm.transformers.models.gemma import gemma_rms_norm_forward
         from ipex_llm.transformers.models.gemma import gemma_mlp_forward
-        convert_forward(model,
-                        module.GemmaAttention,
-                        gemma_attention_forward,
-                        )
         convert_forward(model,
                         module.GemmaRMSNorm,
                         gemma_rms_norm_forward)
         convert_forward(model,
                         module.GemmaMLP,
                         gemma_mlp_forward)
+
     elif model.config.model_type == "gemma2":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
