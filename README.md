@@ -216,7 +216,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
   - LLM finetuning on Intel [GPU](python/llm/example/GPU/LLM-Finetuning), including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)
   - QLoRA finetuning on Intel [CPU](python/llm/example/CPU/QLoRA-FineTuning)
 - Integration with community libraries
-  - [HuggingFace transformers](python/llm/example/GPU/HF-Transformers-AutoModels)
+  - [HuggingFace transformers](python/llm/example/GPU/HuggingFace)
   - [Standard PyTorch model](python/llm/example/GPU/PyTorch-Models)
   - [LangChain](python/llm/example/GPU/LangChain)
   - [LlamaIndex](python/llm/example/GPU/LlamaIndex)
