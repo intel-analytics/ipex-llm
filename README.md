@@ -33,7 +33,7 @@
 - [2024/02] `ipex-llm` now supports a comprehensive list of LLM **finetuning** on Intel GPU (including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)).
 - [2024/01] Using `ipex-llm` [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), we managed to finetune LLaMA2-7B in **21 minutes** and LLaMA2-70B in **3.14 hours** on 8 Intel Max 1550 GPU for [Standford-Alpaca](python/llm/example/GPU/LLM-Finetuning/QLoRA/alpaca-qlora) (see the blog [here](https://www.intel.com/content/www/us/en/developer/articles/technical/finetuning-llms-on-intel-gpus-using-bigdl-llm.html)). 
 - [2023/12] `ipex-llm` now supports [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora) (see *["ReLoRA: High-Rank Training Through Low-Rank Updates"](https://arxiv.org/abs/2307.05695)*).
-- [2023/12] `ipex-llm` now supports [Mixtral-8x7B](python/llm/example/GPU/HuggingFace/LLM/mixtral) on both Intel [GPU](python/llm/example/HuggingFace/LLM/mixtral) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral). 
+- [2023/12] `ipex-llm` now supports [Mixtral-8x7B](python/llm/example/GPU/HuggingFace/LLM/mixtral) on both Intel [GPU](python/llm/example/GPU/HuggingFace/LLM/mixtral) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral). 
 - [2023/12] `ipex-llm` now supports [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) (see *["QA-LoRA: Quantization-Aware Low-Rank Adaptation of Large Language Models"](https://arxiv.org/abs/2309.14717)*). 
 - [2023/12] `ipex-llm` now supports [FP8 and FP4 inference](python/llm/example/GPU/HuggingFace/More-Data-Types) on Intel ***GPU***.
 - [2023/11] Initial support for directly loading [GGUF](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF), [AWQ](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/AWQ) and [GPTQ](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GPTQ) models into `ipex-llm` is available.
@@ -196,26 +196,26 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - *For more details, please refer to the [full installation guide](docs/mddocs/Overview/install.md)*
 
 ### Code Examples
-- Low bit inference
+- #### Low bit inference
   - [INT4 inference](python/llm/example/GPU/HuggingFace/LLM): **INT4** LLM inference on Intel [GPU](python/llm/example/GPU/HuggingFace/LLM) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model)
-  - [FP8/FP4 inference](python/llm/example/GPU/HuggingFace/LLM/More-Data-Types): **FP8** and **FP4** LLM inference on Intel [GPU](python/llm/example/GPU/HuggingFace/LLM/More-Data-Types)
+  - [FP8/FP6/FP4 inference](python/llm/example/GPU/HuggingFace/LLM/More-Data-Types): **FP8**. **FP6** and **FP4** LLM inference on Intel [GPU](python/llm/example/GPU/HuggingFace/LLM/More-Data-Types)
   - [INT8 inference](python/llm/example/GPU/HuggingFace/LLM/More-Data-Types): **INT8** LLM inference on Intel [GPU](python/llm/example/GPU/HuggingFace/LLM/More-Data-Types) and [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/More-Data-Types)
   - [INT2 inference](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF-IQ2): **INT2** LLM inference (based on llama.cpp IQ2 mechanism) on Intel [GPU](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF-IQ2)
-- FP16/BF16 inference
+- #### FP16/BF16 inference
   - **FP16** LLM inference on Intel [GPU](python/llm/example/GPU/Speculative-Decoding), with possible [self-speculative decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md) optimization
   - **BF16** LLM inference on Intel [CPU](python/llm/example/CPU/Speculative-Decoding), with possible [self-speculative decoding](docs/mddocs/Inference/Self_Speculative_Decoding.md) optimization
-- Distributed inference
+- #### Distributed inference
   - **Pipeline Parallel** inference on Intel [GPU](python/llm/example/GPU/Pipeline-Parallel-Inference)
   - **DeepSpeed AutoTP** inference on Intel [GPU](python/llm/example/GPU/Deepspeed-AutoTP)
-- Save and load
+- #### Save and load
   - [Low-bit models](python/llm/example/CPU/HF-Transformers-AutoModels/Save-Load): saving and loading `ipex-llm` low-bit models (INT4/FP4/FP6/INT8/FP8/FP16/etc.)
   - [GGUF](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF): directly loading GGUF models into `ipex-llm`
   - [AWQ](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/AWQ): directly loading AWQ models into `ipex-llm`
   - [GPTQ](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GPTQ): directly loading GPTQ models into `ipex-llm`
-- Finetuning
+- #### Finetuning
   - LLM finetuning on Intel [GPU](python/llm/example/GPU/LLM-Finetuning), including [LoRA](python/llm/example/GPU/LLM-Finetuning/LoRA), [QLoRA](python/llm/example/GPU/LLM-Finetuning/QLoRA), [DPO](python/llm/example/GPU/LLM-Finetuning/DPO), [QA-LoRA](python/llm/example/GPU/LLM-Finetuning/QA-LoRA) and [ReLoRA](python/llm/example/GPU/LLM-Finetuning/ReLora)
   - QLoRA finetuning on Intel [CPU](python/llm/example/CPU/QLoRA-FineTuning)
-- Integration with community libraries
+- #### Integration with community libraries
   - [HuggingFace transformers](python/llm/example/GPU/HuggingFace)
   - [Standard PyTorch model](python/llm/example/GPU/PyTorch-Models)
   - [LangChain](python/llm/example/GPU/LangChain)
