@@ -37,29 +37,29 @@ The following models have been verified on either servers or laptops with Intel 
 
 | Model      | Example of `transformers`-style API                   |
 |------------|-------------------------------------------------------|
-| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* |[link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/vicuna)|
-| LLaMA 2    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/llama2) |
-| ChatGLM2   | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/chatglm2)   |
-| Mistral    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/mistral)    |
-| Falcon     | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/falcon)     |
+| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* |[link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/vicuna)|
+| LLaMA 2    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/llama2) |
+| ChatGLM2   | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/chatglm2)   |
+| Mistral    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/mistral)    |
+| Falcon     | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/falcon)     |
 | MPT        | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/mpt)        |
 | Dolly-v1   | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v1)   | 
 | Dolly-v2   | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/dolly_v2)   | 
 | Replit     | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/replit)     |
-| StarCoder  | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/starcoder)  | 
+| StarCoder  | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/starcoder)  | 
 | Baichuan   | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan)   |
-| Baichuan2  | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/baichuan2)  |
-| InternLM   | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/internlm)   |
-| Qwen       | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/qwen)       |
-| Aquila     | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/aquila)     |
-| Whisper    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/Multimodal/whisper)    |
-| Chinese Llama2	    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/chinese-llama2)    |
-| GPT-J    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/Model/gpt-j)    |
+| Baichuan2  | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/baichuan2)  |
+| InternLM   | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/internlm)   |
+| Qwen       | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/qwen)       |
+| Aquila     | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/aquila)     |
+| Whisper    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Multimodal/whisper)    |
+| Chinese Llama2	    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/chinese-llama2)    |
+| GPT-J    | [link](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/gpt-j)    |
 
 ```eval_rst
 .. important::
 
-   In addition to INT4 optimization, IPEX-LLM also provides other low bit optimizations (such as INT8, INT5, NF4, etc.). You may apply other low bit optimizations through ``transformers``-style API as `example <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HF-Transformers-AutoModels/LLM/More-Data-Types>`_.
+   In addition to INT4 optimization, IPEX-LLM also provides other low bit optimizations (such as INT8, INT5, NF4, etc.). You may apply other low bit optimizations through ``transformers``-style API as `example <https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/More-Data-Types>`_.
 ```
 
 
