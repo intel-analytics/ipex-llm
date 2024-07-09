@@ -3,7 +3,7 @@
 
 ## Env-Check
 
-The **Env-Check** scripts  ([env-check.sh](./env-chec.sh), [env-check.bat](./env-chec.bat)) are designed to verify your `ipex-llm` installation and runtime environment. These scripts can help you ensure your environment is correctly set up for optimal performance. You can include the script's output when reporting issues on [IPEX Github Issues](https://github.com/intel-analytics/ipex-llm/issues) for easier troubleshooting.
+The **Env-Check** scripts  ([env-check.sh](./env-check.sh), [env-check.bat](./env-check.bat)) are designed to verify your `ipex-llm` installation and runtime environment. These scripts can help you ensure your environment is correctly set up for optimal performance. You can include the script's output when reporting issues on [IPEX Github Issues](https://github.com/intel-analytics/ipex-llm/issues) for easier troubleshooting.
 
 > Note: These scripts verify python installation, check for necessary packages and environmental variables, assess hardware or operating system compatibility, and identify any XPU-related issues. 
 
