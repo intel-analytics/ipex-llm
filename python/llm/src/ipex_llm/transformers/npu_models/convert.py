@@ -137,12 +137,22 @@ def optimize_llm(model: torch.nn.Module):
         convert_forward(model, module.MiniCPMMLP, minicpm_mlp_forward)
 
     elif model.config.model_type == "chatglm":
-        from ipex_llm.transformers.npu_models.chatglm import chatglm2_model_forward
-        from ipex_llm.transformers.npu_models.chatglm import chatglm2_attention_forward
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        convert_forward(model, module.ChatGLMModel, chatglm2_model_forward)
-        convert_forward(model, module.SelfAttention, chatglm2_attention_forward)
+        if model.config.num_layers == 40 and hasattr(model.config, 'rope_ratio'):
+            # glm-4-9b
+            from ipex_llm.transformers.npu_models.chatglm4 import chatglm4_model_forward
+            from ipex_llm.transformers.npu_models.chatglm4 import chatglm4_attention_forward
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(model, module.ChatGLMModel, chatglm4_model_forward)
+            convert_forward(model, module.SelfAttention, chatglm4_attention_forward)
+        else:
+            # chatglm-3-6b
+            from ipex_llm.transformers.npu_models.chatglm import chatglm2_model_forward
+            from ipex_llm.transformers.npu_models.chatglm import chatglm2_attention_forward
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(model, module.ChatGLMModel, chatglm2_model_forward)
+            convert_forward(model, module.SelfAttention, chatglm2_attention_forward)
 
     elif model.config.model_type == "stablelm":
         from ipex_llm.transformers.npu_models.stablelm import merge_qkv

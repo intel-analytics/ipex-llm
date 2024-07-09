@@ -225,7 +225,7 @@ def chatglm4_attention_forward(
         key_states = repeat_kv(key_states, n_head // n_kv_head)
         value_states = repeat_kv(value_states, n_head // n_kv_head)
         attn_weights = torch.matmul(query_states / math.sqrt(head_dim),
-                                    key_states.transpose(2, 3)).to(value_states.dtype)
+                                    key_states.transpose(2, 3))
         if attention_mask is not None:
             attn_weights = attn_weights + attention_mask
         attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
