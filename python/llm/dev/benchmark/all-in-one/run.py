@@ -1980,11 +1980,20 @@ if __name__ == '__main__':
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
-        df.index += max(line_counter-1, 0)
-        if api not in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
-            if line_counter == 0:
-                df.to_csv(csv_name, mode='a')
-            else:
-                df.to_csv(csv_name, mode='a', header=None)
-        line_counter += len(df.index)
+        if "pipeline" in api or "deepspeed" in api:
+            if torch.distributed.get_rank() == 0:
+                df.index += max(line_counter - 1, 0)
+                if line_counter == 0:
+                    df.to_csv(csv_name, mode='a')
+                else:
+                    df.to_csv(csv_name, mode='a', header=None)
+                line_counter += len(df.index)
+        else:
+            df.index += max(line_counter - 1, 0)
+            if api not in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
+                if line_counter == 0:
+                    df.to_csv(csv_name, mode='a')
+                else:
+                    df.to_csv(csv_name, mode='a', header=None)
+            line_counter += len(df.index)
         results = []
