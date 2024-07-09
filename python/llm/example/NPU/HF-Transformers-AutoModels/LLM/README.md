@@ -1,5 +1,17 @@
 # Run Large Language Model on Intel NPU
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on LLM models on [Intel NPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as reference Llama2 models. For more verified models please refer to the [Verification Models](#verification-models) section.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on LLM models on [Intel NPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as reference Llama2 models. In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on LLM models on Intel NPUs. See the table blow for verified models.
+
+## Verification Models
+
+| Model      | Model Link                                                    |
+|------------|----------------------------------------------------------------|
+| Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
+| Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
+| Chatglm3 | [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) |
+| Qwen2 | [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) |
+| MiniCPM | [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
+| Phi-3 | [microsoft/Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) |
+| Stablelm | [stabilityai/stablelm-zephyr-3b](https://huggingface.co/stabilityai/stablelm-zephyr-3b) |
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
@@ -57,15 +69,3 @@ Inference time: xxxx s
 --------------------------------------------------------------------------------
 done
 ```
-
-## Verification Models
-
-| Model      | Model Link                                                    |
-|------------|----------------------------------------------------------------|
-| Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
-| Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
-| Chatglm3 | [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) |
-| Qwen2 | [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) |
-| MiniCPM | [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
-| Phi-3 | [microsoft/Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) |
-| Stablelm | [stabilityai/stablelm-zephyr-3b](https://huggingface.co/stabilityai/stablelm-zephyr-3b) |
