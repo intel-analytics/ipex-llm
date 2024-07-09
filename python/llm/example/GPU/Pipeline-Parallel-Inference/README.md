@@ -17,6 +17,7 @@ To run this example with IPEX-LLM on Intel GPUs, we have some recommended requir
 - [Qwen/Qwen-VL-Chat](./run_qwen_vl_arc_2_card.sh)
 - [Qwen/CodeQwen1.5-7B-Chat](./run_qwen1.5_arc_2_card.sh)
 - [THUDM/glm-4-9b-chat](./run_chatglm_arc_2_card.sh)
+- [THUDM/glm-4v-9b](./run_glm_4v_arc_2_card.sh)
 - [THUDM/chatglm3-6b](./run_chatglm_arc_2_card.sh)
 - [baichuan-inc/Baichuan2-7B-Chat](./run_baichuan2_arc_2_card.sh)
 - [baichuan-inc/Baichuan2-13B-Chat](./run_baichuan2_arc_2_card.sh)
@@ -141,6 +142,20 @@ You could specify `--repo-id-or-model-path` in the test script to be the hugging
 ```bash
 pip install transformers==4.37.0 "tiktoken>=0.7.0"
 bash run_chatglm_arc_2_card.sh
+```
+
+</details>
+
+<details>
+  <summary> Show glm-4v example </summary>
+
+#### Run glm-4v-9b on two Intel Arc A770
+
+You could specify `--repo-id-or-model-path` in the test script to be the huggingface repo id for glm-4v-9b to be downloaded, or the path to the huggingface checkpoint folder. Besides, you could change `NUM_GPUS` to the number of GPUs you have on your machine.
+
+```bash
+pip install transformers==4.37.0 tiktoken
+bash run_glm_4v_arc_2_card.sh
 ```
 
 </details>
