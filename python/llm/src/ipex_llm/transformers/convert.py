@@ -1261,6 +1261,7 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.InternLM2Attention, internlm_xcomposser2_attention_forward)
         from ipex_llm.transformers.models.internlm import internlm_xcomposser2_mlp_forward
         convert_forward(model, module.InternLM2MLP, internlm_xcomposser2_mlp_forward)
+        convert_forward(model, module.InternLM2RMSNorm, llama_rms_norm_forward)
         from ipex_llm.transformers.models.internlm import internlm_xcomposser2_chat
         model.chat = MethodType(internlm_xcomposser2_chat, model)
     elif model.config.model_type == "qwen":

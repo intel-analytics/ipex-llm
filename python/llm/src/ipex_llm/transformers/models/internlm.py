@@ -359,12 +359,14 @@ def internlm_xcomposser2_attention_forward(
         kv_seq_len += past_key_value[0].shape[-2]
 
     # IPEX-LLM OPT: fuse rope
-    cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
     if should_use_fuse_rope(hidden_states, position_ids, self.training):
-        query_states, key_states = apply_rotary_pos_emb_cache_freq_xpu(
-            query_states, key_states, sin, cos, "internlm", position_ids
-        )
+        # This fuse rope will get wrong result if context_length > max_position_embeddings (32768)
+        # we assume context_length <= 32768
+        import xe_addons
+        xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                       query_states, key_states)
     else:
+        cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(
             query_states, key_states, cos, sin, position_ids, "internlm")
 
