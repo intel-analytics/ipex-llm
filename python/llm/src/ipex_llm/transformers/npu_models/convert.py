@@ -169,3 +169,11 @@ def optimize_llm(model: torch.nn.Module):
         convert_forward(model, StableLmModel, stablelm_model_forward)
         convert_forward(model, StableLmAttention, stablelm_attention_forward)
         convert_forward(model, StableLmMLP, stablelm_mlp_forward)
+
+    elif model.config.model_type == "baichuan":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.npu_models.baichuan import baichuan_mlp_forward, merge_mlp
+        model.apply(merge_mlp)
+
+        convert_forward(model, module.MLP, baichuan_mlp_forward)
