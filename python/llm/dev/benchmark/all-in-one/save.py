@@ -23,7 +23,7 @@ import os
 import sys
 import gc
 
-from run import LLAMA_IDS, CHATGLM_IDS, LLAVA_IDS, get_model_path
+from run import LLAMA_IDS, CHATGLM_IDS, LLAVA_IDS, PHI3VISION_IDS, get_model_path
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -50,6 +50,12 @@ def save_model_in_low_bit(repo_id,
         from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                           trust_remote_code=True, use_cache=True).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    elif repo_id in PHI3VISION_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                     _attn_implementation="eager",
+                                                     modules_to_not_convert=["vision_embed_tokens"],
+                                                     trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
