@@ -170,6 +170,7 @@ class TCNForecaster(BasePytorchForecaster):
         self.lr = lr
         self.metrics = metrics
         self.seed = seed
+        self.has_bn = not dummy_encoder
 
         # nano setting
         current_num_threads = torch.get_num_threads()
