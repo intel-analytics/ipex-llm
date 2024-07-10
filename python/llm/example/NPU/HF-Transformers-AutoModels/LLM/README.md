@@ -1,7 +1,7 @@
 # Run Large Language Model on Intel NPU
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on LLM models on [Intel NPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) as reference Llama2 models. In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on LLM models on Intel NPUs. See the table blow for verified models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on LLM models on [Intel NPUs](../../../README.md). In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on LLM models on Intel NPUs. See the table blow for verified models.
 
-## Verification Models
+## Verified Models
 
 | Model      | Model Link                                                    |
 |------------|----------------------------------------------------------------|
