@@ -23,7 +23,6 @@ export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
 sudo docker run -itd \
         --net=host \
         --device=/dev/dri \
-        --memory="32G" \
         --name=CONTAINER_NAME \
         --shm-size="16g" \
         $DOCKER_IMAGE
