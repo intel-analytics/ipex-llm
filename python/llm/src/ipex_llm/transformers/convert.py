@@ -1259,12 +1259,19 @@ def _optimize_post(model, lightweight_bmm=False):
     elif model.config.model_type == "internlmxcomposer2":
         modeling_module_name = model.model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_attention_forward
+        from ipex_llm.transformers.models.internlm import (
+            internlm_xcomposser2_attention_forward,
+            internlm_xcomposser2_mlp_forward,
+            internlm_xcomposser2_model_forward_wrapper,
+            internlm_xcomposser2_chat
+        )
         convert_forward(model, module.InternLM2Attention, internlm_xcomposser2_attention_forward)
-        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_mlp_forward
         convert_forward(model, module.InternLM2MLP, internlm_xcomposser2_mlp_forward)
         convert_forward(model, module.InternLM2RMSNorm, llama_rms_norm_forward)
-        from ipex_llm.transformers.models.internlm import internlm_xcomposser2_chat
+        internlm_xcomposser2_model_forward = internlm_xcomposser2_model_forward_wrapper(
+            module.InternLM2Model.forward
+        )
+        convert_forward(model, module.InternLM2Model, internlm_xcomposser2_model_forward)
         model.chat = MethodType(internlm_xcomposser2_chat, model)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
