@@ -174,9 +174,11 @@ def optimize_llm(model: torch.nn.Module):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.npu_models.baichuan import baichuan_mlp_forward, merge_mlp
+        from ipex_llm.transformers.npu_models.baichuan import baichuan_attention_fwd
         model.apply(merge_mlp)
 
         convert_forward(model, module.MLP, baichuan_mlp_forward)
+        convert_forward(model, module.Attention, baichuan_attention_fwd)
 
     elif model.config.model_type == "phi3_v":
         modeling_module_name = model.__class__.__module__
@@ -189,3 +191,13 @@ def optimize_llm(model: torch.nn.Module):
         from transformers.models.clip.modeling_clip import CLIPAttention
         convert_forward(model, CLIPAttention, phi3v_encoder_attention_forward)
         convert_forward(model, module.Phi3VModel, phi3v_model_forward)
+
+        from ipex_llm.transformers.npu_models.phi3 import phi3_attention_forward
+        convert_forward(model, module.Phi3Attention, phi3_attention_forward)
+
+    elif model.config.model_type == "phi3":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.npu_models.phi3 import phi3_attention_forward
+
+        convert_forward(model, module.Phi3Attention, phi3_attention_forward)
