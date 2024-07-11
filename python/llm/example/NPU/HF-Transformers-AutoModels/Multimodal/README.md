@@ -1,11 +1,11 @@
-# Run Multimodal Model on Intel NPU
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on Multimodal models on [Intel NPUs](../../../README.md). In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on Multimodal models on Intel NPUs. See the table blow for verified models.
+# Run Large Multimodal Model on Intel NPU
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on Large Multimodal Models on [Intel NPUs](../../../README.md). In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on Large Multimodal Models on Intel NPUs. See the table blow for verified models.
 
 ## Verified Models
 
 | Model      | Model Link                                                    |
 |------------|----------------------------------------------------------------|
-| Phi3-V | [microsoft/Phi-3-vision-128k-instruct](https://huggingface.co/microsoft/Phi-3-vision-128k-instruct) |
+| Phi-3-Vision | [microsoft/Phi-3-vision-128k-instruct](https://huggingface.co/microsoft/Phi-3-vision-128k-instruct) |
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
