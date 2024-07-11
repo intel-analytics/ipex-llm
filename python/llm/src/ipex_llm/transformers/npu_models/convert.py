@@ -61,6 +61,15 @@ def replace_with_QuantizedLinear(layer, qtype, device):
         return QuantizedLinear(qweights, scale, layer.bias)
 
 
+@module_optimization
+def replace_with_QuantizedMLP(layer, qtype, device):
+    from transformers.models.llama.modeling_llama import LlamaMLP
+    from ipex_llm.transformers.npu_models.fusedmlp import FusedLlamaQuantizedMLP
+    if isinstance(layer, LlamaMLP):
+        weights = [(layer.gate_proj.weight, layer.gate_proj.scale), (layer.up_proj.weight, layer.up_proj.scale), (layer.down_proj.weight, layer.down_proj.scale)]
+        return FusedLlamaQuantizedMLP(weights)   # TODO: handle bias
+
+
 def convert_forward(m, target_m, new_forward):
     if m.__class__ == target_m:
         bound_method = new_forward.__get__(m, m.__class__)
@@ -74,7 +83,7 @@ def optimize_llm(model: torch.nn.Module):
         from ipex_llm.transformers.npu_models.llama import merge_qkv
         from ipex_llm.transformers.npu_models.llama import merge_mlp
         model.apply(merge_qkv)
-        model.apply(merge_mlp)
+        # model.apply(merge_mlp)
 
         from ipex_llm.transformers.npu_models.llama import llama_model_forward
         from ipex_llm.transformers.npu_models.llama import llama_attention_forward
@@ -84,7 +93,7 @@ def optimize_llm(model: torch.nn.Module):
         from transformers.models.llama.modeling_llama import LlamaMLP
         convert_forward(model, LlamaModel, llama_model_forward)
         convert_forward(model, LlamaAttention, llama_attention_forward)
-        convert_forward(model, LlamaMLP, llama_mlp_forward)
+        # convert_forward(model, LlamaMLP, llama_mlp_forward)
 
     elif model.config.model_type == "mistral":
         from ipex_llm.transformers.npu_models.mistral import merge_qkv
