@@ -12,6 +12,7 @@ repo_id:
   - 'deepseek-ai/deepseek-coder-7b-instruct-v1.5'
   - 'RWKV/v5-Eagle-7B-HF'
   - '01-ai/Yi-6B-Chat'
+  - 'Qwen/Qwen-VL-Chat'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3

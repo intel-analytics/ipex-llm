@@ -555,6 +555,7 @@ jobs:
           pip install --upgrade wheel
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
+          pip install --upgrade matplotlib
 
           cd python\llm
           python setup.py clean --all bdist_wheel --win
@@ -585,6 +586,7 @@ jobs:
           pip install --upgrade wheel
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator
+          pip install --upgrade matplotlib
 
           pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           pip show ipex-llm | findstr %TEST_VERSION_DATE%
