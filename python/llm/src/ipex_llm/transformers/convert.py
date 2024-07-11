@@ -327,9 +327,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             optimize_lm_head = False
             if is_lm_head(name, model_config, out_features):
                 model_type = getattr(model_config, "model_type", None)
-                if model_type in ["gptj", "llama", "qwen2"] and \
-                        os.environ.get("IPEX_LLM_LAST_LM_HEAD", None) == "1":
-                    optimize_lm_head = True
+                if model_type in ["gptj", "llama", "qwen2"]:
+                    if os.environ.get("IPEX_LLM_LAST_LM_HEAD", None) is not None:
+                        optimize_lm_head = os.environ.get("IPEX_LLM_LAST_LM_HEAD", None) == "1"
+                    elif os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
+                        optimize_lm_head = os.environ.get("IPEX_LLM_LOW_MEM", None) == "1"
             with init_empty_weights():
                 new_linear = None
                 is_gptq = is_gptq_linear(module)
@@ -1261,6 +1263,7 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.InternLM2Attention, internlm_xcomposser2_attention_forward)
         from ipex_llm.transformers.models.internlm import internlm_xcomposser2_mlp_forward
         convert_forward(model, module.InternLM2MLP, internlm_xcomposser2_mlp_forward)
+        convert_forward(model, module.InternLM2RMSNorm, llama_rms_norm_forward)
         from ipex_llm.transformers.models.internlm import internlm_xcomposser2_chat
         model.chat = MethodType(internlm_xcomposser2_chat, model)
     elif model.config.model_type == "qwen":

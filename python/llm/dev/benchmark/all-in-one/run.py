@@ -42,6 +42,8 @@ CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 
 LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 
+PHI3VISION_IDS = ['microsoft/phi-3-vision-128k-instruct']
+
 results = []
 excludes = []
 
@@ -914,6 +916,13 @@ def run_transformer_int4_gpu_win(repo_id,
                                           trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in PHI3VISION_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                     _attn_implementation="eager",
+                                                     modules_to_not_convert=["vision_embed_tokens"],
+                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
@@ -1021,6 +1030,14 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                                           torch_dtype=torch.float16).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in PHI3VISION_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                     _attn_implementation="eager",
+                                                     modules_to_not_convert=["vision_embed_tokens"],
+                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                                     torch_dtype=torch.float16).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
@@ -1125,6 +1142,13 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                                                   use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in PHI3VISION_IDS:
+        model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
+                                                  _attn_implementation="eager",
+                                                  modules_to_not_convert=["vision_embed_tokens"],
+                                                  use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
+        model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
                                                   use_cache=True, cpu_embedding=cpu_embedding).eval()
@@ -1225,6 +1249,13 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
         sys.path.append(rf"{llava_repo_dir}")
         from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
+                                                  use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
+        model = model.half().to('xpu')
+    elif repo_id in PHI3VISION_IDS:
+        model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
+                                                  _attn_implementation="eager",
+                                                  modules_to_not_convert=["vision_embed_tokens"],
                                                   use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.half().to('xpu')
@@ -1980,11 +2011,20 @@ if __name__ == '__main__':
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
-        df.index += max(line_counter-1, 0)
-        if api not in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
-            if line_counter == 0:
-                df.to_csv(csv_name, mode='a')
-            else:
-                df.to_csv(csv_name, mode='a', header=None)
-        line_counter += len(df.index)
+        if "pipeline" in api or "deepspeed" in api:
+            if torch.distributed.get_rank() == 0:
+                df.index += max(line_counter - 1, 0)
+                if line_counter == 0:
+                    df.to_csv(csv_name, mode='a')
+                else:
+                    df.to_csv(csv_name, mode='a', header=None)
+                line_counter += len(df.index)
+        else:
+            df.index += max(line_counter - 1, 0)
+            if api not in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
+                if line_counter == 0:
+                    df.to_csv(csv_name, mode='a')
+                else:
+                    df.to_csv(csv_name, mode='a', header=None)
+            line_counter += len(df.index)
         results = []

@@ -137,12 +137,22 @@ def optimize_llm(model: torch.nn.Module):
         convert_forward(model, module.MiniCPMMLP, minicpm_mlp_forward)
 
     elif model.config.model_type == "chatglm":
-        from ipex_llm.transformers.npu_models.chatglm import chatglm2_model_forward
-        from ipex_llm.transformers.npu_models.chatglm import chatglm2_attention_forward
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        convert_forward(model, module.ChatGLMModel, chatglm2_model_forward)
-        convert_forward(model, module.SelfAttention, chatglm2_attention_forward)
+        if model.config.num_layers == 40 and hasattr(model.config, 'rope_ratio'):
+            # glm-4-9b
+            from ipex_llm.transformers.npu_models.chatglm4 import chatglm4_model_forward
+            from ipex_llm.transformers.npu_models.chatglm4 import chatglm4_attention_forward
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(model, module.ChatGLMModel, chatglm4_model_forward)
+            convert_forward(model, module.SelfAttention, chatglm4_attention_forward)
+        else:
+            # chatglm-3-6b
+            from ipex_llm.transformers.npu_models.chatglm import chatglm2_model_forward
+            from ipex_llm.transformers.npu_models.chatglm import chatglm2_attention_forward
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(model, module.ChatGLMModel, chatglm2_model_forward)
+            convert_forward(model, module.SelfAttention, chatglm2_attention_forward)
 
     elif model.config.model_type == "stablelm":
         from ipex_llm.transformers.npu_models.stablelm import merge_qkv
@@ -159,3 +169,23 @@ def optimize_llm(model: torch.nn.Module):
         convert_forward(model, StableLmModel, stablelm_model_forward)
         convert_forward(model, StableLmAttention, stablelm_attention_forward)
         convert_forward(model, StableLmMLP, stablelm_mlp_forward)
+
+    elif model.config.model_type == "baichuan":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.npu_models.baichuan import baichuan_mlp_forward, merge_mlp
+        model.apply(merge_mlp)
+
+        convert_forward(model, module.MLP, baichuan_mlp_forward)
+
+    elif model.config.model_type == "phi3_v":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.npu_models.phi3_v import merge_qkv
+        from ipex_llm.transformers.npu_models.phi3_v import phi3v_encoder_attention_forward
+        from ipex_llm.transformers.npu_models.phi3_v import phi3v_model_forward
+        model.apply(merge_qkv)
+
+        from transformers.models.clip.modeling_clip import CLIPAttention
+        convert_forward(model, CLIPAttention, phi3v_encoder_attention_forward)
+        convert_forward(model, module.Phi3VModel, phi3v_model_forward)
