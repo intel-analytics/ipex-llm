@@ -177,3 +177,15 @@ def optimize_llm(model: torch.nn.Module):
         model.apply(merge_mlp)
 
         convert_forward(model, module.MLP, baichuan_mlp_forward)
+
+    elif model.config.model_type == "phi3_v":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.npu_models.phi3_v import merge_qkv
+        from ipex_llm.transformers.npu_models.phi3_v import phi3v_encoder_attention_forward
+        from ipex_llm.transformers.npu_models.phi3_v import phi3v_model_forward
+        model.apply(merge_qkv)
+
+        from transformers.models.clip.modeling_clip import CLIPAttention
+        convert_forward(model, CLIPAttention, phi3v_encoder_attention_forward)
+        convert_forward(model, module.Phi3VModel, phi3v_model_forward)
