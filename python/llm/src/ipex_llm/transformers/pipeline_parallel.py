@@ -447,6 +447,7 @@ class ModelRunner:
             model = AutoModelForCausalLM.from_pretrained(model_path,
                                                          load_in_low_bit=low_bit,
                                                          torch_dtype=self.dtype,
+                                                         cpu_embedding=True,
                                                          optimize_model=True,
                                                          trust_remote_code=True,
                                                          use_cache=True,
@@ -499,7 +500,8 @@ class ModelRunner:
             return tuple(result)
         else:
             # num_layers = self.model.layer_end - self.model.layer_start
-            for layer_idx in range(self.model.num_layers):
+            num_cache = min(len(kv_cache_1.key_cache), self.model.num_layers)
+            for layer_idx in range(num_cache):
                 kv_cache_1.key_cache[layer_idx] = \
                     torch.cat([kv_cache_1.key_cache[layer_idx],
                                kv_cache_2.key_cache[layer_idx]], dim=0)
