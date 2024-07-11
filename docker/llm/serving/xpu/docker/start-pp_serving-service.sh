@@ -16,6 +16,7 @@ export TORCH_LLM_ALLREDUCE=0
 
 export IPEX_LLM_LAST_LM_HEAD=1
 export IPEX_LLM_QUANTIZE_KV_CACHE=1
+export IPEX_LLM_LOW_MEM=1
 export num_gpus=2
 export model_path="/llm/models/Llama-2-7b-chat-hf"
 export low_bit="fp8"
