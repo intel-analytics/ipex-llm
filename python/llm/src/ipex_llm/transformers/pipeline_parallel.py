@@ -229,13 +229,14 @@ def generate(
             generation_config.pad_token_id = eos_token_id
 
         if generation_config is not None and generation_config.max_new_tokens is not None:
-            max_new_tokens = generation_config.max_new_tokens
+            max_new_tokens = generation_config.pop("max_new_tokens")
         else:
-            max_new_tokens = kwargs.get("max_new_tokens", None)
+            max_new_tokens = kwargs.pop("max_new_tokens", None)
 
         return self.pipeline_parallel_generate(inputs=inputs,
                                                max_new_tokens=max_new_tokens,
-                                               generation_config=generation_config,)
+                                               generation_config=generation_config,
+                                               **kwargs)
 
     return original_generate(self,
                              inputs=inputs,
@@ -257,6 +258,23 @@ def pipeline_parallel_generate(self,
                                max_new_tokens: int = 32,
                                generation_config: Optional[GenerationConfig] = None,
                                **kwargs):
+    model_kwargs = generation_config.update(**kwargs)
+    inputs_tensor, model_input_name, model_kwargs = self._prepare_model_inputs(
+        inputs, generation_config.bos_token_id, model_kwargs
+    )
+    bs = inputs_tensor.shape[0]
+    if self.config.is_encoder_decoder:
+        input_ids, model_kwargs = self._prepare_decoder_input_ids_for_generation(
+            batch_size=bs,
+            model_input_name=model_input_name,
+            model_kwargs=model_kwargs,
+            decoder_start_token_id=generation_config.decoder_start_token_id,
+            bos_token_id=generation_config.bos_token_id,
+            device=inputs_tensor.device,
+        )
+    else:
+        input_ids = inputs_tensor if model_input_name == "input_ids" \
+            else model_kwargs.pop("input_ids")
     local_rank = dist.get_rank()
     pre_rank = (local_rank - 1) % self.pipeline_parallel_stages
     next_rank = (local_rank + 1) % self.pipeline_parallel_stages
@@ -272,36 +290,44 @@ def pipeline_parallel_generate(self,
     eos_token_id = generation_config.eos_token_id
     if isinstance(eos_token_id, int):
         eos_token_id = [eos_token_id]
-    eos_token_id_tensor = torch.tensor(eos_token_id).to(inputs.device) \
+    eos_token_id_tensor = torch.tensor(eos_token_id).to(input_ids.device) \
         if eos_token_id is not None else None
 
     _input_ids = None
     _past_key_values = None
-    bs = inputs.shape[0]
-    output_ids = inputs.clone()
+
+    bs = input_ids.shape[0]
+    output_ids = input_ids.clone()
     _check_quantize_kv_cache(self, layer_start, bs)
 
     step = 0
     # keep track of which sequences are already finished
-    unfinished_sequences = torch.ones(inputs.shape[0], dtype=torch.long, device=inputs.device)
+    unfinished_sequences = torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
     this_peer_finished = False
     while True:
         if step >= max_new_tokens:
             break
 
         if _input_ids is None:
-            _input_ids = inputs
+            _input_ids = input_ids
 
         tic = time.time()
         if local_rank == 0:
             outputs = self(input_ids=_input_ids, inputs_embeds=None,
-                           past_key_values=_past_key_values, use_cache=True)
+                           past_key_values=_past_key_values, use_cache=True, **model_kwargs)
         else:
-            inputs_embeds = torch.empty(_input_ids.shape + (self.config.hidden_size,),
+            _inputs_shape = _input_ids.shape + (self.config.hidden_size,)
+            if step == 0 and self.config.model_type == "chatglm" \
+               and hasattr(self.config, "vision_config"):
+                # for glm-4v, image features are mapped during 1st token
+                # 1597 are computed according to computation process of conv
+                _images_feature = 1597 + _input_ids.shape[0] * 2 + _input_ids.shape[1]
+                _inputs_shape = (_input_ids.shape[0], _images_feature, self.config.hidden_size,)
+            inputs_embeds = torch.empty(_inputs_shape,
                                         device=f'xpu:{local_rank}', dtype=self.dtype)
             dist.recv(inputs_embeds, src=pre_rank)
             outputs = self(input_ids=None, inputs_embeds=inputs_embeds,
-                           past_key_values=_past_key_values, use_cache=True)
+                           past_key_values=_past_key_values, use_cache=True, **model_kwargs)
 
         if local_rank == self.pipeline_parallel_stages - 1:
             logits = outputs.logits
@@ -323,7 +349,8 @@ def pipeline_parallel_generate(self,
                                          "make sure that `pad_token_id` is defined.")
             next_ids = next_ids * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
 
-        if self.config.model_type == "chatglm" and self.config.num_layers == 40:
+        if self.config.model_type == "chatglm" and self.config.num_layers == 40 \
+           and not hasattr(self.config, "vision_config"):
             # for glm-4-9b-chat
             if step == 0:
                 value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
@@ -337,7 +364,7 @@ def pipeline_parallel_generate(self,
                 _past_key_values = outputs.past_key_values
         elif self.config.model_type in ["baichuan", "chatglm"] or \
                 (self.config.model_type == "qwen" and hasattr(self.config, "visual")):
-            # for baichuan2, chatglm3, Qwen-VL-Chat
+            # for baichuan2, chatglm3, Qwen-VL-Chat, glm-4v-9b
             if local_rank != 0:
                 value_placeholder = torch.empty_like((outputs.past_key_values)[-1][0])
                 past_key_values_placeholder = tuple(

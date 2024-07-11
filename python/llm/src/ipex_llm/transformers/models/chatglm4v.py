@@ -55,9 +55,7 @@ def chatglm4v_model_forward(
     # generate mode with past_key_values. the image features are already mapped
     if past_key_values is None:
         # not allow for inputs_embeds, because we want to process image feature
-        invalidInputError(input_ids is not None and inputs_embeds is None,
-                          f"{input_ids} should not be None, {inputs_embeds} should be None.")
-        if not is_empty(images):  # multi-modality
+        if not is_empty(images) and input_ids is not None:  # multi-modality
             image_size: int = self.config.vision_config['image_size']
             patch_size: int = self.config.vision_config['patch_size']
             num_patches = (image_size // patch_size // 2) ** 2
@@ -99,10 +97,13 @@ def chatglm4v_model_forward(
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-    batch_size, seq_length = input_ids.shape
-
     if inputs_embeds is None:
+        batch_size, seq_length = input_ids.shape
         inputs_embeds = self.embedding(input_ids)
+    else:
+        batch_size, seq_length, _ = inputs_embeds.shape
+        input_ids = torch.empty((batch_size, seq_length),
+                                dtype=inputs_embeds.dtype, device=inputs_embeds.device)
 
     if full_attention_mask is None:
         if (attention_mask is not None and not attention_mask.all()) or\
