@@ -286,6 +286,8 @@ def should_split_qkv_tensor(query_states, bsz, num_heads, q_len, kv_seq_len, out
     if not output_attentions:
         if os.environ.get("IPEX_LLM_SPLIT_QKV", None) is not None:
             return os.environ.get("IPEX_LLM_SPLIT_QKV", None) == "1"
+        elif os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
+            return os.environ.get("IPEX_LLM_LOW_MEM", None) == "1"
         elif query_states.dtype == torch.float16 and \
                 query_states.shape[2] >= 6800:
             # split tensor for memory block limitation
