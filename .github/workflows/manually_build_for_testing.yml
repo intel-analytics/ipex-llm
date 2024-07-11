@@ -19,6 +19,7 @@ on:
         - ipex-llm-inference-cpp-xpu
         - ipex-llm-serving-cpu
         - ipex-llm-serving-xpu
+        - ipex-llm-serving-xpu-tgi
         - ipex-llm-finetune-lora-cpu
         - ipex-llm-finetune-qlora-cpu
         - ipex-llm-finetune-qlora-cpu-k8s
@@ -164,6 +165,34 @@ jobs:
         echo "##############################################################"
         export image=intelanalytics/ipex-llm-xpu
         cd docker/llm/inference/xpu/docker
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  ipex-llm-serving-xpu-tgi:
+    if: ${{ github.event.inputs.artifact == 'ipex-llm-serving-xpu-tgi' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    
+    steps:
+    - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: ipex-llm-serving-xpu-tgi
+      run: |
+        echo "##############################################################"
+        echo "####### ipex-llm-serving-xpu-tgi ########"
+        echo "##############################################################"
+        export image=intelanalytics/ipex-llm-serving-xpu-tgi
+        cd docker/llm/serving/xpu-tgi
         sudo docker build \
           --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
