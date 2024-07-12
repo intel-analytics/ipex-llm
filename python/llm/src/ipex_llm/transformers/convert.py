@@ -1323,6 +1323,7 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.qwen2 import qwen2_model_forward
         from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
         from ipex_llm.transformers.models.qwen2 import qwen2_causal_lm_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_mlp_forward
         convert_forward(model,
                         module.Qwen2Model,
                         qwen2_model_forward)
@@ -1334,7 +1335,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         llama_rms_norm_forward)
         convert_forward(model,
                         module.Qwen2MLP,
-                        llama_mlp_forward)
+                        qwen2_mlp_forward)
         convert_forward(model,
                         module.Qwen2Attention,
                         qwen2_attention_forward)
