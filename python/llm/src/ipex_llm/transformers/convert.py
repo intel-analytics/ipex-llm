@@ -1378,7 +1378,7 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         if version.parse(trans_version) >= version.parse("4.41.0"):
-            from ipex_llm.transformers.models.mistral import cohere_model_forward_4_41
+            from ipex_llm.transformers.models.cohere import cohere_model_forward_4_41
             convert_forward(model,
                 module.CohereModel,
                 cohere_model_forward_4_41)
