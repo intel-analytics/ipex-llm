@@ -119,22 +119,23 @@ def low_mem_convert(model):
             model,
             transformers.models.llama.modeling_llama.LlamaForCausalLM,
             llama_causallm_forward_4_37_lowmem)
-    elif model.config.model_type == "chatglm" and model.config.num_layers == 40:
-        # for glm4-9b
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        convert_forward(
-            model,
-            module.ChatGLMForConditionalGeneration,
-            glm4_conditional_generation_forward_lowmem)
-    elif model.config.model_type == "chatglm":
-        # for chatglm3-6b
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        convert_forward(
-            model,
-            module.ChatGLMForConditionalGeneration,
-            chatglm3_conditional_generation_forward_lowmem)
+    elif model.config.model_type == "chatglm" and not hasattr(model.config, "vision_config"):
+        if model.config.num_layers == 40:
+            # for glm4-9b
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(
+                model,
+                module.ChatGLMForConditionalGeneration,
+                glm4_conditional_generation_forward_lowmem)
+        else:
+            # for chatglm3-6b
+            modeling_module_name = model.__class__.__module__
+            module = importlib.import_module(modeling_module_name)
+            convert_forward(
+                model,
+                module.ChatGLMForConditionalGeneration,
+                chatglm3_conditional_generation_forward_lowmem)
     return model
 
 
