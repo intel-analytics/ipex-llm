@@ -21,7 +21,7 @@ import timm
 import torch
 import torch.nn.functional as F
 
-# patched
+# patched: `timm` has limited support for XPU backend, so we need to use CPU as a workaround
 def resample_abs_pos_embed(
         posemb: torch.Tensor,
         new_size: List[int],
@@ -166,6 +166,10 @@ if __name__ == '__main__':
     )
     end = time.time()
     print(f'Inference time: {end-st} s')
+    print('-'*20, 'Input', '-'*20)
+    print(image_path)
+    print('-'*20, 'Prompt', '-'*20)
+    print(args.prompt)
     output_str = res
     print('-'*20, 'Output', '-'*20)
     print(output_str)

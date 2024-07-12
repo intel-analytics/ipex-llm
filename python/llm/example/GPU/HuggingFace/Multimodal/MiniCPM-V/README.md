@@ -1,11 +1,11 @@
 # MiniCPM-V
-In this directory, you will find examples on how you could apply IPEX-LLM FP8 optimizations on MiniCPM-V models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-V](https://huggingface.co/openbmb/MiniCPM-V) as a reference MiniCPM-V model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-V](https://huggingface.co/openbmb/MiniCPM-V) as a reference MiniCPM-V model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a MiniCPM-V model to predict the next N tokens using `generate()` API, with IPEX-LLM FP8 optimizations on Intel GPUs.
+## Example: Predict Tokens using `chat()` API
+In the example [generate.py](./generate.py), we show a basic use case for a MiniCPM-V model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -122,6 +122,8 @@ Arguments info:
 
 ```log
 Inference time: xxxx s
+-------------------- Input --------------------
+[Path or URL to the image]
 -------------------- Prompt --------------------
 What is in the image?
 -------------------- Output --------------------
