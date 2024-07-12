@@ -66,7 +66,9 @@ def replace_with_LowBitMLP(layer, qtype, device):
     from transformers.models.llama.modeling_llama import LlamaMLP
     from ipex_llm.transformers.npu_models.lowbitmlp import FusedLlamaLowBitMLP
     if isinstance(layer, LlamaMLP):
-        weights = [(layer.gate_proj.weight, layer.gate_proj.scale), (layer.up_proj.weight, layer.up_proj.scale), (layer.down_proj.weight, layer.down_proj.scale)]
+        weights = [(layer.gate_proj.weight, layer.gate_proj.scale),
+                   (layer.up_proj.weight, layer.up_proj.scale),
+                   (layer.down_proj.weight, layer.down_proj.scale)]
         return FusedLlamaLowBitMLP(weights)   # TODO: handle bias
 
 

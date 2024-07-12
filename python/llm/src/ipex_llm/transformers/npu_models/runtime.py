@@ -21,12 +21,14 @@
 # SPDX-License-Identifier: Apache 2.0
 #
 
-from intel_npu_acceleration_library.backend.runtime import set_contiguous, record_function, adapt_output_tensor, _model_cache
+from intel_npu_acceleration_library.backend.runtime import set_contiguous, record_function
+from intel_npu_acceleration_library.backend.runtime import adapt_output_tensor, _model_cache
 from typing import Optional, List, Union, Any
 from collections import deque
 import torch
 
 NUM_REPLICAS = 4  # TODO: make it an environment variable?
+
 
 @torch.no_grad()
 def run_model(
@@ -35,12 +37,14 @@ def run_model(
     backend_cls: Any,
     op_id: Optional[str] = None,
 ) -> torch.Tensor:
-    """Run a factory operation. Depending on the datatype of the weights it runs a float or quantized operation.
+    """Run a factory operation.
+    Depending on the datatype of the weights it runs a float or quantized operation.
 
     Args:
-        x (Union[torch.Tensor, List[torch.Tensor]]): Activation tensor(s). Its dtype must be torch.float16
-        weights (torch.Tensor): Weights tensor.  Its dtype can be torch.float16 or torch.int8
-        backend_cls (Any): Backend class to run
+        x (Union[torch.Tensor, List[torch.Tensor]]): Activation tensor(s).
+                                                     Its dtype must be torch.float16.
+        weights (torch.Tensor): Weights tensor. Its dtype can be torch.float16 or torch.int8.
+        backend_cls (Any): Backend class to run.
         op_id (Optional[str], optional): Operation ID. Defaults to None.
 
     Returns:
@@ -60,7 +64,7 @@ def run_model(
     op_args = []
     op_args_flatten = []
     for w in weights:
-        if isinstance(w, tuple): # from QuantizedLinear
+        if isinstance(w, tuple):  # from QuantizedLinear
             op_args.append((set_contiguous(w[0]).numpy(), set_contiguous(w[1]).numpy()))
             op_args_flatten.append(op_args[-1][0])
             op_args_flatten.append(op_args[-1][1])

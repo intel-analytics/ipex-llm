@@ -150,7 +150,8 @@ class _BaseAutoModelClass:
 
     @classmethod
     def load_convert(cls, q_k, optimize_model, device, *arg, **kwarg):
-        from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear, replace_with_LowBitMLP
+        from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear
+        from ipex_llm.transformers.npu_models.convert import replace_with_LowBitMLP
         replace_with_QuantizedLinear(optimize_model, q_k, device=device)
         replace_with_LowBitMLP(optimize_model, q_k, device=device)
 

@@ -47,11 +47,12 @@ class LowBitMLP(NNFactory):
         """Initialize the LowBitMLP class.
 
         Args:
-            input_shape (Sequence[int]): input shape channels
-            intermediate_size (int): intermediate_size
-            activation (str): activation function to use
+            input_shape (Sequence[int]): input shape channels.
+            intermediate_size (int): intermediate_size of the MLP.
+            activation (str): activation function to use.
             bias (Optional[bool]): Enable/Disable bias. Defaults to False.
-            dtype (np.dtype): parameter type np.int8, np.uint8 and np.float16 supported. Defaults to np.int8. Unit8 represents packed i4 dtypes.
+            dtype (np.dtype): parameter type np.int8, np.uint8 and np.float16 supported.
+                              Defaults to np.int8. Unit8 represents packed i4 dtypes.
             profile (bool): Enable/Disable profiling. Defaults to False.
             device (str): Target device, default to "NPU".
             additional_args: additional arguments
@@ -61,10 +62,12 @@ class LowBitMLP(NNFactory):
         self.batch, self.hidden_size = input_shape
         input = self.parameter((self.batch, self.hidden_size))
 
-        mm1 = self.linear(input, self.intermediate_size, self.hidden_size, bias=bias, wt_dtype=dtype)
+        mm1 = self.linear(input, self.intermediate_size, self.hidden_size,
+                          bias=bias, wt_dtype=dtype)
 
         if activation == "swiglu":
-            mm2 = self.linear(input, self.intermediate_size, self.hidden_size, bias=bias, wt_dtype=dtype)  # type: ignore[attr-defined]
+            mm2 = self.linear(input, self.intermediate_size, self.hidden_size,
+                              bias=bias, wt_dtype=dtype)  # type: ignore[attr-defined]
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
         elif activation == "clamp":
             atc_fn = getattr(self, activation)
