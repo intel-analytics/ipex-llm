@@ -192,7 +192,6 @@ async def generate(prompt_request: PromptRequest):
             return request_id, "".join(output_str)
 
 
-@app.post("/generate_stream/")
 async def generate_stream(prompt_request: PromptRequest):
     request_id = str(uuid.uuid4()) + "stream"
     await local_model.waiting_requests.put((request_id, prompt_request))
@@ -210,6 +209,11 @@ async def generate_stream(prompt_request: PromptRequest):
             return request_id, StreamingResponse(
                 content=cur_generator, media_type="text/event-stream"
             )
+
+@app.post("/generate_stream/")
+async def generate_stream_api(prompt_request: PromptRequest):
+    request_id, result = await generate_stream(prompt_request)
+    return result
 
 
 DEFAULT_SYSTEM_PROMPT = """\
