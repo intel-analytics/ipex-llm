@@ -191,7 +191,6 @@ def cohere_model_forward(
     )
 
 
-
 def cohere_model_forward_4_41(
     self,
     input_ids: torch.LongTensor = None,
@@ -234,7 +233,8 @@ def cohere_model_forward_4_41(
 
     past_seen_tokens = 0
     return_legacy_cache = False
-    if use_cache and not isinstance(past_key_values, Cache):  # kept for BC (non `Cache` `past_key_values` inputs)
+    # kept for BC (non `Cache` `past_key_values` inputs)
+    if use_cache and not isinstance(past_key_values, Cache):
         return_legacy_cache = True
         past_key_values = DynamicCache.from_legacy_cache(past_key_values)
 
