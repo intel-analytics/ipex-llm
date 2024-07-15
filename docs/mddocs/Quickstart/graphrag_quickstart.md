@@ -50,7 +50,7 @@ In another terminal window, separate from where you executed `ollama serve`, you
   ```
 
 > [!TIP]
-> Here we take [`mistral`](https://ollama.com/library/mistral) and [`nomic-embed-text`](https://ollama.com/library/nomic-embed-text) as an example. You could have a try on other LLMs or embedding models in the [`Ollama model library`](https://ollama.com/library).
+> Here we take [`mistral`](https://ollama.com/library/mistral) and [`nomic-embed-text`](https://ollama.com/library/nomic-embed-text) as an example. You could have a try on other LLMs or embedding models in [`ollama.com`](https://ollama.com/search?p=1).
 
 ### 3. Setup Python Environment for GraphRAG
 
@@ -73,14 +73,16 @@ in which `pip install ollama` is for enabling restful APIs through python, and `
 
 ### 4. Index GraphRAG
 
-The environment is now ready to conduct GraphRAG with local LLMs and embedding models running on Intel GPUs. Before querying GraphRAG, it is necessary to first index GraphRAG, which could be a resource-intensive operation.
+The environment is now ready for GraphRAG with local LLMs and embedding models running on Intel GPUs. Before querying GraphRAG, it is necessary to first index GraphRAG, which could be a resource-intensive operation.
 
 > [!TIP]
 > Refer to [here](https://microsoft.github.io/graphrag/) for more details in GraphRAG process explanation.
 
+#### Prepare Input Corpus
+
 Some [sample documents](https://github.com/TheAiSingularity/graphrag-local-ollama/tree/main/input) are used here as input corpus for indexing GraphRAG.
 
-First, perpare the input corpus, based on which LLM will create a knowledge graph, and initialize the workspace:
+Perpare the input corpus, based on which LLM will create a knowledge graph. And then initialize the workspace:
 
 - For **Linux users**:
 
@@ -116,8 +118,9 @@ First, perpare the input corpus, based on which LLM will create a knowledge grap
   copy settings.yaml .\ragtest /y
   ```
 
-> [!NOTE]
-> If you would like to use LLMs or embedding models other than `mistral` or `nomic-embed-text`, you are required to update the `settings.yml` in `ragtest` folder accordingly:
+#### Update `settings.yml`
+
+In the `settings.yml` file inside the `ragtest` folder, add the configuration `request_timeout: 1800.0` for llm. Besides, if you would like to use LLMs or embedding models other than `mistral` or `nomic-embed-text`, you are required to update the `settings.yml` in `ragtest` folder accordingly:
 >
 > ```yml
 > llm:
@@ -125,6 +128,7 @@ First, perpare the input corpus, based on which LLM will create a knowledge grap
 >   type: openai_chat
 >   model: mistral # change it to the LLM from Ollama model library as you want
 >   model_supports_json: true
+>   request_timeout: 1800.0 # Add this configuratio. You could also increase the request_timeout.
 >   api_base: http://localhost:11434/v1
 > 
 > embeddings:
@@ -148,19 +152,30 @@ You will got message `🚀 All workflows completed successfully.` after the Grap
 
 For a clearer view of the knowledge graph, you can visualize it by specifying the path to the `.graphml` file in the `visualize-graphml.py` script, like below:
 
+- For **Linux users**:
+
+  ```python
+  graph = nx.read_graphml('ragtest/output/20240715-151518/artifacts/summarized_graph.graphml') 
+  ```
+
 - For **Windows users**:
 
   ```python
   graph = nx.read_graphml('ragtest\\output\\20240715-151518\\artifacts\\summarized_graph.graphml') 
   ```
 
-and run:
+and run the following command to interactively visualize the knowledge graph:
 
 ```shell
 python visualize-graphml.py
 ```
 
-[image]
+<table width="100%">
+  <tr>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/knowledge_graph_1.png"><img src="https://llm-assets.readthedocs.io/en/latest/_images/knowledge_graph_1.png"/></a></td>
+    <td><a href="https://llm-assets.readthedocs.io/en/latest/_images/knowledge_graph_2.png"><img src="https://llm-assets.readthedocs.io/en/latest/_images/knowledge_graph_2.png"/></a></td>
+</tr>
+</table>
 
 ### 5. Query GraphRAG
 
@@ -177,15 +192,13 @@ The sample output looks like:
 
 ```log
 INFO: Reading settings from ragtest\settings.yaml
-creating llm client with {'api_key': 'REDACTED,len=9', 'type': "openai_chat", 'model': 'mistral', 'max_tokens': 4000, 'temperature': 0.0, 'top_p': 1.0, 'request_timeout': 180.0, 'api_base': 'http://localhost:11434/v1', 'api_version': None, 'organization': None, 'proxy': None, 'cognitive_services_endpoint': None, 'deployment_name': None, 'model_supports_json': True, 'tokens_per_minute': 0, 'requests_per_minute': 0, 'max_retries': 10, 'max_retry_wait': 10.0, 'sleep_on_rate_limit_recommendation': True, 'concurrent_requests': 25}
+creating llm client with {'api_key': 'REDACTED,len=9', 'type': "openai_chat", 'model': 'mistral', 'max_tokens': 4000, 'temperature': 0.0, 'top_p': 1.0, 'request_timeout': 1800.0, 'api_base': 'http://localhost:11434/v1', 'api_version': None, 'organization': None, 'proxy': None, 'cognitive_services_endpoint': None, 'deployment_name': None, 'model_supports_json': True, 'tokens_per_minute': 0, 'requests_per_minute': 0, 'max_retries': 10, 'max_retry_wait': 10.0, 'sleep_on_rate_limit_recommendation': True, 'concurrent_requests': 25}
 
-SUCCESS: Global Search Response:  The Transformer is a type of model architecture used primarily in machine learning, particularly in natural language processing (NLP). It was initially introduced in the paper 'Attention is All You Need' by Vaswani et al. [Data: Reports (1)]
+SUCCESS: Global Search Response:  The Transformer is a type of neural network architecture primarily used for sequence-to-sequence tasks, such as machine translation and text summarization [Data: Reports (1, 2, 34, 46, 64, +more)]. It was introduced in the paper 'Attention is All You Need' by Vaswani et al. The Transformer model uses self-attention mechanisms to focus on relevant parts of the input sequence when generating an output.
 
-Transformer models employ self-attention mechanisms to focus on different parts of input sequences when making predictions. This allows them to better capture long-range dependencies and enhance performance on tasks such as translation and text summarization [Data: Reports (1, 2)]
+The Transformer architecture was designed to overcome some limitations of Recurrent Neural Networks (RNNs), such as the vanishing gradient problem and the need for long sequences to be processed sequentially [Data: Reports (1, 2)]. The Transformer model processes input sequences in parallel, making it more efficient for handling long sequences.
 
-One popular implementation of the Transformer model is BERT (Bidirectional Encoder Representations from Transformers), which has been pre-trained on a vast corpus of text and can be fine-tuned for various NLP tasks [Data: Reports (2, 4)]
+The Transformer model has been very successful in various natural language processing tasks, such as machine translation and text summarization [Data: Reports (1, 34, 46, 64, +more)]. It has also been applied to other domains, such as computer vision and speech recognition. The key components of the Transformer architecture include self-attention layers, position-wise feedforward networks, and multi-head attention mechanisms [Data: Reports (1, 2, 3)].
 
-Transformer models have gained widespread adoption in various NLP applications due to their superior performance compared to traditional recurrent neural network architectures [Data: Reports (1, 3)]
-
-However, Transformer models are computationally expensive due to their use of self-attention mechanisms. This has led to the development of efficient variants such as Longformer and Linformer [Data: Reports (5, 6)]
+Since its initial introduction, the Transformer model has been further developed and improved upon. Variants of the Transformer architecture, such as BERT (Bidirectional Encoder Representations from Transformers) and RoBERTa (Robustly Optimized BERT Pretraining Approach), have achieved state-of-the-art performance on a wide range of natural language processing tasks [Data: Reports (1, 2, 34, 46, 64, +more)].
 ```
