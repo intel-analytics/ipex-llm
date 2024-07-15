@@ -15,6 +15,7 @@
 #
 # Adapted from
 # https://github.com/lm-sys/FastChat/blob/168ccc29d3f7edc50823016105c024fe2282732a/fastchat/protocol/openai_api_protocol.py
+
 import time
 from typing import Dict, List, Literal, Optional, Union
 
@@ -22,10 +23,13 @@ import torch
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing_extensions import Annotated
+from ipex_llm.utils.common import invalidInputError
+
 
 # from vllm.sampling_params import SamplingParams
 def random_uuid() -> str:
     return str(uuid.uuid4().hex)
+
 
 class OpenAIBaseModel(BaseModel):
     # OpenAI API does not allow extra fields
@@ -127,10 +131,10 @@ class ChatCompletionRequest(OpenAIBaseModel):
     )
     add_generation_prompt: Optional[bool] = Field(
         default=True,
-        description=
-        ("If true, the generation prompt will be added to the chat template. "
-         "This is a parameter used by chat template in tokenizer config of the "
-         "model."),
+        description=(
+            "If true, the generation prompt will be added to the chat template. "
+            "This is a parameter used by chat template in tokenizer config of the "
+            "model."),
     )
     include_stop_str_in_output: Optional[bool] = Field(
         default=False,
@@ -179,9 +183,9 @@ class ChatCompletionRequest(OpenAIBaseModel):
             "guided_choice" in data and data["guided_choice"] is not None
         ])
         if guide_count > 1:
-            raise ValueError(
-                "You can only use one kind of guided decoding "
-                "('guided_json', 'guided_regex' or 'guided_choice').")
+            invalidInputError(False,
+                              "You can only use one kind of guided decoding "
+                              "('guided_json', 'guided_regex' or 'guided_choice').")
         return data
 
 
@@ -232,10 +236,10 @@ class CompletionRequest(OpenAIBaseModel):
     )
     response_format: Optional[ResponseFormat] = Field(
         default=None,
-        description=
-        ("Similar to chat completion, this parameter specifies the format of "
-         "output. Only {'type': 'json_object'} or {'type': 'text' } is "
-         "supported."),
+        description=(
+            "Similar to chat completion, this parameter specifies the format of "
+            "output. Only {'type': 'json_object'} or {'type': 'text' } is "
+            "supported."),
     )
     guided_json: Optional[Union[str, dict, BaseModel]] = Field(
         default=None,
@@ -279,9 +283,9 @@ class CompletionRequest(OpenAIBaseModel):
             "guided_choice" in data and data["guided_choice"] is not None
         ])
         if guide_count > 1:
-            raise ValueError(
-                "You can only use one kind of guided decoding "
-                "('guided_json', 'guided_regex' or 'guided_choice').")
+            invalidInputError(False,
+                              "You can only use one kind of guided decoding "
+                              "('guided_json', 'guided_regex' or 'guided_choice').")
         return data
 
 
