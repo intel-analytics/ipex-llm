@@ -92,7 +92,7 @@ This error may happen when multiple GPUs exists for Windows Users. To solve this
 
 ### The first time to run model on MTL's iGPU(Intel Ultra series) will takes 5-10 minutes.
 This is caused by intel-extension-for-pytorch's compilation. For windows user, you can install this [intel-extension-for-pytorch](https://github.com/Nuullll/intel-extension-for-pytorch/releases) with MTL [AOT](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-0/ahead-of-time-compilation.html).
-Please notice the packages only support python 3.10, you can use below commands either:
+Please notice the packages only support python 3.10, you can use below commands after you have installed ipex-llm[xpu]:
 ```bash
 pip install https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.20%2Bmtl%2Boneapi/intel_extension_for_pytorch-2.1.20+git4849f3b-cp310-cp310-win_amd64.whl
 pip install https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.20%2Bmtl%2Boneapi/torch-2.1.0a0+git7bcf7da-cp310-cp310-win_amd64.whl
