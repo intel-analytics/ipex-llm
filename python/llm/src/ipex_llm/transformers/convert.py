@@ -667,7 +667,7 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
     return model
 
 
-def _optimize_pre(model):
+def _optimize_pre(model, qtype=None):
     try:
         from sentence_transformers.SentenceTransformer import SentenceTransformer
         if isinstance(model, SentenceTransformer):
@@ -743,8 +743,9 @@ def _optimize_pre(model):
         if should_apply_merge_qkv:
             from ipex_llm.transformers.models.qwen2 import merge_qkv
             model.apply(merge_qkv)
-            from ipex_llm.transformers.models.qwen2 import padding_mlp
-            model.apply(padding_mlp)
+            if qtype != ggml_tensor_qtype["fp6"]:
+                from ipex_llm.transformers.models.qwen2 import padding_mlp
+                model.apply(padding_mlp)
     if model.config.model_type == "qwen2_moe":
         from ipex_llm.transformers.models.qwen2_moe import merge_qkv
         model.apply(merge_qkv)
@@ -795,7 +796,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         return model
 
     if optimize_model:
-        model = _optimize_pre(model)
+        model = _optimize_pre(model, qtype)
 
     act_order = False
     if getattr(model, "quantization_method", None) == "gptq":
