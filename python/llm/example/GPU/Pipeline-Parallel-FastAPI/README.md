@@ -50,7 +50,15 @@ pip install transformers==4.40.0
 pip install trl==0.8.1
 ```
 
-### 2. Run pipeline parallel serving on multiple GPUs
+### 2-1. Run ipex-llm serving on a GPU card
+
+```bash
+# Need to set MODEL_PATH in run.sh first
+# Need to set NUM_GPUS=1 in run.sh to run one card
+bash run.sh
+```
+
+### 2-2. Run pipeline parallel serving on multiple GPUs
 
 ```bash
 # Need to set MODEL_PATH in run.sh first
@@ -76,7 +84,7 @@ export http_proxy=
 export https_proxy=
 
 curl -X 'POST' \
-  'http://127.0.0.1:8000/generate/' \
+  'http://127.0.0.1:8000/generate' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{

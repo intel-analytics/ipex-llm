@@ -89,14 +89,30 @@ from openai_protocol import (
 )
 
 
+def get_queue_next_token(delta_text_queue):
+    timeout = int(os.getenv("IPEX_LLM_FASTAPI_TIMEOUT", 60))
+    delta_text = delta_text_queue.text_queue.get(timeout=timeout)
+    if delta_text == None:
+        remain = 0
+    else:
+        remain = 1
+    return delta_text, remain
+
+
 async def chat_stream_generator(local_model, delta_text_queue, request_id):
     model_name = local_model.model_name
     index = 0
     while True:
-        if not delta_text_queue.empty():
-            with local_model.dict_lock:
-                remain, delta_text = await delta_text_queue.get()
-            # print(remain)
+        if not hasattr(delta_text_queue, 'empty'):
+            delta_text, remain = get_queue_next_token(delta_text_queue)
+        else:
+            if not delta_text_queue.empty():
+                with local_model.dict_lock:
+                    remain, delta_text = await delta_text_queue.get()
+            else:
+                await asyncio.sleep(0)
+                continue
+        if remain == 0 and delta_text is not None or remain != 0:
             choice_data = ChatCompletionResponseStreamChoice(
                             index=index,
                             delta=DeltaMessage(role="assistant", content=delta_text),
@@ -109,21 +125,19 @@ async def chat_stream_generator(local_model, delta_text_queue, request_id):
             data = chunk.model_dump_json(exclude_unset=True)
             yield f"data: {data}\n\n"
             index = index + 1
-            if remain == 0:
-                choice_data = ChatCompletionResponseStreamChoice(
-                                index=index,
-                                delta=DeltaMessage(role="assistant", content=None),
-                                logprobs=None,
-                                finish_reason="length")
-                chunk = ChatCompletionStreamResponse(
-                                id=request_id,
-                                choices=[choice_data],
-                                model=model_name)
-                data = chunk.model_dump_json(exclude_unset=True)
-                yield f"data: {data}\n\n"
-                break
-        else:
-            await asyncio.sleep(0)
+        if remain == 0:
+            choice_data = ChatCompletionResponseStreamChoice(
+                            index=index,
+                            delta=DeltaMessage(role="assistant", content=None),
+                            logprobs=None,
+                            finish_reason="length")
+            chunk = ChatCompletionStreamResponse(
+                            id=request_id,
+                            choices=[choice_data],
+                            model=model_name)
+            data = chunk.model_dump_json(exclude_unset=True)
+            yield f"data: {data}\n\n"
+            break
     local_model.streamer.pop(request_id, None)
 
 
@@ -131,10 +145,16 @@ async def completion_stream_generator(local_model, delta_text_queue, request_id)
     model_name = local_model.model_name
     index = 0
     while True:
-        if not delta_text_queue.empty():
-            with local_model.dict_lock:
-                remain, delta_text = await delta_text_queue.get()
-            # print(remain)
+        if not hasattr(delta_text_queue, 'empty'):
+            delta_text, remain = get_queue_next_token(delta_text_queue)
+        else:
+            if not delta_text_queue.empty():
+                with local_model.dict_lock:
+                    remain, delta_text = await delta_text_queue.get()
+            else:
+                await asyncio.sleep(0)
+                continue
+        if remain == 0 and delta_text is not None or remain != 0:
             choice_data = CompletionResponseStreamChoice(
                             index=index,
                             text=delta_text,
@@ -147,38 +167,44 @@ async def completion_stream_generator(local_model, delta_text_queue, request_id)
             data = chunk.model_dump_json(exclude_unset=True)
             yield f"data: {data}\n\n"
             index = index + 1
-            if remain == 0:
-                choice_data = CompletionResponseStreamChoice(
-                                index=index,
-                                text="",
-                                logprobs=None,
-                                finish_reason="length")
-                chunk = CompletionStreamResponse(
-                                id=request_id,
-                                choices=[choice_data],
-                                model=model_name)
-                data = chunk.model_dump_json(exclude_unset=True)
-                yield f"data: {data}\n\n"
-                break
-        else:
-            await asyncio.sleep(0)
+        if remain == 0:
+            choice_data = CompletionResponseStreamChoice(
+                            index=index,
+                            text="",
+                            logprobs=None,
+                            finish_reason="length")
+            chunk = CompletionStreamResponse(
+                            id=request_id,
+                            choices=[choice_data],
+                            model=model_name)
+            data = chunk.model_dump_json(exclude_unset=True)
+            yield f"data: {data}\n\n"
+            break
     local_model.streamer.pop(request_id, None)
 
 
 async def generator(local_model, delta_text_queue, request_id):
     while True:
-        if not delta_text_queue.empty():
-            with local_model.dict_lock:
-                remain, delta_text = await delta_text_queue.get()
-            yield delta_text
-            if remain == 0:
+        if not hasattr(delta_text_queue, 'empty'):
+            delta_text, remain = get_queue_next_token(delta_text_queue)
+            if delta_text == None:
                 break
+            else:
+                yield delta_text
         else:
-            await asyncio.sleep(0)
+            if not delta_text_queue.empty():
+                with local_model.dict_lock:
+                    remain, delta_text = await delta_text_queue.get()
+                yield delta_text
+                if remain == 0:
+                    break
+            else:
+                await asyncio.sleep(0)
+                continue
     local_model.streamer.pop(request_id, None)
 
 
-@app.post("/generate/")
+@app.post("/generate")
 async def generate(prompt_request: PromptRequest):
     request_id = str(uuid.uuid4())
     await local_model.waiting_requests.put((request_id, prompt_request))
@@ -210,7 +236,7 @@ async def generate_stream(prompt_request: PromptRequest):
                 content=cur_generator, media_type="text/event-stream"
             )
 
-@app.post("/generate_stream/")
+@app.post("/generate_stream")
 async def generate_stream_api(prompt_request: PromptRequest):
     request_id, result = await generate_stream(prompt_request)
     return result
@@ -299,6 +325,63 @@ async def process_requests(local_model, result_dict):
 async def startup_event():
     asyncio.create_task(process_requests(local_model, result_dict))
 
+class ModelWorker:
+    def __init__(self, checkpoint, low_bit, torch_dtype=torch.float16):
+        self.dtype = torch_dtype
+        start = time.perf_counter()
+        model = self.load_model(checkpoint, low_bit)
+        from ipex_llm.utils.benchmark_util import BenchmarkWrapper
+        self.model = BenchmarkWrapper(model, do_print=True)
+        end = time.perf_counter()
+        logger.info(f"Time to load weights: {end - start:.2f}s")
+        self.waiting_requests = asyncio.Queue()
+        self.streamer = {}
+        self.model_name = checkpoint
+
+    def load_model(self, model_path, low_bit='sym_int4'):
+        from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
+        try:
+            model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                         load_in_low_bit=low_bit,
+                                                         torch_dtype=self.dtype,
+                                                         optimize_model=True,
+                                                         trust_remote_code=True,
+                                                         use_cache=True,)
+        except:
+            model = AutoModel.from_pretrained(model_path,
+                                              load_in_low_bit=low_bit,
+                                              torch_dtype=self.dtype,
+                                              optimize_model=True,
+                                              trust_remote_code=True,
+                                              use_cache=True,)
+        model = model.eval().to("xpu")
+        return model
+
+    async def add_request(self, tokenizer):
+        if self.waiting_requests.empty():
+            return
+        tmp_result = await self.waiting_requests.get()
+        request_id, prompt_request = tmp_result
+        plain_texts = prompt_request.prompt
+        inputs = tokenizer(plain_texts, return_tensors="pt", padding=True)
+        input_ids = inputs.input_ids.to('xpu')
+        max_tokens = prompt_request.n_predict
+        return input_ids, max_tokens, request_id
+
+    @torch.no_grad()
+    async def process_step(self, tokenizer, result_dict):
+        if not self.waiting_requests.empty():
+            input_ids, max_tokens, request_id = await self.add_request(tokenizer)
+            from transformers import TextIteratorStreamer
+            self.streamer[request_id] = TextIteratorStreamer(tokenizer, skip_prompt=True)
+            def model_generate():
+                local_model.model.generate(input_ids, streamer=self.streamer[request_id], max_new_tokens=max_tokens)
+                torch.xpu.empty_cache()
+                torch.xpu.synchronize()
+            from threading import Thread
+            t1 = Thread(target=model_generate)
+            t1.start()
+
 async def main():
     parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
@@ -319,28 +402,35 @@ async def main():
     max_num_seqs = args.max_num_seqs
     max_prefilled_seqs = args.max_prefilled_seqs
 
-    # serialize model initialization so that we do not run out of CPU memory
-    for i in range(my_size):
-        if my_rank == i:
-            logger.info("start model initialization")
-            global local_model
-            local_model = ModelRunner(model_path, my_rank, my_size, low_bit, max_num_seqs, max_prefilled_seqs)
-            logger.info("model initialized")
-        dist.barrier()
+    global local_model
     # Load tokenizer
     global tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    if local_rank == 0:
+    # serialize model initialization so that we do not run out of CPU memory
+    if my_size == 1:
+        local_model = ModelWorker(model_path, low_bit)
         config = uvicorn.Config(app=app, host="0.0.0.0", port=args.port)
         server = uvicorn.Server(config)
         await server.serve()
     else:
-        while True:
-            await asyncio.sleep(0)
-            await local_model.process_step(tokenizer, result_dict)
+        for i in range(my_size):
+            if my_rank == i:
+                logger.info("start model initialization")
+                local_model = ModelRunner(model_path, my_rank, my_size, low_bit, max_num_seqs, max_prefilled_seqs)
+                logger.info("model initialized")
+            dist.barrier()
+
+        if local_rank == 0:
+            config = uvicorn.Config(app=app, host="0.0.0.0", port=args.port)
+            server = uvicorn.Server(config)
+            await server.serve()
+        else:
+            while True:
+                await asyncio.sleep(0)
+                await local_model.process_step(tokenizer, result_dict)
 
 if __name__ == "__main__":
     asyncio.run(main())
