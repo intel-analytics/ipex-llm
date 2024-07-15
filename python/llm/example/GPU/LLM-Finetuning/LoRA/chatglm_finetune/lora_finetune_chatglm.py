@@ -558,7 +558,7 @@ def main(
         ),
         batched=True,
     )
-    print('train_dataset:', train_dataset[0])
+    print('train_dataset:', train_dataset)
     val_dataset = data_manager.get_dataset(
         Split.VALIDATION,
         functools.partial(
@@ -592,14 +592,15 @@ def main(
     # turn model to fp32
     _prepare_model_for_training(model, ft_config.training_args.use_cpu)
 
-    #ft_config.training_args.generation_config.pad_token_id = (
-    #    tokenizer.pad_token_id
-    #)
-    #ft_config.training_args.generation_config.eos_token_id = [
-    #    tokenizer.eos_token_id,
-    #    tokenizer.get_command('<|user|>'),
-    #    tokenizer.get_command('<|observation|>'),
-    #]
+    if 'AdvertiseGen' in data_dir
+        ft_config.training_args.generation_config.pad_token_id = (
+            tokenizer.pad_token_id
+        )
+        ft_config.training_args.generation_config.eos_token_id = [
+            tokenizer.eos_token_id,
+            tokenizer.get_command('<|user|>'),
+            tokenizer.get_command('<|observation|>'),
+        ]
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
 
@@ -620,8 +621,8 @@ def main(
         data_collator=DataCollatorForSeq2Seq(
             tokenizer=tokenizer,
             return_tensors='pt',
-            padding=True,
-            pad_to_multiple_of=8,
+            padding=True if 'alpaca' in data_dir,
+            pad_to_multiple_of=8 if 'alpaca' in data_dir,
         ),
         train_dataset=train_dataset,
         eval_dataset=val_dataset.select(list(range(50))),
