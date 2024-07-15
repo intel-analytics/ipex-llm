@@ -4,6 +4,12 @@ The [GraphRAG project](https://github.com/microsoft/graphrag) is designed to lev
 
 ## Table of Contents
 
+- [Install and Start `Ollama` Service on Intel GPU](#1-install-and-start-ollama-service-on-intel-gpu)
+- [Prepare LLM and Embedding Model](#2-prepare-llm-and-embedding-model)
+- [Setup Python Environment for GraphRAG](#3-setup-python-environment-for-graphrag)
+- [Index GraphRAG](#4-index-graphrag)
+- [Query GraphRAG](#5-query-graphrag)
+
 ## Quickstart
 
 ### 1. Install and Start `Ollama` Service on Intel GPU 
@@ -89,7 +95,7 @@ First, perpare the input corpus, based on which LLM will create a knowledge grap
   python -m graphrag.index --init --root ./ragtest
 
   # prepare settings.yml, please make sure the initialized settings.yml in ragtest folder is replaced by settings.yml in graphrag-ollama-local folder
-  move settings.yaml ./ragtest
+  cp settings.yaml ./ragtest
   ```
 
 - For **Windows users**:
@@ -107,7 +113,7 @@ First, perpare the input corpus, based on which LLM will create a knowledge grap
   python -m graphrag.index --init --root .\ragtest
 
   :: prepare settings.yml, please make sure the initialized settings.yml in ragtest folder is replaced by settings.yml in graphrag-ollama-local folder
-  move settings.yaml .\ragtest
+  copy settings.yaml .\ragtest /y
   ```
 
 > [!NOTE]
