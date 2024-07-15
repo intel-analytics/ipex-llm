@@ -123,7 +123,7 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Input --------------------
-[Path or URL to the image]
+https://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 -------------------- Prompt --------------------
 What is in the image?
 -------------------- Output --------------------
