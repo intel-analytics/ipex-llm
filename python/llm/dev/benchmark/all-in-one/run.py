@@ -161,8 +161,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_speculative_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, batch_size)
     elif test_api == 'pipeline_parallel_gpu':
         result = run_pipeline_parallel_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=use_fp16_torch_dtype)
-    elif test_api == 'transformer_win_npu_int4':
-        result = run_transformer_win_npu_int4(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
+    elif test_api == 'transformers_int4_npu_win':
+        result = transformers_int4_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
     else:
         invalidInputError(False, "Unknown test_api " + test_api + ", please check your config.yaml.")
 
@@ -570,7 +570,7 @@ def run_transformer_int4_gpu(repo_id,
     return result
 
 
-def run_transformer_win_npu_int4(repo_id,
+def transformers_int4_npu_win(repo_id,
                                  local_model_hub,
                                  in_out_pairs,
                                  warm_up,
