@@ -636,6 +636,8 @@ def run_transformer_win_npu_int4(repo_id,
                 if i >= warm_up:
                     result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                            actual_in_len, actual_out_len, load_time])
+    del model
+    gc.collect()
     return result
 
 
