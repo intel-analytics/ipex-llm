@@ -25,7 +25,7 @@ Follow the steps in [Run Ollama with IPEX-LLM on Intel GPU Guide](./ollama_quick
 
 ### 2. Prepare LLM and Embedding Model
 
-In another terminal window, separate from where you executed `ollama serve`, you can download the LLM and embedding model using the following commands:
+In another terminal window, separate from where you executed `ollama serve`, download the LLM and embedding model using the following commands:
 
 - For **Linux users**:
 
@@ -80,9 +80,9 @@ The environment is now ready for GraphRAG with local LLMs and embedding models r
 
 #### Prepare Input Corpus
 
-Some [sample documents](https://github.com/TheAiSingularity/graphrag-local-ollama/tree/main/input) are used here as input corpus for indexing GraphRAG.
+Some [sample documents](https://github.com/TheAiSingularity/graphrag-local-ollama/tree/main/input) are used here as input corpus for indexing GraphRAG, based on which LLM will create a knowledge graph.
 
-Perpare the input corpus, based on which LLM will create a knowledge graph. And then initialize the workspace:
+Perpare the input corpus, and then initialize the workspace:
 
 - For **Linux users**:
 
@@ -120,15 +120,15 @@ Perpare the input corpus, based on which LLM will create a knowledge graph. And 
 
 #### Update `settings.yml`
 
-In the `settings.yml` file inside the `ragtest` folder, add the configuration `request_timeout: 1800.0` for llm. Besides, if you would like to use LLMs or embedding models other than `mistral` or `nomic-embed-text`, you are required to update the `settings.yml` in `ragtest` folder accordingly:
+In the `settings.yml` file inside the `ragtest` folder, add the configuration `request_timeout: 1800.0` for `llm`. Besides, if you would like to use LLMs or embedding models other than `mistral` or `nomic-embed-text`, you are required to update the `settings.yml` in `ragtest` folder accordingly:
 >
 > ```yml
 > llm:
 >   api_key: ${GRAPHRAG_API_KEY}
 >   type: openai_chat
->   model: mistral # change it to the LLM from Ollama model library as you want
+>   model: mistral # change it accordingly if using another LLM
 >   model_supports_json: true
->   request_timeout: 1800.0 # Add this configuratio. You could also increase the request_timeout.
+>   request_timeout: 1800.0 # add this configuration; you could also increase the request_timeout
 >   api_base: http://localhost:11434/v1
 > 
 > embeddings:
@@ -136,7 +136,7 @@ In the `settings.yml` file inside the `ragtest` folder, add the configuration `r
 >   llm:
 >     api_key: ${GRAPHRAG_API_KEY}
 >     type: openai_embedding
->     model: nomic_embed_text # change it to the embedding model from Ollama model library as you want
+>     model: nomic_embed_text # change it accordingly if using another embedding model
 >     api_base: http://localhost:11434/api
 > ```
 
