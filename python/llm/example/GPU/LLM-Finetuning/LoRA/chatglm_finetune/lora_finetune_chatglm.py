@@ -67,6 +67,12 @@ from transformers import DataCollatorForSeq2Seq as _DataCollatorForSeq2Seq
 
 from transformers import Seq2SeqTrainer as _Seq2SeqTrainer
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
+common_util_path = os.path.join(current_dir, '..', '..')
+import sys
+sys.path.append(common_util_path)
+from common.utils import get_train_val_data, Prompter
+
 ModelType = Union[PreTrainedModel, PeftModelForCausalLM]
 TokenizerType = Union[PreTrainedTokenizer, PreTrainedTokenizerFast]
 app = typer.Typer(pretty_exceptions_show_locals=False)
@@ -247,7 +253,7 @@ def _load_datasets(
     return dataset_dct
 
 
-class DataManager(object):
+class AdvertiseGenDataManager(object):
     def __init__(self, data_dir: str, data_config: DataConfig):
         self._num_proc = data_config.num_proc
 
@@ -282,6 +288,52 @@ class DataManager(object):
             remove_columns=remove_columns,
             num_proc=self._num_proc,
         )
+
+class AlpacaDataConfig(object):
+    def __init__(self, tokenizer, prompter, train_on_inputs,
+                 add_eos_token, cutoff_len, val_set_size, seed):
+        self.tokenizer = tokenizer
+        self.prompter = prompter
+        self.train_on_inputs = train_on_inputs
+        self.add_eos_token = add_eos_token
+        self.cutoff_len = cutoff_len
+        self.val_set_size = val_set_size
+        self.seed = seed
+            
+
+class AlpacaDataManager(object):
+    def __init__(self, data_dir: str, data_config: AlpacaDataConfig):
+        if data_dir.endswith(".json") or data_dir.endswith(".jsonl"):
+            data = load_dataset("json", data_files=data_dir)
+        else:
+            data = load_dataset(data_dir)
+        self.train_data, self.val_data = get_train_val_data(
+            data,
+            data_config.tokenizer,
+            data_config.prompter,
+            data_config.train_on_inputs,
+            data_config.add_eos_token,
+            data_config.cutoff_len,
+            data_config.val_set_size,
+            seed=data_config.seed)
+        self.train_data = self.train_data.remove_columns(
+            ['output', 'input', 'instruction', 'attention_mask', 'position_ids'])
+        self.val_data = self.val_data.remove_columns(
+            ['output', 'input', 'instruction', 'attention_mask', 'position_ids'])
+
+    def get_dataset(
+            self,
+            split: NamedSplit,
+            process_fn: Callable[[dict[str, Any]], dict[str, Any]],
+            batched: bool = True,
+            remove_orig_columns: bool = True,
+    ) -> Optional[Dataset]:
+        if split == Split.TRAIN:
+            return self.train_data
+        elif split == Split.VALIDATION:
+            return self.val_data
+        else:
+            return None
 
 
 def print_model_size(model: PreTrainedModel):
@@ -484,7 +536,17 @@ def main(
 ):
     ft_config = FinetuningConfig.from_file(config_file)
     tokenizer, model = load_tokenizer_and_model(model_dir, peft_config=ft_config.peft_config)
-    data_manager = DataManager(data_dir, ft_config.data_config)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    if 'AdvertiseGen' in data_dir:
+        data_manager = AdvertiseGenDataManager(data_dir, ft_config.data_config)
+    elif 'alpaca' in data_dir:
+        data_config = AlpacaDataConfig(tokenizer=tokenizer, prompter=Prompter("alpaca"),
+                                       train_on_inputs=True, add_eos_token=False,
+                                       cutoff_len=256, val_set_size=2000, seed=42)
+        data_manager = AlpacaDataManager(data_dir, data_config)
+    else:
+        raise NotImplementedError("Wrong dataset, currently only support AdvertiseGen and Alpaca")
 
     train_dataset = data_manager.get_dataset(
         Split.TRAIN,
@@ -496,7 +558,7 @@ def main(
         ),
         batched=True,
     )
-    print('train_dataset:', train_dataset)
+    print('train_dataset:', train_dataset[0])
     val_dataset = data_manager.get_dataset(
         Split.VALIDATION,
         functools.partial(
@@ -530,38 +592,41 @@ def main(
     # turn model to fp32
     _prepare_model_for_training(model, ft_config.training_args.use_cpu)
 
-    ft_config.training_args.generation_config.pad_token_id = (
-        tokenizer.pad_token_id
-    )
-    ft_config.training_args.generation_config.eos_token_id = [
-        tokenizer.eos_token_id,
-        tokenizer.get_command('<|user|>'),
-        tokenizer.get_command('<|observation|>'),
-    ]
+    #ft_config.training_args.generation_config.pad_token_id = (
+    #    tokenizer.pad_token_id
+    #)
+    #ft_config.training_args.generation_config.eos_token_id = [
+    #    tokenizer.eos_token_id,
+    #    tokenizer.get_command('<|user|>'),
+    #    tokenizer.get_command('<|observation|>'),
+    #]
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
 
-    use_tokenizer = True
-    if ft_config.peft_config is not None:
-        use_tokenizer = False if ft_config.peft_config.peft_type == "LORA" else True
+    #use_tokenizer = True
+    #if ft_config.peft_config is not None:
+    #    use_tokenizer = False if ft_config.peft_config.peft_type == "LORA" else True
 
     # Add below L544-L546 to enable finetuning on 2 Intel Arc XPU cards on top of oneccl and deepspeed
     if deepspeed_config_file != '':
         ft_config.training_args.ddp_backend = "ccl"
         ft_config.training_args.deepspeed = deepspeed_config_file
 
+    from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
+
     trainer = Seq2SeqTrainer(
         model=model,
         args=ft_config.training_args,
         data_collator=DataCollatorForSeq2Seq(
             tokenizer=tokenizer,
-            padding='longest',
             return_tensors='pt',
+            padding=True,
+            pad_to_multiple_of=8,
         ),
         train_dataset=train_dataset,
         eval_dataset=val_dataset.select(list(range(50))),
         tokenizer=tokenizer if use_tokenizer else None,  # LORA does not need tokenizer
-        compute_metrics=functools.partial(compute_metrics, tokenizer=tokenizer),
+        compute_metrics=functools.partial(compute_metrics, tokenizer=tokenizer) if 'AdvertiseGen' in data_dir else None,
     )
 
     if auto_resume_from_checkpoint.upper() == "" or auto_resume_from_checkpoint is None:

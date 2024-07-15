@@ -31,7 +31,9 @@ source /opt/intel/oneapi/setvars.sh
 
 ### 3. LoRA Fine-Tune on ChatGLM3-6B
 
-First, download the dataset: we use `AdvertiseGen` to finetune ChatGLM3-6B in the following, and please now get it from [Google Drive](https://drive.google.com/file/d/13_vf0xRTQsyneRKdD1bZIr93vBGOczrk/view?usp=sharing) or [Tsinghua Cloud](https://cloud.tsinghua.edu.cn/f/b3f119a008264b1cabd1/?dl=1), and unzip it in the current directory. Then, process the dataset with the below script:
+First, as for the dataset, you have two options:
+
+1. `AdvertiseGen`: please now get it from [Google Drive](https://drive.google.com/file/d/13_vf0xRTQsyneRKdD1bZIr93vBGOczrk/view?usp=sharing) or [Tsinghua Cloud](https://cloud.tsinghua.edu.cn/f/b3f119a008264b1cabd1/?dl=1), and unzip it in the current directory. Then, process the dataset with the below script:
 
 ```bash
 python process_advertise_gen_dataset.py
@@ -39,12 +41,20 @@ python process_advertise_gen_dataset.py
 
 Then, './AdvertiseGen' will be converted to './AdvertiseGen_fix'. Now, we have prepared the dataset, and are going to start LoRA fine-tuning on ChatGLM3-6B.
 
+2. `Alapca`: We also support [yahma/alpaca-cleaned](https://huggingface.co/datasets/yahma/alpaca-cleaned) that contains generated instructions and demonstrations. It does not require preprocessing, and please directy run the following script.
+
 #### 3.1. Fine-Tune with a Single Arc Card
 
-Start the fine-tuning by:
+1. For `AdvertiseGen`, start the fine-tuning by:
 
 ```bash
-bash lora_finetuning_on_chatglm3_6b_with_1_arc_card.sh
+bash lora_finetuning_chatglm3_6b_on_advertise_gen_with_1_arc_card.sh
+```
+
+2. For `Alpaca`, start the fine-tuning by:
+
+```bash
+bash lora_finetuning_chatglm3_6b_on_alpaca_with_1_arc_card.sh
 ```
 
 Then, you will get output are as below:
@@ -146,5 +156,5 @@ Training completed. Do not forget to share your model on huggingface.co/models =
 Start the data-parallel fine-tuning on 2 Intel Arc XPU cards by:
 
 ```bash
-bash lora_finetuning_on_chatglm3_6b_with_2_arc_cards.sh
+bash lora_finetuning_chatglm3_6b_on_advertise_gen_with_2_arc_cards.sh
 ```
