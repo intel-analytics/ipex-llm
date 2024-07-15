@@ -65,6 +65,7 @@ from transformers import (
 )
 from transformers import DataCollatorForSeq2Seq as _DataCollatorForSeq2Seq
 
+from transformers import Trainer
 from transformers import Seq2SeqTrainer as _Seq2SeqTrainer
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -592,7 +593,7 @@ def main(
     # turn model to fp32
     _prepare_model_for_training(model, ft_config.training_args.use_cpu)
 
-    if 'AdvertiseGen' in data_dir
+    if 'AdvertiseGen' in data_dir:
         ft_config.training_args.generation_config.pad_token_id = (
             tokenizer.pad_token_id
         )
@@ -604,9 +605,12 @@ def main(
     model.gradient_checkpointing_enable()
     model.enable_input_require_grads()
 
-    #use_tokenizer = True
-    #if ft_config.peft_config is not None:
-    #    use_tokenizer = False if ft_config.peft_config.peft_type == "LORA" else True
+    if 'AdvertiseGen' in data_dir:
+        use_tokenizer = True
+        if ft_config.peft_config is not None:
+            use_tokenizer = False if ft_config.peft_config.peft_type == "LORA" else True
+    else:
+        use_tokenizer = False
 
     # Add below L544-L546 to enable finetuning on 2 Intel Arc XPU cards on top of oneccl and deepspeed
     if deepspeed_config_file != '':
@@ -615,14 +619,16 @@ def main(
 
     from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
 
-    trainer = Seq2SeqTrainer(
+    BASE_TRAINER = Trainer if 'alpaca' in data_dir else Seq2SeqTrainer
+
+    trainer = BASE_TRAINER(
         model=model,
         args=ft_config.training_args,
         data_collator=DataCollatorForSeq2Seq(
             tokenizer=tokenizer,
             return_tensors='pt',
-            padding=True if 'alpaca' in data_dir,
-            pad_to_multiple_of=8 if 'alpaca' in data_dir,
+            padding=True if 'alpaca' in data_dir else 'longest',
+            pad_to_multiple_of=8 if 'alpaca' in data_dir else None,
         ),
         train_dataset=train_dataset,
         eval_dataset=val_dataset.select(list(range(50))),
