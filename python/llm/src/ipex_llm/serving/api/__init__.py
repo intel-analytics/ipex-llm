@@ -15,3 +15,4 @@
 #
 
 from .api import FastApp
+from .model_worker import ModelWorker
