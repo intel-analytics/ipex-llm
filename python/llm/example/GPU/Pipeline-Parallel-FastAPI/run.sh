@@ -41,7 +41,8 @@ export MAX_NUM_SEQS="4"
 export MAX_PREFILLED_SEQS=0
 
 if [[ $NUM_GPUS -eq 1 ]]; then
-python serving.py --repo-id-or-model-path $MODEL_PATH --low-bit $LOW_BIT
+    export ZE_AFFINITY_MASK=0
+    python serving.py --repo-id-or-model-path $MODEL_PATH --low-bit $LOW_BIT
 else
-CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS pipeline_serving.py --repo-id-or-model-path $MODEL_PATH --low-bit $LOW_BIT --max-num-seqs $MAX_NUM_SEQS --max-prefilled-seqs $MAX_PREFILLED_SEQS
+    CCL_ZE_IPC_EXCHANGE=sockets torchrun --standalone --nnodes=1 --nproc-per-node $NUM_GPUS pipeline_serving.py --repo-id-or-model-path $MODEL_PATH --low-bit $LOW_BIT --max-num-seqs $MAX_NUM_SEQS --max-prefilled-seqs $MAX_PREFILLED_SEQS
 fi

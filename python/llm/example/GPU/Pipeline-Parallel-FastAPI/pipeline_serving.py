@@ -34,7 +34,7 @@ result_dict: Dict[str, str] = {}
 local_rank = my_rank
 
 async def main():
-    parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP')
+    parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging Pipeline-Parallel')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`, `meta-llama/Llama-2-13b-chat-hf` and `meta-llama/Llama-2-70b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')

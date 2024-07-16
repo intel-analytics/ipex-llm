@@ -26,7 +26,7 @@ from ipex_llm.serving.api import ModelWorker
 logger = logging.get_logger(__name__)
 
 async def main():
-    parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging DeepSpeed-AutoTP')
+    parser = argparse.ArgumentParser(description='Predict Tokens using fastapi by leveraging ipex-llm')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf`, `meta-llama/Llama-2-13b-chat-hf` and `meta-llama/Llama-2-70b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
