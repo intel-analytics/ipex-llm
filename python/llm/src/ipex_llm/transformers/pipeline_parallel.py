@@ -460,9 +460,9 @@ class BatchTask(BaseModel):
     partial_prefilling: int
 
 
-def make_attention_mask(prompt_lengths):
+def make_attention_mask(prompt_lengths, device):
     max_length = max(prompt_lengths)
-    attention_mask = torch.zeros((len(prompt_lengths), max_length), dtype=torch.int64)
+    attention_mask = torch.zeros((len(prompt_lengths), max_length), dtype=torch.int64, device=device)
     for i, length in enumerate(prompt_lengths):
         attention_mask[i, max_length - length:] = 1
     return attention_mask
@@ -499,6 +499,8 @@ class ModelRunner:
         self.print_len = {}
         self.is_finish = {}
         self.model_name = checkpoint
+
+        self.device = f"xpu:{self.rank}"
         # self.layer_start = 0
         # self.layer_end = 0
 
@@ -541,7 +543,7 @@ class ModelRunner:
         return cur_batch
 
     def cat_kv_cache(self, model_type, kv_cache_1, kv_cache_2):
-        if model_type in ["baichuan", "chatglm"]:
+        if model_type in ["baichuan", "chatglm", "mixtral"]:
             result = []
             for sub_tuple1, sub_tuple2 in zip(kv_cache_1, kv_cache_2):
                 if sub_tuple1 is None:
@@ -611,7 +613,7 @@ class ModelRunner:
         # logger.info(f"{self.rank} {cur_batch} {input.shape}")
         cur_id = cur_batch.batch_id
         _past_key_values = self.past_key_values_dict.get(cur_id, None)
-        attention_mask = make_attention_mask(cur_batch.prompt_lengths).to(input.device)
+        attention_mask = make_attention_mask(cur_batch.prompt_lengths, input.device)
 
         if self.rank == 0:
             input_ids = input
@@ -635,7 +637,7 @@ class ModelRunner:
                 tmp_past_key_values = _past_key_values
                 _past_key_values = None
 
-        # torch.xpu.empty_cache()
+        torch.xpu.empty_cache()
         output = self.model(input_ids=input_ids,
                             inputs_embeds=inputs_embeds,
                             past_key_values=_past_key_values,
@@ -672,6 +674,7 @@ class ModelRunner:
             self.past_key_values_dict[cur_id] = _past_key_values
         torch.xpu.synchronize()
         if not self.pp_config.is_tail:
+            # TODO: check this .to()
             return output[0].to(self.dtype), cur_batch
         else:
             if cur_batch.partial_prefilling > 0 and \
