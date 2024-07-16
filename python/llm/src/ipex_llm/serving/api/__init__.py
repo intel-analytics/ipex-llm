@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-from .api import FastApp
+from .api_server import FastApp
 from .model_worker import ModelWorker
