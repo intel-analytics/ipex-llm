@@ -155,6 +155,14 @@ Training completed. Do not forget to share your model on huggingface.co/models =
 
 Start the data-parallel fine-tuning on 2 Intel Arc XPU cards by:
 
+1. `AdvertiseGen` dataset:
+
 ```bash
 bash lora_finetuning_chatglm3_6b_on_advertise_gen_with_2_arc_cards.sh
+```
+
+2. `Alpaca` dataset:
+
+```bash
+bash lora_finetuning_chatglm3_6b_on_alpaca_with_2_arc_cards.sh
 ```
