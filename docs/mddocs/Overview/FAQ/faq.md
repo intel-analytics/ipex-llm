@@ -90,8 +90,8 @@ You may encounter this error during finetuning, expecially when run 70B model. P
 
 This error may happen when multiple GPUs exists for Windows Users. To solve this error, you can open Device Manager (search "Device Manager" in your start menu). Then click the "Display adapter" option, and disable all the GPU device you do not want to use. Restart your computer and try again. IPEX-LLM should work fine this time.
 
-### The first time to run model on Meteor Lake's iGPU(Intel Core Ultra integrated GPU) will takes 5-10 minutes.
-This is caused by intel-extension-for-pytorch's compilation. For windows user, you can install this [intel-extension-for-pytorch](https://github.com/Nuullll/intel-extension-for-pytorch/releases) with MTL [AOT](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-0/ahead-of-time-compilation.html).
+### The first time to run model on Meteor Lake's iGPU(Intel Core™ Ultra integrated GPU) will takes 5-10 minutes.
+This is caused by intel-extension-for-pytorch's compilation. For windows user, you can install this [intel-extension-for-pytorch](https://github.com/Nuullll/intel-extension-for-pytorch/releases) with Meteor Lake's [ahead-of-time-compilation](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-0/ahead-of-time-compilation.html).
 Please notice the packages only support python 3.10, you can use below commands after you have installed ipex-llm[xpu]:
 ```bash
 pip install https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.1.20%2Bmtl%2Boneapi/intel_extension_for_pytorch-2.1.20+git4849f3b-cp310-cp310-win_amd64.whl
