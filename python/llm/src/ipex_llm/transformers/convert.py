@@ -149,9 +149,12 @@ def is_linear_module(module):
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
+        from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
+
 
         VLLM_LINEAR_LIST = [
-            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
+            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear,
+            ParallelLMHead
         ]
         if is_module_in_classes(module, VLLM_LINEAR_LIST):
             if 'xpu' in _VLLM_VERSION:
@@ -167,6 +170,12 @@ def is_linear_module(module):
             else:
                 # For vllm cpu
                 tp_size = 1
+            if isinstance(module, ParallelLMHead) and 'xpu' in _VLLM_VERSION:
+                in_features = module.embedding_dim
+                out_features = module.num_embeddings_per_partition
+                result = True
+                mp_group = None
+                return result, (in_features, out_features, mp_group)
             in_features = module.input_size
             out_features = module.output_size
             result = True
