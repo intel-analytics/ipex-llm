@@ -16,10 +16,11 @@
 import torch
 from vllm.logger import init_logger
 from vllm.model_executor.models.llama import LlamaMLP, LlamaAttention, LlamaForCausalLM
-from vllm.model_executor.models.qwen2 import Qwen2MLP, Qwen2Attention
-from vllm.model_executor.models.qwen import QWenMLP, QWenAttention
+from vllm.model_executor.models.qwen2 import Qwen2MLP, Qwen2Attention, Qwen2ForCausalLM
+from vllm.model_executor.models.qwen import QWenMLP, QWenAttention, QWenLMHeadModel
 from vllm.model_executor.models.baichuan import BaiChuanMLP, BaiChuanAttention
-from vllm.model_executor.models.chatglm import GLMMLP, GLMAttention
+from vllm.model_executor.models.baichuan import BaiChuanBaseForCausalLM
+from vllm.model_executor.models.chatglm import GLMMLP, GLMAttention, ChatGLMForCausalLM
 from vllm.model_executor.model_loader import get_model
 from vllm.model_executor.layers.sampler import Sampler
 
@@ -42,11 +43,35 @@ def _Llama_sample(
                                 sampling_metadata)
     return next_tokens
 
+def _Qwen2_sample(
+    self,
+    hidden_states: torch.Tensor,
+    sampling_metadata: SamplingMetadata,
+) -> Optional[SamplerOutput]:
+    if self.config.tie_word_embeddings:
+        lm_head_weight = self.model.embed_tokens
+    else:
+        lm_head_weight = self.lm_head
+    next_tokens = self.sampler(lm_head_weight, hidden_states,
+                                sampling_metadata)
+    return next_tokens
+
+
+def _Chatglm_sample(
+    self,
+    hidden_states: torch.Tensor,
+    sampling_metadata: SamplingMetadata,
+) -> Optional[SamplerOutput]:
+    next_tokens = self.sampler(self.transformer.output_layer, hidden_states,
+                                sampling_metadata)
+
+    return next_tokens
+
+
 
 def _sample_get_logits(self, hidden_states: torch.Tensor, embedding: torch.nn.Module,
                     embedding_bias: Optional[torch.Tensor]) -> torch.Tensor:
     logits = embedding(hidden_states)
-    # print(f"Before gather: {logits.shape}")
     if embedding_bias is not None:
         logits += embedding_bias
     logits = tensor_model_parallel_gather(logits)
@@ -169,6 +194,10 @@ _REPLACED_ATTENTION_LAYERS = {
 
 _REPLACED_SAMPLER_LAYERS = {
     LlamaForCausalLM: _Llama_sample,
+    QWenLMHeadModel: _Llama_sample,
+    ChatGLMForCausalLM: _Chatglm_sample,
+    Qwen2ForCausalLM: _Qwen2_sample,
+    BaiChuanBaseForCausalLM: _Llama_sample,
 }
 
 
