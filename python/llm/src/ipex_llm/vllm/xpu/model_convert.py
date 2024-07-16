@@ -34,14 +34,16 @@ from typing import Tuple, Optional
 from ipex_llm.utils.common import invalidInputError
 from vllm.sequence import SamplerOutput
 
+
 def _Llama_sample(
     self,
     hidden_states: torch.Tensor,
     sampling_metadata: SamplingMetadata,
 ) -> Optional[SamplerOutput]:
     next_tokens = self.sampler(self.lm_head, hidden_states,
-                                sampling_metadata)
+                               sampling_metadata)
     return next_tokens
+
 
 def _Qwen2_sample(
     self,
@@ -53,7 +55,7 @@ def _Qwen2_sample(
     else:
         lm_head_weight = self.lm_head
     next_tokens = self.sampler(lm_head_weight, hidden_states,
-                                sampling_metadata)
+                               sampling_metadata)
     return next_tokens
 
 
@@ -63,14 +65,13 @@ def _Chatglm_sample(
     sampling_metadata: SamplingMetadata,
 ) -> Optional[SamplerOutput]:
     next_tokens = self.sampler(self.transformer.output_layer, hidden_states,
-                                sampling_metadata)
+                               sampling_metadata)
 
     return next_tokens
 
 
-
 def _sample_get_logits(self, hidden_states: torch.Tensor, embedding: torch.nn.Module,
-                    embedding_bias: Optional[torch.Tensor]) -> torch.Tensor:
+                       embedding_bias: Optional[torch.Tensor]) -> torch.Tensor:
     logits = embedding(hidden_states)
     if embedding_bias is not None:
         logits += embedding_bias
@@ -79,7 +80,6 @@ def _sample_get_logits(self, hidden_states: torch.Tensor, embedding: torch.nn.Mo
     if logits is not None:
         logits = logits[:, :self.org_vocab_size]
     return logits
-
 
 
 def _MLP_forward(self, x):

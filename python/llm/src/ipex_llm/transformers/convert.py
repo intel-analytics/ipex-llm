@@ -150,10 +150,9 @@ def is_linear_module(module):
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
         from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
-
-
         VLLM_LINEAR_LIST = [
-            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear,
+            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear,
+            MergedColumnParallelLinear,
             ParallelLMHead
         ]
         if is_module_in_classes(module, VLLM_LINEAR_LIST):
