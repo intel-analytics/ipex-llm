@@ -15,7 +15,7 @@
 #
 
 import torch.distributed as dist
-from ipex_llm.transformers import init_pipeline_parallel, ModelRunner
+from ipex_llm.transformers import init_pipeline_parallel, PPModelWorker
 from ipex_llm.serving.api import FastApp
 from transformers.utils import logging
 from transformers import AutoTokenizer
@@ -57,7 +57,7 @@ async def main():
     for i in range(my_size):
         if my_rank == i:
             logger.info("start model initialization")
-            local_model = ModelRunner(model_path, my_rank, my_size, low_bit, max_num_seqs, max_prefilled_seqs)
+            local_model = PPModelWorker(model_path, my_rank, my_size, low_bit, max_num_seqs, max_prefilled_seqs)
             logger.info("model initialized")
         dist.barrier()
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')

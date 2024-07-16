@@ -22,4 +22,4 @@ from .model import AutoModelForCausalLM, AutoModel, AutoModelForSeq2SeqLM, \
         AutoModelForNextSentencePrediction, AutoModelForMultipleChoice, \
         AutoModelForTokenClassification
 from .modelling_bigdl import *
-from .pipeline_parallel import init_pipeline_parallel, ModelRunner
+from .pipeline_parallel import init_pipeline_parallel, PPModelWorker

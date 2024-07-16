@@ -50,7 +50,14 @@ pip install transformers==4.40.0
 pip install trl==0.8.1
 ```
 
-### 2. Run pipeline parallel serving on multiple GPUs
+### 2-1. Run ipex-llm serving on one GPU card 
+
+```bash
+# Need to set NUM_GPUS=1 and MODEL_PATH in run.sh first
+bash run.sh
+```
+
+### 2-2. Run pipeline parallel serving on multiple GPUs
 
 ```bash
 # Need to set MODEL_PATH in run.sh first
@@ -99,7 +106,7 @@ Please change the test url accordingly.
 
 ```bash
 # set t/c to the number of concurrencies to test full throughput.
-wrk -t1 -c1 -d5m -s ./wrk_script_1024.lua http://127.0.0.1:8000/generate/ --timeout 1m
+wrk -t1 -c1 -d5m -s ./wrk_script_1024.lua http://127.0.0.1:8000/generate --timeout 1m
 ```
 
 ## 5. Using the `benchmark.py` Script
