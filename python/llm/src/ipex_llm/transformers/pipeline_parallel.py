@@ -462,10 +462,13 @@ class BatchTask(BaseModel):
 
 def make_attention_mask(prompt_lengths, device):
     max_length = max(prompt_lengths)
-    attention_mask = torch.zeros((len(prompt_lengths), max_length),
-                                 dtype=torch.int64, device=device)
-    for i, length in enumerate(prompt_lengths):
-        attention_mask[i, max_length - length:] = 1
+    batch_size = len(prompt_lengths)
+
+    range_tensor = torch.arange(max_length, device=device).expand(batch_size, max_length)
+    prompt_lengths_tensor = torch.tensor(prompt_lengths, device=device).unsqueeze(1)
+    attention_mask = range_tensor >= max_length - prompt_lengths_tensor
+    attention_mask = attention_mask.to(torch.int64)
+
     return attention_mask
 
 
