@@ -16,6 +16,7 @@
 
 import torch.distributed as dist
 from ipex_llm.transformers import init_pipeline_parallel, ModelRunner
+from ipex_llm.serving.api import FastApp
 from transformers.utils import logging
 from transformers import AutoTokenizer
 import uvicorn
@@ -63,7 +64,6 @@ async def main():
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    from source import FastApp
     myapp = FastApp(local_model, tokenizer)
     if local_rank == 0:
         config = uvicorn.Config(app=myapp.app, host="0.0.0.0", port=args.port)
