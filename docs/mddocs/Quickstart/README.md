@@ -23,7 +23,8 @@ This section includes efficient guide to show you how to:
 - [Run llama.cpp with IPEX-LLM on Intel GPU](./llama_cpp_quickstart.md)
 - [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md)
 - [Run Llama 3 on Intel GPU using llama.cpp and ollama with IPEX-LLM](./llama3_llamacpp_ollama_quickstart.md)
-- [Run RAGFlow with IPEX_LLM on Intel GPU](./ragflow_quickstart.md)
+- [Run RAGFlow with IPEX-LLM on Intel GPU](./ragflow_quickstart.md)
+- [Run GraphRAG with IPEX-LLM on Intel GPU](./graphrag_quickstart.md)
 
 ## Serving
 
