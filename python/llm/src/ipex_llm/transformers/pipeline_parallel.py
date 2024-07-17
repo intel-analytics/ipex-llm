@@ -468,7 +468,7 @@ def make_attention_mask(prompt_lengths):
     return attention_mask
 
 
-class ModelRunner:
+class PPModelWorker:
     """Implementation for pipeline parallel multi-stage serving."""
     def __init__(self, checkpoint, rank, world_size, low_bit, max_num_seqs, max_prefilled_seqs,
                  torch_dtype=torch.float16):
