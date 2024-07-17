@@ -36,6 +36,7 @@ class InputsRequest(BaseModel):
     inputs: str
     parameters: Optional[Parameters] = None
     stream: Optional[bool] = False
+    req_type: str = 'completion'
 
 
 class PromptRequest(BaseModel):
@@ -232,7 +233,12 @@ async def generate_stream(inputs_request: InputsRequest):
         await asyncio.sleep(0)
         cur_streamer = local_model.streamer.get(request_id, None)
         if cur_streamer is not None:
-            cur_generator = completion_stream_generator(local_model, cur_streamer, request_id)
+            if inputs_request.req_type == 'completion':
+                cur_generator = completion_stream_generator(local_model, cur_streamer, request_id)
+            elif inputs_request.req_type == 'chat':
+                cur_generator = chat_stream_generator(local_model, cur_streamer, request_id)
+            else:
+                invalidInputError(False, "Invalid Request Type.")
             return request_id, StreamingResponse(
                 content=cur_generator, media_type="text/event-stream"
             )
@@ -261,15 +267,16 @@ async def create_chat_completion(request: ChatCompletionRequest):
         n_predict = 256
     else:
         n_predict = request.max_tokens
-    prompt_request = PromptRequest(
-        prompt=get_prompt(request.messages),
-        n_predict=n_predict,
+    inputs_request = InputsRequest(
+        inputs=get_prompt(request.messages),
+        parameters=Parameters(max_new_tokens=n_predict),
+        stream=request.stream,
         req_type="chat"
     )
     if request.stream:
-        request_id, result = await generate_stream(prompt_request)
+        request_id, result = await generate_stream(inputs_request)
     else:
-        request_id, result = await generate(prompt_request)
+        request_id, result = await generate(inputs_request)
         choice_data = ChatCompletionResponseChoice(
             index=0,
             message=ChatMessage(role="assistant", content=result),
@@ -286,18 +293,19 @@ async def create_chat_completion(request: ChatCompletionRequest):
 async def create_completion(request: CompletionRequest):
     model_name = local_model.model_name
     if request.max_tokens is None:
-        n_predict = 256
+        n_predict = 32
     else:
         n_predict = request.max_tokens
-    prompt_request = PromptRequest(
-        prompt=request.prompt,
-        n_predict=n_predict,
-        req_type="completion"
+    inputs_request = InputsRequest(
+        inputs=request.prompt,
+        parameters=Parameters(max_new_tokens=n_predict),
+        stream=request.stream,
+        req_type="chat"
     )
     if request.stream:
-        request_id, result = await generate_stream(prompt_request)
+        request_id, result = await generate_stream(inputs_request)
     else:
-        request_id, result = await generate(prompt_request)
+        request_id, result = await generate(inputs_request)
         choice_data = CompletionResponseChoice(
             index=0,
             text=result,
