@@ -25,10 +25,17 @@ from ipex_llm.utils.common import invalidInputError
 import asyncio
 import uuid
 from typing import List, Optional, Union, Dict
+from .tgi_protocol import Parameters
 
 
 result_dict: Dict[str, str] = {}
 logger = logging.get_logger(__name__)
+
+
+class InputsRequest(BaseModel):
+    inputs: str
+    parameters: Optional[Parameters] = None
+    stream: Optional[bool] = False
 
 
 class PromptRequest(BaseModel):
@@ -194,9 +201,14 @@ async def generator(local_model, delta_text_queue, request_id):
 
 
 @app.post("/generate")
-async def generate(prompt_request: PromptRequest):
+async def generate(inputs_request: InputsRequest):
+    print(inputs_request)
+    print(type(inputs_request.stream))
+    if inputs_request.stream:
+        result = await generate_stream_api(inputs_request)
+        return result
     request_id = str(uuid.uuid4())
-    await local_model.waiting_requests.put((request_id, prompt_request))
+    await local_model.waiting_requests.put((request_id, inputs_request))
     while True:
         await asyncio.sleep(0)
         cur_streamer = local_model.streamer.get(request_id, None)
@@ -208,25 +220,19 @@ async def generate(prompt_request: PromptRequest):
 
 
 @app.post("/generate_stream")
-async def generate_stream_api(prompt_request: PromptRequest):
-    request_id, result = await generate_stream(prompt_request)
+async def generate_stream_api(inputs_request: InputsRequest):
+    request_id, result = await generate_stream(inputs_request)
     return result
 
 
-async def generate_stream(prompt_request: PromptRequest):
+async def generate_stream(inputs_request: InputsRequest):
     request_id = str(uuid.uuid4()) + "stream"
-    await local_model.waiting_requests.put((request_id, prompt_request))
+    await local_model.waiting_requests.put((request_id, inputs_request))
     while True:
         await asyncio.sleep(0)
         cur_streamer = local_model.streamer.get(request_id, None)
         if cur_streamer is not None:
-            if prompt_request.req_type == 'completion':
-                cur_generator = completion_stream_generator(local_model, cur_streamer, request_id)
-            elif prompt_request.req_type == 'chat':
-                cur_generator = chat_stream_generator(local_model, cur_streamer, request_id)
-            else:
-                invalidInputError(False, "Invalid Request Type.")
-
+            cur_generator = completion_stream_generator(local_model, cur_streamer, request_id)
             return request_id, StreamingResponse(
                 content=cur_generator, media_type="text/event-stream"
             )
