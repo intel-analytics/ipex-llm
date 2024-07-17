@@ -21,8 +21,8 @@ from transformers import AutoTokenizer
 import uvicorn
 import asyncio
 import argparse
-from ipex_llm.serving.api import FastApp
-from ipex_llm.serving.api import ModelWorker
+from ipex_llm.serving.fastapi import FastApp
+from ipex_llm.serving.fastapi import ModelWorker
 logger = logging.get_logger(__name__)
 
 async def main():

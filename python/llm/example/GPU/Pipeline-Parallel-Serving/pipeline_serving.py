@@ -16,7 +16,7 @@
 
 import torch.distributed as dist
 from ipex_llm.transformers import init_pipeline_parallel, PPModelWorker
-from ipex_llm.serving.api import FastApp
+from ipex_llm.serving.fastapi import FastApp
 from transformers.utils import logging
 from transformers import AutoTokenizer
 import uvicorn
