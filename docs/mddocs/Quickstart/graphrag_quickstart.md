@@ -4,24 +4,23 @@ The [GraphRAG project](https://github.com/microsoft/graphrag) is designed to lev
 
 ## Table of Contents
 
-- [Install and Start `Ollama` Service on Intel GPU](#1-install-and-start-ollama-service-on-intel-gpu)
-- [Prepare LLM and Embedding Model](#2-prepare-llm-and-embedding-model)
-- [Setup Python Environment for GraphRAG](#3-setup-python-environment-for-graphrag)
-- [Index GraphRAG](#4-index-graphrag)
-- [Query GraphRAG](#5-query-graphrag)
+- [Run GraphRAG with IPEX-LLM on Intel GPU](#run-graphrag-with-ipex-llm-on-intel-gpu)
+  - [Table of Contents](#table-of-contents)
+  - [Quickstart](#quickstart)
+    - [1. Install and Start `Ollama` Service on Intel GPU](#1-install-and-start-ollama-service-on-intel-gpu)
+    - [2. Prepare LLM and Embedding Model](#2-prepare-llm-and-embedding-model)
+    - [3. Setup Python Environment for GraphRAG](#3-setup-python-environment-for-graphrag)
+    - [4. Index GraphRAG](#4-index-graphrag)
+      - [Prepare Input Corpus](#prepare-input-corpus)
+      - [Update `settings.yml`](#update-settingsyml)
+      - [(Optional) Visualize Knowledge Graph](#optional-visualize-knowledge-graph)
+    - [5. Query GraphRAG](#5-query-graphrag)
 
 ## Quickstart
 
 ### 1. Install and Start `Ollama` Service on Intel GPU 
 
 Follow the steps in [Run Ollama with IPEX-LLM on Intel GPU Guide](./ollama_quickstart.md) to install and run Ollama on Intel GPU. Ensure that `ollama serve` is running correctly and can be accessed through a local URL (e.g., `https://127.0.0.1:11434`).
-
-> [!TIP]
-> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
->
-> ```bash
-> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-> ```
 
 ### 2. Prepare LLM and Embedding Model
 

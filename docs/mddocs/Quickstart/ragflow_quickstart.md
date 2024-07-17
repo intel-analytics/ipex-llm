@@ -38,13 +38,6 @@ Follow the steps in [Run Ollama with IPEX-LLM on Intel GPU Guide](./ollama_quick
 > [!IMPORTANT]
 > If the `RAGFlow` is not deployed on the same machine where Ollama is running (which means `RAGFlow` needs to connect to a remote Ollama service), you must configure the Ollama service to accept connections from any IP address. To achieve this, set or export the environment variable `OLLAMA_HOST=0.0.0.0` before executing the command `ollama serve`.
 
-> [!TIP]
-> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
->
-> ```bash
-> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-> ```
-
 ### 2. Pull Model
 
 Now we need to pull a model for RAG using Ollama. Here we use [Qwen/Qwen2-7B](https://huggingface.co/Qwen/Qwen2-7B) model as an example. Open a new terminal window, run the following command to pull [`qwen2:latest`](https://ollama.com/library/qwen2). 
