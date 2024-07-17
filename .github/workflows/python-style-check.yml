@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: [3.11]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -44,10 +44,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: pip install pycodestyle
-             pip install pydocstyle
-             pip install mypy==0.982
-             pip install wheel
+        run: |
+          pip install pycodestyle pydocstyle mypy==0.982 wheel
 
       - name: LLM style checking
         run: bash python/llm/dev/test/lint-python
