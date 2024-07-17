@@ -20,10 +20,12 @@
 import argparse
 import torch
 from tqdm import tqdm
+from datasets import concatenate_datasets, load_dataset
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_path", required=True, type=str)
+parser.add_argument("--datasets", required=False, type=str, default=None, nargs='*')
 parser.add_argument("--data_path", type=str, default='wikitext-2-raw-v1/wikitext-2-raw/wiki.test.raw')
 parser.add_argument("--chunk_size", type=int, default=512)
 parser.add_argument("--stride", type=int, default=0)
@@ -46,14 +48,26 @@ else:  # ipex-llm
 model = model.to(args.device)
 model = model.eval()
 
-with open(args.data_path, "rb") as f:
-    data = f.read()
+if args.datasets[0] == 'wikitext':
+    def parse_kwargs(kwstr):
+        kvpair = [item.split('=') for item in kwstr.split(',') if item != ""]
+        return {k:v for k, v in kvpair}
 
-from transformers import AutoTokenizer
-tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
-encodings = tokenizer(data.decode("utf-8").strip("\n"), return_tensors="pt")
+    from transformers import AutoTokenizer
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
+    test = load_dataset(**parse_kwargs(args.data_path), split="test")["text"]
+    encodings = tokenizer("\n\n".join(test), return_tensors="pt")
+
+else:
+    with open(args.data_path, "rb") as f:
+        data = f.read()
+
+    from transformers import AutoTokenizer
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
+    encodings = tokenizer(data.decode("utf-8").strip("\n"), return_tensors="pt")
 
 max_length = model.config.max_position_embeddings
+max_length = 4096
 stride = args.chunk_size if args.stride <= 0 else args.stride
 seq_len = encodings.input_ids.size(1)
 num_chunks = seq_len // stride
