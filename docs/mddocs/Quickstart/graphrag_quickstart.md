@@ -4,16 +4,10 @@ The [GraphRAG project](https://github.com/microsoft/graphrag) is designed to lev
 
 ## Table of Contents
 
-- [Run GraphRAG with IPEX-LLM on Intel GPU](#run-graphrag-with-ipex-llm-on-intel-gpu)
-  - [Table of Contents](#table-of-contents)
-  - [Quickstart](#quickstart)
     - [1. Install and Start `Ollama` Service on Intel GPU](#1-install-and-start-ollama-service-on-intel-gpu)
     - [2. Prepare LLM and Embedding Model](#2-prepare-llm-and-embedding-model)
     - [3. Setup Python Environment for GraphRAG](#3-setup-python-environment-for-graphrag)
     - [4. Index GraphRAG](#4-index-graphrag)
-      - [Prepare Input Corpus](#prepare-input-corpus)
-      - [Update `settings.yml`](#update-settingsyml)
-      - [(Optional) Visualize Knowledge Graph](#optional-visualize-knowledge-graph)
     - [5. Query GraphRAG](#5-query-graphrag)
 
 ## Quickstart
