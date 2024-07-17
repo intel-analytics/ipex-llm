@@ -4,11 +4,11 @@ The [GraphRAG project](https://github.com/microsoft/graphrag) is designed to lev
 
 ## Table of Contents
 
-    - [1. Install and Start `Ollama` Service on Intel GPU](#1-install-and-start-ollama-service-on-intel-gpu)
-    - [2. Prepare LLM and Embedding Model](#2-prepare-llm-and-embedding-model)
-    - [3. Setup Python Environment for GraphRAG](#3-setup-python-environment-for-graphrag)
-    - [4. Index GraphRAG](#4-index-graphrag)
-    - [5. Query GraphRAG](#5-query-graphrag)
+- [Install and Start `Ollama` Service on Intel GPU](#1-install-and-start-ollama-service-on-intel-gpu)
+- [Prepare LLM and Embedding Model](#2-prepare-llm-and-embedding-model)
+- [Setup Python Environment for GraphRAG](#3-setup-python-environment-for-graphrag)
+- [Index GraphRAG](#4-index-graphrag)
+- [Query GraphRAG](#5-query-graphrag)
 
 ## Quickstart
 
