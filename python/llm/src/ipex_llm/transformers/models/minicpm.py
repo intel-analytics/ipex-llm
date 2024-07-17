@@ -100,7 +100,6 @@ def minicpm_attention_forward(
     )
 
 
-
 def minicpm_attention_forward_original(
     self,
     hidden_states: torch.Tensor,
@@ -769,6 +768,7 @@ def minicpm_model_forward_internal(
         attentions=all_self_attns,
     )
 
+
 def minicpm_attention_forward_original_4_39(
     self,
     hidden_states: torch.Tensor,
@@ -1066,4 +1066,3 @@ def minicpm_attention_forward_4_39(
         cache_position=cache_position,
         kwargs=kwargs
     )
-
