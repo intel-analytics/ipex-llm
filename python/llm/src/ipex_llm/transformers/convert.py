@@ -149,9 +149,11 @@ def is_linear_module(module):
         from vllm.model_executor.layers.linear import (
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
         )
-
+        from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
         VLLM_LINEAR_LIST = [
-            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear, MergedColumnParallelLinear
+            ColumnParallelLinear, RowParallelLinear, QKVParallelLinear,
+            MergedColumnParallelLinear,
+            ParallelLMHead
         ]
         if is_module_in_classes(module, VLLM_LINEAR_LIST):
             if 'xpu' in _VLLM_VERSION:
@@ -167,6 +169,12 @@ def is_linear_module(module):
             else:
                 # For vllm cpu
                 tp_size = 1
+            if isinstance(module, ParallelLMHead) and 'xpu' in _VLLM_VERSION:
+                in_features = module.embedding_dim
+                out_features = module.num_embeddings_per_partition
+                result = True
+                mp_group = None
+                return result, (in_features, out_features, mp_group)
             in_features = module.input_size
             out_features = module.output_size
             result = True
@@ -667,7 +675,7 @@ def replace_with_low_bit_linear_for_module(model, qtype, module_name=None,
     return model
 
 
-def _optimize_pre(model):
+def _optimize_pre(model, qtype=None):
     try:
         from sentence_transformers.SentenceTransformer import SentenceTransformer
         if isinstance(model, SentenceTransformer):
@@ -743,8 +751,9 @@ def _optimize_pre(model):
         if should_apply_merge_qkv:
             from ipex_llm.transformers.models.qwen2 import merge_qkv
             model.apply(merge_qkv)
-            from ipex_llm.transformers.models.qwen2 import padding_mlp
-            model.apply(padding_mlp)
+            if qtype != ggml_tensor_qtype["fp6"]:
+                from ipex_llm.transformers.models.qwen2 import padding_mlp
+                model.apply(padding_mlp)
     if model.config.model_type == "qwen2_moe":
         from ipex_llm.transformers.models.qwen2_moe import merge_qkv
         model.apply(merge_qkv)
@@ -795,7 +804,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         return model
 
     if optimize_model:
-        model = _optimize_pre(model)
+        model = _optimize_pre(model, qtype)
 
     act_order = False
     if getattr(model, "quantization_method", None) == "gptq":
@@ -1373,13 +1382,23 @@ def _optimize_post(model, lightweight_bmm=False):
                         qwen2_attention_forward)
     elif model.config.model_type == "cohere":
         # for CohereForAI/c4ai-command-r-v01
+        invalidInputError(version.parse(trans_version) >= version.parse("4.40.0"),
+                          "Please upgrade transformers to 4.40.0 or higher version "
+                          "to run Mixtral models.")
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
+        if version.parse(trans_version) >= version.parse("4.41.0"):
+            from ipex_llm.transformers.models.cohere import cohere_model_forward_4_41
+            convert_forward(model,
+                            module.CohereModel,
+                            cohere_model_forward_4_41)
+        else:
+            from ipex_llm.transformers.models.cohere import cohere_model_forward
+            convert_forward(model,
+                            module.CohereModel,
+                            cohere_model_forward)
+
         from ipex_llm.transformers.models.cohere import cohere_attention_forward
-        from ipex_llm.transformers.models.cohere import cohere_model_forward
-        convert_forward(model,
-                        module.CohereModel,
-                        cohere_model_forward)
         convert_forward(model,
                         module.CohereAttention,
                         cohere_attention_forward)

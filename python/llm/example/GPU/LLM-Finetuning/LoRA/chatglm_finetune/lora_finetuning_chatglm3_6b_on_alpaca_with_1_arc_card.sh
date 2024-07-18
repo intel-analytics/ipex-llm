@@ -14,12 +14,10 @@
 # limitations under the License.
 #
 
+export BIGDL_CHECK_DUPLICATE_IMPORT=0
 
-from .convert import ggml_convert_low_bit, get_enable_ipex
-from .model import AutoModelForCausalLM, AutoModel, AutoModelForSeq2SeqLM, \
-        AutoModelForSpeechSeq2Seq, AutoModelForQuestionAnswering, \
-        AutoModelForSequenceClassification, AutoModelForMaskedLM, \
-        AutoModelForNextSentencePrediction, AutoModelForMultipleChoice, \
-        AutoModelForTokenClassification
-from .modelling_bigdl import *
-from .pipeline_parallel import init_pipeline_parallel, PPModelWorker
+# You can also set the remote model repository to a local model path
+python lora_finetune_chatglm.py \
+       yahma/alpaca-cleaned \
+       THUDM/chatglm3-6b  \
+       ./lora_config.yaml

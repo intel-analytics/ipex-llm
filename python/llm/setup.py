@@ -293,7 +293,8 @@ def setup_package():
     xpu_requires = copy.deepcopy(xpu_21_requires)
 
 
-    cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION]
+    cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
+                    "onednn-devel==2024.0.0;platform_system=='Windows'"]
     cpp_requires += oneapi_2024_0_requires
 
     serving_requires = ['py-cpuinfo']
