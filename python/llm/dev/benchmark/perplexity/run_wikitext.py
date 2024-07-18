@@ -25,13 +25,14 @@ from datasets import concatenate_datasets, load_dataset
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_path", required=True, type=str)
-parser.add_argument("--datasets", required=False, type=str, default=None, nargs='*')
+parser.add_argument("--dataset", required=False, type=str, default="wikitext")
 parser.add_argument("--data_path", type=str, default='wikitext-2-raw-v1/wikitext-2-raw/wiki.test.raw')
 parser.add_argument("--chunk_size", type=int, default=512)
 parser.add_argument("--stride", type=int, default=0)
 parser.add_argument("--device", type=str, default="xpu")
 parser.add_argument("--precision", type=str, default="sym_int4")
 parser.add_argument("--use-cache", action="store_true")
+parser.add_argument("--max_length", required=False, type=int, default=0)
 args = parser.parse_args()
 
 if args.precision == "fp16":  # ipex fp16
@@ -48,26 +49,24 @@ else:  # ipex-llm
 model = model.to(args.device)
 model = model.eval()
 
-if args.datasets[0] == 'wikitext':
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
+if args.dataset == 'wikitext':
+    with open(args.data_path, "rb") as f:
+        data = f.read()
+    encodings = tokenizer(data.decode("utf-8").strip("\n"), return_tensors="pt")
+    
+else:
     def parse_kwargs(kwstr):
         kvpair = [item.split('=') for item in kwstr.split(',') if item != ""]
         return {k:v for k, v in kvpair}
-
-    from transformers import AutoTokenizer
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
-    test = load_dataset(**parse_kwargs(args.data_path), split="test")["text"]
+    test = load_dataset(**parse_kwargs(args.dataset), split="test")["text"]
     encodings = tokenizer("\n\n".join(test), return_tensors="pt")
 
+if args.max_length == 0:
+    max_length = model.config.max_position_embeddings
 else:
-    with open(args.data_path, "rb") as f:
-        data = f.read()
-
-    from transformers import AutoTokenizer
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
-    encodings = tokenizer(data.decode("utf-8").strip("\n"), return_tensors="pt")
-
-max_length = model.config.max_position_embeddings
-max_length = 4096
+    max_length = args.max_length
 stride = args.chunk_size if args.stride <= 0 else args.stride
 seq_len = encodings.input_ids.size(1)
 num_chunks = seq_len // stride
