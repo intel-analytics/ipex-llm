@@ -16,13 +16,6 @@ The [GraphRAG project](https://github.com/microsoft/graphrag) is designed to lev
 
 Follow the steps in [Run Ollama with IPEX-LLM on Intel GPU Guide](./ollama_quickstart.md) to install and run Ollama on Intel GPU. Ensure that `ollama serve` is running correctly and can be accessed through a local URL (e.g., `https://127.0.0.1:11434`).
 
-> [!TIP]
-> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
->
-> ```bash
-> export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-> ```
-
 ### 2. Prepare LLM and Embedding Model
 
 In another terminal window, separate from where you executed `ollama serve`, download the LLM and embedding model using the following commands:
