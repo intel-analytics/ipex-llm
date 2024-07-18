@@ -34,14 +34,14 @@ def main():
     conf = OmegaConf.load(args.yaml_name)
     test_apis : list[str] = conf['test_api']
     in_out_pairs : list[str] = conf['in_out_pairs']
-    print(f"test_apis: {type(test_apis)} \n {test_apis}")
-    print(f"test_apis: {type(in_out_pairs)} \n {in_out_pairs}")
+    #print(f"test_apis: {type(test_apis)} \n {test_apis}")
+    #print(f"test_apis: {type(in_out_pairs)} \n {in_out_pairs}")
     for api in test_apis:
         for in_out in in_out_pairs:
             csv_name_info:str = f"{in_out}-{api}-results-"
-            print(csv_name_info)
+            #print(csv_name_info)
             csv_file = [file for file in all_csv_files if (csv_name_info in file) and file.endswith(f"_{args.file_suffix}.csv")][0]
-            print(csv_file)
+            #print(csv_file)
     
             csv_dataframe = pd.read_csv(csv_file, index_col=0)
             actual_test_num = len(csv_dataframe)
