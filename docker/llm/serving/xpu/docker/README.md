@@ -44,6 +44,14 @@ After the container is booted, you could get into the container through `docker 
 
 Currently, we provide two different serving engines in the image, which are FastChat serving engine and vLLM serving engine.
 
+
+#### Lightweight serving engine
+
+To run Lightweight serving on one intel gpu using `IPEX-LLM` as backend, you can refer to this [readme](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Lightweight-Serving).
+
+For convenience, we have included a file `/llm/start-lightweight_serving-service` in the image.
+
+
 #### Pipeline parallel serving engine
 
 To run Pipeline parallel serving using `IPEX-LLM` as backend, you can refer to this [readme](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Pipeline-Parallel-FastAPI).

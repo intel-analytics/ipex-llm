@@ -85,7 +85,7 @@ export no_proxy=localhost,127.0.0.1
 curl -X POST -H "Content-Type: application/json" -d '{
   "inputs": "What is AI?",
   "parameters": {
-    "max_new_tokens": 32,
+    "max_new_tokens": 32
   },
   "stream": false
 }' http://localhost:8000/generate
