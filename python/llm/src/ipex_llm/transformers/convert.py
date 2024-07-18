@@ -475,7 +475,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         elif disk_embedding and type(module) == nn.Embedding:
             model._modules[name] = DiskEmbedding.from_embedding(module)
         elif embedding_qtype is not None and type(module) == nn.Embedding:
-            model._modules[name] = LowBitEmbedding.from_embedding(module, embedding_qtype)
+            model._modules[name] = LowBitEmbedding.from_embedding(module,
+                                                                  convert_shape_only,
+                                                                  embedding_qtype)
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
             _, _flag = _replace_with_low_bit_linear(

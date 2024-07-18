@@ -18,7 +18,6 @@
 import numpy
 import torch
 from torch import Tensor
-from torch.nn import functional as F
 from torch.nn import Parameter
 from typing import Optional
 from ipex_llm.transformers.low_bit_linear import FP4Params
@@ -166,15 +165,22 @@ class LowBitEmbedding(torch.nn.Embedding):
                  _freeze: bool = False,
                  device=None,
                  dtype=None,
+                 convert_shape_only=None,
                  qtype=None) -> None:
         super().__init__(num_embeddings, embedding_dim, padding_idx,
                          max_norm, norm_type, scale_grad_by_freq, sparse,
                          _weight, device, dtype)
+        self.qweight = FP4Params(self.weight.data,
+                                 requires_grad=False,
+                                 quantized=False,
+                                 _shape=None,
+                                 convert_shape_only=convert_shape_only,
+                                 qtype=qtype,
+                                 in_features=embedding_dim)
+        # this dummy_weight is used to record model's dtype and device
         dummy_weight = torch.empty(0, 0, dtype=self.weight.dtype, device=self.weight.device)
-        self.dummy_weight = torch.nn.Parameter(dummy_weight, requires_grad=False)
-        self.weight = FP4Params(self.weight.data,
-                                requires_grad=False,
-                                quantized=False, _shape=None, qtype=qtype)
+        self.weight = torch.nn.Parameter(dummy_weight, requires_grad=False)
+
         self.embedding_dim = embedding_dim
         self.num_embeddings = num_embeddings
 
@@ -182,19 +188,18 @@ class LowBitEmbedding(torch.nn.Embedding):
         invalidInputError(x.device.type == "xpu",
                           "`LowBitEmbedding` only supports GPU now.")
         try:
-            import intel_extension_for_pytorch
             import xe_linear
         except ModuleNotFoundError:
             invalidInputError(False,
-                              "Please `pip install bigdl_core_xe` first.")
+                              "Please `pip install bigdl_core_xe_21` first.")
 
-        result = xe_linear.dequantize_rows(x.contiguous(), self.weight.data,
-                                           self.weight.qtype, self.embedding_dim,
+        result = xe_linear.dequantize_rows(x.contiguous(), self.qweight.data,
+                                           self.qweight.qtype, self.embedding_dim,
                                            self.num_embeddings)
-        return result.to(self.dummy_weight.dtype)
+        return result.to(self.weight.dtype)
 
     @classmethod
-    def from_embedding(cls, embedding: torch.nn.Embedding, qtype):
+    def from_embedding(cls, embedding: torch.nn.Embedding, convert_shape_only, qtype):
         return cls(
             embedding.num_embeddings,
             embedding.embedding_dim,
@@ -207,5 +212,6 @@ class LowBitEmbedding(torch.nn.Embedding):
             True,
             embedding.weight.device,
             embedding.weight.dtype,
-            qtype
+            convert_shape_only,
+            qtype,
         )
