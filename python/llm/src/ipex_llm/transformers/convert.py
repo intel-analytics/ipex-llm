@@ -1673,19 +1673,27 @@ def _optimize_post(model, lightweight_bmm=False):
                         stablelm_model_forward
                         )
     elif model.config.model_type == 'minicpm':
-        from ipex_llm.transformers.models.minicpm import minicpm_attention_forward
-        from ipex_llm.transformers.models.minicpm import minicpm_model_forward
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
+        if version.parse(trans_version) >= version.parse("4.39.0"):
+            from ipex_llm.transformers.models.minicpm import minicpm_attention_forward_4_39
+            convert_forward(model,
+                            module.MiniCPMAttention,
+                            minicpm_attention_forward_4_39)
+        else:
+            from ipex_llm.transformers.models.minicpm import minicpm_attention_forward
+            convert_forward(model,
+                            module.MiniCPMAttention,
+                            minicpm_attention_forward)
+        from ipex_llm.transformers.models.minicpm import minicpm_model_forward
+
         convert_forward(model,
                         module.MiniCPMMLP,
                         llama_mlp_forward)
         convert_forward(model,
                         module.MiniCPMRMSNorm,
                         llama_rms_norm_forward)
-        convert_forward(model,
-                        module.MiniCPMAttention,
-                        minicpm_attention_forward)
+
         convert_forward(model,
                         module.MiniCPMModel,
                         minicpm_model_forward)
