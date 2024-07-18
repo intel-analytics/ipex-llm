@@ -22,7 +22,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
 # According to Gemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
-pip install transformers==4.38.1
+pip install "transformers>=4.38.1"
 ```
 
 On Windows:
@@ -33,7 +33,7 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 
-pip install transformers==4.38.1
+pip install "transformers>=4.38.1"
 ```
 
 ### 2. Run
