@@ -1382,13 +1382,23 @@ def _optimize_post(model, lightweight_bmm=False):
                         qwen2_attention_forward)
     elif model.config.model_type == "cohere":
         # for CohereForAI/c4ai-command-r-v01
+        invalidInputError(version.parse(trans_version) >= version.parse("4.40.0"),
+                          "Please upgrade transformers to 4.40.0 or higher version "
+                          "to run Mixtral models.")
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
+        if version.parse(trans_version) >= version.parse("4.41.0"):
+            from ipex_llm.transformers.models.cohere import cohere_model_forward_4_41
+            convert_forward(model,
+                            module.CohereModel,
+                            cohere_model_forward_4_41)
+        else:
+            from ipex_llm.transformers.models.cohere import cohere_model_forward
+            convert_forward(model,
+                            module.CohereModel,
+                            cohere_model_forward)
+
         from ipex_llm.transformers.models.cohere import cohere_attention_forward
-        from ipex_llm.transformers.models.cohere import cohere_model_forward
-        convert_forward(model,
-                        module.CohereModel,
-                        cohere_model_forward)
         convert_forward(model,
                         module.CohereAttention,
                         cohere_attention_forward)
