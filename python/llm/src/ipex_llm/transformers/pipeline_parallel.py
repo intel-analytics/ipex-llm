@@ -53,7 +53,7 @@ class DummyLayer(nn.Module):
         super().__init__()
         # to avoid AttributeError in https://github.com/intel-analytics/ipex-llm/blob/main/
         # python/llm/src/ipex_llm/transformers/models/llama.py#L2076
-        self.weight = torch.randn(1,)
+        self.weight = nn.Parameter(torch.empty(0,), requires_grad=False)
 
     def forward(self, x):
         return x
