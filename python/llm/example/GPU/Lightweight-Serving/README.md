@@ -1,0 +1,158 @@
+# Running Lightweight Serving using IPEX-LLM on one Intel GPU
+
+## Requirements
+
+To run this example with IPEX-LLM on one Intel GPU, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
+
+## Example
+
+### 1. Install
+
+#### 1.1 Installation on Linux
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.11
+conda activate llm
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install fastapi uvicorn openai
+pip install gradio # for gradio web UI
+conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
+```
+
+#### 1.2 Installation on Windows
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.11 libuv
+conda activate llm
+
+# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install fastapi uvicorn openai
+pip install gradio # for gradio web UI
+conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
+```
+
+### 2. Configures OneAPI environment variables for Linux
+
+> [!NOTE]
+> Skip this step if you are running on Windows.
+
+This is a required step on Linux for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
+
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
+
+### 3. Runtime Configurations
+For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
+#### 3.1 Configurations for Linux
+<details>
+
+<summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
+
+```bash
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
+```
+
+</details>
+
+<details>
+
+<summary>For Intel Data Center GPU Max Series</summary>
+
+```bash
+export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
+export ENABLE_SDP_FUSION=1
+```
+> Note: Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`.
+</details>
+
+<details>
+
+<summary>For Intel iGPU</summary>
+
+```bash
+export SYCL_CACHE_PERSISTENT=1
+export BIGDL_LLM_XMX_DISABLED=1
+```
+
+</details>
+
+#### 3.2 Configurations for Windows
+<details>
+
+<summary>For Intel iGPU</summary>
+
+```cmd
+set SYCL_CACHE_PERSISTENT=1
+set BIGDL_LLM_XMX_DISABLED=1
+```
+
+</details>
+
+<details>
+
+<summary>For Intel Arc™ A-Series Graphics</summary>
+
+```cmd
+set SYCL_CACHE_PERSISTENT=1
+```
+
+</details>
+
+> [!NOTE]
+> For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
+
+### 4. Running example
+
+```
+python ./lightweight_serving.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --low-bit LOW_BIT --port PORT
+```
+
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the model (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
+- `--low-bit LOW_BIT`: Sets the low bit optimizations (such as 'sym_int4', 'fp16', 'fp8' and 'fp6') for the model. It is default to be `sym_int4`.
+- `--port PORT`: The serving access port. It is default to be `8000`.
+
+
+### 5. Sample Input and Output
+
+We can use `curl` to test serving api
+
+#### generate()
+
+```bash
+# Set no_proxy to ensure that requests are not forwarded by a proxy.
+export no_proxy=localhost,127.0.0.1
+
+curl -X POST -H "Content-Type: application/json" -d '{
+  "inputs": "What is AI?",
+  "parameters": {
+    "max_new_tokens": 32,
+    "min_new_tokens": 32,
+    "repetition_penalty": 1.0,
+    "temperature": 1.0,
+    "do_sample": false,
+    "top_k": 5,
+    "tok_p": 1.0
+  },
+  "stream": false
+}' http://localhost:8000/generate
+```
+
+### 6. Benchmark with wrk
+
+Please refer to [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Pipeline-Parallel-Serving#4-benchmark-with-wrk) for more details
+
+## 7. Using the `benchmark.py` Script
+
+Please refer to [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Pipeline-Parallel-Serving#5-using-the-benchmarkpy-script) for more details
+
+## 8. Gradio Web UI
+
+Please refer to [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Pipeline-Parallel-Serving#6-gradio-web-ui) for more details

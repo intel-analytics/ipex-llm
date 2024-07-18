@@ -73,7 +73,6 @@ class ModelWorker:
 
             def model_generate():
                 generate_kwargs = {k: v for k, v in parameters.dict().items() if v is not None}
-                print(generate_kwargs)
                 self.model.generate(input_ids,
                                     streamer=self.streamer[request_id], **generate_kwargs)
                 torch.xpu.empty_cache()

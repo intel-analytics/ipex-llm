@@ -203,8 +203,6 @@ async def generator(local_model, delta_text_queue, request_id):
 
 @app.post("/generate")
 async def generate(inputs_request: InputsRequest):
-    print(inputs_request)
-    print(type(inputs_request.stream))
     if inputs_request.stream:
         result = await generate_stream_api(inputs_request)
         return result

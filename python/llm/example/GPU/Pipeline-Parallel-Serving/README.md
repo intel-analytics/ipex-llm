@@ -52,6 +52,7 @@ pip install trl==0.8.1
 
 ### 2-1. Run ipex-llm serving on one GPU card 
 
+Refer to [Lightweight-Serving](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Lightweight-Serving), get the [lightweight_serving.py](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Lightweight-Serving/lightweight_serving.py) and then to run.
 ```bash
 # Need to set NUM_GPUS=1 and MODEL_PATH in run.sh first
 bash run.sh
@@ -78,18 +79,16 @@ We can use `curl` to test serving api
 #### generate()
 
 ```bash
-# Set http_proxy and https_proxy to null to ensure that requests are not forwarded by a proxy.
-export http_proxy=
-export https_proxy=
+# Set no_proxy to ensure that requests are not forwarded by a proxy.
+export no_proxy=localhost,127.0.0.1
 
-curl -X 'POST' \
-  'http://127.0.0.1:8000/generate' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "prompt": "What is AI?",
-  "n_predict": 32
-}'
+curl -X POST -H "Content-Type: application/json" -d '{
+  "inputs": "What is AI?",
+  "parameters": {
+    "max_new_tokens": 32,
+  },
+  "stream": false
+}' http://localhost:8000/generate
 ```
 
 
