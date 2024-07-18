@@ -292,7 +292,7 @@ async def create_completion(request: CompletionRequest):
         inputs=request.prompt,
         parameters=Parameters(max_new_tokens=n_predict),
         stream=request.stream,
-        req_type="chat"
+        req_type="completion"
     )
     if request.stream:
         request_id, result = await generate_stream(inputs_request)
