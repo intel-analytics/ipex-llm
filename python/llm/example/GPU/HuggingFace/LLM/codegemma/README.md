@@ -20,7 +20,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 # According to CodeGemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
-pip install transformers==4.38.1
+pip install "transformers>=4.38.1"
 ```
 
 #### 1.2 Installation on Windows
@@ -33,7 +33,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 # According to CodeGemma's requirement, please make sure you are using a stable version of Transformers, 4.38.1 or newer.
-pip install transformers==4.38.1
+pip install "transformers>=4.38.1"
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
