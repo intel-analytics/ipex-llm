@@ -659,6 +659,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-32_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
@@ -681,6 +683,8 @@ jobs:
           move ..\..\..\test\benchmark\igpu-perf\32-32_int4_fp16_437.yaml config.yaml
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-32_int4_fp16\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test2
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -705,6 +709,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-32_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 if %ERRORLEVEL% neq -1073740791 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
@@ -750,6 +756,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
@@ -773,6 +781,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test2
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
           
@@ -795,6 +805,8 @@ jobs:
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_438.yaml config.yaml
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -840,6 +852,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\2048-256_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
@@ -863,6 +877,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\2048-256_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test2
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
           
@@ -885,6 +901,8 @@ jobs:
           move ..\..\..\test\benchmark\igpu-perf\2048-256_int4_fp16_438.yaml config.yaml
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\2048-256_int4_fp16\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -930,6 +948,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16_loadlowbit\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
@@ -953,6 +973,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16_loadlowbit\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test2
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
@@ -975,6 +997,8 @@ jobs:
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_loadlowbit_438.yaml config.yaml
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16_loadlowbit\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
@@ -1019,6 +1043,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
@@ -1042,6 +1068,8 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test2
+          if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
 
@@ -1064,6 +1092,8 @@ jobs:
           move ..\..\..\test\benchmark\igpu-perf\1024-128_438.yaml config.yaml
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
