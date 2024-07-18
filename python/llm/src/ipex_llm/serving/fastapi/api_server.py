@@ -39,12 +39,6 @@ class InputsRequest(BaseModel):
     req_type: str = 'completion'
 
 
-class PromptRequest(BaseModel):
-    prompt: str
-    n_predict: Optional[int] = 256
-    req_type: str = 'completion'
-
-
 class ChatCompletionRequest(BaseModel):
     messages: List[ChatCompletionMessageParam]
     model: str

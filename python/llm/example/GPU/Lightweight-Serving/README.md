@@ -145,6 +145,56 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:8000/generate
 ```
 
+#### generate_stream()
+
+```bash
+# Set no_proxy to ensure that requests are not forwarded by a proxy.
+export no_proxy=localhost,127.0.0.1
+
+curl -X POST -H "Content-Type: application/json" -d '{
+  "inputs": "What is AI?",
+  "parameters": {
+    "max_new_tokens": 32,
+    "min_new_tokens": 32,
+    "repetition_penalty": 1.0,
+    "temperature": 1.0,
+    "do_sample": false,
+    "top_k": 5,
+    "tok_p": 1.0
+  },
+  "stream": false
+}' http://localhost:8000/generate_stream
+```
+
+#### /v1/chat/completions
+
+```bash
+# Set no_proxy to ensure that requests are not forwarded by a proxy.
+export no_proxy=localhost,127.0.0.1
+
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Llama-2-7b-chat-hf",
+    "messages": [{"role": "user", "content": "Hello! What is your name?"}]
+  }'
+```
+
+#### /v1/completions
+
+```bash
+# Set no_proxy to ensure that requests are not forwarded by a proxy.
+export no_proxy=localhost,127.0.0.1
+
+curl http://localhost:8000/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Llama-2-7b-chat-hf",
+    "prompt": "Once upon a time",
+    "max_tokens": 32
+  }'
+```
+
 ### 6. Benchmark with wrk
 
 Please refer to [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Pipeline-Parallel-Serving#4-benchmark-with-wrk) for more details

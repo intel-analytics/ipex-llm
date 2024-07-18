@@ -704,7 +704,7 @@ class PPModelWorker:
         new_batch = BatchTask(
             batch_id="batch_" + str(uuid.uuid4()),
             request_ids=request_ids,
-            max_tokens=max([req.parameters.mex_new_tokens for req in prompt_requests]),
+            max_tokens=max([req.parameters.max_new_tokens for req in prompt_requests]),
             batch_size=input_ids.size(0),
             input_len=input_ids.size(1),
             prompt_lengths=[sum(attention_mask[i, :]) for i in range(input_ids.size(0))],
