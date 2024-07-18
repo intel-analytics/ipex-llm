@@ -309,7 +309,9 @@ def use_scale_search(model_config, qtype):
 
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  convert_shape_only=False,
-                                 cpu_embedding=False, prefix_name='',
+                                 cpu_embedding=False,
+                                 disk_embedding=False,
+                                 prefix_name='',
                                  imatrix_data=None, embedding_qtype=None,
                                  model_config=None, torch_dtype=torch.float32,
                                  enable_xetla=False,
@@ -319,7 +321,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  ):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
-    from ipex_llm.transformers.embedding import LLMEmbedding, LowBitEmbedding
+    from ipex_llm.transformers.embedding import CPUEmbedding, DiskEmbedding, LowBitEmbedding
     has_been_replaced = False
 
     for name, module in model.named_children():
@@ -467,48 +469,15 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     model._modules[name].requires_grad_(False)
 
                     module.weight = None
+        # skip user-defined Embedding layer
         elif cpu_embedding and type(module) == nn.Embedding:
-            # skip user-defined Embedding layer
-            model._modules[name] = LLMEmbedding(
-                num_embeddings=module.num_embeddings,
-                embedding_dim=module.embedding_dim,
-                padding_idx=module.padding_idx,
-                max_norm=module.max_norm,
-                norm_type=module.norm_type,
-                scale_grad_by_freq=module.scale_grad_by_freq,
-                sparse=module.sparse,
-                _weight=module.weight.data,
-            )
-        elif type(module) == nn.Embedding and embedding_qtype is not None:
-            if torch_dtype == "auto":
-                torch_dtype = torch.float32
-            q_embedding = LowBitEmbedding(
-                num_embeddings=module.num_embeddings,
-                embedding_dim=module.embedding_dim,
-                padding_idx=module.padding_idx,
-                max_norm=module.max_norm,
-                norm_type=module.norm_type,
-                scale_grad_by_freq=module.scale_grad_by_freq,
-                sparse=module.sparse,
-                _weight=module.weight.data,
-                qtype=embedding_qtype,
-                torch_dtype=torch_dtype
-            )
-            device = module.weight.data.device
-            # Copy the weights
-            paramsLowBit = FP4Params(data=module.weight.data,
-                                     requires_grad=False,
-                                     quantized=False,
-                                     _shape=None,
-                                     convert_shape_only=convert_shape_only,
-                                     qtype=embedding_qtype,
-                                     in_features=module.embedding_dim).to(device)
-            q_embedding._parameters['weight'] = paramsLowBit
-            model._modules[name] = q_embedding
-            # Force requires grad to False to avoid unexpected errors
-            model._modules[name].requires_grad_(False)
-            module.weight = None
-
+            model._modules[name] = CPUEmbedding.from_embedding(module)
+        elif disk_embedding and type(module) == nn.Embedding:
+            model._modules[name] = DiskEmbedding.from_embedding(module)
+        elif embedding_qtype is not None and type(module) == nn.Embedding:
+            model._modules[name] = LowBitEmbedding.from_embedding(module,
+                                                                  convert_shape_only,
+                                                                  embedding_qtype)
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
             _, _flag = _replace_with_low_bit_linear(
@@ -517,6 +486,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 modules_to_not_convert,
                 convert_shape_only,
                 cpu_embedding,
+                disk_embedding,
                 prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
                 imatrix_data=imatrix_data,
                 embedding_qtype=embedding_qtype,
@@ -775,7 +745,8 @@ def _optimize_pre(model, qtype=None):
 
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
-                         modules_to_not_convert=None, cpu_embedding=False,
+                         modules_to_not_convert=None,
+                         cpu_embedding=False, disk_embedding=False,
                          lightweight_bmm=False, torch_dtype="auto",
                          imatrix_data=None,
                          embedding_qtype=None,
@@ -817,7 +788,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     # mixed quantization needs model_config to choose custom quantization strategy
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
-        convert_shape_only, cpu_embedding,
+        convert_shape_only, cpu_embedding, disk_embedding,
         imatrix_data=imatrix_data,
         embedding_qtype=embedding_qtype,
         model_config=model_config,

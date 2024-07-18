@@ -483,7 +483,7 @@ class FP4Params(torch.nn.Parameter):
             return self.quantize(device.type)
         elif (device is not None and device.type == "xpu" and self.data.device.type == "cpu"):
             # enter xpu logic, compile linear_int4 extension at first time
-            self.quantize(device)  # tensor is cpu now
+            self.quantize("cpu")  # tensor is cpu now
             self.data = ggml_q_format_convet_cpu2xpu(self.data,
                                                      reduce(mul, self._shape, 1),
                                                      self.qtype)

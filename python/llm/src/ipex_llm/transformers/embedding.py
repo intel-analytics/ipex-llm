@@ -18,7 +18,6 @@
 import numpy
 import torch
 from torch import Tensor
-from torch.nn import functional as F
 from torch.nn import Parameter
 from typing import Optional
 from ipex_llm.transformers.low_bit_linear import FP4Params
@@ -56,7 +55,7 @@ class CPUPinnedParam(Parameter):
         return super().to(*args, **kwargs)
 
 
-class LLMEmbedding(torch.nn.Embedding):
+class CPUEmbedding(torch.nn.Embedding):
     def __init__(self,
                  num_embeddings: int,
                  embedding_dim: int,
@@ -67,14 +66,31 @@ class LLMEmbedding(torch.nn.Embedding):
                  sparse: bool = False,
                  _weight: Optional[Tensor] = None,
                  _freeze: bool = False,
-                 device=None, dtype=None) -> None:
+                 device=None,
+                 dtype=None) -> None:
         super().__init__(num_embeddings, embedding_dim, padding_idx,
                          max_norm, norm_type, scale_grad_by_freq,
-                         sparse, _weight, _freeze, device, dtype)
-        self.weight = CPUPinnedParam(self.weight.data, requires_grad=not _freeze)
+                         sparse, _weight, True, device, dtype)
+        self.weight = CPUPinnedParam(self.weight.data, requires_grad=False)
 
     def forward(self, x: Tensor):
         return super().forward(x.to('cpu')).to(x.device)
+
+    @classmethod
+    def from_embedding(cls, embedding: torch.nn.Embedding):
+        return cls(
+            embedding.num_embeddings,
+            embedding.embedding_dim,
+            embedding.padding_idx,
+            embedding.max_norm,
+            embedding.norm_type,
+            embedding.scale_grad_by_freq,
+            embedding.sparse,
+            embedding.weight.data,
+            True,
+            embedding.weight.device,
+            embedding.weight.dtype,
+        )
 
 
 class DiskEmbedding(torch.nn.Embedding):
@@ -89,7 +105,7 @@ class DiskEmbedding(torch.nn.Embedding):
                  _weight: Optional[Tensor] = None,
                  _freeze: bool = False,
                  device=None,
-                 dtype=None):
+                 dtype=None) -> None:
         super().__init__(num_embeddings, embedding_dim, padding_idx,
                          max_norm, norm_type, scale_grad_by_freq,
                          sparse, _weight, True, device, dtype)
@@ -147,30 +163,55 @@ class LowBitEmbedding(torch.nn.Embedding):
                  sparse: bool = False,
                  _weight: Optional[Tensor] = None,
                  _freeze: bool = False,
-                 device=None, dtype=None,
-                 qtype=None,
-                 torch_dtype=torch.float32) -> None:
+                 device=None,
+                 dtype=None,
+                 convert_shape_only=None,
+                 qtype=None) -> None:
         super().__init__(num_embeddings, embedding_dim, padding_idx,
                          max_norm, norm_type, scale_grad_by_freq, sparse,
                          _weight, device, dtype)
-        self.weight = FP4Params(self.weight.data,
-                                requires_grad=False,
-                                quantized=False, _shape=None, qtype=qtype)
+        self.qweight = FP4Params(self.weight.data,
+                                 requires_grad=False,
+                                 quantized=False,
+                                 _shape=None,
+                                 convert_shape_only=convert_shape_only,
+                                 qtype=qtype,
+                                 in_features=embedding_dim)
+        # this dummy_weight is used to record model's dtype and device
+        dummy_weight = torch.empty(0, 0, dtype=self.weight.dtype, device=self.weight.device)
+        self.weight = torch.nn.Parameter(dummy_weight, requires_grad=False)
+
         self.embedding_dim = embedding_dim
         self.num_embeddings = num_embeddings
-        self.torch_dtype = torch_dtype
 
     def forward(self, x: Tensor):
         invalidInputError(x.device.type == "xpu",
                           "`LowBitEmbedding` only supports GPU now.")
         try:
-            import intel_extension_for_pytorch
             import xe_linear
         except ModuleNotFoundError:
             invalidInputError(False,
-                              "Please `pip install bigdl_core_xe` first.")
+                              "Please `pip install bigdl_core_xe_21` first.")
 
-        result = xe_linear.dequantize_rows(x.contiguous(), self.weight.data,
-                                           self.weight.qtype, self.embedding_dim,
+        result = xe_linear.dequantize_rows(x.contiguous(), self.qweight.data,
+                                           self.qweight.qtype, self.embedding_dim,
                                            self.num_embeddings)
-        return result.to(self.torch_dtype)
+        return result.to(self.weight.dtype)
+
+    @classmethod
+    def from_embedding(cls, embedding: torch.nn.Embedding, convert_shape_only, qtype):
+        return cls(
+            embedding.num_embeddings,
+            embedding.embedding_dim,
+            embedding.padding_idx,
+            embedding.max_norm,
+            embedding.norm_type,
+            embedding.scale_grad_by_freq,
+            embedding.sparse,
+            embedding.weight.data,
+            True,
+            embedding.weight.device,
+            embedding.weight.dtype,
+            convert_shape_only,
+            qtype,
+        )

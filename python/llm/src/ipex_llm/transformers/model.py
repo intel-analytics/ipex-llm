@@ -144,6 +144,8 @@ class _BaseAutoModelClass:
                             Default to be ``False``.
         :param cpu_embedding: Whether to replace the Embedding layer, may need to set it
             to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
+        :param disk_embedding: Whether to put the Embedding layer on disk to save memory.
+            Default to be ``False``.
         :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
             to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param imatrix: str value, represent filename of importance matrix pretrained on
@@ -435,6 +437,7 @@ class _BaseAutoModelClass:
             warnings.warn("replace_embedding is deprecated and will be removed in a future version,"
                           " please use cpu_embedding instead.", FutureWarning)
             cpu_embedding = True
+        disk_embedding = kwargs.pop("disk_embedding", False)
         lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         quant_config = kwargs.pop("quantization_config", None)
         imatrix_data = kwargs.pop("imatrix_data", None)
@@ -507,7 +510,9 @@ class _BaseAutoModelClass:
         model = model.to("cpu")
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
+                                     cpu_embedding=cpu_embedding,
+                                     disk_embedding=disk_embedding,
+                                     lightweight_bmm=lightweight_bmm,
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
                                      imatrix_data=imatrix_data,
                                      embedding_qtype=embedding_qtype,
@@ -563,6 +568,7 @@ class _BaseAutoModelClass:
             warnings.warn("replace_embedding is deprecated and will be removed in a future version,"
                           " please use cpu_embedding instead.", FutureWarning)
             cpu_embedding = True
+        disk_embedding = kwargs.pop("disk_embedding", False)
         lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
@@ -699,7 +705,9 @@ class _BaseAutoModelClass:
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     cpu_embedding=cpu_embedding, lightweight_bmm=lightweight_bmm,
+                                     cpu_embedding=cpu_embedding,
+                                     disk_embedding=disk_embedding,
+                                     lightweight_bmm=lightweight_bmm,
                                      embedding_qtype=embedding_qtype, torch_dtype=torch_dtype)
 
         if is_sharded:
