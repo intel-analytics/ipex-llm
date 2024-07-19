@@ -162,7 +162,7 @@ def _check_quantize_kv_cache(model, idx, batch_size):
         os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] = "0"
 
 
-def pipeline_parallel(model, pipeline_parallel_stages):
+def pipeline_parallel(model, pipeline_parallel_stages, torch_dtype=torch.float32):
     global num_layers
     if hasattr(model.config, 'num_hidden_layers'):
         num_layers = model.config.num_hidden_layers
@@ -227,6 +227,8 @@ def pipeline_parallel(model, pipeline_parallel_stages):
     model.layer_start = layer_start
     model.layer_end = layer_end
     model.num_layers = num_layers
+    if torch_dtype == torch.float16:
+        model = model.half()
     model = model.to(f'xpu:{local_rank}')
     return model
 

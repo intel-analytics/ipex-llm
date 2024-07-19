@@ -374,7 +374,7 @@ class _BaseAutoModelClass:
                                   "Please make sure you've called `init_pipeline_parallel()` "
                                   "and world size is the same as `pipeline_parallel_stages`")
                 from .pipeline_parallel import pipeline_parallel, pipeline_parallel_generate
-                model = pipeline_parallel(model, pipeline_parallel_stages)
+                model = pipeline_parallel(model, pipeline_parallel_stages, kwargs["torch_dtype"])
                 import types
                 # add pipeline_parallel_generate to pretrained model dynamically
                 model.pipeline_parallel_generate = types.MethodType(pipeline_parallel_generate,
@@ -788,7 +788,7 @@ class _BaseAutoModelClass:
 
         if pipeline_parallel_stages > 1:
             from .pipeline_parallel import pipeline_parallel, pipeline_parallel_generate
-            model = pipeline_parallel(model, pipeline_parallel_stages)
+            model = pipeline_parallel(model, pipeline_parallel_stages, torch_dtype)
             import types
             # add pipeline_parallel_generate to pretrained model dynamically
             model.pipeline_parallel_generate = types.MethodType(pipeline_parallel_generate,
