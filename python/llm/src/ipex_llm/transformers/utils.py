@@ -361,3 +361,14 @@ def get_modelscope_hf_config(model_id_or_path: str,
 def is_torch_bf16_gpu_available():
     # always true for XPU and CPU
     return True
+
+# Arc platfrom does not support FP64, 
+# Disable FP64 in DeepSpeedZeroOptimizer_Stage3's _constant_buffered_norm2  method
+def _constant_buffered_norm2(self, input, buffer_size=250000000):
+    norm = None
+    for part in input.view(-1).split(buffer_size):
+        if norm is None:
+            norm = part.data.norm(2)**2.0
+        else:
+            norm += part.data.norm(2)**2.0
+    return norm**0.5

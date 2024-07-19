@@ -317,6 +317,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  mixed_precision=False,
                                  act_order=False,
                                  enable_scale_search=False,
+                                 enable_deepspeed_zero3=False,
                                  ):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
         FP16Linear, BF16Linear
@@ -404,6 +405,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         enable_xetla=enable_xetla,
                         optimize_lm_head=optimize_lm_head,
                         enable_scale_search=enable_scale_search,
+                        enable_deepspeed_zero3=enable_deepspeed_zero3
                     )
                     device = module.weight.data.device
                     # Copy the weights
@@ -416,7 +418,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                              imatrix=cur_imatrix,
                                              in_features=in_features,
                                              enable_xetla=enable_xetla,
-                                             enable_scale_search=enable_scale_search).to(device)
+                                             enable_scale_search=enable_scale_search
+                                             enable_deepspeed_zero3=enable_deepspeed_zero3).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
@@ -747,7 +750,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          imatrix_data=None,
                          embedding_qtype=None,
                          enable_xetla=False,
-                         mixed_precision=False):
+                         mixed_precision=False,
+                         enable_deepspeed_zero3=False):
     if qtype in ggml_tensor_qtype.values():
         index = list(ggml_tensor_qtype.values()).index(qtype)
         logger.info(f"Converting the current model to "
@@ -793,6 +797,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         mixed_precision=mixed_precision,
         act_order=act_order,
         enable_scale_search=enable_scale_search,
+        enable_deepspeed_zero3=enable_deepspeed_zero3,
     )
     if not has_been_replaced:
         warnings.warn(

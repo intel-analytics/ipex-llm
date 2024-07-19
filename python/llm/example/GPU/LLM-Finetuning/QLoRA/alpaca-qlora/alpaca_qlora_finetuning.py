@@ -144,6 +144,12 @@ def train(
 
     prompter = Prompter(prompt_template_name)
 
+    if "zero3" in deepspeed:
+        from ipex_llm.transformers.utils \
+            import _constant_buffered_norm2
+        replace_attr(deepspeed.runtime.zero.stage3.DeepSpeedZeroOptimizer_Stage3,
+                     "_constant_buffered_norm2", _constant_buffered_norm2)
+
     device_map = "auto"
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     ddp = world_size != 1
@@ -162,6 +168,7 @@ def train(
             torch_dtype=torch.bfloat16,
             modules_to_not_convert=["lm_head"],
             trust_remote_code=True,
+            enable_deepspeed_zero3="zero3" in deepspeed
         )
     else:
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
