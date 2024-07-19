@@ -122,14 +122,11 @@ Arguments info:
 
 ### 5. Sample Input and Output
 
-We can use `curl` to test serving api
+We can use `curl` to test serving api. And need to set no_proxy to ensure that requests are not forwarded by a proxy. `export no_proxy=localhost,127.0.0.1`
 
-#### generate()
+#### /generate
 
 ```bash
-# Set no_proxy to ensure that requests are not forwarded by a proxy.
-export no_proxy=localhost,127.0.0.1
-
 curl -X POST -H "Content-Type: application/json" -d '{
   "inputs": "What is AI?",
   "parameters": {
@@ -145,12 +142,9 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' http://localhost:8000/generate
 ```
 
-#### generate_stream()
+#### /generate_stream
 
 ```bash
-# Set no_proxy to ensure that requests are not forwarded by a proxy.
-export no_proxy=localhost,127.0.0.1
-
 curl -X POST -H "Content-Type: application/json" -d '{
   "inputs": "What is AI?",
   "parameters": {
@@ -169,9 +163,6 @@ curl -X POST -H "Content-Type: application/json" -d '{
 #### /v1/chat/completions
 
 ```bash
-# Set no_proxy to ensure that requests are not forwarded by a proxy.
-export no_proxy=localhost,127.0.0.1
-
 curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -183,9 +174,6 @@ curl http://localhost:8000/v1/chat/completions \
 #### /v1/completions
 
 ```bash
-# Set no_proxy to ensure that requests are not forwarded by a proxy.
-export no_proxy=localhost,127.0.0.1
-
 curl http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
