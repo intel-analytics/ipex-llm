@@ -310,7 +310,6 @@ def use_scale_search(model_config, qtype):
 def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  convert_shape_only=False,
                                  cpu_embedding=False,
-                                 disk_embedding=False,
                                  prefix_name='',
                                  imatrix_data=None, embedding_qtype=None,
                                  model_config=None, torch_dtype=torch.float32,
@@ -472,8 +471,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         # skip user-defined Embedding layer
         elif cpu_embedding and type(module) == nn.Embedding:
             model._modules[name] = CPUEmbedding.from_embedding(module)
-        elif disk_embedding and type(module) == nn.Embedding:
-            model._modules[name] = DiskEmbedding.from_embedding(module)
         elif embedding_qtype is not None and type(module) == nn.Embedding:
             model._modules[name] = LowBitEmbedding.from_embedding(module,
                                                                   convert_shape_only,
@@ -486,7 +483,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 modules_to_not_convert,
                 convert_shape_only,
                 cpu_embedding,
-                disk_embedding,
                 prefix_name=prefix_name + '.' + name if prefix_name != '' else name,
                 imatrix_data=imatrix_data,
                 embedding_qtype=embedding_qtype,
@@ -746,7 +742,7 @@ def _optimize_pre(model, qtype=None):
 def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None,
-                         cpu_embedding=False, disk_embedding=False,
+                         cpu_embedding=False,
                          lightweight_bmm=False, torch_dtype="auto",
                          imatrix_data=None,
                          embedding_qtype=None,
@@ -788,7 +784,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     # mixed quantization needs model_config to choose custom quantization strategy
     model, has_been_replaced = _replace_with_low_bit_linear(
         model, qtype, modules_to_not_convert,
-        convert_shape_only, cpu_embedding, disk_embedding,
+        convert_shape_only, cpu_embedding,
         imatrix_data=imatrix_data,
         embedding_qtype=embedding_qtype,
         model_config=model_config,

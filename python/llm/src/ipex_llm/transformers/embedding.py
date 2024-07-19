@@ -110,7 +110,7 @@ class DiskEmbedding(torch.nn.Embedding):
                          max_norm, norm_type, scale_grad_by_freq,
                          sparse, _weight, True, device, dtype)
         self.filename = "embeddings.bin"
-        self.weight.data.flatten().half().numpy().tofile(self.filename)
+        self.weight.data.flatten().to(device='cpu', dtype=torch.half).numpy().tofile(self.filename)
         dummy_weight = torch.empty(0, 0, dtype=self.weight.dtype, device=self.weight.device)
         self.weight = torch.nn.Parameter(dummy_weight, requires_grad=False)
 
@@ -125,15 +125,6 @@ class DiskEmbedding(torch.nn.Embedding):
                 embeds.append(torch.frombuffer(buffer, dtype=torch.half))
         embeds = torch.stack(embeds).to(device=input_ids.device, dtype=self.weight.dtype)
         return embeds.view(*input_ids.size(), self.embedding_dim)
-
-    def restore(self):
-        with open(self.filename, 'rb') as f:
-            buffer = f.read()
-        embeds = torch.frombuffer(buffer, dtype=torch.half).clone()
-        embeds = embeds.view(self.num_embeddings, self.embedding_dim).to(
-            device=self.weight.device, dtype=self.weight.dtype
-        )
-        self.weight = torch.nn.Parameter(embeds, requires_grad=False)
 
     @classmethod
     def from_embedding(cls, embedding: torch.nn.Embedding):
@@ -150,6 +141,39 @@ class DiskEmbedding(torch.nn.Embedding):
             embedding.weight.device,
             embedding.weight.dtype,
         )
+
+    def to_embedding(self):
+        with open(self.filename, 'rb') as f:
+            buffer = f.read()
+        embeds = torch.frombuffer(buffer, dtype=torch.half).clone()
+        embeds = embeds.view(self.num_embeddings, self.embedding_dim).to(
+            device=self.weight.device, dtype=self.weight.dtype
+        )
+        return torch.nn.Embedding(
+            self.num_embeddings,
+            self.embedding_dim,
+            self.padding_idx,
+            self.max_norm,
+            self.norm_type,
+            self.scale_grad_by_freq,
+            self.sparse,
+            embeds,
+            True,
+            embeds.device,
+            embeds.dtype,
+        )
+
+    @staticmethod
+    def replace_normal_embedding(m: torch.nn.Module):
+        for name, module in m.named_children():
+            if type(module) == torch.nn.Embedding:
+                m._modules[name] = DiskEmbedding.from_embedding(module)
+
+    @staticmethod
+    def restore_normal_embedding(m: torch.nn.Module):
+        for name, module in m.named_children():
+            if type(module) == DiskEmbedding:
+                m._modules[name] = module.to_embedding()
 
 
 class LowBitEmbedding(torch.nn.Embedding):
