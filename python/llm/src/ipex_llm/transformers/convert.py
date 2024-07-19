@@ -1457,14 +1457,14 @@ def _optimize_post(model, lightweight_bmm=False):
             if version.parse(trans_version) >= version.parse("4.36.0"):
                 from ipex_llm.transformers.models.mistral import mistral_model_forward_4_36
                 if version.parse(trans_version) >= version.parse("4.39.0"):
-                    from ipex_llm.transformers.models.mistral import mistral_attention_forward_4_39
+                    from ipex_llm.transformers.models.mistral import mistral_attention_forward_4_39, prepare_inputs_for_generation_mistral, mistral_forward
                     convert_forward(model,
                                     module.MistralAttention,
                                     mistral_attention_forward_4_39
                                     )
+                    transformers.models.mistral.modeling_mistral.MistralForCausalLM.prepare_inputs_for_generation = prepare_inputs_for_generation_mistral
                 else:
                     from ipex_llm.transformers.models.mistral import mistral_attention_forward_4_36
-
                     convert_forward(model,
                                     module.MistralAttention,
                                     mistral_attention_forward_4_36
