@@ -71,7 +71,15 @@ def save_low_bit(self, *args, **kwargs):
 
     architectures = getattr(self.config, "architectures", None)
     model_type = getattr(self.config, "model_type", None)
-    self.save_pretrained(*args, **kwargs)
+    disk_embedding = getattr(self.config, "bigdl_disk_embedding", False)
+
+    if disk_embedding:
+        from ipex_llm.transformers.embedding import DiskEmbedding
+        self.apply(DiskEmbedding.restore_normal_embedding)
+        self.save_pretrained(*args, **kwargs)
+        self.apply(DiskEmbedding.replace_normal_embedding)
+    else:
+        self.save_pretrained(*args, **kwargs)
 
     if architectures:
         self.config.update({"architectures": architectures})
@@ -511,14 +519,19 @@ class _BaseAutoModelClass:
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding,
-                                     disk_embedding=disk_embedding,
                                      lightweight_bmm=lightweight_bmm,
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
                                      imatrix_data=imatrix_data,
                                      embedding_qtype=embedding_qtype,
                                      enable_xetla=enable_xetla,
                                      mixed_precision=mixed_precision)
-        model.config.update({"bigdl_transformers_low_bit": q_k})
+
+        if disk_embedding:
+            from ipex_llm.transformers.embedding import DiskEmbedding
+            model.apply(DiskEmbedding.replace_normal_embedding)
+
+        model.config.update({"bigdl_transformers_low_bit": q_k,
+                             "bigdl_disk_embedding": disk_embedding})
 
         # enable tie_word_embeddings for MPT
         # refer to https://huggingface.co/mosaicml/mpt-7b-chat/blob/main/modeling_mpt.py#L232
@@ -706,7 +719,6 @@ class _BaseAutoModelClass:
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding,
-                                     disk_embedding=disk_embedding,
                                      lightweight_bmm=lightweight_bmm,
                                      embedding_qtype=embedding_qtype, torch_dtype=torch_dtype)
 
@@ -748,6 +760,11 @@ class _BaseAutoModelClass:
 
         # make sure token embedding weights are still tied if needed
         model.tie_weights()
+
+        if disk_embedding:
+            from ipex_llm.transformers.embedding import DiskEmbedding
+            model.apply(DiskEmbedding.replace_normal_embedding)
+            model.config.update({"bigdl_disk_embedding": disk_embedding})
 
         # Set model in evaluation mode to deactivate DropOut modules by default
         model.eval()
