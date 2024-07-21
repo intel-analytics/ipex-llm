@@ -362,6 +362,7 @@ def is_torch_bf16_gpu_available():
     # always true for XPU and CPU
     return True
 
+
 # Arc platfrom does not support FP64, 
 # Disable FP64 in DeepSpeedZeroOptimizer_Stage3's _constant_buffered_norm2  method
 def _constant_buffered_norm2(self, input, buffer_size=250000000):
