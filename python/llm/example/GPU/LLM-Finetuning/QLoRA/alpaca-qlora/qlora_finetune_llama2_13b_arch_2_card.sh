@@ -31,7 +31,7 @@ export TORCH_LLM_ALLREDUCE=0 # Different from PVC
 export DS_SKIP_CUDA_CHECK=1
 
 mpirun -n $NUM_GPUS \
-          python -u ./alpaca_qlora_zero3_finetuning.py \
+          python -u ./alpaca_qlora_finetuning.py \
           --base_model "meta-llama/Llama-2-13b-hf" \
           --data_path "yahma/alpaca-cleaned" \
           --output_dir "./ipex-llm-qlora-alpaca" \
