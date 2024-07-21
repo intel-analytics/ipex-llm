@@ -147,7 +147,9 @@ def train(
     if "zero3" in deepspeed:
         from ipex_llm.transformers.utils \
             import _constant_buffered_norm2
-        replace_attr(deepspeed.runtime.zero.stage3.DeepSpeedZeroOptimizer_Stage3,
+        from ipex_llm.llm_patching import replace_attr
+        import deepspeed as ds
+        replace_attr(ds.runtime.zero.stage3.DeepSpeedZeroOptimizer_Stage3,
                      "_constant_buffered_norm2", _constant_buffered_norm2)
 
     device_map = "auto"
