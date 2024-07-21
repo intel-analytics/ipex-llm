@@ -196,9 +196,10 @@ def train(
         #     # device_map=device_map,
         #     modules_to_not_convert=["lm_head"],
         # )
-    print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
-    model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
-    print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
+    if not "zero3" in deepspeed:
+        print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
+        model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
+        print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")
