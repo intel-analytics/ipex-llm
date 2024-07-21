@@ -495,6 +495,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 mixed_precision=mixed_precision,
                 act_order=act_order,
                 enable_scale_search=enable_scale_search,
+                enable_deepspeed_zero3=enable_deepspeed_zero3,
             )
             has_been_replaced = _flag or has_been_replaced
     return model, has_been_replaced
