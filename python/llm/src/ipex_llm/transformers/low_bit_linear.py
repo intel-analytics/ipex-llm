@@ -759,7 +759,8 @@ class LowBitLinear(nn.Linear):
                 if x_2d.requires_grad:
                     result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
                 else:
-                    if hasattr(weight, "enable_deepspeed_zero3") and weight.enable_deepspeed_zero3:
+                    if hasattr(self.weight, "enable_deepspeed_zero3") \
+                       and self.weight.enable_deepspeed_zero3:
                         result = xe_linear.forward_new(x_2d,
                                                        self.weight.data.view(torch.uint8),
                                                        self.weight.qtype,
