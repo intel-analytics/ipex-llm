@@ -418,8 +418,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                              imatrix=cur_imatrix,
                                              in_features=in_features,
                                              enable_xetla=enable_xetla,
-                                             enable_scale_search=enable_scale_search
-                                             enable_deepspeed_zero3=enable_deepspeed_zero3).to(device)
+                                             enable_deepspeed_zero3=enable_deepspeed_zero3,
+                                             enable_scale_search=enable_scale_search).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
