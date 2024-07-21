@@ -263,7 +263,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         return dst_tensor
 
 
-def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
+def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int,
                                  enable_deepspeed_zero3=False):
     if not enable_deepspeed_zero3:
         invalidInputError(tensor.dtype == torch.uint8,
