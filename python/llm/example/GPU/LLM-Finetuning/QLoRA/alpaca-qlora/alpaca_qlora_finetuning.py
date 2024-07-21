@@ -184,7 +184,8 @@ def train(
         model = AutoModelForCausalLM.from_pretrained(base_model,
                                                      torch_dtype=torch.bfloat16,
                                                      quantization_config=bnb_config,
-                                                     trust_remote_code=True)
+                                                     trust_remote_code=True,
+                                                     enable_deepspeed_zero3="zero3" in deepspeed)
         # below is also supported
         # Load the base model from a directory or the HF Hub to 4-bit format
         # model = AutoModelForCausalLM.from_pretrained(
