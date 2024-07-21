@@ -263,8 +263,10 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         return dst_tensor
 
 
-def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int,
-                                 enable_deepspeed_zero3=False):
+def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int):
+    import os
+    enable_deepspeed_zero3 = (os.getenv("IPEX_LLM_ENABLE_DEEPSPEED_ZERO3", "0") == "1")
+
     if not enable_deepspeed_zero3:
         invalidInputError(tensor.dtype == torch.uint8,
                           "Input tensor must be uint8")
