@@ -73,6 +73,8 @@ You may launch the Ollama service as below:
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+  # [optional] if you want to run on single GPU, use below command to limit GPU may improve performance
+  export ONEAPI_DEVICE_SELECTOR=level_zero:0
 
   ./ollama serve
   ```
