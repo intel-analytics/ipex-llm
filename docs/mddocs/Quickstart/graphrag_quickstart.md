@@ -133,6 +133,8 @@ In the `settings.yml` file inside the `ragtest` folder, add the configuration `r
 >     api_base: http://localhost:11434/api
 > ```
 
+#### Conduct GraphRAG indexing
+
 Finally, conduct GraphRAG indexing, which may take a while:
 
 ```shell
