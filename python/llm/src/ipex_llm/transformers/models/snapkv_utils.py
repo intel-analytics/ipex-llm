@@ -102,8 +102,7 @@ def init_snapkv(self):
 
 
 def should_use_snapkv():
-    snap_kv_len = os.environ.get("IPEX_SNAP_KV_LEN", None)
-    if snap_kv_len is not None:
-        snap_kv_len = int(snap_kv_len)
-        return snap_kv_len
+    use_snap_kv = os.environ.get("IPEX_USE_SNAP_KV", None)
+    if use_snap_kv is not None:
+        return use_snap_kv == "1"
     return False

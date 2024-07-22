@@ -680,6 +680,11 @@ def mistral_attention_forward_4_36_quantized(
     # for flash attention
     original_dtype = hidden_states.dtype
 
+    use_snapkv = should_use_snapkv()
+    if use_snapkv:
+        setattr(self.config, "max_capacity_prompt", 512)
+        init_snapkv(self)
+
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
@@ -1122,7 +1127,7 @@ def mistral_attention_forward_4_39_original(
 
     use_snapkv = should_use_snapkv()
     if use_snapkv:
-        setattr(self.config, "max_capacity_prompt", use_snapkv)
+        setattr(self.config, "max_capacity_prompt", 512)
         init_snapkv(self)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
