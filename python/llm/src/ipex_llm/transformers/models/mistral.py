@@ -736,7 +736,14 @@ def mistral_attention_forward_4_36_quantized(
                     "please make sure to initialize the attention class "
                     "with a layer index."
                 )
-            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+            if hasattr(self, "kv_seq_len"): #[SnapKV] add kv_seq_len
+                if self.kv_seq_len != 0:
+                    kv_seq_len += self.kv_seq_len
+                else:
+                    kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+            else:
+                kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+
 
         if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
@@ -756,6 +763,8 @@ def mistral_attention_forward_4_36_quantized(
         attention_dtype = torch.float16  # use fp16 for flash attention
     else:
         attention_dtype = original_dtype
+
+    
 
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
@@ -1164,7 +1173,8 @@ def mistral_attention_forward_4_39_original(
             past_key_value._seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
         past_key_value.value_cache[self.layer_idx] = value_states
-
+        if use_snapkv:
+            self.kv_seq_len += q_len
     else:
         if should_use_xetla_mm_qkv(self, device):
             if not hasattr(self, "qkv_proj_qweight"):
@@ -1292,8 +1302,6 @@ def mistral_attention_forward_4_39_original(
         import xe_addons
         if use_snapkv:
             attention_mask = None
-        #     attn_output = xe_addons.sdp(query_states, key_states, value_states, None)
-        # else:
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
@@ -1340,10 +1348,12 @@ def mistral_attention_forward_4_39_original(
 def prepare_inputs_for_generation_mistral(
     self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
 ):
+    use_snap_kv = should_use_snapkv()
     # Omit tokens covered by past_key_values
     if past_key_values is None:
-        for layer in self.model.layers:
-            layer.self_attn.kv_seq_len = 0
+        if use_snap_kv:
+            for layer in self.model.layers:
+                layer.self_attn.kv_seq_len = 0
     if past_key_values is not None:
         if isinstance(past_key_values, Cache):
             cache_length = past_key_values.get_seq_length()
@@ -1359,7 +1369,7 @@ def prepare_inputs_for_generation_mistral(
             #             layer.self_attn.kv_seq_len = 0
             #     cache_length = past_length = input_ids.shape[1]
             # else:
-            cache_length = past_length = self.model.layers[0].self_attn.kv_seq_len
+            cache_length = past_length = self.model.layers[0].self_attn.kv_seq_len if use_snap_kv else past_key_values[0][0].shape[2]
             max_cache_length = None
 
         # Keep only the unprocessed tokens:
@@ -1398,7 +1408,8 @@ def prepare_inputs_for_generation_mistral(
 
     # print('prepare position_ids', position_ids)
     # print('prepare input shape', input_ids.shape)
-    attention_mask = None
+    if use_snap_kv:
+        attention_mask = None
     model_inputs.update(
         {
             "position_ids": position_ids,

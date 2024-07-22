@@ -6,5 +6,9 @@ KERNEL_VERSION=$(uname -r)
 if [[ $KERNEL_VERSION != *"6.5"* ]]; then
     export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 fi
+
+export PYTHONPATH=/home/arda/yina/BigDL/python/llm/src
+
+export IPEX_USE_SNAP_KV=512
  
 python run.py # make sure config YAML file
