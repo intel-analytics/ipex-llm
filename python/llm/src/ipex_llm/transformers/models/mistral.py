@@ -1294,6 +1294,7 @@ def mistral_attention_forward_4_39_original(
             attention_mask = None
         #     attn_output = xe_addons.sdp(query_states, key_states, value_states, None)
         # else:
+        # print(f"key_states shape: {key_states.shape}")
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
