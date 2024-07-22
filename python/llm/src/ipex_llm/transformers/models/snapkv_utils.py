@@ -39,13 +39,14 @@ class SnapKVCluster():
     def update_kv(self, key_states, query_states, value_states, attention_mask, num_key_value_groups):
         # check if prefix phase
         assert key_states.shape[-2] == query_states.shape[-2]
-        key_states_expand = repeat_kv(key_states, num_key_value_groups).to(key_states.device)
+        
         # value_states_expand = repeat_kv(value_states, num_key_value_groups).to(value_states.device)
         bsz, num_heads, q_len, head_dim = query_states.shape
         if q_len < self.max_capacity_prompt:
             return key_states, value_states
         else:
             print(q_len)
+            key_states_expand = repeat_kv(key_states, num_key_value_groups).to(key_states.device)
             attn_weights = torch.matmul(query_states[..., -self.window_size:, :], key_states_expand.transpose(2, 3)) / math.sqrt(head_dim)
             mask = torch.full((self.window_size, self.window_size), torch.finfo(attn_weights.dtype).min, device=attn_weights.device)
             mask_cond = torch.arange(mask.size(-1), device=attn_weights.device)
