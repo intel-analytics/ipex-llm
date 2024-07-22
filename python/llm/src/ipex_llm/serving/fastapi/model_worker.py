@@ -59,21 +59,22 @@ class ModelWorker:
             return
         tmp_result = await self.waiting_requests.get()
         request_id, prompt_request = tmp_result
-        plain_texts = prompt_request.prompt
+        plain_texts = prompt_request.inputs
         inputs = tokenizer(plain_texts, return_tensors="pt", padding=True)
         input_ids = inputs.input_ids.to('xpu')
-        max_tokens = prompt_request.n_predict
-        return input_ids, max_tokens, request_id
+        parameters = prompt_request.parameters
+        return input_ids, parameters, request_id
 
     @torch.no_grad()
     async def process_step(self, tokenizer, result_dict):
         if not self.waiting_requests.empty():
-            input_ids, max_tokens, request_id = await self.add_request(tokenizer)
+            input_ids, parameters, request_id = await self.add_request(tokenizer)
             self.streamer[request_id] = TextIteratorStreamer(tokenizer, skip_prompt=True)
 
             def model_generate():
+                generate_kwargs = {k: v for k, v in parameters.dict().items() if v is not None}
                 self.model.generate(input_ids,
-                                    streamer=self.streamer[request_id], max_new_tokens=max_tokens)
+                                    streamer=self.streamer[request_id], **generate_kwargs)
                 torch.xpu.empty_cache()
                 torch.xpu.synchronize()
 

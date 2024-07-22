@@ -162,7 +162,7 @@ def _check_quantize_kv_cache(model, idx, batch_size):
         os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] = "0"
 
 
-def pipeline_parallel(model, pipeline_parallel_stages):
+def pipeline_parallel(model, pipeline_parallel_stages, torch_dtype=torch.float32):
     global num_layers
     if hasattr(model.config, 'num_hidden_layers'):
         num_layers = model.config.num_hidden_layers
@@ -227,6 +227,8 @@ def pipeline_parallel(model, pipeline_parallel_stages):
     model.layer_start = layer_start
     model.layer_end = layer_end
     model.num_layers = num_layers
+    if torch_dtype == torch.float16:
+        model = model.half()
     model = model.to(f'xpu:{local_rank}')
     return model
 
@@ -706,14 +708,14 @@ class PPModelWorker:
             request_ids.append(request_id)
             prompt_requests.append(prompt_request)
 
-        plain_texts = [req.prompt for req in prompt_requests]
+        plain_texts = [req.inputs for req in prompt_requests]
         inputs = tokenizer(plain_texts, return_tensors="pt", padding=True)
         input_ids = inputs.input_ids.to(f'xpu:{self.rank}')
         attention_mask = inputs.attention_mask.to(f'xpu:{self.rank}')
         new_batch = BatchTask(
             batch_id="batch_" + str(uuid.uuid4()),
             request_ids=request_ids,
-            max_tokens=max([req.n_predict for req in prompt_requests]),
+            max_tokens=max([req.parameters.max_new_tokens for req in prompt_requests]),
             batch_size=input_ids.size(0),
             input_len=input_ids.size(1),
             prompt_lengths=[sum(attention_mask[i, :]) for i in range(input_ids.size(0))],

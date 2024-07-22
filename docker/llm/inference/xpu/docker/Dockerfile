@@ -62,6 +62,9 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Download pp_serving
     mkdir -p /llm/pp_serving && \
     cp ./ipex-llm/python/llm/example/GPU/Pipeline-Parallel-Serving/*.py /llm/pp_serving/ && \
+    # Download lightweight_serving
+    mkdir -p /llm/lightweight_serving && \
+    cp ./ipex-llm/python/llm/example/GPU/Lightweight-Serving/*.py /llm/lightweight_serving/ && \
     # Install related library of benchmarking
     pip install pandas omegaconf && \
     chmod +x /llm/benchmark.sh && \

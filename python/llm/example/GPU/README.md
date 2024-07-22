@@ -9,7 +9,8 @@ This folder contains examples of running IPEX-LLM on Intel GPU:
 - [Deepspeed-AutoTP](Deepspeed-AutoTP): running distributed inference using ***DeepSpeed AutoTP*** (with IPEX-LLM low-bit optimized models) on Intel GPUs
 - [Deepspeed-AutoTP-FastAPI](Deepspeed-AutoTP-FastAPI): running distributed inference using ***DeepSpeed AutoTP*** and start serving with ***FastAPI***(with IPEX-LLM low-bit optimized models) on Intel GPUs
 - [Pipeline-Parallel-Inference](Pipeline-Parallel-Inference): running IPEX-LLM optimized low-bit model vertically partitioned on multiple Intel GPUs
-- [Pipeline-Parallel-FastAPI](Pipeline-Parallel-FastAPI): running IPEX-LLM serving with **FastAPI** on multiple Intel GPUs in pipeline parallel fasion
+- [Pipeline-Parallel-Serving](Pipeline-Parallel-Serving): running IPEX-LLM serving with **FastAPI** on multiple Intel GPUs in pipeline parallel fasion
+- [Lightweight-Serving](Lightweight-Serving): running IPEX-LLM serving with **FastAPI** on one Intel GPU In a lightweight way
 - [LangChain](LangChain): running ***LangChain*** applications on IPEX-LLM
 - [PyTorch-Models](PyTorch-Models): running any PyTorch model on IPEX-LLM (with "one-line code change")
 - [Speculative-Decoding](Speculative-Decoding): running any ***Hugging Face Transformers*** model with ***self-speculative decoding*** on Intel GPUs

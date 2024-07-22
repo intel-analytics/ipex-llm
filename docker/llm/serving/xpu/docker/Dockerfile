@@ -33,6 +33,7 @@ COPY ./start-vllm-service.sh           /llm/
 COPY ./benchmark_vllm_throughput.py   /llm/
 COPY ./start-fastchat-service.sh       /llm/
 COPY ./start-pp_serving-service.sh       /llm/
+COPY ./start-lightweight_serving-service.sh       /llm/
 
 
 WORKDIR /llm/
