@@ -264,7 +264,6 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
 
 
 def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int):
-    import os
     enable_deepspeed_zero3 = (os.getenv("IPEX_LLM_ENABLE_DEEPSPEED_ZERO3", "0") == "1")
 
     if not enable_deepspeed_zero3:
