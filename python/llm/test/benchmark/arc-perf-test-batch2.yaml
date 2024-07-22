@@ -11,6 +11,10 @@ repo_id:
   - 'Qwen/Qwen-VL-Chat'
   #- 'SmerkyG/rwkv-5-world-7b' #this model only fp32 is supported for now, fp16 and bf16 are not supported
   - '01-ai/Yi-6B-Chat'
+  - 'mistralai/Mistral-7B-Instruct-v0.2'
+  - 'deepseek-ai/deepseek-coder-7b-instruct-v1.5'
+  - '01-ai/Yi-1.5-6B-Chat'
+  - 'openai/whisper-large-v3'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
@@ -26,4 +30,6 @@ test_api:
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
 exclude:
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
+  - 'openai/whisper-large-v3:2048' # the size of tensor don't match
+  - 'openai/whisper-large-v3:1024' # the size of tensor don't match
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
