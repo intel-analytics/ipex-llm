@@ -118,6 +118,8 @@ To use GPU acceleration, several environment variables are required or recommend
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+  # [optional] if you want to run on single GPU, use below command to limit GPU may improve performance
+  export ONEAPI_DEVICE_SELECTOR=level_zero:0
   ```
 
 - For **Windows users**:
@@ -128,6 +130,9 @@ To use GPU acceleration, several environment variables are required or recommend
   set SYCL_CACHE_PERSISTENT=1
   set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   ```
+
+> [!TIP]
+> When your machine has multi GPUs and you want to run on one of them, you need to set `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]`, here `[gpu_id]` varies based on your requirement. For more details, you can refer to [this section](../Overview/KeyFeatures/multi_gpus_selection.md#2-oneapi-device-selector).
 
 ### 3. Example: Running community GGUF models with IPEX-LLM
 
