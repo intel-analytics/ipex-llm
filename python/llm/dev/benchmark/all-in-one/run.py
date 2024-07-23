@@ -480,6 +480,13 @@ def run_transformer_int4_gpu(repo_id,
                                                      use_cache=True, cpu_embedding=cpu_embedding,
                                                      torch_dtype=torch_dtype).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    elif origin_repo_id in PHI3VISION_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                     _attn_implementation="eager",
+                                                     modules_to_not_convert=["vision_embed_tokens"],
+                                                     trust_remote_code=True, use_cache=True, 
+                                                     cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         if "4bit" in repo_id:
             model = AutoModelForCausalLM.load_low_bit(model_path, optimize_model=True,
