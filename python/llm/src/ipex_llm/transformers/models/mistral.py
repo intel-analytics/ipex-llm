@@ -737,14 +737,14 @@ def mistral_attention_forward_4_36_quantized(
                     "please make sure to initialize the attention class "
                     "with a layer index."
                 )
-            if hasattr(self, "kv_seq_len"): #[SnapKV] add kv_seq_len
+            #[SnapKV] add kv_seq_len
+            if hasattr(self, "kv_seq_len"):
                 if self.kv_seq_len != 0:
                     kv_seq_len += self.kv_seq_len
                 else:
                     kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
             else:
                 kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
-
 
         if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
@@ -764,8 +764,6 @@ def mistral_attention_forward_4_36_quantized(
         attention_dtype = torch.float16  # use fp16 for flash attention
     else:
         attention_dtype = original_dtype
-
-    
 
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups).to(device,
@@ -1238,10 +1236,13 @@ def mistral_attention_forward_4_39_original(
             # update the number of seen tokens
             if self.layer_idx == 0:
                 past_key_value._seen_tokens += key_states.shape[-2]
-            
-            if use_snapkv and (key_states.shape[-2] >= kv_seq_len): # [SnapKV] add kv_cluster
+
+            # [SnapKV] add kv_cluster
+            if use_snapkv and (key_states.shape[-2] >= kv_seq_len):
                 self.kv_seq_len = kv_seq_len
-                key_states_compress, value_states_compress = self.kv_cluster.update_kv(key_states, query_states, value_states, attention_mask, self.num_key_value_groups)
+                key_states_compress, value_states_compress = self.kv_cluster.update_kv(
+                    key_states, query_states, value_states,
+                    attention_mask, self.num_key_value_groups)
             else:
                 if use_snapkv:
                     self.kv_seq_len += q_len
@@ -1273,7 +1274,8 @@ def mistral_attention_forward_4_39_original(
                     cache_v = new_c_v
 
                 key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                           key_states_compress, value_states_compress)
+                                                           key_states_compress,
+                                                           value_states_compress)
 
                 # update past_key_value
                 past_key_value.key_cache[self.layer_idx] = key_states
@@ -1367,22 +1369,28 @@ def prepare_inputs_for_generation_mistral(
             max_cache_length = past_key_values.get_max_length()
         else:
             # [SnapKV]
-            cache_length = past_length = self.model.layers[0].self_attn.kv_seq_len if use_snap_kv else past_key_values[0][0].shape[2]
+            cache_length = past_length = self.model.layers[0].self_attn.kv_seq_len \
+                if use_snap_kv else past_key_values[0][0].shape[2]
             max_cache_length = None
 
         # Keep only the unprocessed tokens:
-        # 1 - If the length of the attention_mask exceeds the length of input_ids, then we are in a setting where
-        # some of the inputs are exclusivelly passed as part of the cache (e.g. when passing input_embeds as
+        # 1 - If the length of the attention_mask exceeds the length of input_ids,
+        # then we are in a setting where
+        # some of the inputs are exclusivelly passed as part of the cache
+        # (e.g. when passing input_embeds as
         # input)
         if attention_mask is not None and attention_mask.shape[1] > input_ids.shape[1]:
-            input_ids = input_ids[:, -(attention_mask.shape[1] - past_length) :]
-        # 2 - If the past_length is smaller than input_ids', then input_ids holds all input tokens. We can discard
+            input_ids = input_ids[:, -(attention_mask.shape[1] - past_length):]
+        # 2 - If the past_length is smaller than input_ids', then input_ids holds all input tokens.
+        # We can discard
         # input_ids based on the past_length.
         elif past_length < input_ids.shape[1]:
             input_ids = input_ids[:, past_length:]
-        # 3 - Otherwise (past_length >= input_ids.shape[1]), let's assume input_ids only has unprocessed tokens.
+        # 3 - Otherwise (past_length >= input_ids.shape[1]), let's assume input_ids only has
+        # unprocessed tokens.
 
-        # If we are about to go beyond the maximum cache length, we need to crop the input attention mask.
+        # If we are about to go beyond the maximum cache length, we need to crop the
+        # input attention mask.
         if (
             max_cache_length is not None
             and attention_mask is not None
@@ -1396,7 +1404,7 @@ def prepare_inputs_for_generation_mistral(
         position_ids = attention_mask.long().cumsum(-1) - 1
         position_ids.masked_fill_(attention_mask == 0, 1)
         if past_key_values:
-            position_ids = position_ids[:, -input_ids.shape[1] :]
+            position_ids = position_ids[:, -input_ids.shape[1]:]
 
     # if `inputs_embeds` are passed, we only want to use them in the 1st generation step
     if inputs_embeds is not None and past_key_values is None:
