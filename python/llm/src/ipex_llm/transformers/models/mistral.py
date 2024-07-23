@@ -737,7 +737,7 @@ def mistral_attention_forward_4_36_quantized(
                     "please make sure to initialize the attention class "
                     "with a layer index."
                 )
-            #[SnapKV] add kv_seq_len
+            # [SnapKV] add kv_seq_len
             if hasattr(self, "kv_seq_len"):
                 if self.kv_seq_len != 0:
                     kv_seq_len += self.kv_seq_len
