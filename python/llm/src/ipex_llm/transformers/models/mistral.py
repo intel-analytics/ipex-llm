@@ -15,6 +15,7 @@
 #
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/main/src/transformers/models/mistral/modeling_mistral.py
+# https://github.com/FasterDecoding/SnapKV/blob/main/snapkv/monkeypatch/mistral_hijack_4_37.py
 #
 # Copyright 2023 Mistral AI and the HuggingFace Inc. team. All rights reserved.
 #
@@ -1134,6 +1135,7 @@ def mistral_attention_forward_4_39_original(
     # for flash attention
     original_dtype = hidden_states.dtype
 
+    # [SnapKV]
     use_snapkv = should_use_snapkv()
     if use_snapkv:
         setattr(self.config, "max_capacity_prompt", 512)
@@ -1173,6 +1175,7 @@ def mistral_attention_forward_4_39_original(
             past_key_value._seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
         past_key_value.value_cache[self.layer_idx] = value_states
+        # [SnapKV]
         if use_snapkv:
             self.kv_seq_len += q_len
     else:
@@ -1212,7 +1215,8 @@ def mistral_attention_forward_4_39_original(
                                   f"If you are using {self.__class__.__name__} for "
                                   "auto-regressive decodingwith k/v caching, please make sure "
                                   "to initialize the attention class with a layer index.")
-            if hasattr(self, "kv_seq_len"): #[SnapKV] add kv_seq_len
+            # [SnapKV] add kv_seq_len
+            if hasattr(self, "kv_seq_len"):
                 if self.kv_seq_len != 0:
                     kv_seq_len += self.kv_seq_len
                 else:
@@ -1300,6 +1304,7 @@ def mistral_attention_forward_4_39_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
+        # [SnapKV] set attention_mask = None
         if use_snapkv:
             attention_mask = None
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
@@ -1350,6 +1355,7 @@ def prepare_inputs_for_generation_mistral(
 ):
     use_snap_kv = should_use_snapkv()
     # Omit tokens covered by past_key_values
+    # [SnapKV]
     if past_key_values is None:
         if use_snap_kv:
             for layer in self.model.layers:
@@ -1360,6 +1366,7 @@ def prepare_inputs_for_generation_mistral(
             past_length = past_key_values.seen_tokens
             max_cache_length = past_key_values.get_max_length()
         else:
+            # [SnapKV]
             cache_length = past_length = self.model.layers[0].self_attn.kv_seq_len if use_snap_kv else past_key_values[0][0].shape[2]
             max_cache_length = None
 
@@ -1397,6 +1404,7 @@ def prepare_inputs_for_generation_mistral(
     else:
         model_inputs = {"input_ids": input_ids}
 
+    # [SnapKV]
     if use_snap_kv:
         attention_mask = None
     model_inputs.update(
