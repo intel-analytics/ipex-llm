@@ -159,7 +159,7 @@ def is_linear_module(module):
         if is_module_in_classes(module, VLLM_LINEAR_LIST):
             if 'xpu' in _VLLM_VERSION:
                 # For vllm xpu
-                from vllm.model_executor.parallel_utils.parallel_state import (
+                from vllm.distributed.parallel_state import (
                     get_tensor_model_parallel_group,
                     get_tensor_model_parallel_world_size
                 )
