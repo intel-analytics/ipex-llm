@@ -774,7 +774,8 @@ class LowBitLinear(nn.Linear):
             result = result.view(new_shape)
             if self.mp_group is not None:
                 if get_use_vllm():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
+                    # torch.distributed.all_reduce(result, group=self.mp_group)
+                    result = self.mp_group.all_reduce(result)
                 elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
@@ -861,7 +862,8 @@ class FP16Linear(nn.Linear):
                 result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
             if self.mp_group is not None:
                 if get_use_vllm():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
+                    # torch.distributed.all_reduce(result, group=self.mp_group)
+                    result = self.mp_group.all_reduce(result)
                 elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
@@ -898,7 +900,8 @@ class FP16Linear(nn.Linear):
             result = result.view(new_shape)
             if self.mp_group is not None:
                 if get_use_vllm():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
+                    # torch.distributed.all_reduce(result, group=self.mp_group)
+                    result = self.mp_group.all_reduce(result)
                 elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
