@@ -48,14 +48,26 @@ class ChatCompletionRequest(BaseModel):
     messages: List[ChatMessage]
     model: str
     max_tokens: Optional[int] = None
+    min_tokens: Optional[int] = None
     stream: Optional[bool] = False
+    top_p: Optional[float] = None
+    top_k: Optional[int] = None
+    repetition_penalty: Optional[float] = None
+    presence_penalty: Optional[float] = None
+    temperature: Optional[float] = None
 
 
 class CompletionRequest(BaseModel):
     model: str
     prompt: Union[List[int], List[List[int]], str, List[str]]
     max_tokens: Optional[int] = None
+    min_tokens: Optional[int] = None
     stream: Optional[bool] = False
+    top_p: Optional[float] = None
+    top_k: Optional[int] = None
+    repetition_penalty: Optional[float] = None
+    presence_penalty: Optional[float] = None
+    temperature: Optional[float] = None
 
 
 app = FastAPI()
@@ -285,21 +297,33 @@ def get_prompt(messages) -> str:
                 invalidInputError(False, f"Unknown role: {role}")
         return prompt.strip()
 
+def set_parameters(req):
+    if req.max_tokens is None:
+        n_predict = 256
+    else:
+        n_predict = req.max_tokens
+    if req.repetition_penalty is not None:
+        repetition_penalty = req.repetition_penalty
+    elif req.presence_penalty is not None:
+        repetition_penalty = req.presence_penalty
+    else:
+        repetition_penalty = None
+    if req.temperature is not None and req.temperature > 1e-4:
+        do_sample = True
+    return Parameters(max_new_tokens=n_predict, do_sample=do_sample, min_new_tokens=req.min_tokens, top_p=req.top_p,
+                      repetition_penalty=repetition_penalty, temperature=req.temperature, top_k=req.top_k)
+
 
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest):
+    print(request)
     model_name = local_model.model_name
-    if request.max_tokens is None:
-        n_predict = 256
-    else:
-        n_predict = request.max_tokens
     inputs_request = InputsRequest(
         inputs=get_prompt(request.messages),
-        parameters=Parameters(max_new_tokens=n_predict),
+        parameters=set_parameters(request),
         stream=request.stream,
         req_type="chat"
     )
-    print(inputs_request.inputs)
     if request.stream:
         request_id, result = await generate_stream(inputs_request)
     else:
@@ -319,13 +343,9 @@ async def create_chat_completion(request: ChatCompletionRequest):
 @app.post("/v1/completions")
 async def create_completion(request: CompletionRequest):
     model_name = local_model.model_name
-    if request.max_tokens is None:
-        n_predict = 32
-    else:
-        n_predict = request.max_tokens
     inputs_request = InputsRequest(
         inputs=request.prompt,
-        parameters=Parameters(max_new_tokens=n_predict),
+        parameters=set_parameters(request),
         stream=request.stream,
         req_type="completion"
     )
