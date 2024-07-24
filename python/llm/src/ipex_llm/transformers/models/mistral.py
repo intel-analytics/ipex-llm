@@ -1358,10 +1358,9 @@ def prepare_inputs_for_generation_mistral(
     use_snap_kv = should_use_snapkv()
     # Omit tokens covered by past_key_values
     # [SnapKV]
-    if past_key_values is None:
-        if use_snap_kv:
-            for layer in self.model.layers:
-                layer.self_attn.kv_seq_len = 0
+    if past_key_values is None and use_snap_kv:
+        for layer in self.model.layers:
+            layer.self_attn.kv_seq_len = 0
     if past_key_values is not None:
         if isinstance(past_key_values, Cache):
             cache_length = past_key_values.get_seq_length()

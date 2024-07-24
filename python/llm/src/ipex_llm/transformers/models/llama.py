@@ -54,6 +54,7 @@ from transformers.models.llama.modeling_llama import LlamaModel
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.utils.common import invalidInputError
+from ipex_llm.transformers.models.snapkv_utils import should_use_snapkv, init_snapkv
 
 try:
     from transformers.cache_utils import Cache, DynamicCache
@@ -1791,6 +1792,12 @@ def llama_attention_forward_4_38_original(
     # for flash attention
     original_dtype = hidden_states.dtype
 
+    # [SnapKV]
+    use_snapkv = should_use_snapkv()
+    if use_snapkv:
+        setattr(self.config, "max_capacity_prompt", 512)
+        init_snapkv(self)
+
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
@@ -1827,7 +1834,9 @@ def llama_attention_forward_4_38_original(
             past_key_value.seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
         past_key_value.value_cache[self.layer_idx] = value_states
-
+        # [SnapKV]
+        if use_snapkv:
+            self.kv_seq_len += q_len
     else:
         if self.config.pretraining_tp > 1:
             key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
@@ -1907,7 +1916,14 @@ def llama_attention_forward_4_38_original(
                                   f"If you are using {self.__class__.__name__} for "
                                   "auto-regressive decodingwith k/v caching, please make sure "
                                   "to initialize the attention class with a layer index.")
-            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+            # [SnapKV] add kv_seq_len
+            if hasattr(self, "kv_seq_len"):
+                if self.kv_seq_len != 0:
+                    kv_seq_len += self.kv_seq_len
+                else:
+                    kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+            else:
+                kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
             rope_theta = self.rotary_emb.base
@@ -1932,11 +1948,23 @@ def llama_attention_forward_4_38_original(
             if self.layer_idx == 0:
                 past_key_value.seen_tokens += key_states.shape[-2]
 
+            # [SnapKV] add kv_cluster
+            if use_snapkv and (key_states.shape[-2] >= kv_seq_len):
+                self.kv_seq_len = kv_seq_len
+                key_states_compress, value_states_compress = self.kv_cluster.update_kv(
+                    key_states, query_states, value_states,
+                    attention_mask, self.num_key_value_groups)
+            else:
+                if use_snapkv:
+                    self.kv_seq_len += q_len
+                key_states_compress = key_states
+                value_states_compress = value_states
+
             # reuse k, v, self_attention
             # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
             if len(past_key_value.key_cache) <= self.layer_idx:
-                past_key_value.key_cache.append(key_states)
-                past_key_value.value_cache.append(value_states)
+                past_key_value.key_cache.append(key_states_compress)
+                past_key_value.value_cache.append(value_states_compress)
             else:
                 cache_k = past_key_value.key_cache[self.layer_idx]
                 cache_v = past_key_value.value_cache[self.layer_idx]
@@ -1958,8 +1986,8 @@ def llama_attention_forward_4_38_original(
 
                 key_states, value_states = append_kv_cache(cache_k,
                                                            cache_v,
-                                                           key_states,
-                                                           value_states)
+                                                           key_states_compress,
+                                                           value_states_compress)
 
                 # update past_key_value
                 past_key_value.key_cache[self.layer_idx] = key_states
@@ -1984,6 +2012,9 @@ def llama_attention_forward_4_38_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
+        # [SnapKV] set attention_mask = None
+        if use_snapkv:
+            new_attention_mask = None
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
