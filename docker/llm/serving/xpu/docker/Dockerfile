@@ -31,6 +31,7 @@ COPY --from=build /tmp/oneccl_bind_pt-2.1.100+xpu-cp311-cp311-linux_x86_64.whl /
 # bigdl-core-xe, which will lead to problems
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev && \
+    apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     pip install --pre --upgrade ipex-llm[xpu,serving] && \
     pip install transformers==4.37.0 gradio==4.19.2 && \
     # Install vLLM-v2 dependencies
