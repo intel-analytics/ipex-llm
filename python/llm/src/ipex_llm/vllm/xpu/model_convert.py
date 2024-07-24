@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 import torch
+from typing import Optional
+from vllm.distributed import tensor_model_parallel_gather
 from vllm.logger import init_logger
 from vllm.model_executor.models.llama import LlamaMLP, LlamaAttention, LlamaForCausalLM
 from vllm.model_executor.models.qwen2 import Qwen2MLP, Qwen2Attention, Qwen2ForCausalLM
@@ -22,11 +24,33 @@ from vllm.model_executor.models.baichuan import BaiChuanMLP, BaiChuanAttention
 from vllm.model_executor.models.baichuan import BaiChuanBaseForCausalLM
 from vllm.model_executor.models.chatglm import GLMMLP, GLMAttention, ChatGLMForCausalLM
 from vllm.model_executor.model_loader import get_model
-from vllm.model_executor.layers.sampler import Sampler
-
+from vllm.model_executor.layers.vocab_parallel_embedding import (
+    VocabParallelEmbedding)
 from vllm.attention import AttentionMetadata
 from vllm.config import DeviceConfig
 from typing import Tuple
+
+
+def _sample_get_logits(
+    self,
+    hidden_states: torch.Tensor,
+    lm_head: VocabParallelEmbedding,
+    embedding_bias: Optional[torch.Tensor],
+) -> torch.Tensor:
+    # HINT: we do not support other types of quantization for now
+    logits = lm_head(hidden_states)
+    if embedding_bias is not None:
+        logits += embedding_bias
+    logits = tensor_model_parallel_gather(logits)
+    # Remove paddings in vocab (if any).
+    if logits is not None:
+        logits = logits[:, : self.org_vocab_size]
+    return logits
+
+
+def _model_sample_convert():
+    from vllm.model_executor.layers.logits_processor import LogitsProcessor
+    setattr(LogitsProcessor, "_get_logits", _sample_get_logits)
 
 
 def _MLP_forward(self, x):
@@ -173,7 +197,7 @@ def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
         _model_mlp_convert()
         _model_attention_convert()
-        # _model_sample_convert()
+        _model_sample_convert()
 
         # from vllm.utils import measure_device_memory
         from vllm.utils import CudaMemoryProfiler
@@ -208,3 +232,20 @@ def get_load_function(low_bit):
                     self.model_memory_usage / float(2**30))
 
     return _ipex_llm_load_model
+
+
+def _sample_get_logits(
+    self,
+    hidden_states: torch.Tensor,
+    lm_head: VocabParallelEmbedding,
+    embedding_bias: Optional[torch.Tensor],
+) -> torch.Tensor:
+    # HINT: we do not support other types of quantization for now
+    logits = lm_head(hidden_states)
+    if embedding_bias is not None:
+        logits += embedding_bias
+    logits = tensor_model_parallel_gather(logits)
+    # Remove paddings in vocab (if any).
+    if logits is not None:
+        logits = logits[:, : self.org_vocab_size]
+    return logits
