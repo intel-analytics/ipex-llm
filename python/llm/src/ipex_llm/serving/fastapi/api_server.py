@@ -25,8 +25,20 @@ from ipex_llm.utils.common import invalidInputError
 import asyncio
 import uuid
 from typing import List, Optional, Union, Dict
+from fastapi.middleware.cors import CORSMiddleware
 from .tgi_protocol import Parameters
-
+from .openai_protocol import (
+    ChatCompletionResponseStreamChoice,
+    ChatCompletionStreamResponse,
+    ChatCompletionResponseChoice,
+    ChatCompletionResponse,
+    ChatMessage,
+    DeltaMessage,
+    CompletionResponseChoice,
+    CompletionResponse,
+    CompletionResponseStreamChoice,
+    CompletionStreamResponse,
+)
 
 result_dict: Dict[str, str] = {}
 logger = logging.get_logger(__name__)
@@ -37,11 +49,6 @@ class InputsRequest(BaseModel):
     parameters: Optional[Parameters] = None
     stream: Optional[bool] = False
     req_type: str = 'completion'
-
-
-class ChatMessage(BaseModel):
-    role: str
-    content: str
 
 
 class ChatCompletionRequest(BaseModel):
@@ -71,7 +78,6 @@ class CompletionRequest(BaseModel):
 
 
 app = FastAPI()
-from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -92,20 +98,6 @@ class FastApp():
         self.app = app
 
 
-from .openai_protocol import (
-    ChatCompletionResponseStreamChoice,
-    ChatCompletionStreamResponse,
-    ChatCompletionResponseChoice,
-    ChatCompletionResponse,
-    ChatMessage,
-    DeltaMessage,
-    CompletionResponseChoice,
-    CompletionResponse,
-    CompletionResponseStreamChoice,
-    CompletionStreamResponse,
-)
-
-
 def get_queue_next_token(delta_text_queue):
     timeout = int(os.getenv("IPEX_LLM_FASTAPI_TIMEOUT", 60))
     delta_text = delta_text_queue.text_queue.get(timeout=timeout)
@@ -114,6 +106,7 @@ def get_queue_next_token(delta_text_queue):
     else:
         remain = 1
     return delta_text, remain
+
 
 def should_return_end_token(next_token):
     if "codegeex" not in local_model.model_name.lower():
@@ -273,11 +266,11 @@ async def generate_stream(inputs_request: InputsRequest):
 
 def get_prompt(messages) -> str:
     if "codegeex" in local_model.model_name.lower():
-        query=messages[-1].content,
+        query = messages[-1].content
         if len(messages) <= 1:
             history = []
         else:
-            history=[msg.model_dump() for msg in messages[:-1]]
+            history = [msg.model_dump() for msg in messages[:-1]]
         history.append({"role": "user", "content": query})
         inputs = tokenizer.apply_chat_template(history, add_generation_prompt=True, tokenize=False,
                                                return_tensors="pt", return_dict=False)
@@ -285,8 +278,8 @@ def get_prompt(messages) -> str:
     else:
         prompt = ""
         for msg in messages:
-            role = msg["role"]
-            content = msg["content"]
+            role = msg.role
+            content = msg.content
             if role == "system":
                 prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
             elif role == "user":
@@ -296,6 +289,7 @@ def get_prompt(messages) -> str:
             else:
                 invalidInputError(False, f"Unknown role: {role}")
         return prompt.strip()
+
 
 def set_parameters(req):
     if req.max_tokens is None:
@@ -310,8 +304,11 @@ def set_parameters(req):
         repetition_penalty = None
     if req.temperature is not None and req.temperature > 1e-4:
         do_sample = True
-    return Parameters(max_new_tokens=n_predict, do_sample=do_sample, min_new_tokens=req.min_tokens, top_p=req.top_p,
-                      repetition_penalty=repetition_penalty, temperature=req.temperature, top_k=req.top_k)
+    else:
+        do_sample = False
+    return Parameters(max_new_tokens=n_predict, do_sample=do_sample, min_new_tokens=req.min_tokens,
+                      top_p=req.top_p, repetition_penalty=repetition_penalty,
+                      temperature=req.temperature, top_k=req.top_k)
 
 
 @app.post("/v1/chat/completions")
