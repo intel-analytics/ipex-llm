@@ -1837,7 +1837,7 @@ def llama_attention_forward_4_38_original(
         if use_compresskv:
             past_key_value.update_seen_tokens(self.layer_idx, q_len)
             kv_seq_len = past_key_value.get_seq_length()
-        else: 
+        else:
             if self.layer_idx == 0:
                 past_key_value.seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
@@ -1943,9 +1943,10 @@ def llama_attention_forward_4_38_original(
 
         if past_key_value is not None:
             if use_compresskv:
-                key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx,
-                                      query_states, attention_mask, self.num_key_value_groups,
-                                      self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
+                key_states, value_states = past_key_value.update(
+                    key_states, value_states, self.layer_idx,
+                    query_states, attention_mask, self.num_key_value_groups,
+                    self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
             else:
                 # update the number of seen tokens
                 if self.layer_idx == 0:
@@ -2672,7 +2673,7 @@ def llama_model_forward_4_38_internal(
     if use_cache:
         next_cache = (
             next_decoder_cache.to_legacy_cache()
-            if not isinstance(next_decoder_cache, (DynamicFp8Cache, DynamicCompressCache)) 
+            if not isinstance(next_decoder_cache, (DynamicFp8Cache, DynamicCompressCache))
             else next_decoder_cache
         )
     if not return_dict:

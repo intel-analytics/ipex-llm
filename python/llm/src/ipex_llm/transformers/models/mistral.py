@@ -58,7 +58,8 @@ from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
 from ipex_llm.transformers.models.llama import should_use_xetla_mm_qkv
 from ipex_llm.transformers.models.llama import fuse_qkv_weight_xetla
-from ipex_llm.transformers.models.snapkv_utils import should_use_compresskv, init_snapkv
+from ipex_llm.transformers.models.snapkv_utils import should_use_compresskv, \
+    DynamicCompressCache
 try:
     from transformers.cache_utils import Cache
 except ImportError:
@@ -209,6 +210,10 @@ def mistral_model_forward_4_36(
     if use_cache and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids):
         if not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+    if use_cache and should_use_compresskv():
+        if not isinstance(past_key_values, DynamicCompressCache):
+            past_key_values = DynamicCompressCache.from_legacy_cache(
+                past_key_values)
     return MistralModel.forward(
         self=self,
         input_ids=input_ids,
@@ -681,11 +686,6 @@ def mistral_attention_forward_4_36_quantized(
     # for flash attention
     original_dtype = hidden_states.dtype
 
-    use_snapkv = should_use_compresskv()
-    if use_snapkv:
-        setattr(self.config, "max_capacity_prompt", 512)
-        init_snapkv(self)
-
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
@@ -1134,10 +1134,7 @@ def mistral_attention_forward_4_39_original(
     original_dtype = hidden_states.dtype
 
     # [SnapKV]
-    use_snapkv = should_use_compresskv()
-    if use_snapkv:
-        setattr(self.config, "max_capacity_prompt", 512)
-        init_snapkv(self)
+    use_compresskv = should_use_compresskv()
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
@@ -1169,13 +1166,15 @@ def mistral_attention_forward_4_39_original(
         kv_seq_len += 1
 
         # update past_key_value's seem_tokens and kv caches.
-        if self.layer_idx == 0:
-            past_key_value._seen_tokens = kv_seq_len
+        # [SnapKV]
+        if use_compresskv:
+            past_key_value.update_seen_tokens(self.layer_idx, q_len)
+            kv_seq_len = past_key_value.get_seq_length()
+        else: 
+            if self.layer_idx == 0:
+                past_key_value._seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
         past_key_value.value_cache[self.layer_idx] = value_states
-        # [SnapKV]
-        if use_snapkv:
-            self.kv_seq_len += q_len
     else:
         if should_use_xetla_mm_qkv(self, device):
             if not hasattr(self, "qkv_proj_qweight"):
@@ -1213,14 +1212,7 @@ def mistral_attention_forward_4_39_original(
                                   f"If you are using {self.__class__.__name__} for "
                                   "auto-regressive decodingwith k/v caching, please make sure "
                                   "to initialize the attention class with a layer index.")
-            # [SnapKV] add kv_seq_len
-            if hasattr(self, "kv_seq_len"):
-                if self.kv_seq_len != 0:
-                    kv_seq_len += self.kv_seq_len
-                else:
-                    kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
-            else:
-                kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
             query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
@@ -1233,53 +1225,47 @@ def mistral_attention_forward_4_39_original(
                                                             cos, sin, position_ids, "mistral")
 
         if past_key_value is not None:
-            # update the number of seen tokens
-            if self.layer_idx == 0:
-                past_key_value._seen_tokens += key_states.shape[-2]
-
-            # [SnapKV] add kv_cluster
-            if use_snapkv and (key_states.shape[-2] >= kv_seq_len):
-                self.kv_seq_len = kv_seq_len
-                key_states_compress, value_states_compress = self.kv_cluster.update_kv(
-                    key_states, query_states, value_states,
-                    attention_mask, self.num_key_value_groups)
+            if use_compresskv:
+                key_states, value_states = past_key_value.update(
+                    key_states, value_states, self.layer_idx,
+                    query_states, attention_mask, self.num_key_value_groups,
+                    self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
             else:
-                if use_snapkv:
-                    self.kv_seq_len += q_len
-                key_states_compress = key_states
-                value_states_compress = value_states
+                # update the number of seen tokens
+                if self.layer_idx == 0:
+                    past_key_value._seen_tokens += key_states.shape[-2]
 
-            # reuse k, v, self_attention
-            # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
-            if len(past_key_value.key_cache) <= self.layer_idx:
-                past_key_value.key_cache.append(key_states_compress)
-                past_key_value.value_cache.append(value_states_compress)
-            else:
-                cache_k = past_key_value.key_cache[self.layer_idx]
-                cache_v = past_key_value.value_cache[self.layer_idx]
+                # reuse k, v, self_attention
+                # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
+                if len(past_key_value.key_cache) <= self.layer_idx:
+                    past_key_value.key_cache.append(key_states)
+                    past_key_value.value_cache.append(value_states)
+                else:
+                    cache_k = past_key_value.key_cache[self.layer_idx]
+                    cache_v = past_key_value.value_cache[self.layer_idx]
 
-                if not enough_kv_room:
-                    # allocate new
-                    new_c_k, new_c_v = extend_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
+                    if not enough_kv_room:
+                        # allocate new
+                        new_c_k, new_c_v = extend_kv_cache(bsz,
+                                                           self.num_key_value_heads,  # Support GQA
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=device)
 
-                    new_c_k[:] = cache_k
-                    new_c_v[:] = cache_v
-                    cache_k = new_c_k
-                    cache_v = new_c_v
+                        new_c_k[:] = cache_k
+                        new_c_v[:] = cache_v
+                        cache_k = new_c_k
+                        cache_v = new_c_v
 
-                key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                           key_states_compress,
-                                                           value_states_compress)
+                    key_states, value_states = append_kv_cache(cache_k, cache_v,
+                                                               key_states,
+                                                               value_states)
 
-                # update past_key_value
-                past_key_value.key_cache[self.layer_idx] = key_states
-                past_key_value.value_cache[self.layer_idx] = value_states
+                    # update past_key_value
+                    past_key_value.key_cache[self.layer_idx] = key_states
+                    past_key_value.value_cache[self.layer_idx] = value_states
 
     if not self.training and not hidden_states.requires_grad:
         fsdp_flag = use_flash_attention(query_states, key_states)
@@ -1307,7 +1293,7 @@ def mistral_attention_forward_4_39_original(
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
         # [SnapKV] set attention_mask = None
-        if use_snapkv:
+        if use_compresskv:
             attention_mask = None
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
@@ -1350,76 +1336,3 @@ def mistral_attention_forward_4_39_original(
         attn_weights = None
 
     return attn_output.to(original_dtype), attn_weights, past_key_value
-
-
-def prepare_inputs_for_generation_mistral(
-    self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
-):
-    use_snap_kv = should_use_compresskv()
-    # Omit tokens covered by past_key_values
-    # [SnapKV]
-    if past_key_values is None and use_snap_kv:
-        for layer in self.model.layers:
-            layer.self_attn.kv_seq_len = 0
-    if past_key_values is not None:
-        if isinstance(past_key_values, Cache):
-            cache_length = past_key_values.get_seq_length()
-            past_length = past_key_values.seen_tokens
-            max_cache_length = past_key_values.get_max_length()
-        else:
-            # [SnapKV]
-            cache_length = past_length = self.model.layers[0].self_attn.kv_seq_len \
-                if use_snap_kv else past_key_values[0][0].shape[2]
-            max_cache_length = None
-
-        # Keep only the unprocessed tokens:
-        # 1 - If the length of the attention_mask exceeds the length of input_ids,
-        # then we are in a setting where
-        # some of the inputs are exclusivelly passed as part of the cache
-        # (e.g. when passing input_embeds as
-        # input)
-        if attention_mask is not None and attention_mask.shape[1] > input_ids.shape[1]:
-            input_ids = input_ids[:, -(attention_mask.shape[1] - past_length):]
-        # 2 - If the past_length is smaller than input_ids', then input_ids holds all input tokens.
-        # We can discard
-        # input_ids based on the past_length.
-        elif past_length < input_ids.shape[1]:
-            input_ids = input_ids[:, past_length:]
-        # 3 - Otherwise (past_length >= input_ids.shape[1]), let's assume input_ids only has
-        # unprocessed tokens.
-
-        # If we are about to go beyond the maximum cache length, we need to crop the
-        # input attention mask.
-        if (
-            max_cache_length is not None
-            and attention_mask is not None
-            and cache_length + input_ids.shape[1] > max_cache_length
-        ):
-            attention_mask = attention_mask[:, -max_cache_length:]
-
-    position_ids = kwargs.get("position_ids", None)
-    if attention_mask is not None and position_ids is None:
-        # create position_ids on the fly for batch generation
-        position_ids = attention_mask.long().cumsum(-1) - 1
-        position_ids.masked_fill_(attention_mask == 0, 1)
-        if past_key_values:
-            position_ids = position_ids[:, -input_ids.shape[1]:]
-
-    # if `inputs_embeds` are passed, we only want to use them in the 1st generation step
-    if inputs_embeds is not None and past_key_values is None:
-        model_inputs = {"inputs_embeds": inputs_embeds}
-    else:
-        model_inputs = {"input_ids": input_ids}
-
-    # [SnapKV]
-    if use_snap_kv:
-        attention_mask = None
-    model_inputs.update(
-        {
-            "position_ids": position_ids,
-            "past_key_values": past_key_values,
-            "use_cache": kwargs.get("use_cache"),
-            "attention_mask": attention_mask,
-        }
-    )
-    return model_inputs
