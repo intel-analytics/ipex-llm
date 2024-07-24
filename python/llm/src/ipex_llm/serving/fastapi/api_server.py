@@ -39,8 +39,13 @@ class InputsRequest(BaseModel):
     req_type: str = 'completion'
 
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
 class ChatCompletionRequest(BaseModel):
-    messages: List[ChatCompletionMessageParam]
+    messages: List[ChatMessage]
     model: str
     max_tokens: Optional[int] = None
     stream: Optional[bool] = False
@@ -54,6 +59,14 @@ class CompletionRequest(BaseModel):
 
 
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 global tokenizer
 global local_model
 
@@ -90,6 +103,14 @@ def get_queue_next_token(delta_text_queue):
         remain = 1
     return delta_text, remain
 
+def should_return_end_token(next_token):
+    if "codegeex" not in local_model.model_name.lower():
+        return True
+    else:
+        if next_token in ["<|user|>", "<|endoftext|>", "<|observation|>"]:
+            return False
+    return True
+
 async def chat_stream_generator(local_model, delta_text_queue, request_id):
     model_name = local_model.model_name
     index = 0
@@ -104,18 +125,19 @@ async def chat_stream_generator(local_model, delta_text_queue, request_id):
                 await asyncio.sleep(0)
                 continue
         if remain == 0 and delta_text is not None or remain != 0:
-            choice_data = ChatCompletionResponseStreamChoice(
-                index=index,
-                delta=DeltaMessage(role="assistant", content=delta_text),
-                logprobs=None,
-                finish_reason=None)
-            chunk = ChatCompletionStreamResponse(
-                id=request_id,
-                choices=[choice_data],
-                model=model_name)
-            data = chunk.model_dump_json(exclude_unset=True)
-            yield f"data: {data}\n\n"
-            index = index + 1
+            if should_return_end_token(delta_text):
+                choice_data = ChatCompletionResponseStreamChoice(
+                    index=index,
+                    delta=DeltaMessage(role="assistant", content=delta_text),
+                    logprobs=None,
+                    finish_reason=None)
+                chunk = ChatCompletionStreamResponse(
+                    id=request_id,
+                    choices=[choice_data],
+                    model=model_name)
+                data = chunk.model_dump_json(exclude_unset=True)
+                yield f"data: {data}\n\n"
+                index = index + 1
         if remain == 0:
             choice_data = ChatCompletionResponseStreamChoice(
                 index=index,
@@ -146,18 +168,19 @@ async def completion_stream_generator(local_model, delta_text_queue, request_id)
                 await asyncio.sleep(0)
                 continue
         if remain == 0 and delta_text is not None or remain != 0:
-            choice_data = CompletionResponseStreamChoice(
-                index=index,
-                text=delta_text,
-                logprobs=None,
-                finish_reason=None)
-            chunk = CompletionStreamResponse(
-                id=request_id,
-                choices=[choice_data],
-                model=model_name)
-            data = chunk.model_dump_json(exclude_unset=True)
-            yield f"data: {data}\n\n"
-            index = index + 1
+            if should_return_end_token(delta_text):
+                choice_data = CompletionResponseStreamChoice(
+                    index=index,
+                    text=delta_text,
+                    logprobs=None,
+                    finish_reason=None)
+                chunk = CompletionStreamResponse(
+                    id=request_id,
+                    choices=[choice_data],
+                    model=model_name)
+                data = chunk.model_dump_json(exclude_unset=True)
+                yield f"data: {data}\n\n"
+                index = index + 1
         if remain == 0:
             choice_data = CompletionResponseStreamChoice(
                 index=index,
@@ -237,19 +260,30 @@ async def generate_stream(inputs_request: InputsRequest):
 
 
 def get_prompt(messages) -> str:
-    prompt = ""
-    for msg in messages:
-        role = msg["role"]
-        content = msg["content"]
-        if role == "system":
-            prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
-        elif role == "user":
-            prompt += f"[INST] {content} [/INST] "
-        elif role == "assistant":
-            prompt += f"{content} "
+    if "codegeex" in local_model.model_name.lower():
+        query=messages[-1].content,
+        if len(messages) <= 1:
+            history = []
         else:
-            invalidInputError(False, f"Unknown role: {role}")
-    return prompt.strip()
+            history=[msg.model_dump() for msg in messages[:-1]]
+        history.append({"role": "user", "content": query})
+        inputs = tokenizer.apply_chat_template(history, add_generation_prompt=True, tokenize=False,
+                                               return_tensors="pt", return_dict=False)
+        return inputs
+    else:
+        prompt = ""
+        for msg in messages:
+            role = msg["role"]
+            content = msg["content"]
+            if role == "system":
+                prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
+            elif role == "user":
+                prompt += f"[INST] {content} [/INST] "
+            elif role == "assistant":
+                prompt += f"{content} "
+            else:
+                invalidInputError(False, f"Unknown role: {role}")
+        return prompt.strip()
 
 
 @app.post("/v1/chat/completions")
@@ -265,6 +299,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
         stream=request.stream,
         req_type="chat"
     )
+    print(inputs_request.inputs)
     if request.stream:
         request_id, result = await generate_stream(inputs_request)
     else:

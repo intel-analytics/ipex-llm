@@ -73,6 +73,10 @@ class ModelWorker:
 
             def model_generate():
                 generate_kwargs = {k: v for k, v in parameters.dict().items() if v is not None}
+                if "codegeex" in self.model_name.lower():
+                    eos_token_id = [tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|user|>"),
+                                    tokenizer.convert_tokens_to_ids("<|observation|>")]
+                    generate_kwargs["eos_token_id"] = eos_token_id
                 self.model.generate(input_ids,
                                     streamer=self.streamer[request_id], **generate_kwargs)
                 torch.xpu.empty_cache()
