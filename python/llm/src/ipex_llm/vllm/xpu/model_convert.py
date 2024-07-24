@@ -24,71 +24,9 @@ from vllm.model_executor.models.chatglm import GLMMLP, GLMAttention, ChatGLMForC
 from vllm.model_executor.model_loader import get_model
 from vllm.model_executor.layers.sampler import Sampler
 
-from vllm.lora.worker_manager import LRUCacheWorkerLoRAManager
-from vllm.attention import Attention, AttentionMetadata
-# from vllm.model_executor.input_metadata import InputMetadata
+from vllm.attention import AttentionMetadata
 from vllm.config import DeviceConfig
-from vllm.model_executor.sampling_metadata import SamplingMetadata
-from vllm.model_executor.parallel_utils.communication_op import tensor_model_parallel_gather
-
-from typing import Tuple, Optional, Union
-from ipex_llm.utils.common import invalidInputError
-from vllm.sequence import SamplerOutput
-
-
-def _Llama_sample(
-    self,
-    hidden_states: torch.Tensor,
-    sampling_metadata: SamplingMetadata,
-) -> Optional[SamplerOutput]:
-    next_tokens = self.sampler(self.lm_head, hidden_states,
-                               sampling_metadata)
-    return next_tokens
-
-
-def _Qwen2_sample(
-    self,
-    hidden_states: torch.Tensor,
-    sampling_metadata: SamplingMetadata,
-) -> Optional[SamplerOutput]:
-    if self.config.tie_word_embeddings:
-        # Embedding layer is not optimized to LowBitLinear
-        lm_head_weight = self.model.embed_tokens.weight
-    else:
-        # This layer is optimized to LowBitLinear
-        lm_head_weight = self.lm_head
-    next_tokens = self.sampler(lm_head_weight, hidden_states,
-                               sampling_metadata)
-    return next_tokens
-
-
-def _Chatglm_sample(
-    self,
-    hidden_states: torch.Tensor,
-    sampling_metadata: SamplingMetadata,
-) -> Optional[SamplerOutput]:
-    next_tokens = self.sampler(self.transformer.output_layer, hidden_states,
-                               sampling_metadata)
-
-    return next_tokens
-
-
-def _sample_get_logits(self, hidden_states: torch.Tensor,
-                       embedding: Union[torch.nn.Module, torch.Tensor],
-                       embedding_bias: Optional[torch.Tensor]) -> torch.Tensor:
-    # For tie_word_embedding models, the embedding is not optimized as
-    # the low_bit_linear layer...
-    if isinstance(embedding, torch.Tensor):
-        logits = torch.matmul(hidden_states, embedding.t())
-    else:
-        logits = embedding(hidden_states)
-    if embedding_bias is not None:
-        logits += embedding_bias
-    logits = tensor_model_parallel_gather(logits)
-    # Remove paddings in vocab (if any).
-    if logits is not None:
-        logits = logits[:, :self.org_vocab_size]
-    return logits
+from typing import Tuple
 
 
 def _MLP_forward(self, x):
@@ -198,13 +136,13 @@ _REPLACED_ATTENTION_LAYERS = {
     GLMAttention: _ChatGLM_Attention_forward
 }
 
-_REPLACED_SAMPLER_LAYERS = {
-    LlamaForCausalLM: _Llama_sample,
-    QWenLMHeadModel: _Llama_sample,
-    ChatGLMForCausalLM: _Chatglm_sample,
-    Qwen2ForCausalLM: _Qwen2_sample,
-    BaiChuanBaseForCausalLM: _Llama_sample,
-}
+# _REPLACED_SAMPLER_LAYERS = {
+#     LlamaForCausalLM: _Llama_sample,
+#     QWenLMHeadModel: _Llama_sample,
+#     ChatGLMForCausalLM: _Chatglm_sample,
+#     Qwen2ForCausalLM: _Qwen2_sample,
+#     BaiChuanBaseForCausalLM: _Llama_sample,
+# }
 
 
 def _model_mlp_convert():
@@ -212,10 +150,10 @@ def _model_mlp_convert():
         setattr(module, "forward", replaced_func)
 
 
-def _model_sample_convert():
-    setattr(Sampler, "_get_logits", _sample_get_logits)
-    for module, replaced_func in _REPLACED_SAMPLER_LAYERS.items():
-        setattr(module, "sample", replaced_func)
+# def _model_sample_convert():
+#     setattr(Sampler, "_get_logits", _sample_get_logits)
+#     for module, replaced_func in _REPLACED_SAMPLER_LAYERS.items():
+#         setattr(module, "sample", replaced_func)
 
 
 def _model_attention_convert():
@@ -224,32 +162,24 @@ def _model_attention_convert():
 
 
 def _ipex_llm_convert(load_in_low_bit):
-    # from vllm.worker.model_runner import ModelRunner
     from vllm.worker.xpu_model_runner import XPUModelRunner
-    # import vllm.model_executor.model_loader as model_loader
+    from ipex_llm.vllm.xpu.ipex_llm_wrapper import get_ipex_llm_wrapper
+    import vllm.executor.ray_utils as ray_utils
     setattr(XPUModelRunner, "load_model", get_load_function(load_in_low_bit))
+    setattr(ray_utils, "RayWorkerWrapper", get_ipex_llm_wrapper(load_in_low_bit))
 
 
 def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
-        # _model_mlp_convert()
-        # _model_attention_convert()
-        _model_sample_convert()
+        _model_mlp_convert()
+        _model_attention_convert()
+        # _model_sample_convert()
 
         # from vllm.utils import measure_device_memory
         from vllm.utils import CudaMemoryProfiler
         with CudaMemoryProfiler() as m:
-            # only support xpu for now
-            # We have to create a new DeviceConfig.
-            # Otherwise, will get the wrong xpu memory usage
-            # self.model = get_model(self.model_config,
-            #                        DeviceConfig("cpu"),
-            #                        lora_config=self.lora_config,
-            #                        parallel_config=self.parallel_config,
-            #                        scheduler_config=self.scheduler_config)
             self.model = get_model(
                 model_config=self.model_config,
-                # device_config=self.device_config,
                 device_config=DeviceConfig("cpu"),
                 load_config=self.load_config,
                 lora_config=self.lora_config,
@@ -277,19 +207,4 @@ def get_load_function(low_bit):
         logger.info("Loading model weights took %.4f GB",
                     self.model_memory_usage / float(2**30))
 
-        # if self.lora_config:
-        #     invalidInputError(hasattr(self.model, "supported_lora_modules")
-        #                       and self.model.supported_lora_modules,
-        #                       "Model does not support LoRA")
-        #     invalidInputError(hasattr(self.model, "embedding_modules"),
-        #                       "Model does not have embedding_modules")
-        #     invalidInputError(hasattr(self.model, "embedding_padding_modules"),
-        #                       "Model does not have embedding_padding_modules")
-        #     self.lora_manager = LRUCacheWorkerLoRAManager(
-        #         self.scheduler_config.max_num_seqs,
-        #         self.scheduler_config.max_num_batched_tokens +
-        #         self.scheduler_config.max_paddings, self.vocab_size,
-        #         self.lora_config, self.device, self.model.embedding_modules,
-        #         self.model.embedding_padding_modules)
-        #     self.model = self.lora_manager.create_lora_manager(self.model)
     return _ipex_llm_load_model
