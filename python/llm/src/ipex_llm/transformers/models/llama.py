@@ -54,7 +54,8 @@ from transformers.models.llama.modeling_llama import LlamaModel
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers.models.snapkv_utils import should_use_snapkv, init_snapkv
+from ipex_llm.transformers.models.snapkv_utils import should_use_compresskv, \
+    DynamicCompressCache
 
 try:
     from transformers.cache_utils import Cache, DynamicCache
@@ -153,6 +154,11 @@ def llama_model_forward_4_38(
     if use_cache and use_quantize_kv_cache(self.layers[0].mlp.up_proj, input):
         if not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
+
+    if use_cache and should_use_compresskv():
+        if not isinstance(past_key_values, DynamicCompressCache):
+            past_key_values = DynamicCompressCache.from_legacy_cache(
+                past_key_values)
     return llama_model_forward_4_38_internal(
         self=self,
         input_ids=input_ids,
@@ -1793,10 +1799,7 @@ def llama_attention_forward_4_38_original(
     original_dtype = hidden_states.dtype
 
     # [SnapKV]
-    use_snapkv = should_use_snapkv()
-    if use_snapkv:
-        setattr(self.config, "max_capacity_prompt", 512)
-        init_snapkv(self)
+    use_compresskv = should_use_compresskv()
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
@@ -1830,13 +1833,15 @@ def llama_attention_forward_4_38_original(
                                                                        self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
-        if self.layer_idx == 0:
-            past_key_value.seen_tokens = kv_seq_len
+        # [SnapKV]
+        if use_compresskv:
+            past_key_value.update_seen_tokens(self.layer_idx, q_len)
+            kv_seq_len = past_key_value.get_seq_length()
+        else: 
+            if self.layer_idx == 0:
+                past_key_value.seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
         past_key_value.value_cache[self.layer_idx] = value_states
-        # [SnapKV]
-        if use_snapkv:
-            self.kv_seq_len += q_len
     else:
         if self.config.pretraining_tp > 1:
             key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
@@ -1916,14 +1921,7 @@ def llama_attention_forward_4_38_original(
                                   f"If you are using {self.__class__.__name__} for "
                                   "auto-regressive decodingwith k/v caching, please make sure "
                                   "to initialize the attention class with a layer index.")
-            # [SnapKV] add kv_seq_len
-            if hasattr(self, "kv_seq_len"):
-                if self.kv_seq_len != 0:
-                    kv_seq_len += self.kv_seq_len
-                else:
-                    kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
-            else:
-                kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+            kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
             rope_theta = self.rotary_emb.base
@@ -1944,54 +1942,47 @@ def llama_attention_forward_4_38_original(
                                                                 cos, sin, position_ids, "llama")
 
         if past_key_value is not None:
-            # update the number of seen tokens
-            if self.layer_idx == 0:
-                past_key_value.seen_tokens += key_states.shape[-2]
-
-            # [SnapKV] add kv_cluster
-            if use_snapkv and (key_states.shape[-2] >= kv_seq_len):
-                self.kv_seq_len = kv_seq_len
-                key_states_compress, value_states_compress = self.kv_cluster.update_kv(
-                    key_states, query_states, value_states,
-                    attention_mask, self.num_key_value_groups)
+            if use_compresskv:
+                key_states, value_states = past_key_value.update(key_states, value_states, self.layer_idx,
+                                      query_states, attention_mask, self.num_key_value_groups,
+                                      self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
             else:
-                if use_snapkv:
-                    self.kv_seq_len += q_len
-                key_states_compress = key_states
-                value_states_compress = value_states
+                # update the number of seen tokens
+                if self.layer_idx == 0:
+                    past_key_value.seen_tokens += key_states.shape[-2]
 
-            # reuse k, v, self_attention
-            # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
-            if len(past_key_value.key_cache) <= self.layer_idx:
-                past_key_value.key_cache.append(key_states_compress)
-                past_key_value.value_cache.append(value_states_compress)
-            else:
-                cache_k = past_key_value.key_cache[self.layer_idx]
-                cache_v = past_key_value.value_cache[self.layer_idx]
+                # reuse k, v, self_attention
+                # update `past_key_value` with `key_states` and `value_states` for layer `layer_idx`
+                if len(past_key_value.key_cache) <= self.layer_idx:
+                    past_key_value.key_cache.append(key_states)
+                    past_key_value.value_cache.append(value_states)
+                else:
+                    cache_k = past_key_value.key_cache[self.layer_idx]
+                    cache_v = past_key_value.value_cache[self.layer_idx]
 
-                if not enough_kv_room:
-                    # allocate new
-                    new_c_k, new_c_v = extend_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
+                    if not enough_kv_room:
+                        # allocate new
+                        new_c_k, new_c_v = extend_kv_cache(bsz,
+                                                           self.num_key_value_heads,  # Support GQA
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=device)
 
-                    new_c_k[:] = cache_k
-                    new_c_v[:] = cache_v
-                    cache_k = new_c_k
-                    cache_v = new_c_v
+                        new_c_k[:] = cache_k
+                        new_c_v[:] = cache_v
+                        cache_k = new_c_k
+                        cache_v = new_c_v
 
-                key_states, value_states = append_kv_cache(cache_k,
-                                                           cache_v,
-                                                           key_states_compress,
-                                                           value_states_compress)
+                    key_states, value_states = append_kv_cache(cache_k,
+                                                               cache_v,
+                                                               key_states,
+                                                               value_states)
 
-                # update past_key_value
-                past_key_value.key_cache[self.layer_idx] = key_states
-                past_key_value.value_cache[self.layer_idx] = value_states
+                    # update past_key_value
+                    past_key_value.key_cache[self.layer_idx] = key_states
+                    past_key_value.value_cache[self.layer_idx] = value_states
 
     if cache_position is not None:
         new_attention_mask = attention_mask[:, :, kv_seq_len - q_len:kv_seq_len, 0:kv_seq_len]
@@ -2012,8 +2003,8 @@ def llama_attention_forward_4_38_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
-        # [SnapKV] set attention_mask = None
-        if use_snapkv:
+        # # [SnapKV] set attention_mask = None
+        if use_compresskv:
             new_attention_mask = None
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
@@ -2677,10 +2668,11 @@ def llama_model_forward_4_38_internal(
 
     next_cache = None
     from ipex_llm.transformers.kv import DynamicFp8Cache
+    from ipex_llm.transformers.models.snapkv_utils import DynamicCompressCache
     if use_cache:
         next_cache = (
             next_decoder_cache.to_legacy_cache()
-            if not isinstance(next_decoder_cache, DynamicFp8Cache)
+            if not isinstance(next_decoder_cache, (DynamicFp8Cache, DynamicCompressCache)) 
             else next_decoder_cache
         )
     if not return_dict:

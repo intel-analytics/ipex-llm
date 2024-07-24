@@ -1007,8 +1007,6 @@ def _optimize_post(model, lightweight_bmm=False):
                         llama_attention_forward_4_41)
                 else:
                     from ipex_llm.transformers.models.llama import llama_model_forward_4_38
-                    from ipex_llm.transformers.models.mistral import \
-                        prepare_inputs_for_generation_mistral
                     convert_forward(
                         model,
                         transformers.models.llama.modeling_llama.LlamaModel,
@@ -1017,8 +1015,6 @@ def _optimize_post(model, lightweight_bmm=False):
                         model,
                         transformers.models.llama.modeling_llama.LlamaAttention,
                         llama_attention_forward_4_38)
-                    transformers.models.llama.modeling_llama.LlamaForCausalLM.\
-                        prepare_inputs_for_generation = prepare_inputs_for_generation_mistral
             else:
                 from ipex_llm.transformers.models.llama import llama_model_forward_4_36
                 convert_forward(

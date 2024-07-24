@@ -58,7 +58,7 @@ from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.transformers.models.llama import llama_decoding_fast_path_qtype_check
 from ipex_llm.transformers.models.llama import should_use_xetla_mm_qkv
 from ipex_llm.transformers.models.llama import fuse_qkv_weight_xetla
-from ipex_llm.transformers.models.snapkv_utils import should_use_snapkv, init_snapkv
+from ipex_llm.transformers.models.snapkv_utils import should_use_compresskv, init_snapkv
 try:
     from transformers.cache_utils import Cache
 except ImportError:
@@ -681,7 +681,7 @@ def mistral_attention_forward_4_36_quantized(
     # for flash attention
     original_dtype = hidden_states.dtype
 
-    use_snapkv = should_use_snapkv()
+    use_snapkv = should_use_compresskv()
     if use_snapkv:
         setattr(self.config, "max_capacity_prompt", 512)
         init_snapkv(self)
@@ -1134,7 +1134,7 @@ def mistral_attention_forward_4_39_original(
     original_dtype = hidden_states.dtype
 
     # [SnapKV]
-    use_snapkv = should_use_snapkv()
+    use_snapkv = should_use_compresskv()
     if use_snapkv:
         setattr(self.config, "max_capacity_prompt", 512)
         init_snapkv(self)
@@ -1355,7 +1355,7 @@ def mistral_attention_forward_4_39_original(
 def prepare_inputs_for_generation_mistral(
     self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
 ):
-    use_snap_kv = should_use_snapkv()
+    use_snap_kv = should_use_compresskv()
     # Omit tokens covered by past_key_values
     # [SnapKV]
     if past_key_values is None and use_snap_kv:
