@@ -25,6 +25,7 @@ ARG https_proxy
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 COPY --from=build /tmp/oneccl_bind_pt-2.1.100+xpu-cp311-cp311-linux_x86_64.whl /tmp/
+ADD ./gradio_web_server.patch /tmp/gradio_web_server.patch
 
 # Install Serving Dependencies
 # Install ipex-llm[serving] only will update ipex_llm source code without updating
