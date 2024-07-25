@@ -201,9 +201,3 @@ class DynamicCompressCache(DynamicCache):
         if len(self.key_cache) <= layer_idx:
             return 0
         return self.real_kv_len
-
-
-def should_use_compresskv():
-    # TODO: add xpu (cpu tobe test)
-    use_compress_kv = os.environ.get("IPEX_LLM_COMPRESS_KV_CACHE", None)
-    return use_compress_kv == "1"
