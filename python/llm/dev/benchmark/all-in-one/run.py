@@ -74,6 +74,20 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
                 result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                         actual_in_len, actual_out_len, load_time, model.peak_memory])
 
+
+def get_continuation_input_str(in_len):
+    # in_len.txt maybe shorter than we need,
+    # use much longer context to make sure input length
+    test_length = min(in_len*2, 8192)
+    while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
+        test_length = test_length * 2
+    # Force the test_length to be 8192, such that we can use 8192.txt
+    if test_length > 8192:
+        test_length = 8192
+    input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+    return input_str
+
+
 def preprocess_prompt(tokenizer, in_len, task):
     if task == 'summarize':
         if in_len == 512:
@@ -274,13 +288,7 @@ def run_transformer_int4(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -339,13 +347,7 @@ def run_pytorch_autocast_bf16(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -410,16 +412,7 @@ def run_optimize_model(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192] and test_length <= 8192:
-                test_length = test_length * 2
-            # Force the test_length to be 8192, such that we can use 8192.txt
-            if test_length > 8192:
-                test_length = 8192
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -528,15 +521,7 @@ def run_transformer_int4_gpu(repo_id,
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
             if task == 'continuation':
-                # As different tokenizer has different encodings,
-                # in_len.txt maybe shorter than we need,
-                # use much longer context to make sure input length
-                test_length = min(in_len*2, 8192)
-                while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
-                    test_length = test_length * 2
-                # For the sequence length not in [32, 256, 1024, 2048, 8192], it will be truncated from 8192.txt.
-                test_length = min(test_length, 8192)
-                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+                input_str = get_continuation_input_str(in_len)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -618,13 +603,7 @@ def transformers_int4_npu_win(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -695,13 +674,7 @@ def run_optimize_model_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -766,13 +739,7 @@ def run_ipex_fp16_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -844,12 +811,6 @@ def run_bigdl_fp16_gpu(repo_id,
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
             # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -935,13 +896,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1034,13 +989,7 @@ def run_transformer_int4_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                # As different tokenizer has different encodings,
-                # in_len.txt maybe shorter than we need,
-                # use much longer context to make sure input length
-                test_length = min(in_len*2, 8192)
-                while test_length not in [32, 256, 1024, 2048, 8192]:
-                    test_length = test_length * 2
-                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+                input_str = get_continuation_input_str(in_len)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1157,13 +1106,7 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                # As different tokenizer has different encodings,
-                # in_len.txt maybe shorter than we need,
-                # use much longer context to make sure input length
-                test_length = min(in_len*2, 8192)
-                while test_length not in [32, 256, 1024, 2048, 8192]:
-                    test_length = test_length * 2
-                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+                input_str = get_continuation_input_str(in_len)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1273,13 +1216,7 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                # As different tokenizer has different encodings,
-                # in_len.txt maybe shorter than we need,
-                # use much longer context to make sure input length
-                test_length = min(in_len*2, 8192)
-                while test_length not in [32, 256, 1024, 2048, 8192]:
-                    test_length = test_length * 2
-                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+                input_str = get_continuation_input_str(in_len)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1389,13 +1326,7 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                # As different tokenizer has different encodings,
-                # in_len.txt maybe shorter than we need,
-                # use much longer context to make sure input length
-                test_length = min(in_len*2, 8192)
-                while test_length not in [32, 256, 1024, 2048, 8192]:
-                    test_length = test_length * 2
-                input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+                input_str = get_continuation_input_str(in_len)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1478,13 +1409,7 @@ def run_transformer_autocast_bf16( repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1549,13 +1474,7 @@ def run_bigdl_ipex_bf16(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1619,13 +1538,7 @@ def run_bigdl_ipex_int4(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1689,13 +1602,7 @@ def run_bigdl_ipex_int8(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1799,13 +1706,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1876,13 +1777,7 @@ def run_speculative_cpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1954,13 +1849,7 @@ def run_speculative_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -2041,13 +1930,7 @@ def run_pipeline_parallel_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
-            # in_len.txt maybe shorter than we need,
-            # use much longer context to make sure input length
-            test_length = min(in_len*2, 8192)
-            while test_length not in [32, 256, 1024, 2048, 8192]:
-                test_length = test_length * 2
-            input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
+            input_str = get_continuation_input_str(in_len)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
