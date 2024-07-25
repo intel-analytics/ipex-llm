@@ -203,8 +203,7 @@ def mistral_model_forward_4_36(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache
-    from ipex_llm.transformers.models.snapkv_utils import DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     if use_cache:
         if use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids):

@@ -113,8 +113,7 @@ def llama_model_forward_4_36(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache
-    from ipex_llm.transformers.models.snapkv_utils import DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
@@ -153,8 +152,7 @@ def llama_model_forward_4_38(
     return_dict: Optional[bool] = None,
     cache_position: Optional[torch.LongTensor] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache
-    from ipex_llm.transformers.models.snapkv_utils import DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
@@ -194,8 +192,7 @@ def llama_model_forward_4_41(
     return_dict: Optional[bool] = None,
     cache_position: Optional[torch.LongTensor] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache
-    from ipex_llm.transformers.models.snapkv_utils import DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
@@ -2566,8 +2563,7 @@ def llama_model_forward_4_41_internal(
         all_hidden_states += (hidden_states,)
 
     next_cache = None
-    from ipex_llm.transformers.kv import DynamicFp8Cache
-    from ipex_llm.transformers.models.snapkv_utils import DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
     if use_cache:
         next_cache = (
             next_decoder_cache.to_legacy_cache()
@@ -2697,8 +2693,7 @@ def llama_model_forward_4_38_internal(
         all_hidden_states += (hidden_states,)
 
     next_cache = None
-    from ipex_llm.transformers.kv import DynamicFp8Cache
-    from ipex_llm.transformers.models.snapkv_utils import DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
     if use_cache:
         next_cache = (
             next_decoder_cache.to_legacy_cache()
