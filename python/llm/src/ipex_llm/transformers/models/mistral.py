@@ -1011,12 +1011,12 @@ def mistral_attention_forward_4_36_original(
                     if not enough_kv_room:
                         # allocate new
                         new_c_k, new_c_v = extend_kv_cache(bsz,
-                                                        self.num_key_value_heads,  # Support GQA
-                                                        self.head_dim,
-                                                        cache_k.size(2),
-                                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                        dtype=cache_k.dtype,
-                                                        device=device)
+                                                           self.num_key_value_heads,  # Support GQA
+                                                           self.head_dim,
+                                                           cache_k.size(2),
+                                                           kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                           dtype=cache_k.dtype,
+                                                           device=device)
 
                         new_c_k[:] = cache_k
                         new_c_v[:] = cache_v
@@ -1024,7 +1024,7 @@ def mistral_attention_forward_4_36_original(
                         cache_v = new_c_v
 
                     key_states, value_states = append_kv_cache(cache_k, cache_v,
-                                                            key_states, value_states)
+                                                               key_states, value_states)
 
                     # update past_key_value
                     past_key_value.key_cache[self.layer_idx] = key_states

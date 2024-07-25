@@ -137,7 +137,7 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
 
-# This function is adapted from 
+# This function is adapted from
 # https://github.com/FasterDecoding/SnapKV/blob/main/snapkv/monkeypatch/snapkv_utils.py
 def compress_kv(attn_config, key_states, query_states, value_states, attention_mask,
                 num_key_value_groups):
