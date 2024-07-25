@@ -231,7 +231,7 @@ def run_native_int4(repo_id,
         in_out_len = in_out.split("-")
         in_len = int(in_out_len[0])
         out_len = int(in_out_len[1])
-        input_str = open(f"prompt/continuation/{in_len}.txt", 'r').read()
+        input_str = get_input_str(in_len)
         # As different tokenizer has different encodings,
         # slice the input_ids to ensure the prompt length is required length.
         n_ctx = in_len + out_len if in_len + out_len > 512 else 512
@@ -809,7 +809,6 @@ def run_bigdl_fp16_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            # As different tokenizer has different encodings,
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
