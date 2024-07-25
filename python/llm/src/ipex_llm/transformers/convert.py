@@ -70,12 +70,12 @@ def is_vllm_available():
     global _IS_VLLM_AVAILABLE
     if _IS_VLLM_AVAILABLE is not None:
         return _IS_VLLM_AVAILABLE
-    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'list'])
-    installed_packages = [r.decode().split('  ')[0] for r in reqs.split()]
-    if 'vllm' in installed_packages:
-        _IS_VLLM_AVAILABLE = True
-    else:
-        _IS_VLLM_AVAILABLE = False
+    import sys
+    original_path = sys.path
+    # Temporally remove current directory
+    sys.path = [p for p in sys.path if p != '']
+    _IS_VLLM_AVAILABLE = importlib.util.find_spec("vllm") is not None
+    sys.path = original_path
     return _IS_VLLM_AVAILABLE
 
 
