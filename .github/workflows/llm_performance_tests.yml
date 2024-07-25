@@ -145,7 +145,7 @@ jobs:
           python -m pip install --upgrade expecttest
           bash python/llm/test/run-llm-install-tests.sh
 
-      - name: Test on xpu(transformers==4.36.2)
+      - name: Test on xpu(transformers==4.41.2)
         shell: bash
         run: |
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
@@ -153,7 +153,9 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
+          python -m pip install transformers==4.41.2cp python/llm/test/benchmark/arc-perf-test.yaml 
+          python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           mkdir test_batch1
           mkdir test_batch2
@@ -182,14 +184,14 @@ jobs:
           python run.py
           mv *.csv test_batch4
 
-      - name: Test on xpu(transformers==4.37.0)
+      - name: Test on xpu(transformers==4.41.2)
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
-          python -m pip install transformers==4.37.0
+          python -m pip install transformers==4.41.2
           # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
@@ -214,14 +216,14 @@ jobs:
           python run.py
           mv *.csv test_batch4
       
-      - name: Test on xpu(transformers==4.40.0)
+      - name: Test on xpu(transformers==4.41.2)
         shell: bash
         run: |
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade transformers for model Qwen/Qwen1.5-MoE-A2.7B-Chat
-          python -m pip install transformers==4.40.0
+          python -m pip install transformers==4.41.2
           python -m pip install trl
           # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-440.yaml python/llm/dev/benchmark/all-in-one/config.yaml
