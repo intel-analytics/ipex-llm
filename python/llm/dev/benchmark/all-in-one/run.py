@@ -416,7 +416,7 @@ def run_optimize_model(repo_id,
             test_length = min(in_len*2, 8192)
             while test_length not in [32, 256, 1024, 2048, 8192] and test_length <= 8192:
                 test_length = test_length * 2
-            # Force the test_length to be 8192.txt
+            # Force the test_length to be 8192, such that we can use 8192.txt
             if test_length > 8192:
                 test_length = 8192
             input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
