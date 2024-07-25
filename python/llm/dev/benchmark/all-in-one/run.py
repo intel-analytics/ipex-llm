@@ -84,8 +84,7 @@ def get_continuation_input_str(in_len):
     # Force the test_length to be 8192, such that we can use 8192.txt
     if test_length > 8192:
         test_length = 8192
-    input_str = open(f"prompt/continuation/{test_length}.txt", 'r').read()
-    return input_str
+    return open(f"prompt/continuation/{test_length}.txt", 'r').read()
 
 
 def preprocess_prompt(tokenizer, in_len, task):
