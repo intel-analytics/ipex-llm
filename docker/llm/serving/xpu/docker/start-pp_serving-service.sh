@@ -6,7 +6,8 @@ export OMP_NUM_THREADS=32
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
 basekit_root=/opt/intel/oneapi
 source $basekit_root/setvars.sh --force
-source $basekit_root/ccl/latest/env/vars.sh --force
+# source $basekit_root/ccl/latest/env/vars.sh --force
+source /opt/intel/1ccl-wks/setvars.sh
 
 export USE_XETLA=OFF
 if [[ $KERNEL_VERSION != *"6.5"* ]]; then
