@@ -1864,7 +1864,7 @@ def llama_attention_forward_4_38_original(
             past_key_value.update_seen_tokens(self.layer_idx, q_len)
             kv_seq_len = past_key_value.get_seq_length()
         elif self.layer_idx == 0:
-                past_key_value.seen_tokens = kv_seq_len
+            past_key_value.seen_tokens = kv_seq_len
         past_key_value.key_cache[self.layer_idx] = key_states
         past_key_value.value_cache[self.layer_idx] = value_states
     else:
