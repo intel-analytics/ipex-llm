@@ -1,5 +1,5 @@
 {
-    "llama2-7b-chat-4k": 3500,
+    "llama2-7b-chat-4k": 4096,
     "longchat-v1.5-7b-32k": 31500,
     "xgen-7b-8k": 7500,
     "internlm-7b-8k": 7500,
