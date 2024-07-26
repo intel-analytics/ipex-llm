@@ -1,5 +1,6 @@
 import os
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer
+from ipex_llm.transformers import AutoModelForCausalLM
 from datasets import load_dataset
 import json
 from tqdm import tqdm
@@ -7,7 +8,7 @@ import numpy as np
 import random
 import argparse
 import torch
-from snapkv.monkeypatch.monkeypatch import replace_llama, replace_mistral, replace_mixtral
+#from snapkv.monkeypatch.monkeypatch import replace_llama, replace_mistral, replace_mixtral
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default=None, choices=[
@@ -75,13 +76,16 @@ def get_pred_single_gpu(data, max_length, max_gen,
                         pooling = None):
     # device = torch.device(f'cuda:{rank}')
     # device = model.device
-    model, tokenizer = load_model_and_tokenizer(model2path[model_name], model_name, device = "cuda", compress=compress)
+    model, tokenizer = load_model_and_tokenizer(model2path[model_name], model_name, device = "xpu", compress=compress)
     device = model.device
+    print(f"model_device: {model.device}")
     printed = False
     print(out_path)
+    count_prompt_under_maxlen = 0
     for json_obj in tqdm(data):
         ############################################################################################################
         # load compress args
+        count_prompt_under_maxlen += 1
         if compress:
             layers = len(model.model.layers)
             # check if window_sizes is a list
@@ -104,8 +108,10 @@ def get_pred_single_gpu(data, max_length, max_gen,
         if "chatglm3" in model_name:
             tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids[0]
         if len(tokenized_prompt) > max_length:
-            half = int(max_length/2)
-            prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True)+tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
+            count_prompt_under_maxlen -= 1
+            continue
+            #half = int(max_length/2)
+            #prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True)+tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
         if dataset not in ["trec", "triviaqa", "samsum", "lsht", "lcc", "repobench-p"]: # chat models are better off without build prompts on these tasks
             prompt = build_chat(tokenizer, prompt, model_name)
         if "chatglm3" in model_name:
@@ -140,6 +146,16 @@ def get_pred_single_gpu(data, max_length, max_gen,
         with open(out_path, "a", encoding="utf-8") as f:
             json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"], "length": json_obj["length"]}, f, ensure_ascii=False)
             f.write('\n')
+
+    count_out_path = os.path.join(os.path.split(out_path)[0], "prompt_count.json")
+    prompt_count_result = {}
+    if os.path.isfile(count_out_path):
+        with open(count_out_path, "r", encoding = "utf-8") as f:
+            prompt_count_result = json.load(f)
+    prompt_count_result[dataset] = count_prompt_under_maxlen
+    with open(count_out_path, "w", encoding = "utf-8") as f:
+        json.dump(prompt_count_result, f, ensure_ascii=False, indent=4)
+
 
 
 def seed_everything(seed):
@@ -208,12 +224,13 @@ def load_model_and_tokenizer(path, model_name, device, compress=False):
         if not compress:
             model = AutoModelForCausalLM.from_pretrained(
                 path,
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True,
+                load_in_4bit=True,
+                #low_cpu_mem_usage=True,
                 device_map="auto",
                 use_cache=True,
-                use_flash_attention_2=True
+                #use_flash_attention_2=True
             )
+            model = model.to(device)
         else:
             model = AutoModelForCausalLM.from_pretrained(
                 path,
@@ -263,8 +280,8 @@ if __name__ == '__main__':
     # world_size = torch.cuda.device_count()
     # mp.set_start_method('spawn', force=True)
 
-    model2path = json.load(open("/home/arda/yina/SnapKV/experiments/LongBench/config/model2path.json", "r"))
-    model2maxlen = json.load(open("/home/arda/yina/SnapKV/experiments/LongBench/config/model2maxlen.json", "r"))
+    model2path = json.load(open("config/model2path.json", "r"))
+    model2maxlen = json.load(open("config/model2maxlen.json", "r"))
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model_name = args.model
     # define your model
@@ -281,8 +298,8 @@ if __name__ == '__main__':
     if args.dataset not in datasets:
         raise ValueError(f"Dataset {args.dataset} not found in datasets")
     # we design specific prompt format and max generation length for each task, feel free to modify them to optimize model output
-    dataset2prompt = json.load(open("/home/arda/yina/SnapKV/experiments/LongBench/config/dataset2prompt.json", "r"))
-    dataset2maxlen = json.load(open("/home/arda/yina/SnapKV/experiments/LongBench/config/dataset2maxlen.json", "r"))
+    dataset2prompt = json.load(open("config/dataset2prompt.json", "r"))
+    dataset2maxlen = json.load(open("config/dataset2maxlen.json", "r"))
     # predict on each dataset
     if not os.path.exists(f"pred_{max_length}"):
         os.makedirs(f"pred_{max_length}")
@@ -291,12 +308,12 @@ if __name__ == '__main__':
     dataset = args.dataset
     # for dataset in datasets:
     if args.compress_args_path:
-        compress_args = json.load(open(os.path.join('/home/arda/yina/SnapKV/experiments/LongBench/config', args.compress_args_path), "r"))
+        compress_args = json.load(open(os.path.join('config', args.compress_args_path), "r"))
         compress = True
         write_model_name = model_name + args.compress_args_path.split(".")[0]
-        replace_llama()
-        replace_mistral()
-        replace_mixtral()
+        #replace_llama()
+        #replace_mistral()
+        #replace_mixtral()
     else:
         compress = False
         compress_args = None
