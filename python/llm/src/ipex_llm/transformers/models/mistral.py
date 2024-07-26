@@ -15,7 +15,6 @@
 #
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/main/src/transformers/models/mistral/modeling_mistral.py
-# https://github.com/FasterDecoding/SnapKV/blob/main/snapkv/monkeypatch/mistral_hijack_4_37.py
 #
 # Copyright 2023 Mistral AI and the HuggingFace Inc. team. All rights reserved.
 #
@@ -898,7 +897,7 @@ def mistral_attention_forward_4_36_original(
     original_dtype = hidden_states.dtype
 
     # [SnapKV]
-    use_compresskv = should_use_compresskv()
+    use_compresskv = should_use_compresskv(hidden_states)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
