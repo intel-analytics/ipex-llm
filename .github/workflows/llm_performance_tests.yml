@@ -153,8 +153,10 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
-          python -m pip install transformers==4.41.2cp python/llm/test/benchmark/arc-perf-test.yaml 
+          cp python/llm/test/benchmark/arc-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          # upgrade transformers 
+          python -m pip install transformers==4.41.2
+          cp python/llm/test/benchmark/arc-perf-test.yaml 
           python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           mkdir test_batch1
