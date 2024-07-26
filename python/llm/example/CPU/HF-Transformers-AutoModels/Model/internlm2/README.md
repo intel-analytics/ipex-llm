@@ -18,6 +18,8 @@ conda activate llm
 
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+pip install transformers==3.36.2
+pip install huggingface_hub 
 ```
 
 On Windows:
@@ -27,9 +29,17 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
+pip install transformers==3.36.2 
+pip install huggingface_hub 
 ```
 
 ### 2. Run
+Setup local MODEL_PATH and run python code to download the right version of model from hugginface.
+```python
+from huggingface_hub import snapshot_download
+snapshot_download(repo_id=repo_id, local_dir=MODEL_PATH, local_dir_use_symlinks=False, revision="v1.1.0")
+```
+Then run the example with the downloaded model
 ```
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
@@ -46,7 +56,7 @@ Arguments info:
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```cmd
-python ./generate.py 
+python ./generate.py  --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 ```
 
 #### 2.2 Server
@@ -59,7 +69,7 @@ source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py
+numactl -C 0-47 -m 0 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 ```
 
 #### 2.3 Sample Output
