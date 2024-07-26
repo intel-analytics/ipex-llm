@@ -21,9 +21,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
 # install packages required for GLM-4
-pip install "tiktoken>=0.7.0"
-pip install transformers==4.42.4
-pip install trl
+pip install "tiktoken>=0.7.0" transformers==4.42.4 trl
 ```
 
 On Windows:
@@ -34,9 +32,7 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 
-pip install "tiktoken>=0.7.0"
-pip install transformers==4.42.4
-pip install trl
+pip install "tiktoken>=0.7.0" transformers==4.42.4 trl
 ```
 
 ### 2. Run

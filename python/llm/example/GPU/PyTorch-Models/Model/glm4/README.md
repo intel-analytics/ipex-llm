@@ -16,9 +16,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 # install packages required for GLM-4
-pip install "tiktoken>=0.7.0"
-pip install transformers==4.42.4
-pip install trl
+pip install "tiktoken>=0.7.0" transformers==4.42.4 trl
 ```
 
 #### 1.2 Installation on Windows
@@ -31,9 +29,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 # install packages required for GLM-4
-pip install "tiktoken>=0.7.0"
-pip install transformers==4.42.4
-pip install trl"
+pip install "tiktoken>=0.7.0" transformers==4.42.4 trl
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
