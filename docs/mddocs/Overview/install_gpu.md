@@ -618,7 +618,7 @@ OSError: libmkl_intel_lp64.so.2: cannot open shared object file: No such file or
 Error: libmkl_sycl_blas.so.4: cannot open shared object file: No such file or directory
 ```
 
-The reason for such errors is that oneAPI has not been initialized properly before running IPEX-LLM code or before importing IPEX package.
+The reason for such errors is that oneAPI has not been initialized properly before running IPEX-LLM code.
 
 * For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running IPEX-LLM.
 * For PIP-installed oneAPI, activate your working environment and run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured for the environment. If the output does not contain oneAPI path (e.g. ``~/intel/oneapi/lib``), check [Prerequisites](#prerequisites-1) to re-install oneAPI with PIP installer.
