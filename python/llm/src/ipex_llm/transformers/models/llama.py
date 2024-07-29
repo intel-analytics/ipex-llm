@@ -1687,9 +1687,10 @@ def llama_attention_forward_4_38_quantized(
                                                              self.layer_idx, cache_kwargs)
             import xe_addons
             update_cache = False
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states, attention_mask)
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
+                                                   value_states, attention_mask)
         elif should_split_qkv_tensor(query_states, bsz, self.num_heads,
-                                   q_len, kv_seq_len, output_attentions):
+                                     q_len, kv_seq_len, output_attentions):
             attn_output, _ = native_sdp_split_qkv_tensor(query_states, repeated_key_states,
                                                          repeated_value_states,
                                                          attention_mask, cache_position,
