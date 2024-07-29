@@ -41,3 +41,21 @@ def merge_qkv_base(module: torch.nn.Module, attention_class):
         ])
         module.qkv_proj = qkv_proj
         del module.q_proj, module.k_proj, module.v_proj
+
+
+def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):
+    from ipex_llm.transformers.models.utils import mlp_fusion_check
+    x_2d = x.view(-1, x.size(-1))
+    qtype = getattr(module.gate_proj, "qtype", None)
+    if mlp_fusion_check(x_2d, qtype, module.training):
+        import xe_linear
+        x_2d = x_2d.contiguous()
+        return module.down_proj(
+            xe_linear.mlp_forward_xpu(
+                x_2d, module.gate_proj.weight.data, module.up_proj.weight.data,
+                x_2d.size(0), x_2d.size(1), module.gate_proj.out_len,
+                act, qtype
+            )
+        )
+    else:
+        return module.down_proj(module.act_fn(module.gate_proj(x)) * module.up_proj(x))
