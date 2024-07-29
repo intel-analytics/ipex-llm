@@ -75,7 +75,7 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     return new_cache_k, new_cache_v
 
 
-def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
+def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor, kv_group: int = 1) -> bool:
     if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         warnings.warn(
             "`BIGDL_QUANTIZE_KV_CACHE` is deprecated and will be removed in future releases. "
@@ -87,13 +87,13 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
     elif os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
         return os.environ["IPEX_LLM_LOW_MEM"] == "1"
     else:
-        return x.device.type == 'xpu' and kv_cache_device_check(x) \
+        return x.device.type == 'xpu' and kv_cache_device_check(x, kv_group) \
             and hasattr(linear, "qtype") and \
             linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]
 
 
-def kv_cache_device_check(x: torch.Tensor) -> bool:
-    return get_xpu_device_type(x) == "mtl" or \
+def kv_cache_device_check(x: torch.Tensor, kv_group: int) -> bool:
+    return (get_xpu_device_type(x) == "mtl" and kv_group <= 1) or \
         ((get_xpu_device_type(x) == "arc" or get_xpu_device_type(x) == "flex") and
             1 < x.size(0) and x.size(0) <= 8)
 

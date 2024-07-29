@@ -205,7 +205,7 @@ def mistral_model_forward_4_36(
     from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     if use_cache:
-        if use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids):
+        if use_quantize_kv_cache(self.layers[0].mlp.up_proj, input_ids, self.config.num_attention_heads // self.config.num_key_value_heads):
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
         elif should_use_compresskv(input_ids):
@@ -237,7 +237,7 @@ def mistral_attention_forward(
     use_cache: bool=False,
     padding_mask: Optional[torch.Tensor]=None,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states):
+    if use_quantize_kv_cache(self.q_proj, hidden_states, self.num_key_value_groups):
         forward_function = mistral_attention_forward_quantized
     else:
         forward_function = mistral_attention_forward_original
@@ -654,7 +654,7 @@ def mistral_attention_forward_4_36(
     use_cache: bool=False,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states):
+    if use_quantize_kv_cache(self.q_proj, hidden_states, self.num_key_value_groups):
         forward_function = mistral_attention_forward_4_36_quantized
     else:
         forward_function = mistral_attention_forward_4_36_original
@@ -1110,7 +1110,7 @@ def mistral_attention_forward_4_39(
     use_cache: bool=False,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states):
+    if use_quantize_kv_cache(self.q_proj, hidden_states, self.num_key_value_groups):
         forward_function = mistral_attention_forward_4_36_quantized
     else:
         forward_function = mistral_attention_forward_4_39_original

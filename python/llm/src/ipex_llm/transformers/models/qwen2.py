@@ -114,7 +114,7 @@ def qwen2_model_forward(
     inputs = input_ids if input_ids is not None else inputs_embeds
     use_quantize_kv = (
         self.config.hidden_size != 3584     # disable quantize kv in specific model
-        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs)
+        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs, self.config.num_attention_heads // self.config.num_key_value_heads)
     )
 
     if use_cache:
