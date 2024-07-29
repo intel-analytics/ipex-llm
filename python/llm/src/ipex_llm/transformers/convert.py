@@ -1512,9 +1512,12 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.gemma import gemma_rms_norm_forward
         from ipex_llm.transformers.models.gemma2 import gemma2_attention_forward
+        from ipex_llm.transformers.models.gemma2 import gemma2_model_forward
         from transformers.models.gemma2.modeling_gemma2 import Gemma2RMSNorm, Gemma2Attention
+        from transformers.models.gemma2.modeling_gemma2 import Gemma2Model
         convert_forward(model, Gemma2RMSNorm, gemma_rms_norm_forward)
         convert_forward(model, Gemma2Attention, gemma2_attention_forward)
+        convert_forward(model, Gemma2Model, gemma2_model_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
