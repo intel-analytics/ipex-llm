@@ -80,7 +80,7 @@ if __name__ == '__main__':
     if args.e:
         path = f"pred_e_4096/{args.model}/"
     else:
-        path = f"pred_e_4096/{args.model}/"
+        path = f"pred_4096/{args.model}/"
     all_files = os.listdir(path)
     print("Evaluating on:", all_files)
     for filename in all_files:
