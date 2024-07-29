@@ -1679,14 +1679,13 @@ def llama_attention_forward_4_38_quantized(
     if len(past_key_value.key_cache) <= self.layer_idx:
         repeated_key_states = repeat_kv(key_states, self.num_key_value_groups)
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
-        update_cache = True
-        if use_sdp_causal(q_len, kv_seq_len, self.head_dim,
-                          query_states, self.training):
+        if use_cache:
             cache_kwargs = None
             key_states, value_states = past_key_value.update(key_states, value_states,
                                                              self.layer_idx, cache_kwargs)
+        if use_cache and use_sdp_causal(q_len, kv_seq_len, self.head_dim,
+                                        query_states, self.training):
             import xe_addons
-            update_cache = False
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
                                                    value_states, attention_mask)
         elif should_split_qkv_tensor(query_states, bsz, self.num_heads,
@@ -1730,10 +1729,6 @@ def llama_attention_forward_4_38_quantized(
                 attn_weights = nn.functional.softmax(attn_weights, dim=-1,
                                                      dtype=torch.float32).to(query_states.dtype)
             attn_output = torch.matmul(attn_weights, repeated_value_states)
-        if use_cache and update_cache:
-            cache_kwargs = None
-            key_states, value_states = past_key_value.update(key_states, value_states,
-                                                             self.layer_idx, cache_kwargs)
     else:
         cache_kwargs = None  # Specific to RoPE models
         key_states, value_states = past_key_value.update(key_states, value_states,
