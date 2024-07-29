@@ -26,14 +26,14 @@ from ipex_llm.utils.common import invalidInputError
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_path", required=True, type=str)
-parser.add_argument("--dataset", required=False, type=str, default=None)
+parser.add_argument("--dataset", type=str, default=None)
 parser.add_argument("--data_path", type=str, default=None)
 parser.add_argument("--chunk_size", type=int, default=512)
 parser.add_argument("--stride", type=int, default=0)
 parser.add_argument("--device", type=str, default="xpu")
 parser.add_argument("--precision", type=str, default="sym_int4")
 parser.add_argument("--use-cache", action="store_true")
-parser.add_argument("--max_length", required=False, type=int, default=None)
+parser.add_argument("--max_length", type=int, default=None)
 args = parser.parse_args()
 
 if args.precision == "fp16":  # ipex fp16
