@@ -31,19 +31,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
-
 import torch
-from ipex_llm.utils.common import invalidInputError
+
+from typing import Optional, Tuple
 from ipex_llm.transformers.models.common import merge_qkv_base
-from ipex_llm.transformers.models.utils import should_use_fuse_rope
+from ipex_llm.transformers.models.utils import should_use_fuse_rope, use_sdp, use_sdp_causal
 from transformers.cache_utils import Cache
-from transformers.models.gemma2.modeling_gemma2 import Gemma2Attention
+from transformers.models.gemma2.modeling_gemma2 import Gemma2Model, Gemma2Attention
 from transformers.models.gemma2.modeling_gemma2 import repeat_kv, apply_rotary_pos_emb
 
 
 def merge_qkv(module: torch.nn.Module):
     return merge_qkv_base(module, Gemma2Attention)
+
+
+def gemma2_model_forward(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[Cache] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+    cache_position: Optional[torch.LongTensor] = None,
+):
+    # ipex-llm change start: add kv_seq_len in past_key_values
+    if past_key_values is not None:
+        if cache_position is not None:
+            kv_seq_len = cache_position[-1].item() + 1
+        else:
+            if input_ids is not None:
+                kv_seq_len = input_ids.size(1)
+            else:
+                kv_seq_len = inputs_embeds.size(1)
+        past_key_values.kv_seq_len = kv_seq_len
+    # ipex-llm change end
+
+    return Gemma2Model.forward(
+        self=self,
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_attentions=output_attentions,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+        cache_position=cache_position
+    )
 
 
 def gemma2_attention_forward(
@@ -86,26 +125,48 @@ def gemma2_attention_forward(
         key_states, value_states = past_key_value.update(key_states, value_states,
                                                          self.layer_idx, cache_kwargs)
 
-    key_states = repeat_kv(key_states, self.num_key_value_groups)
-    value_states = repeat_kv(value_states, self.num_key_value_groups)
+    # IPEX_LLM OPT: sdp
+    kv_seq_len = q_len if past_key_value is None else past_key_value.kv_seq_len
+    if (use_sdp_causal(q_len, kv_seq_len, -1, query_states, self.training)
+            and kv_seq_len <= key_states.size(2)):
+        import xe_addons
+        attn_weights = None
+        attn_output = xe_addons.gemma2_sdp_causal(query_states,
+                                                  key_states[:, :, :kv_seq_len, :],
+                                                  value_states[:, :, :kv_seq_len, :],
+                                                  attention_mask[:, :, :q_len, :kv_seq_len],
+                                                  self.config.attn_logit_softcapping,
+                                                  self.scaling)
+    elif use_sdp(q_len, kv_seq_len, -1, query_states):
+        import xe_addons
+        attn_weights = None
+        attn_output = xe_addons.gemma2_sdp(query_states,
+                                           key_states[:, :, :kv_seq_len, :],
+                                           value_states[:, :, :kv_seq_len, :],
+                                           attention_mask[:, :, :q_len, :kv_seq_len],
+                                           self.config.attn_logit_softcapping,
+                                           self.scaling)
+    else:
+        key_states = repeat_kv(key_states, self.num_key_value_groups)
+        value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-    attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) * self.scaling
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) * self.scaling
 
-    if self.config.attn_logit_softcapping is not None:
-        attn_weights = attn_weights / self.config.attn_logit_softcapping
-        attn_weights = torch.tanh(attn_weights)
-        attn_weights = attn_weights * self.config.attn_logit_softcapping
+        if self.config.attn_logit_softcapping is not None:
+            attn_weights = attn_weights / self.config.attn_logit_softcapping
+            attn_weights = torch.tanh(attn_weights)
+            attn_weights = attn_weights * self.config.attn_logit_softcapping
 
-    if attention_mask is not None:  # no matter the length, we just slice it
-        causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
-        attn_weights = attn_weights + causal_mask
+        if attention_mask is not None:  # no matter the length, we just slice it
+            causal_mask = attention_mask[:, :, :, : key_states.shape[-2]]
+            attn_weights = attn_weights + causal_mask
 
-    # upcast attention to fp32
-    attn_weights = torch.nn.functional.softmax(attn_weights,
-                                               dim=-1, dtype=torch.float32).to(query_states.dtype)
-    attn_weights = torch.nn.functional.dropout(attn_weights,
-                                               p=self.attention_dropout, training=self.training)
-    attn_output = torch.matmul(attn_weights, value_states)
+        # upcast attention to fp32
+        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                   dtype=torch.float32).to(query_states.dtype)
+        attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                                   training=self.training)
+        attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()
 
