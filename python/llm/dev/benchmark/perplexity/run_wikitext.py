@@ -52,27 +52,25 @@ model = model.eval()
 from transformers import AutoTokenizer
 tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
 
-if args.dataset != None:
+if args.dataset:
     def parse_kwargs(kwstr):
         kvpair = [item.split('=') for item in kwstr.split(',') if item != ""]
         return {k:v for k, v in kvpair}
     test = load_dataset(**parse_kwargs(args.dataset), split="test")["text"]
     encodings = tokenizer("\n\n".join(test), return_tensors="pt")
-
-elif args.data_path != None:
+elif args.data_path:
     with open(args.data_path, "rb") as f:
         data = f.read()
     encodings = tokenizer(data.decode("utf-8").strip("\n"), return_tensors="pt")
-
 else:
     raise RuntimeError("Missing data parameter.")
 
     
-if args.max_length == None:
+if not args.max_length:
     try:
         max_length = model.config.max_position_embeddings
     except:
-        max_length = model.config.seq_length
+        max_length = model.config.seq_length  # max_length in config of chatglm is 'seq_length'
 else:
     max_length = args.max_length
 stride = args.chunk_size if args.stride <= 0 else args.stride
