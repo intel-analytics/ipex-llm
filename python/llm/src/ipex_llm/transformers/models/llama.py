@@ -1285,7 +1285,7 @@ def llama_attention_forward_4_41_original(
     # for flash attention
     original_dtype = hidden_states.dtype
 
-    # [SnapKV]
+    # [CompressKV]
     use_compresskv = should_use_compresskv(hidden_states)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
@@ -1320,7 +1320,7 @@ def llama_attention_forward_4_41_original(
                                                                        self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
-        # [SnapKV]
+        # [CompressKV]
         if use_compresskv:
             past_key_value.update_seen_tokens(self.layer_idx, q_len)
             kv_seq_len = past_key_value.get_seq_length()
@@ -1492,7 +1492,7 @@ def llama_attention_forward_4_41_original(
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
         if use_compresskv:
-            # [SnapKV] set attention_mask = None
+            # [CompressKV] set attention_mask = None
             new_attention_mask = None
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
@@ -1824,7 +1824,7 @@ def llama_attention_forward_4_38_original(
     # for flash attention
     original_dtype = hidden_states.dtype
 
-    # [SnapKV]
+    # [CompressKV]
     use_compresskv = should_use_compresskv(hidden_states)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
@@ -1859,7 +1859,7 @@ def llama_attention_forward_4_38_original(
                                                                        self.rotary_emb.base,)
         kv_seq_len += 1
         # update past_key_value's seem_tokens and kv caches.
-        # [SnapKV]
+        # [CompressKV]
         if use_compresskv:
             past_key_value.update_seen_tokens(self.layer_idx, q_len)
             kv_seq_len = past_key_value.get_seq_length()
@@ -2030,7 +2030,7 @@ def llama_attention_forward_4_38_original(
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
         if use_compresskv:
-            # [SnapKV] set attention_mask = None
+            # [CompressKV] set attention_mask = None
             new_attention_mask = None
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
