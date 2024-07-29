@@ -736,6 +736,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "internlmxcomposer2":
         from ipex_llm.transformers.models.internlm import pre_process_attn_and_mlp
         model.apply(pre_process_attn_and_mlp)
+    if model.config.model_type == "gemma2":
+        from ipex_llm.transformers.models.gemma2 import merge_qkv
+        model.apply(merge_qkv)
 
     return model
 

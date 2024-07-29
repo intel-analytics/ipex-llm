@@ -35,9 +35,15 @@ from typing import Optional, Tuple
 
 import torch
 from ipex_llm.utils.common import invalidInputError
+from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from transformers.cache_utils import Cache
+from transformers.models.gemma2.modeling_gemma2 import Gemma2Attention
 from transformers.models.gemma2.modeling_gemma2 import repeat_kv, apply_rotary_pos_emb
+
+
+def merge_qkv(module: torch.nn.Module):
+    return merge_qkv_base(module, Gemma2Attention)
 
 
 def gemma2_attention_forward(
@@ -52,16 +58,12 @@ def gemma2_attention_forward(
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     bsz, q_len, _ = hidden_states.size()
 
-    query_states = self.q_proj(hidden_states)
-    key_states = self.k_proj(hidden_states)
-    value_states = self.v_proj(hidden_states)
-
-    query_states = query_states.view(bsz, q_len, self.num_heads,
-                                     self.head_dim).transpose(1, 2)
-    key_states = key_states.view(bsz, q_len, self.num_key_value_heads,
-                                 self.head_dim).transpose(1, 2)
-    value_states = value_states.view(bsz, q_len, self.num_key_value_heads,
-                                     self.head_dim).transpose(1, 2)
+    qkv = self.qkv_proj(hidden_states)
+    qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+    qkv = qkv.transpose(1, 2)
+    query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                        self.num_key_value_heads,
+                                                        self.num_key_value_heads], dim=1)
 
     # IPEX-LLM OPT: fuse rope
     if should_use_fuse_rope(hidden_states, position_ids, self.training):
