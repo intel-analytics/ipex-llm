@@ -15,5 +15,5 @@ for ds in "${datasets[@]}"; do
     #     CUDA_VISIBLE_DEVICES=0 python pred_snap.py --model mistral-7B-instruct-v0.2 --dataset $ds --compress_args_path ablation_c${l}_w32_k7_maxpool.json
     # done
     echo dataset: $ds, original
-    CUDA_VISIBLE_DEVICES=0 python pred_snap.py --model mistral-7B-instruct-v0.2 --dataset $ds
+    CUDA_VISIBLE_DEVICES=0 python pred_snap.py --model mistral-7B-instruct-v0.2 --dataset $ds --dtype fp16
 done

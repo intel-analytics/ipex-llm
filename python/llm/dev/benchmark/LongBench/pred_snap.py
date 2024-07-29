@@ -18,6 +18,7 @@ def parse_args(args=None):
     parser.add_argument('--compress_args_path', type=str, default=None, help="Path to the compress args")
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     parser.add_argument('--dataset', type=str, default='qasper', help="Dataset to evaluate on")
+    parser.add_argument('--dtype', type=str, default='fp32', help="torch.dtype", choices=['fp32', 'fp16'])
     return parser.parse_args(args)
 
 # This is the customized building prompt for chat models
@@ -76,7 +77,7 @@ def get_pred_single_gpu(data, max_length, max_gen,
                         pooling = None):
     # device = torch.device(f'cuda:{rank}')
     # device = model.device
-    model, tokenizer = load_model_and_tokenizer(model2path[model_name], model_name, device = "xpu", compress=compress)
+    model, tokenizer = load_model_and_tokenizer(model2path[model_name], model_name, device = "xpu", dtype_=args.dtype, compress=compress)
     device = model.device
     print(f"model_device: {model.device}")
     printed = False
@@ -109,9 +110,8 @@ def get_pred_single_gpu(data, max_length, max_gen,
             tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids[0]
         if len(tokenized_prompt) > max_length:
             count_prompt_under_maxlen -= 1
-            continue
-            #half = int(max_length/2)
-            #prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True)+tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
+            half = int(max_length/2)
+            prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True)+tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
         if dataset not in ["trec", "triviaqa", "samsum", "lsht", "lcc", "repobench-p"]: # chat models are better off without build prompts on these tasks
             prompt = build_chat(tokenizer, prompt, model_name)
         if "chatglm3" in model_name:
@@ -167,7 +167,32 @@ def seed_everything(seed):
     torch.backends.cudnn.deterministic = True
     torch.cuda.manual_seed_all(seed)
 
-def load_model_and_tokenizer(path, model_name, device, compress=False):
+def load_model_and_tokenizer(path, model_name, device, dtype_, compress=False):
+    if (dtype_ == 'fp32'):
+        dtype = torch.float32
+    elif (dtype_ == 'fp16'):
+        dtype = torch.float16
+    else:
+        raise ValueError(f"dtype {dtype_} is not supported")
+    model = AutoModelForCausalLM.from_pretrained(
+                path,
+                load_in_4bit=True,
+                #low_cpu_mem_usage=True,
+                device_map="auto",
+                use_cache=True,
+                torch_dtype = dtype
+                #use_flash_attention_2=True
+    ).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(
+            path,
+            padding_side="left",
+            use_fast=False,
+    )
+    model = model.eval()
+    return model, tokenizer
+
+    
+    '''
     if "chatglm" in model_name or "internlm" in model_name or "xgen" in model_name:
         tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
         model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True, torch_dtype=torch.bfloat16).to(device)
@@ -273,6 +298,7 @@ def load_model_and_tokenizer(path, model_name, device, compress=False):
         raise ValueError(f"Model {model_name} not supported!")
     model = model.eval()
     return model, tokenizer
+    '''
 
 if __name__ == '__main__':
     seed_everything(42)
@@ -301,10 +327,6 @@ if __name__ == '__main__':
     dataset2prompt = json.load(open("config/dataset2prompt.json", "r"))
     dataset2maxlen = json.load(open("config/dataset2maxlen.json", "r"))
     # predict on each dataset
-    if not os.path.exists(f"pred_{max_length}"):
-        os.makedirs(f"pred_{max_length}")
-    if not os.path.exists(f"pred_e_{max_length}"):
-        os.makedirs(f"pred_e_{max_length}")
     dataset = args.dataset
     # for dataset in datasets:
     if args.compress_args_path:
@@ -320,14 +342,18 @@ if __name__ == '__main__':
         write_model_name = model_name
     if args.e:
         data = load_dataset('THUDM/LongBench', f"{dataset}_e", split='test')
+        if not os.path.exists(f"pred_e_{max_length}"):
+            os.makedirs(f"pred_e_{max_length}")
         if not os.path.exists(f"pred_e_{max_length}/{write_model_name}"):
             os.makedirs(f"pred_e_{max_length}/{write_model_name}")
         out_path = f"pred_e_{max_length}/{write_model_name}/{dataset}.jsonl"
     else:
         data = load_dataset('THUDM/LongBench', dataset, split='test')
-        if not os.path.exists(f"pred_e_{max_length}/{write_model_name}"):
-            os.makedirs(f"pred_e_{max_length}/{write_model_name}")
-        out_path = f"pred_e_{max_length}/{write_model_name}/{dataset}.jsonl"
+        if not os.path.exists(f"pred_{max_length}"):
+            os.makedirs(f"pred_{max_length}")
+        if not os.path.exists(f"pred_{max_length}/{write_model_name}"):
+            os.makedirs(f"pred_{max_length}/{write_model_name}")
+        out_path = f"pred_{max_length}/{write_model_name}/{dataset}.jsonl"
     prompt_format = dataset2prompt[dataset]
     max_gen = dataset2maxlen[dataset]
     data_all = [data_sample for data_sample in data]
