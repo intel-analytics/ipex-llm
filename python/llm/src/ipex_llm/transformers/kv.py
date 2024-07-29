@@ -271,13 +271,16 @@ class DynamicCompressCache(DynamicCache):
             self.key_cache[layer_idx] = k_cache_compressed
             self.value_cache[layer_idx] = v_cache_compressed
 
-            k_cache, v_cache = init_kv_cache(
-                bsz, num_heads, head_dim,
-                0, key_states.size(2),
-                key_states.dtype, key_states.device
-            )
-            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
-            return k_cache, v_cache
+            if key_states.size(2) != head_dim:
+                k_cache, v_cache = init_kv_cache(
+                    bsz, num_heads, head_dim,
+                    0, key_states.size(2),
+                    key_states.dtype, key_states.device
+                )
+                k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
+                return k_cache, v_cache
+            else:
+                return key_states, value_states
         else:
             cache_k = self.key_cache[layer_idx]
             cache_v = self.value_cache[layer_idx]
