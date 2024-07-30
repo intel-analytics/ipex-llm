@@ -118,7 +118,7 @@ def llama_model_forward(
         position_ids = cache_position.unsqueeze(0)
 
     causal_mask = self._update_causal_mask(attention_mask, inputs_embeds,
-                                           cache_position, past_seen_tokens)
+                                           cache_position)
 
     # embed positions
     hidden_states = inputs_embeds

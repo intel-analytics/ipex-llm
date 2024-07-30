@@ -77,6 +77,8 @@ class DynamicNormalCache(DynamicCache):
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
+        max_seq_length = cache_kwargs.pop("max_seq_len", None)
+
         if layer_idx == 0:
             if hasattr(self, "_seen_tokens"):
                 # 4.39 uses `_seen_tokens`
@@ -87,9 +89,10 @@ class DynamicNormalCache(DynamicCache):
 
         # Update the cache
         if len(self.key_cache) <= layer_idx:
+            max_len = max_seq_length if max_seq_length is not None else key_states.size(2) + self.KV_ALLOC_BLOCK_LENGTH
             k_cache, v_cache = init_kv_cache(
                 batch_size, num_heads, head_dim,
-                0, key_states.size(2) + self.KV_ALLOC_BLOCK_LENGTH,
+                0, max_len,
                 key_states.dtype, key_states.device
             )
             k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
@@ -102,6 +105,7 @@ class DynamicNormalCache(DynamicCache):
 
             kv_seq_len = k_cache.size(2) + key_states.size(2)
             if k_cache.stride(1) < kv_seq_len * k_cache.size(3):
+                assert False, "should not reach here"
                 new_k_cache, new_v_cache = init_kv_cache(
                     batch_size, num_heads, head_dim,
                     k_cache.size(2), kv_seq_len + self.KV_ALLOC_BLOCK_LENGTH,

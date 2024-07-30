@@ -38,10 +38,10 @@ def decoding_fast_path_qtype_check(proj):
 
 
 def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
-    key_cache_storage = torch.empty(batch_size, num_heads,
+    key_cache_storage = torch.zeros(batch_size, num_heads,
                                     max_length, head_dim,
                                     dtype=dtype, device=device)
-    value_cache_storage = torch.empty(batch_size, num_heads,
+    value_cache_storage = torch.zeros(batch_size, num_heads,
                                       max_length, head_dim,
                                       dtype=dtype, device=device)
 

@@ -41,6 +41,8 @@ def module_optimization(func) -> torch.nn.Module:
 
         """
         for name, layer in model.named_children():
+            # if name.endswith("lm_head"):
+            #     continue
             new_layer = func(layer, qtype, device, *args, **kwargs)
             if new_layer:
                 model.add_module(name, new_layer)
@@ -71,10 +73,10 @@ def convert_forward(m, target_m, new_forward):
 
 def optimize_llm(model: torch.nn.Module):
     if model.config.model_type == "llama":
-        from ipex_llm.transformers.npu_models.llama import merge_qkv
-        from ipex_llm.transformers.npu_models.llama import merge_mlp
-        model.apply(merge_qkv)
-        model.apply(merge_mlp)
+        # from ipex_llm.transformers.npu_models.llama import merge_qkv
+        # from ipex_llm.transformers.npu_models.llama import merge_mlp
+        # model.apply(merge_qkv)
+        # model.apply(merge_mlp)
 
         from ipex_llm.transformers.npu_models.llama import llama_model_forward
         from ipex_llm.transformers.npu_models.llama import llama_attention_forward
@@ -83,8 +85,8 @@ def optimize_llm(model: torch.nn.Module):
         from transformers.models.llama.modeling_llama import LlamaAttention
         from transformers.models.llama.modeling_llama import LlamaMLP
         convert_forward(model, LlamaModel, llama_model_forward)
-        convert_forward(model, LlamaAttention, llama_attention_forward)
-        convert_forward(model, LlamaMLP, llama_mlp_forward)
+        # convert_forward(model, LlamaAttention, llama_attention_forward)
+        # convert_forward(model, LlamaMLP, llama_mlp_forward)
 
     elif model.config.model_type == "mistral":
         from ipex_llm.transformers.npu_models.mistral import merge_qkv
