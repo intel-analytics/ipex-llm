@@ -73,7 +73,7 @@ def is_vllm_available():
     import sys
     original_path = sys.path
     # Temporally remove current directory
-    sys.path = [p for p in sys.path if p != '']
+    sys.path = original_path[1:]
     _IS_VLLM_AVAILABLE = importlib.util.find_spec("vllm") is not None
     sys.path = original_path
     return _IS_VLLM_AVAILABLE
