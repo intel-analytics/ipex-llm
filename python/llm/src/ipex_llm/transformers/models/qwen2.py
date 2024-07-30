@@ -47,9 +47,10 @@ from torch.nn.functional import scaled_dot_product_attention as sdpa
 
 from ipex_llm.transformers.models.utils import SILU, mlp_fusion_check
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache, \
+    should_use_compresskv, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_causal
-from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
+from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache, DynamicCompressCache
 from ipex_llm.utils.common import invalidInputError
 
 from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2MLP
@@ -117,11 +118,16 @@ def qwen2_model_forward(
         and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs,
                                   self.config.num_attention_heads//self.config.num_key_value_heads)
     )
+    use_compress_kv = should_use_compresskv(inputs)
 
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        if not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
+        elif use_compress_kv and not isinstance(past_key_values,
+                                                DynamicCompressCache):
+            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+        if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
+                                                                          DynamicNormalCache):
             past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
         past_key_values_length = past_key_values.get_usable_length(seq_length)
     # ipex-llm changes end
@@ -394,6 +400,9 @@ def qwen2_attention_forward(
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
 
+    # [CompressKV]
+    use_compresskv = should_use_compresskv(hidden_states)
+
     if hasattr(self, 'qkv_proj') and self.qkv_proj is not None:
         qkv = self.qkv_proj(hidden_states)
         qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
@@ -427,8 +436,16 @@ def qwen2_attention_forward(
                                                         cos, sin, position_ids)
 
     if past_key_value is not None:
-        key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, None)
+        # [CompressKV]
+        if use_compresskv:
+            enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
+            key_states, value_states = past_key_value.update(
+                key_states, value_states, self.layer_idx,
+                query_states, attention_mask, self.num_key_value_groups,
+                self.config, enough_kv_room, 256)
+        else:
+            key_states, value_states = past_key_value.update(key_states, value_states,
+                                                             self.layer_idx, None)
 
     attn_weights = None
     if query_states.device.type == "cpu":

@@ -259,7 +259,28 @@ class DynamicCompressCache(DynamicCache):
                 num_key_value_groups=num_key_value_groups)
             self.key_cache.append(key_states_compress)
             self.value_cache.append(value_states_compress)
-            return key_states, value_states
+
+            k_cache_compressed, v_cache_compressed = init_kv_cache(
+                bsz, num_heads, head_dim,
+                0, key_states_compress.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                key_states.dtype, key_states.device
+            )
+            k_cache_compressed, v_cache_compressed = append_kv_cache(
+                k_cache_compressed, v_cache_compressed,
+                key_states_compress, value_states_compress)
+            self.key_cache[layer_idx] = k_cache_compressed
+            self.value_cache[layer_idx] = v_cache_compressed
+
+            if key_states.stride(2) != head_dim:
+                k_cache, v_cache = init_kv_cache(
+                    bsz, num_heads, head_dim,
+                    0, key_states.size(2),
+                    key_states.dtype, key_states.device
+                )
+                k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
+                return k_cache, v_cache
+            else:
+                return key_states, value_states
         else:
             cache_k = self.key_cache[layer_idx]
             cache_v = self.value_cache[layer_idx]

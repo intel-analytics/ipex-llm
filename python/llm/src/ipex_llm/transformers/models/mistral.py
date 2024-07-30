@@ -897,7 +897,7 @@ def mistral_attention_forward_4_36_original(
     # for flash attention
     original_dtype = hidden_states.dtype
 
-    # [SnapKV]
+    # [CompressKV]
     use_compresskv = should_use_compresskv(hidden_states)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
@@ -930,7 +930,7 @@ def mistral_attention_forward_4_36_original(
         kv_seq_len += 1
 
         # update past_key_value's seem_tokens and kv caches.
-        # [SnapKV]
+        # [CompressKV]
         if use_compresskv:
             past_key_value.update_seen_tokens(self.layer_idx, q_len)
             kv_seq_len = past_key_value.get_seq_length()
@@ -1055,7 +1055,7 @@ def mistral_attention_forward_4_36_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
-        # [SnapKV] set attention_mask = None
+        # [CompressKV] set attention_mask = None
         if use_compresskv:
             attention_mask = None
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
@@ -1142,7 +1142,7 @@ def mistral_attention_forward_4_39_original(
     # for flash attention
     original_dtype = hidden_states.dtype
 
-    # [SnapKV]
+    # [CompressKV]
     use_compresskv = should_use_compresskv(hidden_states)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
@@ -1175,7 +1175,7 @@ def mistral_attention_forward_4_39_original(
         kv_seq_len += 1
 
         # update past_key_value's seem_tokens and kv caches.
-        # [SnapKV]
+        # [CompressKV]
         if use_compresskv:
             past_key_value.update_seen_tokens(self.layer_idx, q_len)
             kv_seq_len = past_key_value.get_seq_length()
@@ -1300,7 +1300,7 @@ def mistral_attention_forward_4_39_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
-        # [SnapKV] set attention_mask = None
+        # [CompressKV] set attention_mask = None
         if use_compresskv:
             attention_mask = None
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
