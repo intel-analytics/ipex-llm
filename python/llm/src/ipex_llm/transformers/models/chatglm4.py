@@ -279,7 +279,7 @@ def chatglm4_encoder_forward(
     # [CompressKV]
     use_compress_kv = isinstance(kv_caches, DynamicCompressCache)
 
-    if kv_caches and not use_compress_kv:
+    if not kv_caches and not use_compress_kv:
         kv_caches = [None for _ in range(self.num_layers)]
     presents = () if use_cache else None
     if self.gradient_checkpointing and self.training:
