@@ -4,7 +4,6 @@
 # In short, if you change it here, PLEASE also change it in setup.py
 # Actrual installation logic will follow setup.py
 
-torch
 torchvision==0.14.1
 intel_extension_for_pytorch==1.13.100
 pytorch_lightning==1.6.4
