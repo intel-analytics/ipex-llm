@@ -35,6 +35,14 @@ pip install transformers==4.40
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
 #### 2.1 Configurations for Windows
 
+> [!NOTE]
+> For optimal performance, we recommend running code in `conhost` rather than Windows Terminal:
+> - Press <kbd>Win</kbd>+<kbd>R</kbd> and input `conhost`, then press Enter to launch `conhost`.
+> - Run following command to use conda in `conhost`. Replace `<your conda install location>` with your conda install location.
+> ```
+> call <your conda install location>\Scripts\activate
+> ```
+
 **Following envrionment variables are required**:
 
 ```cmd
