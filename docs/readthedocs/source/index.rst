@@ -287,6 +287,13 @@ Verified Models
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/llama3">link</a></td>
        </tr>
        <tr>
+         <td>LLaMA 3.1</td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3.1">link</a></td>
+         <td>
+           <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/LLM/llama3.1">link</a></td>
+       </tr>
+       <tr>
          <td>ChatGLM</td>
          <td>
            <a href="https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm">link</a></td>
