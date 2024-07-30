@@ -67,25 +67,17 @@ if __name__ == '__main__':
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    # here the terminators refer to https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct#transformers-automodelforcausallm
-    terminators = [
-        tokenizer.eos_token_id,
-        tokenizer.convert_tokens_to_ids("<|eot_id|>"),
-    ]
-
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
-                                eos_token_id=terminators,
                                 max_new_tokens=args.n_predict)
 
         # start inference
         st = time.time()
         output = model.generate(input_ids,
-                                eos_token_id=terminators,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
         end = time.time()

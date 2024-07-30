@@ -18,8 +18,8 @@ conda activate llm
 # install ipex-llm with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
-# transformers>=4.43.2 is required for Llama3.1 with IPEX-LLM optimizations
-pip install transformers==4.43.2
+# transformers>=4.43.1 is required for Llama3.1 with IPEX-LLM optimizations
+pip install transformers==4.43.1
 pip install trl 
 ```
 On Windows:
@@ -30,7 +30,7 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 
-pip install transformers==4.43.2
+pip install transformers==4.43.1
 pip install trl 
 ```
 
