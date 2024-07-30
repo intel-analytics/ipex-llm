@@ -271,7 +271,7 @@ class DynamicCompressCache(DynamicCache):
             self.key_cache[layer_idx] = k_cache_compressed
             self.value_cache[layer_idx] = v_cache_compressed
 
-            if key_states.size(2) != head_dim:
+            if key_states.stride(2) != head_dim:
                 k_cache, v_cache = init_kv_cache(
                     bsz, num_heads, head_dim,
                     0, key_states.size(2),
