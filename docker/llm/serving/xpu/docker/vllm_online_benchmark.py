@@ -281,6 +281,8 @@ for MAX_CONCURRENT_REQUESTS in [max_batch]:
     NUM_WARMUP = 2 * MAX_CONCURRENT_REQUESTS
     NUM_REQUESTS = 5 * MAX_CONCURRENT_REQUESTS  # 总请求次数
 
+    # to avoid warm_up time out
+    benchmark(LLM_URLS, MODEL, PROMPT_1024, 2, 1, 32, is_warmup = True)
     benchmark(LLM_URLS, MODEL, PROMPT, NUM_WARMUP, MAX_CONCURRENT_REQUESTS, MAX_TOKENS, is_warmup = True)
 
     # 运行benchmark
