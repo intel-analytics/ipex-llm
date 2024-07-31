@@ -1024,7 +1024,7 @@ jobs:
       - name: Prepare igpu perf test (4096-512 int4+fp16)
         shell: bash
         run: |
-          sed -i 's/2048-256/4096-512/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/3072-384/4096-512/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
       
@@ -1120,7 +1120,7 @@ jobs:
       - name: Prepare igpu perf test (load_low_bit 1024-128 int4+fp16)
         shell: bash
         run: |
-          sed -i 's/2048-256/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/4096-512/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_loadlowbit.yaml
 
