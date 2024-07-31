@@ -85,7 +85,7 @@ def chatglm2_model_forward(
         seq_length, batch_size, _ = inputs_embeds.shape
         input_ids = torch.empty((batch_size, seq_length),
                                 dtype=inputs_embeds.dtype, device=inputs_embeds.device)
-        
+
     if use_cache:
         use_compress_kv = should_use_compresskv(input_ids)
         use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.dense_h_to_4h,
@@ -283,7 +283,7 @@ def chatglm2_attention_forward(
         )
         # past_key_value: [bsz, n_kv_head, seq_len, head_dim] -> [seq_len, bsz, n_kv_head, head_dim]
         past_key_value = (key_states.permute(2, 0, 1, 3),
-                        value_states.permute(2, 0, 1, 3)) if use_cache else None
+                          value_states.permute(2, 0, 1, 3)) if use_cache else None
     else:
         from transformers.configuration_utils import PretrainedConfig
         self.config = self.config if hasattr(self, "config") else PretrainedConfig()
