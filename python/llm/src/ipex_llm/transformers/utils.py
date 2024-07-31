@@ -361,3 +361,24 @@ def get_modelscope_hf_config(model_id_or_path: str,
 def is_torch_bf16_gpu_available():
     # always true for XPU and CPU
     return True
+
+
+def check_hidden_size(qtype, hidden_size):
+    if hidden_size % 256 != 0:
+        if qtype == ggml_tensor_qtype["q4_k"]:
+            logger.info(f"hidden size {hidden_size} is not divisible by 256, "
+                        "required for q4_k - using fallback quantization asym_int4.")
+            return ggml_tensor_qtype["asym_int4"]
+        elif qtype == ggml_tensor_qtype["q5_k"]:
+            logger.info(f"hidden size {hidden_size} is not divisible by 256, "
+                        "required for q5_k - using fallback quantization asym_int5.")
+            return ggml_tensor_qtype["asym_int5"]
+        elif qtype == ggml_tensor_qtype["q6_k"]:
+            logger.info(f"hidden size {hidden_size} is not divisible by 256, "
+                        "required for q6_k - using fallback quantization sym_int8.")
+            return ggml_tensor_qtype["sym_int8"]
+        elif qtype == ggml_tensor_qtype["fp6_k"]:
+            logger.info(f"hidden size {hidden_size} is not divisible by 256, "
+                        "required for fq6_k - using fallback quantization fp6.")
+            return ggml_tensor_qtype["fp6"]
+    return qtype

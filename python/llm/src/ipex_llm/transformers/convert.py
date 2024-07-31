@@ -44,7 +44,7 @@ import warnings
 import transformers
 import importlib.util
 from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
-from .utils import logger, get_cur_qtype_and_imatrix
+from .utils import logger, get_cur_qtype_and_imatrix, check_hidden_size
 import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
@@ -395,6 +395,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         if cur_qtype in [ggml_tensor_qtype["sym_int4"],
                                          ggml_tensor_qtype["asym_int4"]]:
                             cur_qtype = ggml_tensor_qtype["sym_int8"]
+
+                    # check hidden size whether is a multiple of 256
+                    cur_qtype = check_hidden_size(cur_qtype, in_features)
 
                     new_linear = LowBitLinear(
                         in_features,
