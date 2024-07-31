@@ -57,7 +57,6 @@ def chatglm4_model_forward(
                                                                       DynamicCompressCache):
             past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
 
-
     if inputs_embeds is None:
         batch_size, seq_length = input_ids.shape
         inputs_embeds = self.embedding(input_ids)
@@ -197,7 +196,7 @@ def chatglm4_attention_forward(
 
     # IPEX-LLM OPT: kv cache and quantize kv
     use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states)
-    
+
     if use_quantize_kv or (not use_compresskv):
         key_states, value_states = update_past_key_value(
             past_key_value, key_states, value_states,
@@ -217,8 +216,8 @@ def chatglm4_attention_forward(
         enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_number - 1)
         key_states, value_states = past_key_value.update(
             key_states, value_states, self.layer_number - 1,
-                query_states, attention_mask, n_head // n_kv_head,
-                self.config, enough_kv_room, 256
+            query_states, attention_mask, n_head // n_kv_head,
+            self.config, enough_kv_room, 256
         )
 
     # IPEX-LLM OPT: sdp
@@ -328,8 +327,9 @@ def chatglm4_encoder_forward(
                         # bigdl-llm change starts
                         # to fix first token's kv cache error of tensor format in pipeline parallel
                         if isinstance(kv_cache, tuple):
-                            kv_cache = torch.tensor(kv_cache,
-                                                    dtype=hidden_states.dtype).to(hidden_states.device)
+                            kv_cache = torch.tensor(
+                                kv_cache,
+                                dtype=hidden_states.dtype).to(hidden_states.device)
                         # bigdl-llm change ends
                         presents = torch.cat((presents, kv_cache.to(presents.device)), dim=0)
 
