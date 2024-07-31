@@ -225,7 +225,7 @@ def chatglm2_attention_forward(
     q_len, bsz, _ = hidden_states.size()
 
     # [CompressKV]
-    use_compresskv = should_use_compresskv(hidden_states)
+    use_compresskv = isinstance(kv_cache, DynamicCompressCache)
 
     # kv_cache: [seq_len, bsz, n_kv_head, head_dim] ->
     # past_key_value: [bsz, n_kv_head, seq_len, head_dim]
