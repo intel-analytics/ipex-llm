@@ -381,5 +381,4 @@ def check_hidden_size(qtype, hidden_size):
             logger.info(f"hidden size {hidden_size} is not divisible by 256, "
                         "required for fq6_k - using fallback quantization fp6.")
             return ggml_tensor_qtype["fp6"]
-    else:
-        return qtype
+    return qtype
