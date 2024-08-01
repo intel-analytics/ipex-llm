@@ -52,7 +52,11 @@ class InputsRequest(BaseModel):
 
 
 class ChatCompletionRequest(BaseModel):
-    messages: List[ChatMessage]
+    messages: Union[
+        str,
+        List[Dict[str, str]],
+        List[Dict[str, Union[str, List[Dict[str, Union[str, Dict[str, str]]]]]]],
+    ]
     model: str
     max_tokens: Optional[int] = None
     min_tokens: Optional[int] = None
@@ -266,7 +270,7 @@ async def generate_stream(inputs_request: InputsRequest):
 
 def get_prompt(messages) -> str:
     if "codegeex" in local_model.model_name.lower():
-        query = messages[-1].content
+        query = messages[-1]["content"]
         if len(messages) <= 1:
             history = []
         else:
@@ -277,18 +281,33 @@ def get_prompt(messages) -> str:
         return inputs
     else:
         prompt = ""
+        image_list = []
         for msg in messages:
-            role = msg.role
-            content = msg.content
-            if role == "system":
-                prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
-            elif role == "user":
-                prompt += f"[INST] {content} [/INST] "
-            elif role == "assistant":
-                prompt += f"{content} "
+            role = msg["role"]
+            content = msg["content"]
+            if type(content) == list:
+                image_list1 = [
+                    item["image_url"]["url"]
+                    for item in content
+                    if item["type"] == "image_url"
+                ]
+                image_list.extend(image_list1)
+                text_list = [
+                    item["text"]
+                    for item in content
+                    if item["type"] == "text"
+                ]
+                prompt = "".join(text_list)
             else:
-                invalidInputError(False, f"Unknown role: {role}")
-        return prompt.strip()
+                if role == "system":
+                    prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
+                elif role == "user":
+                    prompt += f"[INST] {content} [/INST] "
+                elif role == "assistant":
+                    prompt += f"{content} "
+                else:
+                    invalidInputError(False, f"Unknown role: {role}")
+        return prompt.strip(), image_list
 
 
 def set_parameters(req):
@@ -315,8 +334,11 @@ def set_parameters(req):
 async def create_chat_completion(request: ChatCompletionRequest):
     print(request)
     model_name = local_model.model_name
+    prompt, image_list = get_prompt(request.messages)
+    print(f"prompt {prompt}")
+    print(f"image_list {image_list}")
     inputs_request = InputsRequest(
-        inputs=get_prompt(request.messages),
+        inputs=prompt,
         parameters=set_parameters(request),
         stream=request.stream,
         req_type="chat"
