@@ -250,7 +250,7 @@ async def generate_stream(inputs_request: InputsRequest):
     request_id = str(uuid.uuid4()) + "stream"
     await local_model.waiting_requests.put((request_id, inputs_request))
     while True:
-        await asyncio.sleep(0)
+        await asyncio.sleep(0.1)
         cur_streamer = local_model.streamer.get(request_id, None)
         if cur_streamer is not None:
             if inputs_request.req_type == 'completion':

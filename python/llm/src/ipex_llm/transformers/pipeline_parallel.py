@@ -805,24 +805,26 @@ class PPModelWorker:
                                 self.token_cache[request_id] = []
                                 self.print_len[request_id] = 0
                             self.token_cache[request_id].extend(next_ids[index].tolist())
+                            cur_text = tokenizer.batch_decode(next_ids)
 
-                            text = tokenizer.decode(self.token_cache[request_id])
-                            if text.endswith("\n"):
-                                printable_text = text[self.print_len[request_id]:]
-                                self.token_cache[request_id] = []
-                                self.print_len[request_id] = 0
-                            elif len(text) > 0 and _is_chinese_char(ord(text[-1])):
-                                printable_text = text[self.print_len[request_id]:]
-                                self.print_len[request_id] += len(printable_text)
-                            else:
-                                r_index = text.rfind(" ") + 1
-                                printable_text = text[self.print_len[request_id]: r_index]
-                                self.print_len[request_id] += len(printable_text)
+                            # text = tokenizer.decode(self.token_cache[request_id])
+                            # if text.endswith("\n"):
+                            #     printable_text = text[self.print_len[request_id]:]
+                            #     self.token_cache[request_id] = []
+                            #     self.print_len[request_id] = 0
+                            # elif len(text) > 0 and _is_chinese_char(ord(text[-1])):
+                            #     printable_text = text[self.print_len[request_id]:]
+                            #     self.print_len[request_id] += len(printable_text)
+                            # else:
+                            #     r_index = text.rfind(" ") + 1
+                            #     printable_text = text[self.print_len[request_id]: r_index]
+                            #     self.print_len[request_id] += len(printable_text)
 
+                            printable_text = cur_text[index]
                             if remain > 0:
                                 await self.streamer[request_id].put((remain, printable_text))
                             else:
-                                printable_text = printable_text + text[self.print_len[request_id]:]
+                                # printable_text = printable_text + text[self.print_len[request_id]:]
                                 self.token_cache.pop(request_id, None)
                                 self.print_len.pop(request_id, None)
                                 await self.streamer[request_id].put((remain, printable_text))
