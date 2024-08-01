@@ -87,4 +87,4 @@ bash run_mistral_7b_instruct_flex_2_card.sh
 ### Known Issue
 
 - In our example scripts, tcmalloc is enabled through `export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so:${LD_PRELOAD}` which speed up inference, but this may raise `munmap_chunk(): invalid pointer` error after finishing inference.
-- CPU memory OOM during model covert. In this example, multiple processors will loading models into memory at the same time. If model size/rank_num is very large, it will lead to OOM. Please increase `RANK_WAIT_TIME` to avoid using too much memory.
+- CPU memory OOM during model covert. In this example, multiple processors will loading models into memory at the same time. If model size/rank_num is very large, it will lead to OOM. Please `export RANK_WAIT_TIME=xxx`. `xxx` is sleep time in seconds. You can increase `RANK_WAIT_TIME` to avoid using too much memory.
