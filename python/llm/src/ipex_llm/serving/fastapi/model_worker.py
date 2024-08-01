@@ -63,12 +63,17 @@ class ModelWorker:
         input_ids = None
         inputs_embeds = None
         if "internlm-xcomposer" in self.model_name.lower():
-            meta_instruction = '''
-            You are an AI assistant whose name is InternLM-XComposer (浦语·灵笔).
-            - InternLM-XComposer (浦语·灵笔) is a multi-modality conversational language model that is developed by Shanghai AI Laboratory (上海人工智能实验室). It is designed to be helpful, honest, and harmless.
-            - InternLM-XComposer (浦语·灵笔) can understand and communicate fluently in the language chosen by the user such as English and 中文.
-            - InternLM-XComposer (浦语·灵笔) is capable of comprehending and articulating responses effectively based on the provided image.
-            '''
+            lines = [
+                "You are an AI assistant whose name is InternLM-XComposer (浦语·灵笔).",
+                "- InternLM-XComposer (浦语·灵笔) is a multi-modality conversational language "
+                "model that is developed by Shanghai AI Laboratory (上海人工智能实验室). "
+                "It is designed to be helpful, honest, and harmless.",
+                "- InternLM-XComposer (浦语·灵笔) can understand and communicate fluently in "
+                "the language chosen by the user such as English and 中文.",
+                "- InternLM-XComposer (浦语·灵笔) is capable of comprehending and "
+                "articulating responses effectively based on the provided image."
+            ]
+            meta_instruction = "\n".join(lines)
             if prompt_request.image_list is None:
                 inputs = self.model.build_inputs(tokenizer, plain_texts, [], meta_instruction)
                 im_mask = torch.zeros(inputs['input_ids'].shape[:2]).bool()
@@ -76,7 +81,8 @@ class ModelWorker:
             else:
                 image = self.model.encode_img(prompt_request.image_list[0])
                 plain_texts = "<ImageHere>" + plain_texts
-                inputs, im_mask = self.model.interleav_wrap_chat(tokenizer, plain_texts, image, [], meta_instruction)
+                inputs, im_mask = self.model.interleav_wrap_chat(tokenizer, plain_texts,
+                                                                 image, [], meta_instruction)
                 inputs_embeds = inputs["inputs_embeds"].to('xpu').to(self.dtype)
         else:
             inputs = tokenizer(plain_texts, return_tensors="pt", padding=True)
@@ -108,7 +114,7 @@ class ModelWorker:
                                         streamer=self.streamer[request_id], **generate_kwargs)
                 elif inputs_embeds is not None:
                     self.model.generate(inputs_embeds=inputs_embeds,
-                                        streamer=self.streamer[request_id], **generate_kwargs)   
+                                        streamer=self.streamer[request_id], **generate_kwargs)
                 torch.xpu.empty_cache()
                 torch.xpu.synchronize()
 

@@ -333,11 +333,8 @@ def set_parameters(req):
 
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest):
-    print(request)
     model_name = local_model.model_name
     prompt, image_list = get_prompt(request.messages)
-    print(f"prompt {prompt}")
-    print(f"image_list {image_list}")
     inputs_request = InputsRequest(
         inputs=prompt,
         parameters=set_parameters(request),
