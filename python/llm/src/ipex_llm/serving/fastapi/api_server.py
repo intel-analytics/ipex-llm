@@ -47,6 +47,7 @@ logger = logging.get_logger(__name__)
 class InputsRequest(BaseModel):
     inputs: str
     parameters: Optional[Parameters] = None
+    image_list: Optional[list] = None
     stream: Optional[bool] = False
     req_type: str = 'completion'
 
@@ -340,6 +341,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
     inputs_request = InputsRequest(
         inputs=prompt,
         parameters=set_parameters(request),
+        image_list=image_list if len(image_list) >= 1 else None,
         stream=request.stream,
         req_type="chat"
     )
