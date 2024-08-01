@@ -25,7 +25,7 @@ import torch.distributed as dist
 import os
 import time
 import numpy as np
-from typing import Callable, List, Optional, Union, Tuple
+from typing import Callable, List, Optional, Union, Tuple, Any
 from types import SimpleNamespace
 import transformers
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 import asyncio
 import uuid
 import threading
+import pickle
 try:
     from pydantic import BaseModel
 except ImportError:
@@ -178,6 +179,11 @@ def pipeline_parallel(model, pipeline_parallel_stages, torch_dtype=torch.float32
     global layer_end
     layer_start = slice_size * local_rank
     layer_end = layer_start + min(slice_size, num_layers - layer_start)
+
+    # if local_rank == 0:
+    #     layer_end = layer_end + 1
+    # else:
+    #     layer_start = layer_start + 1
 
     if model.config.model_type == "qwen" and hasattr(model.config, "visual"):
         # for Qwen-VL-Chat
@@ -513,6 +519,8 @@ class PPModelWorker:
         self.max_prefilled_seqs = max_prefilled_seqs
         self.partial_output_dict = {}
 
+        self.stream_tasks = {}
+
     def load_model(self, model_path, world_size, low_bit='sym_int4'):
         from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
         try:
@@ -683,16 +691,14 @@ class PPModelWorker:
             _output = output[0]
             if _output.dtype != self.dtype:
                 _output = _output.to(self.dtype)
-            return _output, cur_batch
         else:
             if cur_batch.partial_prefilling > 0 and \
                cur_batch.prefilled_index == cur_batch.batch_size:
                 _output = self.partial_output_dict.pop(cur_id, None)
                 cur_batch.partial_prefilling = 0
-                return _output, cur_batch
             else:
                 _output = torch.argmax(output.logits[:, -1:, :], dim=-1)
-                return _output, cur_batch
+        return _output, cur_batch
 
     def is_initialized(self):
         return True
@@ -738,14 +744,77 @@ class PPModelWorker:
         self.is_finish.pop(cur_id, None)
         self.partial_output_dict.pop(cur_id, None)
 
+    async def finish_stream_output(self, cur_id):
+        cur_task = self.stream_tasks.pop(cur_id, None)
+        if cur_task is not None:
+            await cur_task
+
+    async def stream_output(self, cur_batch, tokenizer, next_ids):
+        cur_id = cur_batch.batch_id
+        cur_cached_ids = []
+        _stream_tasks = []
+        for index, request_id in enumerate(cur_batch.request_ids):
+            if not self.is_finish.get(request_id, False):
+                # if self.streamer.get(request_id, None) is None:
+                #     self.streamer[request_id] = asyncio.Queue()
+                
+                if self.token_cache.get(request_id, None) is None:
+                    self.token_cache[request_id] = []
+                    self.print_len[request_id] = 0
+                self.token_cache[request_id].extend(next_ids[index].tolist())
+                cur_cached_ids.append(self.token_cache[request_id])
+
+        cur_text = tokenizer.batch_decode(cur_cached_ids,
+                                          skip_special_tokens=True)
+        cached_index = 0
+            
+        for index, request_id in enumerate(cur_batch.request_ids):
+            if not self.is_finish.get(request_id, False):
+                remain = cur_batch.max_tokens - len(self.tokens[cur_id])
+
+                if self.streamer.get(request_id, None) is None:
+                    self.streamer[request_id] = asyncio.Queue()
+
+                # Currently ignore eos for benchmark
+                # if next_ids[index].int() == tokenizer.eos_token_id:
+                #     remain = 0
+                #     self.is_finish[request_id] = True
+
+                text = cur_text[cached_index]
+                cached_index = cached_index + 1
+
+                if text[-1] in ['/n']:
+                    printable_text = text[self.print_len[request_id]:]
+                    self.token_cache[request_id] = []
+                    self.print_len[request_id] = 0
+                elif len(text) > 0 and _is_chinese_char(ord(text[-1])):
+                    printable_text = text[self.print_len[request_id]:]
+                    self.print_len[request_id] += len(printable_text)
+                    self.token_cache[request_id] = []
+                    self.print_len[request_id] = 0
+                else:
+                    r_index = text.rfind(" ") + 1
+                    if r_index > self.print_len[request_id]:
+                        printable_text = text[self.print_len[request_id]: r_index]
+                        self.token_cache[request_id] = self.token_cache[request_id][-1:]
+                        self.print_len[request_id] = 0
+                    else:
+                        printable_text = text[self.print_len[request_id]: r_index]
+
+                if remain > 0:
+                    _stream_tasks.append(self.streamer[request_id].put((remain, printable_text)))
+                else:
+                    printable_text = printable_text + text[self.print_len[request_id]:]
+                    self.token_cache.pop(request_id, None)
+                    self.print_len.pop(request_id, None)
+                    _stream_tasks.append(self.streamer[request_id].put((remain, printable_text)))
+        
+        for _task in _stream_tasks:
+            await _task
+
     async def process_step(self, tokenizer, result_dict):
         cur_batch = None
-
         if self.rank == 0:
-            if self.send_buff is not None:
-                # logger.info(f"send {self.rank} {self.send_buff.shape}")
-                dist.send(self.send_buff, dst=self.next_rank)
-
             if self.on_going_batches[0] is not None:
                 cur_batch = self.on_going_batches[0]
                 cur_input = None
@@ -772,14 +841,14 @@ class PPModelWorker:
                                            device=f'xpu:{self.rank}', dtype=torch.int64)
 
                 # logger.info(f"recv {self.rank} {next_ids.shape}")
-                dist.recv(next_ids, src=self.pre_rank)
+                recv_req = dist.irecv(next_ids, src=self.pre_rank)
+                recv_req.wait()
 
                 if cur_batch.partial_prefilling > 0:
                     cur_input = self.input_ids_dict[cur_batch.batch_id]
                 else:
                     if self.tokens.get(cur_id, None) is None:
                         self.tokens[cur_id] = []
-
                     if len(next_ids.shape) == 1:
                         next_ids = next_ids.unsqueeze(0)
                     self.tokens[cur_id].append(next_ids)
@@ -788,46 +857,13 @@ class PPModelWorker:
                     cur_batch.input_len = 1
                     cur_batch.prompt_lengths = [x + 1 for x in cur_batch.prompt_lengths]
 
-                    for index, request_id in enumerate(cur_batch.request_ids):
-
-                        if not self.is_finish.get(request_id, False):
-                            remain = cur_batch.max_tokens - len(self.tokens[cur_id])
-
-                            if self.streamer.get(request_id, None) is None:
-                                self.streamer[request_id] = asyncio.Queue()
-
-                            # Currently ignore eos for benchmark
-                            # if next_ids[index].int() == tokenizer.eos_token_id:
-                            #     remain = 0
-                            #     self.is_finish[request_id] = True
-
-                            if self.token_cache.get(request_id, None) is None:
-                                self.token_cache[request_id] = []
-                                self.print_len[request_id] = 0
-                            self.token_cache[request_id].extend(next_ids[index].tolist())
-                            cur_text = tokenizer.batch_decode(next_ids)
-
-                            # text = tokenizer.decode(self.token_cache[request_id])
-                            # if text.endswith("\n"):
-                            #     printable_text = text[self.print_len[request_id]:]
-                            #     self.token_cache[request_id] = []
-                            #     self.print_len[request_id] = 0
-                            # elif len(text) > 0 and _is_chinese_char(ord(text[-1])):
-                            #     printable_text = text[self.print_len[request_id]:]
-                            #     self.print_len[request_id] += len(printable_text)
-                            # else:
-                            #     r_index = text.rfind(" ") + 1
-                            #     printable_text = text[self.print_len[request_id]: r_index]
-                            #     self.print_len[request_id] += len(printable_text)
-
-                            printable_text = cur_text[index]
-                            if remain > 0:
-                                await self.streamer[request_id].put((remain, printable_text))
-                            else:
-                                # printable_text = printable_text + text[self.print_len[request_id]:]
-                                self.token_cache.pop(request_id, None)
-                                self.print_len.pop(request_id, None)
-                                await self.streamer[request_id].put((remain, printable_text))
+                    pre_task = self.stream_tasks.get(cur_id)
+                    if pre_task is not None:
+                        await pre_task
+                        del self.stream_tasks[cur_id]
+                    output_next_ids = next_ids.cpu()
+                    cur_task = asyncio.create_task(self.stream_output(cur_batch, tokenizer, output_next_ids))
+                    self.stream_tasks[cur_id] = cur_task
 
                     if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
                         # Finish a batch
@@ -843,6 +879,7 @@ class PPModelWorker:
                         next_token = (cur_times[-1] - cur_times[1]) / (len(self.tokens[cur_id]) - 1)
                         logger.info(f"First token latency: {first_token}, "
                                     f"next token latency: {next_token}")
+                        await self.finish_stream_output(cur_id)
                         self.clear_batch(cur_id)
                         cur_batch.stopped = True
             else:
@@ -852,15 +889,12 @@ class PPModelWorker:
             if cur_batch is not None:
                 cur_batch = self.prepare_batch(cur_batch)
                 dist.broadcast_object_list([cur_batch], src=0)
+            else:
+                await asyncio.sleep(0)
 
         else:
-            if self.send_buff is not None:
-                # logger.info(f"send {self.rank} {self.send_buff.shape}")
-                dist.send(self.send_buff, dst=self.next_rank)
-
             batch_list = [None]
             dist.broadcast_object_list(batch_list, src=0)
-
             cur_batch = batch_list[0]
             cur_input = None
 
@@ -887,7 +921,11 @@ class PPModelWorker:
 
         output, cur_batch = self.model_step(cur_input, cur_batch)
 
-        self.send_buff = output
+        if self.send_buff is not None:
+            torch.xpu.synchronize(self.device)
+            self.send_buff.wait()
+        if output is not None:
+            self.send_buff = dist.isend(output, dst=self.next_rank)
 
         if self.rank == 0:
             self.on_going_batches[:-1] = self.on_going_batches[1:]
