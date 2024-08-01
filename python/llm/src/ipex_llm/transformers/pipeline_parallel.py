@@ -755,9 +755,6 @@ class PPModelWorker:
         _stream_tasks = []
         for index, request_id in enumerate(cur_batch.request_ids):
             if not self.is_finish.get(request_id, False):
-                # if self.streamer.get(request_id, None) is None:
-                #     self.streamer[request_id] = asyncio.Queue()
-                
                 if self.token_cache.get(request_id, None) is None:
                     self.token_cache[request_id] = []
                     self.print_len[request_id] = 0
@@ -767,7 +764,7 @@ class PPModelWorker:
         cur_text = tokenizer.batch_decode(cur_cached_ids,
                                           skip_special_tokens=True)
         cached_index = 0
-            
+
         for index, request_id in enumerate(cur_batch.request_ids):
             if not self.is_finish.get(request_id, False):
                 remain = cur_batch.max_tokens - len(self.tokens[cur_id])
@@ -808,7 +805,6 @@ class PPModelWorker:
                     self.token_cache.pop(request_id, None)
                     self.print_len.pop(request_id, None)
                     _stream_tasks.append(self.streamer[request_id].put((remain, printable_text)))
-        
         for _task in _stream_tasks:
             await _task
 
@@ -862,7 +858,9 @@ class PPModelWorker:
                         await pre_task
                         del self.stream_tasks[cur_id]
                     output_next_ids = next_ids.cpu()
-                    cur_task = asyncio.create_task(self.stream_output(cur_batch, tokenizer, output_next_ids))
+                    cur_task = asyncio.create_task(
+                        self.stream_output(cur_batch, tokenizer, output_next_ids)
+                    )
                     self.stream_tasks[cur_id] = cur_task
 
                     if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
