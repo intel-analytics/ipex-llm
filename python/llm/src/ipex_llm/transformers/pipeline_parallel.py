@@ -180,11 +180,6 @@ def pipeline_parallel(model, pipeline_parallel_stages, torch_dtype=torch.float32
     layer_start = slice_size * local_rank
     layer_end = layer_start + min(slice_size, num_layers - layer_start)
 
-    # if local_rank == 0:
-    #     layer_end = layer_end + 1
-    # else:
-    #     layer_start = layer_start + 1
-
     if model.config.model_type == "qwen" and hasattr(model.config, "visual"):
         # for Qwen-VL-Chat
         for i in range(num_layers):
@@ -744,7 +739,7 @@ class PPModelWorker:
         self.is_finish.pop(cur_id, None)
         self.partial_output_dict.pop(cur_id, None)
 
-    async def finish_stream_output(self, cur_id):
+    async def wait_stream_output(self, cur_id):
         cur_task = self.stream_tasks.pop(cur_id, None)
         if cur_task is not None:
             await cur_task
@@ -761,12 +756,6 @@ class PPModelWorker:
                 self.token_cache[request_id].extend(next_ids[index].tolist())
                 cur_cached_ids.append(self.token_cache[request_id])
 
-        cur_text = tokenizer.batch_decode(cur_cached_ids,
-                                          skip_special_tokens=True)
-        cached_index = 0
-
-        for index, request_id in enumerate(cur_batch.request_ids):
-            if not self.is_finish.get(request_id, False):
                 remain = cur_batch.max_tokens - len(self.tokens[cur_id])
 
                 if self.streamer.get(request_id, None) is None:
@@ -777,10 +766,8 @@ class PPModelWorker:
                 #     remain = 0
                 #     self.is_finish[request_id] = True
 
-                text = cur_text[cached_index]
-                cached_index = cached_index + 1
-
-                if text[-1] in ['/n']:
+                text = tokenizer.decode(self.token_cache[request_id])
+                if text.endswith("\n"):
                     printable_text = text[self.print_len[request_id]:]
                     self.token_cache[request_id] = []
                     self.print_len[request_id] = 0
@@ -877,7 +864,7 @@ class PPModelWorker:
                         next_token = (cur_times[-1] - cur_times[1]) / (len(self.tokens[cur_id]) - 1)
                         logger.info(f"First token latency: {first_token}, "
                                     f"next token latency: {next_token}")
-                        await self.finish_stream_output(cur_id)
+                        await self.wait_stream_output(cur_id)
                         self.clear_batch(cur_id)
                         cur_batch.stopped = True
             else:
