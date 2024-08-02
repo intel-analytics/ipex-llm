@@ -66,6 +66,11 @@ if __name__ == '__main__':
     # Convert to deepspeed model and apply IPEX-LLM optimization on CPU to decrease GPU memory usage
     current_accel = CPU_Accelerator()
     set_accelerator(current_accel)
+    # Avoid OOM caused by parallel loading models into CPU memory
+    # Please increase RANK_WAIT_TIME to avoid using too much memory.
+    rank_wait_time = os.environ.get("RANK_WAIT_TIME", 0)
+    if rank_wait_time != 0:
+        time.sleep(local_rank * rank_wait_time)
     model = AutoModelForCausalLM.from_pretrained(args.repo_id_or_model_path,
                                                  device_map={"": "cpu"},
                                                  low_cpu_mem_usage=True,

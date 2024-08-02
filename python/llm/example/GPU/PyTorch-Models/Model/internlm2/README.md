@@ -14,6 +14,8 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install transformers==3.36.2
+pip install huggingface_hub 
 ```
 
 #### 1.2 Installation on Windows
@@ -24,6 +26,8 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install transformers==3.36.2
+pip install huggingface_hub 
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -100,8 +104,14 @@ set SYCL_CACHE_PERSISTENT=1
 
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
-### 4. Running examples
 
+### 4. Running examples
+Setup local MODEL_PATH and run python code to download the right version of model from hugginface.
+```python
+from huggingface_hub import snapshot_download
+snapshot_download(repo_id=repo_id, local_dir=MODEL_PATH, local_dir_use_symlinks=False, revision="v1.1.0")
+```
+Then run the example with the downloaded model
 ```
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```

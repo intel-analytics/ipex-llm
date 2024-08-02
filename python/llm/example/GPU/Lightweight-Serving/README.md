@@ -167,19 +167,22 @@ curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "Llama-2-7b-chat-hf",
-    "messages": [{"role": "user", "content": "Hello! What is your name?"}]
+    "messages": [{"role": "user", "content": "Hello! What is your name?"}],
+    "stream": false
   }'
 ```
 
 #### /v1/completions
 
 ```bash
+
 curl http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "Llama-2-7b-chat-hf",
     "prompt": "Once upon a time",
-    "max_tokens": 32
+    "max_tokens": 32,
+    "stream": false
   }'
 ```
 
