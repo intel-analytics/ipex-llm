@@ -62,7 +62,7 @@ class ModelWorker:
         plain_texts = prompt_request.inputs
         input_ids = None
         inputs_embeds = None
-        if "internlm-xcomposer" in self.model_name.lower():
+        if "internlm-xcomposer2-vl-7b" in self.model_name.lower():
             lines = [
                 "You are an AI assistant whose name is InternLM-XComposer (浦语·灵笔).",
                 "- InternLM-XComposer (浦语·灵笔) is a multi-modality conversational language "
@@ -103,7 +103,7 @@ class ModelWorker:
                                     tokenizer.convert_tokens_to_ids("<|user|>"),
                                     tokenizer.convert_tokens_to_ids("<|observation|>")]
                     generate_kwargs["eos_token_id"] = eos_token_id
-                elif "internlm-xcomposer" in self.model_name.lower():
+                elif "internlm-xcomposer2-vl-7b" in self.model_name.lower():
                     eos_token_id = [
                         tokenizer.eos_token_id,
                         tokenizer.convert_tokens_to_ids(['[UNUSED_TOKEN_145]'])[0]
