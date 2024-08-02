@@ -744,6 +744,26 @@ class PPModelWorker:
         if cur_task is not None:
             await cur_task
 
+    def get_printable_text(self, cur_text, request_id):
+        if cur_text.endswith("\n"):
+            printable_text = cur_text[self.print_len[request_id]:]
+            self.token_cache[request_id] = []
+            self.print_len[request_id] = 0
+        elif len(cur_text) > 0 and _is_chinese_char(ord(cur_text[-1])):
+            printable_text = cur_text[self.print_len[request_id]:]
+            self.print_len[request_id] += len(printable_text)
+            self.token_cache[request_id] = []
+            self.print_len[request_id] = 0
+        else:
+            r_index = cur_text.rfind(" ") + 1
+            if r_index > self.print_len[request_id]:
+                printable_text = cur_text[self.print_len[request_id]: r_index]
+                self.token_cache[request_id] = self.token_cache[request_id][-1:]
+                self.print_len[request_id] = 0
+            else:
+                printable_text = cur_text[self.print_len[request_id]: r_index]
+        return printable_text
+
     async def stream_output(self, cur_batch, tokenizer, next_ids):
         cur_id = cur_batch.batch_id
         cur_cached_ids = []
@@ -768,32 +788,13 @@ class PPModelWorker:
                 #     remain = 0
                 #     self.is_finish[request_id] = True
 
-                # text = cur_text[cached_index]
-                # cached_index = cached_index + 1
+                cur_text = tokenizer.decode(self.token_cache[request_id])
+                printable_text = self.get_printable_text(cur_text, request_id)
 
-                text = tokenizer.decode(self.token_cache[request_id])
-
-                if text.endswith("\n"):
-                    printable_text = text[self.print_len[request_id]:]
-                    self.token_cache[request_id] = []
-                    self.print_len[request_id] = 0
-                elif len(text) > 0 and _is_chinese_char(ord(text[-1])):
-                    printable_text = text[self.print_len[request_id]:]
-                    self.print_len[request_id] += len(printable_text)
-                    self.token_cache[request_id] = []
-                    self.print_len[request_id] = 0
-                else:
-                    r_index = text.rfind(" ") + 1
-                    if r_index > self.print_len[request_id]:
-                        printable_text = text[self.print_len[request_id]: r_index]
-                        self.token_cache[request_id] = self.token_cache[request_id][-1:]
-                        self.print_len[request_id] = 0
-                    else:
-                        printable_text = text[self.print_len[request_id]: r_index]
                 if remain > 0:
                     _stream_tasks.append(self.streamer[request_id].put((remain, printable_text)))
                 else:
-                    printable_text = printable_text + text[self.print_len[request_id]:]
+                    printable_text = printable_text + cur_text[self.print_len[request_id]:]
                     self.token_cache.pop(request_id, None)
                     self.print_len.pop(request_id, None)
                     _stream_tasks.append(self.streamer[request_id].put((remain, printable_text)))
@@ -849,7 +850,9 @@ class PPModelWorker:
                     if pre_task is not None:
                         await pre_task
                         del self.stream_tasks[cur_id]
-                    cur_task = asyncio.create_task(self.stream_output(cur_batch, tokenizer, next_ids))
+                    cur_task = asyncio.create_task(
+                        self.stream_output(cur_batch, tokenizer, next_ids)
+                    )
                     self.stream_tasks[cur_id] = cur_task
 
                     if len(self.tokens[cur_id]) >= cur_batch.max_tokens:
