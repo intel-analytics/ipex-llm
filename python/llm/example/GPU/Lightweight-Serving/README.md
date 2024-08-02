@@ -20,7 +20,8 @@ pip install gradio # for gradio web UI
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 
 # for internlm-xcomposer2-vl-7b
-pip install transformers==4.31.0 
+pip install transformers==4.31.0
+pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops
 ```
 
 #### 1.2 Installation on Windows
@@ -179,7 +180,7 @@ curl http://localhost:8000/v1/chat/completions \
 
 image input only supports [internlm-xcomposer2-vl-7b](https://huggingface.co/internlm/internlm-xcomposer2-vl-7b) now, and it must install transformers==4.31.0 to run.
 ```bash
-wget -O /llm/test.jpg http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+wget -O ./test.jpg http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -195,7 +196,7 @@ curl http://localhost:8000/v1/chat/completions \
           {
             "type": "image_url",
             "image_url": {
-              "url": "/llm/test.jpg"
+              "url": "./test.jpg"
             }
           }
         ]
@@ -208,7 +209,6 @@ curl http://localhost:8000/v1/chat/completions \
 #### /v1/completions
 
 ```bash
-
 curl http://localhost:8000/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
