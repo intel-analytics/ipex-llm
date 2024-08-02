@@ -386,7 +386,7 @@ def check_hidden_size(qtype, hidden_size):
 
 # Arc platfrom does not support FP64,
 # Disable FP64 in DeepSpeedZeroOptimizer_Stage3's _constant_buffered_norm2  method
-# original: https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/runtime/zero/stage3.py#L1365-L1372
+# https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/runtime/zero/stage3.py#L1365
 def _constant_buffered_norm2(self, input, buffer_size=250000000):
     norm = None
     for part in input.view(-1).split(buffer_size):
