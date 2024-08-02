@@ -231,8 +231,10 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                             device=device)
     else:
         if enable_deepspeed_zero3:
-            # Deepspeed zero3 requires unified dtype, thus here uses bfloat16 consistent to other layers
-            # dst_size above is computed based on uint8, and for bfloat16, buffer size should be half
+            # Deepspeed zero3 requires unified dtype,
+            # thus here uses bfloat16 consistent to other layers
+            # dst_size above is computed based on uint8, and for bfloat16,
+            # buffer size should be half
             dst_tensor = torch.empty(dst_size // 2, dtype=torch.bfloat16,
                                      device=device)
         else:
@@ -378,7 +380,6 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
 
 # Rename to FP4Params to trigger initializing
 # the params layer with all parameters on the CPU
-# https://github.com/huggingface/accelerate/blob/main/src/accelerate/utils/modeling.py#L333
 class FP4Params(torch.nn.Parameter):
     def __new__(cls,
                 data=None,
