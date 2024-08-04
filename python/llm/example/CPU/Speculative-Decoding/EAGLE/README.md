@@ -21,6 +21,7 @@ pip install -r requirements.txt
 pip install transformers==4.36.2
 pip install gradio==3.50.2
 pip install eagle-llm
+pip install "setuptools<70.0.0"
 ```
 
 ### 2. Configures IPEX-LLM environment variables for Linux
