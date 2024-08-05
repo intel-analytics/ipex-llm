@@ -28,7 +28,7 @@ from datetime import date
 import os
 current_dir = os.path.dirname(os.path.realpath(__file__))
 import sys
-from ipex_llm.utils.benchmark_util import BenchmarkWrapper
+from ipex_llm.utils.utils import BenchmarkWrapper
 from ipex_llm.utils.common.log4Error import invalidInputError
 
 LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',

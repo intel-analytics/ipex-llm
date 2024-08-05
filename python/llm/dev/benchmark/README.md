@@ -9,7 +9,7 @@ Take `chatglm-6b` as an example:
 import torch
 from ipex_llm.transformers import AutoModel
 from transformers import AutoTokenizer
-from ipex_llm.utils.benchmark_util import BenchmarkWrapper
+from ipex_llm.utils.utils import BenchmarkWrapper
 
 model_path ='THUDM/chatglm-6b'
 model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
@@ -37,7 +37,7 @@ import torch
 import intel_extension_for_pytorch as ipex
 from ipex_llm.transformers import AutoModel
 from transformers import AutoTokenizer
-from ipex_llm.utils.benchmark_util import BenchmarkWrapper
+from ipex_llm.utils.utils import BenchmarkWrapper
 
 model_path ='THUDM/chatglm-6b'
 model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
@@ -66,7 +66,7 @@ For example, just need to apply following code patch on [Deepspeed Autotp exampl
  import torch
  import transformers
  import deepspeed
-+from ipex_llm.utils.benchmark_util import BenchmarkWrapper
+ from ipex_llm.utils.utils import BenchmarkWrapper
  
  def get_int_from_env(env_keys, default):
      """Returns the first positive env value found in the `env_keys` list or the default."""
