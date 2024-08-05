@@ -17,14 +17,7 @@
 import sys
 import pathlib
 from ipex_llm.utils.common import invalidInputError, invalidOperationError
-import transformers
 
-trans_version = transformers.__version__
-
-if trans_version >= "4.43.1":
-    from .benchmark_util import BenchmarkWrapper
-else:
-    from .benchmark_util_prev import BenchmarkWrapper
 
 def get_shared_lib_info(lib_base_name: str):
     # Determine the file extension based on the platform
