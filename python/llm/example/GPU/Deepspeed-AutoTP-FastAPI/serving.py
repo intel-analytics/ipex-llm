@@ -39,7 +39,7 @@ from transformers.utils import logging
 
 logger = logging.get_logger(__name__)
 
-from ipex_llm.utils.benchmark_util import BenchmarkWrapper
+from ipex_llm.utils import BenchmarkWrapper
 
 
 def get_int_from_env(env_keys, default):

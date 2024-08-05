@@ -27,7 +27,7 @@ class ModelWorker:
         self.dtype = torch_dtype
         start = time.perf_counter()
         model = self.load_model(checkpoint, low_bit)
-        from ipex_llm.utils.benchmark_util import BenchmarkWrapper
+        from ipex_llm.utils import BenchmarkWrapper
         self.model = BenchmarkWrapper(model, do_print=True)
         end = time.perf_counter()
         logger.info(f"Time to load weights: {end - start:.2f}s")
