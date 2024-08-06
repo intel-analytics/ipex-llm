@@ -436,7 +436,8 @@ def llama_attention_forward_4_31(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states, self.num_key_value_groups):
+    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states,
+                             self.num_key_value_groups):
         forward_function = llama_attention_forward_4_31_quantized
     else:
         forward_function = llama_attention_forward_4_31_original
@@ -713,10 +714,12 @@ def llama_attention_forward_4_31_original(
                         value_states = self.v_proj(hidden_states)
                     else:
                         qkv = self.qkv_proj(hidden_states)
-                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
+                                       self.head_dim)
                         query_states, key_states, value_states = qkv.split([self.num_heads,
                                                                             self.num_key_value_heads,
-                                                                            self.num_key_value_heads], dim=2)
+                                                                            self.num_key_value_heads],
+                                                                           dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -914,10 +917,12 @@ def llama_attention_selective_batching_forward_4_31(
                 value_states = self.v_proj(hidden_states)
             else:
                 qkv = self.qkv_proj(hidden_states)
-                qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+                qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
+                               self.head_dim)
                 query_states, key_states, value_states = qkv.split([self.num_heads,
                                                                     self.num_key_value_heads,
-                                                                    self.num_key_value_heads], dim=2)
+                                                                    self.num_key_value_heads],
+                                                                   dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1059,7 +1064,8 @@ def llama_attention_forward_4_41(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
-    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states, self.num_key_value_groups):
+    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states,
+                             self.num_key_value_groups):
         forward_function = llama_attention_forward_4_41_quantized
     else:
         forward_function = llama_attention_forward_4_41_original
@@ -1441,10 +1447,12 @@ def llama_attention_forward_4_41_original(
                         value_states = self.v_proj(hidden_states)
                     else:
                         qkv = self.qkv_proj(hidden_states)
-                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
+                                       self.head_dim)
                         query_states, key_states, value_states = qkv.split([self.num_heads,
                                                                             self.num_key_value_heads,
-                                                                            self.num_key_value_heads], dim=2)
+                                                                            self.num_key_value_heads],
+                                                                           dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1625,7 +1633,8 @@ def llama_attention_forward_4_38(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
-    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states, self.num_key_value_groups):
+    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states,
+                             self.num_key_value_groups):
         forward_function = llama_attention_forward_4_38_quantized
     else:
         forward_function = llama_attention_forward_4_38_original
@@ -2003,10 +2012,12 @@ def llama_attention_forward_4_38_original(
                         value_states = self.v_proj(hidden_states)
                     else:
                         qkv = self.qkv_proj(hidden_states)
-                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
+                                       self.head_dim)
                         query_states, key_states, value_states = qkv.split([self.num_heads,
                                                                             self.num_key_value_heads,
-                                                                            self.num_key_value_heads], dim=2)
+                                                                            self.num_key_value_heads],
+                                                                           dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
