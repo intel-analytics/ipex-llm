@@ -992,6 +992,10 @@ def _optimize_post(model, lightweight_bmm=False):
                         model,
                         transformers.models.llama.modeling_llama.LlamaAttention,
                         llama_attention_forward_4_41)
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaSdpaAttention,
+                        llama_attention_forward_4_41)
                 else:
                     from ipex_llm.transformers.models.llama import llama_model_forward_4_38
                     convert_forward(
@@ -1001,6 +1005,10 @@ def _optimize_post(model, lightweight_bmm=False):
                     convert_forward(
                         model,
                         transformers.models.llama.modeling_llama.LlamaAttention,
+                        llama_attention_forward_4_38)
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaSdpaAttention,
                         llama_attention_forward_4_38)
             else:
                 from ipex_llm.transformers.models.llama import llama_model_forward_4_36
@@ -1012,6 +1020,10 @@ def _optimize_post(model, lightweight_bmm=False):
                     model,
                     transformers.models.llama.modeling_llama.LlamaAttention,
                     llama_attention_forward_4_38)
+                convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaSdpaAttention,
+                        llama_attention_forward_4_38)
         else:
             # transformers version between 4.31.0 - 4.35.2
             convert_forward(
