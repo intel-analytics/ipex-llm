@@ -39,7 +39,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
         dkms \
         linux-headers-$(uname -r) \
         libc6-dev
-    sudo apt install intel-i915-dkms intel-fw-gpu
+
     sudo apt-get install -y gawk libc6-dev udev\
         intel-opencl-icd intel-level-zero-gpu level-zero \
         intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
@@ -94,14 +94,21 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
         libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri \
         libglapi-mesa libgles2-mesa-dev libglx-mesa0 libigdgmm12 libxatracker2 mesa-va-drivers \
         mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo
-    
-    sudo apt install -y intel-i915-dkms intel-fw-gpu
-
+  
     sudo reboot
     ```
 
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
 
+* Configure permissions
+    ```bash
+    sudo gpasswd -a ${USER} render
+    newgrp render
+
+    # Verify the device is working with i915 driver
+    sudo apt-get install -y hwinfo
+    hwinfo --display
+    ```
 
 #### (Optional) Update Level Zero on Intel Core™ Ultra iGPU
 For Intel Core™ Ultra integrated GPU, please make sure level_zero version >= 1.3.28717. The level_zero version can be checked with `sycl-ls`, and verison will be tagged behind `[ext_oneapi_level_zero:gpu]`.
