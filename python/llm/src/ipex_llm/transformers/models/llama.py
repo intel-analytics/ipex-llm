@@ -716,10 +716,11 @@ def llama_attention_forward_4_31_original(
                         qkv = self.qkv_proj(hidden_states)
                         qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
                                        self.head_dim)
-                        query_states, key_states, value_states = qkv.split([self.num_heads,
-                                                                            self.num_key_value_heads,
-                                                                            self.num_key_value_heads],
-                                                                           dim=2)
+                        query_states, key_states, value_states = \
+                            qkv.split([self.num_heads,
+                                       self.num_key_value_heads,
+                                       self.num_key_value_heads],
+                                      dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1447,12 +1448,14 @@ def llama_attention_forward_4_41_original(
                         value_states = self.v_proj(hidden_states)
                     else:
                         qkv = self.qkv_proj(hidden_states)
-                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
+                        qkv = qkv.view(bsz, q_len,
+                                       self.num_heads + 2 * self.num_key_value_heads,
                                        self.head_dim)
-                        query_states, key_states, value_states = qkv.split([self.num_heads,
-                                                                            self.num_key_value_heads,
-                                                                            self.num_key_value_heads],
-                                                                           dim=2)
+                        query_states, key_states, value_states = \
+                            qkv.split([self.num_heads,
+                                       self.num_key_value_heads,
+                                       self.num_key_value_heads],
+                                      dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -2012,12 +2015,14 @@ def llama_attention_forward_4_38_original(
                         value_states = self.v_proj(hidden_states)
                     else:
                         qkv = self.qkv_proj(hidden_states)
-                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
+                        qkv = qkv.view(bsz, q_len,
+                                       self.num_heads + 2 * self.num_key_value_heads,
                                        self.head_dim)
-                        query_states, key_states, value_states = qkv.split([self.num_heads,
-                                                                            self.num_key_value_heads,
-                                                                            self.num_key_value_heads],
-                                                                           dim=2)
+                        query_states, key_states, value_states = \
+                            qkv.split([self.num_heads,
+                                       self.num_key_value_heads,
+                                       self.num_key_value_heads],
+                                      dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
