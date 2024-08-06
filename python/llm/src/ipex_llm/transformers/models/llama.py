@@ -412,7 +412,7 @@ def fuse_qkv_weight_xetla(q_proj, k_proj, v_proj, qtype):
 
 def should_use_xetla_mm_qkv(self, device):
     if not hasattr(self, "q_proj"):
-        # TODO:
+        # TODO: how to support xetla_mm_qkv for merged_qkv
         return False
     full_attn = self.q_proj.out_len == self.k_proj.out_len == self.v_proj.out_len
     supported_qtype = self.q_proj.qtype == SYM_INT4 and full_attn
@@ -436,7 +436,7 @@ def llama_attention_forward_4_31(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states, self.num_key_value_groups):
+    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states, self.num_key_value_groups):
         forward_function = llama_attention_forward_4_31_quantized
     else:
         forward_function = llama_attention_forward_4_31_original
@@ -508,9 +508,16 @@ def llama_attention_forward_4_31_quantized(
                                                                        self.head_dim,
                                                                        self.rotary_emb.base,)
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if hasattr(self, "q_proj"):
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+        else:
+            qkv = self.qkv_proj(hidden_states)
+            qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+            query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                self.num_key_value_heads,
+                                                                self.num_key_value_heads], dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -662,7 +669,7 @@ def llama_attention_forward_4_31_original(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+            if fp16_fusion_check(getattr(self, "q_proj", None), hidden_states, self.training) and \
                     hidden_size == 4096 and self.q_proj.out_features == self.k_proj.out_features:
                 # only use mm_qkv_out on pvc for llama-7b
                 if not hasattr(self, "qkv_proj_weight"):
@@ -700,9 +707,16 @@ def llama_attention_forward_4_31_original(
                     key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
                     value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
-                    query_states = self.q_proj(hidden_states)
-                    key_states = self.k_proj(hidden_states)
-                    value_states = self.v_proj(hidden_states)
+                    if hasattr(self, "q_proj"):
+                        query_states = self.q_proj(hidden_states)
+                        key_states = self.k_proj(hidden_states)
+                        value_states = self.v_proj(hidden_states)
+                    else:
+                        qkv = self.qkv_proj(hidden_states)
+                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+                        query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                            self.num_key_value_heads,
+                                                                            self.num_key_value_heads], dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1038,7 +1052,7 @@ def llama_attention_forward_4_41(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states, self.num_key_value_groups):
+    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states, self.num_key_value_groups):
         forward_function = llama_attention_forward_4_41_quantized
     else:
         forward_function = llama_attention_forward_4_41_original
@@ -1106,9 +1120,16 @@ def llama_attention_forward_4_41_quantized(
                                                                        self.head_dim,
                                                                        self.rotary_emb.base,)
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if hasattr(self, "q_proj"):
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+        else:
+            qkv = self.qkv_proj(hidden_states)
+            qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+            query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                self.num_key_value_heads,
+                                                                self.num_key_value_heads], dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1368,7 +1389,7 @@ def llama_attention_forward_4_41_original(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+            if fp16_fusion_check(getattr(self, "q_proj", None), hidden_states, self.training) and \
                     hidden_size == 4096 and self.q_proj.out_features == self.k_proj.out_features:
                 # only use mm_qkv_out on pvc for llama-7b
                 if not hasattr(self, "qkv_proj_weight"):
@@ -1407,9 +1428,16 @@ def llama_attention_forward_4_41_original(
                     key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
                     value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
-                    query_states = self.q_proj(hidden_states)
-                    key_states = self.k_proj(hidden_states)
-                    value_states = self.v_proj(hidden_states)
+                    if hasattr(self, "q_proj"):
+                        query_states = self.q_proj(hidden_states)
+                        key_states = self.k_proj(hidden_states)
+                        value_states = self.v_proj(hidden_states)
+                    else:
+                        qkv = self.qkv_proj(hidden_states)
+                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+                        query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                            self.num_key_value_heads,
+                                                                            self.num_key_value_heads], dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
