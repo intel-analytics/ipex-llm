@@ -1256,6 +1256,18 @@ def _optimize_post(model, lightweight_bmm=False):
         )
         convert_forward(model, module.InternLM2Model, internlm_xcomposser2_model_forward)
         model.chat = MethodType(internlm_xcomposser2_chat, model)
+    elif model.config.model_type == "internvl_chat":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.internvl import internvl_chat
+        from ipex_llm.transformers.models.internvl import internvl_batch_chat
+        model.get_conv_template = module.get_conv_template
+        model.chat = MethodType(internvl_chat, model)
+        model.batch_chat = MethodType(internvl_batch_chat, model)
+        if model.vision_model.__class__.__name__ == "InternVisionModel":
+            from ipex_llm.transformers.models.internvl import _get_pos_embed
+            vision_embedding = model.vision_model.embeddings
+            vision_embedding._get_pos_embed = MethodType(_get_pos_embed, vision_embedding)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
