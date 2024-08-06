@@ -908,9 +908,16 @@ def llama_attention_selective_batching_forward_4_31(
         if self.config.pretraining_tp > 1:
             invalidInputError(False, f"vLLM: config.pretraining_tp > 1 not supported yet")
         else:
-            query_states = self.q_proj(hidden_states)
-            key_states = self.k_proj(hidden_states)
-            value_states = self.v_proj(hidden_states)
+            if hasattr(self, "q_proj"):
+                query_states = self.q_proj(hidden_states)
+                key_states = self.k_proj(hidden_states)
+                value_states = self.v_proj(hidden_states)
+            else:
+                qkv = self.qkv_proj(hidden_states)
+                qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+                query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                    self.num_key_value_heads,
+                                                                    self.num_key_value_heads], dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -2457,9 +2464,16 @@ def llama_attention_fast_forward(
         value_states = torch.cat(value_states, dim=-1)
 
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if hasattr(self, "q_proj"):
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+        else:
+            qkv = self.qkv_proj(hidden_states)
+            qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+            query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                self.num_key_value_heads,
+                                                                self.num_key_value_heads], dim=2)
 
     query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
     key_states = key_states.view(bsz, q_len, self.num_key_value_heads,
