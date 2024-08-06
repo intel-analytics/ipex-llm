@@ -4,8 +4,6 @@ repo_id:
   - 'THUDM/chatglm3-6b-4bit'
   - 'baichuan-inc/Baichuan2-7B-Chat'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit'
-  - 'mistralai/Mistral-7B-v0.1' #mwj: need to check
-  - 'deepseek-ai/deepseek-coder-6.7b-instruct'
   - 'THUDM/glm-4-9b-chat'
   - 'openbmb/MiniCPM-2B-sft-bf16'
   - 'Qwen/Qwen-VL-Chat'
