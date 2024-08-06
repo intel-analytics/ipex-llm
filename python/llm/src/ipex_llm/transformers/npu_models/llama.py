@@ -116,7 +116,7 @@ def llama_model_forward(
 
     if position_ids is None:
         position_ids = cache_position.unsqueeze(0)
-
+    
     causal_mask = self._update_causal_mask(attention_mask, inputs_embeds,
                                            cache_position)
 
@@ -128,39 +128,58 @@ def llama_model_forward(
     all_self_attns = () if output_attentions else None
     next_decoder_cache = None
 
-    for decoder_layer in self.layers:
-        if output_hidden_states:
-            all_hidden_states += (hidden_states,)
+    seq_len = hidden_states.size(1)
 
-        if self.gradient_checkpointing and self.training:
-            layer_outputs = self._gradient_checkpointing_func(
-                decoder_layer.__call__,
-                hidden_states,
-                causal_mask,
-                position_ids,
-                past_key_values,
-                output_attentions,
-                use_cache,
-                cache_position,
-            )
-        else:
-            layer_outputs = decoder_layer(
-                hidden_states,
-                attention_mask=causal_mask,
-                position_ids=position_ids,
-                past_key_value=past_key_values,
-                output_attentions=output_attentions,
-                use_cache=use_cache,
-                cache_position=cache_position,
-            )
-
+    if seq_len == 1:
+        # assert hasattr(self, "multi_decoder")
+        # multi_decoder = self.layers[(self.layer_end + 1) % num_layers]
+        layer_outputs = self.multi_decoder(hidden_states,
+                    attention_mask=causal_mask,
+                    position_ids=position_ids,
+                    past_key_value=past_key_values,
+                    output_attentions=output_attentions,
+                    use_cache=use_cache,
+                    cache_position=cache_position,)
         hidden_states = layer_outputs[0]
 
-        if use_cache:
-            next_decoder_cache = layer_outputs[2 if output_attentions else 1]
+        assert use_cache
+        next_decoder_cache = layer_outputs[1]
 
-        if output_attentions:
-            all_self_attns += (layer_outputs[1],)
+        assert not output_attentions
+    else:
+        for decoder_layer in self.layers:
+            if output_hidden_states:
+                all_hidden_states += (hidden_states,)
+
+            if self.gradient_checkpointing and self.training:
+                layer_outputs = self._gradient_checkpointing_func(
+                    decoder_layer.__call__,
+                    hidden_states,
+                    causal_mask,
+                    position_ids,
+                    past_key_values,
+                    output_attentions,
+                    use_cache,
+                    cache_position,
+                )
+            else:
+                layer_outputs = decoder_layer(
+                    hidden_states,
+                    attention_mask=causal_mask,
+                    position_ids=position_ids,
+                    past_key_value=past_key_values,
+                    output_attentions=output_attentions,
+                    use_cache=use_cache,
+                    cache_position=cache_position,
+                )
+
+            hidden_states = layer_outputs[0]
+
+            if use_cache:
+                next_decoder_cache = layer_outputs[2 if output_attentions else 1]
+
+            if output_attentions:
+                all_self_attns += (layer_outputs[1],)
 
     hidden_states = self.norm(hidden_states)
 

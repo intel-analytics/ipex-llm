@@ -86,7 +86,7 @@ class _BaseAutoModelClass:
 
         if kwargs.get('torch_dtype', None) not in [None, 'auto', torch.float]:
             warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
-        kwargs['torch_dtype'] = torch.float
+        kwargs['torch_dtype'] = torch.float16
 
         low_bit = kwargs.pop('load_in_low_bit', 'sym_int4')
         qtype_map = {
@@ -114,13 +114,14 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "modules_to_not_convert")
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
-        ignore_argument(kwargs, "pipeline_parallel_stages")
+        # ignore_argument(kwargs, "pipeline_parallel_stages")
+        pipeline_parallel_stages = kwargs.pop("pipeline_parallel_stages", 1)
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         try:
             # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
-            kwargs.pop('device_map', None)
+            # kwargs.pop('device_map', None)
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
         except NotImplementedError:
             logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
@@ -129,21 +130,41 @@ class _BaseAutoModelClass:
             model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
 
+        # print(model)
+
         logger.info(f"Converting model, it may takes up to several minutes ...")
+
+        if pipeline_parallel_stages > 1:
+            invalidInputError(torch.distributed.get_world_size() == pipeline_parallel_stages,
+                                "Please make sure you've called `init_pipeline_parallel()` "
+                                "and world size is the same as `pipeline_parallel_stages`")
+            from .pipeline_parallel import pipeline_parallel, pipeline_parallel_generate
+            model = pipeline_parallel(model, pipeline_parallel_stages, kwargs["torch_dtype"], device="cpu")
+            
+            # add pipeline_parallel_generate to pretrained model dynamically
+            model.pipeline_parallel_generate = types.MethodType(pipeline_parallel_generate,
+                                                                model)
+            # torch.distributed.barrier()
+        
+        # print(model)
 
         from intel_npu_acceleration_library.compiler import create_npu_kernels
         with torch.no_grad():
             optimize_llm(model)
-            cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
-            create_npu_kernels(model)
+            cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
+            create_npu_kernels(model.model)
 
         model = model.eval()
+        model.model.embed_tokens.to(torch.float32)
+        model.model.norm.to(torch.float32)
+        model.lm_head.to(torch.float32)
 
         logger.info(f"Finish to convert model")
 
         model.config.update({"bigdl_transformers_low_bit": qtype})
 
         # add save_low_bit to pretrained model dynamically
+        # import types
         model.save_low_bit = types.MethodType(save_low_bit, model)
 
         return model

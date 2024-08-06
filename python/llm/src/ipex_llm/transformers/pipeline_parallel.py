@@ -140,29 +140,29 @@ def low_mem_convert(model):
 
 
 def _check_quantize_kv_cache(model, idx, batch_size):
-    # align use_quantize_kv_cache setting for different GPU in pipeline parallel
-    pp_quantize_kv_cache = (os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) == "1") or \
-        (os.environ.get("IPEX_LLM_QUANTIZE_KV_CACHE", None) == "1") or \
-        (os.environ.get("IPEX_LLM_LOW_MEM", None) == "1")
-    if model.config.model_type == "qwen" and hasattr(model.config, "visual"):
-        # for Qwen-VL-Chat
-        linear = model._modules['transformer'].h[idx].mlp.c_proj
-    elif model.config.model_type == "chatglm":
-        # for chatglm3-6b, glm-4-9b-chat
-        linear = model._modules['transformer'].encoder.layers[idx].self_attention.query_key_value
-    else:
-        linear = model._modules['model'].layers[idx].mlp.up_proj
-    pp_quantize_kv_cache = pp_quantize_kv_cache or (1 < batch_size and batch_size <= 8 and
-                                                    hasattr(linear, "qtype") and
-                                                    linear.qtype != ggml_tensor_qtype["fp16"] and
-                                                    linear.qtype != ggml_tensor_qtype["bf16"])
-    if pp_quantize_kv_cache:
-        os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] = "1"
-    else:
-        os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] = "0"
+    # # align use_quantize_kv_cache setting for different GPU in pipeline parallel
+    # pp_quantize_kv_cache = (os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) == "1") or \
+    #     (os.environ.get("IPEX_LLM_QUANTIZE_KV_CACHE", None) == "1") or \
+    #     (os.environ.get("IPEX_LLM_LOW_MEM", None) == "1")
+    # if model.config.model_type == "qwen" and hasattr(model.config, "visual"):
+    #     # for Qwen-VL-Chat
+    #     linear = model._modules['transformer'].h[idx].mlp.c_proj
+    # elif model.config.model_type == "chatglm":
+    #     # for chatglm3-6b, glm-4-9b-chat
+    #     linear = model._modules['transformer'].encoder.layers[idx].self_attention.query_key_value
+    # else:
+    #     linear = model._modules['model'].layers[idx].mlp.up_proj
+    # pp_quantize_kv_cache = pp_quantize_kv_cache or (1 < batch_size and batch_size <= 8 and
+    #                                                 hasattr(linear, "qtype") and
+    #                                                 linear.qtype != ggml_tensor_qtype["fp16"] and
+    #                                                 linear.qtype != ggml_tensor_qtype["bf16"])
+    # if pp_quantize_kv_cache:
+    #     os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] = "1"
+    # else:
+    os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] = "0"
 
 
-def pipeline_parallel(model, pipeline_parallel_stages, torch_dtype=torch.float32):
+def pipeline_parallel(model, pipeline_parallel_stages, torch_dtype=torch.float32, device=None):
     global num_layers
     if hasattr(model.config, 'num_hidden_layers'):
         num_layers = model.config.num_hidden_layers
@@ -229,7 +229,10 @@ def pipeline_parallel(model, pipeline_parallel_stages, torch_dtype=torch.float32
     model.num_layers = num_layers
     if torch_dtype == torch.float16:
         model = model.half()
-    model = model.to(f'xpu:{local_rank}')
+    if device is None:
+        model = model.to(f'xpu:{local_rank}')
+    else:
+        model.to(device)
     return model
 
 
@@ -302,6 +305,9 @@ def pipeline_parallel_generate(self,
         inputs, generation_config.bos_token_id, model_kwargs
     )
     bs = inputs_tensor.shape[0]
+    if model_kwargs.get("attention_mask", None) is None:
+        model_kwargs["attention_mask"] = self._prepare_attention_mask_for_generation(
+                    inputs_tensor, generation_config.pad_token_id, generation_config.eos_token_id)
     if self.config.is_encoder_decoder:
         input_ids, model_kwargs = self._prepare_decoder_input_ids_for_generation(
             batch_size=bs,
@@ -314,6 +320,7 @@ def pipeline_parallel_generate(self,
     else:
         input_ids = inputs_tensor if model_input_name == "input_ids" \
             else model_kwargs.pop("input_ids")
+    
     local_rank = dist.get_rank()
     pre_rank = (local_rank - 1) % self.pipeline_parallel_stages
     next_rank = (local_rank + 1) % self.pipeline_parallel_stages
@@ -344,16 +351,23 @@ def pipeline_parallel_generate(self,
     unfinished_sequences = torch.ones(input_ids.shape[0], dtype=torch.long, device=input_ids.device)
     this_peer_finished = False
     while True:
+
+        
         if step >= max_new_tokens:
             break
 
         if _input_ids is None:
             _input_ids = input_ids
+        
+        model_inputs = self.prepare_inputs_for_generation(output_ids, **model_kwargs)
+
+        # print(model_inputs)
 
         tic = time.time()
         if local_rank == 0:
-            outputs = self(input_ids=_input_ids, inputs_embeds=None,
-                           past_key_values=_past_key_values, use_cache=True, **model_kwargs)
+            # outputs = self(input_ids=_input_ids, inputs_embeds=None,
+            #                past_key_values=_past_key_values, use_cache=True, **model_kwargs)
+            outputs = self(**model_inputs)
         else:
             _inputs_shape = _input_ids.shape + (self.config.hidden_size,)
             if step == 0 and self.config.model_type == "chatglm" \
@@ -363,22 +377,32 @@ def pipeline_parallel_generate(self,
                 _images_feature = 1597 + _input_ids.shape[0] * 2 + _input_ids.shape[1]
                 _inputs_shape = (_input_ids.shape[0], _images_feature, self.config.hidden_size,)
             inputs_embeds = torch.empty(_inputs_shape,
-                                        device=f'xpu:{local_rank}', dtype=self.dtype)
+                                        device=input_ids.device, dtype=torch.float16)
             dist.recv(inputs_embeds, src=pre_rank)
-            outputs = self(input_ids=None, inputs_embeds=inputs_embeds,
-                           past_key_values=_past_key_values, use_cache=True, **model_kwargs)
+            # print("receive data:", inputs_embeds)
+            model_inputs.pop("input_ids")
+            model_inputs["inputs_embeds"] = inputs_embeds
+            # outputs = self(input_ids=None, inputs_embeds=inputs_embeds,
+            #                past_key_values=_past_key_values, use_cache=True, **model_kwargs)
+            outputs = self(**model_inputs)
 
         if local_rank == self.pipeline_parallel_stages - 1:
             logits = outputs.logits
             next_ids = torch.argmax(logits[:, -1:, :], dim=-1)
             dist.broadcast(next_ids, src=local_rank)
         else:
-            dist.send(outputs[0].to(self.dtype), dst=next_rank)
-            next_ids = torch.empty((bs, 1), device=f'xpu:{local_rank}', dtype=torch.int64)
+            send_data = outputs[0].to(torch.float16)
+            dist.send(send_data, dst=next_rank)
+            # print("send data:", send_data)
+            next_ids = torch.empty((bs, 1), device=input_ids.device, dtype=torch.int64)
             dist.broadcast(next_ids, src=self.pipeline_parallel_stages - 1)
 
         _input_ids = next_ids
         output_ids = torch.cat([output_ids, next_ids], dim=-1)
+
+        model_kwargs = self._update_model_kwargs_for_generation(
+                outputs, model_kwargs, is_encoder_decoder=self.config.is_encoder_decoder
+            )
 
         # finished sentences should have their next token be a padding token
         next_ids = next_ids.squeeze()
@@ -501,6 +525,7 @@ class PPModelWorker:
         self.print_len = {}
         self.is_finish = {}
         self.model_name = checkpoint
+        self.device = model.device
         # self.layer_start = 0
         # self.layer_end = 0
 
@@ -701,8 +726,8 @@ class PPModelWorker:
 
         plain_texts = [req.inputs for req in prompt_requests]
         inputs = tokenizer(plain_texts, return_tensors="pt", padding=True)
-        input_ids = inputs.input_ids.to(f'xpu:{self.rank}')
-        attention_mask = inputs.attention_mask.to(f'xpu:{self.rank}')
+        input_ids = inputs.input_ids.to(self.device)
+        attention_mask = inputs.attention_mask.to(self.device)
         new_batch = BatchTask(
             batch_id="batch_" + str(uuid.uuid4()),
             request_ids=request_ids,
@@ -757,10 +782,10 @@ class PPModelWorker:
                     cur_batch.partial_prefilling = 0
                 if cur_batch.partial_prefilling > 0:
                     next_ids = torch.empty((cur_batch.partial_prefilling, 1,),
-                                           device=f'xpu:{self.rank}', dtype=torch.int64)
+                                           device=self.device, dtype=torch.int64)
                 else:
                     next_ids = torch.empty((cur_batch.batch_size, 1,),
-                                           device=f'xpu:{self.rank}', dtype=torch.int64)
+                                           device=self.device, dtype=torch.int64)
 
                 # logger.info(f"recv {self.rank} {next_ids.shape}")
                 dist.recv(next_ids, src=self.pre_rank)
@@ -862,13 +887,13 @@ class PPModelWorker:
                     if cur_batch.partial_prefilling:
                         cur_input = torch.empty(
                             (cur_batch.partial_prefilling, cur_len, self.hidden_size,),
-                            device=f'xpu:{self.rank}',
+                            device=self.device,
                             dtype=self.dtype,
                         )
                     else:
                         cur_input = torch.empty(
                             (cur_batch.batch_size, cur_len, self.hidden_size,),
-                            device=f'xpu:{self.rank}',
+                            device=self.device,
                             dtype=self.dtype,
                         )
                     # logger.info(f"recv {self.rank} {cur_input.shape}")
@@ -945,14 +970,18 @@ def llama_causallm_forward_4_37_lowmem(
 
     # ipex-llm change starts
 
+    device = hidden_states.device
+
     if self.config.pretraining_tp > 1:
         lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp, dim=0)  # noqa
         logits = [F.linear(hidden_states, lm_head_slices[i]) for i in range(self.config.pretraining_tp)]  # noqa
         logits = torch.cat(logits, dim=-1)
     else:
-        torch.xpu.empty_cache()
+        if device.type == "xpu":
+            torch.xpu.empty_cache()
         logits = self.lm_head(hidden_states)
-        torch.xpu.empty_cache()
+        if device.type == "xpu":
+            torch.xpu.empty_cache()
     # logits = logits.float()
 
     # ipex-llm change ends
@@ -1015,10 +1044,13 @@ def chatglm3_conditional_generation_forward_lowmem(
     if return_last_logit:
         hidden_states = hidden_states[-1:]
 
+    device = hidden_states.device
     # ipex-llm change starts
-    torch.xpu.empty_cache()
+    if device.type == "xpu":
+        torch.xpu.empty_cache()
     lm_logits = self.transformer.output_layer(hidden_states)
-    torch.xpu.empty_cache()
+    if device.type == "xpu":
+        torch.xpu.empty_cache()
     lm_logits = lm_logits.transpose(0, 1).contiguous()
 
     loss = None
@@ -1080,10 +1112,14 @@ def glm4_conditional_generation_forward_lowmem(
     hidden_states = transformer_outputs[0]
     if return_last_logit:
         hidden_states = hidden_states[:, -1:]
+    
+    device = hidden_states.device
     # ipex-llm change starts
-    torch.xpu.empty_cache()
+    if device.type == "xpu":
+        torch.xpu.empty_cache()
     lm_logits = self.transformer.output_layer(hidden_states)
-    torch.xpu.empty_cache()
+    if device.type == "xpu":
+        torch.xpu.empty_cache()
 
     loss = None
     if labels is not None:

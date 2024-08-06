@@ -59,7 +59,7 @@ def replace_with_QuantizedLinear(layer, qtype, device):
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
     if isinstance(layer, torch.nn.Linear):
-        qweights, scale = ggml_convert_qtype(layer.weight.data, iqtype, device=device)
+        qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32), iqtype, device=device)
         return QuantizedLinear(qweights, scale, layer.bias)
 
 

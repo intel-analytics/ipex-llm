@@ -67,6 +67,11 @@ class DynamicFp8Cache(DynamicCache):
 class DynamicNormalCache(DynamicCache):
     KV_ALLOC_BLOCK_LENGTH = 256
 
+    def __init__(self) -> None:
+        self.key_cache: Dict[int, torch.Tensor] = {} 
+        self.value_cache: Dict[int, torch.Tensor] = {}
+        self._seen_tokens = 0  # Used in `generate` to keep tally of how many tokens the cache has seen
+
     def update(
         self,
         key_states: torch.Tensor,
@@ -78,8 +83,9 @@ class DynamicNormalCache(DynamicCache):
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
         max_seq_length = cache_kwargs.pop("max_seq_len", None)
+        transpose_value = cache_kwargs.pop("transpose_value", None)
 
-        if layer_idx == 0:
+        if layer_idx == 0 or layer_idx == 16:
             if hasattr(self, "_seen_tokens"):
                 # 4.39 uses `_seen_tokens`
                 self._seen_tokens += seq_len
@@ -88,17 +94,19 @@ class DynamicNormalCache(DynamicCache):
                 self.seen_tokens += seq_len
 
         # Update the cache
-        if len(self.key_cache) <= layer_idx:
+        # if len(self.key_cache) <= layer_idx:
+        if layer_idx not in self.key_cache:
             max_len = max_seq_length if max_seq_length is not None else key_states.size(2) + self.KV_ALLOC_BLOCK_LENGTH
             k_cache, v_cache = init_kv_cache(
                 batch_size, num_heads, head_dim,
                 0, max_len,
-                key_states.dtype, key_states.device
+                key_states.dtype, key_states.device,
+                tranpose_value=transpose_value
             )
-            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
+            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states, transpose_value=transpose_value)
 
-            self.key_cache.append(k_cache)
-            self.value_cache.append(v_cache)
+            self.key_cache[layer_idx] = k_cache
+            self.value_cache[layer_idx] = v_cache
         else:
             k_cache = self.key_cache[layer_idx]
             v_cache = self.value_cache[layer_idx]
@@ -115,8 +123,14 @@ class DynamicNormalCache(DynamicCache):
                 new_v_cache[...] = v_cache[...]
                 k_cache = new_k_cache
                 v_cache = new_v_cache
-            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
+            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states, transpose_value=transpose_value)
             self.key_cache[layer_idx] = k_cache
             self.value_cache[layer_idx] = v_cache
 
         return self.key_cache[layer_idx], self.value_cache[layer_idx]
+
+    def get_seq_length(self, layer_idx: Optional[int] = 0) -> int:
+        """Returns the sequence length of the cached states. A layer index can be optionally passed."""
+
+        for idx, layer in self.key_cache.items():
+            return layer.shape[-2]
