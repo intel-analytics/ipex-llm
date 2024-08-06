@@ -744,6 +744,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "gemma2":
         from ipex_llm.transformers.models.gemma2 import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "llama":
+        from ipex_llm.transformers.models.llama import merge_qkv
+        model.apply(merge_qkv)
 
     return model
 
