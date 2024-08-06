@@ -118,7 +118,7 @@ def qwen2_model_forward(
         and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs,
                                   self.config.num_attention_heads//self.config.num_key_value_heads)
     )
-    use_compress_kv = should_use_compresskv(inputs)
+    use_compress_kv = should_use_compresskv(inputs, inputs.shape[-1])
 
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
@@ -401,7 +401,8 @@ def qwen2_attention_forward(
     device = hidden_states.device
 
     # [CompressKV]
-    use_compresskv = should_use_compresskv(hidden_states)
+    from ipex_llm.transformers.kv import DynamicCompressCache
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     if hasattr(self, 'qkv_proj') and self.qkv_proj is not None:
         qkv = self.qkv_proj(hidden_states)
