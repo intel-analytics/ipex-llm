@@ -326,7 +326,8 @@ def phi3_prepare_inputs_for_generation(
         model_inputs = {"input_ids": input_ids}
 
     # [CompressKV]
-    if isinstance(past_key_values, DynamicCompressCache):
+    if isinstance(past_key_values, DynamicCompressCache) or\
+        should_use_compresskv(input_ids, input_ids.shape[-1]):
         attention_mask = None
 
     model_inputs.update(
