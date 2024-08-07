@@ -318,7 +318,11 @@ If you run the llama.cpp program on Windows and find that your program crashes o
 For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).
 
 #### Sycl7.dll not found error
-If you meet `System Error: sycl7.dll not found`, please check if you are using a conda environment and in the right oneapi env, or if you executed `source /opt/intel/oneapi/setvars.sh` on Linux
+If you meet `System Error: sycl7.dll not found` on Windows or you meet similar error on Linux, please check:
 
-#### Garbage output
-If you meet garbage output, please check if your GPU driver version is >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html)
+1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
+2. if you have executed `source /opt/intel/oneapi/setvars.sh` on Linux
+
+#### Check driver first when you meet garbage output
+If you meet garbage output, please check if your GPU driver version is >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html). If not, please follow the instructions in [this section](./install_linux_gpu.md#install-gpu-driver) to update your GPU driver.
+
