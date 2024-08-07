@@ -301,6 +301,7 @@ Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaM
 | Phi-3-vision | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/phi-3-vision) | [link](python/llm/example/GPU/HuggingFace/Multimodal/phi-3-vision) |
 | Yuan2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/yuan2) | [link](python/llm/example/GPU/HuggingFace/LLM/yuan2) |
 | Gemma | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/gemma) | [link](python/llm/example/GPU/HuggingFace/LLM/gemma) |
+| Gemma2 |  | [link](python/llm/example/GPU/HuggingFace/LLM/gemma2) |
 | DeciLM-7B | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/deciLM-7b) | [link](python/llm/example/GPU/HuggingFace/LLM/deciLM-7b) |
 | Deepseek | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/deepseek) | [link](python/llm/example/GPU/HuggingFace/LLM/deepseek) |
 | StableLM | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/stablelm) | [link](python/llm/example/GPU/HuggingFace/LLM/stablelm) |
