@@ -1,7 +1,6 @@
 # For the models that require transformers 4.38.2
 repo_id:
   - 'stablelm/stablelm-zephyr-3b'
-  #- 'Gemma/gemma-7b-it' #disabled due to performance issues
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
