@@ -60,7 +60,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo gpasswd -a ${USER} render
     newgrp render
 
-    # Verify the device is working with i915 driver
+    # Verify the device is working with i915 driver
     sudo apt-get install -y hwinfo
     hwinfo --display
     ```
@@ -105,7 +105,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo gpasswd -a ${USER} render
     newgrp render
 
-    # Verify the device is working with i915 driver
+    # Verify the device is working with i915 driver
     sudo apt-get install -y hwinfo
     hwinfo --display
     ```
