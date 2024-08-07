@@ -1,5 +1,5 @@
 # Qwen2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) as a reference InternLM model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct)as a reference InternLM model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -131,4 +131,21 @@ Inference time: xxxx s
 What is AI?
 -------------------- Output --------------------
 AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans and mimic their actions. The term may
+```
+
+##### [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct)
+```log
+Inference time: 0.33887791633605957 s
+-------------------- Prompt --------------------
+AI是什么？
+-------------------- Output --------------------
+AI是人工智能的简称，是一种计算机科学和技术领域，旨在使机器能够完成通常需要人类智能的任务。这包括识别和理解语言、图像处理
+```
+
+```log
+Inference time: 0.340407133102417 s
+-------------------- Prompt --------------------
+What is AI?
+-------------------- Output --------------------
+Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and work like humans. It involves creating computer programs, algorithms
 ```
