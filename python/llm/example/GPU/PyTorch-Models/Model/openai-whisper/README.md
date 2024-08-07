@@ -131,7 +131,7 @@ For audio file(.wav) download from https://www.youtube.com/watch?v=-LIIf7E-qFI, 
 [00:39.000 --> 00:45.000]  But if you don't, I will look for you. I will find you.
 [00:45.000 --> 00:48.000]  And I will kill you.
 [00:48.000 --> 00:53.000]  Good luck.
-Inference time: 1.4867823123931885 s
+Inference time: xxxx s
 -------------------- Output --------------------
  I don't know who you are. I don't know what you want. If you're looking for ransom, I can tell you I don't know money, but what I do have. I'm a very particular set of skills. The skills I have acquired are very long career. The skills that make me a nightmare for people like you. If you let my daughter go now, that'll be the end of it. I will not look for you. I will not pursue you. But if you don't, I will look for you. I will find you. And I will kill you. Good luck.
 ```
