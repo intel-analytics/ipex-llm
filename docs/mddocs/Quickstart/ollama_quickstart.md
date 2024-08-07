@@ -183,3 +183,14 @@ An example process of interacting with model with `ollama run example` looks lik
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_gguf_demo_image.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_gguf_demo_image.png" width=100%; />
 </a>
+
+### Troubleshooting
+
+#### Why model is always loaded again after several minutes
+Ollama will unload model from gpu memory in every 5 minutes as default. For latest version of ollama, you could set OLLAMA_KEEP_ALIVE=-1 to keep the model loaded in memory. Reference issue: https://github.com/intel-analytics/ipex-llm/issues/11608
+
+#### Error when executing  `ollama serve`
+If you meet `llama runner process has terminated: exit status 0xc0000135`, please check if you are in the right oneapi env, or if you executed `source /opt/intel/oneapi/setvars.sh` on Linux
+
+#### Initial model loading hang
+When launching `ollama serve` for the first time on Windows, it may get stuck during the model loading phase. If you notice that the client side is hanging for a long time during the first run, you can manually input a space or other characters on the server side to ensure the program is running.

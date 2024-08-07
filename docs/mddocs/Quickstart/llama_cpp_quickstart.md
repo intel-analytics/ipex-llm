@@ -40,7 +40,7 @@ Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md), fo
 
 #### Windows (Optional)
 
-Please make sure your GPU driver version is equal or newer than `31.0.101.5333`. If it is not, follow the instructions in [this section](./install_windows_gpu.md#optional-update-gpu-driver) to update your GPU driver; otherwise, you might encounter gibberish output. 
+Please make sure your GPU driver version is equal or newer than `31.0.101.5522`. If it is not, follow the instructions in [this section](./install_windows_gpu.md#optional-update-gpu-driver) to update your GPU driver; otherwise, you might encounter gibberish output. 
 
 ### 1. Install IPEX-LLM for llama.cpp
 
@@ -146,7 +146,7 @@ Before running, you should download or copy community GGUF model to your current
 - For **Linux users**:
   
   ```bash
-  ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+  ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 99 --color
   ```
 
   > **Note**:
@@ -158,7 +158,7 @@ Before running, you should download or copy community GGUF model to your current
   Please run the following command in Miniforge Prompt.
 
   ```cmd
-  main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+  main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 99 --color
   ```
 
   > **Note**:
@@ -316,3 +316,9 @@ Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device 
 If you run the llama.cpp program on Windows and find that your program crashes or outputs abnormally when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
 
 For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).
+
+#### Sycl7.dll not found error
+If you meet `System Error: sycl7.dll not found`, please check if you are using a conda environment and in the right oneapi env, or if you executed `source /opt/intel/oneapi/setvars.sh` on Linux
+
+#### Garbage output
+If you meet garbage output, please check if your GPU driver version is >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html)
