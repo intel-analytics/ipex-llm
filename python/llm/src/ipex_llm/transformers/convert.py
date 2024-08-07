@@ -740,13 +740,18 @@ def _optimize_pre(model, qtype=None):
         from ipex_llm.transformers.models.internlm import pre_process_attn_and_mlp
         model.apply(pre_process_attn_and_mlp)
     if model.config.model_type == "internvl_chat":
-        _optimize_pre(model.language_model)
+        _optimize_pre(model.language_model, qtype=qtype)
     if model.config.model_type == "gemma2":
         from ipex_llm.transformers.models.gemma2 import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "llama":
         from ipex_llm.transformers.models.llama import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "minicpmv":
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            model.llm.config.model_type = "qwen2"
+            _optimize_pre(model.llm, qtype=qtype)
+            model.llm.config.model_type = "minicpmv"
 
     return model
 
@@ -1747,5 +1752,15 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MiniCPMModel,
                         minicpm_model_forward)
+    elif model.config.model_type == "minicpmv":
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            model.llm.config.model_type = "qwen2"
+            _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+            model.llm.config.model_type = "minicpmv"
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.minicpmv import minicpmv_generate_wrapper
+        minicpmv_generate = minicpmv_generate_wrapper(module.MiniCPMV.generate)
+        model.generate = MethodType(minicpmv_generate, model)
 
     return model
