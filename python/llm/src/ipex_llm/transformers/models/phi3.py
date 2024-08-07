@@ -261,7 +261,8 @@ def phi3_model_forward_wrapper(origin_model_forward):
                 past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
             if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
                                                                               (DynamicNormalCache,
-                                                                               DynamicCompressCache)):
+                                                                               DynamicCompressCache
+                                                                               )):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
         return origin_model_forward(
             self=self,
@@ -278,10 +279,11 @@ def phi3_model_forward_wrapper(origin_model_forward):
     return model_forward
 
 
-# Copied from transformers.models.persimmon.modeling_persimmon.PersimmonForCausalLM.prepare_inputs_for_generation
+# Copied from transformers.models.persimmon.modeling_persimmon.PersimmonForCausalLM
+# .prepare_inputs_for_generation
 def phi3_prepare_inputs_for_generation(
         self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
-    ):
+):
     if past_key_values is not None:
         if isinstance(past_key_values, Cache):
             cache_length = past_key_values.get_seq_length()
@@ -292,18 +294,23 @@ def phi3_prepare_inputs_for_generation(
             max_cache_length = None
 
         # Keep only the unprocessed tokens:
-        # 1 - If the length of the attention_mask exceeds the length of input_ids, then we are in a setting where
-        # some of the inputs are exclusively passed as part of the cache (e.g. when passing input_embeds as
+        # 1 - If the length of the attention_mask exceeds the length of input_ids,
+        # then we are in a setting where
+        # some of the inputs are exclusively passed as part of the cache
+        # (e.g. when passing input_embeds as
         # input)
         if attention_mask is not None and attention_mask.shape[1] > input_ids.shape[1]:
-            input_ids = input_ids[:, -(attention_mask.shape[1] - past_length) :]
-        # 2 - If the past_length is smaller than input_ids', then input_ids holds all input tokens. We can discard
+            input_ids = input_ids[:, -(attention_mask.shape[1] - past_length):]
+        # 2 - If the past_length is smaller than input_ids',
+        # then input_ids holds all input tokens. We can discard
         # input_ids based on the past_length.
         elif past_length < input_ids.shape[1]:
             input_ids = input_ids[:, past_length:]
-        # 3 - Otherwise (past_length >= input_ids.shape[1]), let's assume input_ids only has unprocessed tokens.
+        # 3 - Otherwise (past_length >= input_ids.shape[1]),
+        # let's assume input_ids only has unprocessed tokens.
 
-        # If we are about to go beyond the maximum cache length, we need to crop the input attention mask.
+        # If we are about to go beyond the maximum cache length,
+        # we need to crop the input attention mask.
         if (
             max_cache_length is not None
             and attention_mask is not None
@@ -317,7 +324,7 @@ def phi3_prepare_inputs_for_generation(
         position_ids = attention_mask.long().cumsum(-1) - 1
         position_ids.masked_fill_(attention_mask == 0, 1)
         if past_key_values:
-            position_ids = position_ids[:, -input_ids.shape[1] :]
+            position_ids = position_ids[:, -input_ids.shape[1]:]
 
     # if `inputs_embeds` are passed, we only want to use them in the 1st generation step
     if inputs_embeds is not None and past_key_values is None:
@@ -326,8 +333,8 @@ def phi3_prepare_inputs_for_generation(
         model_inputs = {"input_ids": input_ids}
 
     # [CompressKV]
-    if isinstance(past_key_values, DynamicCompressCache) or\
-        should_use_compresskv(input_ids, input_ids.shape[-1]):
+    use_compresskv = should_use_compresskv(input_ids, input_ids.shape[-1])
+    if isinstance(past_key_values, DynamicCompressCache) or use_compresskv:
         attention_mask = None
 
     model_inputs.update(
