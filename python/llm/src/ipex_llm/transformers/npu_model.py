@@ -159,6 +159,25 @@ class _BaseAutoModelClass:
         model.model.norm.to(torch.float32)
         model.lm_head.to(torch.float32)
 
+        from ipex_llm.transformers.low_bit_linear import LowBitLinear, ggml_tensor_qtype, FP4Params
+
+        if isinstance(model.lm_head, torch.nn.Linear):
+            new_linear = LowBitLinear(
+                            model.lm_head.in_features,
+                            model.lm_head.out_features,
+                            ggml_tensor_qtype["sym_int4"],
+                            False
+                        )
+            paramsLowBit = FP4Params(data=model.lm_head.weight.data,
+                                requires_grad=False,
+                                quantized=False,
+                                _shape=None,
+                                qtype=ggml_tensor_qtype["sym_int4"],
+                                in_features=model.lm_head.in_features).to("cpu")
+            new_linear._parameters['weight'] = paramsLowBit
+
+            model.lm_head = new_linear
+
         logger.info(f"Finish to convert model")
 
         model.config.update({"bigdl_transformers_low_bit": qtype})
