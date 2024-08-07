@@ -317,7 +317,7 @@ If you run the llama.cpp program on Windows and find that your program crashes o
 
 For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).
 
-#### Sycl7.dll not found error
+#### sycl7.dll not found error
 If you meet `System Error: sycl7.dll not found` on Windows or you meet similar error on Linux, please check:
 
 1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
