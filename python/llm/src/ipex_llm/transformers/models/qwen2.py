@@ -126,8 +126,9 @@ def qwen2_model_forward(
         elif use_compress_kv and not isinstance(past_key_values,
                                                 DynamicCompressCache):
             past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-        if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                          DynamicNormalCache):
+        if not use_quantize_kv and not use_compress_kv and not isinstance(
+            past_key_values,
+            (DynamicNormalCache, DynamicCompressCache)):
             past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
         past_key_values_length = past_key_values.get_usable_length(seq_length)
     # ipex-llm changes end

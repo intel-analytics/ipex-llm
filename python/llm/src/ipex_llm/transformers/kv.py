@@ -152,7 +152,6 @@ def compress_kv(attn_config, key_states, query_states, value_states, attention_m
     if not hasattr(attn_config, 'pooling'):
         attn_config.pooling = 'maxpool'
     bsz, num_heads, q_len, head_dim = query_states.shape
-    print(f"attn_config.max_capacity_prompt: ", attn_config.max_capacity_prompt, " ", q_len)
     if q_len <= attn_config.max_capacity_prompt:
         return key_states, value_states
     else:
