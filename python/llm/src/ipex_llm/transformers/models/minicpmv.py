@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+
 def minicpmv_generate_wrapper(origin_generate):
     def generate(
         self,
