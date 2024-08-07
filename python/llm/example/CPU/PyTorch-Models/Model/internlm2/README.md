@@ -19,6 +19,8 @@ conda activate llm
 
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
+pip install transformers==3.36.2
+pip install huggingface_hub 
 ```
 
 On Windows:
@@ -28,15 +30,30 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
+pip install transformers==3.36.2
+pip install huggingface_hub 
 ```
 
 ### 2. Run
 After setting up the Python environment, you could run the example by following steps.
+Setup local MODEL_PATH and run python code to download the right version of model from hugginface.
+```python
+from huggingface_hub import snapshot_download
+snapshot_download(repo_id=repo_id, local_dir=MODEL_PATH, local_dir_use_symlinks=False, revision="v1.1.0")
+```
+Then run the example with the downloaded model
+```
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+```
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the InternLM2 model (e.g. `internlm/internlm2-chat-7b`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'internlm/internlm2-chat-7b'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
+- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### 2.1 Client
 On client Windows machines, it is recommended to run directly with full utilization of all cores:
 ```cmd
-python ./generate.py --prompt 'What is AI?'
+python ./generate.py --prompt 'What is AI?' --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 
@@ -50,7 +67,7 @@ source ipex-llm-init
 
 # e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python ./generate.py --prompt 'What is AI?'
+numactl -C 0-47 -m 0 python ./generate.py --prompt 'What is AI?' --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 ```
 More information about arguments can be found in [Arguments Info](#23-arguments-info) section. The expected output can be found in [Sample Output](#24-sample-output) section.
 

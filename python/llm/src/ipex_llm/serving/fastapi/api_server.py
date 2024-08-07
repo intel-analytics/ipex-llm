@@ -25,48 +25,8 @@ from ipex_llm.utils.common import invalidInputError
 import asyncio
 import uuid
 from typing import List, Optional, Union, Dict
+from fastapi.middleware.cors import CORSMiddleware
 from .tgi_protocol import Parameters
-
-
-result_dict: Dict[str, str] = {}
-logger = logging.get_logger(__name__)
-
-
-class InputsRequest(BaseModel):
-    inputs: str
-    parameters: Optional[Parameters] = None
-    stream: Optional[bool] = False
-    req_type: str = 'completion'
-
-
-class ChatCompletionRequest(BaseModel):
-    messages: List[ChatCompletionMessageParam]
-    model: str
-    max_tokens: Optional[int] = None
-    stream: Optional[bool] = False
-
-
-class CompletionRequest(BaseModel):
-    model: str
-    prompt: Union[List[int], List[List[int]], str, List[str]]
-    max_tokens: Optional[int] = None
-    stream: Optional[bool] = False
-
-
-app = FastAPI()
-global tokenizer
-global local_model
-
-
-class FastApp():
-    def __init__(self, model, mytokenizer):
-        global tokenizer
-        global local_model
-        local_model = model
-        tokenizer = mytokenizer
-        self.app = app
-
-
 from .openai_protocol import (
     ChatCompletionResponseStreamChoice,
     ChatCompletionStreamResponse,
@@ -80,6 +40,68 @@ from .openai_protocol import (
     CompletionStreamResponse,
 )
 
+result_dict: Dict[str, str] = {}
+logger = logging.get_logger(__name__)
+
+
+class InputsRequest(BaseModel):
+    inputs: str
+    parameters: Optional[Parameters] = None
+    image_list: Optional[list] = None
+    stream: Optional[bool] = False
+    req_type: str = 'completion'
+
+
+class ChatCompletionRequest(BaseModel):
+    messages: Union[
+        str,
+        List[Dict[str, str]],
+        List[Dict[str, Union[str, List[Dict[str, Union[str, Dict[str, str]]]]]]],
+    ]
+    model: str
+    max_tokens: Optional[int] = None
+    min_tokens: Optional[int] = None
+    stream: Optional[bool] = False
+    top_p: Optional[float] = None
+    top_k: Optional[int] = None
+    repetition_penalty: Optional[float] = None
+    presence_penalty: Optional[float] = None
+    temperature: Optional[float] = None
+
+
+class CompletionRequest(BaseModel):
+    model: str
+    prompt: Union[List[int], List[List[int]], str, List[str]]
+    max_tokens: Optional[int] = None
+    min_tokens: Optional[int] = None
+    stream: Optional[bool] = False
+    top_p: Optional[float] = None
+    top_k: Optional[int] = None
+    repetition_penalty: Optional[float] = None
+    presence_penalty: Optional[float] = None
+    temperature: Optional[float] = None
+
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+global tokenizer
+global local_model
+
+
+class FastApp():
+    def __init__(self, model, mytokenizer):
+        global tokenizer
+        global local_model
+        local_model = model
+        tokenizer = mytokenizer
+        self.app = app
+
 
 def get_queue_next_token(delta_text_queue):
     timeout = int(os.getenv("IPEX_LLM_FASTAPI_TIMEOUT", 60))
@@ -89,6 +111,15 @@ def get_queue_next_token(delta_text_queue):
     else:
         remain = 1
     return delta_text, remain
+
+
+def should_return_end_token(next_token):
+    if "codegeex" not in local_model.model_name.lower():
+        return True
+    else:
+        if next_token in ["<|user|>", "<|endoftext|>", "<|observation|>"]:
+            return False
+    return True
 
 async def chat_stream_generator(local_model, delta_text_queue, request_id):
     model_name = local_model.model_name
@@ -104,18 +135,19 @@ async def chat_stream_generator(local_model, delta_text_queue, request_id):
                 await asyncio.sleep(0)
                 continue
         if remain == 0 and delta_text is not None or remain != 0:
-            choice_data = ChatCompletionResponseStreamChoice(
-                index=index,
-                delta=DeltaMessage(role="assistant", content=delta_text),
-                logprobs=None,
-                finish_reason=None)
-            chunk = ChatCompletionStreamResponse(
-                id=request_id,
-                choices=[choice_data],
-                model=model_name)
-            data = chunk.model_dump_json(exclude_unset=True)
-            yield f"data: {data}\n\n"
-            index = index + 1
+            if should_return_end_token(delta_text):
+                choice_data = ChatCompletionResponseStreamChoice(
+                    index=index,
+                    delta=DeltaMessage(role="assistant", content=delta_text),
+                    logprobs=None,
+                    finish_reason=None)
+                chunk = ChatCompletionStreamResponse(
+                    id=request_id,
+                    choices=[choice_data],
+                    model=model_name)
+                data = chunk.model_dump_json(exclude_unset=True)
+                yield f"data: {data}\n\n"
+                index = index + 1
         if remain == 0:
             choice_data = ChatCompletionResponseStreamChoice(
                 index=index,
@@ -146,18 +178,19 @@ async def completion_stream_generator(local_model, delta_text_queue, request_id)
                 await asyncio.sleep(0)
                 continue
         if remain == 0 and delta_text is not None or remain != 0:
-            choice_data = CompletionResponseStreamChoice(
-                index=index,
-                text=delta_text,
-                logprobs=None,
-                finish_reason=None)
-            chunk = CompletionStreamResponse(
-                id=request_id,
-                choices=[choice_data],
-                model=model_name)
-            data = chunk.model_dump_json(exclude_unset=True)
-            yield f"data: {data}\n\n"
-            index = index + 1
+            if should_return_end_token(delta_text):
+                choice_data = CompletionResponseStreamChoice(
+                    index=index,
+                    text=delta_text,
+                    logprobs=None,
+                    finish_reason=None)
+                chunk = CompletionStreamResponse(
+                    id=request_id,
+                    choices=[choice_data],
+                    model=model_name)
+                data = chunk.model_dump_json(exclude_unset=True)
+                yield f"data: {data}\n\n"
+                index = index + 1
         if remain == 0:
             choice_data = CompletionResponseStreamChoice(
                 index=index,
@@ -222,7 +255,7 @@ async def generate_stream(inputs_request: InputsRequest):
     request_id = str(uuid.uuid4()) + "stream"
     await local_model.waiting_requests.put((request_id, inputs_request))
     while True:
-        await asyncio.sleep(0)
+        await asyncio.sleep(0.1)
         cur_streamer = local_model.streamer.get(request_id, None)
         if cur_streamer is not None:
             if inputs_request.req_type == 'completion':
@@ -237,31 +270,75 @@ async def generate_stream(inputs_request: InputsRequest):
 
 
 def get_prompt(messages) -> str:
-    prompt = ""
-    for msg in messages:
-        role = msg["role"]
-        content = msg["content"]
-        if role == "system":
-            prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
-        elif role == "user":
-            prompt += f"[INST] {content} [/INST] "
-        elif role == "assistant":
-            prompt += f"{content} "
+    if "codegeex" in local_model.model_name.lower():
+        query = messages[-1]["content"]
+        if len(messages) <= 1:
+            history = []
         else:
-            invalidInputError(False, f"Unknown role: {role}")
-    return prompt.strip()
+            history = [msg.model_dump() for msg in messages[:-1]]
+        history.append({"role": "user", "content": query})
+        inputs = tokenizer.apply_chat_template(history, add_generation_prompt=True, tokenize=False,
+                                               return_tensors="pt", return_dict=False)
+        return inputs
+    else:
+        prompt = ""
+        image_list = []
+        for msg in messages:
+            role = msg["role"]
+            content = msg["content"]
+            if type(content) == list:
+                image_list1 = [
+                    item["image_url"]["url"]
+                    for item in content
+                    if item["type"] == "image_url"
+                ]
+                image_list.extend(image_list1)
+                text_list = [
+                    item["text"]
+                    for item in content
+                    if item["type"] == "text"
+                ]
+                prompt = "".join(text_list)
+            else:
+                if role == "system":
+                    prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
+                elif role == "user":
+                    prompt += f"[INST] {content} [/INST] "
+                elif role == "assistant":
+                    prompt += f"{content} "
+                else:
+                    invalidInputError(False, f"Unknown role: {role}")
+        return prompt.strip(), image_list
+
+
+def set_parameters(req):
+    if req.max_tokens is None:
+        n_predict = 256
+    else:
+        n_predict = req.max_tokens
+    if req.repetition_penalty is not None:
+        repetition_penalty = req.repetition_penalty
+    elif req.presence_penalty is not None:
+        repetition_penalty = req.presence_penalty
+    else:
+        repetition_penalty = None
+    if req.temperature is not None and req.temperature > 1e-4:
+        do_sample = True
+    else:
+        do_sample = False
+    return Parameters(max_new_tokens=n_predict, do_sample=do_sample, min_new_tokens=req.min_tokens,
+                      top_p=req.top_p, repetition_penalty=repetition_penalty,
+                      temperature=req.temperature, top_k=req.top_k)
 
 
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest):
     model_name = local_model.model_name
-    if request.max_tokens is None:
-        n_predict = 256
-    else:
-        n_predict = request.max_tokens
+    prompt, image_list = get_prompt(request.messages)
     inputs_request = InputsRequest(
-        inputs=get_prompt(request.messages),
-        parameters=Parameters(max_new_tokens=n_predict),
+        inputs=prompt,
+        parameters=set_parameters(request),
+        image_list=image_list if len(image_list) >= 1 else None,
         stream=request.stream,
         req_type="chat"
     )
@@ -284,13 +361,9 @@ async def create_chat_completion(request: ChatCompletionRequest):
 @app.post("/v1/completions")
 async def create_completion(request: CompletionRequest):
     model_name = local_model.model_name
-    if request.max_tokens is None:
-        n_predict = 32
-    else:
-        n_predict = request.max_tokens
     inputs_request = InputsRequest(
         inputs=request.prompt,
-        parameters=Parameters(max_new_tokens=n_predict),
+        parameters=set_parameters(request),
         stream=request.stream,
         req_type="completion"
     )

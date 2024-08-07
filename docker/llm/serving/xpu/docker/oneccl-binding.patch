@@ -1,0 +1,14 @@
+diff --git a/src/gpu/dpcpp_ccl.cpp b/src/gpu/dpcpp_ccl.cpp
+index 3bd8087..c5b5ce3 100644
+--- a/src/gpu/dpcpp_ccl.cpp
++++ b/src/gpu/dpcpp_ccl.cpp
+@@ -689,7 +689,8 @@ c10::intrusive_ptr<ProcessGroupCCL::AsyncWorkCCL> XPUCCLStubs::allreduce_(std::v
+                                             stream,
+                                             attr), stream.get_native());
+       });
+-    // printf("Use One CCL allreduce.\n");
++    stream.get_native().wait();
++   // printf("Use One CCL allreduce.\n");
+     return ret_evt;
+   },
+   c10d::OpType::ALLREDUCE);

@@ -75,7 +75,7 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     return new_cache_k, new_cache_v
 
 
-def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
+def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor, kv_group: int = 1) -> bool:
     if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         warnings.warn(
             "`BIGDL_QUANTIZE_KV_CACHE` is deprecated and will be removed in future releases. "
@@ -87,13 +87,13 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:
     elif os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
         return os.environ["IPEX_LLM_LOW_MEM"] == "1"
     else:
-        return x.device.type == 'xpu' and kv_cache_device_check(x) \
+        return x.device.type == 'xpu' and kv_cache_device_check(x, kv_group) \
             and hasattr(linear, "qtype") and \
             linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]
 
 
-def kv_cache_device_check(x: torch.Tensor) -> bool:
-    return get_xpu_device_type(x) == "mtl" or \
+def kv_cache_device_check(x: torch.Tensor, kv_group: int) -> bool:
+    return (get_xpu_device_type(x) == "mtl" and kv_group <= 1) or \
         ((get_xpu_device_type(x) == "arc" or get_xpu_device_type(x) == "flex") and
             1 < x.size(0) and x.size(0) <= 8)
 
@@ -329,7 +329,7 @@ def use_sdp(q_len, kv_len, head_dim, query_states):
     return (
         query_states.device.type == "xpu"
         and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
-        and head_dim in [64, 80, 96, 128]
+        and head_dim in [-1, 64, 80, 96, 128]
         and q_len != kv_len     # next token
         and q_len <= 32         # lookup
     )
@@ -347,7 +347,7 @@ def use_sdp_fp8(q_len, kv_len, query_states):
 def use_sdp_causal(q_len, kv_len, head_dim, query_states, training):
     return (
         q_len == kv_len     # first token
-        and head_dim in [64, 80, 96, 128]           # for now
+        and head_dim in [-1, 64, 80, 96, 128]           # for now
         and query_states.device.type == "xpu"   # GPU
         and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
         and not query_states.requires_grad and not training     # not training
@@ -479,3 +479,8 @@ def update_past_key_value(past_key_value, key_states, value_states,
                 v_cache = new_v_cache
             key_states, value_states = append_kv_cache(k_cache, v_cache, key_states, value_states)
     return key_states, value_states
+
+
+def should_use_compresskv(x: torch.Tensor):
+    use_compress_kv = os.environ.get("IPEX_LLM_COMPRESS_KV_CACHE", None)
+    return x.device.type == 'xpu' and use_compress_kv == "1"

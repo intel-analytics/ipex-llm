@@ -31,33 +31,3 @@ class Parameters(BaseModel):
     top_k: Optional[int] = None
     top_p: Optional[float] = None
     typical_p: Optional[float] = None
-
-    @field_validator("repetition_penalty")
-    def valid_repetition_penalty(cls, v):
-        if v is not None and v <= 0:
-            invalidInputError(False, "`repetition_penalty` must be strictly positive")
-        return v
-
-    @field_validator("temperature")
-    def valid_temp(cls, v):
-        if v is not None and v <= 0:
-            invalidInputError(False, "`temperature` must be strictly positive")
-        return v
-
-    @field_validator("top_k")
-    def valid_top_k(cls, v):
-        if v is not None and v <= 0:
-            invalidInputError(False, "`top_k` must be strictly positive")
-        return v
-
-    @field_validator("top_p")
-    def valid_top_p(cls, v):
-        if v is not None and (v <= 0 or v >= 1.0):
-            invalidInputError(False, "`top_p` must be > 0.0 and < 1.0")
-        return v
-
-    @field_validator("typical_p")
-    def valid_typical_p(cls, v):
-        if v is not None and (v <= 0 or v >= 1.0):
-            invalidInputError(False, "`typical_p` must be > 0.0 and < 1.0")
-        return v

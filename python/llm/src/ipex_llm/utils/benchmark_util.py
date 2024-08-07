@@ -574,7 +574,7 @@ class BenchmarkWrapper:
         if input_name == "input_ids" and "inputs_embeds" in model_kwargs:
             if not self.config.is_encoder_decoder:
                 has_inputs_embeds_forwarding = "inputs_embeds" in set(
-                    inspect.signature(self.prepare_inputs_for_generation).parameters.keys()
+                    inspect.signature(self.model.prepare_inputs_for_generation).parameters.keys()
                 )
                 if not has_inputs_embeds_forwarding:
                     raise ValueError(

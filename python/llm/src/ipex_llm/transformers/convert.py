@@ -44,7 +44,7 @@ import warnings
 import transformers
 import importlib.util
 from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
-from .utils import logger, get_cur_qtype_and_imatrix
+from .utils import logger, get_cur_qtype_and_imatrix, check_hidden_size
 import numpy as np
 import os
 from ipex_llm.utils.common import invalidInputError
@@ -70,12 +70,12 @@ def is_vllm_available():
     global _IS_VLLM_AVAILABLE
     if _IS_VLLM_AVAILABLE is not None:
         return _IS_VLLM_AVAILABLE
-    reqs = subprocess.check_output([sys.executable, '-m', 'pip', 'list'])
-    installed_packages = [r.decode().split('  ')[0] for r in reqs.split()]
-    if 'vllm' in installed_packages:
-        _IS_VLLM_AVAILABLE = True
-    else:
-        _IS_VLLM_AVAILABLE = False
+    import sys
+    original_path = sys.path
+    # Temporally remove current directory
+    sys.path = original_path[1:]
+    _IS_VLLM_AVAILABLE = importlib.util.find_spec("vllm") is not None
+    sys.path = original_path
     return _IS_VLLM_AVAILABLE
 
 
@@ -153,8 +153,9 @@ def is_linear_module(module):
         VLLM_LINEAR_LIST = [
             ColumnParallelLinear, RowParallelLinear, QKVParallelLinear,
             MergedColumnParallelLinear,
-            ParallelLMHead
         ]
+        if 'xpu' in _VLLM_VERSION:
+            VLLM_LINEAR_LIST.append(ParallelLMHead)
         if is_module_in_classes(module, VLLM_LINEAR_LIST):
             if 'xpu' in _VLLM_VERSION:
                 # For vllm xpu
@@ -393,7 +394,10 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     if mixed_precision and is_lm_head(name, model_config, out_features):
                         if cur_qtype in [ggml_tensor_qtype["sym_int4"],
                                          ggml_tensor_qtype["asym_int4"]]:
-                            cur_qtype = ggml_tensor_qtype["sym_int8"]
+                            cur_qtype = ggml_tensor_qtype["q6_k"]
+
+                    # check hidden size whether is a multiple of 256
+                    cur_qtype = check_hidden_size(cur_qtype, in_features)
 
                     new_linear = LowBitLinear(
                         in_features,
@@ -735,6 +739,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "internlmxcomposer2":
         from ipex_llm.transformers.models.internlm import pre_process_attn_and_mlp
         model.apply(pre_process_attn_and_mlp)
+    if model.config.model_type == "gemma2":
+        from ipex_llm.transformers.models.gemma2 import merge_qkv
+        model.apply(merge_qkv)
 
     return model
 
@@ -1442,14 +1449,14 @@ def _optimize_post(model, lightweight_bmm=False):
             if version.parse(trans_version) >= version.parse("4.36.0"):
                 from ipex_llm.transformers.models.mistral import mistral_model_forward_4_36
                 if version.parse(trans_version) >= version.parse("4.39.0"):
-                    from ipex_llm.transformers.models.mistral import mistral_attention_forward_4_39
+                    from ipex_llm.transformers.models.mistral import \
+                        mistral_attention_forward_4_39
                     convert_forward(model,
                                     module.MistralAttention,
                                     mistral_attention_forward_4_39
                                     )
                 else:
                     from ipex_llm.transformers.models.mistral import mistral_attention_forward_4_36
-
                     convert_forward(model,
                                     module.MistralAttention,
                                     mistral_attention_forward_4_36
@@ -1507,9 +1514,15 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.gemma import gemma_rms_norm_forward
-        convert_forward(model,
-                        module.GemmaRMSNorm,
-                        gemma_rms_norm_forward)
+        from ipex_llm.transformers.models.gemma2 import gemma2_attention_forward
+        from ipex_llm.transformers.models.gemma2 import gemma2_model_forward
+        from ipex_llm.transformers.models.gemma2 import gemma2_mlp_forward
+        from transformers.models.gemma2.modeling_gemma2 import Gemma2RMSNorm, Gemma2Attention
+        from transformers.models.gemma2.modeling_gemma2 import Gemma2Model, Gemma2MLP
+        convert_forward(model, Gemma2RMSNorm, gemma_rms_norm_forward)
+        convert_forward(model, Gemma2Attention, gemma2_attention_forward)
+        convert_forward(model, Gemma2Model, gemma2_model_forward)
+        convert_forward(model, Gemma2MLP, gemma2_mlp_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
