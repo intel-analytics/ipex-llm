@@ -122,7 +122,7 @@ def llama_model_forward_4_36(
                                  self.config.num_attention_heads//self.config.num_key_value_heads):
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input):
+        elif should_use_compresskv(input, input.shape[-1]):
             # if use quantize kv, compress kv will be ignored now
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(
@@ -162,7 +162,7 @@ def llama_model_forward_4_38(
                                  self.config.num_attention_heads//self.config.num_key_value_heads):
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input):
+        elif should_use_compresskv(input, input.shape[-1]):
             # if use quantize kv, compress kv will be ignored now
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(
@@ -203,7 +203,7 @@ def llama_model_forward_4_41(
                                  self.config.num_attention_heads//self.config.num_key_value_heads):
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input):
+        elif should_use_compresskv(input, input.shape[-1]):
             # if use quantize kv, compress kv will be ignored now
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(
@@ -1283,6 +1283,7 @@ def llama_attention_forward_4_41_original(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1295,7 +1296,7 @@ def llama_attention_forward_4_41_original(
     original_dtype = hidden_states.dtype
 
     # [CompressKV]
-    use_compresskv = should_use_compresskv(hidden_states)
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
@@ -1834,6 +1835,7 @@ def llama_attention_forward_4_38_original(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1846,7 +1848,7 @@ def llama_attention_forward_4_38_original(
     original_dtype = hidden_states.dtype
 
     # [CompressKV]
-    use_compresskv = should_use_compresskv(hidden_states)
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
