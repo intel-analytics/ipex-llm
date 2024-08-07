@@ -256,8 +256,8 @@ def phi3_model_forward_wrapper(origin_model_forward):
         if use_cache:
             if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-            elif use_compress_kv and not isinstance(past_key_values,
-                                                    DynamicCompressCache):
+            elif not use_quantize_kv and use_compress_kv and not isinstance(past_key_values,
+                                                                            DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
             if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
                                                                               (DynamicNormalCache,
