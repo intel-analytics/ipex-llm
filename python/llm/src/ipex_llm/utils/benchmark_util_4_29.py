@@ -2452,7 +2452,7 @@ class BenchmarkWrapper:
                 last_token_time.append(end - st)
 
             # stop if we exceed the maximum length
-            if stopping_criteria(input_ids, scores):
+            if stopping_criteria(input_ids, scores)[0]:
                 this_peer_finished = True
 
             if this_peer_finished and not synced_gpus:
