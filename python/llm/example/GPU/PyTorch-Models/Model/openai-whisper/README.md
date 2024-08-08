@@ -1,6 +1,6 @@
 # Whisper
 
-In this directory, you will find examples of how to use IPEX-LLM to optimize OpenAI Whisper models within the openai-whisper Python library. For illustration purposes, we utilize the [whisper-tiny](https://github.com/openai/whisper/blob/main/model-card.md) as a reference Whisper model.
+In this directory, you will find examples of how to use IPEX-LLM to optimize OpenAI Whisper models within the `openai-whisper` Python library. For illustration purposes, we utilize the [whisper-tiny](https://github.com/openai/whisper/blob/main/model-card.md) as a reference Whisper model.
 
 ## Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
