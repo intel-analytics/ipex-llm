@@ -152,7 +152,9 @@ def attention_forward(
         else:
             # [CompressKV]
             if use_compresskv:
-                attention_mask = None
+                # print(attention_mask.shape)
+                context_len = key_states.size(2)
+                attention_mask = attention_mask[:, :, :, -context_len:]
             attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                         attention_mask)
     # disable sdp_causal to avoid overflow for now
