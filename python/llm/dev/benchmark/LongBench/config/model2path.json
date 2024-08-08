@@ -1,0 +1,16 @@
+{
+    "llama2-7b-chat-4k": "meta-llama/Llama-2-7b-chat-hf",
+    "longchat-v1.5-7b-32k": "lmsys/longchat-7b-v1.5-32k",
+    "xgen-7b-8k": "Salesforce/xgen-7b-8k-inst",
+    "internlm-7b-8k": "internlm/internlm-chat-7b-8k",
+    "chatglm2-6b": "THUDM/chatglm2-6b",
+    "chatglm2-6b-32k": "THUDM/chatglm2-6b-32k",
+    "chatglm3-6b-32k": "THUDM/chatglm3-6b-32k",
+    "vicuna-v1.5-7b-16k": "lmsys/vicuna-7b-v1.5-16k",
+    "mistral-7B-instruct-v0.2": "mistralai/Mistral-7B-Instruct-v0.2",
+    "mistral-7B-instruct-v0.1": "mistralai/Mistral-7B-Instruct-v0.1",
+    "mixtral-8x7B-instruct-v0.1": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+    "llama-2-7B-32k-instruct": "togethercomputer/Llama-2-7B-32K-Instruct",
+    "lwm-text-chat-1m": "LargeWorldModel/LWM-Text-Chat-1M",
+    "lwm-text-1m": "LargeWorldModel/LWM-Text-1M"
+}
