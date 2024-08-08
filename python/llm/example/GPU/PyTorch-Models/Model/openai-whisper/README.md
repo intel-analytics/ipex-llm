@@ -1,11 +1,12 @@
 # Whisper
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on general pytorch models, for example Openai Whisper models. For illustration purposes, we utilize the [whisper-tiny](https://github.com/openai/whisper/blob/main/model-card.md) as a reference Whisper model.
+
+In this directory, you will find examples of how to use IPEX-LLM to optimize OpenAI Whisper models within the openai-whisper Python library. For illustration purposes, we utilize the [whisper-tiny](https://github.com/openai/whisper/blob/main/model-card.md) as a reference Whisper model.
 
 ## Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Llama3 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
+## Example: Recognize Tokens using `transcribe()` API
+In the example [recognize.py](./recognize.py), we show a basic use case for a Whisper model to conduct transcription using `transcribe()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -107,7 +108,7 @@ set SYCL_CACHE_PERSISTENT=1
 ### 4. Running examples
 
 ```bash
-python ./generate.py --audio-file AUDIO_FILE
+python ./recognize.py --audio-file AUDIO_FILE
 ```
 
 Arguments info:
