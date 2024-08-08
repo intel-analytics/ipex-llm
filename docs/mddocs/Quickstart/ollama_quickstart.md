@@ -190,7 +190,7 @@ An example process of interacting with model with `ollama run example` looks lik
 Ollama will unload model from gpu memory in every 5 minutes as default. For latest version of ollama, you could set `OLLAMA_KEEP_ALIVE=-1` to keep the model loaded in memory. Reference issue: https://github.com/intel-analytics/ipex-llm/issues/11608
 
 #### `exit status 0xc0000135` error when executing  `ollama serve`
-If you meet `llama runner process has terminated: exit status 0xc0000135` when executing `ollama serve`, this is most likely caused by the lack of sycl dependency. Please check:
+When executing `ollama serve`, if you meet `llama runner process has terminated: exit status 0xc0000135` on Windows or you meet `ollama_llama_server: error while loading shared libraries: libmkl_core.so.2: cannot open shared object file` on Linux, this is most likely caused by the lack of sycl dependency. Please check:
 
 1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
 2. if you have executed `source /opt/intel/oneapi/setvars.sh` on Linux
