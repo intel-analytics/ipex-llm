@@ -16,8 +16,8 @@ It applies to Intel Core Ultra and Core 11 - 14 gen integrated GPUs (iGPUs), as 
 
 ### (Optional) Update GPU Driver
 
-> [!TIP]
-> It is recommended to update your GPU driver, if you have driver version lower than `31.0.101.5122`. Refer to [here](../Overview/install_gpu.md#prerequisites) for more information.
+> [!IMPORTANT]
+> If you have driver version lower than `31.0.101.5122`, it is required to update your GPU driver. Refer to [here](../Overview/install_gpu.md#prerequisites) for more information.
 
 Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
 
