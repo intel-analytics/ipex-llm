@@ -1,22 +1,3 @@
-FROM intelanalytics/ipex-llm-serving-xpu:latest as build
-
-ARG http_proxy
-ARG https_proxy
-
-ADD ./oneccl-binding.patch  /tmp/oneccl-binding.patch
-
-RUN cd /tmp/ && \
-    pip install --upgrade setuptools wheel twine && \
-    pip install "setuptools<70.0.0" && \
-    git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
-    cd torch-ccl && \
-    patch -p1 < /tmp/oneccl-binding.patch && \
-    git submodule sync && \
-    git submodule update --init --recursive && \
-    USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install sdist bdist_wheel && \
-    mv /tmp/torch-ccl/dist/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl /tmp/
-
-
 FROM intel/oneapi-basekit:2024.1.1-devel-ubuntu22.04
 
 ARG http_proxy
@@ -24,8 +5,8 @@ ARG https_proxy
 
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
-COPY --from=build /tmp/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl /tmp/
 ADD ./gradio_web_server.patch /tmp/gradio_web_server.patch
+ADD ./oneccl-binding.patch  /tmp/oneccl-binding.patch
 
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " | tee /etc/apt/sources.list.d/oneAPI.list && \
@@ -72,6 +53,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Download vLLM-Serving
     cp -r ./ipex-llm/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving 
 
+
 # Install Serving Dependencies
 # Install ipex-llm[serving] only will update ipex_llm source code without updating
 # bigdl-core-xe, which will lead to problems
@@ -113,6 +95,16 @@ RUN apt-get update && \
     # for gradio web UI
     pip install gradio && \
     # Install internal oneccl && \
+    cd /tmp/ && \
+    pip install --upgrade setuptools wheel twine && \
+    pip install "setuptools<70.0.0" && \
+    git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
+    cd torch-ccl && \
+    patch -p1 < /tmp/oneccl-binding.patch && \
+    git submodule sync && \
+    git submodule update --init --recursive && \
+    USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install sdist bdist_wheel && \
+    mv /tmp/torch-ccl/dist/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl /tmp/ && \
     cd /tmp/ && \
     wget https://sourceforge.net/projects/oneccl-wks/files/oneccl_wks_installer_2024.0.0.2.sh && \
     bash oneccl_wks_installer_2024.0.0.2.sh && \
