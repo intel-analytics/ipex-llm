@@ -1,5 +1,5 @@
 # Qwen2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct)as a reference InternLM model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) as reference Qwen2 models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
