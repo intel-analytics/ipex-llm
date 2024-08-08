@@ -24,7 +24,7 @@ ARG https_proxy
 
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
-COPY --from=build /tmp/oneccl_bind_pt-2.1.100+xpu-cp311-cp311-linux_x86_64.whl /tmp/
+COPY --from=build /tmp/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl /tmp/
 ADD ./gradio_web_server.patch /tmp/gradio_web_server.patch
 
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
