@@ -107,7 +107,7 @@ set SYCL_CACHE_PERSISTENT=1
 ### 4. Running examples
 
 ```bash
-python ./generate.py --adudio-file AUDIO_FILE
+python ./generate.py --audio-file AUDIO_FILE
 ```
 
 Arguments info:
