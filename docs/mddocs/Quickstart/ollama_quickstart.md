@@ -197,3 +197,10 @@ If you meet `llama runner process has terminated: exit status 0xc0000135` when e
 
 #### Program hang during initial model loading stage
 When launching `ollama serve` for the first time on Windows, it may get stuck during the model loading phase. If you notice that the program is hanging for a long time during the first run, you can manually input a space or other characters on the server side to ensure the program is running.
+
+#### How to distinguish the community version of Ollama from the ipex-llm version of Ollama
+In the server log of community version of Ollama, you may see `source=payload_common.go:139 msg="Dynamic LLM libraries [rocm_v60000 cpu_avx2 cuda_v11 cpu cpu_avx]"`.
+But in the server log of ipex-llm version of Ollama, you should only see `source=payload.go:44 msg="Dynamic LLM libraries [cpu cpu_avx cpu_avx2]"`.
+
+#### Ollama hang when multiple different questions is asked or context is long
+If you find ollama hang when multiple different questions is asked or context is long, and you see `update_slots : failed to free spaces in the KV cache` in the server log, this could be because that sometimes the LLM context is larger than the default `n_ctx` value, you may increase the `n_ctx` and try it again.
