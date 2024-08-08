@@ -215,9 +215,11 @@ def compress_kv(attn_config, key_states, query_states, value_states, attention_m
 
 
 class DynamicCompressCache(DynamicCache):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, quant_kv=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.real_kv_len = 0
+        self.quant_kv = quant_kv
+        self.append_kv_func = append_fp8_kv_cache if quant_kv else append_kv_cache
 
     def update_seen_tokens(self, layer_idx, q_len):
         if layer_idx == 0:
@@ -267,49 +269,61 @@ class DynamicCompressCache(DynamicCache):
             self.key_cache.append(key_states_compress)
             self.value_cache.append(value_states_compress)
 
-            k_cache_compressed, v_cache_compressed = init_kv_cache(
-                bsz, num_heads, head_dim,
-                0, key_states_compress.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                key_states.dtype, key_states.device
-            )
-            k_cache_compressed, v_cache_compressed = append_kv_cache(
+            if not self.quant_kv:
+                k_cache_compressed, v_cache_compressed = init_kv_cache(
+                    bsz, num_heads, head_dim,
+                    0, key_states_compress.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                    key_states.dtype, key_states.device
+                )
+            else:
+                k_cache_compressed, v_cache_compressed = init_fp8_kv_cache(
+                    bsz, num_heads, seq_len, head_dim,
+                    device=key_states.device,
+                )
+            k_cache_compressed, v_cache_compressed = self.append_kv_func(
                 k_cache_compressed, v_cache_compressed,
                 key_states_compress, value_states_compress)
             self.key_cache[layer_idx] = k_cache_compressed
             self.value_cache[layer_idx] = v_cache_compressed
 
             if key_states.stride(2) != head_dim:
-                k_cache, v_cache = init_kv_cache(
-                    bsz, num_heads, head_dim,
-                    0, key_states.size(2),
-                    key_states.dtype, key_states.device
-                )
-                k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
+                if not self.quant_kv:
+                    k_cache, v_cache = init_kv_cache(
+                        bsz, num_heads, head_dim,
+                        0, key_states.size(2),
+                        key_states.dtype, key_states.device
+                    )
+                else:
+                    k_cache, v_cache = init_fp8_kv_cache(
+                        bsz, num_heads, 0, head_dim, key_states.device
+                    )
+                k_cache, v_cache = self.append_kv_func(k_cache, v_cache,
+                                                       key_states, value_states)
                 return k_cache, v_cache
             else:
                 return key_states, value_states
         else:
             cache_k = self.key_cache[layer_idx]
             cache_v = self.value_cache[layer_idx]
-            if not enough_kv_room:
+            if not enough_kv_room and not self.quant_kv:
                 # allocate new
                 new_c_k, new_c_v = extend_kv_cache(bsz,
-                                                   num_heads,  # Support GQA
-                                                   head_dim,
-                                                   cache_k.size(2),
-                                                   cache_k.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                   dtype=cache_k.dtype,
-                                                   device=query_states.device)
+                                                num_heads,  # Support GQA
+                                                head_dim,
+                                                cache_k.size(2),
+                                                cache_k.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                                                dtype=cache_k.dtype,
+                                                device=query_states.device)
 
                 new_c_k[:] = cache_k
                 new_c_v[:] = cache_v
                 cache_k = new_c_k
                 cache_v = new_c_v
 
-            key_states, value_states = append_kv_cache(cache_k,
-                                                       cache_v,
-                                                       key_states,
-                                                       value_states)
+            key_states, value_states = self.append_kv_func(cache_k,
+                                                           cache_v,
+                                                           key_states,
+                                                           value_states)
 
             # update past_key_value
             self.key_cache[layer_idx] = key_states
