@@ -82,8 +82,9 @@ RUN apt-get update && \
     python -m pip install setuptools==69.5.1 numpy==1.26.4 && \
     # Install vLLM-v2 dependencies 
     git clone -b xiangyu_test_202411_0806 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    pip install -r /llm/vllm/requirements-common.txt && \
     pip install -r /llm/vllm/requirements-xpu.txt && \
-    pip install --no-deps xformers && \
+    pip install --no-deps xformers ray && \
     cd /llm/vllm && \
     VLLM_TARGET_DEVICE=xpu python setup.py install && \
     pip install outlines==0.0.34 --no-deps && \
