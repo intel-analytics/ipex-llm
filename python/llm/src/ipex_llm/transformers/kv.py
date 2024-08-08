@@ -340,7 +340,7 @@ class DynamicCompressCache(DynamicCache):
     
     @classmethod
     def from_legacy_cache(cls, past_key_values: Optional[Tuple[Tuple[torch.FloatTensor]]] = None,
-                          quantize_kv: Optional[bool] = None) -> "DynamicCache":
+                          quantize_kv: Optional[bool] = False) -> "DynamicCache":
         """Converts a cache in the legacy cache format into an equivalent `DynamicCache`."""
         cache = cls(quantize_kv)
         if past_key_values is not None:
