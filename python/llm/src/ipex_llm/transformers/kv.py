@@ -157,7 +157,7 @@ def compress_kv(attn_config, key_states, query_states, value_states, attention_m
     else:
         sliding_window_size = getattr(attn_config, "sliding_window", None)
         if sliding_window_size is not None and sliding_window_size <= 2500:
-            return key_states[:, :,-sliding_window_size:, :],\
+            return key_states[:, :, -sliding_window_size:, :], \
                 value_states[:, :, -sliding_window_size:, :]
         else:
             key_states_expand = repeat_kv(key_states, num_key_value_groups).to(key_states.device)
@@ -201,7 +201,7 @@ def compress_kv(attn_config, key_states, query_states, value_states, attention_m
             else:
                 invalidInputError(False, 'Pooling method not supported')
             indices = attn_cache.topk(attn_config.max_capacity_prompt - attn_config.window_size,
-                                    dim=-1).indices
+                                      dim=-1).indices
             indices = indices.unsqueeze(-1).expand(-1, -1, -1, head_dim)
             k_past_compress = key_states[:, :, :-attn_config.window_size, :]\
                 .gather(dim=2, index=indices)
