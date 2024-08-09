@@ -382,3 +382,16 @@ def check_hidden_size(qtype, hidden_size):
                         "required for fq6_k - using fallback quantization fp6.")
             return ggml_tensor_qtype["fp6"]
     return qtype
+
+
+# Arc platfrom does not support FP64,
+# Disable FP64 in DeepSpeedZeroOptimizer_Stage3's _constant_buffered_norm2  method
+# https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/runtime/zero/stage3.py#L1365
+def _constant_buffered_norm2(self, input, buffer_size=250000000):
+    norm = None
+    for part in input.view(-1).split(buffer_size):
+        if norm is None:
+            norm = part.data.norm(2)**2.0
+        else:
+            norm += part.data.norm(2)**2.0
+    return norm**0.5
