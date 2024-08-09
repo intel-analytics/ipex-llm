@@ -21,6 +21,7 @@
 #
 
 from typing import Callable, List, Optional, Tuple
+import os
 import torch
 import time
 import copy
@@ -54,6 +55,9 @@ def generate(
     **kwargs,
 ):
     lookahead = kwargs.pop("lookahead", None)
+    perf_mode = os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None)
+    if perf_mode == "1" and lookahead is None:
+        lookahead = 2 # default to 2 now
     if lookahead:
         from ipex_llm.transformers.convert import get_enable_ipex
         _enable_ipex = get_enable_ipex()
