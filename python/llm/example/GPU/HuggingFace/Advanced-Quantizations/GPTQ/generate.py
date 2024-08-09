@@ -30,7 +30,7 @@ LLAMA2_PROMPT_FORMAT = """### HUMAN:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="TheBloke/TinyLlama-1.1B-Chat-v1.0-GPTQ",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="TheBloke/Llama-2-7b-Chat-GPTQ",
                         help='The huggingface repo id'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
@@ -47,13 +47,10 @@ if __name__ == '__main__':
                                                  load_in_4bit=True,
                                                  torch_dtype=torch.float,
                                                  trust_remote_code=True,).to("xpu")
-    
+
     # Load tokenizer
-    if "qwen" in model_path.lower():
-        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    else:
-        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = LLAMA2_PROMPT_FORMAT.format(prompt=args.prompt)
