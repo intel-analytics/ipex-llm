@@ -260,7 +260,6 @@ def phi3_model_forward_wrapper(origin_model_forward):
         if use_cache:
             if use_compress_kv and not isinstance(past_key_values,
                                                   DynamicCompressCache):
-                # TODO: use quantize kv only support phi3 mini-4k, medium-4k
                 past_key_values = DynamicCompressCache.\
                     from_legacy_cache(past_key_values,
                                       quantize_kv=use_quantize_kv)
