@@ -37,41 +37,23 @@ def decoding_fast_path_qtype_check(proj):
     return qtype in [SYM_INT4, FP8E5, FP4]
 
 
-def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device, tranpose_value=False):
-    if not tranpose_value:
-        key_cache_storage = torch.zeros(batch_size, num_heads,
-                                        max_length, head_dim,
-                                        dtype=dtype, device=device)
-        value_cache_storage = torch.zeros(batch_size, num_heads,
-                                        max_length, head_dim,
-                                        dtype=dtype, device=device)
+def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
+    key_cache_storage = torch.zeros(batch_size, num_heads,
+                                    max_length, head_dim,
+                                    dtype=dtype, device=device)
+    value_cache_storage = torch.zeros(batch_size, num_heads,
+                                    max_length, head_dim,
+                                    dtype=dtype, device=device)
 
-        key_cache = key_cache_storage.as_strided((batch_size, num_heads,
+    key_cache = key_cache_storage.as_strided((batch_size, num_heads,
+                                            current_length, head_dim),
+                                            key_cache_storage.stride(),
+                                            storage_offset=0)
+    value_cache = value_cache_storage.as_strided((batch_size, num_heads,
                                                 current_length, head_dim),
-                                                key_cache_storage.stride(),
+                                                value_cache_storage.stride(),
                                                 storage_offset=0)
-        value_cache = value_cache_storage.as_strided((batch_size, num_heads,
-                                                    current_length, head_dim),
-                                                    value_cache_storage.stride(),
-                                                    storage_offset=0)
-        return key_cache, value_cache
-    else:
-        key_cache_storage = torch.zeros(batch_size, num_heads,
-                                        max_length, head_dim,
-                                        dtype=dtype, device=device)
-        value_cache_storage = torch.zeros(batch_size, num_heads,
-                                          head_dim, max_length,
-                                          dtype=dtype, device=device)
-
-        key_cache = key_cache_storage.as_strided((batch_size, num_heads,
-                                                current_length, head_dim),
-                                                key_cache_storage.stride(),
-                                                storage_offset=0)
-        value_cache = value_cache_storage.as_strided((batch_size, num_heads,
-                                                    head_dim, current_length),
-                                                    value_cache_storage.stride(),
-                                                    storage_offset=0)
-        return key_cache, value_cache.transpose(-1, -2)
+    return key_cache, value_cache
 
 
 def extend_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device):
@@ -81,35 +63,16 @@ def extend_kv_cache(batch_size, num_heads, head_dim, current_length, max_length,
     return init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, dtype, device)
 
 
-def append_kv_cache(cache_k, cache_v, key_states, value_states, transpose_value=False):
-    if not transpose_value:
-        new_size = (cache_k.size(0),
-                    cache_k.size(1),
-                    cache_k.size(2) + key_states.size(2),
-                    cache_k.size(3))
-        new_cache_k = cache_k.as_strided(new_size, cache_k.stride(), storage_offset=0)
-        new_cache_k[:, :, cache_k.size(2):cache_k.size(2) + key_states.size(2), :] = key_states
-        new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
-        new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + key_states.size(2), :] = value_states
-        return new_cache_k, new_cache_v
-    else:
-        new_size_key = (cache_k.size(0),
-                        cache_k.size(1),
-                        cache_k.size(2) + key_states.size(2),
-                        cache_k.size(3))
-        new_cache_k = cache_k.as_strided(new_size_key, cache_k.stride(), storage_offset=0)
-        new_cache_k[:, :, cache_k.size(2):cache_k.size(2) + key_states.size(2), :] = key_states
-
-        new_size_value = (cache_v.size(0),
-                          cache_v.size(1),
-                          cache_v.size(3),
-                          cache_v.size(2) + value_states.size(3),
-                          )
-        raw_cache_v = cache_v.transpose(-1, -2)
-        # assert raw_cache_v.is_contiguous(), f"raw_cache_v size is {raw_cache_v.shape}, stride is {raw_cache_v.stride()}"
-        new_cache_v = raw_cache_v.as_strided(new_size_value, raw_cache_v.stride(), storage_offset=0)
-        new_cache_v[:, :, :, raw_cache_v.size(3):raw_cache_v.size(3) + value_states.size(3)] = value_states
-        return new_cache_k, new_cache_v.transpose(-1, -2)
+def append_kv_cache(cache_k, cache_v, key_states, value_states):
+    new_size = (cache_k.size(0),
+                cache_k.size(1),
+                cache_k.size(2) + key_states.size(2),
+                cache_k.size(3))
+    new_cache_k = cache_k.as_strided(new_size, cache_k.stride(), storage_offset=0)
+    new_cache_k[:, :, cache_k.size(2):cache_k.size(2) + key_states.size(2), :] = key_states
+    new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
+    new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + key_states.size(2), :] = value_states
+    return new_cache_k, new_cache_v
 
 
 def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor) -> bool:

@@ -24,14 +24,14 @@ from transformers import AutoTokenizer
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for npu model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default=r'C:\Users\intel\models\Qwen2-7B-Instruct',
+    parser.add_argument('--repo-id-or-model-path', type=str, default="D:\llm-models\Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
-    parser.add_argument('--load_in_low_bit', type=str, default="sym_int4",
+    parser.add_argument('--load_in_low_bit', type=str, default="sym_int8",
                         help='Load in low bit to use')
 
     args = parser.parse_args()
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     print(model)
 
     with torch.inference_mode():
-        prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and "
+        prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         print("finish to load")
         print('input length:', len(input_ids[0]))

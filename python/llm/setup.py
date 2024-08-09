@@ -233,23 +233,23 @@ def setup_package():
     change_permission = True if platform_name == "Linux" else False
 
     # Delete legacy libs
-    # if os.path.exists(libs_dir):
-    #     print(f"Deleting existing libs_dir {libs_dir} ....")
-    #     shutil.rmtree(libs_dir)
-    # os.makedirs(libs_dir, exist_ok=True)
-    # open(os.path.join(libs_dir, "__init__.py"), 'w').close()
+    if os.path.exists(libs_dir):
+        print(f"Deleting existing libs_dir {libs_dir} ....")
+        shutil.rmtree(libs_dir)
+    os.makedirs(libs_dir, exist_ok=True)
+    open(os.path.join(libs_dir, "__init__.py"), 'w').close()
 
-    # # copy built files for github workflow
-    # for built_file in glob.glob(os.path.join(github_artifact_dir, '*')):
-    #     print(f'Copy workflow built file: {built_file}')
-    #     if change_permission:
-    #         os.chmod(built_file, 0o775)
-    #     shutil.copy(built_file, libs_dir)
+    # copy built files for github workflow
+    for built_file in glob.glob(os.path.join(github_artifact_dir, '*')):
+        print(f'Copy workflow built file: {built_file}')
+        if change_permission:
+            os.chmod(built_file, 0o775)
+        shutil.copy(built_file, libs_dir)
 
-    # lib_urls = obtain_lib_urls()
+    lib_urls = obtain_lib_urls()
 
-    # for url in lib_urls[platform_name]:
-    #     download_libs(url, change_permission=change_permission)
+    for url in lib_urls[platform_name]:
+        download_libs(url, change_permission=change_permission)
 
     # Check if all package files are ready
     for file in package_data[platform_name]:

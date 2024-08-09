@@ -101,9 +101,8 @@ class DynamicNormalCache(DynamicCache):
                 batch_size, num_heads, head_dim,
                 0, max_len,
                 key_states.dtype, key_states.device,
-                tranpose_value=transpose_value
             )
-            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states, transpose_value=transpose_value)
+            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
 
             self.key_cache[layer_idx] = k_cache
             self.value_cache[layer_idx] = v_cache
@@ -123,7 +122,7 @@ class DynamicNormalCache(DynamicCache):
                 new_v_cache[...] = v_cache[...]
                 k_cache = new_k_cache
                 v_cache = new_v_cache
-            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states, transpose_value=transpose_value)
+            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
             self.key_cache[layer_idx] = k_cache
             self.value_cache[layer_idx] = v_cache
 
