@@ -490,7 +490,7 @@ def should_use_compresskv(x: torch.Tensor, prompt_len: int):
     if use_compress_kv is None:
         return (
             get_xpu_device_type(x) == "mtl"
-            and prompt_len >= 2500
+            and prompt_len >= 1800
             and prompt_len <= 4500
         )
     else:
