@@ -307,13 +307,14 @@ class DynamicCompressCache(DynamicCache):
             cache_v = self.value_cache[layer_idx]
             if not enough_kv_room and not self.quant_kv:
                 # allocate new
-                new_c_k, new_c_v = extend_kv_cache(bsz,
-                                                num_heads,  # Support GQA
-                                                head_dim,
-                                                cache_k.size(2),
-                                                cache_k.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                dtype=cache_k.dtype,
-                                                device=query_states.device)
+                new_c_k, new_c_v = extend_kv_cache(
+                    bsz,
+                    num_heads,  # Support GQA
+                    head_dim,
+                    cache_k.size(2),
+                    cache_k.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                    dtype=cache_k.dtype,
+                    device=query_states.device)
 
                 new_c_k[:] = cache_k
                 new_c_v[:] = cache_v
@@ -337,7 +338,7 @@ class DynamicCompressCache(DynamicCache):
         if len(self.key_cache) <= layer_idx:
             return 0
         return self.real_kv_len
-    
+
     @classmethod
     def from_legacy_cache(cls, past_key_values: Optional[Tuple[Tuple[torch.FloatTensor]]] = None,
                           quantize_kv: Optional[bool] = False) -> "DynamicCache":
