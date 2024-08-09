@@ -31,6 +31,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import math
 import torch
 import warnings
@@ -40,11 +41,13 @@ from ipex_llm.transformers.models.utils import should_use_fuse_rope, rotate_half
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
 from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
-from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache
+from ipex_llm.transformers.models.utils import should_use_compresskv, is_enough_kv_cache_room_4_36
+from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache, DynamicCompressCache
 
 from typing import Optional, Tuple, List
 from transformers.models.phi.modeling_phi import repeat_kv
 from transformers.cache_utils import Cache
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids=None, unsqueeze_dim=1):
@@ -94,6 +97,9 @@ def attention_forward(
 
     bsz, q_len, _ = hidden_states.size()
 
+    # [CompressKV]
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
+
     qkv = self.qkv_proj(hidden_states)
     qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
     qkv = qkv.transpose(1, 2)
@@ -127,12 +133,26 @@ def attention_forward(
                                                         cos, sin, position_ids)
 
     if past_key_value is not None:
-        key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, None)
+        # [CompressKV]
+        if use_compresskv:
+            enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
+            key_states, value_states = past_key_value.update(
+                key_states, value_states, self.layer_idx,
+                query_states, attention_mask, self.num_key_value_groups,
+                self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
+        else:
+            key_states, value_states = past_key_value.update(key_states, value_states,
+                                                             self.layer_idx, None)
 
     if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
+        # [CompressKV]
+        if use_compresskv:
+            # print(attention_mask.shape)
+            context_len = key_states.size(2)
+            attention_mask = attention_mask[:, :, :, -context_len:]
         import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if isinstance(past_key_value,
+                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
         else:
@@ -148,7 +168,8 @@ def attention_forward(
     #         attn_output = xe_addons.sdp_causal(query_states, key_states,
     #                                            value_states, attention_mask)
     else:
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if isinstance(past_key_value,
+                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
         # repeat k/v heads if n_kv_heads < n_heads
@@ -235,10 +256,20 @@ def phi3_model_forward_wrapper(origin_model_forward):
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         input = input_ids if input_ids is not None else inputs_embeds
         use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input)
+        use_compress_kv = should_use_compresskv(input, input.shape[-1])
         if use_cache:
-            if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+            if use_compress_kv and not isinstance(past_key_values,
+                                                  DynamicCompressCache):
+                past_key_values = DynamicCompressCache.\
+                    from_legacy_cache(past_key_values,
+                                      quantize_kv=use_quantize_kv)
+            if use_quantize_kv and not isinstance(past_key_values,
+                                                  (DynamicFp8Cache, DynamicCompressCache)):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-            if not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
+            if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
+                                                                              (DynamicNormalCache,
+                                                                               DynamicCompressCache
+                                                                               )):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
         return origin_model_forward(
             self=self,
