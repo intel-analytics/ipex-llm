@@ -127,7 +127,8 @@ def minicpm_attention_forward_original(
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx,
+                                                  seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
@@ -408,7 +409,8 @@ def minicpm_attention_forward_quantized(
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx,
+                                                  seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
@@ -821,7 +823,8 @@ def minicpm_attention_forward_original_4_39(
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx,
+                                                  seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,

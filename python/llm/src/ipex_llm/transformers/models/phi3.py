@@ -135,7 +135,9 @@ def attention_forward(
     if past_key_value is not None:
         # [CompressKV]
         if use_compresskv:
-            enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
+            enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
+                                                          self.layer_idx,
+                                                          q_len)
             key_states, value_states = past_key_value.update(
                 key_states, value_states, self.layer_idx,
                 query_states, attention_mask, self.num_key_value_groups,

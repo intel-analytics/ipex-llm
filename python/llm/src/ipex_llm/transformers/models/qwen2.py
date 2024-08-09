@@ -440,7 +440,8 @@ def qwen2_attention_forward(
     if past_key_value is not None:
         # [CompressKV]
         if use_compresskv:
-            enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
+            enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx,
+                                                          q_len)
             key_states, value_states = past_key_value.update(
                 key_states, value_states, self.layer_idx,
                 query_states, attention_mask, self.num_key_value_groups,
@@ -471,6 +472,8 @@ def qwen2_attention_forward(
                            is_causal=True).to(hidden_states.dtype)
     elif use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
         import xe_addons
+        if use_compresskv:
+            attention_mask = None
         if isinstance(past_key_value, DynamicFp8Cache):
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
