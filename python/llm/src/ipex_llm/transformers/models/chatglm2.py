@@ -287,7 +287,9 @@ def chatglm2_attention_forward(
     else:
         from transformers.configuration_utils import PretrainedConfig
         self.config = self.config if hasattr(self, "config") else PretrainedConfig()
-        enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_number - 1)
+        enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
+                                                      self.layer_number - 1,
+                                                      q_len)
         key_states, value_states = past_key_value.update(
             key_states, value_states, self.layer_number - 1,
             query_states, attention_mask, n_head // n_kv_head,
