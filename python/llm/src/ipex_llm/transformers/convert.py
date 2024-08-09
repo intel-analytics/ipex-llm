@@ -1675,12 +1675,9 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.phi3 import phi3_rms_norm_forward
         convert_forward(model, module.Phi3RMSNorm, phi3_rms_norm_forward)
         if model.config.model_type == "phi3":
-            from ipex_llm.transformers.models.phi3 import phi3_model_forward_wrapper,\
-                phi3_prepare_inputs_for_generation
+            from ipex_llm.transformers.models.phi3 import phi3_model_forward_wrapper
             model_forward = phi3_model_forward_wrapper(module.Phi3Model.forward)
             convert_forward(model, module.Phi3Model, model_forward)
-            module.Phi3ForCausalLM.prepare_inputs_for_generation =\
-                phi3_prepare_inputs_for_generation
         else:
             from ipex_llm.transformers.models.phi3 import phi3v_model_forward_wrapper
             model_forward = phi3v_model_forward_wrapper(module.Phi3VModel.forward)
