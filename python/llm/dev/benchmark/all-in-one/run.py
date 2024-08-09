@@ -67,8 +67,8 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         torch.xpu.empty_cache()
         actual_out_len = output_ids.shape[1] - actual_in_len
         if i >= warm_up:
-            if lookahead:
-                result[in_out].append([model.first_token_time, (end - st - model.first_token_time)/(model.n_token_generated-1), 0,
+            if lookahead or os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None) == "1":
+                result[in_out].append([model.first_token_time, (end - st - model.first_token_time)/(model.n_token_generated - 1), 0,
                                        actual_in_len, actual_out_len, load_time, 0])
             else:
                 result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
@@ -510,7 +510,7 @@ def run_transformer_int4_gpu(repo_id,
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
 
-    if not lookahead:
+    if not lookahead and os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None) != "1":
         model = BenchmarkWrapper(model)
 
     result = {}
