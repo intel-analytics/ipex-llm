@@ -120,6 +120,10 @@ class PPMLContext {
       write(boosterDF, cryptoMode, primaryKeyName).text(path)
   }
 
+  def setHadoopConf(key: String, value: String): this.type = {
+    sparkSession.sparkContext.hadoopConfiguration.set(key, value)
+  }
+
   /**
    * Interface for loading data in external storage to Dataset.
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
