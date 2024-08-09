@@ -151,7 +151,8 @@ def attention_forward(
             context_len = key_states.size(2)
             attention_mask = attention_mask[:, :, :, -context_len:]
         import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
+        if isinstance(past_key_value,
+                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
         else:
@@ -167,7 +168,8 @@ def attention_forward(
     #         attn_output = xe_addons.sdp_causal(query_states, key_states,
     #                                            value_states, attention_mask)
     else:
-        if isinstance(past_key_value, DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
+        if isinstance(past_key_value,
+                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
         # repeat k/v heads if n_kv_heads < n_heads
