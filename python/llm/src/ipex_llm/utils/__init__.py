@@ -18,3 +18,13 @@
 # physically located elsewhere.
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
+import transformers
+
+trans_version = transformers.__version__
+
+if trans_version >= "4.43.0":
+    from .benchmark_util_4_43 import BenchmarkWrapper
+elif trans_version >= "4.42.0":
+    from .benchmark_util_4_42 import BenchmarkWrapper
+else:
+    from .benchmark_util_4_29 import BenchmarkWrapper

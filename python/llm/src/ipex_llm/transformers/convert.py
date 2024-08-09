@@ -744,9 +744,19 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "internlmxcomposer2":
         from ipex_llm.transformers.models.internlm import pre_process_attn_and_mlp
         model.apply(pre_process_attn_and_mlp)
+    if model.config.model_type == "internvl_chat":
+        _optimize_pre(model.language_model, qtype=qtype)
     if model.config.model_type == "gemma2":
         from ipex_llm.transformers.models.gemma2 import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "llama":
+        from ipex_llm.transformers.models.llama import merge_qkv
+        model.apply(merge_qkv)
+    if model.config.model_type == "minicpmv":
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            model.llm.config.model_type = "qwen2"
+            _optimize_pre(model.llm, qtype=qtype)
+            model.llm.config.model_type = "minicpmv"
 
     return model
 
@@ -992,6 +1002,10 @@ def _optimize_post(model, lightweight_bmm=False):
                         model,
                         transformers.models.llama.modeling_llama.LlamaAttention,
                         llama_attention_forward_4_41)
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaSdpaAttention,
+                        llama_attention_forward_4_41)
                 else:
                     from ipex_llm.transformers.models.llama import llama_model_forward_4_38
                     convert_forward(
@@ -1002,6 +1016,10 @@ def _optimize_post(model, lightweight_bmm=False):
                         model,
                         transformers.models.llama.modeling_llama.LlamaAttention,
                         llama_attention_forward_4_38)
+                    convert_forward(
+                        model,
+                        transformers.models.llama.modeling_llama.LlamaSdpaAttention,
+                        llama_attention_forward_4_38)
             else:
                 from ipex_llm.transformers.models.llama import llama_model_forward_4_36
                 convert_forward(
@@ -1011,6 +1029,10 @@ def _optimize_post(model, lightweight_bmm=False):
                 convert_forward(
                     model,
                     transformers.models.llama.modeling_llama.LlamaAttention,
+                    llama_attention_forward_4_38)
+                convert_forward(
+                    model,
+                    transformers.models.llama.modeling_llama.LlamaSdpaAttention,
                     llama_attention_forward_4_38)
         else:
             # transformers version between 4.31.0 - 4.35.2
@@ -1261,6 +1283,19 @@ def _optimize_post(model, lightweight_bmm=False):
         )
         convert_forward(model, module.InternLM2Model, internlm_xcomposser2_model_forward)
         model.chat = MethodType(internlm_xcomposser2_chat, model)
+    elif model.config.model_type == "internvl_chat":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.internvl import internvl_chat
+        from ipex_llm.transformers.models.internvl import internvl_batch_chat
+        model.get_conv_template = module.get_conv_template
+        model.chat = MethodType(internvl_chat, model)
+        model.batch_chat = MethodType(internvl_batch_chat, model)
+        if model.vision_model.__class__.__name__ == "InternVisionModel":
+            from ipex_llm.transformers.models.internvl import _get_pos_embed
+            vision_embedding = model.vision_model.embeddings
+            vision_embedding._get_pos_embed = MethodType(_get_pos_embed, vision_embedding)
+        _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
@@ -1722,5 +1757,15 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.MiniCPMModel,
                         minicpm_model_forward)
+    elif model.config.model_type == "minicpmv":
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            model.llm.config.model_type = "qwen2"
+            _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+            model.llm.config.model_type = "minicpmv"
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.minicpmv import minicpmv_generate_wrapper
+        minicpmv_generate = minicpmv_generate_wrapper(module.MiniCPMV.generate)
+        model.generate = MethodType(minicpmv_generate, model)
 
     return model

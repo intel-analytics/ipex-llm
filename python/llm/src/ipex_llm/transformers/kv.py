@@ -146,13 +146,13 @@ def compress_kv(attn_config, key_states, query_states, value_states, attention_m
     if not hasattr(attn_config, 'window_size'):
         attn_config.window_size = 32
     if not hasattr(attn_config, 'max_capacity_prompt'):
-        attn_config.max_capacity_prompt = 512
+        attn_config.max_capacity_prompt = 1024
     if not hasattr(attn_config, 'kernel_size'):
-        attn_config.kernel_size = 5
+        attn_config.kernel_size = 7
     if not hasattr(attn_config, 'pooling'):
-        attn_config.pooling = 'avgpool'
+        attn_config.pooling = 'maxpool'
     bsz, num_heads, q_len, head_dim = query_states.shape
-    if q_len < attn_config.max_capacity_prompt:
+    if q_len <= attn_config.max_capacity_prompt:
         return key_states, value_states
     else:
         key_states_expand = repeat_kv(key_states, num_key_value_groups).to(key_states.device)

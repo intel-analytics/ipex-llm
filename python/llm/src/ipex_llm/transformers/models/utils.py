@@ -377,6 +377,8 @@ def use_decoding_fast_path(proj,
                            enough_kv_room,
                            bs,
                            qtype_check=decoding_fast_path_qtype_check):
+    if proj is None:
+        return False
     device = get_xpu_device_type(proj.weight)
     if not qtype_check(proj):
         return False
@@ -419,6 +421,8 @@ def use_fused_layer_norm(x: torch.Tensor, training: bool):
 
 def fp16_fusion_check(proj, x, training):
     # only use fp16 fusion on PVC inference
+    if proj is None:
+        return False
     if not hasattr(proj, "qtype"):
         return False
     if proj.qtype != ggml_tensor_qtype["fp16"]:
@@ -481,6 +485,21 @@ def update_past_key_value(past_key_value, key_states, value_states,
     return key_states, value_states
 
 
-def should_use_compresskv(x: torch.Tensor):
+def should_use_compresskv(x: torch.Tensor, prompt_len: int):
     use_compress_kv = os.environ.get("IPEX_LLM_COMPRESS_KV_CACHE", None)
-    return x.device.type == 'xpu' and use_compress_kv == "1"
+    if use_compress_kv is None:
+        return (
+            get_xpu_device_type(x) == "mtl"
+            and prompt_len >= 2500
+            and prompt_len <= 4500
+        )
+    else:
+        return x.device.type == 'xpu' and use_compress_kv == "1"
+
+
+def get_q_proj_or_qkv_proj(self):
+    if hasattr(self, "q_proj"):
+        proj = self.q_proj
+    elif hasattr(self, "qkv_proj"):
+        proj = self.qkv_proj
+    return proj
