@@ -84,7 +84,7 @@ RUN apt-get update && \
     git clone -b xiangyu_test_202411_0806 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
     pip install -r /llm/vllm/requirements-common.txt && \
     pip install -r /llm/vllm/requirements-xpu.txt && \
-    pip install --no-deps xformers ray && \
+    pip install --no-deps xformers && \
     cd /llm/vllm && \
     VLLM_TARGET_DEVICE=xpu python setup.py install && \
     pip install outlines==0.0.34 --no-deps && \
@@ -112,7 +112,9 @@ RUN apt-get update && \
     pip uninstall -y oneccl_bind_pt && \
     pip install /tmp/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl && \ 
     rm /tmp/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl && \
-    patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
+    patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
+    pip install -r /llm/vllm/requirements-common.txt && \
+    pip install ray
 
 COPY ./vllm_online_benchmark.py        /llm/
 COPY ./vllm_offline_inference.py       /llm/
