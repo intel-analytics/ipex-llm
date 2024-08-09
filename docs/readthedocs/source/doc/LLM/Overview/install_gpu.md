@@ -196,13 +196,14 @@ IPEX-LLM GPU support on Linux has been verified on:
       To enable IPEX-LLM for Intel GPUs with PyTorch 2.1, here are several prerequisite steps for tools installation and environment preparation:
 
 
-      * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. We highly recommend installing the latest version of intel-i915-dkms using apt.
+      * Step 1: Install Intel GPU Driver and Compute Runtime
 
         .. seealso::
 
-           Please refer to our `driver installation <https://dgpu-docs.intel.com/driver/installation.html>`_ for general purpose GPU capabilities.
+           For client GPUs, such as the Intel® Arc™ A-series, drivers are already included in Kernel 6.2+; you only need to install the compute runtime. For instructions, see our [Client GPU Installation Guide](https://dgpu-docs.intel.com/driver/client/overview.html). For data center GPUs, including Intel® Data Center GPU Max Series and Intel® Data Center GPU Flex Series, the out-of-tree drivers are the only drivers validated by Intel, please refer to our [Installation for Data Center GPU](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
 
-           See `release page <https://dgpu-docs.intel.com/releases/index.html>`_ for latest version.
+           See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
+
 
         .. note::
 
@@ -334,13 +335,13 @@ IPEX-LLM GPU support on Linux has been verified on:
       To enable IPEX-LLM for Intel GPUs with PyTorch 2.0, here're several prerequisite steps for tools installation and environment preparation:
 
 
-      * Step 1: Install Intel GPU Driver version >= stable_775_20_20231219. Highly recommend installing the latest version of intel-i915-dkms using apt.
+      * Step 1: Install Intel GPU Driver and Compute Runtime
 
         .. seealso::
 
-           Please refer to our `driver installation <https://dgpu-docs.intel.com/driver/installation.html>`_ for general purpose GPU capabilities.
+           For client GPUs, such as the Intel® Arc™ A-series, drivers are already included in Kernel 6.2+; you only need to install the compute runtime. For instructions, see our [Client GPU Installation Guide](https://dgpu-docs.intel.com/driver/client/overview.html). For data center GPUs, including Intel® Data Center GPU Max Series and Intel® Data Center GPU Flex Series, the out-of-tree drivers are the only drivers validated by Intel, please refer to our [Installation for Data Center GPU](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
 
-           See `release page <https://dgpu-docs.intel.com/releases/index.html>`_ for latest version.
+           See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
 
       * Step 2: Download and install `Intel® oneAPI Base Toolkit <https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html>`_ with version 2023.2. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
@@ -626,7 +627,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
    For **the first time** that **each model** runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ```
 
-### Known issues
+### Known issues (When Using Out-of-Tree Driver)
 
 #### 1. Potential suboptimal performance with Linux kernel 6.2.0
 

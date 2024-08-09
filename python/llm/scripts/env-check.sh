@@ -159,6 +159,7 @@ check_driver_package()
   echo "-----------------------------------------------------------------"
   echo "Driver related package version:"
   dpkg -l | grep 'intel-i915-dkms\|intel-fw-gpu\|intel-level-zero-gpu\|level-zero-dev'
+  modinfo i915 | grep filename
 }
 
 check_igpu()

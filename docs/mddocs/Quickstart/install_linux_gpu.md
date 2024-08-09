@@ -30,17 +30,12 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
 
-* Install drivers
+* Install Compute Runtime
 
     ```bash
     sudo apt-get update
-    sudo apt-get -y install \
-        gawk \
-        dkms \
-        linux-headers-$(uname -r) \
-        libc6-dev
 
-    sudo apt-get install -y gawk libc6-dev udev\
+    sudo apt-get install -y udev\
         intel-opencl-icd intel-level-zero-gpu level-zero \
         intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
         libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri \
@@ -49,8 +44,6 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     
     sudo reboot
     ```
-
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/i915.png" width=100%; />
 
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/gawk.png" width=100%; />
 
@@ -78,17 +71,12 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
 
-* Install drivers
+* Install Compute Runtime
 
     ```bash
     sudo apt-get update
-    sudo apt-get -y install \
-        gawk \
-        dkms \
-        linux-headers-$(uname -r) \
-        libc6-dev
 
-    sudo apt-get install -y gawk libc6-dev udev\
+    sudo apt-get install -y udev\
         intel-opencl-icd intel-level-zero-gpu level-zero \
         intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
         libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri \
