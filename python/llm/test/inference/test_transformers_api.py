@@ -152,20 +152,21 @@ def test_optimize_model(Model, Tokenizer, model_path, prompt):
     tokenizer = Tokenizer.from_pretrained(model_path, trust_remote_code=True)
     input_ids = tokenizer.encode(prompt, return_tensors="pt")
 
-    model = Model.from_pretrained(model_path,
-                                load_in_4bit=True,
-                                optimize_model=False,
-                                trust_remote_code=True)
-    logits_base_model = (model(input_ids)).logits
+    with torch.inference_mode():
+        model = Model.from_pretrained(model_path,
+                                      load_in_4bit=True,
+                                      optimize_model=False,
+                                      trust_remote_code=True)
+        logits_base_model = (model(input_ids)).logits
 
-    model = Model.from_pretrained(model_path,
-                                load_in_4bit=True,
-                                optimize_model=True,
-                                trust_remote_code=True)
-    logits_optimized_model = (model(input_ids)).logits
-    diff = abs(logits_base_model - logits_optimized_model).flatten()
+        model = Model.from_pretrained(model_path,
+                                      load_in_4bit=True,
+                                      optimize_model=True,
+                                      trust_remote_code=True)
+        logits_optimized_model = (model(input_ids)).logits
+        diff = abs(logits_base_model - logits_optimized_model).flatten()
 
-    assert any(diff) is False
+        assert any(diff) is False
 
 
 if __name__ == '__main__':

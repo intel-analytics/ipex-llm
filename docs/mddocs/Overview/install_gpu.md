@@ -14,7 +14,7 @@ To apply Intel GPU acceleration, please first verify your GPU driver version.
 > [!NOTE]
 > The GPU driver version of your device can be checked in the "Task Manager" -> GPU 0 (or GPU 1, etc.) -> Driver version.
 
-If you have driver version lower than `31.0.101.5122`, it is recommended to [**update your GPU driver to the latest**](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html).
+If you have driver version lower than `31.0.101.5122`, it is required to [**update your GPU driver to the latest**](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html).
 
 <!-- Intel® oneAPI Base Toolkit 2024.0 installation methods:
 
