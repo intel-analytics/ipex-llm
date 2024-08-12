@@ -62,7 +62,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         end = time.perf_counter()
         output_ids = output_ids.cpu()
         print("model generate cost: " + str(end - st))
-        output = tokenizer.batch_decode(output_ids[:, actual_in_len:])
+        output = tokenizer.batch_decode(output_ids)
         print(output[0])
         torch.xpu.empty_cache()
         actual_out_len = output_ids.shape[1] - actual_in_len
@@ -580,15 +580,16 @@ def transformers_int4_npu_win(repo_id,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
-        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto').eval()
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                          torch_dtype='auto', attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True).eval()
+                                                     use_cache=True, attn_implementation="eager").eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True).eval()
+                                                     use_cache=True, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     load_time = end - st
@@ -1997,8 +1998,8 @@ if __name__ == '__main__':
                         model_id_input_batch_size = model_id_input + ':' + str(batch_size)
                         if model_id_input in excludes or model_id_input_batch_size in excludes:
                             in_out_pairs.remove(in_out)
-                # if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
-                lookahead = True
+                if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
+                    lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
