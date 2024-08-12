@@ -76,8 +76,8 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
 
 
 def get_continuation_input_str():
-    # all use 8192.txt for prompt preparation for now
-    return open(f"prompt/continuation/8192.txt", 'r').read()
+    # all use 8192.txt for prompt preparation for now; and keep 'utf-8' as encoding mode
+    return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
 
 
 def preprocess_prompt(tokenizer, in_len, task):
