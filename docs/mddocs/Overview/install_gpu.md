@@ -171,7 +171,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 
       > **Tip**:
       >
-      > Please refer to our [driver installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
+      > For client GPUs, such as the Intel® Arc™ A-series, please refer to [Client GPU Installation Guide](https://dgpu-docs.intel.com/driver/client/overview.html). For data center GPUs, including Intel® Data Center GPU Max Series and Intel® Data Center GPU Flex Series, please refer to our [Installation for Data Center GPU](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
       >
       > See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
 
@@ -311,7 +311,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 
       > **Tip**:
       >
-      >   Please refer to our [driver installation](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
+      >   For client GPUs, such as the Intel® Arc™ A-series, please refer to [Client GPU Installation Guide](https://dgpu-docs.intel.com/driver/client/overview.html). For data center GPUs, including Intel® Data Center GPU Max Series and Intel® Data Center GPU Flex Series, please refer to our [Installation for Data Center GPU](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
       >
       >   See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
 
@@ -623,3 +623,9 @@ The reason for such errors is that oneAPI has not been initialized properly befo
 * For oneAPI installed using APT or Offline Installer, make sure you execute `setvars.sh` of oneAPI Base Toolkit before running IPEX-LLM.
 * For PIP-installed oneAPI, activate your working environment and run ``echo $LD_LIBRARY_PATH`` to check if the installation path is properly configured for the environment. If the output does not contain oneAPI path (e.g. ``~/intel/oneapi/lib``), check [Prerequisites](#prerequisites-1) to re-install oneAPI with PIP installer.
 * Make sure you install matching versions of ipex-llm/pytorch/IPEX and oneAPI Base Toolkit. IPEX-LLM with PyTorch 2.1 should be used with oneAPI Base Toolkit version 2024.0. IPEX-LLM with PyTorch 2.0 should be used with oneAPI Base Toolkit version 2023.2.
+
+#### 2. `core dump` when running with GPU
+If encountered random  `core dump` when running with GPU, please remove out of tree driver.
+```
+sudo apt purge -y  intel-i915-dkms  intel-fw-gpu
+```
