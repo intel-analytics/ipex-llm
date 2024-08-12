@@ -42,7 +42,8 @@ import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import SILU
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
-    restore_fp8_kv_cache, use_quantize_kv_cache, should_use_compresskv
+    restore_fp8_kv_cache, use_quantize_kv_cache, should_use_compresskv, \
+    get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
@@ -1547,9 +1548,10 @@ def llama_attention_forward_4_41_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
+        # [CompressKV]
         if use_compresskv:
-            # [CompressKV] set attention_mask = None
-            new_attention_mask = None
+            new_attention_mask = get_compresskv_attn_mask(key_states,
+                                                          new_attention_mask)
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
@@ -2111,9 +2113,10 @@ def llama_attention_forward_4_38_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
+        # [CompressKV]
         if use_compresskv:
-            # [CompressKV] set attention_mask = None
-            new_attention_mask = None
+            new_attention_mask = get_compresskv_attn_mask(key_states,
+                                                          new_attention_mask)
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
         attn_output = attn_output.view(query_states.shape)

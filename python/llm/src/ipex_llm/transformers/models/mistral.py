@@ -46,7 +46,8 @@ from transformers.models.mistral.modeling_mistral import MistralModel
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
-    restore_fp8_kv_cache, use_quantize_kv_cache, should_use_compresskv
+    restore_fp8_kv_cache, use_quantize_kv_cache, should_use_compresskv, \
+    get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
     apply_rotary_pos_emb_no_cache_xpu
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
@@ -1097,9 +1098,9 @@ def mistral_attention_forward_4_36_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
-        # [CompressKV] set attention_mask = None
+        # [CompressKV]
         if use_compresskv:
-            attention_mask = None
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
@@ -1348,9 +1349,9 @@ def mistral_attention_forward_4_39_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
-        # [CompressKV] set attention_mask = None
+        # [CompressKV]
         if use_compresskv:
-            attention_mask = None
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None

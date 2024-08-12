@@ -48,7 +48,7 @@ from torch.nn.functional import scaled_dot_product_attention as sdpa
 from ipex_llm.transformers.models.utils import SILU, mlp_fusion_check
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache, \
-    should_use_compresskv, is_enough_kv_cache_room_4_36
+    should_use_compresskv, is_enough_kv_cache_room_4_36, get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_causal
 from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache, DynamicCompressCache
 from ipex_llm.utils.common import invalidInputError
@@ -473,7 +473,7 @@ def qwen2_attention_forward(
     elif use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
         import xe_addons
         if use_compresskv:
-            attention_mask = None
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         if isinstance(past_key_value, DynamicFp8Cache):
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
