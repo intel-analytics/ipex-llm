@@ -19,7 +19,6 @@ import time
 import argparse
 
 from transformers import AutoTokenizer
-from ipex_llm import optimize_model
 import numpy as np
 
 
@@ -36,7 +35,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    
+
     from ipex_llm.transformers import AutoModelForCausalLM
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -45,7 +44,7 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    model = model.to("xpu")
+    model = model.half().to("xpu")
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
