@@ -208,8 +208,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                        device=None, convert_shape_only=False,
                        imatrix: torch.Tensor=None,
                        in_features: int=None,
-                       enable_scale_search: bool=False,
-                       enable_deepspeed_zero3: bool=False):
+                       enable_scale_search: bool=False):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
 
@@ -230,16 +229,12 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
     else:
-        if enable_deepspeed_zero3:
-            # Deepspeed zero3 requires unified dtype,
-            # thus here uses bfloat16 consistent to other layers
-            # dst_size above is computed based on uint8, and for bfloat16,
-            # buffer size should be half
-            dst_tensor = torch.empty(dst_size // 2, dtype=torch.bfloat16,
-                                     device=device)
-        else:
-            dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
-                                     device=device)
+        # Deepspeed zero3 requires unified dtype,
+        # thus here uses bfloat16 consistent to other layers
+        # dst_size above is computed based on uint8, and for bfloat16,
+        # buffer size should be half
+        dst_tensor = torch.empty(dst_size // 2, dtype=torch.bfloat16,
+                                 device=device)
 
     if not convert_shape_only and device != 'meta':
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
@@ -268,14 +263,11 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
 
 
 def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int):
-    enable_deepspeed_zero3 = (os.getenv("IPEX_LLM_ENABLE_DEEPSPEED_ZERO3", "0") == "1")
-
-    if not enable_deepspeed_zero3:
-        invalidInputError(tensor.dtype == torch.uint8,
-                          "Input tensor must be uint8")
+    invalidInputError(tensor.dtype == torch.bfloat16,
+                      "Input tensor must be bfloat16")
 
     invalidInputError(tensor.device == torch.device('cpu'),
-                      "Input tensor must be uint8")
+                      "Input tensor must be on cpu")
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
@@ -391,8 +383,7 @@ class FP4Params(torch.nn.Parameter):
                 imatrix=None,
                 in_features=None,
                 enable_xetla=False,
-                enable_scale_search=False,
-                enable_deepspeed_zero3=False):
+                enable_scale_search=False):
         if data is None:
             data = torch.empty(0)
 
@@ -406,7 +397,6 @@ class FP4Params(torch.nn.Parameter):
         self.in_features = in_features
         self.enable_xetla = enable_xetla
         self.enable_scale_search = enable_scale_search
-        self.enable_deepspeed_zero3 = enable_deepspeed_zero3
         return self
 
     def ggml_mse(self, w, ggml_qtype, device):
@@ -465,8 +455,7 @@ class FP4Params(torch.nn.Parameter):
                                                  convert_shape_only=self.convert_shape_only,
                                                  imatrix=self.imatrix,
                                                  in_features=self.in_features,
-                                                 enable_scale_search=self.enable_scale_search,
-                                                 enable_deepspeed_zero3=self.enable_deepspeed_zero3)
+                                                 enable_scale_search=self.enable_scale_search)
                 self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
@@ -594,7 +583,7 @@ class MatMulLowBit(torch.autograd.Function):
     def forward(ctx, A, weight, input_seq_size):
         ctx.is_empty = False
         import xe_linear
-        if hasattr(weight, "enable_deepspeed_zero3") and weight.enable_deepspeed_zero3:
+        if weight.qtype == NF4:
             result = xe_linear.forward_new(A,
                                            weight.data.view(torch.uint8),
                                            weight.qtype,
@@ -620,7 +609,7 @@ class MatMulLowBit(torch.autograd.Function):
         if req_gradA:
             if torch.xpu.is_autocast_xpu_enabled():
                 grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
-            if hasattr(weight, "enable_deepspeed_zero3") and weight.enable_deepspeed_zero3:
+            if weight.qtype == NF4:
                 dequant_weight = xe_linear.dequant(A,
                                                    weight.data.view(torch.uint8),
                                                    weight.qtype)
@@ -664,15 +653,13 @@ class LowBitLinear(nn.Linear):
     def __init__(self, input_features, output_features, qtype, bias=True,
                  conver_to_half=True, mp_group=None, enable_xetla=False,
                  optimize_lm_head=False, act_order=False,
-                 enable_scale_search=False,
-                 enable_deepspeed_zero3=False):
+                 enable_scale_search=False):
         super().__init__(input_features, output_features, bias)
         self.weight = FP4Params(self.weight.data,
                                 requires_grad=False,
                                 quantized=False, _shape=None, qtype=qtype,
                                 enable_xetla=enable_xetla,
-                                enable_scale_search=enable_scale_search,
-                                enable_deepspeed_zero3=enable_deepspeed_zero3)
+                                enable_scale_search=enable_scale_search)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
@@ -692,7 +679,6 @@ class LowBitLinear(nn.Linear):
         self.is_lm_head = self.in_len * self.out_len >= 32000 * 4096 and self.bias is None
         self.low_memory_mode = self.is_lm_head
         self.act_order = act_order
-        self.enable_deepspeed_zero3 = enable_deepspeed_zero3
         if act_order:
             self.register_buffer(
                 "g_idx_map",
@@ -763,8 +749,7 @@ class LowBitLinear(nn.Linear):
                 if x_2d.requires_grad:
                     result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
                 else:
-                    if hasattr(self.weight, "enable_deepspeed_zero3") \
-                       and self.weight.enable_deepspeed_zero3:
+                    if self.weight.qtype == NF4:
                         result = xe_linear.forward_new(x_2d,
                                                        self.weight.data.view(torch.uint8),
                                                        self.weight.qtype,
