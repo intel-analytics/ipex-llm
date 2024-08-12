@@ -29,11 +29,11 @@ In the example [generate.py](./generate.py), we show a basic use case for a Llam
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.10 libuv
+conda create -n llm python=3.10
 conda activate llm
 
-# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+# install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all]
 
 # below command will install intel_npu_acceleration_library
 pip install intel-npu-acceleration-library==1.3

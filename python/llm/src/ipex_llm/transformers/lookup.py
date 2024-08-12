@@ -149,7 +149,7 @@ class PromptLookupCandidateGenerator():
                            input_ids: torch.LongTensor):
         for ngram_size in range(self.max_matching_ngram_size, 0, -1):
             # Create sliding windows of size ngram_size
-            windows = input_ids.unfold(dimension=1, size=ngram_size, step=1)
+            windows = input_ids.cpu().unfold(dimension=1, size=ngram_size, step=1)
             for idx in range(windows.size(1)):
                 window = tensor2key(windows[0, idx])
                 if window not in self.lookup_table:
