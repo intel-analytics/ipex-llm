@@ -35,7 +35,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo apt install intel-i915-dkms intel-fw-gpu
 
     # Install Compute Runtime
-    sudo apt-get install -y udev\
+    sudo apt-get install -y udev \
         intel-opencl-icd intel-level-zero-gpu level-zero \
         intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
         libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri \
@@ -87,7 +87,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     sudo apt install intel-i915-dkms intel-fw-gpu
 
     # Install Compute Runtime
-    sudo apt-get install -y udev\
+    sudo apt-get install -y udev \
         intel-opencl-icd intel-level-zero-gpu level-zero \
         intel-media-va-driver-non-free libmfx1 libmfxgen1 libvpl2 \
         libegl-mesa0 libegl1-mesa libegl1-mesa-dev libgbm1 libgl1-mesa-dev libgl1-mesa-dri \
