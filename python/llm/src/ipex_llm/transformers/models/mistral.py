@@ -1083,9 +1083,10 @@ def mistral_attention_forward_4_36_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
-        # [CompressKV] set attention_mask = None
-        if use_compresskv:
-            attention_mask = None
+        # [CompressKV]
+        if use_compresskv and attention_mask is not None:
+            context_length = key_states.shape[2]
+            attention_mask = attention_mask[:, :, :, -context_length:]
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
@@ -1331,9 +1332,10 @@ def mistral_attention_forward_4_39_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
-        # [CompressKV] set attention_mask = None
-        if use_compresskv:
-            attention_mask = None
+        # [CompressKV]
+        if use_compresskv and attention_mask is not None:
+            context_length = key_states.shape[2]
+            attention_mask = attention_mask[:, :, :, -context_length:]
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None

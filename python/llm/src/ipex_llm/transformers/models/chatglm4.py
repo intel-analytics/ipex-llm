@@ -79,7 +79,10 @@ def chatglm4_model_forward(
         if past_key_values is None:
             position_ids = torch.arange(seq_length, dtype=torch.int64, device=inputs_embeds.device)
         else:
-            kv_length = past_key_values[0][0].size(2)
+            if isinstance(past_key_values, DynamicCompressCache):
+                kv_length = past_key_values.get_seq_length()
+            else:
+                kv_length = past_key_values[0][0].size(2)
             position_ids = torch.arange(kv_length, kv_length + seq_length,
                                         dtype=torch.int64, device=inputs_embeds.device)
         position_ids = position_ids.repeat(batch_size, 1)
