@@ -23,7 +23,7 @@ Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-w
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
 Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
 
-## Example: Predict Tokens using `generate()` API
+## Example 1: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
 ### 1. Install
 #### 1.1 Installation on Windows
@@ -80,4 +80,63 @@ Inference time: xxxx s
 <s> Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun. But her parents were always telling her to stay at home and be careful. They were worried about her safety, and they didn't want her to
 --------------------------------------------------------------------------------
 done
+```
+
+## Example 2: Predict Tokens using `generate()` API using multi processes
+In the example [llama2.py](./llama2.py), we show an experimental support for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimization and fused decoderlayer optimization on Intel NPUs.
+### 1. Install
+#### 1.1 Installation on Windows
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.10
+conda activate llm
+
+# install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all]
+pip install --pre --upgrade bigdl-core-npu
+
+pip install transformers==4.40
+```
+
+### 2. Runtime Configurations
+For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
+#### 2.1 Configurations for Windows
+
+> [!NOTE]
+> For optimal performance, we recommend running code in `conhost` rather than Windows Terminal:
+> - Press <kbd>Win</kbd>+<kbd>R</kbd> and input `conhost`, then press Enter to launch `conhost`.
+> - Run following command to use conda in `conhost`. Replace `<your conda install location>` with your conda install location.
+> ```
+> call <your conda install location>\Scripts\activate
+> ```
+
+**Following envrionment variables are required**:
+
+```cmd
+set BIGDL_USE_NPU=1
+```
+
+### 3. Running examples
+
+```
+torchrun --standalone --nnodes=1 --nproc-per-node=2  llama2.py
+```
+
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (i.e. `meta-llama/Llama-2-7b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun'`.
+- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+
+#### Sample Output
+#### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
+
+```log
+First token cost: xxxx s, rest tokens cost average: xxxx s
+Inference time: xxxx s
+-------------------- Prompt --------------------
+Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun
+-------------------- Output --------------------
+<s> Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun and exciting experiences.
+
+One day, she decided to go on a journey to find a magical land that was said to be full of wonders
 ```
