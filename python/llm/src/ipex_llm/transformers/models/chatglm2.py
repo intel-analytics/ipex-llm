@@ -306,6 +306,9 @@ def chatglm2_attention_forward(
             attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_states, self.training):
         import xe_addons
+        if use_compresskv and attention_mask is not None:
+            context_len = key_states.size(2)
+            attention_mask = attention_mask[:, :, :, -context_len:]
         if use_quantize_kv:
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states,
                                                    attention_mask)

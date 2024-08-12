@@ -1547,9 +1547,10 @@ def llama_attention_forward_4_41_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
-        if use_compresskv:
-            # [CompressKV] set attention_mask = None
-            new_attention_mask = None
+        # [CompressKV]
+        if use_compresskv and new_attention_mask is not None:
+            context_len = key_states.size(2)
+            new_attention_mask = new_attention_mask[:, :, :, -context_len:]
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
@@ -2111,9 +2112,10 @@ def llama_attention_forward_4_38_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
-        if use_compresskv:
-            # [CompressKV] set attention_mask = None
-            new_attention_mask = None
+        # [CompressKV]
+        if use_compresskv and new_attention_mask is not None:
+            context_len = key_states.size(2)
+            new_attention_mask = new_attention_mask[:, :, :, -context_len:]
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
