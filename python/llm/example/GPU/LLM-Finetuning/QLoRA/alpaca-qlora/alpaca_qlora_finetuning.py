@@ -169,8 +169,7 @@ def train(
             optimize_model=False,
             torch_dtype=torch.bfloat16,
             modules_to_not_convert=["lm_head"],
-            trust_remote_code=True,
-            enable_deepspeed_zero3="zero3" in deepspeed
+            trust_remote_code=True
         )
     else:
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
@@ -184,8 +183,7 @@ def train(
         model = AutoModelForCausalLM.from_pretrained(base_model,
                                                      torch_dtype=torch.bfloat16,
                                                      quantization_config=bnb_config,
-                                                     trust_remote_code=True,
-                                                     enable_deepspeed_zero3="zero3" in deepspeed)
+                                                     trust_remote_code=True)
         # below is also supported
         # Load the base model from a directory or the HF Hub to 4-bit format
         # model = AutoModelForCausalLM.from_pretrained(
