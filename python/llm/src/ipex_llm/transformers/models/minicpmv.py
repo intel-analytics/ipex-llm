@@ -16,7 +16,43 @@
 
 
 import torch
+from typing import Optional
+from ipex_llm.transformers.models.common import merge_qkv_base
 from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
+
+
+def merge_qkv(module: torch.nn.Module):
+    return merge_qkv_base(module, "SiglipAttention")
+
+
+def siglip_attention_forward(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    output_attentions: Optional[bool] = False,
+):
+    bsz, q_len, _ = hidden_states.size()
+
+    qkv = self.qkv_proj(hidden_states)
+    qkv = qkv.view(bsz, q_len, self.num_heads * 3, self.head_dim)
+    qkv = qkv.transpose(1, 2)
+    query_states, key_states, value_states = qkv.chunk(3, dim=1)
+
+    attn_weights = torch.matmul(query_states * self.scale, key_states.transpose(2, 3))
+    if attention_mask is not None:
+        attn_weights = attn_weights + attention_mask
+
+    # upcast attention to fp32
+    attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
+    attn_weights = torch.nn.functional.dropout(attn_weights, p=self.dropout, training=self.training)
+    attn_output = torch.matmul(attn_weights, value_states)
+
+    attn_output = attn_output.transpose(1, 2).contiguous()
+    attn_output = attn_output.reshape(bsz, q_len, self.embed_dim)
+
+    attn_output = self.out_proj(attn_output)
+
+    return attn_output, attn_weights
 
 
 def patched_repetition_penalty_call(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):

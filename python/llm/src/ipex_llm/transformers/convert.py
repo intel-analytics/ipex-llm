@@ -748,6 +748,8 @@ def _optimize_pre(model, qtype=None):
         from ipex_llm.transformers.models.llama import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "minicpmv":
+        from ipex_llm.transformers.models.minicpmv import merge_qkv
+        model.apply(merge_qkv)
         if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
             model.llm.config.model_type = "qwen2"
             _optimize_pre(model.llm, qtype=qtype)
@@ -1762,5 +1764,10 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.minicpmv import minicpmv_generate_wrapper
         minicpmv_generate = minicpmv_generate_wrapper(module.MiniCPMV.generate)
         model.generate = MethodType(minicpmv_generate, model)
+
+        modeling_module_name = model.vpm.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
+        convert_forward(model, module.SiglipAttention, siglip_attention_forward)
 
     return model
