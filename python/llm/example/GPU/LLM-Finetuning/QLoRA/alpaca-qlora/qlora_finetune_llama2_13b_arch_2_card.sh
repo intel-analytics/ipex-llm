@@ -29,7 +29,6 @@ export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export TORCH_LLM_ALLREDUCE=0 # Different from PVC
 export DS_SKIP_CUDA_CHECK=1
-export IPEX_LLM_ENABLE_DEEPSPEED_ZERO3=1
 
 mpirun -n $NUM_GPUS \
           python -u ./alpaca_qlora_finetuning.py \
