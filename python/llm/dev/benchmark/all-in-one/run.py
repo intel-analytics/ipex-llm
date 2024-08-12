@@ -77,14 +77,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
 
 def get_continuation_input_str(in_len):
     # in_len.txt maybe shorter than we need,
-    # use much longer context to make sure input length
-    test_length = min(in_len*2, 8192)
-    while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
-        test_length = test_length * 2
-    # Force the test_length to be 8192, such that we can use 8192.txt
-    if test_length > 8192:
-        test_length = 8192
-    return open(f"prompt/continuation/{test_length}.txt", 'r').read()
+    return open(f"prompt/continuation/8192.txt", 'r').read()
 
 
 def preprocess_prompt(tokenizer, in_len, task):
