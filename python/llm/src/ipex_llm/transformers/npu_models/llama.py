@@ -232,7 +232,7 @@ def llama_fused_model_forward(
 
     if position_ids is None:
         position_ids = cache_position.unsqueeze(0)
-    
+
     causal_mask = self._update_causal_mask(attention_mask, inputs_embeds,
                                            cache_position, past_seen_tokens)
 
@@ -247,21 +247,17 @@ def llama_fused_model_forward(
     seq_len = hidden_states.size(1)
 
     if seq_len == 1:
-        # assert hasattr(self, "multi_decoder")
         # multi_decoder = self.layers[(self.layer_end + 1) % num_layers]
         layer_outputs = self.multi_decoder(hidden_states,
-                    attention_mask=causal_mask,
-                    position_ids=position_ids,
-                    past_key_value=past_key_values,
-                    output_attentions=output_attentions,
-                    use_cache=use_cache,
-                    cache_position=cache_position,)
+                                           attention_mask=causal_mask,
+                                           position_ids=position_ids,
+                                           past_key_value=past_key_values,
+                                           output_attentions=output_attentions,
+                                           use_cache=use_cache,
+                                           cache_position=cache_position,)
         hidden_states = layer_outputs[0]
 
-        assert use_cache
         next_decoder_cache = layer_outputs[1]
-
-        assert not output_attentions
     else:
         for decoder_layer in self.layers:
             if output_hidden_states:

@@ -25,8 +25,8 @@ def init_fused_kv_cache(batch_size, num_heads, head_dim, current_length, max_len
                                     max_length, head_dim,
                                     dtype=dtype, device=device)
     value_cache_storage = torch.zeros(batch_size, num_heads,
-                                    max_length, head_dim,
-                                    dtype=dtype, device=device)
+                                      max_length, head_dim,
+                                      dtype=dtype, device=device)
 
     key_cache = key_cache_storage.as_strided((batch_size, num_heads,
                                              current_length, head_dim),
@@ -57,9 +57,9 @@ class DynamicFusedNormalCache(DynamicCache):
     KV_ALLOC_BLOCK_LENGTH = 256
 
     def __init__(self) -> None:
-        self.key_cache: Dict[int, torch.Tensor] = {} 
+        self.key_cache: Dict[int, torch.Tensor] = {}
         self.value_cache: Dict[int, torch.Tensor] = {}
-        self._seen_tokens = 0  # Used in `generate` to keep tally of how many tokens the cache has seen
+        self._seen_tokens = 0  # Used in `generate` to keep how many tokens the cache has seen
 
     def update(
         self,
@@ -85,7 +85,8 @@ class DynamicFusedNormalCache(DynamicCache):
         # Update the cache
         # if len(self.key_cache) <= layer_idx:
         if layer_idx not in self.key_cache:
-            max_len = max_seq_length if max_seq_length is not None else key_states.size(2) + self.KV_ALLOC_BLOCK_LENGTH
+            max_len = max_seq_length if max_seq_length is not None else key_states.size(2) + \
+                self.KV_ALLOC_BLOCK_LENGTH
             k_cache, v_cache = init_fused_kv_cache(
                 batch_size, num_heads, head_dim,
                 0, max_len,
@@ -107,7 +108,8 @@ class DynamicFusedNormalCache(DynamicCache):
         return self.key_cache[layer_idx], self.value_cache[layer_idx]
 
     def get_seq_length(self, layer_idx: Optional[int] = 0) -> int:
-        """Returns the sequence length of the cached states. A layer index can be optionally passed."""
+        """Returns the sequence length of the cached states.
+        A layer index can be optionally passed."""
 
         for idx, layer in self.key_cache.items():
             return layer.shape[-2]

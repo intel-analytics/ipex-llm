@@ -276,7 +276,7 @@ def pipeline_parallel_generate(self,
     bs = inputs_tensor.shape[0]
     if model_kwargs.get("attention_mask", None) is None:
         model_kwargs["attention_mask"] = self._prepare_attention_mask_for_generation(
-                    inputs_tensor, generation_config.pad_token_id, generation_config.eos_token_id)
+            inputs_tensor, generation_config.pad_token_id, generation_config.eos_token_id)
     if self.config.is_encoder_decoder:
         input_ids, model_kwargs = self._prepare_decoder_input_ids_for_generation(
             batch_size=bs,
@@ -289,7 +289,7 @@ def pipeline_parallel_generate(self,
     else:
         input_ids = inputs_tensor if model_input_name == "input_ids" \
             else model_kwargs.pop("input_ids")
-    
+
     local_rank = dist.get_rank()
     pre_rank = (local_rank - 1) % self.pipeline_parallel_stages
     next_rank = (local_rank + 1) % self.pipeline_parallel_stages
@@ -325,7 +325,7 @@ def pipeline_parallel_generate(self,
 
         if _input_ids is None:
             _input_ids = input_ids
-        
+
         model_inputs = self.prepare_inputs_for_generation(output_ids, **model_kwargs)
 
         tic = time.time()
@@ -360,8 +360,8 @@ def pipeline_parallel_generate(self,
         output_ids = torch.cat([output_ids, next_ids], dim=-1)
 
         model_kwargs = self._update_model_kwargs_for_generation(
-                outputs, model_kwargs, is_encoder_decoder=self.config.is_encoder_decoder
-            )
+            outputs, model_kwargs, is_encoder_decoder=self.config.is_encoder_decoder
+        )
 
         # finished sentences should have their next token be a padding token
         next_ids = next_ids.squeeze()
@@ -602,7 +602,7 @@ def glm4_conditional_generation_forward_lowmem(
     hidden_states = transformer_outputs[0]
     if return_last_logit:
         hidden_states = hidden_states[:, -1:]
-    
+
     device = hidden_states.device
     # ipex-llm change starts
     if device.type == "xpu":
