@@ -497,6 +497,13 @@ def should_use_compresskv(x: torch.Tensor, prompt_len: int):
         return x.device.type == 'xpu' and use_compress_kv == "1"
 
 
+def get_compresskv_attn_mask(key_states: torch.Tensor,
+                             attention_mask: torch.Tensor):
+    if attention_mask is not None:
+        attention_mask = attention_mask[:, :, :, -key_states.size(2):]
+    return attention_mask
+
+
 def get_q_proj_or_qkv_proj(self):
     if hasattr(self, "q_proj"):
         proj = self.q_proj

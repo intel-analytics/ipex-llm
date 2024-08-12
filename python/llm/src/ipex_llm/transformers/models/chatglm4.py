@@ -21,7 +21,8 @@ import torch
 from typing import Optional, Tuple, Union
 from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past_key_value
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, \
-    use_sdp_causal, should_use_compresskv, is_enough_kv_cache_room_4_36
+    use_sdp_causal, should_use_compresskv, is_enough_kv_cache_room_4_36, \
+    get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.chatglm2 import repeat_kv
 from ipex_llm.transformers.kv import DynamicCompressCache
@@ -235,9 +236,8 @@ def chatglm4_attention_forward(
             attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_states, self.training):
         import xe_addons
-        if use_compresskv and attention_mask is not None:
-            context_len = key_states.size(2)
-            attention_mask = attention_mask[:, :, :, -context_len:]
+        if use_compresskv:
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         if use_quantize_kv:
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states,
                                                    attention_mask)
