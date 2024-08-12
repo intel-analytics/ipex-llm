@@ -63,7 +63,8 @@ def replace_with_QuantizedLinear(layer, qtype, device):
                (layer.in_features == 18944 and layer.out_features == 3584):
                 qtype = "sym_int8_rtn"
                 iqtype = ggml_tensor_qtype[qtype]
-        qweights, scale = ggml_convert_qtype(layer.weight.data, iqtype, device=device)
+        qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
+                                             iqtype, device=device)
         return QuantizedLinear(qweights, scale, layer.bias)
 
 
@@ -77,10 +78,10 @@ def convert_forward(m, target_m, new_forward):
 
 def optimize_llm(model: torch.nn.Module):
     if model.config.model_type == "llama":
-        from ipex_llm.transformers.npu_models.llama import merge_qkv
-        from ipex_llm.transformers.npu_models.llama import merge_mlp
-        model.apply(merge_qkv)
-        model.apply(merge_mlp)
+        # from ipex_llm.transformers.npu_models.llama import merge_qkv
+        # from ipex_llm.transformers.npu_models.llama import merge_mlp
+        # model.apply(merge_qkv)
+        # model.apply(merge_mlp)
 
         from ipex_llm.transformers.npu_models.llama import llama_model_forward
         from ipex_llm.transformers.npu_models.llama import llama_attention_forward
@@ -89,8 +90,8 @@ def optimize_llm(model: torch.nn.Module):
         from transformers.models.llama.modeling_llama import LlamaAttention
         from transformers.models.llama.modeling_llama import LlamaMLP
         convert_forward(model, LlamaModel, llama_model_forward)
-        convert_forward(model, LlamaAttention, llama_attention_forward)
-        convert_forward(model, LlamaMLP, llama_mlp_forward)
+        # convert_forward(model, LlamaAttention, llama_attention_forward)
+        # convert_forward(model, LlamaMLP, llama_mlp_forward)
 
     elif model.config.model_type == "mistral":
         from ipex_llm.transformers.npu_models.mistral import merge_qkv

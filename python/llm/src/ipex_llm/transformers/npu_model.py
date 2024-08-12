@@ -84,7 +84,7 @@ class _BaseAutoModelClass:
             warnings.warn("`device_map` will be ignored")
         kwargs['device_map'] = 'cpu'
 
-        if kwargs.get('torch_dtype', None) not in [None, 'auto', torch.float]:
+        if kwargs.get('torch_dtype', None) not in [None, 'auto', torch.float, torch.float16]:
             warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
         kwargs['torch_dtype'] = torch.float
 
@@ -114,7 +114,7 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "modules_to_not_convert")
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
-        ignore_argument(kwargs, "pipeline_parallel_stages")
+        pipeline_parallel_stages = kwargs.pop("pipeline_parallel_stages", 1)
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -131,13 +131,51 @@ class _BaseAutoModelClass:
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
 
+        if pipeline_parallel_stages > 1:
+            invalidInputError(torch.distributed.get_world_size() == pipeline_parallel_stages,
+                              "Please make sure world size is same as `pipeline_parallel_stages`")
+            kwargs['torch_dtype'] = torch.float16
+            from .npu_models.pipeline_parallel import pipeline_parallel, pipeline_parallel_generate
+            model = pipeline_parallel(model, pipeline_parallel_stages,
+                                      kwargs["torch_dtype"], device="cpu")
+
+            # add pipeline_parallel_generate to pretrained model dynamically
+            model.pipeline_parallel_generate = types.MethodType(pipeline_parallel_generate,
+                                                                model)
+
         from intel_npu_acceleration_library.compiler import create_npu_kernels
         with torch.no_grad():
             optimize_llm(model)
-            cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
-            create_npu_kernels(model)
+            if pipeline_parallel_stages == 1:
+                cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
+                create_npu_kernels(model)
+                model = model.eval()
+            else:
+                cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
+                create_npu_kernels(model.model)
+                model = model.eval()
+                model.model.embed_tokens.to(torch.float32)
+                model.model.norm.to(torch.float32)
+                model.lm_head.to(torch.float32)
 
-        model = model.eval()
+                from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
+                    ggml_tensor_qtype, FP4Params
+
+                if isinstance(model.lm_head, torch.nn.Linear):
+                    new_linear = LowBitLinear(
+                                    model.lm_head.in_features,
+                                    model.lm_head.out_features,
+                                    ggml_tensor_qtype["sym_int4"],
+                                    False
+                                )
+                    paramsLowBit = FP4Params(data=model.lm_head.weight.data,
+                                        requires_grad=False,
+                                        quantized=False,
+                                        _shape=None,
+                                        qtype=ggml_tensor_qtype["sym_int4"],
+                                        in_features=model.lm_head.in_features).to("cpu")
+                    new_linear._parameters['weight'] = paramsLowBit
+                    model.lm_head = new_linear
 
         logger.info(f"Finish to convert model")
 
