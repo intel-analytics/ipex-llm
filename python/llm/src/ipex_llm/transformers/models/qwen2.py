@@ -473,7 +473,9 @@ def qwen2_attention_forward(
     elif use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
         import xe_addons
         if use_compresskv:
-            attention_mask = None
+            if attention_mask is not None:
+                context_len = key_states.size(2)
+                attention_mask = attention_mask[:, :, :, -context_len:]
         if isinstance(past_key_value, DynamicFp8Cache):
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)

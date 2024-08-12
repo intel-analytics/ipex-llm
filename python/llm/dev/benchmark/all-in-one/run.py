@@ -62,7 +62,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         end = time.perf_counter()
         output_ids = output_ids.cpu()
         print("model generate cost: " + str(end - st))
-        output = tokenizer.batch_decode(output_ids)
+        output = tokenizer.batch_decode(output_ids[:, actual_in_len:])
         print(output[0])
         torch.xpu.empty_cache()
         actual_out_len = output_ids.shape[1] - actual_in_len
@@ -1997,8 +1997,8 @@ if __name__ == '__main__':
                         model_id_input_batch_size = model_id_input + ':' + str(batch_size)
                         if model_id_input in excludes or model_id_input_batch_size in excludes:
                             in_out_pairs.remove(in_out)
-                if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
-                    lookahead = True
+                # if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
+                lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
