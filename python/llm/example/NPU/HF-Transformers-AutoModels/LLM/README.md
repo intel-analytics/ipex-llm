@@ -29,7 +29,7 @@ In the example [generate.py](./generate.py), we show a basic use case for a Llam
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.10 libuv
+conda create -n llm python=3.10
 conda activate llm
 
 # install ipex-llm with 'all' option
