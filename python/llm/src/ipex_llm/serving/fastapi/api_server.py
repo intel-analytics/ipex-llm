@@ -275,11 +275,11 @@ def get_prompt(messages) -> str:
         if len(messages) <= 1:
             history = []
         else:
-            history = [msg.model_dump() for msg in messages[:-1]]
+            history = [msg for msg in messages[:-1]]
         history.append({"role": "user", "content": query})
         inputs = tokenizer.apply_chat_template(history, add_generation_prompt=True, tokenize=False,
                                                return_tensors="pt", return_dict=False)
-        return inputs
+        return inputs, []
     else:
         prompt = ""
         image_list = []
