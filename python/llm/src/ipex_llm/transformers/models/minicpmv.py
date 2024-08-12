@@ -22,7 +22,7 @@ from transformers.generation.logits_process import RepetitionPenaltyLogitsProces
 def patched_repetition_penalty_call(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
     if scores.device.type == "xpu":
         import xe_addons
-        xe_addons.repeatition_penalty_logits_process_inplaced(scores, input_ids, self.penalty)
+        xe_addons.repetition_penalty_logits_process_inplaced(scores, input_ids, self.penalty)
     else:
         score = torch.gather(scores, 1, input_ids)
         score = torch.where(score < 0, score * self.penalty, score / self.penalty)
