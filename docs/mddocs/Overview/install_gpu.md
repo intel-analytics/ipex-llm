@@ -626,3 +626,6 @@ The reason for such errors is that oneAPI has not been initialized properly befo
 
 #### 2. `core dump` when running with GPU
 If encountered random  `core dump` when running with GPU, please remove out of tree driver.
+```
+sudo apt purge -y  intel-i915-dkms  intel-fw-gpu
+```
