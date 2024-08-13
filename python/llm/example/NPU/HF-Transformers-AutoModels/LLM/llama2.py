@@ -739,24 +739,8 @@ if __name__ == "__main__":
         my_size = dist.get_world_size()
         logger.info(f"rank: {my_rank}, size: {my_size}")
 
-        if my_rank == 0:
-            device_map = {"model.layers.{i}": "cpu" for i in range(16)}
-            device_map.update({"model.layers.{i}": "meta" for i in range(16, 32)})
-            device_map["model.embed_tokens"] = "cpu"
-            device_map["model.norm"] = "meta"
-            device_map["lm_head"] = "meta"
-
-            model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, attn_implementation="eager",
-                                                         load_in_low_bit="sym_int4", pipeline_parallel_stages=2)
-
-        if my_rank == 1:
-            device_map = {"model.layers.{i}": "meta" for i in range(16)}
-            device_map.update({"model.layers.{i}": "cpu" for i in range(16, 32)})
-            device_map["model.embed_tokens"] = "meta"
-            device_map["model.norm"] = "cpu"
-            device_map["lm_head"] = "cpu"
-            model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, attn_implementation="eager",
-                                                         load_in_low_bit="sym_int4", pipeline_parallel_stages=2)
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, attn_implementation="eager",
+                                                     load_in_low_bit="sym_int4", pipeline_parallel_stages=2)
 
         if my_rank == 0:
             print(model)
