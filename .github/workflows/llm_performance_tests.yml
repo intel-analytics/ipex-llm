@@ -714,6 +714,33 @@ jobs:
 
           call conda deactivate
 
+      - name: Prepare igpu perf test for transformers 4.43 (32-32 int4+fp16)
+        shell: bash
+        run: |
+          sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/32-32_int4_fp16_443.yaml
+
+      - name: Test on igpu for transformers 4.43 (32-32 int4+fp16)
+        shell: cmd
+        run: |
+          call conda activate igpu-perf
+          pip install transformers==4.43.1
+          pip install trl
+
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
+
+          cd python\llm\dev\benchmark\all-in-one
+          move ..\..\..\test\benchmark\igpu-perf\32-32_int4_fp16_443.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
+          python run.py >> %CSV_SAVE_PATH%\32-32_int4_fp16\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 if %ERRORLEVEL% neq -1073740791 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          pip uninstall trl
+          call conda deactivate
+
       - name: Concat csv and generate html (32-32 int4+fp16)
         shell: cmd
         run: |
@@ -737,7 +764,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/32-32/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16.yaml
 
       - name: Test on igpu (1024-128 int4+fp16)
@@ -811,6 +838,33 @@ jobs:
 
           call conda deactivate
 
+      - name: Prepare igpu perf test for transformers 4.43 (1024-128 int4+fp16)
+        shell: bash
+        run: |
+          sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_443.yaml
+
+      - name: Test on igpu for transformers 4.43 (1024-128 int4+fp16)
+        shell: cmd
+        run: |
+          call conda activate igpu-perf
+          pip install transformers==4.43.1
+          pip install trl
+
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
+
+          cd python\llm\dev\benchmark\all-in-one
+          move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_443.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
+          python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          pip uninstall trl
+          call conda deactivate
+
       - name: Concat csv and generate html (1024-128 int4+fp16)
         shell: cmd
         run: |
@@ -833,7 +887,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/1024-128/2048-256/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16.yaml
 
       - name: Test on igpu (2048-256 int4+fp16)
@@ -907,6 +961,33 @@ jobs:
 
           call conda deactivate
 
+      - name: Prepare igpu perf test for transformers 4.43 (2048-256 int4+fp16)
+        shell: bash
+        run: |
+          sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16_443.yaml
+
+      - name: Test on igpu for transformers 4.43 (2048-256 int4+fp16)
+        shell: cmd
+        run: |
+          call conda activate igpu-perf
+          pip install transformers==4.43.1
+          pip install trl
+
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
+
+          cd python\llm\dev\benchmark\all-in-one
+          move ..\..\..\test\benchmark\igpu-perf\2048-256_int4_fp16_443.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
+          python run.py >> %CSV_SAVE_PATH%\2048-256_int4_fp16\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          pip uninstall trl
+          call conda deactivate
+
       - name: Concat csv and generate html (2048-256 int4+fp16)
         shell: cmd
         run: |
@@ -929,7 +1010,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/2048-256/3072-384/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
       
       - name: Test on igpu (3072-384 int4+fp16)
@@ -1003,6 +1084,33 @@ jobs:
 
           call conda deactivate
 
+      - name: Prepare igpu perf test for transformers 4.43 (3072-384 int4+fp16)
+        shell: bash
+        run: |
+          sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16_443.yaml
+
+      - name: Test on igpu for transformers 4.43 (3072-384 int4+fp16)
+        shell: cmd
+        run: |
+          call conda activate igpu-perf
+          pip install transformers==4.43.1
+          pip install trl
+
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
+
+          cd python\llm\dev\benchmark\all-in-one
+          move ..\..\..\test\benchmark\igpu-perf\3072-384_int4_fp16_438.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
+          python run.py >> %CSV_SAVE_PATH%\3072-384_int4_fp16\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          pip uninstall trl
+          call conda deactivate
+
       - name: Concat csv and generate html (3072-384 int4+fp16)
         shell: cmd
         run: |
@@ -1025,7 +1133,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/3072-384/4096-512/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
       
       - name: Test on igpu (4096-512 int4+fp16)
@@ -1098,6 +1206,36 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           call conda deactivate
+
+      # NOTE: Gemma2 not working for 4096-512. 
+      #       When it works, uncomment this section and remember to change "'s/{today}_test3/{today}_test1/g'" in next section.
+      
+      #- name: Prepare igpu perf test for transformers 4.43 (4096-512 int4+fp16)
+      #  shell: bash
+      #  run: |
+      #    sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
+      #    sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16_443.yaml
+
+      #- name: Test on igpu for transformers 4.43 (4096-512 int4+fp16)
+      #  shell: cmd
+      #  run: |
+      #    call conda activate igpu-perf
+      #    pip install transformers==4.43.1
+      #    pip install trl
+      #
+      #    set SYCL_CACHE_PERSISTENT=1
+      #    set BIGDL_LLM_XMX_DISABLED=1
+      #
+      #    cd python\llm\dev\benchmark\all-in-one
+      #    move ..\..\..\test\benchmark\igpu-perf\4096-512_int4_fp16_443.yaml config.yaml
+      #    set PYTHONIOENCODING=utf-8
+      #    python run.py >> %CSV_SAVE_PATH%\4096-512_int4_fp16\log\%LOG_FILE% 2>&1
+      #    if %ERRORLEVEL% neq 0 (exit /b 1)
+      #    python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
+      #    if %ERRORLEVEL% neq 0 (exit /b 1)
+      #    
+      #    pip uninstall trl
+      #    call conda deactivate
 
       - name: Concat csv and generate html (4096-512 int4+fp16)
         shell: cmd
@@ -1195,6 +1333,33 @@ jobs:
 
           call conda deactivate
 
+      - name: Prepare igpu perf test for transformers 4.43 (load_low_bit 1024-128 int4+fp16)
+        shell: bash
+        run: |
+          sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_loadlowbit_443.yaml
+
+      - name: Test on igpu for transformers 4.43 (load_low_bit 1024-128 int4+fp16)
+        shell: cmd
+        run: |
+          call conda activate igpu-perf
+          pip install transformers==4.43.1
+          pip install trl
+
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
+
+          cd python\llm\dev\benchmark\all-in-one
+          move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_loadlowbit_443.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
+          python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16_loadlowbit\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          pip uninstall trl
+          call conda deactivate
+
       - name: Concat csv and generate html (load_low_bit 1024-128 int4+fp16)
         shell: cmd
         run: |
@@ -1216,7 +1381,7 @@ jobs:
       - name: Prepare igpu perf test (1024-128)
         shell: bash
         run: |
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128.yaml
 
       - name: Test on igpu (1024-128)
@@ -1288,6 +1453,33 @@ jobs:
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
+          call conda deactivate
+
+      - name: Prepare igpu perf test for transformers 4.43 (1024-128)
+        shell: bash
+        run: |
+          sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_443.yaml
+
+      - name: Test on igpu for transformers 4.43 (1024-128)
+        shell: cmd
+        run: |
+          call conda activate igpu-perf
+          pip install transformers==4.43.1
+          pip install trl
+
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
+
+          cd python\llm\dev\benchmark\all-in-one
+          move ..\..\..\test\benchmark\igpu-perf\1024-128_443.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
+          python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          pip uninstall trl
           call conda deactivate
 
       - name: Concat csv and generate html (1024-128)
