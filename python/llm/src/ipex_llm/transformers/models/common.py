@@ -37,7 +37,10 @@ def merge_linear(linears: List[torch.nn.Linear]) -> torch.nn.Linear:
 
 
 def merge_qkv_base(module: torch.nn.Module, attention_class):
-    if isinstance(module, attention_class):
+    if (
+        isinstance(attention_class, str) and module.__class__.__name__ == attention_class
+        or not isinstance(attention_class, str) and isinstance(module, attention_class)
+    ):
         qkv_proj = merge_linear([
             module.q_proj,
             module.k_proj,
