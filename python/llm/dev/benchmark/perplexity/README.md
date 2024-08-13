@@ -3,7 +3,10 @@ Perplexity (PPL) is one of the most common metrics for evaluating language model
 
 ## Run on Wikitext
 
-Setting the --dataset parameter to 'path=wikitext,name=wikitext-2-raw-v1' can fetch the wikitext dataset. The parameter --max_length is used to limit the maximum length of the model to avoid Out-Of-Memory. Here is a specific example to run on wikitext.
+```bash
+pip install datasets
+```
+
 ```bash
 
 python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B --dataset path=wikitext,name=wikitext-2-raw-v1 --precision sym_int4 --device xpu --stride 512 --max_length 4096
