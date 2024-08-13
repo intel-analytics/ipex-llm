@@ -213,7 +213,7 @@ def mistral_model_forward_4_36(
                                  self.config.num_attention_heads//self.config.num_key_value_heads):
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input_ids, input_ids.shape[-1]):
+        elif should_use_compresskv(input_ids, input_ids.shape[1]):
             # if use quantize kv, compress kv will be ignored now
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(

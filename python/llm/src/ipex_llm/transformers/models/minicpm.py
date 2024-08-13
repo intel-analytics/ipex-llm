@@ -628,7 +628,7 @@ def minicpm_model_forward(
                                  self.config.num_key_value_heads):
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input, input.shape[-1]):
+        elif should_use_compresskv(input, input.shape[1]):
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
 

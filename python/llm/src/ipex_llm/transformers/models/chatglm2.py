@@ -87,7 +87,7 @@ def chatglm2_model_forward(
                                 dtype=inputs_embeds.dtype, device=inputs_embeds.device)
 
     if use_cache:
-        use_compress_kv = should_use_compresskv(input_ids, input_ids.shape[-1])
+        use_compress_kv = should_use_compresskv(input_ids, input_ids.shape[1])
         use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.dense_h_to_4h,
                                                 input_ids)
         if use_compress_kv and not use_quantize_kv and not isinstance(past_key_values,

@@ -258,7 +258,7 @@ def phi3_model_forward_wrapper(origin_model_forward):
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         input = input_ids if input_ids is not None else inputs_embeds
         use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input)
-        use_compress_kv = should_use_compresskv(input, input.shape[-1])
+        use_compress_kv = should_use_compresskv(input, input.shape[1])
         if use_cache:
             if use_compress_kv and not isinstance(past_key_values,
                                                   DynamicCompressCache):
