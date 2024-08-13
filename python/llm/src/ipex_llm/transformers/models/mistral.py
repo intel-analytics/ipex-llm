@@ -131,7 +131,7 @@ def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_
             )
 
         attn_weights = attn_weights + attention_mask
-    if os.getenv("IPEX_LLM_LOW_MEM", 'True').lower() in ('true', '1', 't'):
+    if os.getenv("IPEX_LLM_LOW_MEM", '0').lower() in ('true', '1', 't'):
         if kv_seq_len >= 2048 or bsz >= 64:
             # for memory considerations, do not upcast attention to fp32
             # for long sequences or large batches
