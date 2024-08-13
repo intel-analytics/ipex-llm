@@ -1755,19 +1755,29 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.MiniCPMModel,
                         minicpm_model_forward)
     elif model.config.model_type == "minicpmv":
-        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
-            model.llm.config.model_type = "qwen2"
-            _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
-            model.llm.config.model_type = "minicpmv"
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.minicpmv import minicpmv_generate_wrapper
         minicpmv_generate = minicpmv_generate_wrapper(module.MiniCPMV.generate)
         model.generate = MethodType(minicpmv_generate, model)
 
-        modeling_module_name = model.vpm.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
-        convert_forward(model, module.SiglipAttention, siglip_attention_forward)
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            # MiniCPM-V 2.6
+            model.llm.config.model_type = "qwen2"
+            _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+            model.llm.config.model_type = "minicpmv"
+        elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
+            # MiniCPM-V 2.5
+            pass
+
+        vpm_modeling_module_name = model.vpm.__class__.__module__
+        vpm_module = importlib.import_module(vpm_modeling_module_name)
+        if model.vpm.config.model_type == "siglip":
+            # MiniCPM-V 2.6
+            from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
+            convert_forward(model, vpm_module.SiglipAttention, siglip_attention_forward)
+        elif model.vpm.config.model_type == "idefics2":
+            # MiniCPM-V 2.5
+            pass
 
     return model

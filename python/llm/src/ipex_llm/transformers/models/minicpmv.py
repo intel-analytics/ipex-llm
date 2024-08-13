@@ -69,32 +69,12 @@ def patched_repetition_penalty_call(self, input_ids: torch.LongTensor, scores: t
 
 def minicpmv_generate_wrapper(origin_generate):
     def generate(
-        self,
-        input_ids=None,
-        pixel_values=None,
-        tgt_sizes=None,
-        image_bound=None,
-        attention_mask=None,
-        tokenizer=None,
-        vision_hidden_states=None,
-        return_vision_hidden_states=False,
-        stream=False,
-        decode_text=False,
+        *inputs,
         **kwargs
     ):
         RepetitionPenaltyLogitsProcessor.__call__ = patched_repetition_penalty_call
         return origin_generate(
-            self=self,
-            input_ids=input_ids,
-            pixel_values=pixel_values,
-            tgt_sizes=tgt_sizes,
-            image_bound=image_bound,
-            attention_mask=attention_mask,
-            tokenizer=tokenizer,
-            vision_hidden_states=vision_hidden_states,
-            return_vision_hidden_states=return_vision_hidden_states,
-            stream=stream,
-            decode_text=decode_text,
-            **kwargs
+            *inputs,
+            **kwargs,
         )
     return generate
