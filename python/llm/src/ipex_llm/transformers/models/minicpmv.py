@@ -42,8 +42,9 @@ def siglip_attention_forward(
     if attention_mask is not None:
         attn_weights = attn_weights + attention_mask
 
-    # upcast attention to fp32
-    attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
+    import xe_addons
+    xe_addons.attn_softmax_inplaced(attn_weights)
+
     attn_weights = torch.nn.functional.dropout(attn_weights, p=self.dropout, training=self.training)
     attn_output = torch.matmul(attn_weights, value_states)
 
