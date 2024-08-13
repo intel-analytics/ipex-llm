@@ -82,8 +82,8 @@ class DynamicNormalCache(DynamicCache):
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
-        max_seq_length = cache_kwargs.pop("max_seq_len", None)
-        transpose_value = cache_kwargs.pop("transpose_value", None)
+        max_seq_length = cache_kwargs["max_seq_len"] if "max_seq_len" in cache_kwargs else None
+        transpose_value = cache_kwargs["transpose"] if "transpose" in cache_kwargs else False
 
         if layer_idx == 0 or layer_idx == 16:
             if hasattr(self, "_seen_tokens"):
@@ -101,8 +101,9 @@ class DynamicNormalCache(DynamicCache):
                 batch_size, num_heads, head_dim,
                 0, max_len,
                 key_states.dtype, key_states.device,
+                tranpose_value=transpose_value
             )
-            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
+            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states, transpose_value=transpose_value)
 
             self.key_cache[layer_idx] = k_cache
             self.value_cache[layer_idx] = v_cache
@@ -122,7 +123,7 @@ class DynamicNormalCache(DynamicCache):
                 new_v_cache[...] = v_cache[...]
                 k_cache = new_k_cache
                 v_cache = new_v_cache
-            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states)
+            k_cache, v_cache = append_kv_cache(k_cache, v_cache, key_states, value_states, transpose_value=transpose_value)
             self.key_cache[layer_idx] = k_cache
             self.value_cache[layer_idx] = v_cache
 
