@@ -149,12 +149,11 @@ class _BaseAutoModelClass:
             if pipeline_parallel_stages == 1:
                 cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
                 create_npu_kernels(model)
-                model = model.eval()
             else:
                 cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
                 create_npu_kernels(model.model)
-                model = model.eval()
                 optimize_llm_post(model)
+        model = model.eval()
 
         logger.info(f"Finish to convert model")
 
