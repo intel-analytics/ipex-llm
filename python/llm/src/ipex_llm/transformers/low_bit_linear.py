@@ -229,6 +229,13 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK)
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
+    elif qtype == NF4:
+        # Deepspeed zero3 requires unified dtype,
+        # thus here uses bfloat16 consistent to other layers
+        # dst_size above is computed based on uint8, and for bfloat16,
+        # buffer size should be half
+        dst_tensor = torch.empty(dst_size // 2, dtype=torch.bfloat16,
+                                 device=device)
     else:
         dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
                                  device=device)
@@ -260,12 +267,15 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
 
 
 def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int):
-
-    invalidInputError(tensor.dtype == torch.uint8,
-                      "Input tensor must be uint8")
+    if qtype == NF4:
+        invalidInputError(tensor.dtype == torch.bfloat16,
+                          "NF4 Input tensor must be bfloat16")
+    else:
+        invalidInputError(tensor.dtype == torch.uint8,
+                          "Input tensor except NF4 must be uint8")
 
     invalidInputError(tensor.device == torch.device('cpu'),
-                      "Input tensor must be uint8")
+                      "Input tensor must be on cpu")
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
@@ -370,7 +380,6 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
 
 # Rename to FP4Params to trigger initializing
 # the params layer with all parameters on the CPU
-# https://github.com/huggingface/accelerate/blob/main/src/accelerate/utils/modeling.py#L333
 class FP4Params(torch.nn.Parameter):
     def __new__(cls,
                 data=None,
@@ -582,7 +591,13 @@ class MatMulLowBit(torch.autograd.Function):
     def forward(ctx, A, weight, input_seq_size):
         ctx.is_empty = False
         import xe_linear
-        result = xe_linear.forward_new(A, weight.data, weight.qtype, input_seq_size)
+        if weight.qtype == NF4:
+            result = xe_linear.forward_new(A,
+                                           weight.data.view(torch.uint8),
+                                           weight.qtype,
+                                           input_seq_size)
+        else:
+            result = xe_linear.forward_new(A, weight.data, weight.qtype, input_seq_size)
         if any(ctx.needs_input_grad[:2]):
             ctx.tensors = (A, weight)
         else:
@@ -602,7 +617,12 @@ class MatMulLowBit(torch.autograd.Function):
         if req_gradA:
             if torch.xpu.is_autocast_xpu_enabled():
                 grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
-            dequant_weight = xe_linear.dequant(A, weight.data, weight.qtype)
+            if weight.qtype == NF4:
+                dequant_weight = xe_linear.dequant(A,
+                                                   weight.data.view(torch.uint8),
+                                                   weight.qtype)
+            else:
+                dequant_weight = xe_linear.dequant(A, weight.data, weight.qtype)
             grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None
@@ -737,9 +757,16 @@ class LowBitLinear(nn.Linear):
                 if x_2d.requires_grad:
                     result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
                 else:
-                    result = xe_linear.forward_new(x_2d, self.weight.data,
-                                                   self.weight.qtype,
-                                                   input_seq_size)
+                    if self.weight.qtype == NF4:
+                        result = xe_linear.forward_new(x_2d,
+                                                       self.weight.data.view(torch.uint8),
+                                                       self.weight.qtype,
+                                                       input_seq_size)
+                    else:
+                        result = xe_linear.forward_new(x_2d,
+                                                       self.weight.data,
+                                                       self.weight.qtype,
+                                                       input_seq_size)
             elif self.enable_xetla:
                 x_2d = x_2d.half()
                 result = xe_linear.mm_xetla(x_2d, self.weight.data, self.qtype)
