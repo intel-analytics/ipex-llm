@@ -29,6 +29,8 @@ from datetime import date
 import os
 current_dir = os.path.dirname(os.path.realpath(__file__))
 import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
 from ipex_llm.utils import BenchmarkWrapper
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.utils.common import invalidInputError
