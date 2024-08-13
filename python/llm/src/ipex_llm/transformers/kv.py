@@ -211,7 +211,6 @@ def compress_kv(attn_config, key_states, query_states, value_states, attention_m
             v_cur = value_states[:, :, -attn_config.window_size:, :]
             key_states = torch.cat([k_past_compress, k_cur], dim=2)
             value_states = torch.cat([v_past_compress, v_cur], dim=2)
-            print(f"key_states compress to {key_states.size()}")
             return key_states, value_states
 
 
