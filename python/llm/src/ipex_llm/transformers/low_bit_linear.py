@@ -234,7 +234,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         # dst_size above is computed based on uint8, and for bfloat16,
         # buffer size should be half
         dst_tensor = torch.empty(dst_size // 2, dtype=torch.bfloat16,
-                                    device=device)
+                                 device=device)
     else:
         dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
                                  device=device)
