@@ -263,8 +263,12 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
 
 
 def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int):
-    invalidInputError(tensor.dtype == torch.bfloat16,
-                      "Input tensor must be bfloat16")
+    if qtype == NF4:
+        invalidInputError(tensor.dtype == torch.bfloat16,
+                          "NF4 Input tensor must be bfloat16")
+    else:
+        invalidInputError(tensor.dtype == torch.uint8,
+                          "Input tensor except NF4 must be uint8")
 
     invalidInputError(tensor.device == torch.device('cpu'),
                       "Input tensor must be on cpu")
