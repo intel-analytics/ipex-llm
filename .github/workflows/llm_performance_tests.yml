@@ -738,7 +738,7 @@ jobs:
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
-          pip uninstall trl
+          pip uninstall trl -y
           call conda deactivate
 
       - name: Concat csv and generate html (32-32 int4+fp16)
@@ -862,7 +862,7 @@ jobs:
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
-          pip uninstall trl
+          pip uninstall trl -y
           call conda deactivate
 
       - name: Concat csv and generate html (1024-128 int4+fp16)
@@ -985,7 +985,7 @@ jobs:
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
-          pip uninstall trl
+          pip uninstall trl -y
           call conda deactivate
 
       - name: Concat csv and generate html (2048-256 int4+fp16)
@@ -1101,14 +1101,14 @@ jobs:
           set BIGDL_LLM_XMX_DISABLED=1
 
           cd python\llm\dev\benchmark\all-in-one
-          move ..\..\..\test\benchmark\igpu-perf\3072-384_int4_fp16_438.yaml config.yaml
+          move ..\..\..\test\benchmark\igpu-perf\3072-384_int4_fp16_443.yaml config.yaml
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\3072-384_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
-          pip uninstall trl
+          pip uninstall trl -y
           call conda deactivate
 
       - name: Concat csv and generate html (3072-384 int4+fp16)
@@ -1234,7 +1234,7 @@ jobs:
       #    python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
       #    if %ERRORLEVEL% neq 0 (exit /b 1)
       #    
-      #    pip uninstall trl
+      #    pip uninstall trl -y
       #    call conda deactivate
 
       - name: Concat csv and generate html (4096-512 int4+fp16)
@@ -1357,7 +1357,7 @@ jobs:
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
-          pip uninstall trl
+          pip uninstall trl -y
           call conda deactivate
 
       - name: Concat csv and generate html (load_low_bit 1024-128 int4+fp16)
@@ -1479,7 +1479,7 @@ jobs:
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
-          pip uninstall trl
+          pip uninstall trl -y
           call conda deactivate
 
       - name: Concat csv and generate html (1024-128)
