@@ -212,3 +212,28 @@ def optimize_llm(model: torch.nn.Module):
         from ipex_llm.transformers.npu_models.phi3 import phi3_attention_forward
 
         convert_forward(model, module.Phi3Attention, phi3_attention_forward)
+
+
+def optimize_llm_post(model: torch.nn.Module):
+    # experimental support for fused decoderlayer implementation
+    if model.config.model_type == "llama":
+        model.model.embed_tokens.to(torch.float32)
+        model.model.norm.to(torch.float32)
+        model.lm_head.to(torch.float32)
+
+        from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
+            ggml_tensor_qtype, FP4Params
+
+        if isinstance(model.lm_head, torch.nn.Linear):
+            new_linear = LowBitLinear(model.lm_head.in_features,
+                                      model.lm_head.out_features,
+                                      ggml_tensor_qtype["sym_int4"],
+                                      False)
+            paramsLowBit = FP4Params(data=model.lm_head.weight.data,
+                                     requires_grad=False,
+                                     quantized=False,
+                                     _shape=None,
+                                     qtype=ggml_tensor_qtype["sym_int4"],
+                                     in_features=model.lm_head.in_features).to("cpu")
+            new_linear._parameters['weight'] = paramsLowBit
+            model.lm_head = new_linear
