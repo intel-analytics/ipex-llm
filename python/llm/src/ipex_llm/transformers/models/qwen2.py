@@ -118,7 +118,7 @@ def qwen2_model_forward(
         and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs,
                                   self.config.num_attention_heads//self.config.num_key_value_heads)
     )
-    use_compress_kv = should_use_compresskv(inputs, inputs.shape[-1])
+    use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
 
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
