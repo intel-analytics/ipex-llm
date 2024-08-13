@@ -228,12 +228,15 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK)
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
-    else:
+    elif qtype == NF4:
         # Deepspeed zero3 requires unified dtype,
         # thus here uses bfloat16 consistent to other layers
         # dst_size above is computed based on uint8, and for bfloat16,
         # buffer size should be half
         dst_tensor = torch.empty(dst_size // 2, dtype=torch.bfloat16,
+                                    device=device)
+    else:
+        dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
                                  device=device)
 
     if not convert_shape_only and device != 'meta':
