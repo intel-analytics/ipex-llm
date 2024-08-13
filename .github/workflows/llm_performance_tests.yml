@@ -735,7 +735,7 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-32_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 if %ERRORLEVEL% neq -1073740791 (exit /b 1)
-          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl
@@ -764,7 +764,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/32-32/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16.yaml
 
       - name: Test on igpu (1024-128 int4+fp16)
@@ -859,7 +859,7 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl
@@ -887,7 +887,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/1024-128/2048-256/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16.yaml
 
       - name: Test on igpu (2048-256 int4+fp16)
@@ -982,7 +982,7 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\2048-256_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl
@@ -1010,7 +1010,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/2048-256/3072-384/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
       
       - name: Test on igpu (3072-384 int4+fp16)
@@ -1105,7 +1105,7 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\3072-384_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl
@@ -1133,7 +1133,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/3072-384/4096-512/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
       
       - name: Test on igpu (4096-512 int4+fp16)
@@ -1228,7 +1228,7 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\4096-512_int4_fp16\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl
@@ -1256,7 +1256,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/4096-512/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_loadlowbit.yaml
 
       - name: Test on igpu (load_low_bit 1024-128 int4+fp16)
@@ -1351,7 +1351,7 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128_int4_fp16_loadlowbit\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl
@@ -1378,7 +1378,7 @@ jobs:
       - name: Prepare igpu perf test (1024-128)
         shell: bash
         run: |
-          sed -i 's/{today}_test3/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128.yaml
 
       - name: Test on igpu (1024-128)
@@ -1473,7 +1473,7 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\1024-128\log\%LOG_FILE% 2>&1
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test2
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl
