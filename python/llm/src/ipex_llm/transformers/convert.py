@@ -970,6 +970,8 @@ def _optimize_post(model, lightweight_bmm=False):
     convert_forward(model,
                     nn.LayerNorm,
                     bloom_layer_norm_forward)
+    from ipex_llm.transformers.models.llama import llama_rms_norm_forward
+    from ipex_llm.transformers.models.llama import llama_mlp_forward
 
     if model.config.model_type == "llama":
         from transformers.models.llama.modeling_llama import LlamaRMSNorm
@@ -1332,6 +1334,7 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.qwen2_moe import qwen2moe_model_forward
         from ipex_llm.transformers.models.qwen2_moe import qwen2_moe_causal_lm_forward
         from ipex_llm.transformers.models.qwen2 import qwen2_attention_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_mlp_forward
         convert_forward(model,
                         module.Qwen2MoeModel,
                         qwen2moe_model_forward)
@@ -1346,7 +1349,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         qwen2moe_moeblock_forward)
         convert_forward(model,
                         module.Qwen2MoeMLP,
-                        llama_mlp_forward)
+                        qwen2_mlp_forward)
         convert_forward(model,
                         module.Qwen2MoeAttention,
                         qwen2_attention_forward)
