@@ -22,8 +22,9 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.10 libuv
 conda activate llm
 
-# below command will install intel_extension_for_pytorch==2.1.10+xpu as default
-pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+# install ipex-llm with 'all' option
+pip install --pre --upgrade ipex-llm[all]
+pip install torchvision
 
 # below command will install intel_npu_acceleration_library
 pip install intel-npu-acceleration-library==1.3
