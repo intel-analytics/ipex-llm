@@ -226,7 +226,6 @@ jobs:
           scripts_dir="$python_dir/Scripts"
           
           # Set environment variables
-          echo "PYTHON_PATH=$python_path" >> $GITHUB_ENV
           echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
           echo "SCRIPTS_DIR=$scripts_dir" >> $GITHUB_ENV
 
@@ -235,18 +234,11 @@ jobs:
         shell: powershell
         run: |
           # Retrieve environment variables
-          $pythonPath = $env:PYTHON_PATH
           $pythonDir = $env:PYTHON_DIR
           $scriptsDir = $env:SCRIPTS_DIR
           
           # Update PATH
           $env:PATH = "$pythonDir;$scriptsDir;$env:PATH"
-          
-          # Print PATH and verify Python
-          echo "Current PATH: $env:PATH"
-          & $pythonPath --version
-          & $pythonPath -m pip --version
-          pip list
           
           # Run tests
           llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x llama -m $env:LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
@@ -254,7 +246,6 @@ jobs:
           llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x bloom -m $env:BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
           # llm-cli.ps1 -t $env:THREAD_NUM -x starcoder -m $env:STARCODER_INT4_CKPT_PATH -p 'def check_odd('
           
-        
       - name: Run LLM inference test
         shell: bash
         run: |
