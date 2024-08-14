@@ -1219,10 +1219,10 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.43.1
           pip install trl
-        
+
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
-        
+
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\4096-512_int4_fp16_443.yaml config.yaml
           set PYTHONIOENCODING=utf-8
@@ -1230,7 +1230,7 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           if %ERRORLEVEL% neq 0 (exit /b 1)
-          
+
           pip uninstall trl -y
           call conda deactivate
 
