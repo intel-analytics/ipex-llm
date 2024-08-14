@@ -34,12 +34,12 @@ def init_fused_kv_cache(batch_size, num_heads, head_dim,
 
         key_cache = key_cache_storage.as_strided((batch_size, num_heads,
                                                   current_length, head_dim),
-                                                  key_cache_storage.stride(),
-                                                  storage_offset=0)
+                                                 key_cache_storage.stride(),
+                                                 storage_offset=0)
         value_cache = value_cache_storage.as_strided((batch_size, num_heads,
                                                       current_length, head_dim),
-                                                      value_cache_storage.stride(),
-                                                      storage_offset=0)
+                                                     value_cache_storage.stride(),
+                                                     storage_offset=0)
         return key_cache, value_cache
     else:
         key_cache_storage = torch.zeros(batch_size, num_heads,
@@ -51,12 +51,12 @@ def init_fused_kv_cache(batch_size, num_heads, head_dim,
 
         key_cache = key_cache_storage.as_strided((batch_size, num_heads,
                                                   current_length, head_dim),
-                                                  key_cache_storage.stride(),
-                                                  storage_offset=0)
+                                                 key_cache_storage.stride(),
+                                                 storage_offset=0)
         value_cache = value_cache_storage.as_strided((batch_size, num_heads,
                                                       head_dim, current_length),
-                                                      value_cache_storage.stride(),
-                                                      storage_offset=0)
+                                                     value_cache_storage.stride(),
+                                                     storage_offset=0)
         return key_cache, value_cache.transpose(-1, -2)
 
 
