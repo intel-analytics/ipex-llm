@@ -129,7 +129,8 @@ def gemma2_attention_forward(
     # IPEX_LLM OPT: sdp
     kv_seq_len = q_len if past_key_value is None else past_key_value.kv_seq_len
     if (use_sdp_causal(q_len, kv_seq_len, -1, query_states, self.training)
-            and kv_seq_len <= key_states.size(2)):
+            and kv_seq_len <= key_states.size(2) and
+            (self.sliding_window is None or kv_seq_len < self.sliding_window)):
         import xe_addons
         attn_weights = None
         attn_output = xe_addons.gemma2_sdp_causal(query_states,
@@ -141,10 +142,15 @@ def gemma2_attention_forward(
     elif use_sdp(q_len, kv_seq_len, -1, query_states):
         import xe_addons
         attn_weights = None
+        if self.sliding_window is not None:
+            attn_mask = attention_mask[:, :, :q_len, : key_states.shape[-2]]
+        else:
+            attn_mask = attention_mask
+
         attn_output = xe_addons.gemma2_sdp(query_states,
-                                           key_states[:, :, :kv_seq_len, :],
-                                           value_states[:, :, :kv_seq_len, :],
-                                           attention_mask[:, :, :q_len, :kv_seq_len],
+                                           key_states,
+                                           value_states,
+                                           attn_mask,
                                            self.config.attn_logit_softcapping,
                                            self.scaling)
     else:
