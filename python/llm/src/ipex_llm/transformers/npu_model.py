@@ -86,7 +86,7 @@ class _BaseAutoModelClass:
 
         if kwargs.get('torch_dtype', None) not in [None, 'auto', torch.float, torch.float16]:
             warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
-        kwargs['torch_dtype'] = torch.float
+            kwargs['torch_dtype'] = torch.float32
 
         low_bit = kwargs.pop('load_in_low_bit', 'sym_int4')
         qtype_map = {

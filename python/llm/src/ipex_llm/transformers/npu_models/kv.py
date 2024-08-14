@@ -116,12 +116,12 @@ class DynamicFusedNormalCache(DynamicCache):
         # Update the cache
         # if len(self.key_cache) <= layer_idx:
         if layer_idx not in self.key_cache:
-            max_len = max_seq_length if max_seq_length is not None else key_states.size(2) + \
-                self.KV_ALLOC_BLOCK_LENGTH
+            max_len = max_seq_length
             k_cache, v_cache = init_fused_kv_cache(
                 batch_size, num_heads, head_dim,
                 0, max_len,
                 key_states.dtype, key_states.device,
+                tranpose_value=transpose_value,
             )
             k_cache, v_cache = append_fused_kv_cache(k_cache, v_cache, key_states, value_states,
                                                      transpose_value=transpose_value)
