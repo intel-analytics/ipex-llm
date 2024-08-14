@@ -44,6 +44,7 @@ from filelock import FileLock
 
 from transformers.utils import logging
 logger = logging.get_logger(__name__)
+import gc
 
 
 @torch.no_grad()
@@ -459,6 +460,10 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         print("weight setted")
         backend_lib.run(self.backend_cls_decode_1._mm)
 
+
+        self.op_parameters = None
+        gc.collect()
+
         print("2nd inference done")
 
         self.kv_cache_c_parameter_handel = (None, None)
@@ -804,7 +809,7 @@ def pipeline_parallel_generate(self,
     return output_ids, _past_key_values
 
 
-def run_decode(model_path, rank, world_size, layer_start, layer_end,
+def run_decode(model, rank, world_size, layer_start, layer_end,
                max_seq_len, transpose_value_cache,
                input_queue, result_queue):
     
@@ -820,9 +825,9 @@ def run_decode(model_path, rank, world_size, layer_start, layer_end,
     my_size = dist.get_world_size()
     logger.info(f"rank: {my_rank}, size: {my_size}")
 
-    model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16,
-                                                 trust_remote_code=True, attn_implementation="eager",
-                                                 load_in_low_bit="sym_int4", pipeline_parallel_stages=world_size)
+    # model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16,
+    #                                              trust_remote_code=True, attn_implementation="eager",
+    #                                              load_in_low_bit="sym_int4", pipeline_parallel_stages=world_size)
     
     num_heads = model.model.layers[layer_start].self_attn.num_heads
     num_key_value_heads = model.model.layers[layer_start].self_attn.num_key_value_heads
@@ -874,7 +879,10 @@ def run_decode(model_path, rank, world_size, layer_start, layer_end,
         transpose_value=transpose_value_cache
     )
 
-    model.model.layers = None
+    for i in range(len(model.model.layers)):
+        model.model.layers[i] = None
+    
+    gc.collect()
     model.model.multi_decoder = multi_decoder
 
     result_queue.put("loading success")
@@ -886,19 +894,16 @@ def run_decode(model_path, rank, world_size, layer_start, layer_end,
             result = input_queue.get()
             if result == "stop":
                 break
-            input_ids, past_key_value, n_predict = input_queue.get()
-            output = model.generate(input_ids, num_beams=1, do_sample=False, max_new_tokens=n_predict, past_key_values=past_key_value)
-            result_queue.put(output)
+            # input_ids, past_key_value, n_predict = input_queue.get()
+            # output = model.generate(input_ids, num_beams=1, do_sample=False, max_new_tokens=n_predict, past_key_values=past_key_value)
+            result_queue.put("result")
 
 
 
-def run_prefill(model_path, max_seq_len, transpose_value_cache, input_queue, result_queue):
+def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_queue):
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16,
-                                                 trust_remote_code=True, attn_implementation="eager",
-                                                 load_in_low_bit="sym_int4")
+    print("finish loading prefill model")
     
     layer_start = 0
     layer_end = len(model.model.layers)
@@ -950,6 +955,7 @@ def run_prefill(model_path, max_seq_len, transpose_value_cache, input_queue, res
         post_attn_layernorm_weights.append(layer_norm_1)
         model.model.layers[layer_idx] = new_decoderlayer
 
+    print("finish creating all decode layers in prefill")
     result_queue.put("loading finish")
 
     while True:
@@ -957,7 +963,7 @@ def run_prefill(model_path, max_seq_len, transpose_value_cache, input_queue, res
         result = input_queue.get()
         if result == "stop":
             break
-        input_ids, n_predict, max_seq_len, transpose_value_cache = input_queue.get()
+        input_ids, n_predict, max_seq_len, transpose_value_cache = result
         with torch.inference_mode():
             
 
@@ -982,32 +988,27 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
+    model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16,
+                                                 trust_remote_code=True, attn_implementation="eager",
+                                                 load_in_low_bit="sym_int4")
+
+    model.share_memory()
+
+    print("share memory success")
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     input_ids = tokenizer.encode(args.prompt, return_tensors="pt")
 
-    prefill_result_queue = mp.Queue()
-    prefill_input_queue = mp.Queue()
-
-    p = mp.Process(target=run_prefill, args=(model_path, args.max_seq_len, args.transpose_value_cache, prefill_input_queue , prefill_result_queue))
-    p.start()
-
-
-    output = prefill_result_queue.get()
-
     from colorama import Fore, Back, Style
-
-    print(Fore.RED + f"prefill process output: {output}")
-    print(Style.RESET_ALL)
 
     decode_result_queue_0 = mp.Queue()
     decode_input_queue_0 = mp.Queue()
-    decode_p_0 = mp.Process(target=run_decode, args=(model_path, 0, 2, 0, 16, args.max_seq_len, args.transpose_value_cache, decode_input_queue_0, decode_result_queue_0))
+    decode_p_0 = mp.Process(target=run_decode, args=(model, 0, 2, 0, 16, args.max_seq_len, args.transpose_value_cache, decode_input_queue_0, decode_result_queue_0))
     decode_p_0.start()
 
     decode_result_queue_1 = mp.Queue()
     decode_input_queue_1 = mp.Queue()
-    decode_p_1 = mp.Process(target=run_decode, args=(model_path, 1, 2, 16, 32, args.max_seq_len, args.transpose_value_cache, decode_input_queue_1, decode_result_queue_1))
+    decode_p_1 = mp.Process(target=run_decode, args=(model, 1, 2, 16, 32, args.max_seq_len, args.transpose_value_cache, decode_input_queue_1, decode_result_queue_1))
     decode_p_1.start()
 
     output = decode_result_queue_0.get()
@@ -1016,6 +1017,17 @@ if __name__ == "__main__":
 
     output = decode_result_queue_1.get()
     print(Fore.GREEN  + f"decode process 1 output: {output}")
+    print(Style.RESET_ALL)
+
+    prefill_result_queue = mp.Queue()
+    prefill_input_queue = mp.Queue()
+
+    p = mp.Process(target=run_prefill, args=(model, args.max_seq_len, args.transpose_value_cache, prefill_input_queue , prefill_result_queue))
+    p.start()
+
+    output = prefill_result_queue.get()
+
+    print(Fore.RED + f"prefill process output: {output}")
     print(Style.RESET_ALL)
 
     prefill_input_queue.put((input_ids, args.n_predict, args.max_seq_len, args.transpose_value_cache))

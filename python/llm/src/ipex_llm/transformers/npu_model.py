@@ -145,10 +145,12 @@ class _BaseAutoModelClass:
 
         from intel_npu_acceleration_library.compiler import create_npu_kernels
         with torch.no_grad():
-            optimize_llm(model)
+            # optimize_llm(model)
             if pipeline_parallel_stages == 1:
                 cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
+                print("load convert finished")
                 create_npu_kernels(model)
+                print("create npu kernels finished")
             else:
                 cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
                 create_npu_kernels(model.model)
@@ -160,7 +162,7 @@ class _BaseAutoModelClass:
         model.config.update({"bigdl_transformers_low_bit": qtype})
 
         # add save_low_bit to pretrained model dynamically
-        model.save_low_bit = types.MethodType(save_low_bit, model)
+        # model.save_low_bit = types.MethodType(save_low_bit, model)
 
         return model
 

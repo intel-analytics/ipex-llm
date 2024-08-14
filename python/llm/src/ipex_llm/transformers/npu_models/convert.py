@@ -41,6 +41,7 @@ def module_optimization(func) -> torch.nn.Module:
 
         """
         for name, layer in model.named_children():
+            print(f"converting layers {name}")
             new_layer = func(layer, qtype, device, *args, **kwargs)
             if new_layer:
                 model.add_module(name, new_layer)
