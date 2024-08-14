@@ -27,7 +27,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install timm peft transformers==4.40.0
+pip install timm peft transformers==4.40.0 trl
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -107,7 +107,7 @@ set SYCL_CACHE_PERSISTENT=1
 ### 4. Running examples
 
 ```
-python ./generate.py --repo-id-or-model-path MODEL_PATH --prompt 'What is in the image?'
+python ./generate.py --prompt 'What is in the image?'
 ```
 
 Arguments info:
