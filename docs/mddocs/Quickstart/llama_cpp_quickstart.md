@@ -326,3 +326,5 @@ If you meet `System Error: sycl7.dll not found` on Windows or you meet similar e
 #### Check driver first when you meet garbage output
 If you meet garbage output, please check if your GPU driver version is >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html). If not, please follow the instructions in [this section](./install_linux_gpu.md#install-gpu-driver) to update your GPU driver.
 
+#### Why my program can't find sycl device
+If you meet `GGML_ASSERT: C:/Users/Administrator/actions-runner/cpp-release/_work/llm.cpp/llm.cpp/llama-cpp-bigdl/ggml-sycl.cpp:18283: main_gpu_id<g_all_sycl_device_count` error or similar error, and you find nothing is output when using `ls-sycl-device`, this is because llama.cpp cannot find the sycl device. On some laptops, the installation of the ARC driver may lead to a forced installation of `OpenCL, OpenGL, and Vulkan Compatibility Pack` by Microsoft, which inadvertently blocks the system from locating sycl devices. This issue can be resolved by manually uninstalling it in Microsoft store.
