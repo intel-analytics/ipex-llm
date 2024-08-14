@@ -1726,6 +1726,11 @@ def _optimize_post(model, lightweight_bmm=False):
         minicpmv_generate = minicpmv_generate_wrapper(module.MiniCPMV.generate)
         model.generate = MethodType(minicpmv_generate, model)
 
+        if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
+            # MiniCPM-V 2
+            model.llm.config.model_type = "minicpm"
+            _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+            model.llm.config.model_type = "minicpmv"
         if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
             # MiniCPM-V 2.6
             model.llm.config.model_type = "qwen2"
@@ -1739,7 +1744,11 @@ def _optimize_post(model, lightweight_bmm=False):
 
         vpm_modeling_module_name = model.vpm.__class__.__module__
         vpm_module = importlib.import_module(vpm_modeling_module_name)
-        if model.vpm.config.model_type == "siglip":
+        if not hasattr(model.vpm, "config"):
+            # MiniCPM-V 2
+            from ipex_llm.transformers.models.minicpmv import minicpmv_get_vision_embedding
+            model.get_vision_embedding = MethodType(minicpmv_get_vision_embedding, model)
+        elif model.vpm.config.model_type == "siglip":
             # MiniCPM-V 2.6
             from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
             convert_forward(model.vpm, vpm_module.SiglipAttention, siglip_attention_forward)
