@@ -18,11 +18,13 @@
 import torch
 from typing import Optional
 from ipex_llm.transformers.models.common import merge_qkv_base
+from transformers import AutoProcessor
 from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
 
 
 def merge_qkv(module: torch.nn.Module):
-    return merge_qkv_base(module, "SiglipAttention")
+    merge_qkv_base(module, "SiglipAttention")
+    merge_qkv_base(module, "Idefics2VisionAttention")
 
 
 def siglip_attention_forward(
@@ -65,6 +67,43 @@ def patched_repetition_penalty_call(self, input_ids: torch.LongTensor, scores: t
         score = torch.where(score < 0, score * self.penalty, score / self.penalty)
         scores.scatter_(1, input_ids, score)
     return scores
+
+
+def minicpmv_chat_wrapper(origin_chat):
+    def minicpmv_chat(
+        self,
+        image,
+        msgs,
+        tokenizer,
+        processor=None,
+        vision_hidden_states=None,
+        max_new_tokens=1024,
+        sampling=True,
+        max_inp_length=2048,
+        system_prompt='',
+        stream=False,
+        **kwargs
+    ):
+        if processor is None:
+            if getattr(self, "processor", None) is None:
+                self.processor = AutoProcessor.from_pretrained(self.config._name_or_path,
+                                                               trust_remote_code=True)
+            processor = self.processor
+        return origin_chat(
+            self=self,
+            image=image,
+            msgs=msgs,
+            tokenizer=tokenizer,
+            processor=processor,
+            vision_hidden_states=vision_hidden_states,
+            max_new_tokens=max_new_tokens,
+            sampling=sampling,
+            max_inp_length=max_inp_length,
+            system_prompt=system_prompt,
+            stream=stream,
+            **kwargs
+        )
+    return minicpmv_chat
 
 
 def minicpmv_generate_wrapper(origin_generate):
