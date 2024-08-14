@@ -29,17 +29,17 @@ def init_fused_kv_cache(batch_size, num_heads, head_dim,
                                         max_length, head_dim,
                                         dtype=dtype, device=device)
         value_cache_storage = torch.zeros(batch_size, num_heads,
-                                        max_length, head_dim,
-                                        dtype=dtype, device=device)
+                                          max_length, head_dim,
+                                          dtype=dtype, device=device)
 
         key_cache = key_cache_storage.as_strided((batch_size, num_heads,
-                                                current_length, head_dim),
-                                                key_cache_storage.stride(),
-                                                storage_offset=0)
+                                                  current_length, head_dim),
+                                                  key_cache_storage.stride(),
+                                                  storage_offset=0)
         value_cache = value_cache_storage.as_strided((batch_size, num_heads,
-                                                    current_length, head_dim),
-                                                    value_cache_storage.stride(),
-                                                    storage_offset=0)
+                                                      current_length, head_dim),
+                                                      value_cache_storage.stride(),
+                                                      storage_offset=0)
         return key_cache, value_cache
     else:
         key_cache_storage = torch.zeros(batch_size, num_heads,
@@ -50,13 +50,13 @@ def init_fused_kv_cache(batch_size, num_heads, head_dim,
                                           dtype=dtype, device=device)
 
         key_cache = key_cache_storage.as_strided((batch_size, num_heads,
-                                                current_length, head_dim),
-                                                key_cache_storage.stride(),
-                                                storage_offset=0)
+                                                  current_length, head_dim),
+                                                  key_cache_storage.stride(),
+                                                  storage_offset=0)
         value_cache = value_cache_storage.as_strided((batch_size, num_heads,
-                                                    head_dim, current_length),
-                                                    value_cache_storage.stride(),
-                                                    storage_offset=0)
+                                                      head_dim, current_length),
+                                                      value_cache_storage.stride(),
+                                                      storage_offset=0)
         return key_cache, value_cache.transpose(-1, -2)
 
 
@@ -85,9 +85,10 @@ def append_fused_kv_cache(cache_k, cache_v, key_states, value_states, transpose_
                           cache_v.size(2) + value_states.size(3),
                           )
         raw_cache_v = cache_v.transpose(-1, -2)
-        # assert raw_cache_v.is_contiguous(), f"raw_cache_v size is {raw_cache_v.shape}, stride is {raw_cache_v.stride()}"
         new_cache_v = raw_cache_v.as_strided(new_size_value, raw_cache_v.stride(), storage_offset=0)
-        new_cache_v[:, :, :, raw_cache_v.size(3):raw_cache_v.size(3) + value_states.size(3)] = value_states
+        start = raw_cache_v.size(3)
+        end = raw_cache_v.size(3) + value_states.size(3)
+        new_cache_v[:, :, :, start:end] = value_states
         return new_cache_k, new_cache_v.transpose(-1, -2)
 
 
@@ -146,11 +147,11 @@ class DynamicFusedNormalCache(DynamicCache):
 
         for idx, layer in self.key_cache.items():
             return layer.shape[-2]
-    
+
     @property
     def _seen_tokens(self):
         return self.get_seq_length()
-    
+
     @property
     def seen_tokens(self):
         return self.get_seq_length()
