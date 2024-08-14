@@ -157,7 +157,7 @@ if __name__ == '__main__':
     # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2/blob/main/README.md
     msgs = [{'role': 'user', 'content': args.prompt}]
     st = time.time()
-    res, context, _ = model.chat(
+    res = model.chat(
      image=image,
      msgs=msgs,
      context=None,
@@ -165,6 +165,8 @@ if __name__ == '__main__':
      sampling=False,
      temperature=0.7
     )
+    if model.config._name_or_path.endswith("2"):
+        res, context, _ = res
     end = time.time()
     print(f'Inference time: {end-st} s')
     print('-'*20, 'Input', '-'*20)
