@@ -828,7 +828,10 @@ def run_decode(model, rank, world_size, layer_start, layer_end,
     # model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16,
     #                                              trust_remote_code=True, attn_implementation="eager",
     #                                              load_in_low_bit="sym_int4", pipeline_parallel_stages=world_size)
-    
+
+    from ipex_llm.transformers.npu_models.convert import optimize_llm, optimize_llm_post
+    optimize_llm(model)
+
     num_heads = model.model.layers[layer_start].self_attn.num_heads
     num_key_value_heads = model.model.layers[layer_start].self_attn.num_key_value_heads
     head_dim = model.model.layers[layer_start].self_attn.head_dim
@@ -879,10 +882,6 @@ def run_decode(model, rank, world_size, layer_start, layer_end,
         transpose_value=transpose_value_cache
     )
 
-    for i in range(len(model.model.layers)):
-        model.model.layers[i] = None
-    
-    gc.collect()
     model.model.multi_decoder = multi_decoder
 
     result_queue.put("loading success")
@@ -894,9 +893,9 @@ def run_decode(model, rank, world_size, layer_start, layer_end,
             result = input_queue.get()
             if result == "stop":
                 break
-            # input_ids, past_key_value, n_predict = input_queue.get()
-            # output = model.generate(input_ids, num_beams=1, do_sample=False, max_new_tokens=n_predict, past_key_values=past_key_value)
-            result_queue.put("result")
+            input_ids, past_key_value, n_predict = result
+            output = model.generate(input_ids, num_beams=1, do_sample=False, max_new_tokens=n_predict, past_key_values=past_key_value)
+            result_queue.put(output)
 
 
 
@@ -904,6 +903,10 @@ def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_q
 
 
     print("finish loading prefill model")
+
+    from ipex_llm.transformers.npu_models.convert import optimize_llm, optimize_llm_post
+
+    optimize_llm(model)
     
     layer_start = 0
     layer_end = len(model.model.layers)

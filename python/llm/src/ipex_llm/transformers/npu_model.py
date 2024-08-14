@@ -146,15 +146,15 @@ class _BaseAutoModelClass:
         from intel_npu_acceleration_library.compiler import create_npu_kernels
         with torch.no_grad():
             # optimize_llm(model)
-            if pipeline_parallel_stages == 1:
-                cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
-                print("load convert finished")
-                create_npu_kernels(model)
-                print("create npu kernels finished")
-            else:
-                cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
-                create_npu_kernels(model.model)
-                optimize_llm_post(model)
+            # if pipeline_parallel_stages == 1:
+            cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
+            print("load convert finished")
+            create_npu_kernels(model)
+            print("create npu kernels finished")
+            # else:
+            #     cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
+            #     create_npu_kernels(model.model)
+            #     optimize_llm_post(model)
         model = model.eval()
 
         logger.info(f"Finish to convert model")
