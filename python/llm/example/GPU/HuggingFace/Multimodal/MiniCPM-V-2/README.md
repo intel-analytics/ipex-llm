@@ -1,5 +1,5 @@
 # MiniCPM-V-2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V-2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-V-2](https://huggingface.co/openbmb/MiniCPM-V-2) as a reference MiniCPM-V-2 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V-2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-V-2](https://huggingface.co/openbmb/MiniCPM-V-2) and [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) as a reference MiniCPM-V-2 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -128,6 +128,18 @@ http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 What is in the image?
 -------------------- Output --------------------
 In the image, there is a young child holding a teddy bear. The teddy bear appears to be dressed in a pink tutu. The child is also wearing a red and white striped dress. The background of the image includes a stone wall and some red flowers.
+```
+
+#### [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6)
+
+```log
+Inference time: 3.102498769760132 s
+-------------------- Input --------------------
+http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+-------------------- Prompt --------------------
+What is in the image?
+-------------------- Output --------------------
+The image features a young child holding a white teddy bear with a pink tutu. The child is wearing a striped dress and is standing in front of a stone wall with some red flowers in the background.
 ```
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
