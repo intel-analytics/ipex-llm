@@ -749,7 +749,7 @@ def _optimize_pre(model, qtype=None):
         model.apply(merge_qkv)
     if model.config.model_type == "minicpmv":
         from ipex_llm.transformers.models.minicpmv import merge_qkv
-        model.apply(merge_qkv)
+        model.vpm.apply(merge_qkv)
         if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
             model.llm.config.model_type = "qwen2"
             _optimize_pre(model.llm, qtype=qtype)
@@ -1742,9 +1742,13 @@ def _optimize_post(model, lightweight_bmm=False):
         if model.vpm.config.model_type == "siglip":
             # MiniCPM-V 2.6
             from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
-            convert_forward(model, vpm_module.SiglipAttention, siglip_attention_forward)
+            convert_forward(model.vpm, vpm_module.SiglipAttention, siglip_attention_forward)
         elif model.vpm.config.model_type == "idefics2":
             # MiniCPM-V 2.5
-            pass
+            from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
+            from ipex_llm.transformers.models.minicpmv import minicpmv_chat_wrapper
+            convert_forward(model.vpm, vpm_module.Idefics2VisionAttention, siglip_attention_forward)
+            minicpmv_chat = minicpmv_chat_wrapper(module.MiniCPMV.chat)
+            model.chat = MethodType(minicpmv_chat, model)
 
     return model
