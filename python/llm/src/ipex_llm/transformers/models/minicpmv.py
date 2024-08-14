@@ -15,6 +15,7 @@
 #
 
 
+import math
 import torch
 from typing import Optional
 from ipex_llm.transformers.models.common import merge_qkv_base
@@ -22,11 +23,13 @@ from transformers import AutoProcessor
 from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
 
 
+# MiniCPM-V-2_5 and MiniCPM-V-2_6
 def merge_qkv(module: torch.nn.Module):
     merge_qkv_base(module, "SiglipAttention")
     merge_qkv_base(module, "Idefics2VisionAttention")
 
 
+# MiniCPM-V-2_5 and MiniCPM-V-2_6
 def siglip_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -58,17 +61,7 @@ def siglip_attention_forward(
     return attn_output, attn_weights
 
 
-def patched_repetition_penalty_call(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
-    if scores.device.type == "xpu":
-        import xe_addons
-        xe_addons.repetition_penalty_logits_process_inplaced(scores, input_ids, self.penalty)
-    else:
-        score = torch.gather(scores, 1, input_ids)
-        score = torch.where(score < 0, score * self.penalty, score / self.penalty)
-        scores.scatter_(1, input_ids, score)
-    return scores
-
-
+# MiniCPM-V-2_5
 def minicpmv_chat_wrapper(origin_chat):
     def minicpmv_chat(
         self,
@@ -104,6 +97,37 @@ def minicpmv_chat_wrapper(origin_chat):
             **kwargs
         )
     return minicpmv_chat
+
+
+# MiniCPM-V-2
+def minicpmv_get_vision_embedding(self, pixel_values):
+    res = []
+    dtype = self.dtype
+
+    def process_each_pixel(pixel_value, dtype, config, vpm, resampler):
+        H, W = pixel_value.shape[-2:]
+        target_size = (math.ceil(H / config.patch_size), math.ceil(W / config.patch_size))
+        vision_embedding = self.vpm_forward_features(pixel_value.unsqueeze(0).type(dtype))
+
+        if hasattr(vpm, 'num_prefix_tokens') and vpm.num_prefix_tokens > 0:
+            vision_embedding = vision_embedding[:, vpm.num_prefix_tokens:]
+        return resampler(vision_embedding, target_size)
+
+    for pixel_value in pixel_values:
+        result = process_each_pixel(pixel_value, dtype, self.config, self.vpm, self.resampler)
+        res.append(result)
+    return torch.vstack(res)
+
+
+def patched_repetition_penalty_call(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
+    if scores.device.type == "xpu":
+        import xe_addons
+        xe_addons.repetition_penalty_logits_process_inplaced(scores, input_ids, self.penalty)
+    else:
+        score = torch.gather(scores, 1, input_ids)
+        score = torch.where(score < 0, score * self.penalty, score / self.penalty)
+        scores.scatter_(1, input_ids, score)
+    return scores
 
 
 def minicpmv_generate_wrapper(origin_generate):
