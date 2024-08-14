@@ -77,23 +77,36 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
                                         actual_in_len, actual_out_len, load_time, model.peak_memory])
 
 
-def get_continuation_input_str():
-    # all use 8192.txt for prompt preparation for now; and keep 'utf-8' as character encoding mode
+def get_continuation_input_str(in_len, tokenizer):
+    # keep 'utf-8' as character encoding mode
+    if in_len <= 2048:
+        input_str = open("prompt/summarize/cnn_39.txt", 'r', encoding='utf-8').read()
+        question = "Can you please summarize this article?"
+        prompt_format = "{}\nQuestion: {}\n"
+        full_prompt = prompt_format.format(input_str, question)
+        input_ids = tokenizer.encode(full_prompt, return_tensors="pt")
+        if input_ids.shape[1] < in_len:
+            return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
+        else:
+            half_idx = in_len // 2
+            input_ids_truncated = torch.cat((input_ids[:, :half_idx], input_ids[:, -(in_len-half_idx):]), dim=1)
+            return tokenizer.batch_decode(input_ids_truncated)[0]
+
     return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
 
 
 def preprocess_prompt(tokenizer, in_len, task):
     if task == 'summarize':
         if in_len == 512:
-            input_str = open(f"prompt/summarize/cnn_239.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_239.txt", 'r', encoding='utf-8').read()
         elif in_len == 1024:
-            input_str = open(f"prompt/summarize/cnn_615.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_615.txt", 'r', encoding='utf-8').read()
         elif in_len == 2048:
-            input_str = open(f"prompt/summarize/cnn_824.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_824.txt", 'r', encoding='utf-8').read()
         elif in_len <= 256:
-            input_str = open(f"prompt/summarize/cnn_64.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_64.txt", 'r', encoding='utf-8').read()
         else:
-            input_str = open(f"prompt/summarize/cnn_5618.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_5618.txt", 'r', encoding='utf-8').read()
         question = "Can you please summarize this article?"
         prompt_format = "[INST] Article:```{}``` \n\n Question: {} \n\n [/INST]"
         special_tokens_len = len(tokenizer.encode(prompt_format.format("", question), add_special_tokens=False))
@@ -106,13 +119,13 @@ def preprocess_prompt(tokenizer, in_len, task):
         input_ids = tokenizer.encode(final_prompt, return_tensors="pt", truncation=True, max_length=in_len)
     elif task == 'QA':
         if in_len == 512:
-            input_str = open(f"prompt/QA/orca_776.txt", 'r').read()
+            input_str = open(f"prompt/QA/orca_776.txt", 'r', encoding='utf-8').read()
         elif in_len == 1024:
-            input_str = open(f"prompt/QA/orca_99.txt", 'r').read()
+            input_str = open(f"prompt/QA/orca_99.txt", 'r', encoding='utf-8').read()
         elif in_len == 2048:
-            input_str = open(f"prompt/QA/orca_401.txt", 'r').read()
+            input_str = open(f"prompt/QA/orca_401.txt", 'r', encoding='utf-8').read()
         elif in_len == 4096:
-            input_str = open(f"prompt/QA/orca_497.txt", 'r').read()
+            input_str = open(f"prompt/QA/orca_497.txt", 'r', encoding='utf-8').read()
         else:
             raise ValueError("No corresponding prompt available now, will be added later.")          
         input_ids = tokenizer.encode(input_str, return_tensors="pt")    
@@ -226,7 +239,7 @@ def run_native_int4(repo_id,
         in_out_len = in_out.split("-")
         in_len = int(in_out_len[0])
         out_len = int(in_out_len[1])
-        input_str = get_continuation_input_str()
+        input_str = get_continuation_input_str(in_len, tokenizer)
         # As different tokenizer has different encodings,
         # slice the input_ids to ensure the prompt length is required length.
         n_ctx = in_len + out_len if in_len + out_len > 512 else 512
@@ -282,7 +295,7 @@ def run_transformer_int4(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -341,7 +354,7 @@ def run_pytorch_autocast_bf16(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -406,7 +419,7 @@ def run_optimize_model(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -515,7 +528,7 @@ def run_transformer_int4_gpu(repo_id,
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
             if task == 'continuation':
-                input_str = get_continuation_input_str()
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -598,7 +611,7 @@ def transformers_int4_npu_win(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -669,7 +682,7 @@ def run_optimize_model_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -734,7 +747,7 @@ def run_ipex_fp16_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -805,7 +818,7 @@ def run_bigdl_fp16_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -891,7 +904,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -984,7 +997,7 @@ def run_transformer_int4_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str()
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1101,7 +1114,7 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str()
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1211,7 +1224,7 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str()
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1321,7 +1334,7 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str()
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1404,7 +1417,7 @@ def run_transformer_autocast_bf16( repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1469,7 +1482,7 @@ def run_bigdl_ipex_bf16(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1533,7 +1546,7 @@ def run_bigdl_ipex_int4(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1597,7 +1610,7 @@ def run_bigdl_ipex_int8(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1701,7 +1714,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1772,7 +1785,7 @@ def run_speculative_cpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1844,7 +1857,7 @@ def run_speculative_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1925,7 +1938,7 @@ def run_pipeline_parallel_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str()
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")

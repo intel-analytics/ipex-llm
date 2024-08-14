@@ -368,8 +368,9 @@ def lookup_generate(self,
             accept_rate = self.n_matched/self.n_drafted if self.n_drafted > 0 else 1
             self.accept_rate.append(accept_rate)
             # Update the candidate generation strategy if needed
-            candidates_generator.update_candidate_strategy(candidate_length, n_matches,
-                                                           accept_rate)
+            if device_name != 'mtl':
+                candidates_generator.update_candidate_strategy(candidate_length, n_matches,
+                                                               accept_rate)
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
             candidates_generator.update_look_up_table(input_ids)
