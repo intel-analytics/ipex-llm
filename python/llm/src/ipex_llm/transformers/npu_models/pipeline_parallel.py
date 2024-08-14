@@ -325,13 +325,18 @@ def pipeline_parallel_generate(self,
 
         if _input_ids is None:
             _input_ids = input_ids
-
-        model_inputs = self.prepare_inputs_for_generation(output_ids, **model_kwargs)
-
+    
+        model_inputs = self.prepare_inputs_for_generation(_input_ids, **model_kwargs)
+        if local_rank == 1:
+            from colorama import Fore, Back, Style
+            # print(Fore.GREEN + f"model_inputs: ", model_inputs, Style.RESET_ALL)
+            # print(Fore.GREEN + f"_input_ids: ", _input_ids, Style.RESET_ALL)
+        
         tic = time.time()
         if local_rank == 0:
             outputs = self(**model_inputs)
         else:
+            # _input_ids = model_inputs.pop("input_ids")
             _inputs_shape = _input_ids.shape + (self.config.hidden_size,)
             if step == 0 and self.config.model_type == "chatglm" \
                and hasattr(self.config, "vision_config"):
