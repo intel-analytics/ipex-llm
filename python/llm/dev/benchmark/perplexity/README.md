@@ -10,9 +10,6 @@ python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B/ --data_path wiki
 
 # Run with stride
 python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B/ --data_path wikitext-2-raw-v1/wikitext-2-raw/wiki.test.raw --precision fp16 --device xpu --stride 512
-
-# Run with mixed presision
-python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B/ --data_path wikitext-2-raw-v1/wikitext-2-raw/wiki.test.raw --precision fp16 --device xpu --stride 512 --mixed_precision
 ```
 
 ## Run on [THUDM/LongBench](https://github.com/THUDM/LongBench) dataset
