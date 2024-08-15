@@ -67,3 +67,13 @@ def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):
         )
     else:
         return module.down_proj(module.act_fn(module.gate_proj(x)) * module.up_proj(x))
+
+
+def attention_softmax(attn_weights: torch.Tensor, training: bool):
+    if attn_weights.is_contiguous() and attn_weights.device.type == "xpu" and not training:
+        import xe_addons
+        xe_addons.attn_softmax_inplaced(attn_weights)
+    else:
+        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                   dtype=torch.float32).to(attn_weights.dtype)
+    return attn_weights

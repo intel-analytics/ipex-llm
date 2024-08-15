@@ -19,6 +19,7 @@ import math
 import torch
 from typing import Optional
 from ipex_llm.transformers.models.common import merge_qkv_base
+from ipex_llm.transformers.models.common import attention_softmax
 from transformers import AutoProcessor
 from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
 
@@ -47,8 +48,7 @@ def siglip_attention_forward(
     if attention_mask is not None:
         attn_weights = attn_weights + attention_mask
 
-    import xe_addons
-    xe_addons.attn_softmax_inplaced(attn_weights)
+    attn_weights = attention_softmax(attn_weights, self.training)
 
     attn_weights = torch.nn.functional.dropout(attn_weights, p=self.dropout, training=self.training)
     attn_output = torch.matmul(attn_weights, value_states)
