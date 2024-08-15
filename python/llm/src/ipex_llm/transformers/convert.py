@@ -1309,9 +1309,6 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.qwen2 import qwen2_causal_lm_forward
         from ipex_llm.transformers.models.qwen2 import qwen2_mlp_forward
         convert_forward(model,
-                        module.Qwen2Model,
-                        qwen2_model_forward)
-        convert_forward(model,
                         module.Qwen2ForCausalLM,
                         qwen2_causal_lm_forward)
         convert_forward(model,
@@ -1326,6 +1323,12 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2SdpaAttention,
                         qwen2_attention_forward)
+        if version.parse(trans_version) >= version.parse("4.42"):
+            from ipex_llm.transformers.models.qwen2 import qwen2_model_forward_4_42
+            convert_forward(model, module.Qwen2Model, qwen2_model_forward_4_42)
+        else:
+            from ipex_llm.transformers.models.qwen2 import qwen2_model_forward
+            convert_forward(model, module.Qwen2Model, qwen2_model_forward)
     elif model.config.model_type == "qwen2_moe":
         # for Qwen1.5-MOE-A2.7B
         modeling_module_name = model.__class__.__module__
@@ -1356,6 +1359,8 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model,
                         module.Qwen2MoeSdpaAttention,
                         qwen2_attention_forward)
+    elif model.config.model_type == "qwen2_audio":
+        _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
     elif model.config.model_type == "cohere":
         # for CohereForAI/c4ai-command-r-v01
         invalidInputError(version.parse(trans_version) >= version.parse("4.40.0"),
