@@ -180,6 +180,8 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
+            invalidInputError(module.skip_bias_add is not True, "Currently, ipex-vllm does not"
+                              " support linear layers with skip_bias_add argument")
             if isinstance(module, RowParallelLinear) and tp_size >= 2:
                 mp_group = get_tensor_model_parallel_group()
                 in_features = module.input_size_per_partition
@@ -216,6 +218,70 @@ def is_linear_module(module):
             result = False
 
     return result, (in_features, out_features, mp_group)
+
+
+def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
+                 enable_xetla, optimize_lm_head, enable_scale_search):
+    from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
+    from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
+        FP16Linear, BF16Linear, vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
+    if isinstance(module, ParallelLMHead):
+        if qtype == ggml_tensor_qtype["fp16"]:
+            new_linear = FP16Linear(
+                in_features,
+                out_features,
+                module.bias is not None,
+                mp_group=mp_group,
+                optimize_lm_head=optimize_lm_head
+            )
+        elif qtype == ggml_tensor_qtype["bf16"]:
+            new_linear = BF16Linear(
+                in_features,
+                out_features,
+                module.bias is not None,
+                mp_group=mp_group,
+                optimize_lm_head=optimize_lm_head
+            )
+        else:
+            new_linear = LowBitLinear(
+                in_features,
+                out_features,
+                cur_qtype,
+                module.bias is not None,
+                mp_group=mp_group,
+                enable_xetla=enable_xetla,
+                optimize_lm_head=optimize_lm_head,
+                enable_scale_search=enable_scale_search,
+            )
+    else:
+        if qtype == ggml_tensor_qtype["fp16"]:
+            new_linear = vLLMFP16Linear(
+                in_features,
+                out_features,
+                module.bias is not None,
+                mp_group=mp_group,
+                optimize_lm_head=optimize_lm_head
+            )
+        elif qtype == ggml_tensor_qtype["bf16"]:
+            new_linear = vLLMBF16Linear(
+                in_features,
+                out_features,
+                module.bias is not None,
+                mp_group=mp_group,
+                optimize_lm_head=optimize_lm_head
+            )
+        else:
+            new_linear = vLLMLowBitLinear(
+                in_features,
+                out_features,
+                cur_qtype,
+                module.bias is not None,
+                mp_group=mp_group,
+                enable_xetla=enable_xetla,
+                optimize_lm_head=optimize_lm_head,
+                enable_scale_search=enable_scale_search,
+            )
+    return new_linear
 
 
 def convert_gptq(module, awq=False, llm_awq=False, act_order=False):
@@ -399,16 +465,27 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     # check hidden size whether is a multiple of 256
                     cur_qtype = check_hidden_size(cur_qtype, in_features)
 
-                    new_linear = LowBitLinear(
-                        in_features,
-                        out_features,
-                        cur_qtype,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        enable_xetla=enable_xetla,
-                        optimize_lm_head=optimize_lm_head,
-                        enable_scale_search=enable_scale_search,
-                    )
+                    if _USE_VLLM:
+                        new_linear = convert_vllm(module,
+                                                  qtype,
+                                                  in_features,
+                                                  out_features,
+                                                  mp_group,
+                                                  cur_qtype,
+                                                  enable_xetla,
+                                                  optimize_lm_head,
+                                                  enable_scale_search)
+                    else:
+                        new_linear = LowBitLinear(
+                            in_features,
+                            out_features,
+                            cur_qtype,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                            enable_xetla=enable_xetla,
+                            optimize_lm_head=optimize_lm_head,
+                            enable_scale_search=enable_scale_search,
+                        )
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
@@ -427,13 +504,26 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             .to(device)
                 elif qtype == ggml_tensor_qtype["fp16"]:
                     module.to(torch.float16)
-                    new_linear = FP16Linear(
-                        in_features,
-                        out_features,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        optimize_lm_head=optimize_lm_head
-                    )
+                    if _USE_VLLM:
+                        new_linear = convert_vllm(
+                            module,
+                            qtype,
+                            in_features,
+                            out_features,
+                            mp_group,
+                            None,
+                            None,
+                            optimize_lm_head,
+                            None
+                        )
+                    else:
+                        new_linear = FP16Linear(
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                            optimize_lm_head=optimize_lm_head
+                        )
                     device = module.weight.data.device
                     from ipex_llm.transformers.utils import get_ipex_version
                     if get_ipex_version() < "2.1.10+xpu":
@@ -449,13 +539,26 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             .to(device)
                 elif qtype == ggml_tensor_qtype["bf16"]:
                     module.to(torch.bfloat16)
-                    new_linear = BF16Linear(
-                        in_features,
-                        out_features,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        optimize_lm_head=optimize_lm_head
-                    )
+                    if _USE_VLLM:
+                        new_linear = convert_vllm(
+                            module,
+                            qtype,
+                            in_features,
+                            out_features,
+                            mp_group,
+                            None,
+                            None,
+                            optimize_lm_head,
+                            None
+                        )
+                    else:
+                        new_linear = BF16Linear(
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                            optimize_lm_head=optimize_lm_head
+                        )
                     device = module.weight.data.device
                     # convert here
                     new_linear._parameters['weight'] = nn.Parameter(module.weight)
