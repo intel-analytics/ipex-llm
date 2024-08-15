@@ -233,9 +233,6 @@ def llama_fused_model_forward(
     if position_ids is None:
         position_ids = cache_position.unsqueeze(0)
 
-    # print("attention_mask", attention_mask)
-    # print("cache_position", cache_position)
-    # print('past_seen_tokens', past_seen_tokens)
     causal_mask = self._update_causal_mask(attention_mask, inputs_embeds,
                                            cache_position, past_seen_tokens)
 
