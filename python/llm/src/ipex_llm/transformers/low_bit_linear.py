@@ -984,3 +984,38 @@ class BF16Linear(nn.Linear):
             result = result.reshape(*original_shape[:-1], result.shape[-1])
 
         return result.to(x.dtype)
+
+
+class vLLMLowBitLinear(LowBitLinear):
+    def __init__(self, input_features, output_features, qtype, bias=True,
+                 conver_to_half=True, mp_group=None, enable_xetla=False,
+                 optimize_lm_head=False, act_order=False,
+                 enable_scale_search=False):
+        super().__init__(input_features, output_features, qtype, bias, conver_to_half, mp_group,
+                         enable_xetla, optimize_lm_head, act_order, enable_scale_search)
+
+    def forward(self, x: torch.Tensor):
+        result = super().forward(x)
+        return result, None
+
+
+class vLLMFP16Linear(FP16Linear):
+    def __init__(self, input_features, output_features, bias=True, mp_group=None, weight_type=1,
+                 enable_xetla=False, optimize_lm_head=False):
+        super().__init__(input_features, output_features, bias, mp_group, weight_type,
+                         enable_xetla, optimize_lm_head)
+
+    def forward(self, x: torch.Tensor):
+        result = super().forward(x)
+        return result, None
+
+
+class vLLMBF16Linear(BF16Linear):
+    def __init__(self, input_features, output_features, bias=True, mp_group=None,
+                 compute_dtype=None, enable_xetla=False, optimize_lm_head=False):
+        super().__init__(input_features, output_features, bias, mp_group, compute_dtype,
+                         enable_xetla, optimize_lm_head)
+
+    def forward(self, x: torch.Tensor):
+        result = super().forward(x)
+        return result, None
