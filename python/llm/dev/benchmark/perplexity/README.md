@@ -6,7 +6,7 @@ Perplexity (PPL) is one of the most common metrics for evaluating language model
 ```bash
 pip install datasets
 ```
-
+An example to run perplexity on wikitext:
 ```bash
 
 python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B --dataset path=wikitext,name=wikitext-2-raw-v1 --precision sym_int4 --device xpu --stride 512 --max_length 4096
@@ -16,11 +16,12 @@ python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B --dataset path=wi
 ## Run on [THUDM/LongBench](https://github.com/THUDM/LongBench) dataset
 
 ```bash
-python run_longbench.py --model_path <path/to/model> --precisions sym_int4 fp8 --device xpu --datasets dataset_names --dataset_path <path/to/dataset> --language en
+pip install datasets
 ```
-A more specific example to run perplexity on Llama2-7B using the default English datasets:
+
+An example to run perplexity on Llama2-7B using the default Chinese datasets:
 ```bash
-python run_longbench.py --model_path meta-llama/Llama-2-7b-chat-hf --precisions float16 sym_int4 --device xpu --language en
+python run_longbench.py --model_path meta-llama/Llama-2-7b-chat-hf --precisions float16 sym_int4 --device xpu --language zh
 ```
 
 Notes:
