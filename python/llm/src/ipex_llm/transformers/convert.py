@@ -386,7 +386,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  enable_scale_search=False,
                                  ):
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params, \
-        FP16Linear, BF16Linear, vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
+        FP16Linear, BF16Linear
     from ipex_llm.transformers.embedding import CPUEmbedding, DiskEmbedding, LowBitEmbedding
     has_been_replaced = False
 
@@ -452,8 +452,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     if in_features % 64 != 0:
                         # now our kernel requires in_features is a multiple of 64
                         continue
-
-                    # Let's now convert it to vLLMLowBitLinear
                     cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                        full_module_name,
                                                                        imatrix_data,
