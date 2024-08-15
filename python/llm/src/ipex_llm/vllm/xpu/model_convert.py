@@ -225,8 +225,8 @@ def _ipex_llm_convert(load_in_low_bit):
 
 def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
-        _model_mlp_convert()
-        _model_attention_convert()
+        # _model_mlp_convert()
+        # _model_attention_convert()
         _model_sample_convert()
 
         from vllm.utils import measure_device_memory
@@ -243,6 +243,7 @@ def get_load_function(low_bit):
             optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype)
             self.model = self.model.to(device=self.device_config.device,
                                        dtype=self.model_config.dtype)
+            print(self.model)
 
         self.model_memory_usage = m.consumed_memory
         logger = init_logger(__name__)
