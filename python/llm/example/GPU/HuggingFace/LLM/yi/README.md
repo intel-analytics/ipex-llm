@@ -122,41 +122,18 @@ In the example, several arguments can be passed to satisfy your requirements:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-
-<|im_start|>system
-You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
-<|im_start|>user
-What is AI?<|im_end|>
-<|im_start|>assistant
-
+What is AI?
 -------------------- Output --------------------
-
-<|im_start|>system
-You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
-<|im_start|>user
-What is AI?<|im_end|>
-<|im_start|>assistant
-What is the difference between a chatbot and a virtual assistant?
-A chatbot is a computer program that can hold a conversation with a user. A virtual
+What is AI?
+Artificial Intelligence (AI) is the simulation of human intelligence in machines. AI is the science and engineering of making intelligent machines, especially intelligent computer programs.
 ```
 
 #### [01-ai/Yi-6B-Chat](https://huggingface.co/01-ai/Yi-6B-Chat)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-
-<|im_start|>system
-You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
-<|im_start|>user
-What is AI?<|im_end|>
-<|im_start|>assistant
-
+What is AI?
 -------------------- Output --------------------
-
- system
-You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information. 
- user
-What is AI? 
- assistant
-Artificial Intelligence (AI) refers to the simulation of human intelligence in machines, such as computers and software systems. It involves the development of systems with the capabilities
+What is AI?
+Artificial Intelligence (AI) refers to the simulation of human intelligence processes by machines, especially computer systems. These processes include learning, reasoning, and self-
 ```
