@@ -91,6 +91,30 @@ def append_fused_kv_cache(cache_k, cache_v, key_states, value_states, transpose_
         new_cache_v[:, :, :, start:end] = value_states
         return new_cache_k, new_cache_v.transpose(-1, -2)
 
+def expand_fused_kv_cache(cache_k, cache_v, transpose_value=False):
+    if not transpose_value:
+        new_size = (cache_k.size(0),
+                    cache_k.size(1),
+                    cache_k.size(2) + 1,
+                    cache_k.size(3))
+        new_cache_k = cache_k.as_strided(new_size, cache_k.stride(), storage_offset=0)
+        new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
+        return new_cache_k, new_cache_v
+    else:
+        new_size_key = (cache_k.size(0),
+                        cache_k.size(1),
+                        cache_k.size(2) + 1,
+                        cache_k.size(3))
+        new_cache_k = cache_k.as_strided(new_size_key, cache_k.stride(), storage_offset=0)
+        new_size_value = (cache_v.size(0),
+                          cache_v.size(1),
+                          cache_v.size(3),
+                          cache_v.size(2) + 1,
+                          )
+        raw_cache_v = cache_v.transpose(-1, -2)
+        new_cache_v = raw_cache_v.as_strided(new_size_value, raw_cache_v.stride(), storage_offset=0)
+        return new_cache_k, new_cache_v.transpose(-1, -2)
+
 
 class DynamicFusedNormalCache(DynamicCache):
     # Experimental support for fused decoderlayer implementation on NPU
@@ -147,6 +171,12 @@ class DynamicFusedNormalCache(DynamicCache):
 
         for idx, layer in self.key_cache.items():
             return layer.shape[-2]
+    
+    def expand(self):
+        for idx, layer in self.key_cache.items():
+            key_cache, value_cache = expand_fused_kv_cache(self.key_cache[idx], self.value_cache[idx])
+            self.key_cache[idx] = key_cache
+            self.value_cache[idx] = value_cache
 
     @property
     def _seen_tokens(self):
