@@ -112,7 +112,7 @@ python ./generate.py
 
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Yi model (e.g. `01-ai/Yi-6B`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'01-ai/Yi-6B'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Yi model (e.g. `01-ai/Yi-6B`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'01-ai/Yi-6B-Chat'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
