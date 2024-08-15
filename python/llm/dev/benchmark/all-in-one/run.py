@@ -64,7 +64,7 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         end = time.perf_counter()
         output_ids = output_ids.cpu()
         print("model generate cost: " + str(end - st))
-        output = tokenizer.batch_decode(output_ids)
+        output = tokenizer.batch_decode(output_ids[:, actual_in_len:])
         print(output[0])
         torch.xpu.empty_cache()
         actual_out_len = output_ids.shape[1] - actual_in_len
