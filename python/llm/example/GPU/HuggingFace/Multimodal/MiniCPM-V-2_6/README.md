@@ -1,11 +1,11 @@
-# MiniCPM-V-2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V-2 model on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-V-2](https://huggingface.co/openbmb/MiniCPM-V-2) as a reference MiniCPM-V-2 model.
+# MiniCPM-V-2_6
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V-2_6 model on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) as reference MiniCPM-V-2_6 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `chat()` API
-In the example [generate.py](./generate.py), we show a basic use case for a MiniCPM-V-2 model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a MiniCPM-V-2_6 model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -27,7 +27,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install timm peft
+pip install timm peft transformers==4.40.0 trl
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -111,23 +111,23 @@ python ./generate.py --prompt 'What is in the image?'
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MiniCPM-V-2 (e.g. `openbmb/MiniCPM-V-2`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MiniCPM-V-2_6 (e.g. `openbmb/MiniCPM-V_2`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2_6'`.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
 
-#### [openbmb/MiniCPM-V-2](https://huggingface.co/openbmb/MiniCPM-V-2)
+#### [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6)
 
 ```log
-Inference time: xxxx s
+Inference time: 3.102498769760132 s
 -------------------- Input --------------------
 http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 -------------------- Prompt --------------------
 What is in the image?
 -------------------- Output --------------------
-In the image, there is a young child holding a teddy bear. The teddy bear appears to be dressed in a pink tutu. The child is also wearing a red and white striped dress. The background of the image includes a stone wall and some red flowers.
+The image features a young child holding a white teddy bear with a pink tutu. The child is wearing a striped dress and is standing in front of a stone wall with some red flowers in the background.
 ```
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):

@@ -116,9 +116,9 @@ from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for openbmb/MiniCPM-V-2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2",
-                        help='The huggingface repo id for the openbmb/MiniCPM-V-2 model to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for openbmb/MiniCPM-V-2_6 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6",
+                        help='The huggingface repo id for the openbmb/MiniCPM-V-2_6 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--image-url-or-path', type=str,
                         default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg',
@@ -140,9 +140,8 @@ if __name__ == '__main__':
                                       load_in_low_bit="asym_int4",
                                       optimize_model=True,
                                       trust_remote_code=True,
-                                      modules_to_not_convert=["vpm", "resampler", "lm_head"],
                                       use_cache=True)
-    model = model.float().to(device='xpu')
+    model = model.half().to(device='xpu')
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     model.eval()
@@ -157,7 +156,7 @@ if __name__ == '__main__':
     # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2/blob/main/README.md
     msgs = [{'role': 'user', 'content': args.prompt}]
     st = time.time()
-    res, context, _ = model.chat(
+    res = model.chat(
      image=image,
      msgs=msgs,
      context=None,
