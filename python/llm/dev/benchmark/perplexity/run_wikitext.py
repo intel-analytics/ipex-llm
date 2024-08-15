@@ -38,8 +38,6 @@ args = parser.parse_args()
 
 if args.precision == "fp16":  # ipex fp16
     from transformers import AutoModelForCausalLM
-    if "xpu" in args.device:
-        import intel_extension_for_pytorch as ipex
     model = AutoModelForCausalLM.from_pretrained(args.model_path, use_cache=args.use_cache, trust_remote_code=True)
     model = model.half()
 else:  # ipex-llm
