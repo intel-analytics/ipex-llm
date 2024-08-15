@@ -120,7 +120,7 @@ Arguments info:
 #### Sample Output
 #### [lmsys/vicuna-13b-v1.5](https://huggingface.co/lmsys/vicuna-13b-v1.5)
 ```log
-Inference time: 1.0269405841827393 s
+Inference time: xxxx s
 -------------------- Prompt --------------------
 ### Human:
 What is AI? 
@@ -135,7 +135,7 @@ AI stands for Artificial Intelligence. It refers to the development of computer 
 
 #### [eachadea/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5)
 ```log
-Inference time: 0.7162051200866699 s
+Inference time: xxxx s
 -------------------- Prompt --------------------
 ### Human:
 What is AI? 
