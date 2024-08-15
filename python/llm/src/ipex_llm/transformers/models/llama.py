@@ -1108,7 +1108,7 @@ def llama_attention_forward_4_41_quantized(
                                                 llama_decoding_fast_path_qtype_check) and no_tp
     # [CompressKV]
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
-    
+
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         tmp_cache_k, tmp_cache_v = init_kv_cache(
@@ -1695,7 +1695,7 @@ def llama_attention_forward_4_38_quantized(
                                                 enough_kv_room,
                                                 bsz * q_len,
                                                 llama_decoding_fast_path_qtype_check) and no_tp
-    
+
     # [CompressKV]
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
@@ -1782,8 +1782,8 @@ def llama_attention_forward_4_38_quantized(
                     self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
             else:
                 key_states, value_states = past_key_value.update(key_states, value_states,
-                                                                self.layer_idx, cache_kwargs)
-            
+                                                                 self.layer_idx, cache_kwargs)
+
         if use_cache and use_sdp_causal(q_len, kv_seq_len, self.head_dim,
                                         query_states, self.training):
             import xe_addons
@@ -1840,7 +1840,7 @@ def llama_attention_forward_4_38_quantized(
                 self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
         else:
             key_states, value_states = past_key_value.update(key_states, value_states,
-                                                            self.layer_idx, cache_kwargs)
+                                                             self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
         if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
