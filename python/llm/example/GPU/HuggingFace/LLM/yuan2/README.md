@@ -122,9 +122,9 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### Sample Output
 #### [IEITYuan/Yuan2-2B-hf](https://huggingface.co/IEITYuan/Yuan2-2B-hf)
 ```log
-Inference time: xxxx seconds
+Inference time: 1.4669029712677002 seconds
 -------------------- Output --------------------
 
 What is AI?
-AI is a field of technology and technologies that is used to analyze and improve human behavior such as language processing, machine learning and artificial intelligence (AI).<eod>
+The term "AI" refers to the ability of artificial intelligence (AI) to perform tasks performed by humans. This can be seen when we think of AI as a form of machine learning and natural language processing (NLP), which are both fundamental in our lives today. But what really distinguishes AI is that it is capable of solving problems and solving them in an object-oriented, machine-readable, and natural language-based way
 ```
