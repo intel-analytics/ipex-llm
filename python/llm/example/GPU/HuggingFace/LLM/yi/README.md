@@ -1,5 +1,5 @@
 # Yi
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Yi models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [01-ai/Yi-6B](https://huggingface.co/01-ai/Yi-6B) as a reference Yi model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Yi models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [01-ai/Yi-6B](https://huggingface.co/01-ai/Yi-6B) and [01-ai/Yi-6B-Chat](https://huggingface.co/01-ai/Yi-1.5-6B-Chat) as reference Yi models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -120,10 +120,43 @@ In the example, several arguments can be passed to satisfy your requirements:
 #### [01-ai/Yi-6B](https://huggingface.co/01-ai/Yi-6B)
 
 ```log
-Inference time: xxxx s
+Inference time: 1.1255202293395996 s
 -------------------- Prompt --------------------
-AI是什么？
+
+<|im_start|>system
+You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+
 -------------------- Output --------------------
-AI是什么？
-人工智能（Artificial Intelligence），英文缩写为AI。它是研究、开发用于模拟、延伸和扩展人的智能的理论、方法、技术及
+
+<|im_start|>system
+You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+What is the difference between a chatbot and a virtual assistant?
+A chatbot is a computer program that can hold a conversation with a user. A virtual
+```
+
+#### [01-ai/Yi-6B-Chat](https://huggingface.co/01-ai/Yi-6B-Chat)
+```log
+Inference time: 0.5318927764892578 s
+-------------------- Prompt --------------------
+
+<|im_start|>system
+You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+
+-------------------- Output --------------------
+
+ system
+You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information. 
+ user
+What is AI? 
+ assistant
+Artificial Intelligence (AI) refers to the simulation of human intelligence in machines, such as computers and software systems. It involves the development of systems with the capabilities
 ```
