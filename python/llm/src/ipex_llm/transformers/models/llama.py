@@ -128,7 +128,6 @@ def llama_model_forward_4_36(
             self.layers[0].mlp.up_proj, input,
             self.config.num_attention_heads//self.config.num_key_value_heads)
         if should_use_compresskv(input, input.shape[1]):
-            # if use quantize kv, compress kv will be ignored now
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(
                     past_key_values, quantize_kv=use_quantize)
@@ -165,13 +164,11 @@ def llama_model_forward_4_38(
     from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
-    print("bbbbbbbbbbbb")
     if use_cache:
         use_quantize = use_quantize_kv_cache(
             self.layers[0].mlp.up_proj, input,
             self.config.num_attention_heads//self.config.num_key_value_heads)
         if should_use_compresskv(input, input.shape[1]):
-            # if use quantize kv, compress kv will be ignored now
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(
                     past_key_values, quantize_kv=use_quantize)
@@ -210,15 +207,16 @@ def llama_model_forward_4_41(
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
-        if use_quantize_kv_cache(self.layers[0].mlp.up_proj, input,
-                                 self.config.num_attention_heads//self.config.num_key_value_heads):
-            if not isinstance(past_key_values, DynamicFp8Cache):
-                past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input, input.shape[1]):
-            # if use quantize kv, compress kv will be ignored now
+        use_quantize = use_quantize_kv_cache(
+            self.layers[0].mlp.up_proj, input,
+            self.config.num_attention_heads//self.config.num_key_value_heads)
+        if should_use_compresskv(input, input.shape[1]):
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(
-                    past_key_values)
+                    past_key_values, quantize_kv=use_quantize)
+        elif use_quantize:
+            if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
+                past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_41_internal(
         self=self,
         input_ids=input_ids,
@@ -1091,6 +1089,7 @@ def llama_attention_forward_4_41_quantized(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1107,6 +1106,9 @@ def llama_attention_forward_4_41_quantized(
                                                 enough_kv_room,
                                                 bsz * q_len,
                                                 llama_decoding_fast_path_qtype_check) and no_tp
+    # [CompressKV]
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
+    
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         tmp_cache_k, tmp_cache_v = init_kv_cache(
@@ -1182,8 +1184,15 @@ def llama_attention_forward_4_41_quantized(
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
         if use_cache:
             cache_kwargs = None
-            key_states, value_states = past_key_value.update(key_states, value_states,
-                                                             self.layer_idx, cache_kwargs)
+            # [CompressKV]
+            if use_compresskv:
+                key_states, value_states = past_key_value.update(
+                    key_states, value_states, self.layer_idx,
+                    query_states, attention_mask, self.num_key_value_groups,
+                    self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
+            else:
+                key_states, value_states = past_key_value.update(key_states, value_states,
+                                                                 self.layer_idx, cache_kwargs)
         if use_cache and use_sdp_causal(q_len, kv_seq_len, self.head_dim,
                                         query_states, self.training):
             import xe_addons
@@ -1232,8 +1241,15 @@ def llama_attention_forward_4_41_quantized(
             attn_output = torch.matmul(attn_weights, repeated_value_states)
     else:
         cache_kwargs = None  # Specific to RoPE models
-        key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs)
+        # [CompressKV]
+        if use_compresskv:
+            key_states, value_states = past_key_value.update(
+                key_states, value_states, self.layer_idx,
+                query_states, attention_mask, self.num_key_value_groups,
+                self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
+        else:
+            key_states, value_states = past_key_value.update(key_states, value_states,
+                                                             self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
         if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -1280,6 +1296,11 @@ def llama_attention_forward_4_41_quantized(
                 new_attn_mask = attention_mask[:, :, :, 0:kv_seq_len]
             else:
                 new_attn_mask = attention_mask
+
+            # [CompressKV]
+            if use_compresskv:
+                new_attn_mask = get_compresskv_attn_mask(key_states,
+                                                         new_attn_mask)
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, new_attn_mask)
             attn_weights = None
 
@@ -1753,6 +1774,7 @@ def llama_attention_forward_4_38_quantized(
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
         if use_cache:
             cache_kwargs = None
+            # [CompressKV]
             if use_compresskv:
                 key_states, value_states = past_key_value.update(
                     key_states, value_states, self.layer_idx,
@@ -1810,6 +1832,7 @@ def llama_attention_forward_4_38_quantized(
             attn_output = torch.matmul(attn_weights, repeated_value_states)
     else:
         cache_kwargs = None  # Specific to RoPE models
+        # [CompressKV]
         if use_compresskv:
             key_states, value_states = past_key_value.update(
                 key_states, value_states, self.layer_idx,
