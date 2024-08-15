@@ -1735,7 +1735,9 @@ def _optimize_post(model, lightweight_bmm=False):
         vpm_module = importlib.import_module(vpm_modeling_module_name)
         if not hasattr(model.vpm, "config"):
             # MiniCPM-V 2
+            from ipex_llm.transformers.models.minicpmv import vision_transformer_attention_forward
             from ipex_llm.transformers.models.minicpmv import minicpmv_get_vision_embedding
+            convert_forward(model.vpm, vpm_module.Attention, vision_transformer_attention_forward)
             model.get_vision_embedding = MethodType(minicpmv_get_vision_embedding, model)
         elif model.vpm.config.model_type == "siglip":
             # MiniCPM-V 2.6
