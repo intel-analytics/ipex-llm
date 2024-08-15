@@ -1,5 +1,5 @@
 # Vicuna
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Vicuna models. For illustration purposes, we utilize the [lmsys/vicuna-13b-v1.3](https://huggingface.co/lmsys/vicuna-13b-v1.3) and [eachadea/vicuna-7b-1.1](https://huggingface.co/eachadea/vicuna-7b-1.1) as reference Vicuna models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Vicuna models. For illustration purposes, we utilize the [lmsys/vicuna-13b-v1.5](https://huggingface.co/lmsys/vicuna-13b-v1.5) and [lmsys/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5) as reference Vicuna models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -109,7 +109,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Vicuna model (e.g. `lmsys/vicuna-13b-v1.3` and `eachadea/vicuna-7b-1.1`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'lmsys/vicuna-13b-v1.3'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Vicuna model (e.g. `lmsys/vicuna-13b-v1.5` and `eachadea/vicuna-7b-v1.5`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'lmsys/vicuna-13b-v1.5'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -118,7 +118,7 @@ Arguments info:
 > Please select the appropriate size of the Vicuna model based on the capabilities of your machine.
 
 #### Sample Output
-#### [lmsys/vicuna-13b-v1.3](https://huggingface.co/lmsys/vicuna-13b-v1.3)
+#### [lmsys/vicuna-13b-v1.5](https://huggingface.co/lmsys/vicuna-13b-v1.5)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
@@ -130,10 +130,10 @@ What is AI?
 ### Human:
 What is AI? 
  ### Assistant:
-AI, or Artificial Intelligence, refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception,
+AI stands for Artificial Intelligence. It refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception
 ```
 
-#### [eachadea/vicuna-7b-1.1](https://huggingface.co/eachadea/vicuna-7b-1.1)
+#### [eachadea/vicuna-7b-v1.5](https://huggingface.co/lmsys/vicuna-7b-v1.5)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
@@ -145,5 +145,5 @@ What is AI?
 ### Human:
 What is AI? 
  ### Assistant:
-AI, or artificial intelligence, refers to the ability of a machine or computer program to mimic human intelligence and perform tasks that would normally require human intelligence to
+AI stands for "Artificial Intelligence." It refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual per
 ```
