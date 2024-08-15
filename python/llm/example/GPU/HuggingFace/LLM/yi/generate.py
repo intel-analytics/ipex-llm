@@ -21,11 +21,10 @@ import argparse
 from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-# Refer to https://huggingface.co/01-ai/Yi-6B-Chat#31-use-the-chat-model
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Yi model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="/01-ai/Yi-6B-Chat",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="01-ai/Yi-6B-Chat",
                         help='The huggingface repo id for the Yi model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
