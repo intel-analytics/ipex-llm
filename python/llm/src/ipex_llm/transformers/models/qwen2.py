@@ -121,11 +121,12 @@ def qwen2_model_forward(
     use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
 
     if use_cache:
-        if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+        if use_compress_kv and not isinstance(past_key_values, DynamicCompressCache):
+            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values,
+                                                                     quantize_kv=use_quantize_kv)
+        elif use_quantize_kv and not isinstance(past_key_values,
+                                                (DynamicFp8Cache, DynamicCompressCache)):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif not use_quantize_kv and use_compress_kv and not isinstance(past_key_values,
-                                                                        DynamicCompressCache):
-            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
         if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
                                                                           (DynamicNormalCache,
                                                                            DynamicCompressCache)):
@@ -474,7 +475,8 @@ def qwen2_attention_forward(
         import xe_addons
         if use_compresskv:
             attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if isinstance(past_key_value,
+                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
         else:
@@ -482,14 +484,16 @@ def qwen2_attention_forward(
                                         attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
         import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if isinstance(past_key_value,
+                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
                                                    value_states, attention_mask)
         else:
             attn_output = xe_addons.sdp_causal(query_states, key_states,
                                                value_states, attention_mask)
     else:
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if isinstance(past_key_value,
+                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
         # repeat k/v heads if n_kv_heads < n_heads
