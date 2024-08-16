@@ -137,7 +137,7 @@ if __name__ == '__main__':
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModel.from_pretrained(model_path, 
-                                      load_in_low_bit="asym_int4",
+                                      load_in_low_bit="sym_int4",
                                       optimize_model=True,
                                       trust_remote_code=True,
                                       use_cache=True)
@@ -153,11 +153,11 @@ if __name__ == '__main__':
        image = Image.open(requests.get(image_path, stream=True).raw).convert('RGB')
 
     # Generate predicted tokens
-    # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2/blob/main/README.md
-    msgs = [{'role': 'user', 'content': args.prompt}]
+    # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/README.md
+    msgs = [{'role': 'user', 'content': [image, args.prompt]}]
     st = time.time()
     res = model.chat(
-     image=image,
+     image=None,
      msgs=msgs,
      context=None,
      tokenizer=tokenizer,
