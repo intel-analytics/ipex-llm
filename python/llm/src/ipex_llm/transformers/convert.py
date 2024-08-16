@@ -223,65 +223,40 @@ def is_linear_module(module):
 def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
                  enable_xetla, optimize_lm_head, enable_scale_search):
     from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
-    from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
-        FP16Linear, BF16Linear, vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
-    if isinstance(module, ParallelLMHead):
-        if qtype == ggml_tensor_qtype["fp16"]:
-            new_linear = FP16Linear(
-                in_features,
-                out_features,
-                module.bias is not None,
-                mp_group=mp_group,
-                optimize_lm_head=optimize_lm_head
-            )
-        elif qtype == ggml_tensor_qtype["bf16"]:
-            new_linear = BF16Linear(
-                in_features,
-                out_features,
-                module.bias is not None,
-                mp_group=mp_group,
-                optimize_lm_head=optimize_lm_head
-            )
-        else:
-            new_linear = LowBitLinear(
-                in_features,
-                out_features,
-                cur_qtype,
-                module.bias is not None,
-                mp_group=mp_group,
-                enable_xetla=enable_xetla,
-                optimize_lm_head=optimize_lm_head,
-                enable_scale_search=enable_scale_search,
-            )
-    else:
-        if qtype == ggml_tensor_qtype["fp16"]:
-            new_linear = vLLMFP16Linear(
-                in_features,
-                out_features,
-                module.bias is not None,
-                mp_group=mp_group,
-                optimize_lm_head=optimize_lm_head
-            )
-        elif qtype == ggml_tensor_qtype["bf16"]:
-            new_linear = vLLMBF16Linear(
-                in_features,
-                out_features,
-                module.bias is not None,
-                mp_group=mp_group,
-                optimize_lm_head=optimize_lm_head
-            )
-        else:
-            new_linear = vLLMLowBitLinear(
-                in_features,
-                out_features,
-                cur_qtype,
-                module.bias is not None,
-                mp_group=mp_group,
-                enable_xetla=enable_xetla,
-                optimize_lm_head=optimize_lm_head,
-                enable_scale_search=enable_scale_search,
-            )
-    return new_linear
+    from ipex_llm.transformers.low_bit_linear import (
+        LowBitLinear, FP16Linear, BF16Linear,
+        vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
+    )
+
+    linear_class_map = {
+        "fp16": (FP16Linear, vLLMFP16Linear),
+        "bf16": (BF16Linear, vLLMBF16Linear),
+        "lowbit": (LowBitLinear, vLLMLowBitLinear)
+    }
+
+    # Determine which class to use based on the module type and qtype
+    base_class, vllm_class = linear_class_map.get(
+        "lowbit" if qtype not in linear_class_map else qtype
+    )
+    selected_class = base_class if isinstance(module, ParallelLMHead) else vllm_class
+
+    kwargs = {
+        "in_features": in_features,
+        "out_features": out_features,
+        "bias": module.bias is not None,
+        "mp_group": mp_group,
+        "optimize_lm_head": optimize_lm_head
+    }
+
+    # Add additional arguments for LowBitLinear and vLLMLowBitLinear
+    if selected_class in {LowBitLinear, vLLMLowBitLinear}:
+        kwargs.update({
+            "cur_qtype": cur_qtype,
+            "enable_xetla": enable_xetla,
+            "enable_scale_search": enable_scale_search
+        })
+
+    return selected_class(**kwargs)
 
 
 def convert_gptq(module, awq=False, llm_awq=False, act_order=False):
@@ -1115,21 +1090,10 @@ def _optimize_post(model, lightweight_bmm=False):
             convert_forward(model, LlamaAttention, llama_attention_forward_4_38)
             convert_forward(model, LlamaSdpaAttention, llama_attention_forward_4_38)
         else:
-            vllm_se_batching = os.getenv("VLLM_ENABLE_SELECTIVE_BATCHING", "").lower() == "true"
-            if vllm_se_batching:
-                from ipex_llm.transformers.models.llama import (
-                    llama_model_selective_batching_forward_4_31,
-                    llama_attention_selective_batching_forward_4_31,
-                )
-                convert_forward(model, LlamaModel,
-                                llama_model_selective_batching_forward_4_31)
-                convert_forward(model, LlamaAttention,
-                                llama_attention_selective_batching_forward_4_31)
-            else:
-                from ipex_llm.transformers.models.llama import llama_model_forward
-                from ipex_llm.transformers.models.llama import llama_attention_forward_4_31
-                convert_forward(model, LlamaModel, llama_model_forward)
-                convert_forward(model, LlamaAttention, llama_attention_forward_4_31)
+            from ipex_llm.transformers.models.llama import llama_model_forward
+            from ipex_llm.transformers.models.llama import llama_attention_forward_4_31
+            convert_forward(model, LlamaModel, llama_model_forward)
+            convert_forward(model, LlamaAttention, llama_attention_forward_4_31)
 
     elif (
         model.config.architectures is not None
