@@ -525,8 +525,8 @@ def run_transformer_int4_gpu(repo_id,
                                                             trust_remote_code=True, use_cache=True,
                                                             cpu_embedding=cpu_embedding,
                                                             torch_dtype=torch_dtype).eval()
-        model = model.to('xpu')
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
 
     end = time.perf_counter()
     load_time = end - st
