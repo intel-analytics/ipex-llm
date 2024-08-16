@@ -180,6 +180,8 @@ def is_linear_module(module):
             out_features = module.output_size
             result = True
             mp_group = None
+            invalidInputError(module.skip_bias_add is not True, "Currently, ipex-vllm does not"
+                              " support linear layers with skip_bias_add argument")
             if isinstance(module, RowParallelLinear) and tp_size >= 2:
                 mp_group = get_tensor_model_parallel_group()
                 in_features = module.input_size_per_partition
@@ -216,6 +218,70 @@ def is_linear_module(module):
             result = False
 
     return result, (in_features, out_features, mp_group)
+
+
+def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
+                 enable_xetla, optimize_lm_head, enable_scale_search):
+    from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
+    from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
+        FP16Linear, BF16Linear, vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
+    if isinstance(module, ParallelLMHead):
+        if qtype == ggml_tensor_qtype["fp16"]:
+            new_linear = FP16Linear(
+                in_features,
+                out_features,
+                module.bias is not None,
+                mp_group=mp_group,
+                optimize_lm_head=optimize_lm_head
+            )
+        elif qtype == ggml_tensor_qtype["bf16"]:
+            new_linear = BF16Linear(
+                in_features,
+                out_features,
+                module.bias is not None,
+                mp_group=mp_group,
+                optimize_lm_head=optimize_lm_head
+            )
+        else:
+            new_linear = LowBitLinear(
+                in_features,
+                out_features,
+                cur_qtype,
+                module.bias is not None,
+                mp_group=mp_group,
+                enable_xetla=enable_xetla,
+                optimize_lm_head=optimize_lm_head,
+                enable_scale_search=enable_scale_search,
+            )
+    else:
+        if qtype == ggml_tensor_qtype["fp16"]:
+            new_linear = vLLMFP16Linear(
+                in_features,
+                out_features,
+                module.bias is not None,
+                mp_group=mp_group,
+                optimize_lm_head=optimize_lm_head
+            )
+        elif qtype == ggml_tensor_qtype["bf16"]:
+            new_linear = vLLMBF16Linear(
+                in_features,
+                out_features,
+                module.bias is not None,
+                mp_group=mp_group,
+                optimize_lm_head=optimize_lm_head
+            )
+        else:
+            new_linear = vLLMLowBitLinear(
+                in_features,
+                out_features,
+                cur_qtype,
+                module.bias is not None,
+                mp_group=mp_group,
+                enable_xetla=enable_xetla,
+                optimize_lm_head=optimize_lm_head,
+                enable_scale_search=enable_scale_search,
+            )
+    return new_linear
 
 
 def convert_gptq(module, awq=False, llm_awq=False, act_order=False):
@@ -399,16 +465,27 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                     # check hidden size whether is a multiple of 256
                     cur_qtype = check_hidden_size(cur_qtype, in_features)
 
-                    new_linear = LowBitLinear(
-                        in_features,
-                        out_features,
-                        cur_qtype,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        enable_xetla=enable_xetla,
-                        optimize_lm_head=optimize_lm_head,
-                        enable_scale_search=enable_scale_search,
-                    )
+                    if _USE_VLLM:
+                        new_linear = convert_vllm(module,
+                                                  qtype,
+                                                  in_features,
+                                                  out_features,
+                                                  mp_group,
+                                                  cur_qtype,
+                                                  enable_xetla,
+                                                  optimize_lm_head,
+                                                  enable_scale_search)
+                    else:
+                        new_linear = LowBitLinear(
+                            in_features,
+                            out_features,
+                            cur_qtype,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                            enable_xetla=enable_xetla,
+                            optimize_lm_head=optimize_lm_head,
+                            enable_scale_search=enable_scale_search,
+                        )
                     device = module.weight.data.device
                     # Copy the weights
                     paramsLowBit = FP4Params(data=module.weight.data,
@@ -427,13 +504,26 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             .to(device)
                 elif qtype == ggml_tensor_qtype["fp16"]:
                     module.to(torch.float16)
-                    new_linear = FP16Linear(
-                        in_features,
-                        out_features,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        optimize_lm_head=optimize_lm_head
-                    )
+                    if _USE_VLLM:
+                        new_linear = convert_vllm(
+                            module,
+                            qtype,
+                            in_features,
+                            out_features,
+                            mp_group,
+                            None,
+                            None,
+                            optimize_lm_head,
+                            None
+                        )
+                    else:
+                        new_linear = FP16Linear(
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                            optimize_lm_head=optimize_lm_head
+                        )
                     device = module.weight.data.device
                     from ipex_llm.transformers.utils import get_ipex_version
                     if get_ipex_version() < "2.1.10+xpu":
@@ -449,13 +539,26 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             .to(device)
                 elif qtype == ggml_tensor_qtype["bf16"]:
                     module.to(torch.bfloat16)
-                    new_linear = BF16Linear(
-                        in_features,
-                        out_features,
-                        module.bias is not None,
-                        mp_group=mp_group,
-                        optimize_lm_head=optimize_lm_head
-                    )
+                    if _USE_VLLM:
+                        new_linear = convert_vllm(
+                            module,
+                            qtype,
+                            in_features,
+                            out_features,
+                            mp_group,
+                            None,
+                            None,
+                            optimize_lm_head,
+                            None
+                        )
+                    else:
+                        new_linear = BF16Linear(
+                            in_features,
+                            out_features,
+                            module.bias is not None,
+                            mp_group=mp_group,
+                            optimize_lm_head=optimize_lm_head
+                        )
                     device = module.weight.data.device
                     # convert here
                     new_linear._parameters['weight'] = nn.Parameter(module.weight)
@@ -727,6 +830,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "qwen2_moe":
         from ipex_llm.transformers.models.qwen2_moe import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "qwen2_audio":
+        from ipex_llm.transformers.models.qwen2 import merge_qkv
+        model.language_model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
@@ -747,17 +853,20 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "llama":
         from ipex_llm.transformers.models.llama import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "minicpm":
+        from ipex_llm.transformers.models.minicpm import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "minicpmv":
         from ipex_llm.transformers.models.minicpmv import merge_qkv
         model.vpm.apply(merge_qkv)
-        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+        if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
+            model.llm.config.model_type = "minicpm"
+        elif model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
             model.llm.config.model_type = "qwen2"
-            _optimize_pre(model.llm, qtype=qtype)
-            model.llm.config.model_type = "minicpmv"
         elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
             model.llm.config.model_type = "llama"
-            _optimize_pre(model.llm, qtype=qtype)
-            model.llm.config.model_type = "minicpmv"
+        _optimize_pre(model.llm, qtype=qtype)
+        model.llm.config.model_type = "minicpmv"
 
     return model
 
@@ -1699,31 +1808,16 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.StableLmModel,
                         stablelm_model_forward
                         )
-    elif model.config.model_type == 'minicpm':
+    elif model.config.model_type == "minicpm":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        if version.parse(trans_version) >= version.parse("4.39.0"):
-            from ipex_llm.transformers.models.minicpm import minicpm_attention_forward_4_39
-            convert_forward(model,
-                            module.MiniCPMAttention,
-                            minicpm_attention_forward_4_39)
-        else:
-            from ipex_llm.transformers.models.minicpm import minicpm_attention_forward
-            convert_forward(model,
-                            module.MiniCPMAttention,
-                            minicpm_attention_forward)
-        from ipex_llm.transformers.models.minicpm import minicpm_model_forward
-
-        convert_forward(model,
-                        module.MiniCPMMLP,
-                        llama_mlp_forward)
-        convert_forward(model,
-                        module.MiniCPMRMSNorm,
-                        llama_rms_norm_forward)
-
-        convert_forward(model,
-                        module.MiniCPMModel,
-                        minicpm_model_forward)
+        from ipex_llm.transformers.models.minicpm import minicpm_attention_forward
+        from ipex_llm.transformers.models.minicpm import minicpm_model_forward_wrapper
+        convert_forward(model, module.MiniCPMAttention, minicpm_attention_forward)
+        convert_forward(model, module.MiniCPMMLP, llama_mlp_forward)
+        convert_forward(model, module.MiniCPMRMSNorm, llama_rms_norm_forward)
+        minicpm_model_forward = minicpm_model_forward_wrapper(module.MiniCPMModel.forward)
+        convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
     elif model.config.model_type == "minicpmv":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1734,24 +1828,22 @@ def _optimize_post(model, lightweight_bmm=False):
         if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
             # MiniCPM-V 2
             model.llm.config.model_type = "minicpm"
-            _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
-            model.llm.config.model_type = "minicpmv"
-        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+        elif model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
             # MiniCPM-V 2.6
             model.llm.config.model_type = "qwen2"
-            _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
-            model.llm.config.model_type = "minicpmv"
         elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
             # MiniCPM-V 2.5
             model.llm.config.model_type = "llama"
-            _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
-            model.llm.config.model_type = "minicpmv"
+        _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+        model.llm.config.model_type = "minicpmv"
 
         vpm_modeling_module_name = model.vpm.__class__.__module__
         vpm_module = importlib.import_module(vpm_modeling_module_name)
         if not hasattr(model.vpm, "config"):
             # MiniCPM-V 2
+            from ipex_llm.transformers.models.minicpmv import vision_transformer_attention_forward
             from ipex_llm.transformers.models.minicpmv import minicpmv_get_vision_embedding
+            convert_forward(model.vpm, vpm_module.Attention, vision_transformer_attention_forward)
             model.get_vision_embedding = MethodType(minicpmv_get_vision_embedding, model)
         elif model.vpm.config.model_type == "siglip":
             # MiniCPM-V 2.6
