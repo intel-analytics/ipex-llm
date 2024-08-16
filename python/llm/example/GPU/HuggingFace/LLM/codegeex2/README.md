@@ -29,7 +29,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 ```
 
 ### 2. Download Model and Replace File
-If you select the codegeex2-6b model ([THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b)), please note that their code (`tokenization_chatglm.py`) initialized tokenizer after the call of `__init__` of its parent class, which may result in error during loading tokenizer. To address issue, we have provided an updated file ([tokenization_chatglm.py](./tokenization_chatglm.py))
+If you select the codegeex2-6b model ([THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b)), please note that their code (`tokenization_chatglm.py`) initialized tokenizer after the call of `__init__` of its parent class, which may result in error during loading tokenizer. To address issue, we have provided an updated file ([tokenization_chatglm.py](./codegeex2-6b/tokenization_chatglm.py))
 
 ```python
 def __init__(self, vocab_file, padding_side="left", clean_up_tokenization_spaces=False, **kwargs):
@@ -37,7 +37,7 @@ def __init__(self, vocab_file, padding_side="left", clean_up_tokenization_spaces
     super().__init__(padding_side=padding_side, clean_up_tokenization_spaces=clean_up_tokenization_spaces, **kwargs)
 ```
 
-You could download the model from [THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b), and replace the file  `tokenization_chatglm.py` with [tokenization_chatglm.py](./tokenization_chatglm.py).
+You could download the model from [THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b), and replace the file  `tokenization_chatglm.py` with [tokenization_chatglm.py](./codegeex2-6b/tokenization_chatglm.py).
 
 ### 3. Configures OneAPI environment variables for Linux
 
