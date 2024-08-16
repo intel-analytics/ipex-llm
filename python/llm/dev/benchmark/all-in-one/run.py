@@ -77,21 +77,22 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
                                         actual_in_len, actual_out_len, load_time, model.peak_memory])
 
 
-def get_continuation_input_str(in_len, tokenizer):
+def get_continuation_input_str(in_len, tokenizer=None):
     # keep 'utf-8' as character encoding mode
-    if in_len > 128 and in_len <= 4096:
-        if in_len <= 2048:
-            input_str = open("prompt/continuation/longbench_2k.txt", 'r', encoding='utf-8').read()
-        else:
-            input_str = open("prompt/continuation/longbench_4k.txt", 'r', encoding='utf-8').read()
+    if tokenizer is not None:
+        if in_len > 128 and in_len <= 4096:
+            if in_len <= 2048:
+                input_str = open("prompt/continuation/longbench_2k.txt", 'r', encoding='utf-8').read()
+            else:
+                input_str = open("prompt/continuation/longbench_4k.txt", 'r', encoding='utf-8').read()
 
-        input_ids = tokenizer.encode(input_str, return_tensors="pt")
-        if input_ids.shape[1] < in_len:
-            return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
-        else:
-            half_idx = in_len // 2
-            input_ids_truncated = torch.cat((input_ids[:, :half_idx], input_ids[:, -(in_len-half_idx):]), dim=1)
-            return tokenizer.batch_decode(input_ids_truncated)[0]
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            if input_ids.shape[1] < in_len:
+                return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
+            else:
+                half_idx = in_len // 2
+                input_ids_truncated = torch.cat((input_ids[:, :half_idx], input_ids[:, -(in_len-half_idx):]), dim=1)
+                return tokenizer.batch_decode(input_ids_truncated)[0]
 
     return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
 
@@ -240,7 +241,7 @@ def run_native_int4(repo_id,
         in_out_len = in_out.split("-")
         in_len = int(in_out_len[0])
         out_len = int(in_out_len[1])
-        input_str = get_continuation_input_str(in_len, tokenizer)
+        input_str = get_continuation_input_str(in_len)
         # As different tokenizer has different encodings,
         # slice the input_ids to ensure the prompt length is required length.
         n_ctx = in_len + out_len if in_len + out_len > 512 else 512
