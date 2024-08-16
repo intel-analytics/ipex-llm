@@ -641,6 +641,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
 import time
 import types
 def run_decode(model, rank, world_size, port, layer_start, layer_end,
+               intra_stages,
                max_seq_len, transpose_value_cache,
                input_queue, result_queue):
     
