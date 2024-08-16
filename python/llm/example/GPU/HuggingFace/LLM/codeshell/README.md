@@ -21,6 +21,12 @@ Suppose you have already configured GPU environment, you will need some extra pr
 
 ## 1. How to use this server
 
+This is a required step on Linux for APT. Skip this step for PIP-installed oneAPI or if you are running on Windows.
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
+
+Then run the following command in the terminal:
 ```
 python server.py [--option value]
 ```
