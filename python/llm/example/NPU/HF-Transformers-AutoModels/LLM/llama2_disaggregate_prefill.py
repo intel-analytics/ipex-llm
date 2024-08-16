@@ -365,6 +365,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         input_laynorm_weights: List[torch.Tensor],
         post_attn_layernorm_weights: List[torch.Tensor],
         layer_indexes : List[int],
+        intra_stages: int,
         cached_cos,
         cached_sin,
         # rotary_emb,
@@ -404,61 +405,57 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             assert False, "should not be here"
             np_dtype = np.float16
         
+        self.intra_stages = intra_stages
         self.layer_indexes = layer_indexes
         self.num_layers_1 = len(self.layer_indexes) // 2
         self.num_layers_0 = len(self.layer_indexes) - self.num_layers_1
+        num_layers = len(self.layer_indexes) // intra_stages
+        self.layer_ranges = []
+        for i in range(intra_stages):
+            if i == intra_stages - 1:
+                self.layer_ranges.append((i * num_layers, len(self.layer_indexes)))
+            else:
+                self.layer_ranges.append((i * num_layers, (i+1) * num_layers))
+        # last_num_layers = len(self.layer_indexes) - num_layers * (intra_stages -1)
+        # self.stage_num_layers = [num_layers] * intra_stages + [last_num_layers]
 
-        assert self.num_layers_1 + self.num_layers_0 == len(input_laynorm_weights)
-        assert self.num_layers_1 + self.num_layers_0 == len(post_attn_layernorm_weights)
 
-        print(f"creating dedcoder layer: {self.layer_indexes[0]}:{self.layer_indexes[self.num_layers_0 - 1]}")
-        self.backend_cls_decode_0 = LowBitLlamaMultiDecoderlayer([1, 1, num_heads*head_dim],
-                                          input_layernorm_weights=input_laynorm_weights[:self.num_layers_0],
-                                          post_attn_layernorm_weights=post_attn_layernorm_weights[:self.num_layers_0],
-                                          cached_cos=cached_cos,
-                                          cached_sin=cached_sin,
-                                          num_heads=num_heads,
-                                          num_key_value_heads=num_key_value_heads,
-                                          num_layers=self.num_layers_0,
-                                          max_seq_len=max_seq_len,
-                                          rms_norm_eps=rms_norm_eps,
-                                          intermediate_size=intermediate_size,
-                                          mode="decode",
-                                          transpose_value=self.transpose_value,
-                                          dtype=np_dtype)
-        print(f"creating dedcoder layer: {self.layer_indexes[self.num_layers_0]}:{self.layer_indexes[self.num_layers_0 + self.num_layers_1 - 1]}")
-        self.backend_cls_decode_1 = LowBitLlamaMultiDecoderlayer([1, 1, num_heads*head_dim],
-                                          input_layernorm_weights=input_laynorm_weights[self.num_layers_0:],
-                                          post_attn_layernorm_weights=post_attn_layernorm_weights[self.num_layers_0:],
-                                          cached_cos=cached_cos,
-                                          cached_sin=cached_sin,
-                                          num_heads=num_heads,
-                                          num_key_value_heads=num_key_value_heads,
-                                          num_layers=self.num_layers_1,
-                                          max_seq_len=max_seq_len,
-                                          rms_norm_eps=rms_norm_eps,
-                                          intermediate_size=intermediate_size,
-                                          mode="decode",
-                                          transpose_value=self.transpose_value,
-                                          dtype=np_dtype)
-        print(f"created dedcoder layer: {self.layer_indexes[0]}:{self.layer_indexes[-1]}")
+        # assert self.num_layers_1 + self.num_layers_0 == len(input_laynorm_weights)
+        # assert self.num_layers_1 + self.num_layers_0 == len(post_attn_layernorm_weights)
 
-        assert (self.num_layers_0 + self.num_layers_1) * 7 == len(op_parameters)
+        self.backend_decoders = []
+
+        for i in range(intra_stages):
+            start, end = self.layer_ranges[i]
+            print(f"creating dedcoder layer: {self.layer_indexes[start]}:{self.layer_indexes[end - 1]}")
+            decoder = LowBitLlamaMultiDecoderlayer([1, 1, num_heads*head_dim],
+                                            input_layernorm_weights=input_laynorm_weights[start:end],
+                                            post_attn_layernorm_weights=post_attn_layernorm_weights[start:end],
+                                            cached_cos=cached_cos,
+                                            cached_sin=cached_sin,
+                                            num_heads=num_heads,
+                                            num_key_value_heads=num_key_value_heads,
+                                            num_layers=end - start,
+                                            max_seq_len=max_seq_len,
+                                            rms_norm_eps=rms_norm_eps,
+                                            intermediate_size=intermediate_size,
+                                            mode="decode",
+                                            transpose_value=self.transpose_value,
+                                            dtype=np_dtype)
+            self.backend_decoders.append(decoder)
+            print(f"created dedcoder layer: {self.layer_indexes[start]}:{self.layer_indexes[end - 1]}")
+
         
-        self.backend_cls_decode_0.setWeights(3+self.num_layers_0*2, self.op_id, *op_parameters[:self.num_layers_0*7])
-        backend_lib.run(self.backend_cls_decode_0._mm)
+        for i in range(intra_stages):
+            start, end = self.layer_ranges[i]
+            num_intra_layers = end - start
+            self.backend_decoders[i].setWeights(3+(num_intra_layers)*2, self.op_id, *op_parameters[start*7:end*7])
+            backend_lib.run(self.backend_decoders[i]._mm)
 
-        print("first inference done")
+            print(f"{i}th inference done")
 
-        self.backend_cls_decode_1.setWeights(3+self.num_layers_1*2, self.op_id, *op_parameters[self.num_layers_0*7:])
-
-        print("weight setted")
-        backend_lib.run(self.backend_cls_decode_1._mm)
-
-        print("2nd inference done")
-
-        self.kv_cache_c_parameter_handel = (None, None)
-        self.kv_cache_parameters = None
+        self.kv_cache_c_parameter_handel = []
+        self.kv_cache_parameters = []
         self.kv_cache_prefetched = False
 
 
@@ -485,17 +482,13 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                   position_ids,
                 )
 
-        if self.kv_cache_parameters is None:
-            self.kv_cache_parameters = []
-            self.kv_cache_c_parameter_handel = None
-            self.kv_cache_prefetched = False
-        else:
+        if len(self.kv_cache_parameters) > 0:
             # the case kv cache changed
             cached_prt = self.kv_cache_parameters[0].storage().data_ptr()
             current_ptr = past_key_value.key_cache[self.layer_indexes[0]].storage().data_ptr()
             if cached_prt != current_ptr:
                 self.kv_cache_parameters = []
-                self.kv_cache_c_parameter_handel = (None, None)
+                self.kv_cache_c_parameter_handel = []
                 self.kv_cache_prefetched = False
 
         if len(self.kv_cache_parameters) == 0:
@@ -518,10 +511,11 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
 
                 self.kv_cache_parameters.append(past_key)
                 self.kv_cache_parameters.append(past_value)
-            handle_0 = self.backend_cls_decode_0.create_parameters([p.numpy() for p in self.kv_cache_parameters[:self.num_layers_0*2]])
-            handle_1 = self.backend_cls_decode_1.create_parameters([p.numpy() for p in self.kv_cache_parameters[self.num_layers_0*2:]])
-            assert len(self.kv_cache_parameters) == (self.num_layers_0 + self.num_layers_1) * 2
-            self.kv_cache_c_parameter_handel = (handle_0, handle_1)
+            
+            for i in range(self.intra_stages):
+                start, end = self.layer_ranges[i]
+                handle = self.backend_decoders[i].create_parameters([p.numpy() for p in self.kv_cache_parameters[start*2:end*2]])
+                self.kv_cache_c_parameter_handel.append(handle)
 
         x_np = [elem.to(torch.float16).numpy() for elem in inputs]
 
@@ -529,16 +523,16 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
 
         with record_function(f"npu_factory"):
             if not self.kv_cache_prefetched:
-                self.backend_cls_decode_0.load_wt_fn(len(inputs), self.backend_cls_decode_0._mm, self.kv_cache_c_parameter_handel[0])
-                self.backend_cls_decode_1.load_wt_fn(len(inputs), self.backend_cls_decode_1._mm, self.kv_cache_c_parameter_handel[1])
+                for i in range(self.intra_stages):
+                    self.backend_decoders[i].load_wt_fn(len(inputs), self.backend_decoders[i]._mm, self.kv_cache_c_parameter_handel[i])
 
-            models_ptr = (ctypes.POINTER(ctypes.c_char) * 2)(self.backend_cls_decode_0._mm, self.backend_cls_decode_1._mm)
+            models_ptr = (ctypes.POINTER(ctypes.c_char) * self.intra_stages)(*[self.backend_decoders[i]._mm for i in range(self.intra_stages)])
             inputs_ptr = (ctypes.c_void_p * 3)(x_np[0].ctypes.data_as(ctypes.c_void_p), x_np[1].ctypes.data_as(ctypes.c_void_p), x_np[2].ctypes.data_as(ctypes.c_void_p))
             t0 = time.perf_counter()
             backend_lib.run_decoders(models_ptr, inputs_ptr, 2, 3)
             t1 = time.perf_counter()
 
-        hidden_states = self.backend_cls_decode_1.torch_out[0]
+        hidden_states = self.backend_decoders[-1].torch_out[0]
 
         if self.do_print:
             print("outputs:", hidden_states)
@@ -549,18 +543,18 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
     
     def post_forward(self, past_key_value, cache_position):
         key_value_states = []
-        for i in range(1, len(self.backend_cls_decode_0.torch_out)):
-            key_value_states.append(self.backend_cls_decode_0.torch_out[i])
+        for i in range(self.intra_stages):
+            for j in range(1, len(self.backend_decoders[i].torch_out)):
+                key_value_states.append(self.backend_decoders[i].torch_out[j])
         
-        for i in range(1, len(self.backend_cls_decode_1.torch_out)):
-            key_value_states.append(self.backend_cls_decode_1.torch_out[i])
         cache_kwargs = {"cache_position": cache_position, "max_seq_len":self.max_seq_len, "transpose": self.transpose_value}
         for i in range(len(self.layer_indexes)):
             key_states, value_states = past_key_value.update(key_value_states[2*i],
                                                              key_value_states[2*i+1],
                                                              self.layer_indexes[i], cache_kwargs)
-        self.backend_cls_decode_0.load_wt_fn(3, self.backend_cls_decode_0._mm, self.kv_cache_c_parameter_handel[0])
-        self.backend_cls_decode_1.load_wt_fn(3, self.backend_cls_decode_1._mm, self.kv_cache_c_parameter_handel[1])
+        
+        for i in range(self.intra_stages):
+            self.backend_decoders[i].load_wt_fn(3, self.backend_decoders[i]._mm, self.kv_cache_c_parameter_handel[i])
         self.kv_cache_prefetched = True
 
 
@@ -651,7 +645,7 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
                input_queue, result_queue):
     
     os.environ['MASTER_ADDR'] = '127.0.0.1'
-    os.environ['MASTER_PORT'] = '54791'
+    os.environ['MASTER_PORT'] = port
     os.environ['RANK'] = str(rank)
     os.environ['WORLD_SIZE'] = str(world_size)
 
@@ -701,6 +695,7 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
         input_laynorm_weights=input_layer_norm_weights,
         post_attn_layernorm_weights=post_attn_layernorm_weights,
         layer_indexes=layer_indexs,
+        intra_stages=intra_stages,
         cached_cos=cached_cos,
         cached_sin=cached_sin,
         num_heads=num_heads,
@@ -765,49 +760,49 @@ class DecodeRunner:
         self.model = model
         self.max_seq_len = max_seq_len
         self.transpose_value_cache = transpose_value_cache
+        world_size = 3
+        num_layers = self.model.model.config.num_hidden_layers
 
         port = '54791'
         os.environ['MASTER_ADDR'] = '127.0.0.1'
         os.environ['MASTER_PORT'] = port
         os.environ['RANK'] = '0'
-        os.environ['WORLD_SIZE'] = '3'
+        os.environ['WORLD_SIZE'] = str(world_size)
 
+        self.input_queues = []
+        self.output_queues = []
+        self.decoder_processes = []
 
-
-        self.decode_result_queue_0 = mp.Queue()
-        self.decode_input_queue_0 = mp.Queue()
-        self.decode_p_0 = mp.Process(target=run_decode, args=(self.model,
-                                                              1, 3, port,
-                                                              0, 16,
-                                                              self.max_seq_len,
-                                                              self.transpose_value_cache,
-                                                              self.decode_input_queue_0,
-                                                              self.decode_result_queue_0))
-        self.decode_p_0.start()
-
-        self.decode_result_queue_1 = mp.Queue()
-        self.decode_input_queue_1 = mp.Queue()
-        self.decode_p_1 = mp.Process(target=run_decode, args=(self.model,
-                                                              2, 3, port,
-                                                              16, 32,
-                                                              self.max_seq_len,
-                                                              self.transpose_value_cache,
-                                                              self.decode_input_queue_1,
-                                                              self.decode_result_queue_1))
-        self.decode_p_1.start()
+        for rank in range(1, world_size):
+            input_q = mp.Queue()
+            output_q = mp.Queue()
+            start_layer = (rank - 1) * (num_layers // (world_size - 1))
+            end_layer = (rank) * (num_layers // (world_size - 1))
+            if rank == world_size - 1:
+                end_layer = num_layers
+            p = mp.Process(target=run_decode, args=(self.model,
+                                                    rank, world_size, port,
+                                                    start_layer, end_layer,
+                                                    2,
+                                                    self.max_seq_len,
+                                                    self.transpose_value_cache,
+                                                    input_q,
+                                                    output_q))
+            p.daemon = True
+            p.start()
+            self.input_queues.append(input_q)
+            self.output_queues.append(output_q)
+            self.decoder_processes.append(p)
 
         dist.init_process_group()
         my_rank = dist.get_rank()
-        my_size = dist.get_world_size()
-        logger.info(f"rank: {my_rank}, size: {my_size}")
+        self.world_size = dist.get_world_size()
+        logger.info(f"rank: {my_rank}, size: {self.world_size}")
 
-        output = self.decode_result_queue_0.get()
-        print(Fore.GREEN  + f"decode process 0 output: {output}")
-        print(Style.RESET_ALL)
-
-        output = self.decode_result_queue_1.get()
-        print(Fore.GREEN  + f"decode process 1 output: {output}")
-        print(Style.RESET_ALL)
+        for i, p in enumerate(self.output_queues):
+            output = self.output_queues[i].get()
+            print(Fore.GREEN  + f"decode process {i + 1} output: {output}")
+            print(Style.RESET_ALL)
 
         self.cache_past_key_value = None
 
@@ -825,27 +820,29 @@ class DecodeRunner:
             if self.cache_past_key_value != past_key_value:
                 control = torch.tensor(-1, dtype=torch.int)
                 dist.broadcast(control, src=0)
-                self.decode_input_queue_0.put(past_key_value)
-                self.decode_input_queue_1.put(past_key_value)
+                for i in range(len(self.decoder_processes)):
+                    self.input_queues.put(past_key_value)
 
             control = torch.tensor(0, dtype=torch.int)
             dist.broadcast(control, src=0)
             hidden_states = hidden_states.to(torch.float16)
             dist.send(hidden_states, dst=1)
             past_key_value.expand()
-            dist.recv(hidden_states, src=2)
+            dist.recv(hidden_states, src=self.world_size - 1)
             t1 = time.perf_counter()
             return hidden_states, past_key_value
     
     def shutdown(self):
         control = torch.tensor(-2, dtype=torch.int)
         dist.broadcast(control, src=0)
-        self.decode_p_0.join()
-        self.decode_p_1.join()
+        for p in self.decoder_processes:
+            p.join(3)
+        for p in self.decoder_processes:
+            if p.exitcode is None:
+                p.kill()
 
     def __del__(self):
         self.shutdown()
-
 
 def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_queue):
     print("finish loading prefill model")
@@ -947,6 +944,7 @@ class PrefillRunner:
                                                       args.transpose_value_cache,
                                                       self.prefill_input_queue,
                                                       self.prefill_result_queue))
+        self.p.daemon = True
         self.p.start()
         output = self.prefill_result_queue.get()
         print(Fore.GREEN + f"prefill process output: {output}")
@@ -966,7 +964,9 @@ class PrefillRunner:
     
     def shutdown(self):
         self.prefill_input_queue.put("stop")
-        self.p.join()
+        self.p.join(3)
+        if self.p.exitcode is None:
+            self.p.kill()
 
     def __del__(self):
         self.shutdown()
