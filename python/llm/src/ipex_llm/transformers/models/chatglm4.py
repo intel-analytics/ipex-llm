@@ -200,8 +200,10 @@ def chatglm4_attention_forward(
         key_states[..., :rot_dim] = k_rot[...]
 
     # IPEX-LLM OPT: kv cache and quantize kv
-    use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states)
+    use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states) or \
+        (use_compresskv and past_key_value.quant_kv)
 
+    # [CompressKV]
     if use_compresskv:
         from transformers.configuration_utils import PretrainedConfig
         self.config = self.config if hasattr(self, "config") else PretrainedConfig()
@@ -233,13 +235,13 @@ def chatglm4_attention_forward(
         import xe_addons
         if use_compresskv:
             attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
-        if use_quantize_kv or (use_compresskv and past_key_value.quant_kv):
+        if use_quantize_kv:
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, attention_mask)
         else:
             attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_states, self.training):
         import xe_addons
-        if use_quantize_kv or (use_compresskv and past_key_value.quant_kv):
+        if use_quantize_kv:
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states,
                                                    attention_mask)
         else:
@@ -258,7 +260,7 @@ def chatglm4_attention_forward(
                 query_states, key_states, value_states, attention_mask
             )
     else:
-        if use_quantize_kv or (use_compresskv and past_key_value.quant_kv):
+        if use_quantize_kv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
         # repeat k/v heads if n_kv_heads < n_heads
