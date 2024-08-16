@@ -1,5 +1,5 @@
 repo_id:
-  # - 'google/gemma-2-2b-it'
+  - 'google/gemma-2-2b-it'
   - 'google/gemma-2-9b-it'
 local_model_hub: 'path to your local model hub'
 warm_up: 3
