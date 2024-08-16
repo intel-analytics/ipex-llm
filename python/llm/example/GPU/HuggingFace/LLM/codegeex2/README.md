@@ -28,7 +28,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
 
-### 2. Replace File
+### 2. Download Model and Replace File
 If you select the codegeex2-6b model ([THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b)), please note that their code (`tokenization_chatglm.py`) initialized tokenizer after the call of `__init__` of its parent class, which would result in error. To address issue, we have provided updated file ([tokenization_chatglm.py](./tokenization_chatglm.py))
 
 ```python
