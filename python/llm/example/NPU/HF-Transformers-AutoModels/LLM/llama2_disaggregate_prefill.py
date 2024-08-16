@@ -641,7 +641,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
 import time
 import types
 def run_decode(model, rank, world_size, port, layer_start, layer_end,
-               max_seq_len, transpose_value_cache,
+               intra_stages, max_seq_len, transpose_value_cache,
                input_queue, result_queue):
     
     os.environ['MASTER_ADDR'] = '127.0.0.1'
@@ -821,7 +821,7 @@ class DecodeRunner:
                 control = torch.tensor(-1, dtype=torch.int)
                 dist.broadcast(control, src=0)
                 for i in range(len(self.decoder_processes)):
-                    self.input_queues.put(past_key_value)
+                    self.input_queues[i].put(past_key_value)
 
             control = torch.tensor(0, dtype=torch.int)
             dist.broadcast(control, src=0)
