@@ -15,14 +15,11 @@ python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B --dataset path=wi
 
 ## Run on [THUDM/LongBench](https://github.com/THUDM/LongBench) dataset
 
-Chinese datasets are as follows:
-"multifieldqa_zh", "dureader", "vcsum", "lsht", "passage_retrieval_zh"
-
 ```bash
 pip install datasets
 ```
 
-An example to run perplexity on chatglm3-6b using the default Chinese datasets:
+An example to run perplexity on chatglm3-6b using the default Chinese datasets("multifieldqa_zh", "dureader", "vcsum", "lsht", "passage_retrieval_zh")
 ```bash
 python run_longbench.py --model_path THUDM/chatglm3-6b --precisions float16 sym_int4 --device xpu --language zh
 ```
