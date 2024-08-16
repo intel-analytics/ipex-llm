@@ -48,6 +48,8 @@ PHI3VISION_IDS = ['microsoft/phi-3-vision-128k-instruct']
 
 QWENVL_IDS = ['Qwen/Qwen-VL-Chat']
 
+MINICPM_V_IDS = ['openbmb/MiniCPM-V-2_6']
+
 results = []
 excludes = []
 
@@ -480,11 +482,13 @@ def run_transformer_int4_gpu(repo_id,
                                               trust_remote_code=True, use_cache=True,
                                               torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, cpu_embedding=cpu_embedding)
+        model = model.to('xpu')
     elif origin_repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True, cpu_embedding=cpu_embedding,
                                                      torch_dtype=torch_dtype).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
     elif origin_repo_id in PHI3VISION_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      _attn_implementation="eager",
@@ -492,6 +496,15 @@ def run_transformer_int4_gpu(repo_id,
                                                      trust_remote_code=True, use_cache=True, 
                                                      cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    elif origin_repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True,
+                                          torch_dtype=torch_dtype).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         if "4bit" in repo_id:
             model = AutoModelForCausalLM.load_low_bit(model_path, optimize_model=True,
@@ -512,9 +525,8 @@ def run_transformer_int4_gpu(repo_id,
                                                             trust_remote_code=True, use_cache=True,
                                                             cpu_embedding=cpu_embedding,
                                                             torch_dtype=torch_dtype).eval()
+        model = model.to('xpu')
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    model = model.to('xpu')
 
     end = time.perf_counter()
     load_time = end - st
