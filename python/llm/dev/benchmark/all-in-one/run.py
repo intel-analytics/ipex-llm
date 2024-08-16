@@ -480,7 +480,7 @@ def run_transformer_int4_gpu(repo_id,
         else:
             model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                               trust_remote_code=True, use_cache=True,
-                                              torch_dtype=torch_dtype).eval()
+                                              cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, cpu_embedding=cpu_embedding)
         model = model.to('xpu')
     elif origin_repo_id in LLAMA_IDS:
@@ -501,7 +501,7 @@ def run_transformer_int4_gpu(repo_id,
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                           modules_to_not_convert=["vpm", "resampler"],
                                           trust_remote_code=True, use_cache=True,
-                                          torch_dtype=torch_dtype).eval()
+                                          cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
         model = model.llm
