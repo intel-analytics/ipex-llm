@@ -29,7 +29,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 ```
 
 ### 2. Download Model and Replace File
-If you select the codegeex2-6b model ([THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b)), please note that their code (`tokenization_chatglm.py`) initialized tokenizer after the call of `__init__` of its parent class, which would result in error. To address issue, we have provided updated file ([tokenization_chatglm.py](./tokenization_chatglm.py))
+If you select the codegeex2-6b model ([THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b)), please note that their code (`tokenization_chatglm.py`) initialized tokenizer after the call of `__init__` of its parent class, which may result in error during loading tokenizer. To address issue, we have provided an updated file ([tokenization_chatglm.py](./tokenization_chatglm.py))
 
 ```python
 def __init__(self, vocab_file, padding_side="left", clean_up_tokenization_spaces=False, **kwargs):
