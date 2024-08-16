@@ -79,12 +79,13 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
 
 def get_continuation_input_str(in_len, tokenizer):
     # keep 'utf-8' as character encoding mode
-    if in_len <= 2048:
-        input_str = open("prompt/summarize/cnn_39.txt", 'r', encoding='utf-8').read()
-        question = "Can you please summarize this article?"
-        prompt_format = "{}\nQuestion: {}\n"
-        full_prompt = prompt_format.format(input_str, question)
-        input_ids = tokenizer.encode(full_prompt, return_tensors="pt")
+    if in_len > 128 and in_len <= 4096:
+        if in_len <= 2048:
+            input_str = open("prompt/continuation/longbench_2k.txt", 'r', encoding='utf-8').read()
+        else:
+            input_str = open("prompt/continuation/longbench_4k.txt", 'r', encoding='utf-8').read()
+
+        input_ids = tokenizer.encode(input_str, return_tensors="pt")
         if input_ids.shape[1] < in_len:
             return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
         else:
