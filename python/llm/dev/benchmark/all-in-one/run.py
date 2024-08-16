@@ -992,6 +992,13 @@ def run_transformer_int4_gpu_win(repo_id,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
@@ -1108,6 +1115,14 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                                                      torch_dtype=torch.float16).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                          torch_dtype=torch.float16).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
