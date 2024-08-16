@@ -709,7 +709,7 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
         do_print=False, # layer_start == 0,
     )
 
-    result_queue.put("loading success")
+    dist.barrier()
 
     past_key_values = None
 
@@ -757,11 +757,12 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
 
 import time
 class DecodeRunner:
-    def __init__(self, model, max_seq_len, transpose_value_cache):
+    def __init__(self, model, max_seq_len, intra_pp=2, inter_pp=2, transpose_value_cache=True):
         self.model = model
         self.max_seq_len = max_seq_len
         self.transpose_value_cache = transpose_value_cache
-        world_size = 3
+        world_size = inter_pp + 1
+        intra_stages = intra_pp
         num_layers = self.model.model.config.num_hidden_layers
 
         port = '54791'
@@ -784,7 +785,7 @@ class DecodeRunner:
             p = mp.Process(target=run_decode, args=(self.model,
                                                     rank, world_size, port,
                                                     start_layer, end_layer,
-                                                    2,
+                                                    intra_stages,
                                                     self.max_seq_len,
                                                     self.transpose_value_cache,
                                                     input_q,
@@ -800,11 +801,7 @@ class DecodeRunner:
         self.world_size = dist.get_world_size()
         logger.info(f"rank: {my_rank}, size: {self.world_size}")
 
-        for i, p in enumerate(self.output_queues):
-            output = self.output_queues[i].get()
-            print(Fore.GREEN  + f"decode process {i + 1} output: {output}")
-            print(Style.RESET_ALL)
-
+        dist.barrier()
         self.cache_past_key_value = None
 
     def forward(self,
@@ -822,7 +819,7 @@ class DecodeRunner:
                 control = torch.tensor(-1, dtype=torch.int)
                 dist.broadcast(control, src=0)
                 for i in range(len(self.decoder_processes)):
-                    self.input_queues.put(past_key_value)
+                    self.input_queues[i].put(past_key_value)
 
             control = torch.tensor(0, dtype=torch.int)
             dist.broadcast(control, src=0)
@@ -1138,8 +1135,8 @@ As she'''
     input_ids = input_ids[:, :args.max_seq_len - args.n_predict]
 
 
-    decode_runner = DecodeRunner(model, args.max_seq_len, args.transpose_value_cache)
-    prefill_runner = PrefillRunner(model, args.max_seq_len, args.transpose_value_cache)
+    decode_runner = DecodeRunner(model, args.max_seq_len, inter_pp=2, intra_pp=2, transpose_value_cache=args.transpose_value_cache)
+    prefill_runner = PrefillRunner(model, args.max_seq_len, transpose_value_cache=args.transpose_value_cache)
 
     llama_model_forward = gen_llama_fused_model_forward(prefill_runner=prefill_runner,
                                   decode_runner=decode_runner)
@@ -1175,7 +1172,3 @@ As she'''
     prefill_runner.shutdown()
 
     print("success shut down")
-
-
-
-
