@@ -54,9 +54,10 @@ def chatglm4_model_forward(
         use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
         use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.dense_h_to_4h,
                                                 inputs)
-        if use_compress_kv and not use_quantize_kv and not isinstance(past_key_values,
-                                                                      DynamicCompressCache):
-            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+        if use_compress_kv and not isinstance(past_key_values,
+                                              DynamicCompressCache):
+            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values,
+                                                                     use_quantize_kv)
 
     if inputs_embeds is None:
         batch_size, seq_length = input_ids.shape
@@ -201,7 +202,18 @@ def chatglm4_attention_forward(
     # IPEX-LLM OPT: kv cache and quantize kv
     use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states)
 
-    if use_quantize_kv or (not use_compresskv):
+    if use_compresskv:
+        from transformers.configuration_utils import PretrainedConfig
+        self.config = self.config if hasattr(self, "config") else PretrainedConfig()
+        enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
+                                                      self.layer_number - 1,
+                                                      q_len)
+        key_states, value_states = past_key_value.update(
+            key_states, value_states, self.layer_number - 1,
+            query_states, attention_mask, n_head // n_kv_head,
+            self.config, enough_kv_room, 256
+        )
+    else:
         key_states, value_states = update_past_key_value(
             past_key_value, key_states, value_states,
             kv_seq_len, use_quantize_kv, hidden_states.device
@@ -214,31 +226,20 @@ def chatglm4_attention_forward(
                 past_key_value = (key_states, value_states)
         else:
             past_key_value = None
-    else:
-        from transformers.configuration_utils import PretrainedConfig
-        self.config = self.config if hasattr(self, "config") else PretrainedConfig()
-        enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
-                                                      self.layer_number - 1,
-                                                      q_len)
-        key_states, value_states = past_key_value.update(
-            key_states, value_states, self.layer_number - 1,
-            query_states, attention_mask, n_head // n_kv_head,
-            self.config, enough_kv_room, 256
-        )
 
     # IPEX-LLM OPT: sdp
     attn_weights = None
     if use_sdp(q_len, kv_seq_len, head_dim, query_states):
         import xe_addons
-        if use_quantize_kv:
+        if use_compresskv:
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
+        if use_quantize_kv or (use_compresskv and past_key_value.quant_kv):
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, attention_mask)
         else:
             attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_states, self.training):
         import xe_addons
-        if use_compresskv:
-            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
-        if use_quantize_kv:
+        if use_quantize_kv or (use_compresskv and past_key_value.quant_kv):
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states,
                                                    attention_mask)
         else:
@@ -257,7 +258,7 @@ def chatglm4_attention_forward(
                 query_states, key_states, value_states, attention_mask
             )
     else:
-        if use_quantize_kv:
+        if use_quantize_kv or (use_compresskv and past_key_value.quant_kv):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
         # repeat k/v heads if n_kv_heads < n_heads
