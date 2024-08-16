@@ -15,16 +15,22 @@
 #
 
 
+import math
 import torch
 from typing import Optional
 from ipex_llm.transformers.models.common import merge_qkv_base
+from ipex_llm.transformers.models.common import attention_softmax
+from transformers import AutoProcessor
 from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
 
 
+# MiniCPM-V-2_5 and MiniCPM-V-2_6
 def merge_qkv(module: torch.nn.Module):
-    return merge_qkv_base(module, "SiglipAttention")
+    merge_qkv_base(module, "SiglipAttention")
+    merge_qkv_base(module, "Idefics2VisionAttention")
 
 
+# MiniCPM-V-2_5 and MiniCPM-V-2_6
 def siglip_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -42,8 +48,7 @@ def siglip_attention_forward(
     if attention_mask is not None:
         attn_weights = attn_weights + attention_mask
 
-    import xe_addons
-    xe_addons.attn_softmax_inplaced(attn_weights)
+    attn_weights = attention_softmax(attn_weights, self.training)
 
     attn_weights = torch.nn.functional.dropout(attn_weights, p=self.dropout, training=self.training)
     attn_output = torch.matmul(attn_weights, value_states)
@@ -54,6 +59,87 @@ def siglip_attention_forward(
     attn_output = self.out_proj(attn_output)
 
     return attn_output, attn_weights
+
+
+# MiniCPM-V-2
+# modified from timm.models.vision_transformer.Attention.forward
+def vision_transformer_attention_forward(self, x: torch.Tensor) -> torch.Tensor:
+    bsz, q_len, hidden_size = x.size()
+
+    qkv = self.qkv(x)
+    qkv = qkv.view(bsz, q_len, self.num_heads * 3, self.head_dim)
+    qkv = qkv.transpose(1, 2)
+    query_states, key_states, value_states = qkv.chunk(3, dim=1)
+
+    attn_weights = torch.matmul(query_states * self.scale, key_states.transpose(2, 3))
+    attn_weights = attention_softmax(attn_weights, self.training)
+    attn_weights = self.attn_drop(attn_weights)
+    attn_output = torch.matmul(attn_weights, value_states)
+
+    attn_output = attn_output.transpose(1, 2).contiguous()
+    attn_output = attn_output.reshape(bsz, q_len, hidden_size)
+
+    attn_output = self.proj(attn_output)
+    attn_output = self.proj_drop(attn_output)
+    return attn_output
+
+
+# MiniCPM-V-2_5
+def minicpmv_chat_wrapper(origin_chat):
+    def minicpmv_chat(
+        self,
+        image,
+        msgs,
+        tokenizer,
+        processor=None,
+        vision_hidden_states=None,
+        max_new_tokens=1024,
+        sampling=True,
+        max_inp_length=2048,
+        system_prompt='',
+        stream=False,
+        **kwargs
+    ):
+        if processor is None:
+            if getattr(self, "processor", None) is None:
+                self.processor = AutoProcessor.from_pretrained(self.config._name_or_path,
+                                                               trust_remote_code=True)
+            processor = self.processor
+        return origin_chat(
+            self=self,
+            image=image,
+            msgs=msgs,
+            tokenizer=tokenizer,
+            processor=processor,
+            vision_hidden_states=vision_hidden_states,
+            max_new_tokens=max_new_tokens,
+            sampling=sampling,
+            max_inp_length=max_inp_length,
+            system_prompt=system_prompt,
+            stream=stream,
+            **kwargs
+        )
+    return minicpmv_chat
+
+
+# MiniCPM-V-2
+def minicpmv_get_vision_embedding(self, pixel_values):
+    res = []
+    dtype = self.dtype
+
+    def process_each_pixel(pixel_value, dtype, config, vpm, resampler):
+        H, W = pixel_value.shape[-2:]
+        target_size = (math.ceil(H / config.patch_size), math.ceil(W / config.patch_size))
+        vision_embedding = self.vpm_forward_features(pixel_value.unsqueeze(0).type(dtype))
+
+        if hasattr(vpm, 'num_prefix_tokens') and vpm.num_prefix_tokens > 0:
+            vision_embedding = vision_embedding[:, vpm.num_prefix_tokens:]
+        return resampler(vision_embedding, target_size)
+
+    for pixel_value in pixel_values:
+        result = process_each_pixel(pixel_value, dtype, self.config, self.vpm, self.resampler)
+        res.append(result)
+    return torch.vstack(res)
 
 
 def patched_repetition_penalty_call(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
