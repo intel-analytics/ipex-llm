@@ -79,6 +79,11 @@ def minicpm_attention_forward(
                                                         self.num_key_value_heads,
                                                         self.num_key_value_heads], dim=1)
 
+    # [CompressKV]
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
+    use_quantizekv = isinstance(past_key_value,
+                                DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv)
+
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
@@ -94,7 +99,7 @@ def minicpm_attention_forward(
         )
 
     if past_key_value is not None:
-        if isinstance(past_key_value, DynamicCompressCache):
+        if use_compresskv:
             enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, q_len)
             key_states, value_states = past_key_value.update(
                 key_states, value_states, self.layer_idx,
@@ -107,10 +112,11 @@ def minicpm_attention_forward(
     attn_weights = None
     if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
         import xe_addons
-        if isinstance(past_key_value, DynamicCompressCache):
+        # [CompressKV]
+        if use_compresskv:
             attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
-            attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
-        elif isinstance(past_key_value, DynamicFp8Cache):
+
+        if use_quantizekv:
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
         else:
@@ -118,14 +124,14 @@ def minicpm_attention_forward(
                                         attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
         import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if use_quantizekv:
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
                                                    value_states, attention_mask)
         else:
             attn_output = xe_addons.sdp_causal(query_states, key_states,
                                                value_states, attention_mask)
     else:
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if use_quantizekv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
         key_states = repeat_kv(key_states, self.num_key_value_groups)
@@ -180,11 +186,13 @@ def minicpm_model_forward_wrapper(origin_forward):
 
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         if use_cache:
-            if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+            if use_compress_kv and not isinstance(past_key_values,
+                                                  DynamicCompressCache):
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values,
+                                                                         use_quantize_kv)
+            elif use_quantize_kv and not isinstance(past_key_values,
+                                                    (DynamicFp8Cache, DynamicCompressCache)):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-            elif not use_quantize_kv and use_compress_kv and not isinstance(past_key_values,
-                                                                            DynamicCompressCache):
-                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
             elif (not use_quantize_kv and not use_compress_kv
                   and not isinstance(past_key_values, (DynamicNormalCache, DynamicCompressCache))):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
