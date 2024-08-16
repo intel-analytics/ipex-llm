@@ -125,6 +125,7 @@ async def chat_stream_generator(local_model, delta_text_queue, request_id):
     model_name = local_model.model_name
     index = 0
     while True:
+        await asyncio.sleep(0)
         if not hasattr(delta_text_queue, 'empty'):
             delta_text, remain = get_queue_next_token(delta_text_queue)
         else:
@@ -168,6 +169,7 @@ async def completion_stream_generator(local_model, delta_text_queue, request_id)
     model_name = local_model.model_name
     index = 0
     while True:
+        await asyncio.sleep(0)
         if not hasattr(delta_text_queue, 'empty'):
             delta_text, remain = get_queue_next_token(delta_text_queue)
         else:

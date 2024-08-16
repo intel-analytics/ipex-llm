@@ -37,6 +37,7 @@ import torch
 import warnings
 from torch import nn
 
+from ipex_llm.transformers.models.common import attention_softmax
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, rotate_half
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
 from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
@@ -184,8 +185,7 @@ def attention_forward(
         if attention_mask is not None:
             attn_weights = attn_weights + attention_mask
 
-        import xe_addons
-        xe_addons.attn_softmax_inplaced(attn_weights)
+        attn_weights = attention_softmax(attn_weights, self.training)
 
         attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
                                                    training=self.training)
