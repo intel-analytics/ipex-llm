@@ -39,7 +39,7 @@ def __init__(self, vocab_file, padding_side="left", clean_up_tokenization_spaces
 
 You could download the model from [THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b), and replace the file  `tokenization_chatglm.py` with [tokenization_chatglm.py](./tokenization_chatglm.py).
 
-### 2. Configures OneAPI environment variables for Linux
+### 3. Configures OneAPI environment variables for Linux
 
 > [!NOTE]
 > Skip this step if you are running on Windows.
@@ -50,7 +50,7 @@ This is a required step on Linux for APT or offline installed oneAPI. Skip this 
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Runtime Configurations
+### 4. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
 #### 3.1 Configurations for Linux
 <details>
@@ -114,7 +114,7 @@ set SYCL_CACHE_PERSISTENT=1
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
-### 4. Running examples
+### 5. Running examples
 ```
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
