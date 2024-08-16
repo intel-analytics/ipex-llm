@@ -830,6 +830,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "qwen2_moe":
         from ipex_llm.transformers.models.qwen2_moe import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "qwen2_audio":
+        from ipex_llm.transformers.models.qwen2 import merge_qkv
+        model.language_model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
