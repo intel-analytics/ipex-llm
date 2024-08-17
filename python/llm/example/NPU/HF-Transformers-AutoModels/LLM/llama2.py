@@ -64,8 +64,6 @@ if __name__ == "__main__":
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    input_ids = tokenizer.encode(prompt, return_tensors="pt")
-
     prompts = [
         "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
         "Once upon a time, there existed",
