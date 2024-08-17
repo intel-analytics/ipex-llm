@@ -38,7 +38,7 @@ def patch_flash_attn_import(filename: str) -> List[str]:
     return imports
 
 
-def ignore_argument(kwargs: dict, key: 'str'):
+def ignore_argument(kwargs: dict, key: "str"):
     arg = kwargs.pop(key, None)
     if arg is not None:
         warnings.warn(f"argument `{key}={arg}` will be ignored")
@@ -46,10 +46,11 @@ def ignore_argument(kwargs: dict, key: 'str'):
 
 def save_low_bit(self, model_dir: str, *args, **kwargs):
     origin_device = self.device
-    kwargs['safe_serialization'] = False
+    kwargs["safe_serialization"] = False
     self.save_pretrained(model_dir, *args, **kwargs)
     import json
     import os
+
     # We conveniently save all the keys of the model to have them on hand,
     # so that when using 'low_cpumem load',
     # it's not necessary to load the entire model to extract its keys
@@ -57,7 +58,7 @@ def save_low_bit(self, model_dir: str, *args, **kwargs):
     load_keys = {"all_checkpoint_keys": list(self.state_dict().keys())}
     with open(os.path.join(model_dir, "load_keys.json"), "w") as json_file:
         json.dump(load_keys, json_file)
-    if origin_device != 'cpu':
+    if origin_device != "cpu":
         self.to(origin_device)
 
 
@@ -66,9 +67,7 @@ class _BaseAutoModelClass:
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
-    def from_pretrained(cls,
-                        *args,
-                        **kwargs):
+    def from_pretrained(cls, *args, **kwargs):
         """
         Load a model from a directory or the HF Hub. Use load_in_low_bit parameter to convert
         model to low-bit format, like int4 and int8.
@@ -80,23 +79,24 @@ class _BaseAutoModelClass:
                                 Relevant low bit optimizations will be applied to the model.
         :return: a model instance
         """
-        if kwargs.get('device_map', None) not in [None, 'cpu', 'auto']:
+        if kwargs.get("device_map", None) not in [None, "cpu", "auto"]:
             warnings.warn("`device_map` will be ignored")
-        kwargs['device_map'] = 'cpu'
+        kwargs["device_map"] = "cpu"
 
-        if kwargs.get('torch_dtype', None) not in [None, 'auto', torch.float, torch.float16]:
+        if kwargs.get("torch_dtype", None) not in [None, "auto", torch.float, torch.float16]:
             warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
-            kwargs['torch_dtype'] = torch.float32
+            kwargs["torch_dtype"] = torch.float32
 
-        low_bit = kwargs.pop('load_in_low_bit', 'sym_int4')
+        low_bit = kwargs.pop("load_in_low_bit", "sym_int4")
         qtype_map = {
-            'sym_int4': "sym_int4_rtn",
-            'sym_int8': "sym_int8_rtn",
+            "sym_int4": "sym_int4_rtn",
+            "sym_int8": "sym_int8_rtn",
         }
 
-        invalidInputError(low_bit in qtype_map.keys(),
-                          f"unsupported low_bit: {low_bit}, "
-                          f"only {list(qtype_map.keys())} are supported")
+        invalidInputError(
+            low_bit in qtype_map.keys(),
+            f"unsupported low_bit: {low_bit}, " f"only {list(qtype_map.keys())} are supported",
+        )
         qtype = qtype_map[low_bit]
 
         kwargs["low_cpu_mem_usage"] = True
@@ -119,17 +119,19 @@ class _BaseAutoModelClass:
         max_seq_len = kwargs.pop("max_seq_len", 1024)
         inter_pp = kwargs.pop("inter_pp", 2)
         intra_pp = kwargs.pop("intra_pp", 2)
-        transpose_value_cache = kwargs.pop("transpose_value_cache", True)  
+        transpose_value_cache = kwargs.pop("transpose_value_cache", True)
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         try:
             # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
-            kwargs.pop('device_map', None)
+            kwargs.pop("device_map", None)
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
         except NotImplementedError:
-            logger.info("Failed to load models with `low_cpu_mem_usage` specified, "
-                        "will fall to traditional load method with higher memory consumption.")
+            logger.info(
+                "Failed to load models with `low_cpu_mem_usage` specified, "
+                "will fall to traditional load method with higher memory consumption."
+            )
             _kwargs["low_cpu_mem_usage"] = False
             model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
@@ -137,18 +139,22 @@ class _BaseAutoModelClass:
         logger.info(f"Converting model, it may takes up to several minutes ...")
         if enable_mp:
             from intel_npu_acceleration_library.compiler import create_npu_kernels
+
             with torch.no_grad():
-                cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
+                cls.load_convert(qtype, model, "cpu", *args, **kwargs)
                 create_npu_kernels(model)
             model = model.eval()
             logger.info(f"Finish to convert model")
             model.config.update({"bigdl_transformers_low_bit": qtype})
             model.share_memory()
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
-            optimize_llm(model, max_seq_len, inter_pp, intra_pp, transpose_value_cache=transpose_value_cache)
+
+            optimize_llm(
+                model, max_seq_len, inter_pp, intra_pp, transpose_value_cache=transpose_value_cache
+            )
         else:
             optimize_llm(model)
-            cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
+            cls.load_convert(qtype, model.model, "cpu", *args, **kwargs)
             create_npu_kernels(model.model)
             optimize_llm_post(model)
             model = model.eval()
@@ -162,12 +168,13 @@ class _BaseAutoModelClass:
     @classmethod
     def load_convert(cls, q_k, optimize_model, device, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear
+
         replace_with_QuantizedLinear(optimize_model, q_k, device=device)
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
     def load_low_bit(cls, pretrained_model_name_or_path: str, *model_args, **kwargs):
-        if kwargs.pop('torch_dtype', None) not in [None, 'auto', torch.float]:
+        if kwargs.pop("torch_dtype", None) not in [None, "auto", torch.float]:
             warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
 
         # ignore following arguments
@@ -182,13 +189,18 @@ class _BaseAutoModelClass:
 
         from transformers.models.auto.configuration_auto import AutoConfig
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
-        from transformers.dynamic_module_utils import resolve_trust_remote_code, \
-            get_class_from_dynamic_module
+        from transformers.dynamic_module_utils import (
+            resolve_trust_remote_code,
+            get_class_from_dynamic_module,
+        )
         from transformers.models.auto.auto_factory import _get_model_class
         from transformers.utils.generic import ContextManagers
         from transformers.generation.configuration_utils import GenerationConfig
-        from ipex_llm.transformers.utils import extract_local_archive_file, get_local_shard_files, \
-            load_state_dict
+        from ipex_llm.transformers.utils import (
+            extract_local_archive_file,
+            get_local_shard_files,
+            load_state_dict,
+        )
         from accelerate.big_modeling import init_empty_weights
 
         trust_remote_code = kwargs.pop("trust_remote_code", None)
@@ -217,14 +229,18 @@ class _BaseAutoModelClass:
         qtype = config_dict.pop("bigdl_transformers_low_bit", False)
         bigdl_lcmu_enabled = config_dict.pop("bigdl_lcmu_enabled", True)
 
-        invalidInputError(qtype,
-                          "Detect this model is not a low-bit model, Please use from_pretrained"
-                          " with load_in_4bit or load_in_low_bit to get a low-bit model , and "
-                          " serialize the model using save_low_bit first.")
+        invalidInputError(
+            qtype,
+            "Detect this model is not a low-bit model, Please use from_pretrained"
+            " with load_in_4bit or load_in_low_bit to get a low-bit model , and "
+            " serialize the model using save_low_bit first.",
+        )
 
-        invalidInputError(qtype in ["sym_int8_rtn", "sym_int4_rtn"],
-                          f"Unknown bigdl_transformers_low_bit value: {qtype},"
-                          f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
+        invalidInputError(
+            qtype in ["sym_int8_rtn", "sym_int4_rtn"],
+            f"Unknown bigdl_transformers_low_bit value: {qtype},"
+            f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.",
+        )
 
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
         has_local_code = type(config) in cls.HF_Model._model_mapping.keys()
@@ -244,15 +260,13 @@ class _BaseAutoModelClass:
             model_class = _get_model_class(config, cls.HF_Model._model_mapping)
 
         resolved_archive_file, is_sharded = extract_local_archive_file(
-            pretrained_model_name_or_path,
-            subfolder,
-            variant)
+            pretrained_model_name_or_path, subfolder, variant
+        )
 
         if is_sharded:
-            resolved_archive_file, sharded_metadata = \
-                get_local_shard_files(pretrained_model_name_or_path,
-                                      resolved_archive_file,
-                                      subfolder=subfolder)
+            resolved_archive_file, sharded_metadata = get_local_shard_files(
+                pretrained_model_name_or_path, resolved_archive_file, subfolder=subfolder
+            )
 
         # set dtype to instantiate the model under:
         # 1. If torch_dtype is not None, we use that dtype
@@ -276,9 +290,11 @@ class _BaseAutoModelClass:
                             torch_dtype = get_state_dict_dtype(one_state_dict)
                             del one_state_dict  # free CPU memory
                 else:
-                    invalidInputError(False,
-                                      f'`torch_dtype` can be either `torch.dtype` or `"auto"`,'
-                                      'but received {torch_dtype}')
+                    invalidInputError(
+                        False,
+                        f'`torch_dtype` can be either `torch.dtype` or `"auto"`,'
+                        "but received {torch_dtype}",
+                    )
             dtype_orig = model_class._set_default_torch_dtype(torch_dtype)
 
         # Pretrained Model
@@ -288,8 +304,10 @@ class _BaseAutoModelClass:
 
         if bigdl_lcmu_enabled:
             with ContextManagers(init_contexts):
-                if config.architectures is not None and config.architectures[0] in \
-                   ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+                if config.architectures is not None and config.architectures[0] in [
+                    "ChatGLMModel",
+                    "ChatGLMForConditionalGeneration",
+                ]:
 
                     """
                     ChatGLMModel uses skip_init by default, which will force modules placed on cpu
@@ -305,6 +323,7 @@ class _BaseAutoModelClass:
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         logger.info(f"Converting model, it may takes up to several minutes ...")
         from intel_npu_acceleration_library.compiler import create_npu_kernels
+
         with torch.no_grad():
             optimize_llm(model)
             cls.load_convert(qtype, model, quant_device, *model_args, **kwargs)
@@ -317,8 +336,10 @@ class _BaseAutoModelClass:
         else:
             import os
             import json
-            with open(os.path.join(pretrained_model_name_or_path,
-                                   "load_keys.json"), "r") as json_file:
+
+            with open(
+                os.path.join(pretrained_model_name_or_path, "load_keys.json"), "r"
+            ) as json_file:
                 loaded_data = json.load(json_file)
             loaded_state_dict_keys = loaded_data["all_checkpoint_keys"]
 

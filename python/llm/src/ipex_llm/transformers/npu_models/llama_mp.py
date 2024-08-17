@@ -58,17 +58,6 @@ def run_model(
     op_id: str,
     replica: int = 1,
 ) -> torch.Tensor:
-    """Run a factory operation. Depending on the datatype of the weights it runs a float or quantized operation.
-
-    Args:
-        x (Union[torch.Tensor, List[torch.Tensor]]): Activation tensor(s). Its dtype must be torch.float16
-        weights (torch.Tensor): Weights tensor.  Its dtype can be torch.float16 or torch.int8
-        backend_cls (Any): Backend class to run
-        op_id (Optional[str], optional): Operation ID. Defaults to None.
-
-    Returns:
-        torch.Tensor: result
-    """
     global _model_cache
     import time
 
@@ -164,7 +153,6 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         self.sin = self.unsqueeze(sin, axis=0)
 
         if mode == "decode":
-            assert self.seq_len == 1, "seq_len must be 1 for decode mode"
             self.kv_seq_len = self.max_seq_len + 1
         else:
             self.kv_seq_len = self.seq_len
@@ -207,7 +195,6 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
             past_values = [None] * num_layers
 
         if input_layernorm_weights is None:
-            assert post_attn_layernorm_weights is None
             input_layernorm_weights = []
             post_attn_layernorm_weights = []
             for i in range(num_layers):
@@ -530,7 +517,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             num_intra_layers = end - start
             self.backend_decoders[i].setWeights(
-                3 + (num_intra_layers) * 2, self.op_id, *op_parameters[start * 7 : end * 7]
+                3 + (num_intra_layers) * 2, self.op_id, *op_parameters[start * 7:end * 7]
             )
             backend_lib.run(self.backend_decoders[i]._mm)
 
@@ -587,7 +574,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
 
             for i in range(self.intra_stages):
                 start, end = self.layer_ranges[i]
-                layer_kv_cache = self.kv_cache_parameters[start * 2 : end * 2]
+                layer_kv_cache = self.kv_cache_parameters[start * 2:end * 2]
                 layer_kv_cache = [p.numpy() for p in layer_kv_cache]
                 handle = self.backend_decoders[i].create_parameters(layer_kv_cache)
                 self.kv_cache_c_parameter_handel.append(handle)
