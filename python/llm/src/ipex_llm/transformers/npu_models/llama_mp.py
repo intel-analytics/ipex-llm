@@ -45,6 +45,8 @@ logger = logging.get_logger(__name__)
 import gc
 from colorama import Fore, Back, Style
 import torch.multiprocessing as mp
+from transformers.cache_utils import Cache
+from transformers.modeling_outputs import BaseModelOutputWithPast
 
 
 @torch.no_grad()
@@ -958,7 +960,7 @@ class PrefillRunner:
             **kwargs,):
             self.prefill_input_queue.put((hidden_states, position_ids, attention_mask, past_key_value, cache_position))
             return self.prefill_result_queue.get()
-    
+
     def shutdown(self):
         self.prefill_input_queue.put("stop")
         self.p.join(3)
@@ -969,9 +971,8 @@ class PrefillRunner:
         self.shutdown()
 
 
-from transformers.cache_utils import Cache
-from transformers.modeling_outputs import BaseModelOutputWithPast
 def gen_llama_fused_model_forward(prefill_runner, decode_runner):
+
     def llama_fused_model_forward(
         self,
         input_ids: torch.LongTensor = None,
@@ -999,8 +1000,8 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
 
         if (input_ids is None) ^ (inputs_embeds is not None):
             invalidInputError(False,
-                            ("You cannot specify both input_ids and inputs_embeds at the same time, "
-                            "and must specify either one"))
+                            ("You cannot specify both input_ids and inputs_embeds at the same time,"
+                            " and must specify either one"))
 
         if self.gradient_checkpointing and self.training and use_cache:
             use_cache = False
@@ -1017,15 +1018,16 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
             past_seen_tokens = past_key_values.get_seq_length()
 
         if cache_position is None:
-            cache_position = torch.arange(past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1],
-                                        device=inputs_embeds.device)
+            cache_position = torch.arange(past_seen_tokens,
+                                          past_seen_tokens + inputs_embeds.shape[1],
+                                          device=inputs_embeds.device)
         # ipex-llm changes end
 
         if position_ids is None:
             position_ids = cache_position.unsqueeze(0)
 
         causal_mask = self._update_causal_mask(attention_mask, inputs_embeds,
-                                            cache_position, past_seen_tokens)
+                                               cache_position, past_seen_tokens)
 
         # embed positions
         hidden_states = inputs_embeds
@@ -1063,7 +1065,7 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
         # ipex-llm changes end
         if not return_dict:
             return tuple(v for v in [hidden_states, next_cache,
-                                    all_hidden_states, all_self_attns] if v is not None)
+                                     all_hidden_states, all_self_attns] if v is not None)
         t1 = time.perf_counter()
         # print("fused model forward time: ", t1 - t0)
         return BaseModelOutputWithPast(

@@ -91,6 +91,7 @@ def append_fused_kv_cache(cache_k, cache_v, key_states, value_states, transpose_
         new_cache_v[:, :, :, start:end] = value_states
         return new_cache_k, new_cache_v.transpose(-1, -2)
 
+
 def expand_fused_kv_cache(cache_k, cache_v, transpose_value=False):
     if not transpose_value:
         new_size = (cache_k.size(0),
@@ -172,10 +173,11 @@ class DynamicFusedNormalCache(DynamicCache):
         for idx, layer in self.key_cache.items():
             return layer.shape[-2]
         return 0
-    
+
     def expand(self):
         for idx, layer in self.key_cache.items():
-            key_cache, value_cache = expand_fused_kv_cache(self.key_cache[idx], self.value_cache[idx])
+            key_cache, value_cache = expand_fused_kv_cache(self.key_cache[idx],
+                                                           self.value_cache[idx])
             self.key_cache[idx] = key_cache
             self.value_cache[idx] = value_cache
 
