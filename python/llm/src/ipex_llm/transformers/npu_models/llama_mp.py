@@ -41,6 +41,7 @@ import torch.distributed as dist
 from filelock import FileLock
 
 from transformers.utils import logging
+
 logger = logging.get_logger(__name__)
 import gc
 from colorama import Fore, Back, Style
@@ -70,6 +71,7 @@ def run_model(
     """
     global _model_cache
     import time
+
     t0 = time.perf_counter()
 
     # Use or not op_id depending on the class used
@@ -187,11 +189,17 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         past_values = []
         if mode == "decode":
             for i in range(num_layers):
-                past_key = self.parameter((self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim))
+                past_key = self.parameter(
+                    (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                )
                 if transpose_value:
-                    past_value = self.parameter((self.batch_size, self.num_key_value_heads, self.head_dim, self.max_seq_len))
+                    past_value = self.parameter(
+                        (self.batch_size, self.num_key_value_heads, self.head_dim, self.max_seq_len)
+                    )
                 else:
-                    past_value = self.parameter((self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim))
+                    past_value = self.parameter(
+                        (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                    )
                 past_keys.append(past_key)
                 past_values.append(past_value)
         else:
@@ -203,8 +211,22 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
             input_layernorm_weights = []
             post_attn_layernorm_weights = []
             for i in range(num_layers):
-                input_layernorm_weights.append(self.parameter((1, self.hidden_size,)))
-                post_attn_layernorm_weights.append(self.parameter((1, self.hidden_size,)))
+                input_layernorm_weights.append(
+                    self.parameter(
+                        (
+                            1,
+                            self.hidden_size,
+                        )
+                    )
+                )
+                post_attn_layernorm_weights.append(
+                    self.parameter(
+                        (
+                            1,
+                            self.hidden_size,
+                        )
+                    )
+                )
         else:
             input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
             post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
@@ -213,18 +235,20 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
 
         curr_key_values = []
         for i in range(num_layers):
-            hidden_states, new_key_states, new_value_states = self.build_decoder(hidden_states=hidden_states,
-                                                                                 attention_mask=attention_mask,
-                                                                                 position_ids=position_ids,
-                                                                                 input_layernorm_weight=input_layernorm_weights[i],
-                                                                                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
-                                                                                 past_key=past_keys[i],
-                                                                                 past_value=past_values[i],)
+            hidden_states, new_key_states, new_value_states = self.build_decoder(
+                hidden_states=hidden_states,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                input_layernorm_weight=input_layernorm_weights[i],
+                post_attention_layernorm_weight=post_attn_layernorm_weights[i],
+                past_key=past_keys[i],
+                past_value=past_values[i],
+            )
             curr_key_values.append((new_key_states, new_value_states))
 
         # define outputs
         hidden_states = self.convert_to_fp16(hidden_states)
-        
+
         for i in range(num_layers):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
@@ -236,19 +260,43 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         if n_rep == 1:
             return hidden_states
         if not transpose:
-            hidden_states = self.reshape(hidden_states, [self.batch_size, self.num_key_value_heads, 1, self.kv_seq_len, self.head_dim])
-            hidden_states = self.broadcast(hidden_states, [self.batch_size, self.num_key_value_heads, n_rep, self.kv_seq_len, self.head_dim])
-            hidden_states = self.reshape(hidden_states, [self.batch_size, n_rep*self.num_key_value_heads, self.kv_seq_len, self.head_dim])
+            hidden_states = self.reshape(
+                hidden_states,
+                [self.batch_size, self.num_key_value_heads, 1, self.kv_seq_len, self.head_dim],
+            )
+            hidden_states = self.broadcast(
+                hidden_states,
+                [self.batch_size, self.num_key_value_heads, n_rep, self.kv_seq_len, self.head_dim],
+            )
+            hidden_states = self.reshape(
+                hidden_states,
+                [self.batch_size, n_rep * self.num_key_value_heads, self.kv_seq_len, self.head_dim],
+            )
         else:
-            hidden_states = self.reshape(hidden_states, [self.batch_size, self.num_key_value_heads, 1, self.head_dim, self.kv_seq_len])
-            hidden_states = self.broadcast(hidden_states, [self.batch_size, self.num_key_value_heads, n_rep, self.head_dim, self.kv_seq_len])
-            hidden_states = self.reshape(hidden_states, [self.batch_size, n_rep*self.num_key_value_heads, self.head_dim, self.kv_seq_len])
+            hidden_states = self.reshape(
+                hidden_states,
+                [self.batch_size, self.num_key_value_heads, 1, self.head_dim, self.kv_seq_len],
+            )
+            hidden_states = self.broadcast(
+                hidden_states,
+                [self.batch_size, self.num_key_value_heads, n_rep, self.head_dim, self.kv_seq_len],
+            )
+            hidden_states = self.reshape(
+                hidden_states,
+                [self.batch_size, n_rep * self.num_key_value_heads, self.head_dim, self.kv_seq_len],
+            )
         return hidden_states
 
-    def build_decoder(self, hidden_states, attention_mask, position_ids,
-                      input_layernorm_weight, post_attention_layernorm_weight,
-                      past_key = None,
-                      past_value = None):
+    def build_decoder(
+        self,
+        hidden_states,
+        attention_mask,
+        position_ids,
+        input_layernorm_weight,
+        post_attention_layernorm_weight,
+        past_key=None,
+        past_value=None,
+    ):
 
         residual = hidden_states
 
@@ -256,7 +304,11 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
 
         # input layernorm
         input_2d = self.convert_to_fp32(input_2d)
-        variance = self.reduce_mean(self.power(input_2d, self.constant(np.array([[2]], dtype=np.float32))), -1, keep_dims=True)
+        variance = self.reduce_mean(
+            self.power(input_2d, self.constant(np.array([[2]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
         eps = self.constant(self.rms_norm_eps)
         input_2d = self.eltwise_div(input_2d, self.sqrt(self.eltwise_add(variance, eps)))
         input_layernorm_weight = self.convert_to_fp32(input_layernorm_weight)
@@ -264,22 +316,48 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         input_2d = self.convert_to_fp16(input_2d)
 
         # attention
-        query_states = self.linear(input_2d, self.num_heads*self.head_dim, self.hidden_size, bias=False, wt_dtype=self.dtype)
-        key_states = self.linear(input_2d, self.num_key_value_heads*self.head_dim, self.hidden_size, bias=False, wt_dtype=self.dtype)
-        value_states = self.linear(input_2d, self.num_key_value_heads*self.head_dim, self.hidden_size, bias=False, wt_dtype=self.dtype)
+        query_states = self.linear(
+            input_2d,
+            self.num_heads * self.head_dim,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        key_states = self.linear(
+            input_2d,
+            self.num_key_value_heads * self.head_dim,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        value_states = self.linear(
+            input_2d,
+            self.num_key_value_heads * self.head_dim,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
 
-        query_states = self.reshape(query_states, [self.batch_size, self.seq_len, self.num_heads, self.head_dim])
-        key_states = self.reshape(key_states, [self.batch_size, self.seq_len, self.num_key_value_heads, self.head_dim])
-        value_states = self.reshape(value_states, [self.batch_size, self.seq_len, self.num_key_value_heads, self.head_dim])
-        
+        query_states = self.reshape(
+            query_states, [self.batch_size, self.seq_len, self.num_heads, self.head_dim]
+        )
+        key_states = self.reshape(
+            key_states, [self.batch_size, self.seq_len, self.num_key_value_heads, self.head_dim]
+        )
+        value_states = self.reshape(
+            value_states, [self.batch_size, self.seq_len, self.num_key_value_heads, self.head_dim]
+        )
+
         query_states = self.transpose(query_states, [0, 2, 1, 3])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
         if self.transpose_value:
             value_states = self.transpose(value_states, [0, 2, 3, 1])
         else:
             value_states = self.transpose(value_states, [0, 2, 1, 3])
-        
-        query_states, key_states = self.apply_rotary_pos_emb(query_states, key_states, self.cos, self.sin, position_ids)
+
+        query_states, key_states = self.apply_rotary_pos_emb(
+            query_states, key_states, self.cos, self.sin, position_ids
+        )
         new_key_states = key_states
         new_value_states = value_states
 
@@ -289,65 +367,87 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
                 value_states = self.concat(past_value, value_states, axis=-1)
             else:
                 value_states = self.concat(past_value, value_states, axis=-2)
-        
+
         key_states = self.repeat_kv(key_states, self.num_key_value_groups)
         value_states = self.repeat_kv(value_states, self.num_key_value_groups, self.transpose_value)
-        
-        attn_weight = self.matmul(query_states, key_states, False, True) / (math.sqrt(self.head_dim))
+
+        attn_weight = self.matmul(query_states, key_states, False, True) / (
+            math.sqrt(self.head_dim)
+        )
         attn_weight = self.eltwise_add(attn_weight, attention_mask)
         attn_weight = self.convert_to_fp32(attn_weight)
         attn_weight = self.softmax(attn_weight, -1)
         attn_weight = self.convert_to_fp16(attn_weight)
         attn_output = self.matmul(attn_weight, value_states, False, self.transpose_value)
-        
 
         attn_output = self.transpose(attn_output, [0, 2, 1, 3])
         attn_output = self.reshape(attn_output, [self.batch_size, self.seq_len, self.hidden_size])
-        
-        attn_output = self.linear(attn_output, self.hidden_size, self.hidden_size, bias=False, wt_dtype=self.dtype)
+
+        attn_output = self.linear(
+            attn_output, self.hidden_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )
 
         hidden_states = self.eltwise_add(residual, attn_output)
 
         # Fully Connected
         residual = hidden_states
         # post_attention_layernorm forward
-        
+
         hidden_states = self.convert_to_fp32(hidden_states)
-        variance = self.reduce_mean(self.power(hidden_states, self.constant(np.array([[[2]]], dtype=np.float32))), -1, keep_dims=True)
+        variance = self.reduce_mean(
+            self.power(hidden_states, self.constant(np.array([[[2]]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
         hidden_states = self.eltwise_div(hidden_states, self.sqrt(self.eltwise_add(variance, eps)))
         post_attention_layernorm_weight = self.convert_to_fp32(post_attention_layernorm_weight)
         hidden_states = self.eltwise_mul(post_attention_layernorm_weight, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
 
         # mlp
-        mm1 = self.linear(hidden_states, self.intermediate_size, self.hidden_size,
-                          bias=False, wt_dtype=self.dtype)
-        mm2 = self.linear(hidden_states, self.intermediate_size, self.hidden_size,
-                          bias=False, wt_dtype=self.dtype)  # type: ignore[attr-defined]
+        mm1 = self.linear(
+            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )
+        mm2 = self.linear(
+            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )  # type: ignore[attr-defined]
         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+        hidden_states = self.linear(
+            mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+        )
 
-        hidden_states = self.linear(mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype)
-        
         hidden_states = self.eltwise_add(residual, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
 
         return hidden_states, new_key_states, new_value_states
-    
+
     def rotate_half(self, x):
-        x1 = self.slice(x, [0, 0, 0, 0], [self.batch_size, self.num_heads, self.seq_len, self.head_dim//2], )
-        x2 = self.slice(x, [0, 0, 0, self.head_dim//2], [self.batch_size, self.num_heads, self.seq_len, self.head_dim])
+        x1 = self.slice(
+            x,
+            [0, 0, 0, 0],
+            [self.batch_size, self.num_heads, self.seq_len, self.head_dim // 2],
+        )
+        x2 = self.slice(
+            x,
+            [0, 0, 0, self.head_dim // 2],
+            [self.batch_size, self.num_heads, self.seq_len, self.head_dim],
+        )
         return self.concat(self.negative(x2), x1, axis=-1)
-    
+
     def apply_rotary_pos_emb(self, q, k, cos, sin, position_ids):
         position_ids = self.squeeze(position_ids)
         cos = self.gather(cos, self.convert_to_int32(position_ids), self.constant(1), 0)
         sin = self.gather(sin, self.convert_to_int32(position_ids), self.constant(1), 0)
         cos = self.unsqueeze(cos, [1])
         sin = self.unsqueeze(sin, [1])
-        
-        q_embed = self.eltwise_add(self.eltwise_mul(q, cos), self.eltwise_mul(self.rotate_half(q), sin))
-        k_embed = self.eltwise_add(self.eltwise_mul(k, cos), self.eltwise_mul(self.rotate_half(k), sin))
-        
+
+        q_embed = self.eltwise_add(
+            self.eltwise_mul(q, cos), self.eltwise_mul(self.rotate_half(q), sin)
+        )
+        k_embed = self.eltwise_add(
+            self.eltwise_mul(k, cos), self.eltwise_mul(self.rotate_half(k), sin)
+        )
+
         return q_embed, k_embed
 
 
@@ -358,7 +458,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         parameters: List[Tuple[torch.Tensor]],
         input_laynorm_weights: List[torch.Tensor],
         post_attn_layernorm_weights: List[torch.Tensor],
-        layer_indexes : List[int],
+        layer_indexes: List[int],
         intra_stages: int,
         cached_cos: torch.Tensor,
         cached_sin: torch.Tensor,
@@ -369,7 +469,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         intermediate_size,
         max_seq_len: int = 1024,
         transpose_value: bool = False,
-        do_print: bool = False
+        do_print: bool = False,
     ):
         super().__init__()
 
@@ -387,11 +487,9 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         self.transpose_value = transpose_value
         if isinstance(parameters[0], tuple):
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
-            assert np_dtype == np.uint8
-            assert parameters[0][1].dtype == torch.float16, parameters[0]
         else:  # FP16 Linear
             np_dtype = np.float16
-        
+
         self.intra_stages = intra_stages
         self.layer_indexes = layer_indexes
         self.num_layers_1 = len(self.layer_indexes) // 2
@@ -402,7 +500,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             if i == intra_stages - 1:
                 self.layer_ranges.append((i * num_layers, len(self.layer_indexes)))
             else:
-                self.layer_ranges.append((i * num_layers, (i+1) * num_layers))
+                self.layer_ranges.append((i * num_layers, (i + 1) * num_layers))
 
         self.backend_decoders = []
 
@@ -410,45 +508,53 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             lm_0 = input_laynorm_weights[start:end]
             lm_1 = post_attn_layernorm_weights[start:end]
-            decoder = LowBitLlamaMultiDecoderlayer([1, 1, num_heads*head_dim],
-                                                   input_layernorm_weights=lm_0,
-                                                   post_attn_layernorm_weights=lm_1,
-                                                   cached_cos=cached_cos,
-                                                   cached_sin=cached_sin,
-                                                   num_heads=num_heads,
-                                                   num_key_value_heads=num_key_value_heads,
-                                                   num_layers=end - start,
-                                                   max_seq_len=max_seq_len,
-                                                   rms_norm_eps=rms_norm_eps,
-                                                   intermediate_size=intermediate_size,
-                                                   mode="decode",
-                                                   transpose_value=self.transpose_value,
-                                                   dtype=np_dtype)
+            decoder = LowBitLlamaMultiDecoderlayer(
+                [1, 1, num_heads * head_dim],
+                input_layernorm_weights=lm_0,
+                post_attn_layernorm_weights=lm_1,
+                cached_cos=cached_cos,
+                cached_sin=cached_sin,
+                num_heads=num_heads,
+                num_key_value_heads=num_key_value_heads,
+                num_layers=end - start,
+                max_seq_len=max_seq_len,
+                rms_norm_eps=rms_norm_eps,
+                intermediate_size=intermediate_size,
+                mode="decode",
+                transpose_value=self.transpose_value,
+                dtype=np_dtype,
+            )
             self.backend_decoders.append(decoder)
-        
+
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
             num_intra_layers = end - start
-            self.backend_decoders[i].setWeights(3+(num_intra_layers)*2, self.op_id, *op_parameters[start*7:end*7])
+            self.backend_decoders[i].setWeights(
+                3 + (num_intra_layers) * 2, self.op_id, *op_parameters[start * 7 : end * 7]
+            )
             backend_lib.run(self.backend_decoders[i]._mm)
 
         self.kv_cache_c_parameter_handel = []
         self.kv_cache_parameters = []
         self.kv_cache_prefetched = False
 
-    def forward(self,
-                hidden_states: torch.Tensor,
-                attention_mask: Optional[torch.Tensor] = None,
-                position_ids: Optional[torch.LongTensor] = None,
-                past_key_value: Optional[Cache] = None,
-                output_attentions: bool = False,
-                use_cache: bool = False,
-                cache_position: Optional[torch.LongTensor] = None,
-                **kwargs,) -> torch.Tensor:
-        
-        inputs = (hidden_states.to(torch.float16),
-                  attention_mask,
-                  position_ids,)
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_value: Optional[Cache] = None,
+        output_attentions: bool = False,
+        use_cache: bool = False,
+        cache_position: Optional[torch.LongTensor] = None,
+        **kwargs,
+    ) -> torch.Tensor:
+
+        inputs = (
+            hidden_states.to(torch.float16),
+            attention_mask,
+            position_ids,
+        )
 
         if len(self.kv_cache_parameters) > 0:
             # the case kv cache changed
@@ -464,12 +570,11 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                 past_key = past_key_value.key_cache[idx]
                 past_value = past_key_value.value_cache[idx]
 
-                invalidInputError(past_key.dtype == torch.float16, f"past_key dtype is {past_key.dtype}")
+                invalidInputError(
+                    past_key.dtype == torch.float16, f"past_key dtype is {past_key.dtype}"
+                )
 
-                new_size = (past_key.size(0),
-                            past_key.size(1),
-                            self.max_seq_len,
-                            past_key.size(3))
+                new_size = (past_key.size(0), past_key.size(1), self.max_seq_len, past_key.size(3))
                 past_key = past_key.as_strided(new_size, past_key.stride(), storage_offset=0)
                 invalidInputError(past_key.is_contiguous(), "past_key is not contiguous")
                 past_value = past_value.as_strided(new_size, past_value.stride(), storage_offset=0)
@@ -482,7 +587,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
 
             for i in range(self.intra_stages):
                 start, end = self.layer_ranges[i]
-                layer_kv_cache = self.kv_cache_parameters[start*2:end*2]
+                layer_kv_cache = self.kv_cache_parameters[start * 2 : end * 2]
                 layer_kv_cache = [p.numpy() for p in layer_kv_cache]
                 handle = self.backend_decoders[i].create_parameters(layer_kv_cache)
                 self.kv_cache_c_parameter_handel.append(handle)
@@ -492,15 +597,21 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         with record_function(f"npu_factory"):
             if not self.kv_cache_prefetched:
                 for i in range(self.intra_stages):
-                    self.backend_decoders[i].load_wt_fn(len(inputs),
-                                                        self.backend_decoders[i]._mm,
-                                                        self.kv_cache_c_parameter_handel[i])
+                    self.backend_decoders[i].load_wt_fn(
+                        len(inputs),
+                        self.backend_decoders[i]._mm,
+                        self.kv_cache_c_parameter_handel[i],
+                    )
 
-            array_type = (ctypes.POINTER(ctypes.c_char) * self.intra_stages)
-            models_ptr = array_type(*[self.backend_decoders[i]._mm for i in range(self.intra_stages)])
-            inputs_ptr = (ctypes.c_void_p * 3)(x_np[0].ctypes.data_as(ctypes.c_void_p),
-                                               x_np[1].ctypes.data_as(ctypes.c_void_p),
-                                               x_np[2].ctypes.data_as(ctypes.c_void_p))
+            array_type = ctypes.POINTER(ctypes.c_char) * self.intra_stages
+            models_ptr = array_type(
+                *[self.backend_decoders[i]._mm for i in range(self.intra_stages)]
+            )
+            inputs_ptr = (ctypes.c_void_p * 3)(
+                x_np[0].ctypes.data_as(ctypes.c_void_p),
+                x_np[1].ctypes.data_as(ctypes.c_void_p),
+                x_np[2].ctypes.data_as(ctypes.c_void_p),
+            )
             t0 = time.perf_counter()
             backend_lib.run_decoders(models_ptr, inputs_ptr, 2, 3)
             t1 = time.perf_counter()
@@ -519,18 +630,24 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         for i in range(self.intra_stages):
             for j in range(1, len(self.backend_decoders[i].torch_out)):
                 key_value_states.append(self.backend_decoders[i].torch_out[j])
-        
-        cache_kwargs = {"cache_position": cache_position,
-                        "max_seq_len":self.max_seq_len,
-                        "transpose": self.transpose_value}
+
+        cache_kwargs = {
+            "cache_position": cache_position,
+            "max_seq_len": self.max_seq_len,
+            "transpose": self.transpose_value,
+        }
         for i in range(len(self.layer_indexes)):
-            key_states, value_states = past_key_value.update(key_value_states[2*i],
-                                                             key_value_states[2*i+1],
-                                                             self.layer_indexes[i], cache_kwargs)
-        
+            key_states, value_states = past_key_value.update(
+                key_value_states[2 * i],
+                key_value_states[2 * i + 1],
+                self.layer_indexes[i],
+                cache_kwargs,
+            )
+
         for i in range(self.intra_stages):
-            self.backend_decoders[i].load_wt_fn(3, self.backend_decoders[i]._mm,
-                                                self.kv_cache_c_parameter_handel[i])
+            self.backend_decoders[i].load_wt_fn(
+                3, self.backend_decoders[i]._mm, self.kv_cache_c_parameter_handel[i]
+            )
         self.kv_cache_prefetched = True
 
 
@@ -564,32 +681,36 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         else:  # FP16 Linear
             np_dtype = np.float16
 
-        self.backend_cls_prefill = partial(LowBitLlamaMultiDecoderlayer,
-                                           num_heads=num_heads,
-                                           num_key_value_heads=num_key_value_heads,
-                                           num_layers=1,
-                                           cached_cos=cached_cos,
-                                           cached_sin=cached_sin,
-                                           input_layernorm_weights=None,
-                                           post_attn_layernorm_weights=None,
-                                           max_seq_len=max_seq_len,
-                                           rms_norm_eps=rms_norm_eps,
-                                           intermediate_size=intermediate_size,
-                                           mode="prefill",
-                                           transpose_value=self.transpose_value,
-                                           dtype=np_dtype)
+        self.backend_cls_prefill = partial(
+            LowBitLlamaMultiDecoderlayer,
+            num_heads=num_heads,
+            num_key_value_heads=num_key_value_heads,
+            num_layers=1,
+            cached_cos=cached_cos,
+            cached_sin=cached_sin,
+            input_layernorm_weights=None,
+            post_attn_layernorm_weights=None,
+            max_seq_len=max_seq_len,
+            rms_norm_eps=rms_norm_eps,
+            intermediate_size=intermediate_size,
+            mode="prefill",
+            transpose_value=self.transpose_value,
+            dtype=np_dtype,
+        )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
 
-    def forward(self,
-                hidden_states: torch.Tensor,
-                attention_mask: Optional[torch.Tensor] = None,
-                position_ids: Optional[torch.LongTensor] = None,
-                past_key_value: Optional[Cache] = None,
-                output_attentions: bool = False,
-                use_cache: bool = False,
-                cache_position: Optional[torch.LongTensor] = None,
-                **kwargs,) -> torch.Tensor:
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_value: Optional[Cache] = None,
+        output_attentions: bool = False,
+        use_cache: bool = False,
+        cache_position: Optional[torch.LongTensor] = None,
+        **kwargs,
+    ) -> torch.Tensor:
         """Torch module forward method.
 
         Args:
@@ -604,28 +725,41 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         backend_cls = self.backend_cls_prefill
         inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
         inputs += (self.layer_norm_0, self.layer_norm_1)
-        hidden_states, past_key, past_value = run_model(inputs, self.op_parameters,
-                                                        backend_cls, self.op_id, replica=2)
-        cache_kwargs = {"cache_position": cache_position,
-                        "max_seq_len": self.max_seq_len,
-                        "transpose": self.transpose_value}
-        key_states, value_states = past_key_value.update(past_key, past_value,
-                                                         self.layer_idx, cache_kwargs)
+        hidden_states, past_key, past_value = run_model(
+            inputs, self.op_parameters, backend_cls, self.op_id, replica=2
+        )
+        cache_kwargs = {
+            "cache_position": cache_position,
+            "max_seq_len": self.max_seq_len,
+            "transpose": self.transpose_value,
+        }
+        key_states, value_states = past_key_value.update(
+            past_key, past_value, self.layer_idx, cache_kwargs
+        )
 
         outputs = (hidden_states,)
         outputs += (past_key_value,)
         return outputs
 
 
-def run_decode(model, rank, world_size, port, layer_start, layer_end,
-               intra_stages,
-               max_seq_len, transpose_value_cache,
-               input_queue, result_queue):
+def run_decode(
+    model,
+    rank,
+    world_size,
+    port,
+    layer_start,
+    layer_end,
+    intra_stages,
+    max_seq_len,
+    transpose_value_cache,
+    input_queue,
+    result_queue,
+):
 
-    os.environ['MASTER_ADDR'] = '127.0.0.1'
-    os.environ['MASTER_PORT'] = port
-    os.environ['RANK'] = str(rank)
-    os.environ['WORLD_SIZE'] = str(world_size)
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = port
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world_size)
 
     print("start init process group, rank: ", rank, "world_size: ", world_size)
 
@@ -656,7 +790,8 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
             (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
             (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
             (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale)]
+            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+        ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -690,7 +825,7 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
     past_key_values = None
 
     control = torch.empty((), dtype=torch.int)
-    hidden_states = torch.empty((1, 1, head_dim*num_heads), dtype=torch.float16)
+    hidden_states = torch.empty((1, 1, head_dim * num_heads), dtype=torch.float16)
     with torch.inference_mode():
         while True:
 
@@ -703,27 +838,32 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
                 t0 = time.perf_counter()
                 past_seen_tokens = past_key_values.get_seq_length()
                 attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
-                cache_position = torch.arange(past_seen_tokens, past_seen_tokens + 1,
-                                              device=hidden_states.device)
+                cache_position = torch.arange(
+                    past_seen_tokens, past_seen_tokens + 1, device=hidden_states.device
+                )
 
                 position_ids = position_ids = cache_position.unsqueeze(0)
-                causal_mask = model.model._update_causal_mask(attention_mask, hidden_states,
-                                                              cache_position, past_seen_tokens)
+                causal_mask = model.model._update_causal_mask(
+                    attention_mask, hidden_states, cache_position, past_seen_tokens
+                )
                 pad_len = multi_decoder.max_seq_len + 1 - causal_mask.size(-1)
 
                 pad_mask = (0, pad_len)
-                padded_causal_mask = F.pad(causal_mask.to(torch.float16), pad_mask,
-                                           value=torch.finfo(torch.float16).min)
+                padded_causal_mask = F.pad(
+                    causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
+                )
                 padded_causal_mask[:, :, :, -1] = 0.0
                 dist.recv(hidden_states, src=rank - 1)
                 t1 = time.perf_counter()
-                layer_outputs, elapse = multi_decoder(hidden_states,
-                                                      attention_mask=padded_causal_mask,
-                                                      position_ids=position_ids,
-                                                      past_key_value=past_key_values,
-                                                      output_attentions=False,
-                                                      use_cache=True,
-                                                      cache_position=cache_position,)
+                layer_outputs, elapse = multi_decoder(
+                    hidden_states,
+                    attention_mask=padded_causal_mask,
+                    position_ids=position_ids,
+                    past_key_value=past_key_values,
+                    output_attentions=False,
+                    use_cache=True,
+                    cache_position=cache_position,
+                )
                 t2 = time.perf_counter()
                 hidden_states = layer_outputs[0]
                 t3 = time.perf_counter()
@@ -741,11 +881,11 @@ class DecodeRunner:
         intra_stages = intra_pp
         num_layers = self.model.model.config.num_hidden_layers
 
-        port = '54791'
-        os.environ['MASTER_ADDR'] = '127.0.0.1'
-        os.environ['MASTER_PORT'] = port
-        os.environ['RANK'] = '0'
-        os.environ['WORLD_SIZE'] = str(world_size)
+        port = "54791"
+        os.environ["MASTER_ADDR"] = "127.0.0.1"
+        os.environ["MASTER_PORT"] = port
+        os.environ["RANK"] = "0"
+        os.environ["WORLD_SIZE"] = str(world_size)
 
         self.input_queues = []
         self.output_queues = []
@@ -758,14 +898,22 @@ class DecodeRunner:
             end_layer = (rank) * (num_layers // (world_size - 1))
             if rank == world_size - 1:
                 end_layer = num_layers
-            p = mp.Process(target=run_decode, args=(self.model,
-                                                    rank, world_size, port,
-                                                    start_layer, end_layer,
-                                                    intra_stages,
-                                                    self.max_seq_len,
-                                                    self.transpose_value_cache,
-                                                    input_q,
-                                                    output_q))
+            p = mp.Process(
+                target=run_decode,
+                args=(
+                    self.model,
+                    rank,
+                    world_size,
+                    port,
+                    start_layer,
+                    end_layer,
+                    intra_stages,
+                    self.max_seq_len,
+                    self.transpose_value_cache,
+                    input_q,
+                    output_q,
+                ),
+            )
             p.daemon = True
             p.start()
             self.input_queues.append(input_q)
@@ -780,31 +928,33 @@ class DecodeRunner:
         dist.barrier()
         self.cache_past_key_value = None
 
-    def forward(self,
-                hidden_states: torch.Tensor,
-                attention_mask: Optional[torch.Tensor] = None,
-                position_ids: Optional[torch.LongTensor] = None,
-                past_key_value: Optional[Cache] = None,
-                output_attentions: bool = False,
-                use_cache: bool = False,
-                cache_position: Optional[torch.LongTensor] = None,
-                **kwargs,):
-            t0 = time.perf_counter()
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_value: Optional[Cache] = None,
+        output_attentions: bool = False,
+        use_cache: bool = False,
+        cache_position: Optional[torch.LongTensor] = None,
+        **kwargs,
+    ):
+        t0 = time.perf_counter()
 
-            if self.cache_past_key_value != past_key_value:
-                control = torch.tensor(-1, dtype=torch.int)
-                dist.broadcast(control, src=0)
-                for i in range(len(self.decoder_processes)):
-                    self.input_queues[i].put(past_key_value)
-
-            control = torch.tensor(0, dtype=torch.int)
+        if self.cache_past_key_value != past_key_value:
+            control = torch.tensor(-1, dtype=torch.int)
             dist.broadcast(control, src=0)
-            hidden_states = hidden_states.to(torch.float16)
-            dist.send(hidden_states, dst=1)
-            past_key_value.expand()
-            dist.recv(hidden_states, src=self.world_size - 1)
-            t1 = time.perf_counter()
-            return hidden_states, past_key_value
+            for i in range(len(self.decoder_processes)):
+                self.input_queues[i].put(past_key_value)
+
+        control = torch.tensor(0, dtype=torch.int)
+        dist.broadcast(control, src=0)
+        hidden_states = hidden_states.to(torch.float16)
+        dist.send(hidden_states, dst=1)
+        past_key_value.expand()
+        dist.recv(hidden_states, src=self.world_size - 1)
+        t1 = time.perf_counter()
+        return hidden_states, past_key_value
 
     def shutdown(self):
         control = torch.tensor(-2, dtype=torch.int)
@@ -845,7 +995,8 @@ def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_q
             (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
             (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
             (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale)]
+            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+        ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -853,19 +1004,21 @@ def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_q
         layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
         layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
-        new_decoderlayer = FusedLlamaLowBitDecoderlayer(weights,
-                                                        num_heads=num_heads,
-                                                        num_key_value_heads=num_key_value_heads,
-                                                        cached_cos=cached_cos,
-                                                        cached_sin=cached_sin,
-                                                        layer_norm_0=layer_norm_0,
-                                                        layer_norm_1=layer_norm_1,
-                                                        layer_idx=layer_idx,
-                                                        rms_norm_eps=rms_norm_eps,
-                                                        intermediate_size=intermediate_size,
-                                                        max_seq_len=max_seq_len,
-                                                        transpose_value=transpose_value_cache)
-        
+        new_decoderlayer = FusedLlamaLowBitDecoderlayer(
+            weights,
+            num_heads=num_heads,
+            num_key_value_heads=num_key_value_heads,
+            cached_cos=cached_cos,
+            cached_sin=cached_sin,
+            layer_norm_0=layer_norm_0,
+            layer_norm_1=layer_norm_1,
+            layer_idx=layer_idx,
+            rms_norm_eps=rms_norm_eps,
+            intermediate_size=intermediate_size,
+            max_seq_len=max_seq_len,
+            transpose_value=transpose_value_cache,
+        )
+
         layer_weights.extend(weights)
         input_layer_norm_weights.append(layer_norm_0)
         post_attn_layernorm_weights.append(layer_norm_1)
@@ -909,29 +1062,36 @@ class PrefillRunner:
         self.prefill_result_queue = mp.Queue()
         self.prefill_input_queue = mp.Queue()
 
-        self.p = mp.Process(target=run_prefill, args=(model,
-                                                      max_seq_len,
-                                                      transpose_value_cache,
-                                                      self.prefill_input_queue,
-                                                      self.prefill_result_queue))
+        self.p = mp.Process(
+            target=run_prefill,
+            args=(
+                model,
+                max_seq_len,
+                transpose_value_cache,
+                self.prefill_input_queue,
+                self.prefill_result_queue,
+            ),
+        )
         self.p.daemon = True
         self.p.start()
         output = self.prefill_result_queue.get()
         print(Fore.GREEN + f"prefill process output: {output}")
         print(Style.RESET_ALL)
 
-    def forward(self,
-                hidden_states: torch.Tensor,
-                attention_mask: Optional[torch.Tensor] = None,
-                position_ids: Optional[torch.LongTensor] = None,
-                past_key_value: Optional[Cache] = None,
-                output_attentions: bool = False,
-                use_cache: bool = False,
-                cache_position: Optional[torch.LongTensor] = None,
-                **kwargs,):
-            args = (hidden_states, position_ids, attention_mask, past_key_value, cache_position)
-            self.prefill_input_queue.put(args)
-            return self.prefill_result_queue.get()
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_value: Optional[Cache] = None,
+        output_attentions: bool = False,
+        use_cache: bool = False,
+        cache_position: Optional[torch.LongTensor] = None,
+        **kwargs,
+    ):
+        args = (hidden_states, position_ids, attention_mask, past_key_value, cache_position)
+        self.prefill_input_queue.put(args)
+        return self.prefill_result_queue.get()
 
     def shutdown(self):
         self.prefill_input_queue.put("stop")
@@ -960,20 +1120,22 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
     ) -> Union[Tuple, BaseModelOutputWithPast]:
         t0 = time.perf_counter()
         output_attentions = (
-            output_attentions if output_attentions is not None
-            else self.config.output_attentions
+            output_attentions if output_attentions is not None else self.config.output_attentions
         )
         output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None
+            output_hidden_states
+            if output_hidden_states is not None
             else self.config.output_hidden_states
         )
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         if (input_ids is None) ^ (inputs_embeds is not None):
-            invalidInputError(False,
-                              ("You cannot specify both input_ids and inputs_embeds at the same time,"
-                               " and must specify either one"))
+            msg = (
+                "You cannot specify both input_ids and inputs_embeds at the same time,"
+                " and must specify either one"
+            )
+            invalidInputError(False, msg)
 
         if self.gradient_checkpointing and self.training and use_cache:
             use_cache = False
@@ -985,21 +1147,25 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
 
         # ipex-llm changes start
         from ipex_llm.transformers.npu_models.kv import DynamicFusedNormalCache
+
         if use_cache and not isinstance(past_key_values, DynamicFusedNormalCache):
             past_key_values = DynamicFusedNormalCache.from_legacy_cache(past_key_values)
             past_seen_tokens = past_key_values.get_seq_length()
 
         if cache_position is None:
-            cache_position = torch.arange(past_seen_tokens,
-                                          past_seen_tokens + inputs_embeds.shape[1],
-                                          device=inputs_embeds.device)
+            cache_position = torch.arange(
+                past_seen_tokens,
+                past_seen_tokens + inputs_embeds.shape[1],
+                device=inputs_embeds.device,
+            )
         # ipex-llm changes end
 
         if position_ids is None:
             position_ids = cache_position.unsqueeze(0)
 
-        causal_mask = self._update_causal_mask(attention_mask, inputs_embeds,
-                                               cache_position, past_seen_tokens)
+        causal_mask = self._update_causal_mask(
+            attention_mask, inputs_embeds, cache_position, past_seen_tokens
+        )
 
         # embed positions
         hidden_states = inputs_embeds
@@ -1015,13 +1181,15 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
             layers_runner = decode_runner
         else:
             layers_runner = prefill_runner
-        layer_outputs = layers_runner.forward(hidden_states,
-                                              attention_mask=causal_mask,
-                                              position_ids=position_ids,
-                                              past_key_value=past_key_values,
-                                              output_attentions=output_attentions,
-                                              use_cache=use_cache,
-                                              cache_position=cache_position,)
+        layer_outputs = layers_runner.forward(
+            hidden_states,
+            attention_mask=causal_mask,
+            position_ids=position_ids,
+            past_key_value=past_key_values,
+            output_attentions=output_attentions,
+            use_cache=use_cache,
+            cache_position=cache_position,
+        )
         hidden_states = layer_outputs[0]
 
         next_decoder_cache = layer_outputs[1]
@@ -1036,8 +1204,11 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
         next_cache = next_decoder_cache if use_cache else None
         # ipex-llm changes end
         if not return_dict:
-            return tuple(v for v in [hidden_states, next_cache,
-                                     all_hidden_states, all_self_attns] if v is not None)
+            return tuple(
+                v
+                for v in [hidden_states, next_cache, all_hidden_states, all_self_attns]
+                if v is not None
+            )
         t1 = time.perf_counter()
         # print("fused model forward time: ", t1 - t0)
         return BaseModelOutputWithPast(
@@ -1046,4 +1217,5 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
             hidden_states=all_hidden_states,
             attentions=all_self_attns,
         )
+
     return llama_fused_model_forward
