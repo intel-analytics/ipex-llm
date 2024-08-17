@@ -160,7 +160,7 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
 
         sin = self.constant(self.cached_sin)
         self.sin = self.unsqueeze(sin, axis=0)
-        
+
         if mode == "decode":
             assert self.seq_len == 1, "seq_len must be 1 for decode mode"
             self.kv_seq_len = self.max_seq_len + 1
@@ -169,10 +169,10 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
 
         self.num_heads = num_heads
         self.num_key_value_heads = num_key_value_heads
-        
+
         self.head_dim = self.hidden_size // self.num_heads
         self.num_key_value_groups = self.num_heads // self.num_key_value_heads
-        
+
         # define input, the order self.parameter matters
         input = self.parameter((self.batch_size, self.seq_len, self.hidden_size))
 
@@ -181,8 +181,7 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
             attention_mask = self.parameter((self.batch_size, 1, 1, self.max_seq_len + 1))
         else:
             attention_mask = self.parameter((self.batch_size, 1, self.seq_len, self.seq_len))
-            
-        
+
         position_ids = self.parameter((self.batch_size, self.seq_len))
         past_keys = []
         past_values = []
@@ -198,7 +197,7 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         else:
             past_keys = [None] * num_layers
             past_values = [None] * num_layers
-        
+
         if input_layernorm_weights is None:
             assert post_attn_layernorm_weights is None
             input_layernorm_weights = []
@@ -211,7 +210,7 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
             post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
 
         hidden_states = input
-        
+
         curr_key_values = []
         for i in range(num_layers):
             hidden_states, new_key_states, new_value_states = self.build_decoder(hidden_states=hidden_states,
@@ -223,7 +222,6 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
                                                                                  past_value=past_values[i],)
             curr_key_values.append((new_key_states, new_value_states))
 
-        
         # define outputs
         hidden_states = self.convert_to_fp16(hidden_states)
         
@@ -231,9 +229,8 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
-        with FileLock("decoder_compile.lock"):
-            print("start compiling")
-            self.compile()
+        print("start compiling")
+        self.compile()
 
     def repeat_kv(self, hidden_states, n_rep, transpose=False):
         if n_rep == 1:
@@ -285,9 +282,7 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         query_states, key_states = self.apply_rotary_pos_emb(query_states, key_states, self.cos, self.sin, position_ids)
         new_key_states = key_states
         new_value_states = value_states
-        
- 
-        
+
         if self.mode == "decode":
             key_states = self.concat(past_key, key_states, axis=-2)
             if self.transpose_value:
@@ -295,7 +290,6 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
             else:
                 value_states = self.concat(past_value, value_states, axis=-2)
         
-        # repeat_kv cannot be implemented because Broadcast op is needed
         key_states = self.repeat_kv(key_states, self.num_key_value_groups)
         value_states = self.repeat_kv(value_states, self.num_key_value_groups, self.transpose_value)
         
@@ -321,7 +315,6 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         hidden_states = self.convert_to_fp32(hidden_states)
         variance = self.reduce_mean(self.power(hidden_states, self.constant(np.array([[[2]]], dtype=np.float32))), -1, keep_dims=True)
         hidden_states = self.eltwise_div(hidden_states, self.sqrt(self.eltwise_add(variance, eps)))
-        # post_attention_layernorm_weight = self.constant(post_attention_layernorm_weight)
         post_attention_layernorm_weight = self.convert_to_fp32(post_attention_layernorm_weight)
         hidden_states = self.eltwise_mul(post_attention_layernorm_weight, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
@@ -367,12 +360,8 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         post_attn_layernorm_weights: List[torch.Tensor],
         layer_indexes : List[int],
         intra_stages: int,
-        cached_cos,
-        cached_sin,
-        # rotary_emb,
-        # batch_size: int,
-        # seq_len: int,
-        # hidden_size: int,
+        cached_cos: torch.Tensor,
+        cached_sin: torch.Tensor,
         num_heads: int,
         head_dim: int,
         num_key_value_heads: int,
@@ -394,16 +383,13 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                 op_parameters.append(w.to(torch.float16).numpy())
         self.op_parameters = op_parameters
         self.op_id = str(uuid.uuid4())
-        # self.layer_idx = layer_idx
         self.max_seq_len = max_seq_len
         self.transpose_value = transpose_value
-        # self.rotary_emb = rotary_emb
-        if isinstance(parameters[0], tuple):  # weight, scale from QuantizedLinear
+        if isinstance(parameters[0], tuple):
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
             assert np_dtype == np.uint8
             assert parameters[0][1].dtype == torch.float16, parameters[0]
         else:  # FP16 Linear
-            assert False, "should not be here"
             np_dtype = np.float16
         
         self.intra_stages = intra_stages
@@ -417,35 +403,28 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                 self.layer_ranges.append((i * num_layers, len(self.layer_indexes)))
             else:
                 self.layer_ranges.append((i * num_layers, (i+1) * num_layers))
-        # last_num_layers = len(self.layer_indexes) - num_layers * (intra_stages -1)
-        # self.stage_num_layers = [num_layers] * intra_stages + [last_num_layers]
-
-
-        # assert self.num_layers_1 + self.num_layers_0 == len(input_laynorm_weights)
-        # assert self.num_layers_1 + self.num_layers_0 == len(post_attn_layernorm_weights)
 
         self.backend_decoders = []
 
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
-            print(f"creating dedcoder layer: {self.layer_indexes[start]}:{self.layer_indexes[end - 1]}")
+            lm_0 = input_laynorm_weights[start:end]
+            lm_1 = post_attn_layernorm_weights[start:end]
             decoder = LowBitLlamaMultiDecoderlayer([1, 1, num_heads*head_dim],
-                                            input_layernorm_weights=input_laynorm_weights[start:end],
-                                            post_attn_layernorm_weights=post_attn_layernorm_weights[start:end],
-                                            cached_cos=cached_cos,
-                                            cached_sin=cached_sin,
-                                            num_heads=num_heads,
-                                            num_key_value_heads=num_key_value_heads,
-                                            num_layers=end - start,
-                                            max_seq_len=max_seq_len,
-                                            rms_norm_eps=rms_norm_eps,
-                                            intermediate_size=intermediate_size,
-                                            mode="decode",
-                                            transpose_value=self.transpose_value,
-                                            dtype=np_dtype)
+                                                   input_layernorm_weights=lm_0,
+                                                   post_attn_layernorm_weights=lm_1,
+                                                   cached_cos=cached_cos,
+                                                   cached_sin=cached_sin,
+                                                   num_heads=num_heads,
+                                                   num_key_value_heads=num_key_value_heads,
+                                                   num_layers=end - start,
+                                                   max_seq_len=max_seq_len,
+                                                   rms_norm_eps=rms_norm_eps,
+                                                   intermediate_size=intermediate_size,
+                                                   mode="decode",
+                                                   transpose_value=self.transpose_value,
+                                                   dtype=np_dtype)
             self.backend_decoders.append(decoder)
-            print(f"created dedcoder layer: {self.layer_indexes[start]}:{self.layer_indexes[end - 1]}")
-
         
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
@@ -453,12 +432,9 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             self.backend_decoders[i].setWeights(3+(num_intra_layers)*2, self.op_id, *op_parameters[start*7:end*7])
             backend_lib.run(self.backend_decoders[i]._mm)
 
-            print(f"{i}th inference done")
-
         self.kv_cache_c_parameter_handel = []
         self.kv_cache_parameters = []
         self.kv_cache_prefetched = False
-
 
     def forward(self,
                 hidden_states: torch.Tensor,
@@ -469,19 +445,10 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                 use_cache: bool = False,
                 cache_position: Optional[torch.LongTensor] = None,
                 **kwargs,) -> torch.Tensor:
-        """Torch module forward method.
-
-        Args:
-            x (torch.Tensor): Input tensor
-
-        Returns:
-            torch.Tensor: result
-        """
         
         inputs = (hidden_states.to(torch.float16),
                   attention_mask,
-                  position_ids,
-                )
+                  position_ids,)
 
         if len(self.kv_cache_parameters) > 0:
             # the case kv cache changed
@@ -497,38 +464,43 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                 past_key = past_key_value.key_cache[idx]
                 past_value = past_key_value.value_cache[idx]
 
-                assert past_key.dtype == torch.float16, f"past_key dtype is {past_key.dtype}"
+                invalidInputError(past_key.dtype == torch.float16, f"past_key dtype is {past_key.dtype}")
 
                 new_size = (past_key.size(0),
                             past_key.size(1),
                             self.max_seq_len,
                             past_key.size(3))
                 past_key = past_key.as_strided(new_size, past_key.stride(), storage_offset=0)
-                assert past_key.is_contiguous()
+                invalidInputError(past_key.is_contiguous(), "past_key is not contiguous")
                 past_value = past_value.as_strided(new_size, past_value.stride(), storage_offset=0)
                 if self.transpose_value:
                     past_value = past_value.transpose(-1, -2)
-                assert past_value.is_contiguous()
+                invalidInputError(past_value.is_contiguous(), "past_value is not contiguous")
 
                 self.kv_cache_parameters.append(past_key)
                 self.kv_cache_parameters.append(past_value)
-            
+
             for i in range(self.intra_stages):
                 start, end = self.layer_ranges[i]
-                handle = self.backend_decoders[i].create_parameters([p.numpy() for p in self.kv_cache_parameters[start*2:end*2]])
+                layer_kv_cache = self.kv_cache_parameters[start*2:end*2]
+                layer_kv_cache = [p.numpy() for p in layer_kv_cache]
+                handle = self.backend_decoders[i].create_parameters(layer_kv_cache)
                 self.kv_cache_c_parameter_handel.append(handle)
 
         x_np = [elem.to(torch.float16).numpy() for elem in inputs]
 
-        key_value_states = []
-
         with record_function(f"npu_factory"):
             if not self.kv_cache_prefetched:
                 for i in range(self.intra_stages):
-                    self.backend_decoders[i].load_wt_fn(len(inputs), self.backend_decoders[i]._mm, self.kv_cache_c_parameter_handel[i])
+                    self.backend_decoders[i].load_wt_fn(len(inputs),
+                                                        self.backend_decoders[i]._mm,
+                                                        self.kv_cache_c_parameter_handel[i])
 
-            models_ptr = (ctypes.POINTER(ctypes.c_char) * self.intra_stages)(*[self.backend_decoders[i]._mm for i in range(self.intra_stages)])
-            inputs_ptr = (ctypes.c_void_p * 3)(x_np[0].ctypes.data_as(ctypes.c_void_p), x_np[1].ctypes.data_as(ctypes.c_void_p), x_np[2].ctypes.data_as(ctypes.c_void_p))
+            array_type = (ctypes.POINTER(ctypes.c_char) * self.intra_stages)
+            models_ptr = array_type(*[self.backend_decoders[i]._mm for i in range(self.intra_stages)])
+            inputs_ptr = (ctypes.c_void_p * 3)(x_np[0].ctypes.data_as(ctypes.c_void_p),
+                                               x_np[1].ctypes.data_as(ctypes.c_void_p),
+                                               x_np[2].ctypes.data_as(ctypes.c_void_p))
             t0 = time.perf_counter()
             backend_lib.run_decoders(models_ptr, inputs_ptr, 2, 3)
             t1 = time.perf_counter()
@@ -541,21 +513,24 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         outputs = (hidden_states,)
         outputs += (past_key_value,)
         return outputs, t1 - t0
-    
+
     def post_forward(self, past_key_value, cache_position):
         key_value_states = []
         for i in range(self.intra_stages):
             for j in range(1, len(self.backend_decoders[i].torch_out)):
                 key_value_states.append(self.backend_decoders[i].torch_out[j])
         
-        cache_kwargs = {"cache_position": cache_position, "max_seq_len":self.max_seq_len, "transpose": self.transpose_value}
+        cache_kwargs = {"cache_position": cache_position,
+                        "max_seq_len":self.max_seq_len,
+                        "transpose": self.transpose_value}
         for i in range(len(self.layer_indexes)):
             key_states, value_states = past_key_value.update(key_value_states[2*i],
                                                              key_value_states[2*i+1],
                                                              self.layer_indexes[i], cache_kwargs)
         
         for i in range(self.intra_stages):
-            self.backend_decoders[i].load_wt_fn(3, self.backend_decoders[i]._mm, self.kv_cache_c_parameter_handel[i])
+            self.backend_decoders[i].load_wt_fn(3, self.backend_decoders[i]._mm,
+                                                self.kv_cache_c_parameter_handel[i])
         self.kv_cache_prefetched = True
 
 
@@ -623,29 +598,30 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         Returns:
             torch.Tensor: result
         """
-        assert not output_attentions
 
         seq_len = hidden_states.shape[1]
-        assert seq_len > 1, "seq_len must be 1 for decode mode"
 
         backend_cls = self.backend_cls_prefill
         inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
         inputs += (self.layer_norm_0, self.layer_norm_1)
-        hidden_states, past_key, past_value = run_model(inputs, self.op_parameters, backend_cls, self.op_id, replica=2)
-        cache_kwargs = {"cache_position": cache_position, "max_seq_len":self.max_seq_len, "transpose": self.transpose_value}
-        key_states, value_states = past_key_value.update(past_key, past_value, self.layer_idx, cache_kwargs)
+        hidden_states, past_key, past_value = run_model(inputs, self.op_parameters,
+                                                        backend_cls, self.op_id, replica=2)
+        cache_kwargs = {"cache_position": cache_position,
+                        "max_seq_len": self.max_seq_len,
+                        "transpose": self.transpose_value}
+        key_states, value_states = past_key_value.update(past_key, past_value,
+                                                         self.layer_idx, cache_kwargs)
 
         outputs = (hidden_states,)
         outputs += (past_key_value,)
         return outputs
 
-import time
-import types
+
 def run_decode(model, rank, world_size, port, layer_start, layer_end,
                intra_stages,
                max_seq_len, transpose_value_cache,
                input_queue, result_queue):
-    
+
     os.environ['MASTER_ADDR'] = '127.0.0.1'
     os.environ['MASTER_PORT'] = port
     os.environ['RANK'] = str(rank)
@@ -684,14 +660,13 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
-
         layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
         layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
-        
+
         layer_weights.extend(weights)
         input_layer_norm_weights.append(layer_norm_0)
         post_attn_layernorm_weights.append(layer_norm_1)
-    
+
     multi_decoder = FusedLlamaLowBitMultiDecoderlayer(
         parameters=layer_weights,
         input_laynorm_weights=input_layer_norm_weights,
@@ -707,7 +682,7 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
         intermediate_size=intermediate_size,
         max_seq_len=max_seq_len,
         transpose_value=transpose_value_cache,
-        do_print=False, # layer_start == 0,
+        do_print=False,
     )
 
     dist.barrier()
@@ -718,7 +693,7 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
     hidden_states = torch.empty((1, 1, head_dim*num_heads), dtype=torch.float16)
     with torch.inference_mode():
         while True:
-            
+
             dist.broadcast(control, src=0)
             if control.item() == -2:
                 break
@@ -733,30 +708,30 @@ def run_decode(model, rank, world_size, port, layer_start, layer_end,
 
                 position_ids = position_ids = cache_position.unsqueeze(0)
                 causal_mask = model.model._update_causal_mask(attention_mask, hidden_states,
-                                                    cache_position, past_seen_tokens)
+                                                              cache_position, past_seen_tokens)
                 pad_len = multi_decoder.max_seq_len + 1 - causal_mask.size(-1)
 
                 pad_mask = (0, pad_len)
                 padded_causal_mask = F.pad(causal_mask.to(torch.float16), pad_mask,
-                                        value=torch.finfo(torch.float16).min)
-                padded_causal_mask[:,:,:,-1] = 0.0
+                                           value=torch.finfo(torch.float16).min)
+                padded_causal_mask[:, :, :, -1] = 0.0
                 dist.recv(hidden_states, src=rank - 1)
                 t1 = time.perf_counter()
                 layer_outputs, elapse = multi_decoder(hidden_states,
-                        attention_mask=padded_causal_mask,
-                        position_ids=position_ids,
-                        past_key_value=past_key_values,
-                        output_attentions=False,
-                        use_cache=True,
-                        cache_position=cache_position,)
+                                                      attention_mask=padded_causal_mask,
+                                                      position_ids=position_ids,
+                                                      past_key_value=past_key_values,
+                                                      output_attentions=False,
+                                                      use_cache=True,
+                                                      cache_position=cache_position,)
                 t2 = time.perf_counter()
                 hidden_states = layer_outputs[0]
                 t3 = time.perf_counter()
-                dist.send(hidden_states, dst=(rank + 1)%world_size)
+                dist.send(hidden_states, dst=(rank + 1) % world_size)
                 t4 = time.perf_counter()
                 multi_decoder.post_forward(past_key_values, cache_position)
 
-import time
+
 class DecodeRunner:
     def __init__(self, model, max_seq_len, intra_pp=2, inter_pp=2, transpose_value_cache=True):
         self.model = model
@@ -806,14 +781,14 @@ class DecodeRunner:
         self.cache_past_key_value = None
 
     def forward(self,
-            hidden_states: torch.Tensor,
-            attention_mask: Optional[torch.Tensor] = None,
-            position_ids: Optional[torch.LongTensor] = None,
-            past_key_value: Optional[Cache] = None,
-            output_attentions: bool = False,
-            use_cache: bool = False,
-            cache_position: Optional[torch.LongTensor] = None,
-            **kwargs,):
+                hidden_states: torch.Tensor,
+                attention_mask: Optional[torch.Tensor] = None,
+                position_ids: Optional[torch.LongTensor] = None,
+                past_key_value: Optional[Cache] = None,
+                output_attentions: bool = False,
+                use_cache: bool = False,
+                cache_position: Optional[torch.LongTensor] = None,
+                **kwargs,):
             t0 = time.perf_counter()
 
             if self.cache_past_key_value != past_key_value:
@@ -830,7 +805,7 @@ class DecodeRunner:
             dist.recv(hidden_states, src=self.world_size - 1)
             t1 = time.perf_counter()
             return hidden_states, past_key_value
-    
+
     def shutdown(self):
         control = torch.tensor(-2, dtype=torch.int)
         dist.broadcast(control, src=0)
@@ -843,13 +818,9 @@ class DecodeRunner:
     def __del__(self):
         self.shutdown()
 
+
 def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_queue):
-    print("finish loading prefill model")
 
-    # from ipex_llm.transformers.npu_models.convert import optimize_llm, optimize_llm_post
-
-    # optimize_llm(model)
-    
     layer_start = 0
     layer_end = len(model.model.layers)
     num_heads = model.model.layers[layer_start].self_attn.num_heads
@@ -883,17 +854,17 @@ def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_q
         layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
         new_decoderlayer = FusedLlamaLowBitDecoderlayer(weights,
-                                            num_heads=num_heads,
-                                            num_key_value_heads=num_key_value_heads,
-                                            cached_cos=cached_cos,
-                                            cached_sin=cached_sin,
-                                            layer_norm_0=layer_norm_0,
-                                            layer_norm_1=layer_norm_1,
-                                            layer_idx=layer_idx,
-                                            rms_norm_eps=rms_norm_eps,
-                                            intermediate_size=intermediate_size,
-                                            max_seq_len=max_seq_len,
-                                            transpose_value=transpose_value_cache)
+                                                        num_heads=num_heads,
+                                                        num_key_value_heads=num_key_value_heads,
+                                                        cached_cos=cached_cos,
+                                                        cached_sin=cached_sin,
+                                                        layer_norm_0=layer_norm_0,
+                                                        layer_norm_1=layer_norm_1,
+                                                        layer_idx=layer_idx,
+                                                        rms_norm_eps=rms_norm_eps,
+                                                        intermediate_size=intermediate_size,
+                                                        max_seq_len=max_seq_len,
+                                                        transpose_value=transpose_value_cache)
         
         layer_weights.extend(weights)
         input_layer_norm_weights.append(layer_norm_0)
@@ -950,15 +921,16 @@ class PrefillRunner:
         print(Style.RESET_ALL)
 
     def forward(self,
-            hidden_states: torch.Tensor,
-            attention_mask: Optional[torch.Tensor] = None,
-            position_ids: Optional[torch.LongTensor] = None,
-            past_key_value: Optional[Cache] = None,
-            output_attentions: bool = False,
-            use_cache: bool = False,
-            cache_position: Optional[torch.LongTensor] = None,
-            **kwargs,):
-            self.prefill_input_queue.put((hidden_states, position_ids, attention_mask, past_key_value, cache_position))
+                hidden_states: torch.Tensor,
+                attention_mask: Optional[torch.Tensor] = None,
+                position_ids: Optional[torch.LongTensor] = None,
+                past_key_value: Optional[Cache] = None,
+                output_attentions: bool = False,
+                use_cache: bool = False,
+                cache_position: Optional[torch.LongTensor] = None,
+                **kwargs,):
+            args = (hidden_states, position_ids, attention_mask, past_key_value, cache_position)
+            self.prefill_input_queue.put(args)
             return self.prefill_result_queue.get()
 
     def shutdown(self):
@@ -1000,8 +972,8 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
 
         if (input_ids is None) ^ (inputs_embeds is not None):
             invalidInputError(False,
-                            ("You cannot specify both input_ids and inputs_embeds at the same time,"
-                            " and must specify either one"))
+                              ("You cannot specify both input_ids and inputs_embeds at the same time,"
+                               " and must specify either one"))
 
         if self.gradient_checkpointing and self.training and use_cache:
             use_cache = False
