@@ -119,7 +119,7 @@ set BIGDL_USE_NPU=1
 ### 3. Running examples
 
 ```
-torchrun --standalone --nnodes=1 --nproc-per-node=2  llama2.py
+python  llama2.py
 ```
 
 Arguments info:
@@ -131,7 +131,6 @@ Arguments info:
 #### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
 
 ```log
-First token cost: xxxx s, rest tokens cost average: xxxx s
 Inference time: xxxx s
 -------------------- Prompt --------------------
 Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun

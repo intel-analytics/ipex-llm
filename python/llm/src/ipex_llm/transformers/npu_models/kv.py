@@ -171,6 +171,7 @@ class DynamicFusedNormalCache(DynamicCache):
 
         for idx, layer in self.key_cache.items():
             return layer.shape[-2]
+        return 0
     
     def expand(self):
         for idx, layer in self.key_cache.items():

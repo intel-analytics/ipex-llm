@@ -114,7 +114,12 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "modules_to_not_convert")
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
-        pipeline_parallel_stages = kwargs.pop("pipeline_parallel_stages", 1)
+        ignore_argument(kwargs, "pipeline_parallel_stages")
+        enable_mp = kwargs.pop("enable_mp", True)
+        max_seq_len = kwargs.pop("max_seq_len", 1024)
+        inter_pp = kwargs.pop("inter_pp", 2)
+        intra_pp = kwargs.pop("intra_pp", 2)
+        transpose_value_cache = kwargs.pop("transpose_value_cache", True)  
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -130,39 +135,27 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_lcmu_enabled": False})
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
-
-        if pipeline_parallel_stages > 1:
-            invalidInputError(torch.distributed.get_world_size() == pipeline_parallel_stages,
-                              "Please make sure world size is same as `pipeline_parallel_stages`")
-            kwargs['torch_dtype'] = torch.float16
-            from .npu_models.pipeline_parallel import pipeline_parallel, pipeline_parallel_generate
-            model = pipeline_parallel(model, pipeline_parallel_stages,
-                                      kwargs["torch_dtype"], device="cpu")
-
-            # add pipeline_parallel_generate to pretrained model dynamically
-            model.pipeline_parallel_generate = types.MethodType(pipeline_parallel_generate,
-                                                                model)
-
-        from intel_npu_acceleration_library.compiler import create_npu_kernels
-        with torch.no_grad():
-            # optimize_llm(model)
-            # if pipeline_parallel_stages == 1:
-            cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
-            print("load convert finished")
-            create_npu_kernels(model)
-            print("create npu kernels finished")
-            # else:
-            #     cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
-            #     create_npu_kernels(model.model)
-            #     optimize_llm_post(model)
-        model = model.eval()
-
-        logger.info(f"Finish to convert model")
-
-        model.config.update({"bigdl_transformers_low_bit": qtype})
-
-        # add save_low_bit to pretrained model dynamically
-        # model.save_low_bit = types.MethodType(save_low_bit, model)
+        if enable_mp:
+            from intel_npu_acceleration_library.compiler import create_npu_kernels
+            with torch.no_grad():
+                cls.load_convert(qtype, model, 'cpu', *args, **kwargs)
+                create_npu_kernels(model)
+            model = model.eval()
+            logger.info(f"Finish to convert model")
+            model.config.update({"bigdl_transformers_low_bit": qtype})
+            model.share_memory()
+            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
+            optimize_llm(model, max_seq_len, inter_pp, intra_pp, transpose_value_cache=transpose_value_cache)
+        else:
+            optimize_llm(model)
+            cls.load_convert(qtype, model.model, 'cpu', *args, **kwargs)
+            create_npu_kernels(model.model)
+            optimize_llm_post(model)
+            model = model.eval()
+            logger.info(f"Finish to convert model")
+            model.config.update({"bigdl_transformers_low_bit": qtype})
+            # add save_low_bit to pretrained model dynamically
+            model.save_low_bit = types.MethodType(save_low_bit, model)
 
         return model
 
