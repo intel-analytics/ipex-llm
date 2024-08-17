@@ -116,7 +116,8 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
         enable_mp = kwargs.pop("enable_mp", True)
-        max_seq_len = kwargs.pop("max_seq_len", 1024)
+        max_output_len = kwargs.pop("max_output_len", 1024)
+        max_prompt_len = kwargs.pop("max_prompt_len", max_output_len)
         inter_pp = kwargs.pop("inter_pp", 2)
         intra_pp = kwargs.pop("intra_pp", 2)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
@@ -138,6 +139,13 @@ class _BaseAutoModelClass:
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
         if enable_mp:
+            invalidInputError(
+                max_prompt_len < max_output_len,
+                (
+                    f"max_prompt_len ({max_prompt_len}) should be less"
+                    " than max_output_len ({max_output_len})"
+                ),
+            )
             from intel_npu_acceleration_library.compiler import create_npu_kernels
 
             with torch.no_grad():
@@ -150,7 +158,12 @@ class _BaseAutoModelClass:
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
 
             optimize_llm(
-                model, max_seq_len, inter_pp, intra_pp, transpose_value_cache=transpose_value_cache
+                model,
+                max_output_len=max_output_len,
+                max_prompt_len=max_prompt_len,
+                inter_pp=inter_pp,
+                intra_pp=intra_pp,
+                transpose_value_cache=transpose_value_cache,
             )
         else:
             optimize_llm(model)

@@ -519,7 +519,8 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             self.backend_decoders[i].setWeights(
                 3 + (num_intra_layers) * 2, self.op_id, *op_parameters[start * 7:end * 7]
             )
-            backend_lib.run(self.backend_decoders[i]._mm)
+            with FileLock(f"decoder_run.lock"):
+                backend_lib.run(self.backend_decoders[i]._mm)
 
         self.kv_cache_c_parameter_handel = []
         self.kv_cache_parameters = []
@@ -938,7 +939,7 @@ class DecodeRunner:
         dist.broadcast(control, src=0)
         hidden_states = hidden_states.to(torch.float16)
         dist.send(hidden_states, dst=1)
-        past_key_value.expand()
+        past_key_value.expand(self.transpose_value_cache)
         dist.recv(hidden_states, src=self.world_size - 1)
         t1 = time.perf_counter()
         return hidden_states, past_key_value
@@ -956,7 +957,9 @@ class DecodeRunner:
         self.shutdown()
 
 
-def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_queue):
+def run_prefill(
+    model, max_output_len, max_prompt_len, transpose_value_cache, input_queue, result_queue
+):
 
     layer_start = 0
     layer_end = len(model.model.layers)
@@ -1002,7 +1005,7 @@ def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_q
             layer_idx=layer_idx,
             rms_norm_eps=rms_norm_eps,
             intermediate_size=intermediate_size,
-            max_seq_len=max_seq_len,
+            max_seq_len=max_output_len,
             transpose_value=transpose_value_cache,
         )
 
@@ -1041,9 +1044,10 @@ def run_prefill(model, max_seq_len, transpose_value_cache, input_queue, result_q
 
 
 class PrefillRunner:
-    def __init__(self, model, max_seq_len, transpose_value_cache):
+    def __init__(self, model, max_output_len, max_prompt_len, transpose_value_cache):
         self.model = model
-        self.max_seq_len = max_seq_len
+        self.max_output_len = max_output_len
+        self.max_prompt_len = max_prompt_len
         self.transpose_value_cache = transpose_value_cache
 
         self.prefill_result_queue = mp.Queue()
@@ -1053,7 +1057,8 @@ class PrefillRunner:
             target=run_prefill,
             args=(
                 model,
-                max_seq_len,
+                max_output_len,
+                max_prompt_len,
                 transpose_value_cache,
                 self.prefill_input_queue,
                 self.prefill_result_queue,
@@ -1076,9 +1081,29 @@ class PrefillRunner:
         cache_position: Optional[torch.LongTensor] = None,
         **kwargs,
     ):
+        seq_len = hidden_states.size(1)
+        invalidInputError(
+            seq_len <= self.max_prompt_len,
+            (
+                f"seq_len: {seq_len} should be less than or equal"
+                " to max_prompt_len {self.max_prompt_len}"
+            ),
+        )
+        pad_len = self.max_prompt_len - seq_len
+        hidden_states = F.pad(hidden_states.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
+        position_ids = F.pad(position_ids, (0, pad_len), value=0)
+        attention_mask = F.pad(
+            attention_mask.to(torch.float16),
+            (0, pad_len, 0, pad_len),
+            value=torch.finfo(torch.float16).min,
+        )
+
         args = (hidden_states, position_ids, attention_mask, past_key_value, cache_position)
         self.prefill_input_queue.put(args)
-        return self.prefill_result_queue.get()
+        hidden_states, past_key_value = self.prefill_result_queue.get()
+        past_key_value.shrink(seq_len, self.transpose_value_cache)
+        hidden_states = hidden_states[:, :seq_len, :]
+        return hidden_states, past_key_value
 
     def shutdown(self):
         self.prefill_input_queue.put("stop")
