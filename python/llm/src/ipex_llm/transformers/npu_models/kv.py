@@ -73,9 +73,9 @@ def append_fused_kv_cache(cache_k, cache_v, key_states, value_states, transpose_
             cache_k.size(3),
         )
         new_cache_k = cache_k.as_strided(new_size, cache_k.stride(), storage_offset=0)
-        new_cache_k[:, :, cache_k.size(2):cache_k.size(2) + key_states.size(2), :] = key_states
+        new_cache_k[:, :, cache_k.size(2) : cache_k.size(2) + key_states.size(2), :] = key_states
         new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
-        new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + key_states.size(2), :] = value_states
+        new_cache_v[:, :, cache_v.size(2) : cache_v.size(2) + key_states.size(2), :] = value_states
         return new_cache_k, new_cache_v
     else:
         new_size_key = (
@@ -85,7 +85,7 @@ def append_fused_kv_cache(cache_k, cache_v, key_states, value_states, transpose_
             cache_k.size(3),
         )
         new_cache_k = cache_k.as_strided(new_size_key, cache_k.stride(), storage_offset=0)
-        new_cache_k[:, :, cache_k.size(2):cache_k.size(2) + key_states.size(2), :] = key_states
+        new_cache_k[:, :, cache_k.size(2) : cache_k.size(2) + key_states.size(2), :] = key_states
 
         new_size_value = (
             cache_v.size(0),
