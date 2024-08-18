@@ -1,6 +1,8 @@
 # Qwen2-Audio
 In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2-Audio models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the following model: 
-- [Qwen/Qwen2-Audio-7B-Instruct](https://huggingface.co/Qwen/Qwen2-Audio-7B-Instruct) as reference model.
+- [Qwen/Qwen2-Audio-7B-Instruct](https://huggingface.co/Qwen/Qwen2-Audio-7B-Instruct)
+
+as reference model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -120,3 +122,9 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Qwen2-Audio model (e.g. `Qwen/Qwen2-Audio-7B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen2-Audio-7B-Instruct'`.
+
+#### Sample Output
+In `generate.py`, [an audio clip](https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen2-Audio/audio/translate_to_chinese.wav) is used as the input, which asks the model to translate an English sentence into Chinese. The response from the model is expected to be similar to:
+```bash
+['每个人都希望被赏识，所以如果你欣赏某人，不要保密。']
+```
