@@ -17,6 +17,7 @@
 # https://huggingface.co/THUDM/chatglm2-6b-32k/blob/main/configuration_chatglm.py
 #
 
+import os
 import torch
 from typing import Optional, Tuple, Union
 from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past_key_value
@@ -25,9 +26,11 @@ from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, \
     get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.chatglm2 import repeat_kv
-from ipex_llm.transformers.kv import DynamicCompressCache
+from ipex_llm.transformers.kv import DynamicCompressCache, DynamicCompressFp8Cache
 from transformers.modeling_outputs import BaseModelOutputWithPast
 import math
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
 def chatglm4_model_forward(
@@ -56,8 +59,10 @@ def chatglm4_model_forward(
                                                 inputs)
         if use_compress_kv and not isinstance(past_key_values,
                                               DynamicCompressCache):
-            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values,
-                                                                     use_quantize_kv)
+            if use_quantize_kv:
+                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+            else:
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
 
     if inputs_embeds is None:
         batch_size, seq_length = input_ids.shape
@@ -200,8 +205,7 @@ def chatglm4_attention_forward(
         key_states[..., :rot_dim] = k_rot[...]
 
     # IPEX-LLM OPT: kv cache and quantize kv
-    use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states) or \
-        (use_compresskv and past_key_value.quant_kv)
+    use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states)
 
     # [CompressKV]
     if use_compresskv:
@@ -213,7 +217,7 @@ def chatglm4_attention_forward(
         key_states, value_states = past_key_value.update(
             key_states, value_states, self.layer_number - 1,
             query_states, attention_mask, n_head // n_kv_head,
-            self.config, enough_kv_room, 256
+            self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH
         )
     else:
         key_states, value_states = update_past_key_value(
