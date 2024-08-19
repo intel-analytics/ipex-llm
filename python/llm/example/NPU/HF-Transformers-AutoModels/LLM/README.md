@@ -119,19 +119,17 @@ set BIGDL_USE_NPU=1
 ### 3. Running examples
 
 ```
-torchrun --standalone --nnodes=1 --nproc-per-node=2  llama2.py
+python  llama2.py
 ```
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (i.e. `meta-llama/Llama-2-7b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
 #### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
 
 ```log
-First token cost: xxxx s, rest tokens cost average: xxxx s
 Inference time: xxxx s
 -------------------- Prompt --------------------
 Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun
