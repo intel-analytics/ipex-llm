@@ -51,7 +51,8 @@ from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache, \
     should_use_compresskv, is_enough_kv_cache_room_4_36, get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_causal
-from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache, DynamicCompressCache
+from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache, \
+    DynamicCompressCache, DynamicCompressFp8Cache
 from ipex_llm.utils.common import invalidInputError
 
 from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2MLP
@@ -122,11 +123,14 @@ def qwen2_model_forward(
     use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
 
     if use_cache:
-        if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+        if use_compress_kv and not isinstance(past_key_values, DynamicCompressCache):
+            if use_quantize_kv:
+                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+            else:
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+        elif use_quantize_kv and not isinstance(past_key_values, (DynamicFp8Cache,
+                                                                  DynamicCompressCache)):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif not use_quantize_kv and use_compress_kv and not isinstance(past_key_values,
-                                                                        DynamicCompressCache):
-            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
         if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
                                                                           (DynamicNormalCache,
                                                                            DynamicCompressCache)):
@@ -312,10 +316,20 @@ def qwen2_model_forward_4_42(
         and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs_embeds,
                                   self.config.num_attention_heads//self.config.num_key_value_heads)
     )
+    use_compress_kv = should_use_compresskv(inputs_embeds, inputs_embeds.shape[1])
+
     if use_cache:
-        if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+        if use_compress_kv and not isinstance(past_key_values, DynamicCompressCache):
+            if use_quantize_kv:
+                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+            else:
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+        elif use_quantize_kv and not isinstance(past_key_values, (DynamicFp8Cache,
+                                                                  DynamicCompressCache)):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
+        elif not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
+                                                                            (DynamicNormalCache,
+                                                                             DynamicCompressCache)):
             past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
     # ipex-llm changes end
 
@@ -522,6 +536,7 @@ def qwen2_attention_forward(
     # [CompressKV]
     from ipex_llm.transformers.kv import DynamicCompressCache
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
+    use_quantizekv = isinstance(past_key_value, DynamicFp8Cache)
 
     if hasattr(self, 'qkv_proj') and self.qkv_proj is not None:
         qkv = self.qkv_proj(hidden_states)
@@ -592,7 +607,7 @@ def qwen2_attention_forward(
         import xe_addons
         if use_compresskv:
             attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if use_quantizekv:
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
         else:
@@ -600,14 +615,14 @@ def qwen2_attention_forward(
                                         attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
         import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if use_quantizekv:
             attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
                                                    value_states, attention_mask)
         else:
             attn_output = xe_addons.sdp_causal(query_states, key_states,
                                                value_states, attention_mask)
     else:
-        if isinstance(past_key_value, DynamicFp8Cache):
+        if use_quantizekv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
         # repeat k/v heads if n_kv_heads < n_heads
