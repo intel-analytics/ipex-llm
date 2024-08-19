@@ -465,7 +465,7 @@ jobs:
           python -m pip install --upgrade wheel
           python -m pip install --upgrade omegaconf pandas
           python -m pip install --upgrade tiktoken einops transformers_stream_generator
-    
+          python -m pip install transformers==4.37.0
       # specific for test on certain commits
       - name: Download llm binary
         if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
@@ -492,7 +492,6 @@ jobs:
         run: |
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
-          pip install transformers==4.37.0
           mv python/llm/test/benchmark/core-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
