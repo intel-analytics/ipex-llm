@@ -120,7 +120,8 @@ def llama_model_forward_4_36(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache, \
+        DynamicCompressFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
@@ -129,10 +130,14 @@ def llama_model_forward_4_36(
             self.config.num_attention_heads//self.config.num_key_value_heads)
         if should_use_compresskv(input, input.shape[1]):
             if not isinstance(past_key_values, DynamicCompressCache):
-                past_key_values = DynamicCompressCache.from_legacy_cache(
-                    past_key_values, quantize_kv=use_quantize)
+                if use_quantize:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
+                        past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(
+                        past_key_values)
         elif use_quantize:
-            if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
+            if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_36_internal(
         self=self,
@@ -161,7 +166,8 @@ def llama_model_forward_4_38(
     return_dict: Optional[bool] = None,
     cache_position: Optional[torch.LongTensor] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache, \
+        DynamicCompressFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
@@ -170,10 +176,14 @@ def llama_model_forward_4_38(
             self.config.num_attention_heads//self.config.num_key_value_heads)
         if should_use_compresskv(input, input.shape[1]):
             if not isinstance(past_key_values, DynamicCompressCache):
-                past_key_values = DynamicCompressCache.from_legacy_cache(
-                    past_key_values, quantize_kv=use_quantize)
+                if use_quantize:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
+                        past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(
+                        past_key_values)
         elif use_quantize:
-            if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
+            if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_38_internal(
         self=self,
@@ -203,7 +213,8 @@ def llama_model_forward_4_41(
     return_dict: Optional[bool] = None,
     cache_position: Optional[torch.LongTensor] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache, \
+        DynamicCompressFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
@@ -212,8 +223,12 @@ def llama_model_forward_4_41(
             self.config.num_attention_heads//self.config.num_key_value_heads)
         if should_use_compresskv(input, input.shape[1]):
             if not isinstance(past_key_values, DynamicCompressCache):
-                past_key_values = DynamicCompressCache.from_legacy_cache(
-                    past_key_values, quantize_kv=use_quantize)
+                if use_quantize:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
+                        past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(
+                        past_key_values)
         elif use_quantize:
             if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
