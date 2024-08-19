@@ -396,6 +396,8 @@ class _BaseAutoModelClass:
             from .lookup import lookup_generate
             import types
             model.lookup_generate = types.MethodType(lookup_generate, model)
+            if model.config.model_type == "minicpmv" and hasattr(model, 'llm'):
+                model.llm.lookup_generate = types.MethodType(lookup_generate, model.llm)
         else:
             # load default
             model = cls.HF_Model.from_pretrained(*args, **kwargs)

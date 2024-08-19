@@ -3,23 +3,25 @@ Perplexity (PPL) is one of the most common metrics for evaluating language model
 
 ## Run on Wikitext
 
-Download the dataset from [here](https://paperswithcode.com/dataset/wikitext-2), unzip it and we will use the test dataset `wiki.test.raw` for evaluation.
-
 ```bash
-python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B/ --data_path wikitext-2-raw-v1/wikitext-2-raw/wiki.test.raw --precision sym_int4 --use-cache --device xpu
+pip install datasets
+```
+An example to run perplexity on wikitext:
+```bash
 
-# Run with stride
-python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B/ --data_path wikitext-2-raw-v1/wikitext-2-raw/wiki.test.raw --precision fp16 --device xpu --stride 512
+python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B --dataset path=wikitext,name=wikitext-2-raw-v1 --precision sym_int4 --device xpu --stride 512 --max_length 4096
+
 ```
 
 ## Run on [THUDM/LongBench](https://github.com/THUDM/LongBench) dataset
 
 ```bash
-python run.py --model_path <path/to/model> --precisions sym_int4 fp8 --device xpu --datasets dataset_names --dataset_path <path/to/dataset> --language en
+pip install datasets
 ```
-A more specific example to run perplexity on Llama2-7B using the default English datasets:
+
+An example to run perplexity on chatglm3-6b using the default Chinese datasets("multifieldqa_zh", "dureader", "vcsum", "lsht", "passage_retrieval_zh")
 ```bash
-python run.py --model_path meta-llama/Llama-2-7b-chat-hf --precisions float16 sym_int4 --device xpu --language en
+python run_longbench.py --model_path THUDM/chatglm3-6b --precisions float16 sym_int4 --device xpu --language zh
 ```
 
 Notes:

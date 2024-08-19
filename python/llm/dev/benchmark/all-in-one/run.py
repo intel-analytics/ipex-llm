@@ -48,6 +48,8 @@ PHI3VISION_IDS = ['microsoft/phi-3-vision-128k-instruct']
 
 QWENVL_IDS = ['Qwen/Qwen-VL-Chat']
 
+MINICPM_V_IDS = ['openbmb/MiniCPM-V-2_6']
+
 results = []
 excludes = []
 
@@ -77,20 +79,22 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
                                         actual_in_len, actual_out_len, load_time, model.peak_memory])
 
 
-def get_continuation_input_str(in_len, tokenizer):
+def get_continuation_input_str(in_len, tokenizer=None):
     # keep 'utf-8' as character encoding mode
-    if in_len <= 2048:
-        input_str = open("prompt/summarize/cnn_39.txt", 'r', encoding='utf-8').read()
-        question = "Can you please summarize this article?"
-        prompt_format = "{}\nQuestion: {}\n"
-        full_prompt = prompt_format.format(input_str, question)
-        input_ids = tokenizer.encode(full_prompt, return_tensors="pt")
-        if input_ids.shape[1] < in_len:
-            return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
-        else:
-            half_idx = in_len // 2
-            input_ids_truncated = torch.cat((input_ids[:, :half_idx], input_ids[:, -(in_len-half_idx):]), dim=1)
-            return tokenizer.batch_decode(input_ids_truncated)[0]
+    if tokenizer is not None:
+        if in_len > 128 and in_len <= 4096:
+            if in_len <= 2048:
+                input_str = open("prompt/continuation/longbench_2k.txt", 'r', encoding='utf-8').read()
+            else:
+                input_str = open("prompt/continuation/longbench_4k.txt", 'r', encoding='utf-8').read()
+
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            if input_ids.shape[1] < in_len:
+                return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
+            else:
+                half_idx = in_len // 2
+                input_ids_truncated = torch.cat((input_ids[:, :half_idx], input_ids[:, -(in_len-half_idx):]), dim=1)
+                return tokenizer.batch_decode(input_ids_truncated)[0]
 
     return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
 
@@ -239,7 +243,7 @@ def run_native_int4(repo_id,
         in_out_len = in_out.split("-")
         in_len = int(in_out_len[0])
         out_len = int(in_out_len[1])
-        input_str = get_continuation_input_str(in_len, tokenizer)
+        input_str = get_continuation_input_str(in_len)
         # As different tokenizer has different encodings,
         # slice the input_ids to ensure the prompt length is required length.
         n_ctx = in_len + out_len if in_len + out_len > 512 else 512
@@ -476,13 +480,15 @@ def run_transformer_int4_gpu(repo_id,
         else:
             model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                               trust_remote_code=True, use_cache=True,
-                                              torch_dtype=torch_dtype).eval()
+                                              cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, cpu_embedding=cpu_embedding)
+        model = model.to('xpu')
     elif origin_repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True, cpu_embedding=cpu_embedding,
                                                      torch_dtype=torch_dtype).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
     elif origin_repo_id in PHI3VISION_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      _attn_implementation="eager",
@@ -490,6 +496,15 @@ def run_transformer_int4_gpu(repo_id,
                                                      trust_remote_code=True, use_cache=True, 
                                                      cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    elif origin_repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True,
+                                          cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         if "4bit" in repo_id:
             model = AutoModelForCausalLM.load_low_bit(model_path, optimize_model=True,
@@ -511,8 +526,7 @@ def run_transformer_int4_gpu(repo_id,
                                                             cpu_embedding=cpu_embedding,
                                                             torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    model = model.to('xpu')
+        model = model.to('xpu')
 
     end = time.perf_counter()
     load_time = end - st
@@ -978,6 +992,13 @@ def run_transformer_int4_gpu_win(repo_id,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
@@ -1094,6 +1115,14 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                                                      torch_dtype=torch.float16).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                          torch_dtype=torch.float16).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
