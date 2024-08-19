@@ -96,7 +96,7 @@ def main():
         log_dir = f"{output_path}/{model_name}/{args.device}/{precision}/{args.language}"
         os.makedirs(log_dir, exist_ok=True)
         results = {}
-        ppl_evaluator = BigDLPPL(model_path=args.model_path, device=args.device, mixed_precision = args.mixed_precision, **model_kwargs)
+        ppl_evaluator = BigDLPPL(model_path=args.model_path, device=args.device, mixed_precision=args.mixed_precision, **model_kwargs)
         ppl = ppl_evaluator.perplexity_hf(encoded_texts)
         summary[precision] = ppl
         results['results'] = ppl
