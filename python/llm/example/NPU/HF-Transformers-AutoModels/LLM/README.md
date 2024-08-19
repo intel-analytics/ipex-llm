@@ -127,7 +127,7 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `What is AI?`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--max-output-len MAX_OUTPUT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
-- `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `128`.
+- `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `768`.
 
 
 #### Sample Output
@@ -135,10 +135,16 @@ Arguments info:
 
 ```log
 Inference time: xxxx s
--------------------- Prompt --------------------
-Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun
--------------------- Output --------------------
-<s> Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun and exciting experiences.
+-------------------- Input --------------------
+<s><s> [INST] <<SYS>>
 
-One day, she decided to go on a journey to find a magical land that was said to be full of wonders
+<</SYS>>
+
+What is AI? [/INST]
+-------------------- Output --------------------
+<s><s> [INST] <<SYS>>
+
+<</SYS>>
+
+What is AI? [/INST]  AI (Artificial Intelligence) is a field of computer science and engineering that focuses on the development of intelligent machines that can perform tasks
 ```
