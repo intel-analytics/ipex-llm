@@ -1845,7 +1845,7 @@ def _optimize_post(model, lightweight_bmm=False):
             from ipex_llm.transformers.models.minicpmv import minicpmv_get_vision_embedding
             convert_forward(model.vpm, vpm_module.Attention, vision_transformer_attention_forward)
             model.get_vision_embedding = MethodType(minicpmv_get_vision_embedding, model)
-        elif model.vpm.config.model_type == "siglip":
+        elif "siglip" in model.vpm.config.model_type:
             # MiniCPM-V 2.6
             from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
             convert_forward(model.vpm, vpm_module.SiglipAttention, siglip_attention_forward)
