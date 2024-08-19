@@ -568,7 +568,7 @@ def run_transformer_int4_gpu(repo_id,
                 peak_mem = result[in_out][-1][6]
                 streaming = 'N/A'
                 use_fp16_torch_dtype = 'N/A'
-                with open(csv_name, mode='a', newline='') as file:
+                with open(csv_name, mode='a', newline='', encoding='utf-8') as file:
                     csv_writer = csv.writer(file)
                     file.seek(0, os.SEEK_END)
                     global line_counter
@@ -2046,16 +2046,16 @@ if __name__ == '__main__':
             if torch.distributed.get_rank() == 0:
                 df.index += max(line_counter - 1, 0)
                 if line_counter == 0:
-                    df.to_csv(csv_name, mode='a')
+                    df.to_csv(csv_name, mode='a', encoding='utf-8')
                 else:
-                    df.to_csv(csv_name, mode='a', header=None)
+                    df.to_csv(csv_name, mode='a', header=None, encoding='utf-8')
                 line_counter += len(df.index)
         else:
             df.index += max(line_counter - 1, 0)
             if api not in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
                 if line_counter == 0:
-                    df.to_csv(csv_name, mode='a')
+                    df.to_csv(csv_name, mode='a', encoding='utf-8')
                 else:
-                    df.to_csv(csv_name, mode='a', header=None)
+                    df.to_csv(csv_name, mode='a', header=None, encoding='utf-8')
             line_counter += len(df.index)
         results = []
