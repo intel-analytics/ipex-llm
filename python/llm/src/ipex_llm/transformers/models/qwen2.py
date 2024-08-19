@@ -50,7 +50,8 @@ from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache, \
     should_use_compresskv, is_enough_kv_cache_room_4_36, get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_causal
-from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache, DynamicCompressCache
+from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache, \
+    DynamicCompressCache, DynamicCompressFp8Cache
 from ipex_llm.utils.common import invalidInputError
 
 from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2MLP
@@ -122,10 +123,11 @@ def qwen2_model_forward(
 
     if use_cache:
         if use_compress_kv and not isinstance(past_key_values, DynamicCompressCache):
-            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values,
-                                                                     quantize_kv=use_quantize_kv)
-        elif use_quantize_kv and not isinstance(past_key_values,
-                                                (DynamicFp8Cache, DynamicCompressCache)):
+            if use_quantize_kv:
+                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+            else:
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+        elif use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
         if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
                                                                           (DynamicNormalCache,
@@ -542,8 +544,7 @@ def qwen2_attention_forward(
     # [CompressKV]
     from ipex_llm.transformers.kv import DynamicCompressCache
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
-    use_quantizekv = isinstance(
-        past_key_value, DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv)
+    use_quantizekv = isinstance(past_key_value, DynamicFp8Cache)
 
     if hasattr(self, 'qkv_proj') and self.qkv_proj is not None:
         qkv = self.qkv_proj(hidden_states)
