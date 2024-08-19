@@ -38,6 +38,8 @@ from .openai_protocol import (
     CompletionResponse,
     CompletionResponseStreamChoice,
     CompletionStreamResponse,
+    TranscriptionRequest,
+    TranscriptionResponse,
 )
 
 result_dict: Dict[str, str] = {}
@@ -50,6 +52,7 @@ class InputsRequest(BaseModel):
     image_list: Optional[list] = None
     stream: Optional[bool] = False
     req_type: str = 'completion'
+    transcription_request:  Optional[TranscriptionRequest] = None
 
 
 class ChatCompletionRequest(BaseModel):
@@ -92,20 +95,27 @@ app.add_middleware(
 
 global tokenizer
 global local_model
+global processor
 
 
 class FastApp():
-    def __init__(self, model, mytokenizer):
+    def __init__(self, model, mytokenizer, myprocessor = None):
         global tokenizer
         global local_model
+        global processor
         local_model = model
         tokenizer = mytokenizer
+        processor = myprocessor
         self.app = app
 
 
 def get_queue_next_token(delta_text_queue):
     timeout = int(os.getenv("IPEX_LLM_FASTAPI_TIMEOUT", 60))
     delta_text = delta_text_queue.text_queue.get(timeout=timeout)
+    if "whisper" in local_model.model_name.lower():
+        if  delta_text is not None and "<|" in delta_text and "|>" in delta_text:
+            import re
+            delta_text = re.sub(r'<\|.*?\|>', '', delta_text)
     if delta_text is None:
         remain = 0
     else:
@@ -384,6 +394,33 @@ async def create_completion(request: CompletionRequest):
             model=model_name)
     return result
 
+from typing_extensions import Literal
+from fastapi import File, UploadFile, Form
+@app.post("/v1/audio/transcriptions")
+async def transcriptions(
+    file: UploadFile = File(...),
+    model: Optional[str] = Form("default_model"),
+    language: Optional[str] = Form("zh"),
+    prompt: Optional[str] = Form(None),
+    response_format: Optional[Literal["json", "text", "srt", "verbose_json", "vtt"]] = Form(None),
+    temperature: Optional[float] = Form(None),
+    timestamp_granularities: Optional[List[Literal["word", "segment"]]] = Form(None)
+):
+    file_path = "./" + file.filename
+    if not os.path.exists(file_path):
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+    inputs_request = InputsRequest(
+        inputs="transcriptions",
+        parameters=None,
+        stream=False,
+        req_type="completion",
+        transcription_request=TranscriptionRequest(file=file_path, model=model, language=language)
+    )
+    request_id, result = await generate(inputs_request)
+    rsp = TranscriptionResponse(text=result)
+    return rsp
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -393,4 +430,4 @@ async def startup_event():
 async def process_requests(local_model, result_dict):
     while True:
         await asyncio.sleep(0)
-        await local_model.process_step(tokenizer, result_dict)
+        await local_model.process_step(tokenizer, result_dict, processor)

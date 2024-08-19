@@ -27,9 +27,21 @@ from ipex_llm.utils.common import invalidInputError
 
 
 # from vllm.sampling_params import SamplingParams
-def random_uuid() -> str:
-    return str(uuid.uuid4().hex)
+def random_uuid() -> str:BaseModel
 
+from typing_extensions import Literal
+from fastapi import File, UploadFile
+class TranscriptionRequest(BaseModel):
+    file: str = None
+    model: Optional[str] = "default_model"
+    language: Optional[str] = "zh"
+    prompt: Optional[str] = None
+    response_format: Optional[Literal["json", "text", "srt", "verbose_json", "vtt"]] = None
+    temperature: Optional[float] = None
+    timestamp_granularities: Optional[List[Literal["word", "segment"]]] = None
+
+class TranscriptionResponse(BaseModel):
+    text: str
 
 class OpenAIBaseModel(BaseModel):
     # OpenAI API does not allow extra fields
