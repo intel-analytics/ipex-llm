@@ -8,7 +8,6 @@ repo_id:
   - 'mistralai/Mistral-7B-Instruct-v0.2'
   - 'deepseek-ai/deepseek-coder-7b-instruct-v1.5'
   - '01-ai/Yi-6B-Chat'
-  - 'Qwen/Qwen-VL-Chat'
   - 'openbmb/MiniCPM-1B-sft-bf16'
   - 'openbmb/MiniCPM-2B-sft-bf16'
   - 'Qwen/Qwen1.5-7B-Chat'
