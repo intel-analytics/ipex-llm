@@ -3,6 +3,10 @@ FROM intel/oneapi-basekit:2024.1.1-devel-ubuntu22.04
 ARG http_proxy
 ARG https_proxy
 
+ENV TZ=Asia/Shanghai
+ENV PYTHONUNBUFFERED=1
+
+
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 ADD ./gradio_web_server.patch /tmp/gradio_web_server.patch
@@ -54,13 +58,23 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     cp -r ./ipex-llm/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving 
 
 
-# Install Serving Dependencies
-# Install ipex-llm[serving] only will update ipex_llm source code without updating
-# bigdl-core-xe, which will lead to problems
+# Install torch-ccl
+RUN cd /tmp/ && \
+    pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    wget https://sourceforge.net/projects/oneccl-wks/files/oneccl_wks_installer_2024.0.0.2.sh && \
+    bash oneccl_wks_installer_2024.0.0.2.sh && \
+    git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
+    cd torch-ccl && \
+    patch -p1 < /tmp/oneccl-binding.patch && \
+    USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install
+
+# # Install Serving Dependencies
+# # Install ipex-llm[serving] only will update ipex_llm source code without updating
+# # bigdl-core-xe, which will lead to problems
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev && \
-    mkdir -p /llm/neo && \
-    cd /llm/neo && \
+    mkdir -p /tmp/neo && \
+    cd /tmp/neo && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.15136.4/intel-igc-core_1.0.15136.4_amd64.deb && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.15136.4/intel-igc-opencl_1.0.15136.4_amd64.deb && \
     wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-level-zero-gpu-dbgsym_1.3.27191.9_amd64.ddeb && \
@@ -69,51 +83,22 @@ RUN apt-get update && \
     wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-opencl-icd_23.35.27191.9_amd64.deb && \
     wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/libigdgmm12_22.3.11.ci17747749_amd64.deb && \
     dpkg -i *.deb && \
-    pip install --pre --upgrade ipex-llm[xpu,serving] && \
-    pip install transformers==4.37.0 gradio==4.19.2 && \
-    # Use ipex-vllm-mainline
-    git clone -b vllm_202411_0807 https://github.com/xiangyuT/ipex-llm.git /llm/ipex-llm && \
-    cp /llm/ipex-llm/python/llm/src/ipex_llm/transformers/convert.py /usr/local/lib/python3.11/dist-packages/ipex_llm/transformers/convert.py && \
-    cp /llm/ipex-llm/python/llm/src/ipex_llm/transformers/low_bit_linear.py /usr/local/lib/python3.11/dist-packages/ipex_llm/transformers/low_bit_linear.py && \
-    rm -rf /usr/local/lib/python3.11/dist-packages/ipex_llm/vllm && \
-    cp -r /llm/ipex-llm/python/llm/src/ipex_llm/vllm /usr/local/lib/python3.11/dist-packages/ipex_llm/ && \
-    # install ipex 2.1.30
-    python -m pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 oneccl_bind_pt==2.1.300+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
-    python -m pip install setuptools==69.5.1 numpy==1.26.4 && \
-    # Install vLLM-v2 dependencies 
+    mkdir -p /llm && \
+    cd /llm && \
+    rm -rf /tmp/neo && \
+    # Install ipex-llm vllm version
+    pip uninstall -y ipex-llm && \
+    git clone https://github.com/intel-analytics/ipex-llm.git -b ipex-vllm-mainline && \
+    cd ipex-llm/python/llm && \
+    python setup.py develop && \
+    cd /llm && \
     git clone -b xiangyu_test_202411_0806 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
-    pip install -r /llm/vllm/requirements-common.txt && \
-    pip install -r /llm/vllm/requirements-xpu.txt && \
-    pip install --no-deps xformers && \
     cd /llm/vllm && \
+    pip install -r /llm/vllm/requirements-xpu.txt && \
     VLLM_TARGET_DEVICE=xpu python setup.py install && \
-    pip install outlines==0.0.34 --no-deps && \
-    pip install interegular cloudpickle diskcache joblib lark nest-asyncio numba scipy && \
-    # For Qwen series models support
-    pip install transformers_stream_generator einops tiktoken && \
-    # For pipeline serving support
     pip install mpi4py fastapi uvicorn openai && \
-    # for gradio web UI
     pip install gradio && \
-    # Install internal oneccl && \
-    cd /tmp/ && \
-    pip install --upgrade setuptools wheel twine && \
-    pip install "setuptools<70.0.0" && \
-    git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
-    cd torch-ccl && \
-    patch -p1 < /tmp/oneccl-binding.patch && \
-    git submodule sync && \
-    git submodule update --init --recursive && \
-    USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install sdist bdist_wheel && \
-    mv /tmp/torch-ccl/dist/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl /tmp/ && \
-    cd /tmp/ && \
-    wget https://sourceforge.net/projects/oneccl-wks/files/oneccl_wks_installer_2024.0.0.2.sh && \
-    bash oneccl_wks_installer_2024.0.0.2.sh && \
-    pip uninstall -y oneccl_bind_pt && \
-    pip install /tmp/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl && \ 
-    rm /tmp/oneccl_bind_pt-2.1.300+xpu-cp311-cp311-linux_x86_64.whl && \
-    patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
-    pip install -r /llm/vllm/requirements-common.txt && \
+    # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
     pip install ray
 
 COPY ./vllm_online_benchmark.py        /llm/
@@ -124,6 +109,8 @@ COPY ./benchmark_vllm_throughput.py   /llm/
 COPY ./start-fastchat-service.sh       /llm/
 COPY ./start-pp_serving-service.sh       /llm/
 COPY ./start-lightweight_serving-service.sh       /llm/
+
+ENV LD_LIBRARY_PATH /usr/local/lib/python3.11/dist-packages/intel_extension_for_pytorch/lib/:/opt/intel/1ccl-wks/lib:/opt/intel/oneapi/tbb/2021.12/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.12/opt/mpi/libfabric/lib:/opt/intel/oneapi/mpi/2021.12/lib:/opt/intel/oneapi/mkl/2024.1/lib:/opt/intel/oneapi/ippcp/2021.11/lib/:/opt/intel/oneapi/ipp/2021.11/lib:/opt/intel/oneapi/dpl/2022.5/lib:/opt/intel/oneapi/dnnl/2024.1/lib:/opt/intel/oneapi/debugger/2024.1/opt/debugger/lib:/opt/intel/oneapi/dal/2024.2/lib:/opt/intel/oneapi/compiler/2024.1/opt/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2024.1/opt/compiler/lib:/opt/intel/oneapi/compiler/2024.1/lib:/opt/intel/oneapi/ccl/2021.12/lib/
 
 
 WORKDIR /llm/
