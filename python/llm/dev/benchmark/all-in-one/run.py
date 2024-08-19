@@ -48,7 +48,7 @@ PHI3VISION_IDS = ['microsoft/phi-3-vision-128k-instruct']
 
 QWENVL_IDS = ['Qwen/Qwen-VL-Chat']
 
-MINICPM_V_IDS = ['openbmb/MiniCPM-V-2_6']
+MINICPM_V_IDS = ['openbmb/MiniCPM-V-2_6', 'openbmb/MiniCPM-Llama3-V-2_5']
 
 results = []
 excludes = []
