@@ -138,7 +138,7 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_lcmu_enabled": False})
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
-        from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
+        from intel_npu_acceleration_library.compiler import create_npu_kernels
 
         if enable_mp:
             invalidInputError(
@@ -148,7 +148,7 @@ class _BaseAutoModelClass:
                     " than max_output_len ({max_output_len})"
                 ),
             )
-            from intel_npu_acceleration_library.compiler import create_npu_kernels
+            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
 
             with torch.no_grad():
                 cls.load_convert(qtype, model, "cpu", *args, **kwargs)
@@ -167,6 +167,7 @@ class _BaseAutoModelClass:
                 transpose_value_cache=transpose_value_cache,
             )
         else:
+            from ipex_llm.transformers.npu_models.convert import optimize_llm, optimize_llm_post
             optimize_llm(model)
             cls.load_convert(qtype, model.model, "cpu", *args, **kwargs)
             create_npu_kernels(model.model)
