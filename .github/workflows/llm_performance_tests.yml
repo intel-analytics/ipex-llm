@@ -192,14 +192,15 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade transformers
           python -m pip install transformers==4.37.0 
-          # batch_size 1
+          cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          mkdir test_batch1
+          mkdir test_batch2
+          mkdir test_batch4
+           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           # change csv name
           sed -i 's/{today}/{today}_test1_batch1/g' run.py
-          cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
-          cd python/llm/dev/benchmark/all-in-one
-          # change csv name
-          sed -i 's/test1_batch4/test2_batch1/g' run.py
           python run.py
           mv *.csv test_batch1
           # batch_size 2
