@@ -38,6 +38,7 @@ def get_arguments():
     parser.add_argument("--language", required=False, type=str, default="en", choices=['en', 'zh', 'all'])
     parser.add_argument("--precisions", required=False, type=str, default=None, nargs='+')
     parser.add_argument("--mixed_precision", action="store_true") 
+    parser.add_argument("--mixed_precision", action="store_true") 
     parser.add_argument("--device", type=str, default="xpu")
     parser.add_argument("--output_path", default=None)
     return parser.parse_args()
