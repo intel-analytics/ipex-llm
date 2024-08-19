@@ -167,11 +167,11 @@ class _BaseAutoModelClass:
                 transpose_value_cache=transpose_value_cache,
             )
         else:
-            from ipex_llm.transformers.npu_models.convert import optimize_llm, optimize_llm_post
+            from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
-            cls.load_convert(qtype, model.model, "cpu", *args, **kwargs)
-            create_npu_kernels(model.model)
-            optimize_llm_post(model)
+            with torch.no_grad():
+                cls.load_convert(qtype, model, "cpu", *args, **kwargs)
+                create_npu_kernels(model)
             model = model.eval()
             logger.info(f"Finish to convert model")
             model.config.update({"bigdl_transformers_low_bit": qtype})
