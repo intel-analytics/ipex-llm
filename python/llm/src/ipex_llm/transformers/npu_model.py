@@ -115,7 +115,7 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
-        enable_mp = kwargs.pop("enable_mp", True)
+        enable_mp = kwargs.pop("enable_mp", False)
         max_output_len = kwargs.pop("max_output_len", 1024)
         max_prompt_len = kwargs.pop("max_prompt_len", max_output_len)
         inter_pp = kwargs.pop("inter_pp", 2)
@@ -138,6 +138,8 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_lcmu_enabled": False})
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
+        from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
+
         if enable_mp:
             invalidInputError(
                 max_prompt_len < max_output_len,
@@ -155,7 +157,6 @@ class _BaseAutoModelClass:
             logger.info(f"Finish to convert model")
             model.config.update({"bigdl_transformers_low_bit": qtype})
             model.share_memory()
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
 
             optimize_llm(
                 model,
