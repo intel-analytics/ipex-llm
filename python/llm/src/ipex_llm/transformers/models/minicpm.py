@@ -47,7 +47,8 @@ from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, get_compres
 from ipex_llm.transformers.models.utils import should_use_compresskv, should_use_fuse_rope
 from ipex_llm.transformers.models.llama import repeat_kv
 from ipex_llm.transformers.models.common import merge_qkv_base
-from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache, DynamicCompressCache
+from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache, \
+    DynamicCompressCache, DynamicCompressFp8Cache
 from transformers.cache_utils import Cache
 
 
@@ -81,8 +82,7 @@ def minicpm_attention_forward(
 
     # [CompressKV]
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
-    use_quantizekv = isinstance(past_key_value,
-                                DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv)
+    use_quantizekv = isinstance(past_key_value, DynamicFp8Cache)
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
@@ -188,10 +188,11 @@ def minicpm_model_forward_wrapper(origin_forward):
         if use_cache:
             if use_compress_kv and not isinstance(past_key_values,
                                                   DynamicCompressCache):
-                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values,
-                                                                         use_quantize_kv)
-            elif use_quantize_kv and not isinstance(past_key_values,
-                                                    (DynamicFp8Cache, DynamicCompressCache)):
+                if use_quantize_kv:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+            elif use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
             elif (not use_quantize_kv and not use_compress_kv
                   and not isinstance(past_key_values, (DynamicNormalCache, DynamicCompressCache))):

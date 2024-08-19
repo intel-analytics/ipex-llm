@@ -40,10 +40,11 @@ from torch import nn
 from ipex_llm.transformers.models.common import attention_softmax
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, rotate_half
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
-from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
+from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal, get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
 from ipex_llm.transformers.models.utils import should_use_compresskv, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache, DynamicCompressCache
+from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache, \
+    DynamicCompressCache, DynamicCompressFp8Cache
 
 from typing import Optional, Tuple, List
 from transformers.models.phi.modeling_phi import repeat_kv
@@ -100,8 +101,7 @@ def attention_forward(
 
     # [CompressKV]
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
-    use_quantizekv = isinstance(
-        past_key_value, DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv)
+    use_quantizekv = isinstance(past_key_value, DynamicFp8Cache)
 
     qkv = self.qkv_proj(hidden_states)
     qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
@@ -152,9 +152,7 @@ def attention_forward(
     if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
         # [CompressKV]
         if use_compresskv:
-            # print(attention_mask.shape)
-            context_len = key_states.size(2)
-            attention_mask = attention_mask[:, :, :, -context_len:]
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         import xe_addons
         if use_quantizekv:
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
@@ -262,11 +260,11 @@ def phi3_model_forward_wrapper(origin_model_forward):
         if use_cache:
             if use_compress_kv and not isinstance(past_key_values,
                                                   DynamicCompressCache):
-                past_key_values = DynamicCompressCache.\
-                    from_legacy_cache(past_key_values,
-                                      quantize_kv=use_quantize_kv)
-            if use_quantize_kv and not isinstance(past_key_values,
-                                                  (DynamicFp8Cache, DynamicCompressCache)):
+                if use_quantize_kv:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+            if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
             if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
                                                                               (DynamicNormalCache,

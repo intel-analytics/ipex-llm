@@ -338,7 +338,7 @@ class DynamicCompressFp8Cache(DynamicCompressCache, DynamicFp8Cache):
         attn_config: Dict[str, Any],
         enough_kv_room: bool,
         KV_CACHE_ALLOC_BLOCK_LENGTH: int,
-        cache_kwargs: Optional[Dict[str, Any]]=None,    
+        cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         bsz, num_heads, seq_len, head_dim = key_states.shape
 
