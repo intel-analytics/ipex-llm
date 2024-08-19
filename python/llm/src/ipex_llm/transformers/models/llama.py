@@ -137,7 +137,7 @@ def llama_model_forward_4_36(
                     past_key_values = DynamicCompressCache.from_legacy_cache(
                         past_key_values)
         elif use_quantize:
-            if not isinstance(past_key_values, DynamicFp8Cache):
+            if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_36_internal(
         self=self,
@@ -183,7 +183,7 @@ def llama_model_forward_4_38(
                     past_key_values = DynamicCompressCache.from_legacy_cache(
                         past_key_values)
         elif use_quantize:
-            if not isinstance(past_key_values, DynamicFp8Cache):
+            if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_38_internal(
         self=self,

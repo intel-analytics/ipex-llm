@@ -192,7 +192,8 @@ def minicpm_model_forward_wrapper(origin_forward):
                     past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
                 else:
                     past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-            elif use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
+            elif use_quantize_kv and not isinstance(past_key_values, (DynamicFp8Cache,
+                                                                      DynamicCompressCache)):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
             elif (not use_quantize_kv and not use_compress_kv
                   and not isinstance(past_key_values, (DynamicNormalCache, DynamicCompressCache))):
