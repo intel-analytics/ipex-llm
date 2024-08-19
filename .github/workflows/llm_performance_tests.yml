@@ -492,6 +492,7 @@ jobs:
         run: |
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
+          pip install transformers==4.37.0
           mv python/llm/test/benchmark/core-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
