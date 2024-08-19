@@ -153,6 +153,7 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          python -m pip install transformers==4.36.2
           cp python/llm/test/benchmark/arc-perf-transformers-436.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           mkdir test_batch1
@@ -1520,3 +1521,4 @@ jobs:
       #   shell: cmd
       #   run: |
       #     call conda env remove -n igpu-perf -y
+      
