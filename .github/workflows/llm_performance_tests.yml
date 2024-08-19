@@ -1520,4 +1520,3 @@ jobs:
       #   shell: cmd
       #   run: |
       #     call conda env remove -n igpu-perf -y
-      
