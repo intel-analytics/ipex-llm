@@ -14,7 +14,6 @@ repo_id:
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit'
   - 'THUDM/glm-4-9b-chat'
   - 'openbmb/MiniCPM-2B-sft-bf16'
-  - 'Qwen/Qwen-VL-Chat'
   #- 'SmerkyG/rwkv-5-world-7b' #this model only fp32 is supported for now, fp16 and bf16 are not supported
   - '01-ai/Yi-6B-Chat'
   - 'mistralai/Mistral-7B-Instruct-v0.2'
@@ -40,7 +39,6 @@ exclude:
   - 'baichuan-inc/Baichuan2-7B-Chat:2048'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:1024'
   - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
-  - 'Qwen/Qwen-VL-Chat:2048'
 #  - 'fnlp/moss-moon-003-sft-4bit:1024'
 #  - 'fnlp/moss-moon-003-sft-4bit:2048'
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
