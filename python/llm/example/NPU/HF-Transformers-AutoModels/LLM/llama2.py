@@ -26,6 +26,18 @@ from transformers.utils import logging
 
 logger = logging.get_logger(__name__)
 
+def get_prompt(message: str, chat_history: list[tuple[str, str]],
+               system_prompt: str) -> str:
+    texts = [f'<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n']
+    # The first user input is _not_ stripped
+    do_strip = False
+    for user_input, response in chat_history:
+        user_input = user_input.strip() if do_strip else user_input
+        do_strip = True
+        texts.append(f'{user_input} [/INST] {response.strip()} </s><s>[INST] ')
+    message = message.strip() if do_strip else message
+    texts.append(f'{message} [/INST]')
+    return ''.join(texts)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -38,9 +50,11 @@ if __name__ == "__main__":
         help="The huggingface repo id for the Llama2 model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
+    parser.add_argument('--prompt', type=str, default="What is AI?",
+                        help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-output-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=128)
+    parser.add_argument("--max-prompt-len", type=int, default=768)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--intra-pp", type=int, default=2)
     parser.add_argument("--inter-pp", type=int, default=2)
@@ -64,20 +78,15 @@ if __name__ == "__main__":
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    prompts = [
-        "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
-        "Once upon a time, there existed",
-        "Once upon a time, there existed a little girl who liked to have adventures.",
-    ]
+    DEFAULT_SYSTEM_PROMPT = """\
+    """
 
     print("-" * 80)
     print("done")
     with torch.inference_mode():
         print("finish to load")
         for i in range(5):
-            import random
-            idx = random.randint(0, 2)
-            prompt = prompts[idx]
+            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
             _input_ids = tokenizer.encode(prompt, return_tensors="pt")
             print("input length:", len(_input_ids[0]))
             st = time.time()
