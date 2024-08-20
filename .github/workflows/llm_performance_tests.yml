@@ -189,7 +189,7 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          # upgrade transformers for model Qwen/Qwen1.5-7B-Chat
+          # upgrade for default transformers version
           python -m pip install transformers==4.37.0
           # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -385,7 +385,6 @@ jobs:
           python -m pip install --upgrade einops
           python -m pip install --upgrade tiktoken
           python -m pip install --upgrade transformers_stream_generator
-          python -m pip install transformers==4.37.0
       # specific for test on certain commits
       - name: Download llm binary
         if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
@@ -492,7 +491,6 @@ jobs:
         run: |
           date_for_test_version=$(date -d yesterday +%Y-%m-%d)
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
-          pip install transformers==4.37.0
           mv python/llm/test/benchmark/core-perf-test.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
@@ -896,7 +894,6 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.37.0
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
