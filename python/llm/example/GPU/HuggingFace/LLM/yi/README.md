@@ -122,18 +122,18 @@ In the example, several arguments can be passed to satisfy your requirements:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-What is AI?
+AI是什么？
 -------------------- Output --------------------
-What is AI?
-Artificial Intelligence (AI) is the simulation of human intelligence in machines. AI is the science and engineering of making intelligent machines, especially intelligent computer programs.
+AI是什么？
+人工智能（Artificial Intelligence），英文缩写为AI。它是研究、开发用于模拟、延伸和扩展人的智能的理论、方法、技术及
 ```
 
 #### [01-ai/Yi-6B-Chat](https://huggingface.co/01-ai/Yi-6B-Chat)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-What is AI?
+AI是什么？
 -------------------- Output --------------------
-What is AI?
-Artificial Intelligence (AI) refers to the simulation of human intelligence processes by machines, especially computer systems. These processes include learning, reasoning, and self-
+AI是什么？
+人工智能（Artificial Intelligence, AI）是计算机科学的一个分支，它研究如何让计算机模拟人类的智能行为。人工智能可以通过模仿人类的思维过程和
 ```
