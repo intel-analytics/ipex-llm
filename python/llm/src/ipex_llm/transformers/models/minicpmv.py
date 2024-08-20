@@ -97,6 +97,9 @@ def _in_projection_packed(
     else:
         w_q, w_k, w_v = w.chunk(3)
         # ipex-llm changes start: add contiguous to workaround a ipex bug
+        q = q.contiguous()
+        k = k.contiguous()
+        v = v.contiguous()
         w_q = w_q.contiguous()
         w_k = w_k.contiguous()
         w_v = w_v.contiguous()
