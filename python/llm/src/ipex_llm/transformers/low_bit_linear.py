@@ -1011,36 +1011,34 @@ class BF16Linear(nn.Linear):
         return result.to(x.dtype)
 
 
-class vLLMLowBitLinear(LowBitLinear):
+class vLLMBaseLinear:
+    def __init__(self, linear_class, *args, **kwargs):
+        self.linear = linear_class(*args, **kwargs)
+
+    def forward(self, x: torch.Tensor):
+        result = self.linear.forward(x)
+        return result, None
+
+
+class vLLMLowBitLinear(vLLMBaseLinear):
     def __init__(self, input_features, output_features, qtype, bias=True,
                  conver_to_half=True, mp_group=None, enable_xetla=False,
                  optimize_lm_head=False, act_order=False,
                  enable_scale_search=False):
-        super().__init__(input_features, output_features, qtype, bias, conver_to_half, mp_group,
-                         enable_xetla, optimize_lm_head, act_order, enable_scale_search)
-
-    def forward(self, x: torch.Tensor):
-        result = super().forward(x)
-        return result, None
+        super().__init__(LowBitLinear, input_features, output_features, qtype, bias,
+                         conver_to_half, mp_group, enable_xetla, optimize_lm_head,
+                         act_order, enable_scale_search)
 
 
-class vLLMFP16Linear(FP16Linear):
-    def __init__(self, input_features, output_features, bias=True, mp_group=None, weight_type=1,
-                 enable_xetla=False, optimize_lm_head=False):
-        super().__init__(input_features, output_features, bias, mp_group, weight_type,
-                         enable_xetla, optimize_lm_head)
-
-    def forward(self, x: torch.Tensor):
-        result = super().forward(x)
-        return result, None
+class vLLMFP16Linear(vLLMBaseLinear):
+    def __init__(self, input_features, output_features, bias=True, mp_group=None,
+                 weight_type=1, enable_xetla=False, optimize_lm_head=False):
+        super().__init__(FP16Linear, input_features, output_features, bias, mp_group,
+                         weight_type, enable_xetla, optimize_lm_head)
 
 
-class vLLMBF16Linear(BF16Linear):
+class vLLMBF16Linear(vLLMBaseLinear):
     def __init__(self, input_features, output_features, bias=True, mp_group=None,
                  compute_dtype=None, enable_xetla=False, optimize_lm_head=False):
-        super().__init__(input_features, output_features, bias, mp_group, compute_dtype,
-                         enable_xetla, optimize_lm_head)
-
-    def forward(self, x: torch.Tensor):
-        result = super().forward(x)
-        return result, None
+        super().__init__(BF16Linear, input_features, output_features, bias, mp_group,
+                         compute_dtype, enable_xetla, optimize_lm_head)
