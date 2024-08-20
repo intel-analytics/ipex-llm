@@ -301,7 +301,7 @@ def setup_package():
     serving_requires += SERVING_DEP
 
     npu_requires = copy.deepcopy(all_requires)
-    cpu_transformers_version = ['transformers == 4.36.2', 'tokenizers == 0.15.2']
+    cpu_transformers_version = ['transformers == 4.37.0', 'tokenizers == 0.15.2']
     for exclude_require in cpu_transformers_version:
         npu_requires.remove(exclude_require)
     npu_requires += ["transformers==4.40.0",
