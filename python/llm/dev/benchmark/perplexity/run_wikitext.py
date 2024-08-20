@@ -21,7 +21,6 @@ import argparse
 import torch
 from tqdm import tqdm
 from datasets import concatenate_datasets, load_dataset
-from ipex_llm.utils.common import invalidInputError
 
 
 parser = argparse.ArgumentParser()
@@ -64,6 +63,7 @@ elif args.data_path:
         data = f.read()
     encodings = tokenizer(data.decode("utf-8").strip("\n"), return_tensors="pt")
 else:
+    from ipex_llm.utils.common import invalidInputError
     raise invalidInputError(False, "Must specify either dataset or datapath.")
 
 if not args.max_length:
