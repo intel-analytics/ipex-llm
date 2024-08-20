@@ -1,28 +1,30 @@
 # Perplexity
 Perplexity (PPL) is one of the most common metrics for evaluating language models. This benchmark implementation is adapted from [transformers/perplexity](https://huggingface.co/docs/transformers/perplexity#perplexity-of-fixed-length-models) and [benchmark_patch_llm.py](https://github.com/insuhan/hyper-attn/blob/main/benchmark_patch_llm.py) 
 
-## Run on Wikitext
-
+## Environment Preparation
 ```bash
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install datasets
 ```
-An example to run perplexity on wikitext:
-```bash
+This is a required step on Linux for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
 
+```bash
+source /opt/intel/oneapi/setvars.sh
+```
+
+## PPL Evaluation
+### 1. Run on Wikitext
+An example to run perplexity on [wikitext](https://paperswithcode.com/dataset/wikitext-2):
+```bash
 python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B --dataset path=wikitext,name=wikitext-2-raw-v1 --precision sym_int4 --device xpu --stride 512 --max_length 4096
-
 ```
-
-## Run on [THUDM/LongBench](https://github.com/THUDM/LongBench) dataset
-
-```bash
-pip install datasets
-```
+###  2. Run on [THUDM/LongBench](https://github.com/THUDM/LongBench) dataset
 
 An example to run perplexity on chatglm3-6b using the default Chinese datasets("multifieldqa_zh", "dureader", "vcsum", "lsht", "passage_retrieval_zh")
 ```bash
 python run_longbench.py --model_path THUDM/chatglm3-6b --precisions float16 sym_int4 --device xpu --language zh
 ```
+
 
 Notes:
 - If you want to test model perplexity on a few selected datasets from the `LongBench` dataset, please use the format below.
