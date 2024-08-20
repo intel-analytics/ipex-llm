@@ -132,8 +132,8 @@ AI是什么？
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-What is AI?
+AI是什么？
 -------------------- Output --------------------
-What is AI?
-Artificial Intelligence (AI) is a branch of computer science that aims to create intelligent machines that can perform tasks that typically require human intelligence, such as learning
+AI是什么？
+人工智能（Artificial Intelligence, AI）是计算机科学的一个分支，它研究如何让计算机模拟人类的智能行为。人工智能可以通过模仿人类的思维过程和
 ```
