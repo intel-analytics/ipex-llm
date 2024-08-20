@@ -24,13 +24,14 @@ from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing_extensions import Annotated
 from ipex_llm.utils.common import invalidInputError
+from typing_extensions import Literal
 
 
 # from vllm.sampling_params import SamplingParams
-def random_uuid() -> str:BaseModel
+def random_uuid() -> str:
+    return str(uuid.uuid4().hex)
 
-from typing_extensions import Literal
-from fastapi import File, UploadFile
+
 class TranscriptionRequest(BaseModel):
     file: str = None
     model: Optional[str] = "default_model"
@@ -40,8 +41,10 @@ class TranscriptionRequest(BaseModel):
     temperature: Optional[float] = None
     timestamp_granularities: Optional[List[Literal["word", "segment"]]] = None
 
+
 class TranscriptionResponse(BaseModel):
     text: str
+
 
 class OpenAIBaseModel(BaseModel):
     # OpenAI API does not allow extra fields

@@ -42,30 +42,29 @@ class ModelWorker:
         if model_type == "audio":
             from ipex_llm.transformers import AutoModelForSpeechSeq2Seq
             model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path,
-                                                            load_in_low_bit=low_bit,
-                                                            torch_dtype=self.dtype,
-                                                            optimize_model=True,
-                                                            trust_remote_code=True,
-                                                            use_cache=True)
+                                                              load_in_low_bit=low_bit,
+                                                              torch_dtype=self.dtype,
+                                                              optimize_model=True,
+                                                              trust_remote_code=True,
+                                                              use_cache=True)
         else:
             from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
             try:
                 model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                            load_in_low_bit=low_bit,
-                                                            torch_dtype=self.dtype,
-                                                            optimize_model=True,
-                                                            trust_remote_code=True,
-                                                            use_cache=True,)
+                                                             load_in_low_bit=low_bit,
+                                                             torch_dtype=self.dtype,
+                                                             optimize_model=True,
+                                                             trust_remote_code=True,
+                                                             use_cache=True,)
             except:
                 model = AutoModel.from_pretrained(model_path,
-                                                load_in_low_bit=low_bit,
-                                                torch_dtype=self.dtype,
-                                                optimize_model=True,
-                                                trust_remote_code=True,
-                                              use_cache=True,)
+                                                  load_in_low_bit=low_bit,
+                                                  torch_dtype=self.dtype,
+                                                  optimize_model=True,
+                                                  trust_remote_code=True,
+                                                  use_cache=True,)
         model = model.eval().to("xpu")
         return model
-
 
     async def add_asr_request(self, processor):
         if self.waiting_requests.empty():
@@ -73,18 +72,19 @@ class ModelWorker:
         tmp_result = await self.waiting_requests.get()
         request_id, request = tmp_result
         transcription_request = request.transcription_request
-        forced_decoder_ids = processor.get_decoder_prompt_ids(language=transcription_request.language, task="transcribe")
+        forced_decoder_ids = processor.get_decoder_prompt_ids(
+            language=transcription_request.language, task="transcribe")
         audio_path = transcription_request.file
         import librosa
-        raw_speech, sampling_rate = librosa.load(audio_path, sr=processor.feature_extractor.sampling_rate)
+        raw_speech, sampling_rate = librosa.load(audio_path,
+                                                 sr=processor.feature_extractor.sampling_rate)
         input_features = processor(
             raw_speech,
             sampling_rate=sampling_rate,
             return_tensors="pt",
             return_attention_mask=True,
         ).input_features.to('xpu')
-        return input_features, forced_decoder_ids, request_id, 
-
+        return input_features, forced_decoder_ids, request_id
 
     async def add_request(self, tokenizer):
         if self.waiting_requests.empty():
@@ -123,15 +123,16 @@ class ModelWorker:
         return input_ids, parameters, request_id, inputs_embeds
 
     @torch.no_grad()
-    async def process_step(self, tokenizer, result_dict, processor = None):
+    async def process_step(self, tokenizer, result_dict, processor=None):
         if not self.waiting_requests.empty():
             if processor is not None and "whisper" in self.model_name.lower():
-                input_features, forced_decoder_ids, request_id = await self.add_asr_request(processor)
+                input_features, decoder_ids, request_id = await self.add_asr_request(processor)
                 self.streamer[request_id] = TextIteratorStreamer(tokenizer, skip_prompt=True)
+
                 def model_generate():
-                    self.model.generate(input_features, 
-                                        streamer=self.streamer[request_id], 
-                                        forced_decoder_ids=forced_decoder_ids)
+                    self.model.generate(input_features,
+                                        streamer=self.streamer[request_id],
+                                        forced_decoder_ids=decoder_ids)
             else:
                 input_ids, parameters, request_id, inputs_embeds = await self.add_request(tokenizer)
                 self.streamer[request_id] = TextIteratorStreamer(tokenizer, skip_prompt=True)
