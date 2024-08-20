@@ -256,7 +256,8 @@ def phi3_model_forward_wrapper(origin_model_forward):
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         inputs = input_ids if input_ids is not None else inputs_embeds
         use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs)
-        use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
+        use_compress_kv = should_use_compresskv(inputs, inputs.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
         if use_cache:
             if use_compress_kv and not isinstance(past_key_values,
                                                   DynamicCompressCache):
@@ -264,13 +265,11 @@ def phi3_model_forward_wrapper(origin_model_forward):
                     past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
                 else:
                     past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-            if use_quantize_kv and not isinstance(past_key_values, (DynamicFp8Cache,
-                                                                    DynamicCompressCache)):
+            if use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
+                                                                          DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
             if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                              (DynamicNormalCache,
-                                                                               DynamicCompressCache
-                                                                               )):
+                                                                              DynamicNormalCache):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
                 if past_key_values.get_seq_length() == 0:
                     n_layer = self.config.num_hidden_layers

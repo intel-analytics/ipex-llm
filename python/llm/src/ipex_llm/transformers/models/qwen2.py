@@ -120,7 +120,8 @@ def qwen2_model_forward(
         and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs,
                                   self.config.num_attention_heads//self.config.num_key_value_heads)
     )
-    use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
+    use_compress_kv = should_use_compresskv(inputs, inputs.shape[1]) or \
+        isinstance(past_key_values, DynamicCompressCache)
 
     if use_cache:
         if use_compress_kv and not isinstance(past_key_values, DynamicCompressCache):
@@ -128,12 +129,11 @@ def qwen2_model_forward(
                 past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
             else:
                 past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-        elif use_quantize_kv and not isinstance(past_key_values, (DynamicFp8Cache,
-                                                                  DynamicCompressCache)):
+        elif use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
+                                                                        DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
         if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                          (DynamicNormalCache,
-                                                                           DynamicCompressCache)):
+                                                                          DynamicNormalCache):
             past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
         past_key_values_length = past_key_values.get_usable_length(seq_length)
     # ipex-llm changes end
@@ -316,7 +316,8 @@ def qwen2_model_forward_4_42(
         and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs_embeds,
                                   self.config.num_attention_heads//self.config.num_key_value_heads)
     )
-    use_compress_kv = should_use_compresskv(inputs_embeds, inputs_embeds.shape[1])
+    use_compress_kv = should_use_compresskv(inputs_embeds, inputs_embeds.shape[1]) or \
+        isinstance(past_key_values, DynamicCompressCache)
 
     if use_cache:
         if use_compress_kv and not isinstance(past_key_values, DynamicCompressCache):
@@ -324,12 +325,11 @@ def qwen2_model_forward_4_42(
                 past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
             else:
                 past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-        elif use_quantize_kv and not isinstance(past_key_values, (DynamicFp8Cache,
-                                                                  DynamicCompressCache)):
+        elif use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
+                                                                        DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                            (DynamicNormalCache,
-                                                                             DynamicCompressCache)):
+        if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
+                                                                          DynamicNormalCache):
             past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
     # ipex-llm changes end
 
