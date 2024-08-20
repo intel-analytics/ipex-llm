@@ -91,11 +91,8 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.10
 conda activate llm
 
-# install ipex-llm with 'all' option
-pip install --pre --upgrade ipex-llm[all]
-pip install --pre --upgrade bigdl-core-npu
-
-pip install transformers==4.40
+# install ipex-llm with 'npu' option
+pip install --pre --upgrade ipex-llm[npu]
 ```
 
 ### 2. Runtime Configurations

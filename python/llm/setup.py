@@ -300,6 +300,12 @@ def setup_package():
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
 
+    npu_requires = copy.deepcopy(all_requires)
+    cpu_transformers_version = ['transformers == 4.37.0', 'tokenizers == 0.15.2']
+    for exclude_require in cpu_transformers_version:
+        npu_requires.remove(exclude_require)
+    npu_requires += ["transformers==4.40.0",
+                     "bigdl-core-npu==" + CORE_XE_VERSION + ";platform_system=='Windows'"]
 
     metadata = dict(
         name='ipex_llm',
@@ -323,6 +329,7 @@ def setup_package():
         },
         extras_require={"all": all_requires,
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
+                        "npu": npu_requires,
                         "xpu-2-1": xpu_21_requires,
                         "serving": serving_requires,
                         "cpp": cpp_requires,
