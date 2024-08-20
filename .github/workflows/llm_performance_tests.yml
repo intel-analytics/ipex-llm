@@ -653,7 +653,6 @@ jobs:
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
           set TRANSFORMERS_OFFLINE=1
-          pip install transformers==4.37.0
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32_int4_fp16.yaml config.yaml
@@ -895,6 +894,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
+          pip install transformers==4.37.0
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
