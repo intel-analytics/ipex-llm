@@ -121,6 +121,21 @@ class DynamicNormalCache(DynamicCache):
 
         return self.key_cache[layer_idx], self.value_cache[layer_idx]
 
+    @classmethod
+    def from_reserved(cls, layers: int,
+                      bsz: int, n_head: int, length: int, head_dim: int,
+                      dtype: torch.dtype, device: torch.device):
+        past_key_values = cls()
+        for _i in range(layers):
+            k_cache, v_cache = init_kv_cache(
+                bsz, n_head, head_dim,
+                0, length + cls.KV_ALLOC_BLOCK_LENGTH,
+                dtype, device
+            )
+            past_key_values.key_cache.append(k_cache)
+            past_key_values.value_cache.append(v_cache)
+        return past_key_values
+
 
 # Copied from transformers.models.llama.modeling_llama.repeat_kv
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
