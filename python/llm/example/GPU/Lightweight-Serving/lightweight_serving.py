@@ -40,7 +40,7 @@ async def main():
     low_bit = args.low_bit
 
     processor = None
-    if "whisper" not in model_path:
+    if "whisper" not in model_path.lower():
         local_model = ModelWorker(model_path, low_bit)
         # Load tokenizer
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
