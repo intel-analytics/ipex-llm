@@ -305,7 +305,7 @@ def setup_package():
     for exclude_require in cpu_transformers_version:
         npu_requires.remove(exclude_require)
     npu_requires += ["transformers==4.40.0",
-                     "bigdl-core-npu==" + CORE_XE_VERSION]
+                     "bigdl-core-npu==" + CORE_XE_VERSION + ";platform_system=='Windows'"]
 
     metadata = dict(
         name='ipex_llm',
