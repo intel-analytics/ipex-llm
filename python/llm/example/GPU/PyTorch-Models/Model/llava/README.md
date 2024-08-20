@@ -16,7 +16,6 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install einops # install dependencies required by llava
-pip install transformers==4.36.2
 
 git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 cp generate.py ./LLaVA/ # copy our example to the LLaVA folder
@@ -34,7 +33,6 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install einops # install dependencies required by llava
-pip install transformers==4.36.2
 
 git clone https://github.com/haotian-liu/LLaVA.git # clone the llava libary
 copy generate.py .\LLaVA\ # copy our example to the LLaVA folder
