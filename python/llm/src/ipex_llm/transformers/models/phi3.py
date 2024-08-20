@@ -269,7 +269,7 @@ def phi3_model_forward_wrapper(origin_model_forward):
                                                                           DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
             if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                              DynamicCompressCache):
+                                                                              DynamicNormalCache):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
                 if past_key_values.get_seq_length() == 0:
                     n_layer = self.config.num_hidden_layers
