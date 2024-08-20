@@ -128,7 +128,9 @@ def llama_model_forward_4_36(
         use_quantize = use_quantize_kv_cache(
             self.layers[0].mlp.up_proj, input,
             self.config.num_attention_heads//self.config.num_key_value_heads)
-        if should_use_compresskv(input, input.shape[1]):
+        use_compresskv = should_use_compresskv(input, input.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
+        if use_compresskv:
             if not isinstance(past_key_values, DynamicCompressCache):
                 if use_quantize:
                     past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
@@ -137,7 +139,7 @@ def llama_model_forward_4_36(
                     past_key_values = DynamicCompressCache.from_legacy_cache(
                         past_key_values)
         elif use_quantize:
-            if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
+            if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_36_internal(
         self=self,
@@ -174,7 +176,9 @@ def llama_model_forward_4_38(
         use_quantize = use_quantize_kv_cache(
             self.layers[0].mlp.up_proj, input,
             self.config.num_attention_heads//self.config.num_key_value_heads)
-        if should_use_compresskv(input, input.shape[1]):
+        use_compresskv = should_use_compresskv(input, input.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
+        if use_compresskv:
             if not isinstance(past_key_values, DynamicCompressCache):
                 if use_quantize:
                     past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
@@ -183,7 +187,7 @@ def llama_model_forward_4_38(
                     past_key_values = DynamicCompressCache.from_legacy_cache(
                         past_key_values)
         elif use_quantize:
-            if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
+            if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_38_internal(
         self=self,
@@ -221,7 +225,9 @@ def llama_model_forward_4_41(
         use_quantize = use_quantize_kv_cache(
             self.layers[0].mlp.up_proj, input,
             self.config.num_attention_heads//self.config.num_key_value_heads)
-        if should_use_compresskv(input, input.shape[1]):
+        use_compresskv = should_use_compresskv(input, input.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
+        if use_compresskv:
             if not isinstance(past_key_values, DynamicCompressCache):
                 if use_quantize:
                     past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
@@ -230,7 +236,7 @@ def llama_model_forward_4_41(
                     past_key_values = DynamicCompressCache.from_legacy_cache(
                         past_key_values)
         elif use_quantize:
-            if not isinstance(past_key_values, (DynamicFp8Cache, DynamicCompressCache)):
+            if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
     return llama_model_forward_4_41_internal(
         self=self,

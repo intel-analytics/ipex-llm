@@ -182,7 +182,8 @@ def minicpm_model_forward_wrapper(origin_forward):
         use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs,
                                                 self.config.num_attention_heads //
                                                 self.config.num_key_value_heads)
-        use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
+        use_compress_kv = should_use_compresskv(inputs, inputs.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
 
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         if use_cache:
@@ -192,11 +193,11 @@ def minicpm_model_forward_wrapper(origin_forward):
                     past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
                 else:
                     past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-            elif use_quantize_kv and not isinstance(past_key_values, (DynamicFp8Cache,
-                                                                      DynamicCompressCache)):
+            elif (use_quantize_kv and not use_compress_kv
+                  and not isinstance(past_key_values, DynamicFp8Cache)):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
             elif (not use_quantize_kv and not use_compress_kv
-                  and not isinstance(past_key_values, (DynamicNormalCache, DynamicCompressCache))):
+                  and not isinstance(past_key_values, DynamicNormalCache)):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
         # ipex-llm changes end
         return origin_forward(
