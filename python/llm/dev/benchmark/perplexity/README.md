@@ -1,18 +1,11 @@
 # Perplexity
 Perplexity (PPL) is one of the most common metrics for evaluating language models. This benchmark implementation is adapted from [transformers/perplexity](https://huggingface.co/docs/transformers/perplexity#perplexity-of-fixed-length-models) and [benchmark_patch_llm.py](https://github.com/insuhan/hyper-attn/blob/main/benchmark_patch_llm.py) 
 
-## Environment Preparations 
-To run perplexity test  with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
-
-We suggest using conda to manage iprx environment:
+## Environment Preparation
+Install ipex-llm and dataset.
 ```bash
-conda create -n llm python=3.11
-conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-```
-Install the dataset dependency to download and load dataset for the test.
-```bash
 pip install datasets
 ```
 This is a required step on Linux for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
@@ -21,7 +14,7 @@ This is a required step on Linux for APT or offline installed oneAPI. Skip this 
 source /opt/intel/oneapi/setvars.sh
 ```
 
-## Running the test
+## Running PPL Evaluation
 ### 1. Run on Wikitext
 An example to run perplexity on wikitext:
 ```bash
