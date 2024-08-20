@@ -315,7 +315,7 @@ jobs:
         run: |
           # batch_size 1
           cd python/llm/dev/benchmark/all-in-one/test_batch1
-          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test.yaml
+          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-transformers-436.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437.yaml
           python ../../../../test/benchmark/check_results.py -c test3 -y ../../../../test/benchmark/arc-perf-transformers-440.yaml
           find . -name "*test*.csv" -delete
@@ -328,7 +328,7 @@ jobs:
           rm -r test_batch1
           # batch_size 2
           cd test_batch2
-          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test-batch2.yaml
+          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-transformers-436-batch2.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437-batch2.yaml
           find . -name "*test*.csv" -delete
           if [[ ${{ github.event_name }} == "schedule" ]]; then
@@ -340,7 +340,7 @@ jobs:
           rm -r test_batch2
           # batch_size 4
           cd test_batch4
-          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-test-batch4.yaml
+          python ../../../../test/benchmark/check_results.py -c test1 -y ../../../../test/benchmark/arc-perf-transformers-436-batch4.yaml
           python ../../../../test/benchmark/check_results.py -c test2 -y ../../../../test/benchmark/arc-perf-transformers-437-batch4.yaml
           find . -name "*test*.csv" -delete
           if [[ ${{ github.event_name }} == "schedule" ]]; then
