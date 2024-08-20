@@ -17,7 +17,8 @@
 
 import math
 import torch
-from typing import Optional
+from typing import Optional, List
+from torch.nn.functional import linear
 from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.common import attention_softmax
 from transformers import AutoProcessor
@@ -59,6 +60,55 @@ def siglip_attention_forward(
     attn_output = self.out_proj(attn_output)
 
     return attn_output, attn_weights
+
+
+# MiniCPM-V-2_6
+def _in_projection_packed(
+    q: torch.Tensor,
+    k: torch.Tensor,
+    v: torch.Tensor,
+    w: torch.Tensor,
+    b: Optional[torch.Tensor] = None,
+) -> List[torch.Tensor]:
+    E = q.size(-1)
+    if k is v:
+        if q is k:
+            # self-attention
+            proj = linear(q, w, b)
+            # reshape to 3, E and not E, 3 is deliberate for
+            # better memory coalescing and keeping same order as chunk()
+            proj = proj.unflatten(-1, (3, E)).unsqueeze(0).transpose(0, -2).squeeze(-2)
+            proj = proj.contiguous()
+            return proj[0], proj[1], proj[2]
+        else:
+            # encoder-decoder attention
+            w_q, w_kv = w.split([E, E * 2])
+            if b is None:
+                b_q = b_kv = None
+            else:
+                b_q, b_kv = b.split([E, E * 2])
+            q_proj = linear(q, w_q, b_q)
+            kv_proj = linear(k, w_kv, b_kv)
+            # reshape to 2, E and not E, 2 is deliberate for
+            # better memory coalescing and keeping same order as chunk()
+            kv_proj = kv_proj.unflatten(-1, (2, E)).unsqueeze(0).transpose(0, -2).squeeze(-2)
+            kv_proj = kv_proj.contiguous()
+            return (q_proj, kv_proj[0], kv_proj[1])
+    else:
+        w_q, w_k, w_v = w.chunk(3)
+        # ipex-llm changes start: add contiguous to workaround a ipex bug
+        q = q.contiguous()
+        k = k.contiguous()
+        v = v.contiguous()
+        w_q = w_q.contiguous()
+        w_k = w_k.contiguous()
+        w_v = w_v.contiguous()
+        # ipex-llm changes end
+        if b is None:
+            b_q = b_k = b_v = None
+        else:
+            b_q, b_k, b_v = b.chunk(3)
+        return linear(q, w_q, b_q), linear(k, w_k, b_k), linear(v, w_v, b_v)
 
 
 # MiniCPM-V-2
