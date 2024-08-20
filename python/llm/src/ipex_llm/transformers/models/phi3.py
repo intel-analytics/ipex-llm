@@ -254,9 +254,9 @@ def phi3_model_forward_wrapper(origin_model_forward):
     ):
         # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
         use_cache = use_cache if use_cache is not None else self.config.use_cache
-        input = input_ids if input_ids is not None else inputs_embeds
-        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input)
-        use_compress_kv = should_use_compresskv(input, input.shape[1])
+        inputs = input_ids if input_ids is not None else inputs_embeds
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs)
+        use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
         if use_cache:
             if use_compress_kv and not isinstance(past_key_values,
                                                   DynamicCompressCache):
@@ -272,6 +272,14 @@ def phi3_model_forward_wrapper(origin_model_forward):
                                                                                DynamicCompressCache
                                                                                )):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
+                if past_key_values.get_seq_length() == 0:
+                    n_layer = self.config.num_hidden_layers
+                    n_head = self.config.num_attention_heads
+                    head_dim = self.config.hidden_size // self.config.num_attention_heads
+                    past_key_values = DynamicNormalCache.from_reserved(
+                        n_layer, inputs.size(0), n_head, inputs.size(1), head_dim,
+                        inputs.dtype, inputs.device
+                    )
         return origin_model_forward(
             self=self,
             input_ids=input_ids,
