@@ -1849,6 +1849,11 @@ def _optimize_post(model, lightweight_bmm=False):
             # MiniCPM-V 2.6
             from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
             convert_forward(model.vpm, vpm_module.SiglipAttention, siglip_attention_forward)
+
+            from ipex_llm.transformers.models.minicpmv import _in_projection_packed
+            resampler_module_name = model.resampler.__class__.__module__
+            resampler_module = importlib.import_module(resampler_module_name)
+            resampler_module._in_projection_packed = _in_projection_packed
         elif model.vpm.config.model_type == "idefics2":
             # MiniCPM-V 2.5
             from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
