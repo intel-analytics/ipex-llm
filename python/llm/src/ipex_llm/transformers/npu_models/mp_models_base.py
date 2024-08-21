@@ -28,6 +28,7 @@ import ctypes
 
 logger = logging.get_logger(__name__)
 
+
 @torch.no_grad()
 def run_model(
     x: Union[torch.Tensor, List[torch.Tensor]],
@@ -113,7 +114,7 @@ class LLMBaseNNFactory(NNFactory):
                           "create_input_op should be called before any create_cache_op")
         invalidInputError(len(self.linear_ops) == 0,
                           "create_input_op should be called before any linear op")
-            
+
         op = super().parameter(shape)
         self.input_ops.append(op)
         return op
@@ -126,8 +127,7 @@ class LLMBaseNNFactory(NNFactory):
     def parameter(self, shape):
         invalidInputError(False,
                           ("parameter should not be called directly, "
-                           "use create_cache_op or create_input_op instead")
-                           )
+                           "use create_cache_op or create_input_op instead"))
 
     def update_cache(self, past_key_value, indexes):
 
@@ -174,12 +174,12 @@ class LLMBaseNNFactory(NNFactory):
             backend_lib.run(self._mm)
 
     def set_weights_async(self, op_id, weights):
-       offset = len(self.input_ops) + len(self.cache_parameter_ops)
-       invalidInputError(len(weights) == len(self.linear_ops),
-                         (f"weights size does not match graph, "
-                          f"with weights size: {len(weights)} and "
-                          f" graph linear size: {len(self.linear_ops)}"))
-       self.setWeights(offset, op_id, *weights)
+        offset = len(self.input_ops) + len(self.cache_parameter_ops)
+        invalidInputError(len(weights) == len(self.linear_ops),
+                          (f"weights size does not match graph, "
+                           f"with weights size: {len(weights)} and "
+                           f" graph linear size: {len(self.linear_ops)}"))
+        self.setWeights(offset, op_id, *weights)
 
     @staticmethod
     def run_decoders(inputs, decoders):
@@ -209,7 +209,3 @@ class LLMBaseNNFactory(NNFactory):
                 else:
                     new_value_states.append(decoders[i].torch_out[j])
         return hidden_states, new_key_states, new_value_states
-
-
-
-
