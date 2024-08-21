@@ -196,7 +196,6 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
-        print("start compiling")
         self.compile()
 
     def build_decoder(
@@ -299,9 +298,6 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
-            logger.info(
-                f"creating dedcoder layer: {self.layer_indexes[start]}:{self.layer_indexes[end - 1]}"
-            )
             lm_0 = input_laynorm_weights[start:end]
             lm_1 = post_attn_layernorm_weights[start:end]
             decoder = LowBitQwenMultiDecoderlayer(
@@ -324,9 +320,6 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
                 dtype=np_dtype,
             )
             self.backend_decoders.append(decoder)
-            logger.info(
-                f"created dedcoder layer: {self.layer_indexes[start]}:{self.layer_indexes[end - 1]}"
-            )
 
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
@@ -463,13 +456,11 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         backend_cls = self.backend_cls_prefill
         inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
         inputs += (self.layer_norm_0, self.layer_norm_1)
+        inputs += (self.q_bias, self.k_bias, self.v_bias)
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
         )
-        cache_kwargs = {
-            "max_seq_len": self.max_seq_len,
-            "transpose": self.transpose_value,
-        }
+        cache_kwargs = {"max_seq_len": self.max_seq_len, "transpose": self.transpose_value}
         key_states, value_states = past_key_value.update(
             past_key, past_value, self.layer_idx, cache_kwargs
         )
@@ -596,19 +587,20 @@ def run_decode(
 
                 causal_mask = _prepare_4d_causal_attention_mask(
                     attention_mask,
-                    (1, 1),
+                    (hidden_states.shape[0], hidden_states.shape[1]),
                     hidden_states,
                     past_seen_tokens,
                     sliding_window=model.model.config.sliding_window,
                 )
                 pad_len = multi_decoder.max_seq_len + 1 - causal_mask.size(-1)
 
+                causal_mask[:, :, :, -1] = torch.finfo(torch.float16).min
                 pad_mask = (0, pad_len)
                 padded_causal_mask = F.pad(
                     causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
                 )
                 padded_causal_mask[:, :, :, -1] = 0.0
-                padded_causal_mask[:, :, :, causal_mask.size(-1)-1] = torch.finfo(torch.float16).min
+                # padded_causal_mask[:, :, :, causal_mask.size(-1)-1] = torch.finfo(torch.float16).min
                 dist.recv(hidden_states, src=rank - 1)
                 t1 = time.perf_counter()
                 layer_outputs = multi_decoder(
@@ -838,8 +830,6 @@ class PrefillRunner:
         self.p.daemon = True
         self.p.start()
         output = self.prefill_result_queue.get()
-        print(Fore.GREEN + f"prefill process output: {output}")
-        print(Style.RESET_ALL)
 
     def forward(
         self,
@@ -859,21 +849,8 @@ class PrefillRunner:
                 " to max_prompt_len {self.max_prompt_len}"
             ),
         )
-        pad_len = self.max_prompt_len - seq_len
-        hidden_states = F.pad(hidden_states.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
-        position_ids = F.pad(position_ids, (0, pad_len), value=0)
-        attention_mask = F.pad(
-            attention_mask.to(torch.float16),
-            (0, pad_len, 0, pad_len),
-            value=torch.finfo(torch.float16).min,
-        )
-
-        args = (hidden_states, position_ids, attention_mask, past_key_value)
-        self.prefill_input_queue.put(args)
-        hidden_states, past_key_value = self.prefill_result_queue.get()
-        past_key_value.shrink(seq_len, self.transpose_value_cache)
-        hidden_states = hidden_states[:, :seq_len, :]
-        return hidden_states, past_key_value
+        self.prefill_input_queue.put((hidden_states, position_ids, attention_mask, past_key_value))
+        return self.prefill_result_queue.get()
 
     def shutdown(self):
         self.prefill_input_queue.put("stop")

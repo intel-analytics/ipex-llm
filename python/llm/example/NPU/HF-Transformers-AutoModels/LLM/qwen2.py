@@ -74,7 +74,7 @@ if __name__ == "__main__":
                                          add_generation_prompt=True)
     with torch.inference_mode():
         print("finish to load")
-        for i in range(5):
+        for i in range(1):
             _input_ids = tokenizer([text], return_tensors="pt").input_ids
             print("input length:", len(_input_ids[0]))
             st = time.time()
