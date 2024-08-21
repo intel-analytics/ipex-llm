@@ -54,3 +54,26 @@ def optimize_llm(
             prefill_runner=prefill_runner, decode_runner=decode_runner
         )
         convert_forward(model, LlamaModel, llama_model_forward)
+    elif model.config.model_type == "qwen2" and model.config.intermediate_size == 8960:
+        # for qwen2-1.5B
+        from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
+        from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner
+        from transformers.models.qwen2.modeling_qwen2 import Qwen2Model
+
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+        prefill_runner = PrefillRunner(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_value_cache,
+        )
+        qwen2_model_forward = gen_qwen2_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
+        convert_forward(model, Qwen2Model, qwen2_model_forward)
