@@ -32,13 +32,8 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.10
 conda activate llm
 
-# install ipex-llm with 'all' option
-pip install --pre --upgrade ipex-llm[all]
-
-# below command will install intel_npu_acceleration_library
-pip install intel-npu-acceleration-library==1.3
-
-pip install transformers==4.40
+# install ipex-llm with 'npu' option
+pip install --pre --upgrade ipex-llm[npu]
 ```
 
 ### 2. Runtime Configurations
