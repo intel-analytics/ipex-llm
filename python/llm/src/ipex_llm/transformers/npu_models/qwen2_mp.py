@@ -157,8 +157,6 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
 
         if q_biases is None:
-            assert k_biases is None
-            assert v_biases is None
             q_biases = []
             k_biases = []
             v_biases = []
@@ -600,7 +598,6 @@ def run_decode(
                     causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
                 )
                 padded_causal_mask[:, :, :, -1] = 0.0
-                # padded_causal_mask[:, :, :, causal_mask.size(-1)-1] = torch.finfo(torch.float16).min
                 dist.recv(hidden_states, src=rank - 1)
                 t1 = time.perf_counter()
                 layer_outputs = multi_decoder(
@@ -890,17 +887,16 @@ def gen_qwen2_fused_model_forward(prefill_runner, decode_runner):
 
         # retrieve input_ids and inputs_embeds
         if input_ids is not None and inputs_embeds is not None:
-            raise ValueError(
-                "You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time"
-            )
+            invalidInputError(False,
+                              "You cannot specify both decoder_input_ids and "
+                              "decoder_inputs_embeds at the same time")
         elif input_ids is not None:
             batch_size, seq_length = input_ids.shape
         elif inputs_embeds is not None:
             batch_size, seq_length, _ = inputs_embeds.shape
         else:
-            raise ValueError(
-                "You have to specify either decoder_input_ids or decoder_inputs_embeds"
-            )
+            invalidInputError(False,
+                              "You have to specify either input_ids or inputs_embeds")
 
         if self.gradient_checkpointing and self.training:
             if use_cache:
