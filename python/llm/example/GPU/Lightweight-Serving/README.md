@@ -192,7 +192,7 @@ curl http://localhost:8000/v1/chat/completions \
 
 image input only supports [internlm-xcomposer2-vl-7b](https://huggingface.co/internlm/internlm-xcomposer2-vl-7b) now, and it must install transformers==4.31.0 to run.
 ```bash
-wget -O ./test.jpg http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+wget -O /llm/lightweight_serving/test.jpg http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -233,7 +233,7 @@ curl http://localhost:8000/v1/completions \
 
 #### v1/audio/transcriptions
 
-ASR only supports [whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) now.
+ASR only supports [whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) now. And `whisper-large-v3` just can be used to transcription audio. The audio file_type should be supported by `librosa.load`.
 ```bash
 curl http://localhost:8000/v1/audio/transcriptions \
   -H "Content-Type: multipart/form-data" \
