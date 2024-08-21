@@ -25,6 +25,8 @@ from ipex_llm.utils.common import invalidInputError
 from transformers.utils import logging
 from filelock import FileLock
 import ctypes
+import math
+import numpy as np
 
 logger = logging.get_logger(__name__)
 
@@ -92,7 +94,7 @@ def run_model(
 
 class LLMBaseNNFactory(NNFactory):
 
-    def __init__(self, max_seq_len, transpose_value, profile=False, device="NPU"):
+    def __init__(self, max_seq_len, transpose_value, dtype, profile=False, device="NPU"):
         super().__init__(profile, device)
         self.cache_parameter_ops = []
         self.input_ops = []
@@ -101,6 +103,211 @@ class LLMBaseNNFactory(NNFactory):
         self.kv_cache_torch = []
         self.max_seq_len = max_seq_len
         self.transpose_value = transpose_value
+        self.dtype = dtype
+
+    def attention(self,
+                  *,
+                  hidden_states,
+                  position_ids,
+                  attention_mask,
+                  past_key,
+                  past_value,
+                  cos,
+                  sin,
+                  mode,
+                  num_heads,
+                  num_key_value_heads,
+                  head_dim,
+                  seq_len):
+        hidden_size = num_heads * head_dim
+        num_key_value_groups = num_heads // num_key_value_heads
+        query_states = self.linear(
+            hidden_states,
+            num_heads * head_dim,
+            hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        key_states = self.linear(
+            hidden_states,
+            num_key_value_heads * head_dim,
+            hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        value_states = self.linear(
+            hidden_states,
+            num_key_value_heads * head_dim,
+            hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+
+        query_states = self.reshape(
+            query_states, [1, seq_len, num_heads, head_dim]
+        )
+        key_states = self.reshape(
+            key_states, [1, seq_len, num_key_value_heads, head_dim]
+        )
+        value_states = self.reshape(
+            value_states, [1, seq_len, num_key_value_heads, head_dim]
+        )
+
+        query_states = self.transpose(query_states, [0, 2, 1, 3])
+        key_states = self.transpose(key_states, [0, 2, 1, 3])
+        if self.transpose_value:
+            value_states = self.transpose(value_states, [0, 2, 3, 1])
+        else:
+            value_states = self.transpose(value_states, [0, 2, 1, 3])
+
+        query_states, key_states = self.apply_rotary_pos_emb(
+            q=query_states,
+            k=key_states,
+            cos=cos,
+            sin=sin,
+            position_ids=position_ids,
+            num_heads=num_heads,
+            seq_len=seq_len,
+            head_dim=head_dim,
+        )
+        new_key_states = key_states
+        new_value_states = value_states
+
+        if mode == "decode":
+            key_states = self.concat(past_key, key_states, axis=-2)
+            if self.transpose_value:
+                value_states = self.concat(past_value, value_states, axis=-1)
+            else:
+                value_states = self.concat(past_value, value_states, axis=-2)
+            kv_seq_len = self.max_seq_len + 1
+        else:
+            kv_seq_len = seq_len
+
+        key_states = self.repeat_kv(hidden_states=key_states,
+                                    n_rep=num_key_value_groups,
+                                    num_key_value_heads=num_key_value_heads,
+                                    kv_seq_len=kv_seq_len,
+                                    head_dim=head_dim,)
+        value_states = self.repeat_kv(hidden_states=value_states,
+                                      n_rep=num_key_value_groups,
+                                      num_key_value_heads=num_key_value_heads,
+                                      kv_seq_len=kv_seq_len,
+                                      head_dim=head_dim,)
+        attn_weight = self.matmul(query_states, key_states, False, True) / (
+            math.sqrt(head_dim)
+        )
+        attn_weight = self.eltwise_add(attn_weight, attention_mask)
+        attn_weight = self.convert_to_fp32(attn_weight)
+        attn_weight = self.softmax(attn_weight, -1)
+        attn_weight = self.convert_to_fp16(attn_weight)
+        attn_output = self.matmul(attn_weight, value_states, False, self.transpose_value)
+
+        attn_output = self.transpose(attn_output, [0, 2, 1, 3])
+        attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
+
+        attn_output = self.linear(
+            attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
+        )
+
+        return attn_output, new_key_states, new_value_states
+
+    def mlp(self, hidden_states):
+        mm1 = self.linear(
+            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )
+        mm2 = self.linear(
+            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )  # type: ignore[attr-defined]
+        mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+        hidden_states = self.linear(
+            mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+        )
+        return hidden_states
+
+    def layer_norm(self, hidden_states, layernorm_weight):
+        hidden_states = self.convert_to_fp32(hidden_states)
+        variance = self.reduce_mean(
+            self.power(hidden_states, self.constant(np.array([[2]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
+        eps = self.constant(self.rms_norm_eps)
+        hidden_states = self.eltwise_div(hidden_states, self.sqrt(self.eltwise_add(variance, eps)))
+        layernorm_weight = self.convert_to_fp32(layernorm_weight)
+        hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
+        hidden_states = self.convert_to_fp16(hidden_states)
+        return hidden_states
+
+    def rotate_half(self, x, *, num_heads, seq_len, head_dim):
+        x1 = self.slice(
+            x,
+            [0, 0, 0, 0],
+            [1, num_heads, seq_len, head_dim // 2],
+        )
+        x2 = self.slice(
+            x,
+            [0, 0, 0, head_dim // 2],
+            [1, num_heads, seq_len, head_dim],
+        )
+        return self.concat(self.negative(x2), x1, axis=-1)
+
+    def apply_rotary_pos_emb(self, *, q, k, cos, sin, position_ids,
+                             num_heads, seq_len, head_dim):
+        position_ids = self.squeeze(position_ids)
+        cos = self.gather(cos, self.convert_to_int32(position_ids), self.constant(1), 0)
+        sin = self.gather(sin, self.convert_to_int32(position_ids), self.constant(1), 0)
+        cos = self.unsqueeze(cos, [1])
+        sin = self.unsqueeze(sin, [1])
+
+        rotate_half_q = self.rotate_half(q,
+                                         num_heads=num_heads,
+                                         seq_len=seq_len,
+                                         head_dim=head_dim)
+        rotate_half_k = self.rotate_half(k,
+                                         num_heads=num_heads,
+                                         seq_len=seq_len,
+                                         head_dim=head_dim)
+
+        q_embed = self.eltwise_add(
+            self.eltwise_mul(q, cos), self.eltwise_mul(rotate_half_q, sin)
+        )
+        k_embed = self.eltwise_add(
+            self.eltwise_mul(k, cos), self.eltwise_mul(rotate_half_k, sin)
+        )
+
+        return q_embed, k_embed
+
+    def repeat_kv(self, *, hidden_states, n_rep, num_key_value_heads,
+                  kv_seq_len, head_dim, transpose=False):
+        if n_rep == 1:
+            return hidden_states
+        if not transpose:
+            hidden_states = self.reshape(
+                hidden_states,
+                [1, num_key_value_heads, 1, kv_seq_len, head_dim],
+            )
+            hidden_states = self.broadcast(
+                hidden_states,
+                [1, num_key_value_heads, n_rep, kv_seq_len, head_dim],
+            )
+            hidden_states = self.reshape(
+                hidden_states,
+                [1, n_rep * num_key_value_heads, kv_seq_len, head_dim],
+            )
+        else:
+            hidden_states = self.reshape(
+                hidden_states,
+                [1, num_key_value_heads, 1, head_dim, kv_seq_len],
+            )
+            hidden_states = self.broadcast(
+                hidden_states,
+                [1, num_key_value_heads, n_rep, head_dim, kv_seq_len],
+            )
+            hidden_states = self.reshape(
+                hidden_states,
+                [1, n_rep * num_key_value_heads, head_dim, kv_seq_len],
+            )
+        return hidden_states
 
     def create_cache_op(self, shape):
         invalidInputError(len(self.linear_ops) == 0,
