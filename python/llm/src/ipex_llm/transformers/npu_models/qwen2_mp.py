@@ -163,9 +163,9 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             k_biases = []
             v_biases = []
             for i in range(num_layers):
-                q_biases.append(self.parameter((self.num_heads * self.head_dim,)))
-                k_biases.append(self.parameter((self.num_key_value_heads * self.head_dim,)))
-                v_biases.append(self.parameter((self.num_key_value_heads * self.head_dim,)))
+                q_biases.append(self.create_input_op((self.num_heads * self.head_dim,)))
+                k_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
+                v_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
         else:
             q_biases = [self.constant(w) for w in q_biases]
             k_biases = [self.constant(w) for w in k_biases]
@@ -299,6 +299,9 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
+            logger.info(
+                f"creating dedcoder layer: {self.layer_indexes[start]}:{self.layer_indexes[end - 1]}"
+            )
             lm_0 = input_laynorm_weights[start:end]
             lm_1 = post_attn_layernorm_weights[start:end]
             decoder = LowBitQwenMultiDecoderlayer(
@@ -321,6 +324,9 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
                 dtype=np_dtype,
             )
             self.backend_decoders.append(decoder)
+            logger.info(
+                f"created dedcoder layer: {self.layer_indexes[start]}:{self.layer_indexes[end - 1]}"
+            )
 
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
@@ -334,7 +340,6 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         past_key_value: Optional[Cache] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
-        cache_position: Optional[torch.LongTensor] = None,
         **kwargs,
     ) -> torch.Tensor:
 
@@ -442,7 +447,6 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         past_key_value: Optional[Cache] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
-        cache_position: Optional[torch.LongTensor] = None,
         **kwargs,
     ) -> torch.Tensor:
         """Torch module forward method.
@@ -592,19 +596,19 @@ def run_decode(
 
                 causal_mask = _prepare_4d_causal_attention_mask(
                     attention_mask,
-                    (hidden_states.shape[0], 1),
+                    (1, 1),
                     hidden_states,
                     past_seen_tokens,
                     sliding_window=model.model.config.sliding_window,
                 )
                 pad_len = multi_decoder.max_seq_len + 1 - causal_mask.size(-1)
 
-                causal_mask[:, :, :, -1] = torch.finfo(torch.float16).min
                 pad_mask = (0, pad_len)
                 padded_causal_mask = F.pad(
                     causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
                 )
                 padded_causal_mask[:, :, :, -1] = 0.0
+                padded_causal_mask[:, :, :, causal_mask.size(-1)-1] = torch.finfo(torch.float16).min
                 dist.recv(hidden_states, src=rank - 1)
                 t1 = time.perf_counter()
                 layer_outputs = multi_decoder(
@@ -792,7 +796,7 @@ def run_prefill(
         if result == "stop":
             break
 
-        hidden_states, position_ids, causal_mask, past_key_values, cache_position = result
+        hidden_states, position_ids, causal_mask, past_key_values = result
         with torch.inference_mode():
             for decoder_layer in deocderlayers:
                 layer_outputs = decoder_layer(

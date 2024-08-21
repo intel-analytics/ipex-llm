@@ -67,13 +67,15 @@ if __name__ == "__main__":
 
     print("-" * 80)
     print("done")
+    messages = [{"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": args.prompt}]
+    text = tokenizer.apply_chat_template(messages,
+                                         tokenize=False,
+                                         add_generation_prompt=True)
     with torch.inference_mode():
         print("finish to load")
         for i in range(5):
-            prompt = tokenizer.apply_chat_template(args.prompt,
-                                                   tokenize=False,
-                                                   add_generation_prompt=True)
-            _input_ids = tokenizer.encode(prompt, return_tensors="pt")
+            _input_ids = tokenizer([text], return_tensors="pt").input_ids
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(

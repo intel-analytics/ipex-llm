@@ -201,7 +201,8 @@ class LLMBaseNNFactory(NNFactory):
                                       n_rep=num_key_value_groups,
                                       num_key_value_heads=num_key_value_heads,
                                       kv_seq_len=kv_seq_len,
-                                      head_dim=head_dim,)
+                                      head_dim=head_dim,
+                                      transpose=self.transpose_value)
         attn_weight = self.matmul(query_states, key_states, False, True) / (
             math.sqrt(head_dim)
         )
