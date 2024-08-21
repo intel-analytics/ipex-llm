@@ -403,7 +403,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             optimize_lm_head = (
                 is_lm_head(name, model_config, out_features)
                 and (
-                    os.environ.get("IPEX_LLM_LAST_LM_HEAD", "0") == "1"
+                    (not os.environ.get("IPEX_LLM_LAST_LM_HEAD", None) == "0")
                     or os.environ.get("IPEX_LLM_LOW_MEM", "0") == "1"
                     and getattr(model_config, "model_type", "") in ["gptj", "llama", "qwen2"]
                 )

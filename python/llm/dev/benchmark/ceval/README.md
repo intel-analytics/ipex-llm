@@ -18,6 +18,7 @@ bash run.sh
 ```
 + `run.sh`
 ```shell
+export IPEX_LLM_LAST_LM_HEAD=0
 python eval.py \
     --model_path "path to model" \
     --eval_type validation \
