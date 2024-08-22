@@ -131,7 +131,7 @@ jobs:
         shell: bash
         run: |
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          test_version=2.1.0b$test_version_date
+          test_version=2.2.0b$test_version_date
           pip install --pre --upgrade ipex-llm[xpu]==$test_version --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
           if ! pip show ipex-llm | grep $test_version; then
             echo "Did not install ipex-llm with excepted version $test_version"
@@ -400,7 +400,7 @@ jobs:
         shell: bash
         run: |
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          test_version=2.1.0b$test_version_date
+          test_version=2.2.0b$test_version_date
           pip install --pre --upgrade ipex-llm[all]==$test_version --extra-index-url https://download.pytorch.org/whl/cpu
           if ! pip show ipex-llm | grep $test_version; then
             echo "Did not install ipex-llm with excepted version $test_version"
@@ -481,7 +481,7 @@ jobs:
         shell: bash
         run: |
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          test_version=2.1.0b$test_version_date
+          test_version=2.2.0b$test_version_date
           pip install --pre --upgrade ipex-llm[all]==$test_version
           if ! pip show ipex-llm | grep $test_version; then
             echo "Did not install ipex-llm with excepted version $test_version"
@@ -575,7 +575,7 @@ jobs:
         shell: bash
         run: |
           test_version_date=`date -d 'yesterday' '+%Y%m%d'`
-          test_version=2.1.0b$test_version_date
+          test_version=2.2.0b$test_version_date
           echo "TEST_VERSION=${test_version}" >> "$GITHUB_ENV"
 
       - name: Install ipex-llm and other related packages (install from pypi)
