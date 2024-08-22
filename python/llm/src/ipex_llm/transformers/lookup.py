@@ -381,19 +381,20 @@ def lookup_generate(self,
             self.post_time.append(pot-mot)
 
         # Stop on eos and remove content after eos
-        output_ids_list = output_ids[0].tolist()
-        if isinstance(generation_config.eos_token_id, list):
-            eos_token_id_set = set(generation_config.eos_token_id)
-        else:
-            eos_token_id_set = set([generation_config.eos_token_id])
-        first_eos_idx = -1
-        for out_idx, out_id in enumerate(output_ids_list):
-            if out_id in eos_token_id_set:
-                first_eos_idx = out_idx
+        if generation_config.eos_token_id is not None:
+            output_ids_list = output_ids[0].tolist()
+            if isinstance(generation_config.eos_token_id, list):
+                eos_token_id_set = set(generation_config.eos_token_id)
+            else:
+                eos_token_id_set = set([generation_config.eos_token_id])
+            first_eos_idx = -1
+            for out_idx, out_id in enumerate(output_ids_list):
+                if out_id in eos_token_id_set:
+                    first_eos_idx = out_idx
+                    break
+            if first_eos_idx > -1:
+                step -= (len(output_ids_list) - first_eos_idx - 1)
                 break
-        if first_eos_idx > -1:
-            step -= (len(output_ids_list) - first_eos_idx - 1)
-            break
 
     step = min(step, max_new_tokens)
     e2e_toc = time.time()
