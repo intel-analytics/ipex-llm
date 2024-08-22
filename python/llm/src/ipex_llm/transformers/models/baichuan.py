@@ -277,8 +277,8 @@ def baichuan_attention_forward_7b(
 
     else:
         enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
-                                                    self.layer_idx,
-                                                    q_len)
+                                                      self.layer_idx,
+                                                      q_len)
         key_states, value_states = past_key_value.update(
             key_states, value_states, self.layer_idx,
             query_states, attention_mask, 1,
