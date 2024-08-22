@@ -107,12 +107,15 @@ def optimize_llm(
         from transformers.models.llama.modeling_llama import LlamaForCausalLM
         from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
         convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
-    elif model.config.model_type == "qwen2" and model.config.intermediate_size == 8960:
-        # for qwen2-1.5B
+    elif model.config.model_type == "qwen2" and model.config.num_hidden_layers == 28:
+        # for qwen2-1.5B and qwen2-7B
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 1
+            if model.config.intermediate_size == 18944:
+                inter_pp = 4
+            else:
+                inter_pp = 1
 
         from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
         from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner

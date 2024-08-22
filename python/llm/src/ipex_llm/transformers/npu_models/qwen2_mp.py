@@ -199,6 +199,35 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
 
         self.compile()
 
+    def mlp(self, hidden_states):
+        mm1 = self.linear(
+            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )
+        mm2 = self.linear(
+            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )  # type: ignore[attr-defined]
+        mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+        
+        x1 = self.slice(mm1, 0, 4608)
+        x2 = self.slice(mm1, 4608, 9216)
+        x3 = self.slice(mm1, 9216, 13824)
+        x4 = self.slice(mm1, 13824, 18944)
+        down1 = self.linear(
+            x1, self.hidden_size, 4608, bias=False, wt_dtype=self.dtype
+        )
+        down2 = self.linear(
+            x2, self.hidden_size, 4608, bias=False, wt_dtype=self.dtype
+        )
+        down3 = self.linear(
+            x3, self.hidden_size, 4608, bias=False, wt_dtype=self.dtype
+        )
+        down4 = self.linear(
+            x4, self.hidden_size, 4608, bias=False, wt_dtype=self.dtype
+        )
+        
+        hidden_states = down1 + down2 + down3 + down4
+        return hidden_states
+    
     def build_decoder(
         self,
         hidden_states,
@@ -282,6 +311,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         self.transpose_value = transpose_value
         if isinstance(parameters[0], tuple):
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+            assert np_dtype == np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
 
@@ -324,7 +354,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
-            self.backend_decoders[i].set_weights(self.op_id, op_parameters[start * 7:end * 7])
+            self.backend_decoders[i].set_weights(self.op_id, op_parameters[start * 10:end * 10])
 
     def forward(
         self,
@@ -408,6 +438,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         # self.rotary_emb = rotary_emb
         if isinstance(parameters[0], tuple):  # weight, scale from QuantizedLinear
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+            assert np_dtype == np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
 
@@ -522,7 +553,10 @@ def run_decode(
             (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
             (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
             (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            (mlp_layer.down1_proj.weight, mlp_layer.down1_proj.scale),
+            (mlp_layer.down2_proj.weight, mlp_layer.down2_proj.scale),
+            (mlp_layer.down3_proj.weight, mlp_layer.down3_proj.scale),
+            (mlp_layer.down4_proj.weight, mlp_layer.down4_proj.scale),
         ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
@@ -746,7 +780,10 @@ def run_prefill(
             (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
             (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
             (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            (mlp_layer.down1_proj.weight, mlp_layer.down1_proj.scale),
+            (mlp_layer.down2_proj.weight, mlp_layer.down2_proj.scale),
+            (mlp_layer.down3_proj.weight, mlp_layer.down3_proj.scale),
+            (mlp_layer.down4_proj.weight, mlp_layer.down4_proj.scale),
         ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
