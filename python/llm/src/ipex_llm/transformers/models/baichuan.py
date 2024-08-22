@@ -97,7 +97,7 @@ def baichuan_model_7b_forward(
     )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
 
-    return_dict = return_dict if return_dict is not None else self.config.use_return_dict    
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
     if use_cache:
         inputs = input_ids if input_ids is not None else inputs_embeds
@@ -163,9 +163,6 @@ def baichuan_model_7b_forward(
     next_decoder_cache = () if use_cache else None
 
     use_compresskv = isinstance(past_key_values, DynamicCompressCache)
-
-    # if not past_key_values and not use_compresskv:
-    #     past_key_values = [None for _ in range(self.num_layers)]
 
     for idx, decoder_layer in enumerate(self.layers):
         if output_hidden_states:
