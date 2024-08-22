@@ -78,7 +78,7 @@ done
 ```
 
 ## Example 2: Predict Tokens using `generate()` API using multi processes
-In the example [llama2.py](./llama2.py), we show an experimental support for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimization and fused decoderlayer optimization on Intel NPUs.
+In the example [llama2.py](./llama2.py) and [qwen2.py](./qwen2.py), we show an experimental support for a Llama2 / Qwen2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimization and fused decoderlayer optimization on Intel NPUs.
 ### 1. Install
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
@@ -111,7 +111,11 @@ set BIGDL_USE_NPU=1
 ### 3. Running examples
 
 ```
+# to run Llama-2-7b-chat-hf
 python  llama2.py
+
+# to run Qwen2-1.5B-Instruct
+python qwen2.py
 ```
 
 Arguments info:

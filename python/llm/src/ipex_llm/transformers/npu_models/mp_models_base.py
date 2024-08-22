@@ -118,7 +118,10 @@ class LLMBaseNNFactory(NNFactory):
                   num_heads,
                   num_key_value_heads,
                   head_dim,
-                  seq_len):
+                  seq_len,
+                  q_bias=None,
+                  k_bias=None,
+                  v_bias=None):
         hidden_size = num_heads * head_dim
         num_key_value_groups = num_heads // num_key_value_heads
         query_states = self.linear(
@@ -128,6 +131,8 @@ class LLMBaseNNFactory(NNFactory):
             bias=False,
             wt_dtype=self.dtype,
         )
+        if q_bias is not None:
+            query_states = query_states + q_bias
         key_states = self.linear(
             hidden_states,
             num_key_value_heads * head_dim,
@@ -135,6 +140,8 @@ class LLMBaseNNFactory(NNFactory):
             bias=False,
             wt_dtype=self.dtype,
         )
+        if k_bias is not None:
+            key_states = key_states + k_bias
         value_states = self.linear(
             hidden_states,
             num_key_value_heads * head_dim,
@@ -142,6 +149,8 @@ class LLMBaseNNFactory(NNFactory):
             bias=False,
             wt_dtype=self.dtype,
         )
+        if v_bias is not None:
+            value_states = value_states + v_bias
 
         query_states = self.reshape(
             query_states, [1, seq_len, num_heads, head_dim]
@@ -192,7 +201,8 @@ class LLMBaseNNFactory(NNFactory):
                                       n_rep=num_key_value_groups,
                                       num_key_value_heads=num_key_value_heads,
                                       kv_seq_len=kv_seq_len,
-                                      head_dim=head_dim,)
+                                      head_dim=head_dim,
+                                      transpose=self.transpose_value)
         attn_weight = self.matmul(query_states, key_states, False, True) / (
             math.sqrt(head_dim)
         )
