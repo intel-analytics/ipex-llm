@@ -284,7 +284,6 @@ def baichuan_attention_forward_7b(
             query_states, attention_mask, 1,
             self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
         
-
     if self.training:
         warnings.warn("xops is not supported on Intel GPU, so just use normal implementation")
 
