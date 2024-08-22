@@ -46,7 +46,7 @@ if __name__ == '__main__':
                                                  use_cache=True)
     model = optimize_model(model)
     
-    model = model.to('xpu')
+    model = model.half().to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
