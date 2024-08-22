@@ -39,6 +39,7 @@ import os
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
+
 def pre_compute_inv_freq(module: torch.nn.Module):
     if module.__class__.__name__ == "RotaryEmbedding":
         inv_freq = module.inv_freq
