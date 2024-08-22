@@ -385,7 +385,7 @@ def lookup_generate(self,
         if isinstance(generation_config.eos_token_id, list):
             eos_token_id_set = set(generation_config.eos_token_id)
         else:
-            eos_token_id_set = [generation_config.eos_token_id]
+            eos_token_id_set = set([generation_config.eos_token_id])
         first_eos_idx = -1
         for out_idx, out_id in enumerate(output_ids_list):
             if out_id in eos_token_id_set:
