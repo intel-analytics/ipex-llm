@@ -32,13 +32,8 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.10
 conda activate llm
 
-# install ipex-llm with 'all' option
-pip install --pre --upgrade ipex-llm[all]
-
-# below command will install intel_npu_acceleration_library
-pip install intel-npu-acceleration-library==1.3
-
-pip install transformers==4.40
+# install ipex-llm with 'npu' option
+pip install --pre --upgrade ipex-llm[npu]
 ```
 
 ### 2. Runtime Configurations
@@ -83,7 +78,13 @@ done
 ```
 
 ## Example 2: Predict Tokens using `generate()` API using multi processes
-In the example [llama2.py](./llama2.py), we show an experimental support for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimization and fused decoderlayer optimization on Intel NPUs.
+In the example [llama2.py](./llama2.py) and [qwen2.py](./qwen2.py), we show an experimental support for a Llama2 / Qwen2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimization and fused decoderlayer optimization on Intel NPUs.
+
+> [!IMPORTANT]
+> To run Qwen2 and Llama2 with IPEX-LLM on Intel NPUs, we recommend using version **32.0.100.2540** for the Intel NPU.
+> 
+> Go to https://www.intel.com/content/www/us/en/download/794734/825735/intel-npu-driver-windows.html to download and unzip the driver. Then follow the same steps on [Requirements](#0-requirements).
+
 ### 1. Install
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
@@ -116,7 +117,11 @@ set BIGDL_USE_NPU=1
 ### 3. Running examples
 
 ```
+# to run Llama-2-7b-chat-hf
 python  llama2.py
+
+# to run Qwen2-1.5B-Instruct
+python qwen2.py
 ```
 
 Arguments info:
@@ -124,7 +129,7 @@ Arguments info:
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `What is AI?`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--max-output-len MAX_OUTPUT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
-- `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `768`.
+- `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `512`.
 
 
 #### Sample Output

@@ -41,7 +41,7 @@ from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
 
 
-class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
+class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
     def __init__(
         self,
         # batch_size: int,
@@ -56,6 +56,9 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         cached_sin,
         input_layernorm_weights=None,
         post_attn_layernorm_weights=None,
+        q_biases=None,
+        k_biases=None,
+        v_biases=None,
         mode: str = "prefill",
         dtype: np.dtype = np.int8,
         max_seq_len: int = 1024,
@@ -153,6 +156,19 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
             post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
 
+        if q_biases is None:
+            q_biases = []
+            k_biases = []
+            v_biases = []
+            for i in range(num_layers):
+                q_biases.append(self.create_input_op((self.num_heads * self.head_dim,)))
+                k_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
+                v_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
+        else:
+            q_biases = [self.constant(w) for w in q_biases]
+            k_biases = [self.constant(w) for w in k_biases]
+            v_biases = [self.constant(w) for w in v_biases]
+
         hidden_states = input
 
         curr_key_values = []
@@ -163,6 +179,9 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
                 position_ids=position_ids,
                 input_layernorm_weight=input_layernorm_weights[i],
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
+                q_bias=q_biases[i],
+                k_bias=k_biases[i],
+                v_bias=v_biases[i],
                 past_key=past_keys[i],
                 past_value=past_values[i],
             )
@@ -175,7 +194,6 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
-        print("start compiling")
         self.compile()
 
     def build_decoder(
@@ -185,6 +203,9 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         position_ids,
         input_layernorm_weight,
         post_attention_layernorm_weight,
+        q_bias,
+        k_bias,
+        v_bias,
         past_key=None,
         past_value=None,
     ):
@@ -205,6 +226,9 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             num_key_value_heads=self.num_key_value_heads,
             head_dim=self.head_dim,
             seq_len=self.seq_len,
+            q_bias=q_bias,
+            k_bias=k_bias,
+            v_bias=v_bias,
         )
         hidden_states = self.eltwise_add(residual, attn_output)
         residual = hidden_states
@@ -216,13 +240,16 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         return hidden_states, new_key_states, new_value_states
 
 
-class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
+class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
     def __init__(
         self,
         parameters: List[Tuple[torch.Tensor]],
         input_laynorm_weights: List[torch.Tensor],
         post_attn_layernorm_weights: List[torch.Tensor],
+        q_biases: List[torch.Tensor],
+        k_biases: List[torch.Tensor],
+        v_biases: List[torch.Tensor],
         layer_indexes: List[int],
         intra_stages: int,
         cached_cos: torch.Tensor,
@@ -271,10 +298,13 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             lm_0 = input_laynorm_weights[start:end]
             lm_1 = post_attn_layernorm_weights[start:end]
-            decoder = LowBitLlamaMultiDecoderlayer(
+            decoder = LowBitQwenMultiDecoderlayer(
                 [1, 1, num_heads * head_dim],
                 input_layernorm_weights=lm_0,
                 post_attn_layernorm_weights=lm_1,
+                q_biases=q_biases[start:end],
+                k_biases=k_biases[start:end],
+                v_biases=v_biases[start:end],
                 cached_cos=cached_cos,
                 cached_sin=cached_sin,
                 num_heads=num_heads,
@@ -301,7 +331,6 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         past_key_value: Optional[Cache] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
-        cache_position: Optional[torch.LongTensor] = None,
         **kwargs,
     ) -> torch.Tensor:
 
@@ -315,7 +344,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
 
-        hidden_states, new_keys, new_values = LowBitLlamaMultiDecoderlayer.run_decoders(
+        hidden_states, new_keys, new_values = LowBitQwenMultiDecoderlayer.run_decoders(
             inputs,
             decoders=self.backend_decoders)
 
@@ -326,14 +355,13 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         outputs += (past_key_value, new_keys, new_values)
         return outputs
 
-    def post_forward(self, past_key_value, new_keys, new_values, cache_position):
+    def post_forward(self, past_key_value, new_keys, new_values):
         key_value_states = []
         for i in range(self.intra_stages):
             for j in range(1, len(self.backend_decoders[i].torch_out)):
                 key_value_states.append(self.backend_decoders[i].torch_out[j])
 
         cache_kwargs = {
-            "cache_position": cache_position,
             "max_seq_len": self.max_seq_len,
             "transpose": self.transpose_value,
         }
@@ -349,9 +377,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             self.backend_decoders[i].load_cache_async()
 
 
-class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
-    """LLAMA MLP operation NPU backend."""
-
+class FusedQwenLowBitDecoderlayer(torch.nn.Module):
     def __init__(
         self,
         parameters: List[torch.Tensor],
@@ -359,6 +385,9 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         cached_sin,
         layer_norm_0,
         layer_norm_1,
+        q_bias,
+        k_bias,
+        v_bias,
         num_heads: int,
         num_key_value_heads: int,
         layer_idx: int,
@@ -380,7 +409,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             np_dtype = np.float16
 
         self.backend_cls_prefill = partial(
-            LowBitLlamaMultiDecoderlayer,
+            LowBitQwenMultiDecoderlayer,
             num_heads=num_heads,
             num_key_value_heads=num_key_value_heads,
             num_layers=1,
@@ -397,6 +426,9 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
+        self.q_bias = q_bias
+        self.k_bias = k_bias
+        self.v_bias = v_bias
 
     def forward(
         self,
@@ -406,7 +438,6 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         past_key_value: Optional[Cache] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
-        cache_position: Optional[torch.LongTensor] = None,
         **kwargs,
     ) -> torch.Tensor:
         """Torch module forward method.
@@ -423,14 +454,11 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         backend_cls = self.backend_cls_prefill
         inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
         inputs += (self.layer_norm_0, self.layer_norm_1)
+        inputs += (self.q_bias, self.k_bias, self.v_bias)
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
         )
-        cache_kwargs = {
-            "cache_position": cache_position,
-            "max_seq_len": self.max_seq_len,
-            "transpose": self.transpose_value,
-        }
+        cache_kwargs = {"max_seq_len": self.max_seq_len, "transpose": self.transpose_value}
         key_states, value_states = past_key_value.update(
             past_key, past_value, self.layer_idx, cache_kwargs
         )
@@ -475,6 +503,9 @@ def run_decode(
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
+    q_biases = []
+    k_biases = []
+    v_biases = []
     layer_indexs = range(layer_start, layer_end)
     for layer_idx in layer_indexs:
         curr_layer = model.model.layers[layer_idx]
@@ -499,11 +530,17 @@ def run_decode(
         layer_weights.extend(weights)
         input_layer_norm_weights.append(layer_norm_0)
         post_attn_layernorm_weights.append(layer_norm_1)
+        q_biases.append(attn_layer.q_proj.bias.to(torch.float16))
+        k_biases.append(attn_layer.k_proj.bias.to(torch.float16))
+        v_biases.append(attn_layer.v_proj.bias.to(torch.float16))
 
-    multi_decoder = FusedLlamaLowBitMultiDecoderlayer(
+    multi_decoder = FusedQwenLowBitMultiDecoderlayer(
         parameters=layer_weights,
         input_laynorm_weights=input_layer_norm_weights,
         post_attn_layernorm_weights=post_attn_layernorm_weights,
+        q_biases=q_biases,
+        k_biases=k_biases,
+        v_biases=v_biases,
         layer_indexes=layer_indexs,
         intra_stages=intra_stages,
         cached_cos=cached_cos,
@@ -536,16 +573,26 @@ def run_decode(
                 t0 = time.perf_counter()
                 past_seen_tokens = past_key_values.get_seq_length()
                 attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
-                cache_position = torch.arange(
-                    past_seen_tokens, past_seen_tokens + 1, device=hidden_states.device
+                position_ids = torch.arange(
+                    past_seen_tokens,
+                    1 + past_seen_tokens,
+                    dtype=torch.long,
+                    device=hidden_states.device,
                 )
+                position_ids = position_ids.unsqueeze(0).view(-1, 1)
 
-                position_ids = position_ids = cache_position.unsqueeze(0)
-                causal_mask = model.model._update_causal_mask(
-                    attention_mask, hidden_states, cache_position, past_seen_tokens
+                from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
+
+                causal_mask = _prepare_4d_causal_attention_mask(
+                    attention_mask,
+                    (hidden_states.shape[0], hidden_states.shape[1]),
+                    hidden_states,
+                    past_seen_tokens,
+                    sliding_window=model.model.config.sliding_window,
                 )
                 pad_len = multi_decoder.max_seq_len + 1 - causal_mask.size(-1)
 
+                causal_mask[:, :, :, -1] = torch.finfo(torch.float16).min
                 pad_mask = (0, pad_len)
                 padded_causal_mask = F.pad(
                     causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
@@ -560,7 +607,6 @@ def run_decode(
                     past_key_value=past_key_values,
                     output_attentions=False,
                     use_cache=True,
-                    cache_position=cache_position,
                 )
                 t2 = time.perf_counter()
                 hidden_states = layer_outputs[0]
@@ -570,7 +616,7 @@ def run_decode(
                 past_key_values = layer_outputs[1]
                 new_keys = layer_outputs[2]
                 new_values = layer_outputs[3]
-                multi_decoder.post_forward(past_key_values, new_keys, new_values, cache_position)
+                multi_decoder.post_forward(past_key_values, new_keys, new_values)
 
 
 class DecodeRunner:
@@ -637,7 +683,6 @@ class DecodeRunner:
         past_key_value: Optional[Cache] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
-        cache_position: Optional[torch.LongTensor] = None,
         **kwargs,
     ):
         t0 = time.perf_counter()
@@ -707,7 +752,7 @@ def run_prefill(
         layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
         layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
-        new_decoderlayer = FusedLlamaLowBitDecoderlayer(
+        new_decoderlayer = FusedQwenLowBitDecoderlayer(
             weights,
             num_heads=num_heads,
             num_key_value_heads=num_key_value_heads,
@@ -715,6 +760,9 @@ def run_prefill(
             cached_sin=cached_sin,
             layer_norm_0=layer_norm_0,
             layer_norm_1=layer_norm_1,
+            q_bias=attn_layer.q_proj.bias.to(torch.float16),
+            k_bias=attn_layer.k_proj.bias.to(torch.float16),
+            v_bias=attn_layer.v_proj.bias.to(torch.float16),
             layer_idx=layer_idx,
             rms_norm_eps=rms_norm_eps,
             intermediate_size=intermediate_size,
@@ -737,7 +785,7 @@ def run_prefill(
         if result == "stop":
             break
 
-        hidden_states, position_ids, causal_mask, past_key_values, cache_position = result
+        hidden_states, position_ids, causal_mask, past_key_values = result
         with torch.inference_mode():
             for decoder_layer in deocderlayers:
                 layer_outputs = decoder_layer(
@@ -747,7 +795,6 @@ def run_prefill(
                     past_key_value=past_key_values,
                     output_attentions=False,
                     use_cache=True,
-                    cache_position=cache_position,
                 )
 
                 hidden_states = layer_outputs[0]
@@ -780,8 +827,6 @@ class PrefillRunner:
         self.p.daemon = True
         self.p.start()
         output = self.prefill_result_queue.get()
-        print(Fore.GREEN + f"prefill process output: {output}")
-        print(Style.RESET_ALL)
 
     def forward(
         self,
@@ -791,7 +836,6 @@ class PrefillRunner:
         past_key_value: Optional[Cache] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
-        cache_position: Optional[torch.LongTensor] = None,
         **kwargs,
     ):
         seq_len = hidden_states.size(1)
@@ -802,21 +846,8 @@ class PrefillRunner:
                 " to max_prompt_len {self.max_prompt_len}"
             ),
         )
-        pad_len = self.max_prompt_len - seq_len
-        hidden_states = F.pad(hidden_states.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
-        position_ids = F.pad(position_ids, (0, pad_len), value=0)
-        attention_mask = F.pad(
-            attention_mask.to(torch.float16),
-            (0, pad_len, 0, pad_len),
-            value=torch.finfo(torch.float16).min,
-        )
-
-        args = (hidden_states, position_ids, attention_mask, past_key_value, cache_position)
-        self.prefill_input_queue.put(args)
-        hidden_states, past_key_value = self.prefill_result_queue.get()
-        past_key_value.shrink(seq_len, self.transpose_value_cache)
-        hidden_states = hidden_states[:, :seq_len, :]
-        return hidden_states, past_key_value
+        self.prefill_input_queue.put((hidden_states, position_ids, attention_mask, past_key_value))
+        return self.prefill_result_queue.get()
 
     def shutdown(self):
         self.prefill_input_queue.put("stop")
@@ -828,9 +859,9 @@ class PrefillRunner:
         self.shutdown()
 
 
-def gen_llama_fused_model_forward(prefill_runner, decode_runner):
+def gen_qwen2_fused_model_forward(prefill_runner, decode_runner):
 
-    def llama_fused_model_forward(
+    def qwen2_fused_model_forward(
         self,
         input_ids: torch.LongTensor = None,
         attention_mask: Optional[torch.Tensor] = None,
@@ -841,9 +872,7 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-        cache_position: Optional[torch.LongTensor] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
-        t0 = time.perf_counter()
         output_attentions = (
             output_attentions if output_attentions is not None else self.config.output_attentions
         )
@@ -853,43 +882,57 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
             else self.config.output_hidden_states
         )
         use_cache = use_cache if use_cache is not None else self.config.use_cache
+
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-        if (input_ids is None) ^ (inputs_embeds is not None):
-            msg = (
-                "You cannot specify both input_ids and inputs_embeds at the same time,"
-                " and must specify either one"
-            )
-            invalidInputError(False, msg)
+        # retrieve input_ids and inputs_embeds
+        if input_ids is not None and inputs_embeds is not None:
+            invalidInputError(False,
+                              "You cannot specify both decoder_input_ids and "
+                              "decoder_inputs_embeds at the same time")
+        elif input_ids is not None:
+            batch_size, seq_length = input_ids.shape
+        elif inputs_embeds is not None:
+            batch_size, seq_length, _ = inputs_embeds.shape
+        else:
+            invalidInputError(False,
+                              "You have to specify either input_ids or inputs_embeds")
 
-        if self.gradient_checkpointing and self.training and use_cache:
-            use_cache = False
+        if self.gradient_checkpointing and self.training:
+            if use_cache:
+                use_cache = False
 
         if inputs_embeds is None:
             inputs_embeds = self.embed_tokens(input_ids)
 
-        past_seen_tokens = 0
+        past_key_values_length = 0
 
-        # ipex-llm changes start
         from ipex_llm.transformers.npu_models.kv import DynamicFusedNormalCache
 
         if use_cache and not isinstance(past_key_values, DynamicFusedNormalCache):
             past_key_values = DynamicFusedNormalCache.from_legacy_cache(past_key_values)
-            past_seen_tokens = past_key_values.get_seq_length()
-
-        if cache_position is None:
-            cache_position = torch.arange(
-                past_seen_tokens,
-                past_seen_tokens + inputs_embeds.shape[1],
-                device=inputs_embeds.device,
-            )
-        # ipex-llm changes end
+            past_key_values_length = past_key_values.get_seq_length()
 
         if position_ids is None:
-            position_ids = cache_position.unsqueeze(0)
+            device = input_ids.device if input_ids is not None else inputs_embeds.device
+            position_ids = torch.arange(
+                past_key_values_length,
+                seq_length + past_key_values_length,
+                dtype=torch.long,
+                device=device,
+            )
+            position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+        else:
+            position_ids = position_ids.view(-1, seq_length).long()
 
-        causal_mask = self._update_causal_mask(
-            attention_mask, inputs_embeds, cache_position, past_seen_tokens
+        from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
+
+        attention_mask = _prepare_4d_causal_attention_mask(
+            attention_mask,
+            (batch_size, seq_length),
+            inputs_embeds,
+            past_key_values_length,
+            sliding_window=self.config.sliding_window,
         )
 
         # embed positions
@@ -900,20 +943,17 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
         all_self_attns = () if output_attentions else None
         next_decoder_cache = None
 
-        seq_len = hidden_states.size(1)
-
-        if seq_len == 1:
+        if seq_length == 1:
             layers_runner = decode_runner
         else:
             layers_runner = prefill_runner
         layer_outputs = layers_runner.forward(
             hidden_states,
-            attention_mask=causal_mask,
+            attention_mask=attention_mask,
             position_ids=position_ids,
             past_key_value=past_key_values,
             output_attentions=output_attentions,
             use_cache=use_cache,
-            cache_position=cache_position,
         )
         hidden_states = layer_outputs[0]
 
@@ -925,17 +965,14 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
         if output_hidden_states:
             all_hidden_states += (hidden_states,)
 
-        # ipex-llm changes start
         next_cache = next_decoder_cache if use_cache else None
-        # ipex-llm changes end
         if not return_dict:
             return tuple(
                 v
                 for v in [hidden_states, next_cache, all_hidden_states, all_self_attns]
                 if v is not None
             )
-        t1 = time.perf_counter()
-        # print("fused model forward time: ", t1 - t0)
+
         return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=next_cache,
@@ -943,4 +980,4 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
             attentions=all_self_attns,
         )
 
-    return llama_fused_model_forward
+    return qwen2_fused_model_forward

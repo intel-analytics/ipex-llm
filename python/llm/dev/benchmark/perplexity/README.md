@@ -12,6 +12,11 @@ This is a required step on Linux for APT or offline installed oneAPI. Skip this 
 source /opt/intel/oneapi/setvars.sh
 ```
 
+Please set IPEX_LLM_LAST_LM_HEAD=0 to disable the last_lm_head optimization.
+```bash
+export IPEX_LLM_LAST_LM_HEAD=0
+```
+
 ## PPL Evaluation
 ### 1. Run on Wikitext
 An example to run perplexity on [wikitext](https://paperswithcode.com/dataset/wikitext-2):

@@ -225,6 +225,8 @@ def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
     from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
         FP16Linear, BF16Linear, vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
+    # Currently, vLLM does not support optimize_lm_head = True
+    optimize_lm_head = False
     if isinstance(module, ParallelLMHead):
         if qtype == ggml_tensor_qtype["fp16"]:
             new_linear = FP16Linear(
@@ -403,7 +405,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             optimize_lm_head = (
                 is_lm_head(name, model_config, out_features)
                 and (
-                    os.environ.get("IPEX_LLM_LAST_LM_HEAD", "0") == "1"
+                    (not os.environ.get("IPEX_LLM_LAST_LM_HEAD", None) == "0")
                     or os.environ.get("IPEX_LLM_LOW_MEM", "0") == "1"
                     and getattr(model_config, "model_type", "") in ["gptj", "llama", "qwen2"]
                 )

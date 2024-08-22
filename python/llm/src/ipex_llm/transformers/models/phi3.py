@@ -277,7 +277,7 @@ def phi3_model_forward_wrapper(origin_model_forward):
                     head_dim = self.config.hidden_size // self.config.num_attention_heads
                     past_key_values = DynamicNormalCache.from_reserved(
                         n_layer, inputs.size(0), n_head, inputs.size(1), head_dim,
-                        inputs.dtype, inputs.device
+                        self.dtype, inputs.device
                     )
         return origin_model_forward(
             self=self,

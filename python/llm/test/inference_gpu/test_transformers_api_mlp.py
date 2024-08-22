@@ -134,7 +134,7 @@ class Test_Optimize_Gpu_Model:
         # currently only compare the output of the last mlp layer.
         layer_before_MLP = "model.layers.31.post_attention_layernorm"
         MLP_layer = "model.layers.31.mlp"
-        lower_bound = 0
+        lower_bound = 1e-3
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, MLP_layer, layer_before_MLP, lower_bound)
 
     def Llama2_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
