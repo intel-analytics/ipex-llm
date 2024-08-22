@@ -39,12 +39,19 @@ async def main():
     model_path = args.repo_id_or_model_path
     low_bit = args.low_bit
 
-    local_model = ModelWorker(model_path, low_bit)
-    # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    myapp = FastApp(local_model, tokenizer)
+    processor = None
+    if "whisper" not in model_path.lower():
+        local_model = ModelWorker(model_path, low_bit)
+        # Load tokenizer
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, padding_side='left')
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+    else:
+        local_model = ModelWorker(model_path, low_bit, "audio", torch_dtype=torch.float32)
+        from transformers import WhisperProcessor
+        processor = WhisperProcessor.from_pretrained(model_path)
+        tokenizer = processor.tokenizer
+    myapp = FastApp(local_model, tokenizer, processor)
     config = uvicorn.Config(app=myapp.app, host="0.0.0.0", port=args.port)
     server = uvicorn.Server(config)
     await server.serve()
