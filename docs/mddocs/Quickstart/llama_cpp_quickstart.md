@@ -296,6 +296,18 @@ Log end
 
 ### Troubleshooting
 
+#### Unable to run the initialization script
+If you are unable to run `init-llama-cpp`, please make sure you have installed `ipex-llm[cpp]` in your conda environment. If you have installed it, please check if you have activated the correct conda environment. Also, if you are using Windows, please make sure you have run the script with administrator privilege.
+
+#### `DeviceList is empty. -30 (PI_ERROR_INVALID_VALUE)`
+On Linux, this happens when devices starting with `[ext_oneapi_level_zero]` are not found. Please make sure you have installed level-zero, and have sourced `/opt/intel/oneapi/setvars.sh` before running the command.
+
+#### Prompt is too long
+If you encounter `main: prompt is too long (xxx tokens, max xxx)`, please either reduce the length of the prompt or increase the `-c` parameter to set a larger size of the prompt context.
+
+#### Cannot allocate memory on host error / Could not create an engine
+If you meet `oneapi::mkl::oneapi::mkl::blas::gemm: cannot allocate memory on host` error, or `could not create an engine`, this probably means that you have installed OneAPI dependencies directly via `pip install`. You should prevent installing like `pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0`, and instead use `apt` to install. Please refer to [this guide](./install_linux_gpu.md) for more details.
+
 #### Fail to quantize model
 If you encounter `main: failed to quantize model from xxx`, please make sure you have created related output directory.
 
