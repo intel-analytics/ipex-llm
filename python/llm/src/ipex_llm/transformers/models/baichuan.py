@@ -77,6 +77,7 @@ def baichuan_mlp_forward(
         ))
     return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
 
+
 def baichuan_model_7b_forward(
         self,
         input_ids: torch.LongTensor = None,
