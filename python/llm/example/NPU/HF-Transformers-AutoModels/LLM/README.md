@@ -79,6 +79,12 @@ done
 
 ## Example 2: Predict Tokens using `generate()` API using multi processes
 In the example [llama2.py](./llama2.py) and [qwen2.py](./qwen2.py), we show an experimental support for a Llama2 / Qwen2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimization and fused decoderlayer optimization on Intel NPUs.
+
+> [!IMPORTANT]
+> To run Qwen2 and Llama2 with IPEX-LLM on Intel NPUs, we recommend using version **32.0.100.2540** for the Intel NPU.
+> 
+> Go to https://www.intel.com/content/www/us/en/download/794734/825735/intel-npu-driver-windows.html to download and unzip the driver. Then follow the same steps on [Requirements](#0-requirements).
+
 ### 1. Install
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
