@@ -246,6 +246,7 @@ def baichuan_attention_forward_7b(
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
 
+    # [CompressKV]
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     qkv = self.W_pack(hidden_states)
@@ -257,6 +258,7 @@ def baichuan_attention_forward_7b(
 
     kv_seq_len = key_states.shape[2]
     if past_key_value is not None:
+        # [CompressKV]
         if use_compresskv:
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len,
                                                            self.layer_idx)
