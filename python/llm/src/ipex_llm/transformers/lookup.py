@@ -57,12 +57,17 @@ def generate(
     streamer: Optional["BaseStreamer"] = None,
     **kwargs,
 ):
-    device_name = get_xpu_device_type(inputs)
     lookahead = kwargs.pop("lookahead", None)
     perf_mode = os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None)
     if perf_mode == "1" and lookahead is None:
-        if device_name != 'mtl' or inputs.shape[-1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
-            lookahead = 2  # default to 2 now
+        if inputs is not None:
+            if inputs.shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
+                lookahead = 2  # default to 2 now
+        else:
+            inputs_embeds = kwargs.get("inputs_embeds", None)
+            if inputs_embeds is not None:
+                if inputs_embeds.shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
+                    lookahead = 2  # default to 2 now
     if lookahead:
         from ipex_llm.transformers.convert import get_enable_ipex
         _enable_ipex = get_enable_ipex()
