@@ -1019,7 +1019,7 @@ def qwen2_casullm_forward(
         output_attentions=output_attentions,
         output_hidden_states=output_hidden_states,
         return_dict=return_dict,
-        cache_position=cache_position,
+        # cache_position=cache_position,
     )
 
     hidden_states = outputs[0]
