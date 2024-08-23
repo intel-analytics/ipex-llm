@@ -255,7 +255,6 @@ def lookup_generate(self,
                     max_matching_ngram_size: int = None,
                     generation_config: Optional[GenerationConfig] = None,
                     attention_mask=None,
-                    use_update_candidate_strategy=True,
                     **sampling_kwargs):
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
