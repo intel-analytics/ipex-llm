@@ -77,3 +77,10 @@ def optimize_llm(
             prefill_runner=prefill_runner, decode_runner=decode_runner
         )
         convert_forward(model, Qwen2Model, qwen2_model_forward)
+
+
+def optimize_llm_post(model: torch.nn.Module):
+    if model.config.model_type == "llama":
+        from transformers.models.llama.modeling_llama import LlamaForCausalLM
+        from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
+        convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
