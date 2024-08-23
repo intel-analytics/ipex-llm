@@ -40,6 +40,9 @@ from transformers import GenerationMixin
 original_generate = GenerationMixin.generate
 query_group_size = 16
 
+# may tune it with more tested data
+PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD = 100
+
 
 @torch.no_grad()
 def generate(
@@ -54,10 +57,12 @@ def generate(
     streamer: Optional["BaseStreamer"] = None,
     **kwargs,
 ):
+    device_name = get_xpu_device_type(inputs)
     lookahead = kwargs.pop("lookahead", None)
     perf_mode = os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None)
     if perf_mode == "1" and lookahead is None:
-        lookahead = 2  # default to 2 now
+        if device_name != 'mtl' or inputs.shape[-1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
+            lookahead = 2  # default to 2 now
     if lookahead:
         from ipex_llm.transformers.convert import get_enable_ipex
         _enable_ipex = get_enable_ipex()
