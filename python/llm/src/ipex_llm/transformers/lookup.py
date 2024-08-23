@@ -59,16 +59,23 @@ def generate(
 ):
     lookahead = kwargs.pop("lookahead", None)
     perf_mode = os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None)
+    use_update_candidate_strategy = True
     if perf_mode == "1" and lookahead is None:
         if inputs is not None:
             if inputs.shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
                 lookahead = 2  # default to 2 now
+            else:
+                lookahead = 0
+                use_update_candidate_strategy = False
         else:
             inputs_embeds = kwargs.get("inputs_embeds", None)
             if inputs_embeds is not None:
                 if inputs_embeds.shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
                     lookahead = 2  # default to 2 now
-    if lookahead:
+                else:
+                    lookahead = 0
+                    use_update_candidate_strategy = False
+    if lookahead is not None:
         from ipex_llm.transformers.convert import get_enable_ipex
         _enable_ipex = get_enable_ipex()
 
@@ -97,6 +104,7 @@ def generate(
                                         logits_processor=logits_processor,
                                         stopping_criteria=stopping_criteria,
                                         prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                        use_update_candidate_strategy=use_update_candidate_strategy,
                                         **kwargs)
 
     return original_generate(self,
@@ -152,7 +160,7 @@ class PromptLookupCandidateGenerator():
             self.min_candidates = 0
 
         self.lookup_table = {}
-        invalidInputError(self.max_matching_ngram_size > 0 and self.num_output_tokens > 0,
+        invalidInputError(self.max_matching_ngram_size > 0 and self.num_output_tokens >= 0,
                           "Invalid max_matching_ngram_size or num_output_tokens")
 
     def init_look_up_table(self,
@@ -255,6 +263,7 @@ def lookup_generate(self,
                     max_matching_ngram_size: int = None,
                     generation_config: Optional[GenerationConfig] = None,
                     attention_mask=None,
+                    use_update_candidate_strategy=True,
                     **sampling_kwargs):
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
@@ -385,7 +394,7 @@ def lookup_generate(self,
             accept_rate = self.n_matched/self.n_drafted if self.n_drafted > 0 else 1
             self.accept_rate.append(accept_rate)
             # Update the candidate generation strategy if needed
-            if device_name != 'mtl':
+            if device_name != 'mtl' and use_update_candidate_strategy:
                 candidates_generator.update_candidate_strategy(candidate_length, n_matches,
                                                                accept_rate)
 
