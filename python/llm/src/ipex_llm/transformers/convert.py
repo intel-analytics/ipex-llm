@@ -225,6 +225,8 @@ def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
     from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
         FP16Linear, BF16Linear, vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
+    # Currently, vLLM does not support optimize_lm_head = True
+    optimize_lm_head = False
     if isinstance(module, ParallelLMHead):
         if qtype == ggml_tensor_qtype["fp16"]:
             new_linear = FP16Linear(
@@ -1294,8 +1296,17 @@ def _optimize_post(model, lightweight_bmm=False):
         if model.config.hidden_size in [4096, 2048]:
             # baichuan-7B and baichuan2-7B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_7b
+            from ipex_llm.transformers.models.baichuan import baichuan_model_7b_forward
+            for i in range(len(model.model.layers)):
+                setattr(model.model.layers[i].self_attn, "layer_idx", i)
             convert_forward(model, module.Attention, baichuan_attention_forward_7b)
             convert_forward(model, module.RMSNorm, llama_rms_norm_forward)
+            if model.config.vocab_size == 125696:
+                # baichuan2-7B
+                convert_forward(model, module.BaichuanModel, baichuan_model_7b_forward)
+            elif model.config.vocab_size == 64000:
+                # baichuan-7B
+                convert_forward(model, module.Model, baichuan_model_7b_forward)
         elif model.config.hidden_size == 5120:
             # baichuan-13B and baichuan2-13B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_13b

@@ -305,6 +305,16 @@ def llama_mlp_forward(
             )
             hidden_states = attn_output.view(x.shape)
         return hidden_states
+    elif x.device.type == "xpu" and not self.training:
+        import xe_addons
+        gate = self.gate_proj(x)
+        up = self.up_proj(x)
+        xe_addons.mlp_silu_mul_inplaced(gate, up)
+        out = self.down_proj(gate)
+        if residual is not None:
+            return out + residual
+        else:
+            return out
     else:
         a = self.act_fn(self.gate_proj(x))
         b = self.up_proj(x)
