@@ -148,7 +148,7 @@ class _BaseAutoModelClass:
                     " than max_output_len ({max_output_len})"
                 ),
             )
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_post
+            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
 
             with torch.no_grad():
                 cls.load_convert(qtype, model, "cpu", *args, **kwargs)
@@ -166,7 +166,6 @@ class _BaseAutoModelClass:
                 intra_pp=intra_pp,
                 transpose_value_cache=transpose_value_cache,
             )
-            optimize_llm_post(model)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
