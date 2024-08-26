@@ -209,7 +209,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         residual = hidden_states
         input_2d = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
         input_2d = self.layer_norm(input_2d, input_layernorm_weight)
-        
+
         attn_output, new_key_states, new_value_states = self.attention(
             hidden_states=input_2d,
             position_ids=position_ids,
@@ -225,11 +225,13 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             seq_len=self.seq_len,
         )
 
-        hidden_states = self.eltwise_add(residual, attn_output * (scale_depth / math.sqrt(num_hidden_layers)))
+        hidden_states = self.eltwise_add(residual,
+                                         attn_output * (scale_depth / math.sqrt(num_hidden_layers)))
         residual = hidden_states
         hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
         hidden_states = self.mlp(hidden_states)
-        hidden_states = self.eltwise_add(residual, hidden_states * (scale_depth / math.sqrt(num_hidden_layers)))
+        hidden_states = self.eltwise_add(residual,
+                                         hidden_states * (scale_depth / math.sqrt(num_hidden_layers)))
         hidden_states = self.convert_to_fp16(hidden_states)
 
         return hidden_states, new_key_states, new_value_states
@@ -869,6 +871,7 @@ from transformers.modeling_attn_mask_utils import (
     _prepare_4d_causal_attention_mask,
 )
 
+
 def gen_minicpm_fused_model_forward(prefill_runner, decode_runner):
 
     def minicpm_fused_model_forward(
@@ -896,13 +899,16 @@ def gen_minicpm_fused_model_forward(prefill_runner, decode_runner):
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
         if input_ids is not None and inputs_embeds is not None:
-            raise ValueError("You cannot specify both input_ids and inputs_embeds at the same time")
+            invalidInputError(False,
+                              "You cannot specify both decoder_input_ids and "
+                              "decoder_inputs_embeds at the same time")
         elif input_ids is not None:
             batch_size, seq_length = input_ids.shape[:2]
         elif inputs_embeds is not None:
             batch_size, seq_length = inputs_embeds.shape[:2]
         else:
-            raise ValueError("You have to specify either input_ids or inputs_embeds")
+            invalidInputError(False,
+                              "You have to specify either input_ids or inputs_embeds")
 
         from ipex_llm.transformers.npu_models.kv import DynamicFusedNormalCache
 
@@ -914,16 +920,19 @@ def gen_minicpm_fused_model_forward(prefill_runner, decode_runner):
         if position_ids is None:
             device = input_ids.device if input_ids is not None else inputs_embeds.device
             position_ids = torch.arange(
-                past_key_values_length, seq_length + past_key_values_length, dtype=torch.long, device=device
+                past_key_values_length,
+                seq_length + past_key_values_length,
+                dtype=torch.long,
+                device=device
             )
             position_ids = position_ids.unsqueeze(0)
-        
+
         if inputs_embeds is None:
             inputs_embeds = self.embed_tokens(input_ids) * self.config.scale_emb
 
         attention_mask = _prepare_4d_causal_attention_mask(
                 attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
-            )
+        )
 
         # embed positions
         hidden_states = inputs_embeds
@@ -952,7 +961,7 @@ def gen_minicpm_fused_model_forward(prefill_runner, decode_runner):
         next_decoder_cache = layer_outputs[1]
 
         hidden_states = self.norm(hidden_states)
-    
+
         # add hidden states from the last decoder layer
         if output_hidden_states:
             all_hidden_states += (hidden_states,)
