@@ -261,7 +261,7 @@ def lookup_generate(self,
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               **sampling_kwargs)
-    
+
     if streamer is not None:
         streamer.put(input_ids.cpu())
 
