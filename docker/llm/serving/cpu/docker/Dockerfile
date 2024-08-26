@@ -1,4 +1,4 @@
-FROM intelanalytics/ipex-llm-cpu:2.2.0-SNAPSHOT
+FROM intelanalytics/ipex-llm-cpu:2.2.0
 
 ARG http_proxy
 ARG https_proxy
@@ -15,7 +15,7 @@ RUN wget -qO /sbin/tini https://github.com/krallin/tini/releases/download/${TINI
     cd /llm && \
     apt-get update && \
     apt-get install -y --no-install-recommends wrk patch g++ && \
-    pip install --pre --upgrade ipex-llm[serving] && \
+    pip install --pre --upgrade ipex-llm[serving]==2.2.0 && \
     # Fix Trivy CVE Issues
     pip install Jinja2==3.1.3 transformers==4.36.2 gradio==4.19.2 cryptography==42.0.4 && \
     # Fix Qwen model adapter in fastchat
