@@ -75,6 +75,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         device: str = "NPU",
         rms_norm_eps,
         intermediate_size,
+        scale_depth,
+        num_hidden_layers
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
@@ -174,6 +176,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
                 position_ids=position_ids,
                 input_layernorm_weight=input_layernorm_weights[i],
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
+                scale_depth=scale_depth,
+                num_hidden_layers=num_hidden_layers,
                 past_key=past_keys[i],
                 past_value=past_values[i],
             )
@@ -196,6 +200,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         position_ids,
         input_layernorm_weight,
         post_attention_layernorm_weight,
+        scale_depth,
+        num_hidden_layers,
         past_key=None,
         past_value=None,
     ):
@@ -203,6 +209,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         residual = hidden_states
         input_2d = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
         input_2d = self.layer_norm(input_2d, input_layernorm_weight)
+        
         attn_output, new_key_states, new_value_states = self.attention(
             hidden_states=input_2d,
             position_ids=position_ids,
@@ -217,11 +224,12 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             head_dim=self.head_dim,
             seq_len=self.seq_len,
         )
-        hidden_states = self.eltwise_add(residual, attn_output)
+
+        hidden_states = self.eltwise_add(residual, attn_output * (scale_depth / math.sqrt(num_hidden_layers)))
         residual = hidden_states
         hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
         hidden_states = self.mlp(hidden_states)
-        hidden_states = self.eltwise_add(residual, hidden_states)
+        hidden_states = self.eltwise_add(residual, hidden_states * (scale_depth / math.sqrt(num_hidden_layers)))
         hidden_states = self.convert_to_fp16(hidden_states)
 
         return hidden_states, new_key_states, new_value_states
@@ -243,6 +251,8 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         num_key_value_heads: int,
         rms_norm_eps,
         intermediate_size,
+        scale_depth,
+        num_hidden_layers,
         max_seq_len: int = 1024,
         transpose_value: bool = False,
         do_print: bool = False,
@@ -294,6 +304,8 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                 max_seq_len=max_seq_len,
                 rms_norm_eps=rms_norm_eps,
                 intermediate_size=intermediate_size,
+                scale_depth=scale_depth,
+                num_hidden_layers=num_hidden_layers,
                 mode="decode",
                 transpose_value=self.transpose_value,
                 dtype=np_dtype,
@@ -312,7 +324,6 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         past_key_value: Optional[Cache] = None,
         output_attentions: bool = False,
         use_cache: bool = False,
-        #cache_position: Optional[torch.LongTensor] = None,
         **kwargs,
     ) -> torch.Tensor:
 
@@ -344,7 +355,6 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                 key_value_states.append(self.backend_decoders[i].torch_out[j])
 
         cache_kwargs = {
-            #"cache_position": cache_position,
             "max_seq_len": self.max_seq_len,
             "transpose": self.transpose_value,
         }
@@ -375,6 +385,8 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         layer_idx: int,
         rms_norm_eps,
         intermediate_size,
+        scale_depth,
+        num_hidden_layers,
         max_seq_len: int = 128,
         transpose_value: bool = False,
     ):
@@ -402,6 +414,8 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             max_seq_len=max_seq_len,
             rms_norm_eps=rms_norm_eps,
             intermediate_size=intermediate_size,
+            scale_depth=scale_depth,
+            num_hidden_layers=num_hidden_layers,
             mode="prefill",
             transpose_value=self.transpose_value,
             dtype=np_dtype,
@@ -457,6 +471,7 @@ def run_decode(
     layer_start,
     layer_end,
     intra_stages,
+    scale_depth,
     max_seq_len,
     transpose_value_cache,
     input_queue,
@@ -480,6 +495,7 @@ def run_decode(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
+    num_hidden_layers = model.config.num_hidden_layers
     deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
@@ -522,6 +538,8 @@ def run_decode(
         num_key_value_heads=num_key_value_heads,
         rms_norm_eps=rms_norm_eps,
         intermediate_size=intermediate_size,
+        scale_depth=scale_depth,
+        num_hidden_layers=num_hidden_layers,
         max_seq_len=max_seq_len,
         transpose_value=transpose_value_cache,
         do_print=False,
@@ -549,7 +567,7 @@ def run_decode(
                     past_seen_tokens, past_seen_tokens + 1, device=hidden_states.device
                 )
 
-                position_ids = cache_position.unsqueeze(0)#.view(-1, 1)
+                position_ids = cache_position.unsqueeze(0)
                 from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
 
                 causal_mask = _prepare_4d_causal_attention_mask(
@@ -594,6 +612,7 @@ class DecodeRunner:
         world_size = inter_pp + 1
         intra_stages = intra_pp
         num_layers = self.model.model.config.num_hidden_layers
+        scale_depth = self.model.model.config.scale_depth
 
         port = "54791"
         os.environ["MASTER_ADDR"] = "127.0.0.1"
@@ -622,6 +641,7 @@ class DecodeRunner:
                     start_layer,
                     end_layer,
                     intra_stages,
+                    scale_depth,
                     self.max_seq_len,
                     self.transpose_value_cache,
                     input_q,
@@ -693,6 +713,8 @@ def run_prefill(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
+    scale_depth = model.config.scale_depth
+    num_hidden_layers = model.config.num_hidden_layers
     deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
@@ -730,6 +752,8 @@ def run_prefill(
             layer_idx=layer_idx,
             rms_norm_eps=rms_norm_eps,
             intermediate_size=intermediate_size,
+            scale_depth=scale_depth,
+            num_hidden_layers=num_hidden_layers,
             max_seq_len=max_output_len,
             transpose_value=transpose_value_cache,
         )
