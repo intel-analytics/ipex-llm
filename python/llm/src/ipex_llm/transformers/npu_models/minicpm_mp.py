@@ -225,13 +225,14 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             seq_len=self.seq_len,
         )
 
+        layer_scale_depth = scale_depth / math.sqrt(num_hidden_layers)
         hidden_states = self.eltwise_add(residual,
-                                         attn_output * (scale_depth / math.sqrt(num_hidden_layers)))
+                                         attn_output * layer_scale_depth)
         residual = hidden_states
         hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
         hidden_states = self.mlp(hidden_states)
         hidden_states = self.eltwise_add(residual,
-                                         hidden_states * (scale_depth / math.sqrt(num_hidden_layers)))
+                                         hidden_states * layer_scale_depth)
         hidden_states = self.convert_to_fp16(hidden_states)
 
         return hidden_states, new_key_states, new_value_states
@@ -931,7 +932,7 @@ def gen_minicpm_fused_model_forward(prefill_runner, decode_runner):
             inputs_embeds = self.embed_tokens(input_ids) * self.config.scale_emb
 
         attention_mask = _prepare_4d_causal_attention_mask(
-                attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
+            attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
         )
 
         # embed positions
