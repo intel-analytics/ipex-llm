@@ -82,15 +82,15 @@ def generate(
         if self.device.type == "cpu" and _enable_ipex:
             logger.warning("Prompt lookup is currently not supported on CPU with IPEX, "
                            "fallback to original generate.")
-            kwargs.pop("max_matching_ngram_size")
+            kwargs.pop("max_matching_ngram_size", None)
         elif input_ids_shape[0] > 1:
             logger.warning("Prompt lookup is currently not supported with batch inference, "
                            "fallback to original generate.")
-            kwargs.pop("max_matching_ngram_size")
+            kwargs.pop("max_matching_ngram_size", None)
         elif kwargs.get("num_beams", None) not in [None, 1]:
             logger.warning("Prompt lookup is currently not supported with num_beams != 1, "
                            "fallback to original generate.")
-            kwargs.pop("max_matching_ngram_size")
+            kwargs.pop("max_matching_ngram_size", None)
         else:
             # Do prompt lookup generation
             # If lookahead is provided, we will use lookup_generate instead of
