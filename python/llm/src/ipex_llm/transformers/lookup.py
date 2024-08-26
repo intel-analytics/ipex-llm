@@ -413,8 +413,6 @@ def lookup_generate(self,
                                                                accept_rate)
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
-            if streamer is not None:
-                streamer.put(output_ids.cpu())
             candidates_generator.update_look_up_table(input_ids)
 
             step += output_ids.size(1)
@@ -431,8 +429,11 @@ def lookup_generate(self,
                     first_eos_idx = out_idx
                     break
             if first_eos_idx > -1:
+                if streamer is not None:
+                    streamer.put(output_ids[:first_eos_idx].cpu())
                 step -= (len(output_ids_list) - first_eos_idx - 1)
                 break
+        streamer.put(output_ids.cpu())
 
     step = min(step, max_new_tokens)
     e2e_toc = time.time()
