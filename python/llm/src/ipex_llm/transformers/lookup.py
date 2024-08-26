@@ -94,10 +94,10 @@ def generate(
             return self.lookup_generate(inputs=inputs,
                                         num_output_tokens=lookahead,
                                         generation_config=generation_config,
+                                        streamer=streamer,
                                         logits_processor=logits_processor,
                                         stopping_criteria=stopping_criteria,
                                         prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
-                                        streamer=streamer,
                                         **kwargs)
 
     return original_generate(self,
