@@ -77,12 +77,10 @@ def optimize_llm(
             max_prompt_len=max_prompt_len,
             transpose_value_cache=transpose_value_cache,
         )
-
         qwen2_model_forward = gen_qwen2_fused_model_forward(
             prefill_runner=prefill_runner, decode_runner=decode_runner
         )
         convert_forward(model, Qwen2Model, qwen2_model_forward)
-
         from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
         from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
