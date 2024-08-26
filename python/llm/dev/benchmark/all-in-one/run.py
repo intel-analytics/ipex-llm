@@ -559,7 +559,7 @@ def run_transformer_int4_gpu(repo_id,
                 from ipex_llm.transformers.lookup import PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD
                 if actual_in_len < PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
                     warnings.warn(
-                        "All-in-one benchmark currently do not support IPEX_LLM_PERFORMANCE_MODE "
+                        "All-in-one benchmark currently does not support IPEX_LLM_PERFORMANCE_MODE "
                         f"with actual input token length < {PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD}. "
                         f"Skip benchmarking in-out pair {in_out} for model {repo_id}."
                     )
