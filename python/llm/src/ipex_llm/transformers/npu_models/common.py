@@ -30,3 +30,13 @@ def merge_linear(linears: List[torch.nn.Linear]) -> torch.nn.Linear:
     new_linear.in_features = new_weight.size(1)
     new_linear.out_features = new_weight.size(0)
     return new_linear
+
+
+def reshape_lm_head_input(x):
+    if x.dim() > 3:
+        x = x.reshape([-1, x.shape[-2], x.shape[-1]])
+    shape = list(x.size())
+    if shape[1] > 10:
+        shape[1] = 1
+        x = x[:, -1, :].view(shape)
+    return x
