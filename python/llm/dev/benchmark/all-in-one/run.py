@@ -22,6 +22,7 @@ import gc
 import traceback
 import threading
 import csv
+import warnings
 
 import numpy as np
 from datetime import date
@@ -554,6 +555,15 @@ def run_transformer_int4_gpu(repo_id,
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
+            if not lookahead and os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None) == "1":
+                from ipex_llm.transformers.lookup import PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD
+                if actual_in_len < PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
+                    warnings.warn(
+                        "All-in-one benchmark currently does not support IPEX_LLM_PERFORMANCE_MODE "
+                        f"with actual input token length < {PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD}. "
+                        f"Skip benchmarking in-out pair {in_out} for model {repo_id}."
+                    )
+                    continue
             thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead))
             thread.start()
             thread.join()

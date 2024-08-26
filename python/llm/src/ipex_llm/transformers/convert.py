@@ -405,9 +405,11 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
             optimize_lm_head = (
                 is_lm_head(name, model_config, out_features)
                 and (
-                    (not os.environ.get("IPEX_LLM_LAST_LM_HEAD", None) == "0")
-                    or os.environ.get("IPEX_LLM_LOW_MEM", "0") == "1"
-                    and getattr(model_config, "model_type", "") in ["gptj", "llama", "qwen2"]
+                    not os.environ.get("IPEX_LLM_LAST_LM_HEAD", None) == "0"
+                )
+                and (
+                    not (getattr(model_config, "model_type", "") == "baichuan" and
+                         model.config.hidden_size == 5120)  # except baichuan2-13B
                 )
             )
             with init_empty_weights():
@@ -1296,8 +1298,17 @@ def _optimize_post(model, lightweight_bmm=False):
         if model.config.hidden_size in [4096, 2048]:
             # baichuan-7B and baichuan2-7B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_7b
+            from ipex_llm.transformers.models.baichuan import baichuan_model_7b_forward
+            for i in range(len(model.model.layers)):
+                setattr(model.model.layers[i].self_attn, "layer_idx", i)
             convert_forward(model, module.Attention, baichuan_attention_forward_7b)
             convert_forward(model, module.RMSNorm, llama_rms_norm_forward)
+            if model.config.vocab_size == 125696:
+                # baichuan2-7B
+                convert_forward(model, module.BaichuanModel, baichuan_model_7b_forward)
+            elif model.config.vocab_size == 64000:
+                # baichuan-7B
+                convert_forward(model, module.Model, baichuan_model_7b_forward)
         elif model.config.hidden_size == 5120:
             # baichuan-13B and baichuan2-13B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_13b

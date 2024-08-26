@@ -17,7 +17,7 @@ RUN cd /tmp/ && \
     mv /tmp/torch-ccl/dist/oneccl_bind_pt-2.1.100+xpu-cp311-cp311-linux_x86_64.whl /tmp/
 
 
-FROM intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+FROM intelanalytics/ipex-llm-xpu:2.2.0-SNAPSHOT
 
 ARG http_proxy
 ARG https_proxy
