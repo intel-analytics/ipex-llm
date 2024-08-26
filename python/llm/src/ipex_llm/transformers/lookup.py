@@ -72,7 +72,7 @@ def generate(
                 input_ids_shape = inputs_embeds.shape
 
     if perf_mode == "1" and lookahead is None:
-        if input_ids_shape.shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
+        if input_ids_shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
             lookahead = 2  # default to 2 now
 
     if lookahead:
@@ -87,7 +87,7 @@ def generate(
             logger.warning("Prompt lookup is currently not supported with batch inference, "
                            "fallback to original generate.")
             kwargs.pop("max_matching_ngram_size")
-        elif kwargs.get("num_beams", None) != 1:
+        elif kwargs.get("num_beams", None) not in [None, 1]:
             logger.warning("Prompt lookup is currently not supported with num_beams != 1, "
                            "fallback to original generate.")
             kwargs.pop("max_matching_ngram_size")
@@ -277,7 +277,7 @@ def lookup_generate(self,
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               **sampling_kwargs)
 
-    invalidInputError(input_ids.shape[0] > 1,
+    invalidInputError(input_ids.shape[0] == 1,
                       "Prompt lookup is currently not supported with batch inference.")
 
     if streamer is not None:
@@ -433,7 +433,8 @@ def lookup_generate(self,
                     streamer.put(output_ids[:first_eos_idx].cpu())
                 step -= (len(output_ids_list) - first_eos_idx - 1)
                 break
-        streamer.put(output_ids.cpu())
+        if streamer is not None:
+            streamer.put(output_ids.cpu())
 
     step = min(step, max_new_tokens)
     e2e_toc = time.time()
