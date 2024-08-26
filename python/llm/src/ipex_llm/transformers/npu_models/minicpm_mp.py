@@ -869,9 +869,9 @@ from transformers.modeling_attn_mask_utils import (
     _prepare_4d_causal_attention_mask,
 )
 
-def gen_llama_fused_model_forward(prefill_runner, decode_runner):
+def gen_minicpm_fused_model_forward(prefill_runner, decode_runner):
 
-    def llama_fused_model_forward(
+    def minicpm_fused_model_forward(
         self,
         input_ids: torch.LongTensor = None,
         attention_mask: Optional[torch.Tensor] = None,
@@ -974,4 +974,4 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
             attentions=all_self_attns,
         )
 
-    return llama_fused_model_forward
+    return minicpm_fused_model_forward
