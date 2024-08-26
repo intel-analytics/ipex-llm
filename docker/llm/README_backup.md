@@ -30,14 +30,14 @@ This guide provides step-by-step instructions for installing and using IPEX-LLM 
 
 Run the following command to pull image:
 ```bash
-docker pull intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-cpu:2.2.0-SNAPSHOT
 ```
 
 ### 2. Start bigdl-llm-cpu Docker Container
 
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-cpu:2.2.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -156,7 +156,7 @@ Additionally, for examples related to Inference with Speculative Decoding, you c
 
 Run the following command to pull image from dockerhub:
 ```bash
-docker pull intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-xpu:2.2.0-SNAPSHOT
 ```
 
 ### 2. Start Chat Inference
@@ -167,7 +167,7 @@ To map the xpu into the container, you need to specify --device=/dev/dri when bo
 
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.2.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -189,7 +189,7 @@ Execute a quick performance benchmark by starting the ipex-llm-xpu container, sp
 To map the XPU into the container, specify `--device=/dev/dri` when booting the container.
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:2.2.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models [change to your model path]
 
@@ -226,7 +226,7 @@ IPEX-LLM is integrated into FastChat so that user can use IPEX-LLM as a serving 
 Run the following command:
 
 ```bash
-docker pull intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-serving-cpu:2.2.0-SNAPSHOT
 ```
 
 ### 2. Start ipex-llm-serving-cpu Docker Container
@@ -234,7 +234,7 @@ docker pull intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
 Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
 
 ```bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.2.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -349,7 +349,7 @@ IPEX-LLM is integrated into FastChat so that user can use IPEX-LLM as a serving 
 Run the following command:
 
 ```bash
-docker pull intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-serving-xpu:2.2.0-SNAPSHOT
 ```
 
 ### 2. Start ipex-llm-serving-xpu Docker Container
@@ -357,7 +357,7 @@ docker pull intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
 To map the `xpu` into the container, you need to specify `--device=/dev/dri` when booting the container.
 
 ```bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:2.2.0-SNAPSHOT
 export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
@@ -473,10 +473,10 @@ You can download directly from Dockerhub like:
 
 ```bash
 # For standalone
-docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.2.0-SNAPSHOT
 
 # For k8s
-docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.2.0-SNAPSHOT
 ```
 
 Or build the image from source:
@@ -489,7 +489,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.2.0-SNAPSHOT \
   -f ./Dockerfile .
 
 # For k8s
@@ -499,7 +499,7 @@ export HTTPS_PROXY=your_https_proxy
 docker build \
   --build-arg http_proxy=${HTTP_PROXY} \
   --build-arg https_proxy=${HTTPS_PROXY} \
-  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT \
+  -t intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.2.0-SNAPSHOT \
   -f ./Dockerfile.k8s .
 ```
 
@@ -520,7 +520,7 @@ docker run -itd \
    -e https_proxy=${HTTPS_PROXY} \
    -v $BASE_MODE_PATH:/ipex_llm/model \
    -v $DATA_PATH:/ipex_llm/data/alpaca-cleaned \
-   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.2.0-SNAPSHOT
 ```
 
 The download and mount of base model and data to a docker container demonstrates a standard fine-tuning process. You can skip this step for a quick start, and in this way, the fine-tuning codes will automatically download the needed files:
@@ -534,7 +534,7 @@ docker run -itd \
    --name=ipex-llm-fintune-qlora-cpu \
    -e http_proxy=${HTTP_PROXY} \
    -e https_proxy=${HTTPS_PROXY} \
-   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT
+   intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.2.0-SNAPSHOT
 ```
 
 However, we do recommend you to handle them manually, because the automatical download can be blocked by Internet access and Huggingface authentication etc. according to different environment, and the manual method allows you to fine-tune in a custom way (with different base model and dataset).
@@ -593,7 +593,7 @@ The following shows how to fine-tune LLM with Quantization (QLoRA built on IPEX-
 Run the following command:
 
 ```bash
-docker pull intelanalytics/ipex-llm-finetune-xpu:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-finetune-xpu:2.2.0-SNAPSHOT
 ```
 
 ### 2. Prepare Base Model, Data and Start Docker Container
@@ -606,7 +606,7 @@ export DATA_PATH=your_downloaded_data_path
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
 export CONTAINER_NAME=my_container
-export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-xpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-finetune-xpu:2.2.0-SNAPSHOT
 
 docker run -itd \
    --net=host \

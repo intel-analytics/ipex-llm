@@ -130,6 +130,18 @@ Arguments info:
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--max-output-len MAX_OUTPUT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
 - `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `512`.
+- `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
+
+### 4. Troubleshooting
+
+If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
+```bash
+# to run Llama-2-7b-chat-hf
+python  llama2.py --disable-transpose-value-cache
+
+# to run Qwen2-1.5B-Instruct
+python qwen2.py --disable-transpose-value-cache
+```
 
 
 #### Sample Output
