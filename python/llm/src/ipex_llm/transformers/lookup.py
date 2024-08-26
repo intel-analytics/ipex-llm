@@ -97,6 +97,7 @@ def generate(
                                         logits_processor=logits_processor,
                                         stopping_criteria=stopping_criteria,
                                         prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                        streamer=streamer,
                                         **kwargs)
 
     return original_generate(self,
@@ -254,11 +255,15 @@ def lookup_generate(self,
                     num_output_tokens: int = 10,
                     max_matching_ngram_size: int = None,
                     generation_config: Optional[GenerationConfig] = None,
+                    streamer: Optional["BaseStreamer"] = None,
                     attention_mask=None,
                     **sampling_kwargs):
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               **sampling_kwargs)
+    
+    if streamer is not None:
+        streamer.put(input_ids.cpu())
 
     device_name = get_xpu_device_type(input_ids)
 
@@ -390,6 +395,8 @@ def lookup_generate(self,
                                                                accept_rate)
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
+            if streamer is not None:
+                streamer.put(output_ids.cpu())
             candidates_generator.update_look_up_table(input_ids)
 
             step += output_ids.size(1)
@@ -413,5 +420,8 @@ def lookup_generate(self,
     e2e_toc = time.time()
     self.n_token_generated = step
     self.e2e_time_without_first = e2e_toc - e2e_tic
+
+    if streamer is not None:
+        streamer.end()
 
     return input_ids[:, : input_len + step]
