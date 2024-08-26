@@ -115,7 +115,7 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
-        optimize_model = kwargs.pop("optimize_model", False)        
+        optimize_model = kwargs.pop("optimize_model", False)
         max_output_len = kwargs.pop("max_output_len", 1024)
         max_prompt_len = kwargs.pop("max_prompt_len", max_output_len)
         inter_pp = kwargs.pop("inter_pp", None)
