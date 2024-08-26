@@ -430,7 +430,7 @@ def lookup_generate(self,
                     break
             if first_eos_idx > -1:
                 if streamer is not None:
-                    streamer.put(output_ids[:first_eos_idx].cpu())
+                    streamer.put(output_ids[:(first_eos_idx + 1)].cpu())
                 step -= (len(output_ids_list) - first_eos_idx - 1)
                 break
         if streamer is not None:
