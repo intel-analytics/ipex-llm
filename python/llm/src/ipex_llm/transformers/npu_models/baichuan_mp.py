@@ -279,9 +279,7 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         proj = self.unsqueeze(proj, [0])  # b, s, 3, h
         proj = self.transpose(proj, [2, 1, 0, 3])  # 3, s, b, h
         proj = self.squeeze(proj)  # 3, b*s, h
-        print("proj shape: ", proj.shape)
         proj = self.unsqueeze(proj, [1])
-        print("proj shape after unsqueeze", proj.shape)
         # query_states = proj[0].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
         query_states = self.reshape(proj[0, ...], [self.batch_size,
                                                    self.seq_len, self.num_heads, self.head_dim])
