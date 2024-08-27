@@ -50,6 +50,7 @@ from transformers.cache_utils import Cache
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
 
+
 @torch.no_grad()
 def run_model(
     x: Union[torch.Tensor, List[torch.Tensor]],
@@ -177,7 +178,6 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
 
         position_ids = self.create_input_op((self.batch_size, self.seq_len))
         # self.num_key_value_heads = num_key_value_heads
-        
         past_keys = []
         past_values = []
         if mode == "decode":
@@ -265,7 +265,13 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
                   k_bias=None,
                   v_bias=None):
         hidden_size = num_heads * head_dim
-        proj = self.linear(hidden_states, 3 * hidden_size, hidden_size, bias=False, wt_dtype=self.dtype)
+        proj = self.linear(
+            hidden_states,
+            3 * hidden_size,
+            hidden_size,
+            bias=False,
+            wt_dtype=self.dtype
+            )
         proj = self.reshape(proj, [-1, 3, hidden_size])  # b*s, 3, h
         proj = self.unsqueeze(proj, [0])  # b, s, 3, h
         proj = self.transpose(proj, [2, 1, 0, 3])  # 3, s, b, h
@@ -349,7 +355,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             head_dim=self.head_dim,
             seq_len=self.seq_len,
         )
-        
+
         hidden_states = self.eltwise_add(residual, attn_output)
         residual = hidden_states
         hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
@@ -437,7 +443,6 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             self.backend_decoders[i].set_weights(self.op_id, op_parameters[start * 5:end * 5])
 
-
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -453,7 +458,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             attention_mask,
             position_ids,
         )
-        
+
         for i in range(self.intra_stages):
             start, end = self.layer_ranges[i]
             self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
@@ -479,7 +484,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             "max_seq_len": self.max_seq_len,
             "transpose": self.transpose_value,
         }
-        
+
         for i in range(len(self.layer_indexes)):
             key_states, value_states = past_key_value.update(
                 new_keys[i],
