@@ -609,19 +609,23 @@ def transformers_int4_npu_win(repo_id,
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)
+    max_output_len = max(in_out_len[0] + in_out_len[1], 1024)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
-        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, optimize_model=optimize_model,
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                          optimize_model=optimize_model, max_output_len=max_output_len,
                                           torch_dtype='auto', attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, optimize_model=optimize_model,
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                                     optimize_model=optimize_model, max_output_len=max_output_len,
                                                      use_cache=True, attn_implementation="eager").eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, optimize_model=optimize_model,
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                                     optimize_model=optimize_model, max_output_len=max_output_len,
                                                      use_cache=True, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
