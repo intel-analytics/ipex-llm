@@ -118,7 +118,7 @@ set BIGDL_USE_NPU=1
 
 ```
 # to run Llama-2-7b-chat-hf
-python  llama2.py
+python  llama2.py
 
 # to run Qwen2-1.5B-Instruct
 python qwen2.py
@@ -137,7 +137,7 @@ Arguments info:
 If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
 ```bash
 # to run Llama-2-7b-chat-hf
-python  llama2.py --disable-transpose-value-cache
+python  llama2.py --disable-transpose-value-cache
 
 # to run Qwen2-1.5B-Instruct
 python qwen2.py --disable-transpose-value-cache
