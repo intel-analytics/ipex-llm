@@ -14,12 +14,15 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
 
 * **Install LlamaIndex Packages**
     ```bash
-    pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+    pip install llama-index-llms-ipex-llm==0.1.8
+    pip install llama-index-embeddings-ipex-llm==0.1.5
+    pip install llama-index-readers-file==0.1.33
+    pip install llama-index-vector-stores-postgres==0.1.14
+    pip install pymupdf
     ```
-
-* **Install IPEX-LLM**
-Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) before proceeding with the examples provided here. 
-
+    > **Note:**
+    > The installation of `llama-index-llms-ipex-llm` or `llama-index-embeddings-ipex-llm` will also install `IPEX-LLM` and its dependencies.
+    > `IpexLLMEmbedding` currently only provides optimization for Hugging Face Bge models.
 
 * **Database Setup (using PostgreSQL)**:
     * Installation: 
