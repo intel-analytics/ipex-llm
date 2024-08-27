@@ -95,6 +95,12 @@ def optimize_llm(
         from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
     elif model.config.model_type == "minicpm":
+        # for minicpm-1b
+        if intra_pp is None:
+            intra_pp = 2
+        if inter_pp is None:
+            inter_pp = 2
+
         from ipex_llm.transformers.npu_models.minicpm_mp import gen_minicpm_fused_model_forward
         from ipex_llm.transformers.npu_models.minicpm_mp import DecodeRunner, PrefillRunner
 
