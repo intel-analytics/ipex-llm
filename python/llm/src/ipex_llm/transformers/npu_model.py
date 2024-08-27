@@ -77,6 +77,8 @@ class _BaseAutoModelClass:
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'sym_int8'``,
                                 ``'fp16'``, ``'fp32'``.
                                 Relevant low bit optimizations will be applied to the model.
+        :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
+                               Default to be ``False``.
         :return: a model instance
         """
         if kwargs.get("device_map", None) not in [None, "cpu", "auto"]:
@@ -148,9 +150,10 @@ class _BaseAutoModelClass:
                     " than max_output_len ({max_output_len})"
                 ),
             )
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
+            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
 
             with torch.no_grad():
+                optimize_llm_pre(model)
                 cls.load_convert(qtype, model, "cpu", *args, **kwargs)
                 create_npu_kernels(model)
             model = model.eval()

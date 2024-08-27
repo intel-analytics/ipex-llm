@@ -25,6 +25,22 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
+def optimize_llm_pre(model: torch.nn.Module):
+    if model.config.model_type == "baichuan":
+        # process NormHead module in Baichuan2 7B
+        if hasattr(model, 'lm_head') and model.lm_head is not None:
+            vocab_size, hidden_size = model.lm_head.weight.shape
+            lm_head_weight_data = model.lm_head.weight.data
+            model.lm_head = torch.nn.Linear(hidden_size, vocab_size, bias=False,
+                                            device=lm_head_weight_data.device)
+            if model.lm_head.weight.data.device != "meta":
+                norm_weight = torch.nn.functional.normalize(lm_head_weight_data)
+                model.lm_head.weight.data = norm_weight
+        if model.config.hidden_size in [4096, 2048]:
+            from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
+            model.apply(pre_compute_inv_freq)
+
+
 def optimize_llm(
     model: torch.nn.Module,
     max_output_len=1024,
@@ -124,7 +140,12 @@ def optimize_llm(
             prefill_runner=prefill_runner, decode_runner=decode_runner
         )
         convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
-    elif model.config.model_type == "baichuan":
+    elif model.config.model_type == "baichuan" and model.config.num_hidden_layers == 32:
+        # for Baichuan2-7B
+        if intra_pp is None:
+            intra_pp = 2
+        if inter_pp is None:
+            inter_pp = 2
         from ipex_llm.transformers.npu_models.baichuan_mp import gen_baichuan_fused_model_forward
         from ipex_llm.transformers.npu_models.baichuan_mp import DecodeRunner, PrefillRunner
         decode_runner = DecodeRunner(
@@ -141,8 +162,8 @@ def optimize_llm(
             transpose_value_cache=transpose_value_cache,
         )
         baichuan_model_forward = gen_baichuan_fused_model_forward(
-                    prefill_runner=prefill_runner, decode_runner=decode_runner
-                )
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model, module.BaichuanModel, baichuan_model_forward)
