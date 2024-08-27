@@ -41,7 +41,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py && \
     python3 get-pip.py && \
     # install XPU ipex-llm
-    pip install --pre --upgrade ipex-llm[xpu]==2.2.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install --pre --upgrade ipex-llm[xpu]==2.1.0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # prepare finetune code and scripts
     git clone https://github.com/intel-analytics/IPEX-LLM.git && \
     mv IPEX-LLM/python/llm/example/GPU/LLM-Finetuning /LLM-Finetuning && \
