@@ -77,6 +77,8 @@ class _BaseAutoModelClass:
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'sym_int8'``,
                                 ``'fp16'``, ``'fp32'``.
                                 Relevant low bit optimizations will be applied to the model.
+        :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
+                               Default to be ``False``.
         :return: a model instance
         """
         if kwargs.get("device_map", None) not in [None, "cpu", "auto"]:
