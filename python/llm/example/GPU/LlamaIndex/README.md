@@ -8,17 +8,27 @@ This folder contains examples showcasing how to use [**LlamaIndex**](https://git
 ## Retrieval-Augmented Generation (RAG) Example
 The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
 
+### 1. Install Prerequisites
+
+To benefit from IPEX-LLM on Intel GPUs, there are several prerequisite steps for tools installation and environment preparation.
+
+If you are a Windows user, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_windows_gpu.html#install-prerequisites) to update GPU driver (optional) and install Conda.
+
+If you are a Linux user, visit the [Install IPEX-LLM on Linux with Intel GPU](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html), and follow [Install Prerequisites](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#install-prerequisites) to install GPU driver, Intel® oneAPI Base Toolkit 2024.0, and Conda.
 
 
-### 1. Setting up Dependencies 
+### 2. Setting up Dependencies 
 
 * **Install LlamaIndex Packages**
     ```bash
-    pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+    conda activate <your-conda-env-name>
+    pip install llama-index-llms-ipex-llm[xpu]==0.1.8 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+    pip install llama-index-embeddings-ipex-llm[xpu]==0.1.5 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+    pip install llama-index-readers-file==0.1.33
+    pip install llama-index-vector-stores-postgres==0.1.14
+    pip install pymupdf
     ```
-* **Install IPEX-LLM**
-
-    Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install ipex-llm.
+    Theinstallation of `llama-index-llms-ipex-llm` or `llama-index-embeddings-ipex-llm` will also install `IPEX-LLM` and its dependencies. You can also use `https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/` as the `extra-indel-url`.
 
 * **Database Setup (using PostgreSQL)**:
     * Linux
