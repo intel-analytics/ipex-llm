@@ -14,9 +14,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 </table>
 
 > [!NOTE]
-> `ipex-llm[cpp]==2.5.0b20240527` is consistent with [c780e75](https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452) of llama.cpp.
+> `ipex-llm[cpp]==2.2.0b20240826` is consistent with [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) of llama.cpp.
 >
-> Our latest version is consistent with [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) of llama.cpp.
+> Our latest version is consistent with [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) of llama.cpp.
 
 ## Table of Contents
 - [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites)
@@ -24,8 +24,6 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 - [Setup for running llama.cpp](./llama_cpp_quickstart.md#2-setup-for-running-llamacpp)
 - [Example: Running community GGUF models with IPEX-LLM](./llama_cpp_quickstart.md#3-example-running-community-gguf-models-with-ipex-llm)
 - [Troubleshooting](./llama_cpp_quickstart.md#troubleshooting)
-
-
 
 ## Quick Start
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.

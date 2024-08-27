@@ -120,6 +120,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         hidden_shape: Sequence[int],
         *shapes,
         num_heads: int,
+        # num_key_value_heads: int,
         num_layers: int,
         cached_cos,
         cached_sin,
@@ -139,7 +140,6 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
                          dtype=dtype,
                          profile=profile,
                          device=device)
-        # super().__init__(profile, device)
         self.max_seq_len = max_seq_len
         self.intermediate_size = intermediate_size
         self.dtype = dtype
@@ -176,6 +176,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len))
 
         position_ids = self.create_input_op((self.batch_size, self.seq_len))
+        # self.num_key_value_heads = num_key_value_heads
+        
         past_keys = []
         past_values = []
         if mode == "decode":
@@ -301,7 +303,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             else:
                 value_states = self.concat(past_value, value_states, axis=-2)
 
-        attn_weight = self.matmul(query_states, key_states, False, True) / (math.sqrt(head_dim))
+        attn_weight = self.matmul(query_states, key_states, False, True) / (
+            math.sqrt(self.head_dim))
         attn_weight = self.eltwise_add(attn_weight, attention_mask)
         attn_weight = self.convert_to_fp32(attn_weight)
         attn_weight = self.softmax(attn_weight, -1)
@@ -984,13 +987,15 @@ def gen_baichuan_fused_model_forward(prefill_runner, decode_runner):
 
         # retrieve input_ids and inputs_embeds
         if input_ids is not None and inputs_embeds is not None:
-            invalidInputError(False, "You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time")
+            invalidInputError(False, "You cannot specify both decoder_input_ids\
+                              and decoder_inputs_embeds at the same time")
         elif input_ids is not None:
             batch_size, seq_length = input_ids.shape
         elif inputs_embeds is not None:
             batch_size, seq_length, _ = inputs_embeds.shape
         else:
-            invalidInputError(False, "You have to specify either decoder_input_ids or decoder_inputs_embeds")
+            invalidInputError(False, "You have to specify either decoder_input_ids\
+                              or decoder_inputs_embeds")
 
         seq_length_with_past = seq_length
         past_key_values_length = 0
@@ -1006,7 +1011,8 @@ def gen_baichuan_fused_model_forward(prefill_runner, decode_runner):
         if position_ids is None:
             device = input_ids.device if input_ids is not None else inputs_embeds.device
             position_ids = torch.arange(
-                past_key_values_length, seq_length + past_key_values_length, dtype=torch.long, device=device
+                past_key_values_length, seq_length + past_key_values_length,
+                dtype=torch.long, device=device
             )
             position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
         else:
@@ -1032,7 +1038,8 @@ def gen_baichuan_fused_model_forward(prefill_runner, decode_runner):
         if self.gradient_checkpointing and self.training:
             if use_cache:
                 logger.warning_once(
-                    "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                    "`use_cache=True` is incompatible with gradient checkpointing.\
+                        Setting `use_cache=False`..."
                 )
                 use_cache = False
 

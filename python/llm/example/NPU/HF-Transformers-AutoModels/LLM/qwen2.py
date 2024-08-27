@@ -55,7 +55,7 @@ if __name__ == "__main__":
         trust_remote_code=True,
         attn_implementation="eager",
         load_in_low_bit="sym_int4",
-        enable_mp=True,
+        optimize_model=True,
         max_output_len=args.max_output_len,
         max_prompt_len=args.max_prompt_len,
         intra_pp=args.intra_pp,

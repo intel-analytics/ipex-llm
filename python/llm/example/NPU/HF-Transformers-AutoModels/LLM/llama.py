@@ -46,24 +46,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-<<<<<<< HEAD
         default="meta-llama/Llama-2-7b-chat-hf",
         help="The huggingface repo id for the Llama2 model to be downloaded"
-=======
-        default="baichuan-inc/Baichuan2-7B-Chat",
-        help="The huggingface repo id for the Baichuan2 model to be downloaded"
->>>>>>> 460bc96d3263f043f0df35c87e2731995db42f3f
         ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-output-len", type=int, default=1024)
-<<<<<<< HEAD
-    parser.add_argument("--max-prompt-len", type=int, default=768)
-=======
     parser.add_argument("--max-prompt-len", type=int, default=512)
->>>>>>> 460bc96d3263f043f0df35c87e2731995db42f3f
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--intra-pp", type=int, default=2)
     parser.add_argument("--inter-pp", type=int, default=2)
@@ -73,15 +64,11 @@ if __name__ == "__main__":
 
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        torch_dtype=torch.bfloat16,
+        torch_dtype=torch.float16,
         trust_remote_code=True,
         attn_implementation="eager",
         load_in_low_bit="sym_int4",
-<<<<<<< HEAD
-        enable_mp=True,
-=======
         optimize_model=True,
->>>>>>> 460bc96d3263f043f0df35c87e2731995db42f3f
         max_output_len=args.max_output_len,
         max_prompt_len=args.max_prompt_len,
         intra_pp=args.intra_pp,
