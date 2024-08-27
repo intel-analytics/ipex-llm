@@ -69,14 +69,9 @@ if __name__ == "__main__":
     print("done")
     with torch.inference_mode():
 
-        chat = [
-            { "role": "user", "content": args.prompt },
-        ]
-        prompt = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=False)
-
         print("finish to load")
         for i in range(5):
-            _input_ids = tokenizer.encode(prompt, return_tensors="pt")
+            _input_ids = tokenizer.encode("<用户>{}".format(args.prompt), return_tensors="pt")
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(
