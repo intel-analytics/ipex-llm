@@ -15,7 +15,7 @@
 #
 
 import torch
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.embeddings.ipex_llm import IpexLLMEmbedding
 from sqlalchemy import make_url
 from llama_index.vector_stores.postgres import PGVectorStore
 # from llama_index.llms.llama_cpp import LlamaCPP
@@ -160,10 +160,10 @@ def messages_to_prompt(messages):
     return prompt
 
 def main(args):
-    embed_model = HuggingFaceEmbedding(model_name=args.embedding_model_path)
+    embed_model = IpexLLMEmbedding(model_name=args.embedding_model_path, device="xpu")
     
     # Use custom LLM in BigDL
-    from ipex_llm.llamaindex.llms import IpexLLM
+    from llama_index.llms.ipex_llm import IpexLLM
     llm = IpexLLM.from_model_id(
         model_name=args.model_path,
         tokenizer_name=args.tokenizer_path,
