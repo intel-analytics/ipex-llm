@@ -271,7 +271,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             hidden_size,
             bias=False,
             wt_dtype=self.dtype
-            )
+        )
         proj = self.reshape(proj, [-1, 3, hidden_size])  # b*s, 3, h
         proj = self.unsqueeze(proj, [0])  # b, s, 3, h
         proj = self.transpose(proj, [2, 1, 0, 3])  # 3, s, b, h
