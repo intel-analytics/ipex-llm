@@ -81,6 +81,7 @@ The example below shows how to run the **_optimized model implementations_** on 
 - [Llama2-7B](./llama.py)
 - [Llama3-8B](./llama.py)
 - [Qwen2-1.5B](./qwen2.py)
+- [MiniCPM-1B](./minicpm.py)
 
 ```bash
 # to run Llama-2-7b-chat-hf
@@ -91,6 +92,9 @@ python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
 # to run Qwen2-1.5B-Instruct
 python qwen2.py
+
+# to run MiniCPM-1B-sft-bf16
+python minicpm.py
 ```
 
 Arguments info:
@@ -113,6 +117,9 @@ python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --d
 
 # to run Qwen2-1.5B-Instruct
 python qwen2.py --disable-transpose-value-cache
+
+# to run MiniCPM-1B-sft-bf16
+python minicpm.py --disable-transpose-value-cache
 ```
 
 
