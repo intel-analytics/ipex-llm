@@ -17,7 +17,7 @@ RUN cd /tmp/ && \
     mv /tmp/torch-ccl/dist/oneccl_bind_pt-2.1.100+xpu-cp311-cp311-linux_x86_64.whl /tmp/
 
 
-FROM intelanalytics/ipex-llm-xpu:2.2.0
+FROM intelanalytics/ipex-llm-xpu:2.1.0
 
 ARG http_proxy
 ARG https_proxy
@@ -33,7 +33,7 @@ ADD ./gradio_web_server.patch /tmp/gradio_web_server.patch
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev && \
     apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
-    pip install --pre --upgrade ipex-llm[xpu,serving]==2.2.0 && \
+    pip install --pre --upgrade ipex-llm[xpu,serving]==2.1.0 && \
     pip install transformers==4.37.0 gradio==4.19.2 && \
     # Install vLLM-v2 dependencies
     git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git /llm/vllm && \
