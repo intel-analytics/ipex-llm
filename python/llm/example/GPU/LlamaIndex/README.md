@@ -28,7 +28,8 @@ If you are a Linux user, visit the [Install IPEX-LLM on Linux with Intel GPU](ht
     pip install llama-index-vector-stores-postgres==0.1.14
     pip install pymupdf
     ```
-    > **Note:**
+    > [!NOTE]
+    > You could refer [llama-index-llms-ipex-llm](https://docs.llamaindex.ai/en/stable/examples/llm/ipex_llm_gpu/) and [llama-index-embeddings-ipex-llm](https://docs.llamaindex.ai/en/stable/examples/embeddings/ipex_llm_gpu/) for more information.
     > The installation of `llama-index-llms-ipex-llm` or `llama-index-embeddings-ipex-llm` will also install `IPEX-LLM` and its dependencies. 
     > You can also use `https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/` as the `extra-indel-url`.
     > `IpexLLMEmbedding` currently only provides optimization for Hugging Face Bge models.
