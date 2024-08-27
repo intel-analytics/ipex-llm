@@ -141,8 +141,8 @@ def optimize_llm(
             transpose_value_cache=transpose_value_cache,
         )
         baichuan_model_forward = gen_baichuan_fused_model_forward(
-                    prefill_runner=prefill_runner, decode_runner=decode_runner
-                )
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model, module.BaichuanModel, baichuan_model_forward)
