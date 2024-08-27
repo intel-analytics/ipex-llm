@@ -124,7 +124,8 @@ def optimize_llm(
             prefill_runner=prefill_runner, decode_runner=decode_runner
         )
         convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
-    elif model.config.model_type == "baichuan":
+    elif model.config.model_type == "baichuan" and model.config.num_hidden_layers == 32:
+        # for Baichuan2-7B
         from ipex_llm.transformers.npu_models.baichuan_mp import gen_baichuan_fused_model_forward
         from ipex_llm.transformers.npu_models.baichuan_mp import DecodeRunner, PrefillRunner
         decode_runner = DecodeRunner(
