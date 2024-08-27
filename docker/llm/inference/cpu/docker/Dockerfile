@@ -60,7 +60,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Fix vllm service 
     pip install pydantic==1.10.11 && \
 # Install ipex-llm
-    pip install --pre --upgrade ipex-llm[all]==2.2.0 && \
+    pip install --pre --upgrade ipex-llm[all]==2.1.0 && \
     # Fix CVE-2024-22195
     pip install Jinja2==3.1.3 && \
     pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cpu && \
