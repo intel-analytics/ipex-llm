@@ -192,6 +192,45 @@ def _ipex_llm_convert(load_in_low_bit):
     setattr(XPUModelRunner, "load_model", get_load_function(load_in_low_bit))
     setattr(ray_utils, "RayWorkerWrapper", get_ipex_llm_wrapper(load_in_low_bit))
 
+from vllm.model_executor.models.utils import _CPU_OFFLOAD_MAX_BYTES
+print(f"global: {_CPU_OFFLOAD_MAX_BYTES}")
+_CPU_OFFLOAD_MAX_BYTES = 1 * 1024**3
+_CPU_OFFLOAD_BYTES = 0
+from vllm.utils import is_pin_memory_available
+from torch.func import functional_call
+def maybe_not_offload_to_xpu(module: torch.nn.Module) -> torch.nn.Module:
+    device = "xpu"
+    global _CPU_OFFLOAD_MAX_BYTES, _CPU_OFFLOAD_BYTES
+    offloaded_parameters = False
+
+    if _CPU_OFFLOAD_BYTES >= _CPU_OFFLOAD_MAX_BYTES:
+        module.to("xpu")
+    else:
+        total_memory = sum(p.numel() * p.element_size() for p in module.parameters())
+        _CPU_OFFLOAD_BYTES = _CPU_OFFLOAD_BYTES + total_memory
+        module.to("cpu")
+        offloaded_parameters = True
+
+    if offloaded_parameters:
+        original_forward = module.forward
+
+        def forward(*args, **kwargs):
+            module.forward = original_forward
+            device_state = {
+                k: v.to(device)
+                for k, v in module.named_parameters()
+            }
+            output = functional_call(module,
+                                     device_state,
+                                     args=args,
+                                     kwargs=kwargs)
+            module.forward = forward
+            return output
+
+        module.forward = forward
+
+    return module
+
 
 def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
@@ -214,8 +253,23 @@ def get_load_function(low_bit):
             )
             from ipex_llm import optimize_model
             optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype)
-            self.model = self.model.to(device=self.device_config.device,
-                                       dtype=self.model_config.dtype)
+            if False:
+                self.model = self.model.to(device=self.device_config.device,
+                                           dtype=self.model_config.dtype)
+            else:
+                # need to set commonly
+                self.model.model.embed_tokens.to(self.device_config.device)
+                self.model.model.norm.to(self.device_config.device)
+                self.model.logits_processor.to(self.device_config.device)
+                self.model.lm_head.to(self.device_config.device)
+                self.model.sampler.to(self.device_config.device)
+                for layer in self.model.model.layers:
+                    maybe_not_offload_to_xpu(layer)
+                    #layer.to(self.device_config.device)
+            print(self.model)
+            for name, param in self.model.model.layers[0].named_parameters():
+                print(f"Parameter name: {name}, param: {param}")
+
 
         self.model_memory_usage = m.consumed_memory
         logger = init_logger(__name__)
