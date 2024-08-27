@@ -123,7 +123,7 @@ python  llama2.py
 # to run Qwen2-1.5B-Instruct
 python qwen2.py
 
-# to run MiniCPM-2B-sft-bf16
+# to run MiniCPM-1B-sft-bf16
 python minicpm.py
 ```
 
