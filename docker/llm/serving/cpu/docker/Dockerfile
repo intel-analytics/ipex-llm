@@ -1,4 +1,4 @@
-FROM intelanalytics/ipex-llm-cpu:2.2.0
+FROM intelanalytics/ipex-llm-cpu:2.1.0
 
 ARG http_proxy
 ARG https_proxy
