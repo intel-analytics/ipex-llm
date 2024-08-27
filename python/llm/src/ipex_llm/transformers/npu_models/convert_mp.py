@@ -33,9 +33,9 @@ def optimize_llm(
     transpose_value_cache=True,
 ):
     if model.config.model_type == "llama":
-        if intra_pp is None: 
+        if intra_pp is None:
             intra_pp = 2
-        if inter_pp is None: 
+        if inter_pp is None:
             inter_pp = 2
 
         from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
@@ -64,9 +64,9 @@ def optimize_llm(
         convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
     elif model.config.model_type == "qwen2" and model.config.intermediate_size == 8960:
         # for qwen2-1.5B
-        if intra_pp is None: 
+        if intra_pp is None:
             intra_pp = 2
-        if inter_pp is None: 
+        if inter_pp is None:
             inter_pp = 1
 
         from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
