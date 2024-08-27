@@ -77,11 +77,13 @@ done
 ```
 
 ## 4. Run Optimized Models (Experimental)
-In the example [llama2.py](./llama2.py) and [qwen2.py](./qwen2.py), we show an experimental support for a Llama2 / Qwen2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimization and fused decoderlayer optimization on Intel NPUs.
+The example below shows how to run the **_optimized model implementations_** on Intel NPU, including
+- [Llama2-7B](./llama2.py)
+- [Qwen2-1.5B](./qwen2.py)
 
 ```
 # to run Llama-2-7b-chat-hf
-python  llama2.py
+python llama2.py
 
 # to run Qwen2-1.5B-Instruct
 python qwen2.py
