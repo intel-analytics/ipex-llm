@@ -33,7 +33,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default="meta-llama/Llama-2-7b-chat-hf",
+        default="openbmb/MiniCPM-1B-sft-bf16",
         help="The huggingface repo id for the Llama2 model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
