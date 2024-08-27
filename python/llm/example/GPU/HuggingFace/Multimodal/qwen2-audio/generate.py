@@ -52,6 +52,7 @@ def main(args):
     inputs = inputs.to('xpu')
 
     with torch.inference_mode():
+        generate_ids = model.generate(**inputs, max_length=max_length) # warmup
         import time
         st = time.time()
         generate_ids = model.generate(**inputs, max_length=max_length)
