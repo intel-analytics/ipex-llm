@@ -33,11 +33,12 @@ Visit [Run Ollama with IPEX-LLM on Intel GPU](./ollama_quickstart.md), and follo
 > If the `Continue` plugin is not installed on the same machine where Ollama is running (which means `Continue` needs to connect to a remote Ollama service), you must configure the Ollama service to accept connections from any IP address. To achieve this, set or export the environment variable `OLLAMA_HOST=0.0.0.0` before executing the command `ollama serve`. 
 
 > [!TIP]
-> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before executing `ollama serve`:
+> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), setting the following environment variable before starting the service may potentially improve performance.
 >
 > ```bash
 > export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 > ```
+> The environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
 
 ### 2. Pull and Prepare the Model
 
