@@ -987,7 +987,7 @@ def llama2_casullm_forward(
 
     hidden_states = outputs[0]
     # ipex-llm change start
-    hidden_states = reshape_lm_head_input(hidden_states)
+    # hidden_states = reshape_lm_head_input(hidden_states)
     # ipex-llm change end
     if self.config.pretraining_tp > 1:
         lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp,

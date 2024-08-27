@@ -352,6 +352,7 @@ def reshape_lm_head_input(x):
         x = x.reshape([-1, x.shape[-2], x.shape[-1]])
     shape = list(x.size())
     if shape[1] > 10:
+        print("!!!!!!!!!!!!!!lm head reshape")
         shape[1] = 1
         x = x[:, -1, :].view(shape)
     return x
