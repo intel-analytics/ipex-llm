@@ -52,7 +52,7 @@ For optimal performance, it is recommended to set several environment variables.
 set BIGDL_USE_NPU=1
 ```
 
-## Run models
+## 3. Run models
 In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
 
 ```
@@ -76,7 +76,7 @@ Inference time: xxxx s
 done
 ```
 
-## Run Optimized Models (Experimental)
+## 4. Run Optimized Models (Experimental)
 In the example [llama2.py](./llama2.py) and [qwen2.py](./qwen2.py), we show an experimental support for a Llama2 / Qwen2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimization and fused decoderlayer optimization on Intel NPUs.
 
 ```
