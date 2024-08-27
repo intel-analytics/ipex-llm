@@ -185,6 +185,8 @@ An example process of interacting with model with `ollama run example` looks lik
 </a>
 
 ### Troubleshooting
+#### Unable to run the initialization script
+If you are unable to run `init-ollama.bat`, please make sure you have installed `ipex-llm[cpp]` in your conda environment. If you have installed it, please check if you have activated the correct conda environment. Also, if you are using Windows, please make sure you have run the script with administrator privilege in prompt terminal.
 
 #### Why model is always loaded again after several minutes
 Ollama will unload model from gpu memory in every 5 minutes as default. For latest version of ollama, you could set `OLLAMA_KEEP_ALIVE=-1` to keep the model loaded in memory. Reference issue: https://github.com/intel-analytics/ipex-llm/issues/11608

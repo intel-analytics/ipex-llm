@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import torch
+import importlib
 
 
 def convert_forward(m, target_m, new_forward):
@@ -93,3 +94,27 @@ def optimize_llm(
         from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
         from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
+    elif model.config.model_type == "minicpm":
+        from ipex_llm.transformers.npu_models.minicpm_mp import gen_minicpm_fused_model_forward
+        from ipex_llm.transformers.npu_models.minicpm_mp import DecodeRunner, PrefillRunner
+
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+        prefill_runner = PrefillRunner(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_value_cache,
+        )
+        minicpm_model_forward = gen_minicpm_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
+        convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
