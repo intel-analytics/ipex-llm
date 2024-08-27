@@ -254,8 +254,8 @@ def get_load_function(low_bit):
                     scheduler_config=self.scheduler_config)
                 return
 
-        _model_mlp_convert()
-        _model_attention_convert()
+        # _model_mlp_convert()
+        # _model_attention_convert()
 
         self.model = get_model(
             model_config=self.model_config,
