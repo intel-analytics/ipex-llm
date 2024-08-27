@@ -82,6 +82,7 @@ The example below shows how to run the **_optimized model implementations_** on 
 - [Llama3-8B](./llama.py)
 - [Qwen2-1.5B](./qwen2.py)
 - [MiniCPM-1B](./minicpm.py)
+- [Baichuan2-7B](./baichuan2.py)
 
 ```bash
 # to run Llama-2-7b-chat-hf
@@ -95,6 +96,9 @@ python qwen2.py
 
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py
+
+# to run Baichuan2-7B-Chat
+python baichuan2.py
 ```
 
 Arguments info:

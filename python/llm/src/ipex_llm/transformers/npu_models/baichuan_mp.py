@@ -272,7 +272,8 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         input_2d = self.convert_to_fp16(input_2d)
 
         # attention
-        proj = self.linear(input_2d, 3 * self.hidden_size, self.hidden_size, bias=False, wt_dtype=self.dtype)
+        proj = self.linear(input_2d, 3 * self.hidden_size,
+                           self.hidden_size, bias=False, wt_dtype=self.dtype)
         # proj = proj.unflatten(-1, (3, self.hidden_size)).unsqueeze(0).transpose(0, -2).squeeze(-2)
         proj = self.reshape(proj, [-1, 3, self.hidden_size])  # b*s, 3, h
         proj = self.unsqueeze(proj, [0])  # b, s, 3, h
@@ -282,13 +283,16 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         proj = self.unsqueeze(proj, [1])
         print("proj shape after unsqueeze", proj.shape)
         # query_states = proj[0].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-        query_states = self.reshape(proj[0, ...], [self.batch_size, self.seq_len, self.num_heads, self.head_dim])
+        query_states = self.reshape(proj[0, ...], [self.batch_size,
+                                                   self.seq_len, self.num_heads, self.head_dim])
         query_states = self.transpose(query_states, [0, 2, 1, 3])
         # key_states = proj[1].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-        key_states = self.reshape(proj[1, ...], [self.batch_size, self.seq_len, self.num_heads, self.head_dim])
+        key_states = self.reshape(proj[1, ...], [self.batch_size,
+                                                 self.seq_len, self.num_heads, self.head_dim])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
         # value_states = proj[2].view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-        value_states = self.reshape(proj[2, ...], [self.batch_size, self.seq_len, self.num_heads, self.head_dim])
+        value_states = self.reshape(proj[2, ...], [self.batch_size,
+                                                   self.seq_len, self.num_heads, self.head_dim])
         if self.transpose_value:
             value_states = self.transpose(value_states, [0, 2, 3, 1])
         else:
@@ -309,7 +313,8 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
             else:
                 value_states = self.concat(past_value, value_states, axis=-2)
 
-        attn_weight = self.matmul(query_states, key_states, False, True) / (math.sqrt(self.head_dim))
+        attn_weight = self.matmul(query_states, key_states, False, True) / (
+            math.sqrt(self.head_dim))
         attn_weight = self.eltwise_add(attn_weight, attention_mask)
         attn_weight = self.convert_to_fp32(attn_weight)
         attn_weight = self.softmax(attn_weight, -1)
@@ -349,7 +354,8 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
                           bias=False, wt_dtype=self.dtype)  # type: ignore[attr-defined]
         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
         # down proj
-        hidden_states = self.linear(mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype)
+        hidden_states = self.linear(mm1, self.hidden_size,
+                                    self.intermediate_size, bias=False, wt_dtype=self.dtype)
 
         hidden_states = self.eltwise_add(residual, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
@@ -374,7 +380,7 @@ class LowBitLlamaMultiDecoderlayer(NNFactory):
         cos = self.squeeze(cos)  # [seq_len, dim]
         sin = self.squeeze(sin)  # [seq_len, dim]
         # cos = cos[position_ids]
-        cos = self.unsqueeze(cos, [0, 1]) # [bs, 1, seq_len, dim]
+        cos = self.unsqueeze(cos, [0, 1])  # [bs, 1, seq_len, dim]
         # sin = sin[position_ids]
         sin = self.unsqueeze(sin, [0, 1])  # [bs, 1, seq_len, dim]
 
@@ -1098,13 +1104,15 @@ def gen_baichuan_fused_model_forward(prefill_runner, decode_runner):
 
         # retrieve input_ids and inputs_embeds
         if input_ids is not None and inputs_embeds is not None:
-            invalidInputError(False, "You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time")
+            invalidInputError(False, "You cannot specify both decoder_input_ids\
+                              and decoder_inputs_embeds at the same time")
         elif input_ids is not None:
             batch_size, seq_length = input_ids.shape
         elif inputs_embeds is not None:
             batch_size, seq_length, _ = inputs_embeds.shape
         else:
-            invalidInputError(False, "You have to specify either decoder_input_ids or decoder_inputs_embeds")
+            invalidInputError(False, "You have to specify either decoder_input_ids\
+                              or decoder_inputs_embeds")
 
         seq_length_with_past = seq_length
         past_key_values_length = 0
@@ -1120,7 +1128,8 @@ def gen_baichuan_fused_model_forward(prefill_runner, decode_runner):
         if position_ids is None:
             device = input_ids.device if input_ids is not None else inputs_embeds.device
             position_ids = torch.arange(
-                past_key_values_length, seq_length + past_key_values_length, dtype=torch.long, device=device
+                past_key_values_length, seq_length + past_key_values_length,
+                dtype=torch.long, device=device
             )
             position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
         else:
@@ -1146,7 +1155,8 @@ def gen_baichuan_fused_model_forward(prefill_runner, decode_runner):
         if self.gradient_checkpointing and self.training:
             if use_cache:
                 logger.warning_once(
-                    "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
+                    "`use_cache=True` is incompatible with gradient checkpointing.\
+                        Setting `use_cache=False`..."
                 )
                 use_cache = False
 
