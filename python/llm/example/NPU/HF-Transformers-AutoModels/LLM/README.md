@@ -98,7 +98,7 @@ python qwen2.py
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py
 
-# to run MiniCPM-2B-sft-bf16
+# to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16
 
 # to run Baichuan2-7B-Chat
