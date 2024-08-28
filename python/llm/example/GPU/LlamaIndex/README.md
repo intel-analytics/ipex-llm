@@ -85,7 +85,7 @@ If you are a Linux user, visit the [Install IPEX-LLM on Linux with Intel GPU](ht
     wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
     ```
 
-### 2. Configures OneAPI environment variables for Linux
+### 3. Configures OneAPI environment variables for Linux
 
 > [!NOTE]
 > Skip this step if you are running on Windows.
@@ -96,9 +96,9 @@ This is a required step on Linux for APT or offline installed oneAPI. Skip this 
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Runtime Configurations
+### 4. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
-#### 3.1 Configurations for Linux
+#### 4.1 Configurations for Linux
 <details>
 
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
@@ -135,7 +135,7 @@ export BIGDL_LLM_XMX_DISABLED=1
 
 </details>
 
-#### 3.2 Configurations for Windows
+#### 4.2 Configurations for Windows
 <details>
 
 <summary>For Intel iGPU</summary>
@@ -161,7 +161,7 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
 
-### 4. Running the RAG example
+### 5. Running the RAG example
 
 In the current directory, run the example with command:
 
@@ -178,7 +178,7 @@ python rag.py -m <path_to_model> -t <path_to_tokenizer>
 - `-n N_PREDICT`: max predict tokens
 - `-t TOKENIZER_PATH`: **Required**, path to the tokenizer model
 
-### 5. Example Output
+### 6. Example Output
 
 A query such as **"How does Llama 2 compare to other open-source models?"** with the Llama2 paper as the data source, using the `Llama-2-7b-chat-hf` model, will produce the output like below:
 
@@ -192,6 +192,6 @@ However, it's important to note that the performance of Llama 2 can vary dependi
 In conclusion, while Llama 2 performs well on most benchmarks compared to other open-source models, its performance
 ```
 
-### 6. Trouble shooting
-#### 6.1 Core dump
+### 7. Trouble shooting
+#### 7.1 Core dump
 If you encounter a core dump error in your Python code, it is crucial to verify that the `import torch` statement is placed at the top of your Python file, just as what we did in `rag.py`.
