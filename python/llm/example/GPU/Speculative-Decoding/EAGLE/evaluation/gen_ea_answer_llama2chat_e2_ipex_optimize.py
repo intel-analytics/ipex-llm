@@ -551,7 +551,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--top-k",
         type=int,
-        default=8,
+        default=5,
     )
     parser.add_argument(
         "--num-choices",
