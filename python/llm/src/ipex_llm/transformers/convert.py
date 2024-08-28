@@ -535,7 +535,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             act_order=act_order,
                             enable_scale_search=enable_scale_search,
                         )
-                        print("We are in ParallelLMHead branch")
                         device = module.weight.data.device
                         cur_qtype, cur_imatrix = get_cur_qtype_and_imatrix(qtype,
                                                                            full_module_name,
