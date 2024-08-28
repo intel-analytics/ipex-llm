@@ -48,71 +48,11 @@ from colorama import Fore, Back, Style
 import torch.multiprocessing as mp
 from transformers.cache_utils import Cache
 from transformers.modeling_outputs import BaseModelOutputWithPast
+from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
 
 
-@torch.no_grad()
-def run_model(
-    x: Union[torch.Tensor, List[torch.Tensor]],
-    weights: List[torch.Tensor],
-    backend_cls: Any,
-    op_id: str,
-    replica: int = 1,
-) -> torch.Tensor:
-    global _model_cache
-    import time
-
-    t0 = time.perf_counter()
-
-    # Use or not op_id depending on the class used
-    op_kwargs = {"op_id": op_id} if op_id else {}
-
-    if not isinstance(x, (list, tuple)):
-        x = [x]
-
-    # Reshape input
-    input_dtype = x[0].dtype
-    x_np = [set_contiguous(elem).to(torch.float16).numpy() for elem in x]
-    op_args = []
-    op_args_flatten = []
-    for w in weights:
-        if isinstance(w, tuple):  # from QuantizedLinear
-            op_args.append((set_contiguous(w[0]).numpy(), set_contiguous(w[1]).numpy()))
-            op_args_flatten.append(op_args[-1][0])
-            op_args_flatten.append(op_args[-1][1])
-        else:
-            op_args.append(set_contiguous(w).to(torch.float16).numpy())
-            op_args_flatten.append(op_args[-1])
-
-    shape_dtype_signature = "_".join(
-        ["_".join(str(dim) for dim in t.shape) + f"_{t.dtype}" for t in x_np + op_args_flatten]
-    )
-    key = f"{backend_cls.func.__name__}_{shape_dtype_signature}"
-    models = _model_cache.get(key, None)
-
-    input_shapes = [elem.shape for elem in x_np]
-    if models is None:
-        _model_cache[key] = deque([backend_cls(*input_shapes) for i in range(replica)])
-    elif len(models) < 1:
-        _model_cache[key].append(backend_cls(*input_shapes))
-    else:
-        _model_cache[key].rotate(1)
-
-    # Get the model
-    model = _model_cache[key][0]
-
-    with record_function(f"npu_factory_mul_{key}"):
-        ret = model.run(x_np, *op_args, **op_kwargs)
-
-    if isinstance(ret, list):
-        results = [adapt_output_tensor(r, r.shape, input_dtype) for r in ret]
-    else:
-        results = adapt_output_tensor(ret, ret.shape, input_dtype)
-
-    return results
-
-
-class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
+class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
     def __init__(
         self,
         # batch_size: int,
@@ -366,7 +306,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         return hidden_states, new_key_states, new_value_states
 
 
-class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
+class FusedBaichuanLowBitMultiDecoderlayer(torch.nn.Module):
 
     def __init__(
         self,
@@ -421,7 +361,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             lm_0 = input_laynorm_weights[start:end]
             lm_1 = post_attn_layernorm_weights[start:end]
-            decoder = LowBitLlamaMultiDecoderlayer(
+            decoder = LowBitBaichuanMultiDecoderlayer(
                 [1, 1, num_heads * head_dim],
                 input_layernorm_weights=lm_0,
                 post_attn_layernorm_weights=lm_1,
@@ -463,7 +403,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
 
-        hidden_states, new_keys, new_values = LowBitLlamaMultiDecoderlayer.run_decoders(
+        hidden_states, new_keys, new_values = LowBitBaichuanMultiDecoderlayer.run_decoders(
             inputs,
             decoders=self.backend_decoders)
 
@@ -497,7 +437,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             self.backend_decoders[i].load_cache_async()
 
 
-class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
+class FusedBaichuanLowBitDecoderlayer(torch.nn.Module):
     """LLAMA MLP operation NPU backend."""
 
     def __init__(
@@ -528,7 +468,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             np_dtype = np.float16
 
         self.backend_cls_prefill = partial(
-            LowBitLlamaMultiDecoderlayer,
+            LowBitBaichuanMultiDecoderlayer,
             num_heads=num_heads,
             # num_key_value_heads=num_key_value_heads,
             num_layers=1,
@@ -643,7 +583,7 @@ def run_decode(
         input_layer_norm_weights.append(layer_norm_0)
         post_attn_layernorm_weights.append(layer_norm_1)
 
-    multi_decoder = FusedLlamaLowBitMultiDecoderlayer(
+    multi_decoder = FusedBaichuanLowBitMultiDecoderlayer(
         parameters=layer_weights,
         input_laynorm_weights=input_layer_norm_weights,
         post_attn_layernorm_weights=post_attn_layernorm_weights,
@@ -846,7 +786,7 @@ def run_prefill(
         layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
         layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
-        new_decoderlayer = FusedLlamaLowBitDecoderlayer(
+        new_decoderlayer = FusedBaichuanLowBitDecoderlayer(
             weights,
             num_heads=num_heads,
             # num_key_value_heads=num_key_value_heads,
