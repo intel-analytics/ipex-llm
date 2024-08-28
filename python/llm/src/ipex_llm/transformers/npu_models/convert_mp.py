@@ -43,7 +43,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             model.apply(pre_compute_inv_freq)
 
     # lm_head to cpu optimization
-    if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "1") == "1":
+    if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "1") != "0":
         is_unsupported_model = (model.config.model_type == "llama"
                                 and model.vocab_size > 32000)
         if not is_unsupported_model:
