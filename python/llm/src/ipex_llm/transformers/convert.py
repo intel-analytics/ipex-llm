@@ -182,7 +182,9 @@ def is_linear_module(module):
             result = True
             mp_group = None
             # Check for attribute qweight
-            if hasattr(module, "qweight") and not _USE_VLLM_AWQ:
+            if (not _USE_VLLM_AWQ
+               and hasattr(module.linear_method, "quant_config")
+               and module.linear_method.quant_config.get_name() == "awq"):
                 _USE_VLLM_AWQ = True
             invalidInputError(module.skip_bias_add is not True, "Currently, ipex-vllm does not"
                               " support linear layers with skip_bias_add argument")
@@ -299,9 +301,7 @@ def convert_vllm_awq(module):
                        dtype=torch.int32) * 4).unsqueeze(0)
     # vLLM only supports load 4-bits model, so this has been checked
     bits = 4
-    # group size cannot be sure in this settings, we cannot get the detailed data point
-    import os
-    group_size = int(os.environ.get('VLLM_AWQ_GROUP_SIZE', 128))
+    group_size = module.linear_method.quant_config.group_size
 
     zeros = torch.bitwise_right_shift(
         torch.unsqueeze(module.qzeros, 2).expand(-1, -1, 32 // bits),
