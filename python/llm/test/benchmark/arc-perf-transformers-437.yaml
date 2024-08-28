@@ -6,6 +6,18 @@ repo_id:
   - 'microsoft/phi-3-vision-128k-instruct'
   - 'Qwen/Qwen2-7B-Instruct'
   - 'microsoft/Phi-3-mini-128k-instruct'
+  - 'meta-llama/Llama-2-7b-chat-hf'
+  - 'meta-llama/Llama-2-13b-chat-hf'
+  - 'THUDM/chatglm3-6b-4bit'
+  - 'baichuan-inc/Baichuan2-7B-Chat'
+  - 'baichuan-inc/Baichuan2-13B-Chat-4bit'
+  - 'THUDM/glm-4-9b-chat'
+  - 'openbmb/MiniCPM-2B-sft-bf16'
+  #- 'SmerkyG/rwkv-5-world-7b' #this model only fp32 is supported for now, fp16 and bf16 are not supported
+  - '01-ai/Yi-6B-Chat'
+  - 'mistralai/Mistral-7B-Instruct-v0.2'
+  - 'deepseek-ai/deepseek-coder-7b-instruct-v1.5'
+  - '01-ai/Yi-1.5-6B-Chat'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
@@ -19,4 +31,6 @@ in_out_pairs:
 test_api:
   - "transformer_int4_fp16_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+exclude:
+  - 'baichuan-inc/Baichuan2-13B-Chat-4bit:2048'
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'

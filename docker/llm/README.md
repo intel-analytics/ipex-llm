@@ -13,20 +13,20 @@ You can run IPEX-LLM containers (via docker or k8s) for inference, serving and f
 #### Pull a IPEX-LLM Docker Image
 To pull IPEX-LLM Docker images from [Docker Hub](https://hub.docker.com/u/intelanalytics), use the `docker pull` command. For instance, to pull the CPU inference image:
 ```bash
-docker pull intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT
+docker pull intelanalytics/ipex-llm-cpu:2.2.0-SNAPSHOT
 ```
 
 Available images in hub are: 
 
 | Image Name | Description |
 | --- | --- |
-| intelanalytics/ipex-llm-cpu:2.1.0-SNAPSHOT | CPU Inference |
-| intelanalytics/ipex-llm-xpu:2.1.0-SNAPSHOT | GPU Inference |
-| intelanalytics/ipex-llm-serving-cpu:2.1.0-SNAPSHOT | CPU Serving|
-| intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT | GPU Serving|
-| intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.1.0-SNAPSHOT | CPU Finetuning via Docker|
-| intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.1.0-SNAPSHOT|CPU Finetuning via Kubernetes|
-| intelanalytics/ipex-llm-finetune-qlora-xpu:2.1.0-SNAPSHOT| GPU Finetuning|
+| intelanalytics/ipex-llm-cpu:2.2.0-SNAPSHOT | CPU Inference |
+| intelanalytics/ipex-llm-xpu:2.2.0-SNAPSHOT | GPU Inference |
+| intelanalytics/ipex-llm-serving-cpu:2.2.0-SNAPSHOT | CPU Serving|
+| intelanalytics/ipex-llm-serving-xpu:2.2.0-SNAPSHOT | GPU Serving|
+| intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:2.2.0-SNAPSHOT | CPU Finetuning via Docker|
+| intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:2.2.0-SNAPSHOT|CPU Finetuning via Kubernetes|
+| intelanalytics/ipex-llm-finetune-qlora-xpu:2.2.0-SNAPSHOT| GPU Finetuning|
 
 #### Run a Container
 Use `docker run` command to run an IPEX-LLM docker container. For detailed instructions, refer to the [IPEX-LLM Docker Container Guides](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/index.html).

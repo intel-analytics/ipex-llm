@@ -20,8 +20,7 @@
 import argparse
 import torch
 from tqdm import tqdm
-from datasets import concatenate_datasets, load_dataset
-from ipex_llm.utils.common import invalidInputError
+from datasets import load_dataset
 
 
 parser = argparse.ArgumentParser()
@@ -34,18 +33,17 @@ parser.add_argument("--device", type=str, default="xpu")
 parser.add_argument("--precision", type=str, default="sym_int4")
 parser.add_argument("--use-cache", action="store_true")
 parser.add_argument("--max_length", type=int, default=None)
+parser.add_argument("--mixed_precision", action="store_true") 
 args = parser.parse_args()
 
 if args.precision == "fp16":  # ipex fp16
     from transformers import AutoModelForCausalLM
-    if "xpu" in args.device:
-        import intel_extension_for_pytorch as ipex
     model = AutoModelForCausalLM.from_pretrained(args.model_path, use_cache=args.use_cache, trust_remote_code=True)
     model = model.half()
 else:  # ipex-llm
     from ipex_llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(args.model_path, load_in_low_bit=args.precision,
-                                                 use_cache=args.use_cache, trust_remote_code=True)
+                                                 use_cache=args.use_cache, trust_remote_code=True, mixed_precision= args.mixed_precision)   
     model = model.half()
 model = model.to(args.device)
 model = model.eval()
@@ -64,6 +62,7 @@ elif args.data_path:
         data = f.read()
     encodings = tokenizer(data.decode("utf-8").strip("\n"), return_tensors="pt")
 else:
+    from ipex_llm.utils.common import invalidInputError
     raise invalidInputError(False, "Must specify either dataset or datapath.")
 
 if not args.max_length:

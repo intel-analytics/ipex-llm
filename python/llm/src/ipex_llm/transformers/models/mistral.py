@@ -46,9 +46,9 @@ from transformers.models.mistral.modeling_mistral import MistralModel
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
-    restore_fp8_kv_cache, use_quantize_kv_cache, should_use_compresskv
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
-    apply_rotary_pos_emb_no_cache_xpu
+    restore_fp8_kv_cache, use_quantize_kv_cache, should_use_compresskv, \
+    get_compresskv_attn_mask
+from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS
@@ -62,6 +62,7 @@ try:
     from transformers.cache_utils import Cache
 except ImportError:
     Cache = Tuple[torch.Tensor]
+
 
 import os
 
@@ -128,11 +129,11 @@ def compute_attn_outputs_weights(query_states, key_states, value_states, bsz, q_
             )
 
         attn_weights = attn_weights + attention_mask
-
-    if kv_seq_len >= 2048 or bsz >= 64:
-        # for memory considerations, do not upcast attention to fp32
-        # for long sequences or large batches
-        attn_weights = nn.functional.softmax(attn_weights, dim=-1)
+    if os.getenv("IPEX_LLM_LOW_MEM", '0').lower() in ('true', '1', 't'):
+        if kv_seq_len >= 2048 or bsz >= 64:
+            # for memory considerations, do not upcast attention to fp32
+            # for long sequences or large batches
+            attn_weights = nn.functional.softmax(attn_weights, dim=-1)
     else:
         # upcast attention to fp32
         attn_weights = nn.functional.softmax(attn_weights, dim=-1,
@@ -210,7 +211,7 @@ def mistral_model_forward_4_36(
                                  self.config.num_attention_heads//self.config.num_key_value_heads):
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input_ids):
+        elif should_use_compresskv(input_ids, input_ids.shape[1]):
             # if use quantize kv, compress kv will be ignored now
             if not isinstance(past_key_values, DynamicCompressCache):
                 past_key_values = DynamicCompressCache.from_legacy_cache(
@@ -271,6 +272,7 @@ def mistral_attention_forward_quantized(
     original_dtype = hidden_states.dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
@@ -298,7 +300,8 @@ def mistral_attention_forward_quantized(
                                                                        self.q_proj.weight.qtype,
                                                                        self.v_proj.weight.qtype,
                                                                        0,
-                                                                       self.head_dim)
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -315,10 +318,9 @@ def mistral_attention_forward_quantized(
             kv_seq_len += past_key_value[0].shape[-2]
 
         if use_fuse_rope:
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "mistral")
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -475,6 +477,7 @@ def mistral_attention_forward_original(
     original_dtype = hidden_states.dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
@@ -496,7 +499,8 @@ def mistral_attention_forward_original(
                                                                        self.q_proj.weight.qtype,
                                                                        self.v_proj.weight.qtype,
                                                                        kv_seq_len,
-                                                                       self.head_dim)
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base)
         kv_seq_len += 1
     else:
 
@@ -532,10 +536,9 @@ def mistral_attention_forward_original(
             kv_seq_len += past_key_value[0].shape[-2]
 
         if use_fuse_rope:
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "mistral")
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -697,7 +700,9 @@ def mistral_attention_forward_4_36_quantized(
     original_dtype = hidden_states.dtype
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
+
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx,
+                                                  seq_len=q_len)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
                                                 enough_kv_room,
@@ -724,7 +729,8 @@ def mistral_attention_forward_4_36_quantized(
                                                                        self.q_proj.weight.qtype,
                                                                        self.v_proj.weight.qtype,
                                                                        0,
-                                                                       self.head_dim)
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base)
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
@@ -750,10 +756,9 @@ def mistral_attention_forward_4_36_quantized(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "mistral")
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -822,7 +827,6 @@ def mistral_attention_forward_4_36_quantized(
                         f" but is {attention_mask.size()}"
                     )
                 attn_weights = attn_weights + attention_mask
-
             if kv_seq_len >= 2048 or bsz >= 64:
                 # for memory considerations, do not upcast attention to fp32
                 # for long sequences or large batches
@@ -902,16 +906,21 @@ def mistral_attention_forward_4_36_original(
     use_cache: bool=False,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
+
     bsz, q_len, hidden_size = hidden_states.size()
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
 
     # [CompressKV]
-    use_compresskv = should_use_compresskv(hidden_states)
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
+
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
+                                                  self.layer_idx,
+                                                  q_len)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
                                                 enough_kv_room,
@@ -936,7 +945,8 @@ def mistral_attention_forward_4_36_original(
                                                                        self.q_proj.weight.qtype,
                                                                        self.v_proj.weight.qtype,
                                                                        kv_seq_len,
-                                                                       self.head_dim)
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base)
         kv_seq_len += 1
 
         # update past_key_value's seem_tokens and kv caches.
@@ -989,10 +999,9 @@ def mistral_attention_forward_4_36_original(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "mistral")
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -1074,9 +1083,9 @@ def mistral_attention_forward_4_36_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
-        # [CompressKV] set attention_mask = None
+        # [CompressKV]
         if use_compresskv:
-            attention_mask = None
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None
@@ -1156,16 +1165,19 @@ def mistral_attention_forward_4_39_original(
     use_cache: bool=False,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Cache]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
     bsz, q_len, hidden_size = hidden_states.size()
     device = hidden_states.device
     # for flash attention
     original_dtype = hidden_states.dtype
 
     # [CompressKV]
-    use_compresskv = should_use_compresskv(hidden_states)
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
+
+    enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx,
+                                                  q_len)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
                                                 enough_kv_room,
@@ -1190,7 +1202,8 @@ def mistral_attention_forward_4_39_original(
                                                                        self.q_proj.weight.qtype,
                                                                        self.v_proj.weight.qtype,
                                                                        kv_seq_len,
-                                                                       self.head_dim)
+                                                                       self.head_dim,
+                                                                       self.rotary_emb.base)
         kv_seq_len += 1
 
         # update past_key_value's seem_tokens and kv caches.
@@ -1242,10 +1255,9 @@ def mistral_attention_forward_4_39_original(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "mistral")
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -1319,9 +1331,9 @@ def mistral_attention_forward_4_39_original(
     elif use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         # new fp16 sdp doesn't require repeat_kv
         import xe_addons
-        # [CompressKV] set attention_mask = None
+        # [CompressKV]
         if use_compresskv:
-            attention_mask = None
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
         attn_output = attn_output.view(query_states.shape)
         attn_weights = None

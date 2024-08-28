@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = optimize_model(model)
 
-    model = model.to('xpu')
+    model = model.half().to('xpu')
 
     # Load tokenizer
     tokenizer = CodeLlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)

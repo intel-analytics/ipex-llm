@@ -1,5 +1,5 @@
 # MiniCPM-V-2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V-2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-V-2](https://huggingface.co/openbmb/MiniCPM-V-2) as a reference MiniCPM-V-2 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V-2 model on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-V-2](https://huggingface.co/openbmb/MiniCPM-V-2) as a reference MiniCPM-V-2 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

@@ -22,6 +22,10 @@ conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 # for internlm-xcomposer2-vl-7b
 pip install transformers==4.31.0
 pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops
+
+# for whisper-large-v3
+pip install transformers==4.36.2
+pip install datasets soundfile librosa # required by audio processing
 ```
 
 #### 1.2 Installation on Windows
@@ -35,6 +39,14 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install fastapi uvicorn openai
 pip install gradio # for gradio web UI
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
+
+# for internlm-xcomposer2-vl-7b
+pip install transformers==4.31.0
+pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops
+
+# for whisper-large-v3
+pip install transformers==4.36.2
+pip install datasets soundfile librosa # required by audio processing
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -180,7 +192,7 @@ curl http://localhost:8000/v1/chat/completions \
 
 image input only supports [internlm-xcomposer2-vl-7b](https://huggingface.co/internlm/internlm-xcomposer2-vl-7b) now, and it must install transformers==4.31.0 to run.
 ```bash
-wget -O ./test.jpg http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+wget -O /llm/lightweight_serving/test.jpg http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -217,6 +229,17 @@ curl http://localhost:8000/v1/completions \
     "max_tokens": 32,
     "stream": false
   }'
+```
+
+#### v1/audio/transcriptions
+
+ASR only supports [whisper-large-v3](https://huggingface.co/openai/whisper-large-v3) now. And `whisper-large-v3` just can be used to transcription audio. The audio file_type should be supported by `librosa.load`.
+```bash
+curl http://localhost:8000/v1/audio/transcriptions \
+  -H "Content-Type: multipart/form-data" \
+  -F file="@/llm/test.mp3" \
+  -F model="whisper-large-v3" \
+  -F languag="zh"
 ```
 
 ### 6. Benchmark with wrk

@@ -48,9 +48,8 @@ if __name__ == '__main__':
                                       load_in_4bit=True,
                                       optimize_model=False,
                                       trust_remote_code=True,
-                                      modules_to_not_convert=["vpm", "resampler"],
                                       use_cache=True)
-    model = model.float().to(device='xpu')
+    model = model.half().to(device='xpu')
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     model.eval()

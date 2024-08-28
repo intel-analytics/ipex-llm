@@ -19,28 +19,36 @@ from typing import List
 
 
 def merge_linear(linears: List[torch.nn.Linear]) -> torch.nn.Linear:
-    new_weight = torch.cat(list(linear.weight.data for linear in linears), dim=0)
-    if linears[0].bias is not None:
-        new_linear = torch.nn.Linear(0, 0, bias=True)
-        new_bias = torch.cat(list(linear.bias.data for linear in linears), dim=0)
-        new_linear.bias = torch.nn.Parameter(new_bias, requires_grad=False)
+    if hasattr(linears[0], "weight"):
+        # For GPTQ model, it might be qweight
+        new_weight = torch.cat(list(linear.weight.data for linear in linears), dim=0)
+        if linears[0].bias is not None:
+            new_linear = torch.nn.Linear(0, 0, bias=True)
+            new_bias = torch.cat(list(linear.bias.data for linear in linears), dim=0)
+            new_linear.bias = torch.nn.Parameter(new_bias, requires_grad=False)
+        else:
+            new_linear = torch.nn.Linear(0, 0, bias=False)
+        new_linear.weight = torch.nn.Parameter(new_weight, requires_grad=False)
+        new_linear.in_features = new_weight.size(1)
+        new_linear.out_features = new_weight.size(0)
+        return new_linear
     else:
-        new_linear = torch.nn.Linear(0, 0, bias=False)
-    new_linear.weight = torch.nn.Parameter(new_weight, requires_grad=False)
-    new_linear.in_features = new_weight.size(1)
-    new_linear.out_features = new_weight.size(0)
-    return new_linear
+        return None
 
 
 def merge_qkv_base(module: torch.nn.Module, attention_class):
-    if isinstance(module, attention_class):
+    if (
+        isinstance(attention_class, str) and module.__class__.__name__ == attention_class
+        or not isinstance(attention_class, str) and isinstance(module, attention_class)
+    ):
         qkv_proj = merge_linear([
             module.q_proj,
             module.k_proj,
             module.v_proj,
         ])
-        module.qkv_proj = qkv_proj
-        del module.q_proj, module.k_proj, module.v_proj
+        if qkv_proj is not None:
+            module.qkv_proj = qkv_proj
+            del module.q_proj, module.k_proj, module.v_proj
 
 
 def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):
@@ -59,3 +67,13 @@ def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):
         )
     else:
         return module.down_proj(module.act_fn(module.gate_proj(x)) * module.up_proj(x))
+
+
+def attention_softmax(attn_weights: torch.Tensor, training: bool):
+    if attn_weights.is_contiguous() and attn_weights.device.type == "xpu" and not training:
+        import xe_addons
+        xe_addons.attn_softmax_inplaced(attn_weights)
+    else:
+        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
+                                                   dtype=torch.float32).to(attn_weights.dtype)
+    return attn_weights

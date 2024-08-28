@@ -21,6 +21,7 @@
 #
 
 from typing import Callable, List, Optional, Tuple
+import os
 import torch
 import time
 import copy
@@ -39,6 +40,9 @@ from transformers import GenerationMixin
 original_generate = GenerationMixin.generate
 query_group_size = 16
 
+# may tune it with more tested data
+PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD = 100
+
 
 @torch.no_grad()
 def generate(
@@ -54,6 +58,25 @@ def generate(
     **kwargs,
 ):
     lookahead = kwargs.pop("lookahead", None)
+    perf_mode = os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None)
+
+    input_ids_shape = None
+    if inputs is not None:
+        input_ids_shape = inputs.shape
+    else:
+        input_ids = kwargs.get("input_ids", None)
+        if input_ids is not None:
+            input_ids_shape = input_ids.shape
+        else:
+            inputs_embeds = kwargs.get("inputs_embeds", None)
+            if inputs_embeds is not None:
+                input_ids_shape = inputs_embeds.shape
+
+    if perf_mode == "1" and lookahead is None:
+        if input_ids_shape is not None and \
+                input_ids_shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
+            lookahead = 2  # default to 2 now
+
     if lookahead:
         from ipex_llm.transformers.convert import get_enable_ipex
         _enable_ipex = get_enable_ipex()
@@ -61,7 +84,15 @@ def generate(
         if self.device.type == "cpu" and _enable_ipex:
             logger.warning("Prompt lookup is currently not supported on CPU with IPEX, "
                            "fallback to original generate.")
-            kwargs.pop("max_matching_ngram_size")
+            kwargs.pop("max_matching_ngram_size", None)
+        elif input_ids_shape is not None and input_ids_shape[0] > 1:
+            logger.warning("Prompt lookup is currently not supported with batch inference, "
+                           "fallback to original generate.")
+            kwargs.pop("max_matching_ngram_size", None)
+        elif kwargs.get("num_beams", None) not in [None, 1]:
+            logger.warning("Prompt lookup is currently not supported with num_beams != 1, "
+                           "fallback to original generate.")
+            kwargs.pop("max_matching_ngram_size", None)
         else:
             # Do prompt lookup generation
             # If lookahead is provided, we will use lookup_generate instead of
@@ -80,6 +111,7 @@ def generate(
             return self.lookup_generate(inputs=inputs,
                                         num_output_tokens=lookahead,
                                         generation_config=generation_config,
+                                        streamer=streamer,
                                         logits_processor=logits_processor,
                                         stopping_criteria=stopping_criteria,
                                         prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
@@ -145,7 +177,7 @@ class PromptLookupCandidateGenerator():
                            input_ids: torch.LongTensor):
         for ngram_size in range(self.max_matching_ngram_size, 0, -1):
             # Create sliding windows of size ngram_size
-            windows = input_ids.unfold(dimension=1, size=ngram_size, step=1)
+            windows = input_ids.cpu().unfold(dimension=1, size=ngram_size, step=1)
             for idx in range(windows.size(1)):
                 window = tensor2key(windows[0, idx])
                 if window not in self.lookup_table:
@@ -240,11 +272,18 @@ def lookup_generate(self,
                     num_output_tokens: int = 10,
                     max_matching_ngram_size: int = None,
                     generation_config: Optional[GenerationConfig] = None,
+                    streamer: Optional["BaseStreamer"] = None,
                     attention_mask=None,
                     **sampling_kwargs):
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               **sampling_kwargs)
+
+    invalidInputError(input_ids.shape[0] == 1,
+                      "Prompt lookup is currently not supported with batch inference.")
+
+    if streamer is not None:
+        streamer.put(input_ids.cpu())
 
     device_name = get_xpu_device_type(input_ids)
 
@@ -261,6 +300,13 @@ def lookup_generate(self,
 
     past_key_values = None
     input_len = input_ids.shape[1]
+
+    eos_token_id_set = None
+    if generation_config.eos_token_id is not None:
+        if isinstance(generation_config.eos_token_id, list):
+            eos_token_id_set = set(generation_config.eos_token_id)
+        else:
+            eos_token_id_set = set([generation_config.eos_token_id])
 
     while True:
         if step >= max_new_tokens:
@@ -364,8 +410,9 @@ def lookup_generate(self,
             accept_rate = self.n_matched/self.n_drafted if self.n_drafted > 0 else 1
             self.accept_rate.append(accept_rate)
             # Update the candidate generation strategy if needed
-            candidates_generator.update_candidate_strategy(candidate_length, n_matches,
-                                                           accept_rate)
+            if device_name != 'mtl':
+                candidates_generator.update_candidate_strategy(candidate_length, n_matches,
+                                                               accept_rate)
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
             candidates_generator.update_look_up_table(input_ids)
@@ -376,15 +423,27 @@ def lookup_generate(self,
             self.post_time.append(pot-mot)
 
         # Stop on eos and remove content after eos
-        output_ids_list = output_ids[0].tolist()
-        if generation_config.eos_token_id in output_ids_list:
-            idx = output_ids_list.index(generation_config.eos_token_id)
-            step -= (len(output_ids_list) - idx - 1)
-            break
+        if eos_token_id_set is not None:
+            output_ids_list = output_ids[0].tolist()
+            first_eos_idx = -1
+            for out_idx, out_id in enumerate(output_ids_list):
+                if out_id in eos_token_id_set:
+                    first_eos_idx = out_idx
+                    break
+            if first_eos_idx > -1:
+                if streamer is not None:
+                    streamer.put(output_ids[:(first_eos_idx + 1)].cpu())
+                step -= (len(output_ids_list) - first_eos_idx - 1)
+                break
+        if streamer is not None:
+            streamer.put(output_ids.cpu())
 
     step = min(step, max_new_tokens)
     e2e_toc = time.time()
     self.n_token_generated = step
     self.e2e_time_without_first = e2e_toc - e2e_tic
+
+    if streamer is not None:
+        streamer.end()
 
     return input_ids[:, : input_len + step]

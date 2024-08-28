@@ -142,7 +142,7 @@ if __name__ == '__main__':
                                       trust_remote_code=True,
                                       modules_to_not_convert=["vpm", "resampler", "lm_head"],
                                       use_cache=True)
-    model = model.float().to(device='xpu')
+    model = model.half().to(device='xpu')
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     model.eval()

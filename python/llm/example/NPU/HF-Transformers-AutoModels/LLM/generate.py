@@ -24,7 +24,7 @@ from transformers import AutoTokenizer
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for npu model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="D:\llm-models\Llama-2-7b-chat-hf",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
@@ -40,7 +40,8 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
-                                                 load_in_low_bit=args.load_in_low_bit)
+                                                 load_in_low_bit=args.load_in_low_bit,
+                                                 attn_implementation="eager")
     
     print(model)
 

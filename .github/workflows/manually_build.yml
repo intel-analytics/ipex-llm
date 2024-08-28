@@ -24,9 +24,9 @@ on:
   #       - ipex-llm-finetune-qlora-cpu-k8s
   #       - ipex-llm-finetune-xpu
   #     tag:
-  #       description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+  #       description: 'docker image tag (e.g. 2.2.0-SNAPSHOT)'
   #       required: true
-  #       default: '2.1.0-SNAPSHOT'
+  #       default: '2.2.0-SNAPSHOT'
   #       type: string
   workflow_call:
     inputs:
@@ -40,9 +40,9 @@ on:
         default: 'all'
         type: string
       tag:
-        description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
+        description: 'docker image tag (e.g. 2.2.0-SNAPSHOT)'
         required: true
-        default: '2.1.0-SNAPSHOT'
+        default: '2.2.0-SNAPSHOT'
         type: string
       public:
         description: "if the docker image push to public docker hub"

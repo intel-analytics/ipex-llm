@@ -1,26 +1,35 @@
 # Perplexity
 Perplexity (PPL) is one of the most common metrics for evaluating language models. This benchmark implementation is adapted from [transformers/perplexity](https://huggingface.co/docs/transformers/perplexity#perplexity-of-fixed-length-models) and [benchmark_patch_llm.py](https://github.com/insuhan/hyper-attn/blob/main/benchmark_patch_llm.py) 
 
-## Run on Wikitext
-
-Download the dataset from [here](https://paperswithcode.com/dataset/wikitext-2), unzip it and we will use the test dataset `wiki.test.raw` for evaluation.
+## Environment Preparation
+```bash
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install datasets
+```
+This is a required step on Linux for APT or offline installed oneAPI. Skip this step for PIP-installed oneAPI.
 
 ```bash
-python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B/ --data_path wikitext-2-raw-v1/wikitext-2-raw/wiki.test.raw --precision sym_int4 --use-cache --device xpu
-
-# Run with stride
-python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B/ --data_path wikitext-2-raw-v1/wikitext-2-raw/wiki.test.raw --precision fp16 --device xpu --stride 512
+source /opt/intel/oneapi/setvars.sh
 ```
 
-## Run on [THUDM/LongBench](https://github.com/THUDM/LongBench) dataset
-
+Please set IPEX_LLM_LAST_LM_HEAD=0 to disable the last_lm_head optimization.
 ```bash
-python run.py --model_path <path/to/model> --precisions sym_int4 fp8 --device xpu --datasets dataset_names --dataset_path <path/to/dataset> --language en
+export IPEX_LLM_LAST_LM_HEAD=0
 ```
-A more specific example to run perplexity on Llama2-7B using the default English datasets:
+
+## PPL Evaluation
+### 1. Run on Wikitext
+An example to run perplexity on [wikitext](https://paperswithcode.com/dataset/wikitext-2):
 ```bash
-python run.py --model_path meta-llama/Llama-2-7b-chat-hf --precisions float16 sym_int4 --device xpu --language en
+python run_wikitext.py --model_path meta-llama/Meta-Llama-3-8B --dataset path=wikitext,name=wikitext-2-raw-v1 --precision sym_int4 --device xpu --stride 512 --max_length 4096
 ```
+###  2. Run on [THUDM/LongBench](https://github.com/THUDM/LongBench) dataset
+
+An example to run perplexity on chatglm3-6b using the default Chinese datasets("multifieldqa_zh", "dureader", "vcsum", "lsht", "passage_retrieval_zh")
+```bash
+python run_longbench.py --model_path THUDM/chatglm3-6b --precisions float16 sym_int4 --device xpu --language zh
+```
+
 
 Notes:
 - If you want to test model perplexity on a few selected datasets from the `LongBench` dataset, please use the format below.

@@ -23,36 +23,68 @@ logger = logging.get_logger(__name__)
 
 
 class ModelWorker:
-    def __init__(self, checkpoint, low_bit, torch_dtype=torch.float16):
+    def __init__(self, checkpoint, low_bit, model_type="normal", torch_dtype=torch.float16):
         self.dtype = torch_dtype
         start = time.perf_counter()
-        model = self.load_model(checkpoint, low_bit)
-        from ipex_llm.utils import BenchmarkWrapper
-        self.model = BenchmarkWrapper(model, do_print=True)
+        if model_type == "audio":
+            self.model = self.load_model(checkpoint, low_bit, "audio")
+        else:
+            model = self.load_model(checkpoint, low_bit)
+            from ipex_llm.utils import BenchmarkWrapper
+            self.model = BenchmarkWrapper(model, do_print=True)
         end = time.perf_counter()
         logger.info(f"Time to load weights: {end - start:.2f}s")
         self.waiting_requests = asyncio.Queue()
         self.streamer = {}
         self.model_name = checkpoint
 
-    def load_model(self, model_path, low_bit='sym_int4'):
-        from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
-        try:
-            model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                         load_in_low_bit=low_bit,
-                                                         torch_dtype=self.dtype,
-                                                         optimize_model=True,
-                                                         trust_remote_code=True,
-                                                         use_cache=True,)
-        except:
-            model = AutoModel.from_pretrained(model_path,
-                                              load_in_low_bit=low_bit,
-                                              torch_dtype=self.dtype,
-                                              optimize_model=True,
-                                              trust_remote_code=True,
-                                              use_cache=True,)
+    def load_model(self, model_path, low_bit='sym_int4', model_type="normal"):
+        if model_type == "audio":
+            from ipex_llm.transformers import AutoModelForSpeechSeq2Seq
+            model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path,
+                                                              load_in_low_bit=low_bit,
+                                                              torch_dtype=self.dtype,
+                                                              optimize_model=True,
+                                                              trust_remote_code=True,
+                                                              use_cache=True)
+        else:
+            from ipex_llm.transformers import AutoModelForCausalLM, AutoModel
+            try:
+                model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                             load_in_low_bit=low_bit,
+                                                             torch_dtype=self.dtype,
+                                                             optimize_model=True,
+                                                             trust_remote_code=True,
+                                                             use_cache=True,)
+            except:
+                model = AutoModel.from_pretrained(model_path,
+                                                  load_in_low_bit=low_bit,
+                                                  torch_dtype=self.dtype,
+                                                  optimize_model=True,
+                                                  trust_remote_code=True,
+                                                  use_cache=True,)
         model = model.eval().to("xpu")
         return model
+
+    async def add_asr_request(self, processor):
+        if self.waiting_requests.empty():
+            return
+        tmp_result = await self.waiting_requests.get()
+        request_id, request = tmp_result
+        transcription_request = request.transcription_request
+        forced_decoder_ids = processor.get_decoder_prompt_ids(
+            language=transcription_request.language, task="transcribe")
+        audio_path = transcription_request.file
+        import librosa
+        raw_speech, sampling_rate = librosa.load(audio_path,
+                                                 sr=processor.feature_extractor.sampling_rate)
+        input_features = processor(
+            raw_speech,
+            sampling_rate=sampling_rate,
+            return_tensors="pt",
+            return_attention_mask=True,
+        ).input_features.to('xpu')
+        return input_features, forced_decoder_ids, request_id
 
     async def add_request(self, tokenizer):
         if self.waiting_requests.empty():
@@ -91,33 +123,41 @@ class ModelWorker:
         return input_ids, parameters, request_id, inputs_embeds
 
     @torch.no_grad()
-    async def process_step(self, tokenizer, result_dict):
+    async def process_step(self, tokenizer, result_dict, processor=None):
         if not self.waiting_requests.empty():
-            input_ids, parameters, request_id, inputs_embeds = await self.add_request(tokenizer)
-            self.streamer[request_id] = TextIteratorStreamer(tokenizer, skip_prompt=True)
+            if processor is not None and "whisper" in self.model_name.lower():
+                input_features, decoder_ids, request_id = await self.add_asr_request(processor)
+                self.streamer[request_id] = TextIteratorStreamer(tokenizer, skip_prompt=True)
 
-            def model_generate():
-                generate_kwargs = {k: v for k, v in parameters.dict().items() if v is not None}
-                if "codegeex" in self.model_name.lower():
-                    eos_token_id = [tokenizer.eos_token_id,
-                                    tokenizer.convert_tokens_to_ids("<|user|>"),
-                                    tokenizer.convert_tokens_to_ids("<|observation|>")]
-                    generate_kwargs["eos_token_id"] = eos_token_id
-                elif "internlm-xcomposer2-vl-7b" in self.model_name.lower():
-                    eos_token_id = [
-                        tokenizer.eos_token_id,
-                        tokenizer.convert_tokens_to_ids(['[UNUSED_TOKEN_145]'])[0]
-                    ]
-                    generate_kwargs["eos_token_id"] = eos_token_id
-                if input_ids is not None:
-                    self.model.generate(input_ids,
-                                        streamer=self.streamer[request_id], **generate_kwargs)
-                elif inputs_embeds is not None:
-                    self.model.generate(inputs_embeds=inputs_embeds,
-                                        streamer=self.streamer[request_id], **generate_kwargs)
-                torch.xpu.empty_cache()
-                torch.xpu.synchronize()
+                def model_generate():
+                    self.model.generate(input_features,
+                                        streamer=self.streamer[request_id],
+                                        forced_decoder_ids=decoder_ids)
+            else:
+                input_ids, parameters, request_id, inputs_embeds = await self.add_request(tokenizer)
+                self.streamer[request_id] = TextIteratorStreamer(tokenizer, skip_prompt=True)
 
+                def model_generate():
+                    generate_kwargs = {k: v for k, v in parameters.dict().items() if v is not None}
+                    if "codegeex" in self.model_name.lower():
+                        eos_token_id = [tokenizer.eos_token_id,
+                                        tokenizer.convert_tokens_to_ids("<|user|>"),
+                                        tokenizer.convert_tokens_to_ids("<|observation|>")]
+                        generate_kwargs["eos_token_id"] = eos_token_id
+                    elif "internlm-xcomposer2-vl-7b" in self.model_name.lower():
+                        eos_token_id = [
+                            tokenizer.eos_token_id,
+                            tokenizer.convert_tokens_to_ids(['[UNUSED_TOKEN_145]'])[0]
+                        ]
+                        generate_kwargs["eos_token_id"] = eos_token_id
+                    if input_ids is not None:
+                        self.model.generate(input_ids,
+                                            streamer=self.streamer[request_id], **generate_kwargs)
+                    elif inputs_embeds is not None:
+                        self.model.generate(inputs_embeds=inputs_embeds,
+                                            streamer=self.streamer[request_id], **generate_kwargs)
+            torch.xpu.empty_cache()
+            torch.xpu.synchronize()
             from threading import Thread
             t1 = Thread(target=model_generate)
             t1.start()

@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'ipex-llm version (e.g. 2.1.0b1)'
+        description: 'ipex-llm version (e.g. 2.2.0b1)'
         required: true
-        default: '2.1.0b0'
+        default: '2.2.0b0'
         type: string
 
 permissions:
@@ -26,7 +26,7 @@ jobs:
     
     - name: set release version
       env:
-        DEFAULT_VERSION: '2.1.0b0'
+        DEFAULT_VERSION: '2.2.0b0'
       run: |
         echo "RELEASE_VERSION=${{ github.event.inputs.version || env.DEFAULT_VERSION }}" >> $GITHUB_ENV
 

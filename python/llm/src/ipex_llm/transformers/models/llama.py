@@ -42,19 +42,21 @@ import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import SILU
 from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_cache, \
-    restore_fp8_kv_cache, use_quantize_kv_cache, should_use_compresskv
+    restore_fp8_kv_cache, use_quantize_kv_cache, should_use_compresskv, \
+    get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_fp8, \
     use_sdp_causal
 from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
-from ipex_llm.transformers.models.utils import use_decoding_fast_path
+from ipex_llm.transformers.models.utils import use_decoding_fast_path, get_q_proj_or_qkv_proj
 from transformers.modeling_outputs import BaseModelOutputWithPast
-from transformers.models.llama.modeling_llama import LlamaModel
+from transformers.models.llama.modeling_llama import LlamaModel, LlamaAttention
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.utils.common import invalidInputError
+from ipex_llm.transformers.models.common import merge_qkv_base, fuse_mlp_base
 
 try:
     from transformers.cache_utils import Cache, DynamicCache
@@ -64,6 +66,10 @@ from transformers import logging
 
 
 logger = logging.get_logger(__name__)
+
+
+def merge_qkv(module: torch.nn.Module):
+    return merge_qkv_base(module, LlamaAttention)
 
 
 def llama_decoding_fast_path_qtype_check(proj):
@@ -114,19 +120,27 @@ def llama_model_forward_4_36(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache, \
+        DynamicCompressFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
-        if use_quantize_kv_cache(self.layers[0].mlp.up_proj, input,
-                                 self.config.num_attention_heads//self.config.num_key_value_heads):
+        use_quantize = use_quantize_kv_cache(
+            self.layers[0].mlp.up_proj, input,
+            self.config.num_attention_heads//self.config.num_key_value_heads)
+        use_compresskv = should_use_compresskv(input, input.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
+        if use_compresskv:
+            if not isinstance(past_key_values, DynamicCompressCache):
+                if use_quantize:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
+                        past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(
+                        past_key_values)
+        elif use_quantize:
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input):
-            # if use quantize kv, compress kv will be ignored now
-            if not isinstance(past_key_values, DynamicCompressCache):
-                past_key_values = DynamicCompressCache.from_legacy_cache(
-                    past_key_values)
     return llama_model_forward_4_36_internal(
         self=self,
         input_ids=input_ids,
@@ -154,19 +168,27 @@ def llama_model_forward_4_38(
     return_dict: Optional[bool] = None,
     cache_position: Optional[torch.LongTensor] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache, \
+        DynamicCompressFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
-        if use_quantize_kv_cache(self.layers[0].mlp.up_proj, input,
-                                 self.config.num_attention_heads//self.config.num_key_value_heads):
+        use_quantize = use_quantize_kv_cache(
+            self.layers[0].mlp.up_proj, input,
+            self.config.num_attention_heads//self.config.num_key_value_heads)
+        use_compresskv = should_use_compresskv(input, input.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
+        if use_compresskv:
+            if not isinstance(past_key_values, DynamicCompressCache):
+                if use_quantize:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
+                        past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(
+                        past_key_values)
+        elif use_quantize:
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input):
-            # if use quantize kv, compress kv will be ignored now
-            if not isinstance(past_key_values, DynamicCompressCache):
-                past_key_values = DynamicCompressCache.from_legacy_cache(
-                    past_key_values)
     return llama_model_forward_4_38_internal(
         self=self,
         input_ids=input_ids,
@@ -195,19 +217,27 @@ def llama_model_forward_4_41(
     return_dict: Optional[bool] = None,
     cache_position: Optional[torch.LongTensor] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache
+    from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache, \
+        DynamicCompressFp8Cache
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     input = input_ids if input_ids is not None else inputs_embeds
     if use_cache:
-        if use_quantize_kv_cache(self.layers[0].mlp.up_proj, input,
-                                 self.config.num_attention_heads//self.config.num_key_value_heads):
+        use_quantize = use_quantize_kv_cache(
+            self.layers[0].mlp.up_proj, input,
+            self.config.num_attention_heads//self.config.num_key_value_heads)
+        use_compresskv = should_use_compresskv(input, input.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
+        if use_compresskv:
+            if not isinstance(past_key_values, DynamicCompressCache):
+                if use_quantize:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(
+                        past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(
+                        past_key_values)
+        elif use_quantize:
             if not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif should_use_compresskv(input):
-            # if use quantize kv, compress kv will be ignored now
-            if not isinstance(past_key_values, DynamicCompressCache):
-                past_key_values = DynamicCompressCache.from_legacy_cache(
-                    past_key_values)
     return llama_model_forward_4_41_internal(
         self=self,
         input_ids=input_ids,
@@ -275,6 +305,16 @@ def llama_mlp_forward(
             )
             hidden_states = attn_output.view(x.shape)
         return hidden_states
+    elif x.device.type == "xpu" and not self.training:
+        import xe_addons
+        gate = self.gate_proj(x)
+        up = self.up_proj(x)
+        xe_addons.mlp_silu_mul_inplaced(gate, up)
+        out = self.down_proj(gate)
+        if residual is not None:
+            return out + residual
+        else:
+            return out
     else:
         a = self.act_fn(self.gate_proj(x))
         b = self.up_proj(x)
@@ -406,6 +446,9 @@ def fuse_qkv_weight_xetla(q_proj, k_proj, v_proj, qtype):
 
 
 def should_use_xetla_mm_qkv(self, device):
+    if not hasattr(self, "q_proj"):
+        # TODO: how to support xetla_mm_qkv for merged_qkv
+        return False
     full_attn = self.q_proj.out_len == self.k_proj.out_len == self.v_proj.out_len
     supported_qtype = self.q_proj.qtype == SYM_INT4 and full_attn
     supported_qtype = supported_qtype or self.q_proj.qtype == FP8E5
@@ -428,7 +471,8 @@ def llama_attention_forward_4_31(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs,
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states, self.num_key_value_groups):
+    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states,
+                             self.num_key_value_groups):
         forward_function = llama_attention_forward_4_31_quantized
     else:
         forward_function = llama_attention_forward_4_31_original
@@ -466,7 +510,7 @@ def llama_attention_forward_4_31_quantized(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+    decoding_fast_path = use_decoding_fast_path(getattr(self, "q_proj", None),
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len,
@@ -500,9 +544,16 @@ def llama_attention_forward_4_31_quantized(
                                                                        self.head_dim,
                                                                        self.rotary_emb.base,)
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if hasattr(self, "q_proj"):
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+        else:
+            qkv = self.qkv_proj(hidden_states)
+            qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+            query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                self.num_key_value_heads,
+                                                                self.num_key_value_heads], dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -516,12 +567,9 @@ def llama_attention_forward_4_31_quantized(
             kv_seq_len += past_key_value[0].shape[-2]
 
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -604,7 +652,7 @@ def llama_attention_forward_4_31_original(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+    decoding_fast_path = use_decoding_fast_path(getattr(self, "q_proj", None),
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len,
@@ -654,7 +702,7 @@ def llama_attention_forward_4_31_original(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+            if fp16_fusion_check(getattr(self, "q_proj", None), hidden_states, self.training) and \
                     hidden_size == 4096 and self.q_proj.out_features == self.k_proj.out_features:
                 # only use mm_qkv_out on pvc for llama-7b
                 if not hasattr(self, "qkv_proj_weight"):
@@ -692,9 +740,19 @@ def llama_attention_forward_4_31_original(
                     key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
                     value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
-                    query_states = self.q_proj(hidden_states)
-                    key_states = self.k_proj(hidden_states)
-                    value_states = self.v_proj(hidden_states)
+                    if hasattr(self, "q_proj"):
+                        query_states = self.q_proj(hidden_states)
+                        key_states = self.k_proj(hidden_states)
+                        value_states = self.v_proj(hidden_states)
+                    else:
+                        qkv = self.qkv_proj(hidden_states)
+                        qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
+                                       self.head_dim)
+                        query_states, key_states, value_states = \
+                            qkv.split([self.num_heads,
+                                       self.num_key_value_heads,
+                                       self.num_key_value_heads],
+                                      dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -708,12 +766,9 @@ def llama_attention_forward_4_31_original(
             kv_seq_len += past_key_value[0].shape[-2]
 
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -839,7 +894,7 @@ def llama_attention_selective_batching_forward_4_31(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = past_key_value is not None and is_enough_kv_cache_room_4_31(past_key_value[0])
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+    decoding_fast_path = use_decoding_fast_path(getattr(self, "q_proj", None),
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len,
@@ -886,9 +941,18 @@ def llama_attention_selective_batching_forward_4_31(
         if self.config.pretraining_tp > 1:
             invalidInputError(False, f"vLLM: config.pretraining_tp > 1 not supported yet")
         else:
-            query_states = self.q_proj(hidden_states)
-            key_states = self.k_proj(hidden_states)
-            value_states = self.v_proj(hidden_states)
+            if hasattr(self, "q_proj"):
+                query_states = self.q_proj(hidden_states)
+                key_states = self.k_proj(hidden_states)
+                value_states = self.v_proj(hidden_states)
+            else:
+                qkv = self.qkv_proj(hidden_states)
+                qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads,
+                               self.head_dim)
+                query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                    self.num_key_value_heads,
+                                                                    self.num_key_value_heads],
+                                                                   dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -902,12 +966,9 @@ def llama_attention_selective_batching_forward_4_31(
             kv_seq_len += max(kv_pair[0].shape[-2] for kv_pair in past_key_value)
 
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
             query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
@@ -1030,7 +1091,8 @@ def llama_attention_forward_4_41(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states, self.num_key_value_groups):
+    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states,
+                             self.num_key_value_groups):
         forward_function = llama_attention_forward_4_41_quantized
     else:
         forward_function = llama_attention_forward_4_41_original
@@ -1058,6 +1120,7 @@ def llama_attention_forward_4_41_quantized(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1069,11 +1132,14 @@ def llama_attention_forward_4_41_quantized(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+    decoding_fast_path = use_decoding_fast_path(getattr(self, "q_proj", None),
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len,
                                                 llama_decoding_fast_path_qtype_check) and no_tp
+    # [CompressKV]
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
+
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         tmp_cache_k, tmp_cache_v = init_kv_cache(
@@ -1098,9 +1164,16 @@ def llama_attention_forward_4_41_quantized(
                                                                        self.head_dim,
                                                                        self.rotary_emb.base,)
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if hasattr(self, "q_proj"):
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+        else:
+            qkv = self.qkv_proj(hidden_states)
+            qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+            query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                self.num_key_value_heads,
+                                                                self.num_key_value_heads], dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1122,12 +1195,9 @@ def llama_attention_forward_4_41_quantized(
                 )
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             if cache_position is not None:
                 # for transformers 4.38.0
@@ -1145,8 +1215,15 @@ def llama_attention_forward_4_41_quantized(
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
         if use_cache:
             cache_kwargs = None
-            key_states, value_states = past_key_value.update(key_states, value_states,
-                                                             self.layer_idx, cache_kwargs)
+            # [CompressKV]
+            if use_compresskv:
+                key_states, value_states = past_key_value.update(
+                    key_states, value_states, self.layer_idx,
+                    query_states, attention_mask, self.num_key_value_groups,
+                    self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
+            else:
+                key_states, value_states = past_key_value.update(key_states, value_states,
+                                                                 self.layer_idx, cache_kwargs)
         if use_cache and use_sdp_causal(q_len, kv_seq_len, self.head_dim,
                                         query_states, self.training):
             import xe_addons
@@ -1195,8 +1272,15 @@ def llama_attention_forward_4_41_quantized(
             attn_output = torch.matmul(attn_weights, repeated_value_states)
     else:
         cache_kwargs = None  # Specific to RoPE models
-        key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs)
+        # [CompressKV]
+        if use_compresskv:
+            key_states, value_states = past_key_value.update(
+                key_states, value_states, self.layer_idx,
+                query_states, attention_mask, self.num_key_value_groups,
+                self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
+        else:
+            key_states, value_states = past_key_value.update(key_states, value_states,
+                                                             self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
         if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -1243,6 +1327,11 @@ def llama_attention_forward_4_41_quantized(
                 new_attn_mask = attention_mask[:, :, :, 0:kv_seq_len]
             else:
                 new_attn_mask = attention_mask
+
+            # [CompressKV]
+            if use_compresskv:
+                new_attn_mask = get_compresskv_attn_mask(key_states,
+                                                         new_attn_mask)
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, new_attn_mask)
             attn_weights = None
 
@@ -1283,6 +1372,7 @@ def llama_attention_forward_4_41_original(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1295,12 +1385,12 @@ def llama_attention_forward_4_41_original(
     original_dtype = hidden_states.dtype
 
     # [CompressKV]
-    use_compresskv = should_use_compresskv(hidden_states)
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+    decoding_fast_path = use_decoding_fast_path(getattr(self, "q_proj", None),
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len,
@@ -1359,7 +1449,7 @@ def llama_attention_forward_4_41_original(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+            if fp16_fusion_check(getattr(self, "q_proj", None), hidden_states, self.training) and \
                     hidden_size == 4096 and self.q_proj.out_features == self.k_proj.out_features:
                 # only use mm_qkv_out on pvc for llama-7b
                 if not hasattr(self, "qkv_proj_weight"):
@@ -1398,9 +1488,20 @@ def llama_attention_forward_4_41_original(
                     key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
                     value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
-                    query_states = self.q_proj(hidden_states)
-                    key_states = self.k_proj(hidden_states)
-                    value_states = self.v_proj(hidden_states)
+                    if hasattr(self, "q_proj"):
+                        query_states = self.q_proj(hidden_states)
+                        key_states = self.k_proj(hidden_states)
+                        value_states = self.v_proj(hidden_states)
+                    else:
+                        qkv = self.qkv_proj(hidden_states)
+                        qkv = qkv.view(bsz, q_len,
+                                       self.num_heads + 2 * self.num_key_value_heads,
+                                       self.head_dim)
+                        query_states, key_states, value_states = \
+                            qkv.split([self.num_heads,
+                                       self.num_key_value_heads,
+                                       self.num_key_value_heads],
+                                      dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1420,12 +1521,9 @@ def llama_attention_forward_4_41_original(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             if cache_position is not None:
                 # for transformers 4.38.0
@@ -1507,9 +1605,10 @@ def llama_attention_forward_4_41_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
+        # [CompressKV]
         if use_compresskv:
-            # [CompressKV] set attention_mask = None
-            new_attention_mask = None
+            new_attention_mask = get_compresskv_attn_mask(key_states,
+                                                          new_attention_mask)
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
@@ -1581,7 +1680,8 @@ def llama_attention_forward_4_38(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
-    if use_quantize_kv_cache(self.q_proj, hidden_states, self.num_key_value_groups):
+    if use_quantize_kv_cache(get_q_proj_or_qkv_proj(self), hidden_states,
+                             self.num_key_value_groups):
         forward_function = llama_attention_forward_4_38_quantized
     else:
         forward_function = llama_attention_forward_4_38_original
@@ -1609,6 +1709,7 @@ def llama_attention_forward_4_38_quantized(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1620,11 +1721,15 @@ def llama_attention_forward_4_38_quantized(
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+    decoding_fast_path = use_decoding_fast_path(getattr(self, "q_proj", None),
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len,
                                                 llama_decoding_fast_path_qtype_check) and no_tp
+
+    # [CompressKV]
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
+
     if decoding_fast_path:
         hidden_states = hidden_states.view(1, -1)
         tmp_cache_k, tmp_cache_v = init_kv_cache(
@@ -1649,9 +1754,16 @@ def llama_attention_forward_4_38_quantized(
                                                                        self.head_dim,
                                                                        self.rotary_emb.base,)
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if hasattr(self, "q_proj"):
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+        else:
+            qkv = self.qkv_proj(hidden_states)
+            qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+            query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                self.num_key_value_heads,
+                                                                self.num_key_value_heads], dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1673,12 +1785,9 @@ def llama_attention_forward_4_38_quantized(
                 )
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             if cache_position is not None:
                 # for transformers 4.38.0
@@ -1696,8 +1805,16 @@ def llama_attention_forward_4_38_quantized(
         repeated_value_states = repeat_kv(value_states, self.num_key_value_groups)
         if use_cache:
             cache_kwargs = None
-            key_states, value_states = past_key_value.update(key_states, value_states,
-                                                             self.layer_idx, cache_kwargs)
+            # [CompressKV]
+            if use_compresskv:
+                key_states, value_states = past_key_value.update(
+                    key_states, value_states, self.layer_idx,
+                    query_states, attention_mask, self.num_key_value_groups,
+                    self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
+            else:
+                key_states, value_states = past_key_value.update(key_states, value_states,
+                                                                 self.layer_idx, cache_kwargs)
+
         if use_cache and use_sdp_causal(q_len, kv_seq_len, self.head_dim,
                                         query_states, self.training):
             import xe_addons
@@ -1746,8 +1863,15 @@ def llama_attention_forward_4_38_quantized(
             attn_output = torch.matmul(attn_weights, repeated_value_states)
     else:
         cache_kwargs = None  # Specific to RoPE models
-        key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs)
+        # [CompressKV]
+        if use_compresskv:
+            key_states, value_states = past_key_value.update(
+                key_states, value_states, self.layer_idx,
+                query_states, attention_mask, self.num_key_value_groups,
+                self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
+        else:
+            key_states, value_states = past_key_value.update(key_states, value_states,
+                                                             self.layer_idx, cache_kwargs)
         kv_seq_len = key_states.shape[-2]
         if not use_sdp_fp8(q_len, key_states.shape[2], query_states):
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
@@ -1794,6 +1918,11 @@ def llama_attention_forward_4_38_quantized(
                 new_attn_mask = attention_mask[:, :, kv_seq_len-q_len:kv_seq_len, 0:kv_seq_len]
             else:
                 new_attn_mask = attention_mask
+
+            # [CompressKV]
+            if use_compresskv:
+                new_attn_mask = get_compresskv_attn_mask(key_states,
+                                                         new_attn_mask)
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, new_attn_mask)
             attn_weights = None
 
@@ -1834,6 +1963,7 @@ def llama_attention_forward_4_38_original(
     cache_position: Optional[torch.LongTensor] = None,
     **kwargs
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[List[torch.FloatTensor]]]:
+    from ipex_llm.transformers.kv import DynamicCompressCache
     if "padding_mask" in kwargs:
         warnings.warn(
             "Passing `padding_mask` is deprecated and will be removed in v4.37. "
@@ -1846,12 +1976,12 @@ def llama_attention_forward_4_38_original(
     original_dtype = hidden_states.dtype
 
     # [CompressKV]
-    use_compresskv = should_use_compresskv(hidden_states)
+    use_compresskv = isinstance(past_key_value, DynamicCompressCache)
 
     use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx, seq_len=q_len)
     no_tp = not self.config.pretraining_tp > 1
-    decoding_fast_path = use_decoding_fast_path(self.q_proj,
+    decoding_fast_path = use_decoding_fast_path(getattr(self, "q_proj", None),
                                                 use_fuse_rope,
                                                 enough_kv_room,
                                                 bsz * q_len,
@@ -1909,7 +2039,7 @@ def llama_attention_forward_4_38_original(
                             for i in range(self.config.pretraining_tp)]
             value_states = torch.cat(value_states, dim=-1)
         else:
-            if fp16_fusion_check(self.q_proj, hidden_states, self.training) and \
+            if fp16_fusion_check(getattr(self, "q_proj", None), hidden_states, self.training) and \
                     hidden_size == 4096 and self.q_proj.out_features == self.k_proj.out_features:
                 # only use mm_qkv_out on pvc for llama-7b
                 if not hasattr(self, "qkv_proj_weight"):
@@ -1948,9 +2078,20 @@ def llama_attention_forward_4_38_original(
                     key_states = qkv_states[:, :, q_out_len:q_out_len + k_out_len]
                     value_states = qkv_states[:, :, q_out_len + k_out_len:]
                 else:
-                    query_states = self.q_proj(hidden_states)
-                    key_states = self.k_proj(hidden_states)
-                    value_states = self.v_proj(hidden_states)
+                    if hasattr(self, "q_proj"):
+                        query_states = self.q_proj(hidden_states)
+                        key_states = self.k_proj(hidden_states)
+                        value_states = self.v_proj(hidden_states)
+                    else:
+                        qkv = self.qkv_proj(hidden_states)
+                        qkv = qkv.view(bsz, q_len,
+                                       self.num_heads + 2 * self.num_key_value_heads,
+                                       self.head_dim)
+                        query_states, key_states, value_states = \
+                            qkv.split([self.num_heads,
+                                       self.num_key_value_heads,
+                                       self.num_key_value_heads],
+                                      dim=2)
 
         query_states = query_states.view(bsz, q_len,
                                          self.num_heads, self.head_dim).transpose(1, 2)
@@ -1970,12 +2111,9 @@ def llama_attention_forward_4_38_original(
             kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
         if use_fuse_rope:
-            rope_theta = self.rotary_emb.base
-            query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                         key_states,
-                                                                         position_ids,
-                                                                         "llama",
-                                                                         rope_theta=rope_theta)
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                           query_states, key_states)
         else:
             if cache_position is not None:
                 # for transformers 4.38.0
@@ -2057,9 +2195,10 @@ def llama_attention_forward_4_38_original(
     elif not self.training and not hidden_states.requires_grad and \
             use_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
         import xe_addons
+        # [CompressKV]
         if use_compresskv:
-            # [CompressKV] set attention_mask = None
-            new_attention_mask = None
+            new_attention_mask = get_compresskv_attn_mask(key_states,
+                                                          new_attention_mask)
         attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                     new_attention_mask)
         attn_output = attn_output.view(query_states.shape)
@@ -2411,9 +2550,16 @@ def llama_attention_fast_forward(
         value_states = torch.cat(value_states, dim=-1)
 
     else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+        if hasattr(self, "q_proj"):
+            query_states = self.q_proj(hidden_states)
+            key_states = self.k_proj(hidden_states)
+            value_states = self.v_proj(hidden_states)
+        else:
+            qkv = self.qkv_proj(hidden_states)
+            qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
+            query_states, key_states, value_states = qkv.split([self.num_heads,
+                                                                self.num_key_value_heads,
+                                                                self.num_key_value_heads], dim=2)
 
     query_states = query_states.view(bsz, q_len, self.num_heads, self.head_dim).transpose(1, 2)
     key_states = key_states.view(bsz, q_len, self.num_key_value_heads,

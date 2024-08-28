@@ -14,9 +14,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 </table>
 
 > [!NOTE]
-> `ipex-llm[cpp]==2.5.0b20240527` is consistent with [c780e75](https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452) of llama.cpp.
+> `ipex-llm[cpp]==2.2.0b20240826` is consistent with [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) of llama.cpp.
 >
-> Our latest version is consistent with [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) of llama.cpp.
+> Our latest version is consistent with [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) of llama.cpp.
 
 ## Table of Contents
 - [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites)
@@ -24,8 +24,6 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 - [Setup for running llama.cpp](./llama_cpp_quickstart.md#2-setup-for-running-llamacpp)
 - [Example: Running community GGUF models with IPEX-LLM](./llama_cpp_quickstart.md#3-example-running-community-gguf-models-with-ipex-llm)
 - [Troubleshooting](./llama_cpp_quickstart.md#troubleshooting)
-
-
 
 ## Quick Start
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
@@ -40,7 +38,7 @@ Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md), fo
 
 #### Windows (Optional)
 
-Please make sure your GPU driver version is equal or newer than `31.0.101.5333`. If it is not, follow the instructions in [this section](./install_windows_gpu.md#optional-update-gpu-driver) to update your GPU driver; otherwise, you might encounter gibberish output. 
+Please make sure your GPU driver version is equal or newer than `31.0.101.5522`. If it is not, follow the instructions in [this section](./install_windows_gpu.md#optional-update-gpu-driver) to update your GPU driver; otherwise, you might encounter gibberish output. 
 
 ### 1. Install IPEX-LLM for llama.cpp
 
@@ -146,7 +144,7 @@ Before running, you should download or copy community GGUF model to your current
 - For **Linux users**:
   
   ```bash
-  ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+  ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 99 --color
   ```
 
   > **Note**:
@@ -158,7 +156,7 @@ Before running, you should download or copy community GGUF model to your current
   Please run the following command in Miniforge Prompt.
 
   ```cmd
-  main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 33 --color
+  main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 99 --color
   ```
 
   > **Note**:
@@ -296,6 +294,18 @@ Log end
 
 ### Troubleshooting
 
+#### Unable to run the initialization script
+If you are unable to run `init-llama-cpp.bat`, please make sure you have installed `ipex-llm[cpp]` in your conda environment. If you have installed it, please check if you have activated the correct conda environment. Also, if you are using Windows, please make sure you have run the script with administrator privilege in prompt terminal.
+
+#### `DeviceList is empty. -30 (PI_ERROR_INVALID_VALUE)` error
+On Linux, this error happens when devices starting with `[ext_oneapi_level_zero]` are not found. Please make sure you have installed level-zero, and have sourced `/opt/intel/oneapi/setvars.sh` before running the command.
+
+#### `Prompt is too long` error
+If you encounter `main: prompt is too long (xxx tokens, max xxx)`, please increase the `-c` parameter to set a larger size of context.
+
+#### `gemm: cannot allocate memory on host` error / `could not create an engine` error
+If you meet `oneapi::mkl::oneapi::mkl::blas::gemm: cannot allocate memory on host` error, or `could not create an engine` on Linux, this is probably caused by pip installed OneAPI dependencies. You should prevent installing like `pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0`, and instead use `apt` to install on Linux. Please refer to [this guide](./install_linux_gpu.md) for more details.
+
 #### Fail to quantize model
 If you encounter `main: failed to quantize model from xxx`, please make sure you have created related output directory.
 
@@ -316,3 +326,15 @@ Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device 
 If you run the llama.cpp program on Windows and find that your program crashes or outputs abnormally when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
 
 For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).
+
+#### sycl7.dll not found error
+If you meet `System Error: sycl7.dll not found` on Windows or you meet similar error on Linux, please check:
+
+1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
+2. if you have executed `source /opt/intel/oneapi/setvars.sh` on Linux
+
+#### Check driver first when you meet garbage output
+If you meet garbage output, please check if your GPU driver version is >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html). If not, please follow the instructions in [this section](./install_linux_gpu.md#install-gpu-driver) to update your GPU driver.
+
+#### Why my program can't find sycl device
+If you meet `GGML_ASSERT: C:/Users/Administrator/actions-runner/cpp-release/_work/llm.cpp/llm.cpp/llama-cpp-bigdl/ggml-sycl.cpp:18283: main_gpu_id<g_all_sycl_device_count` error or similar error, and you find nothing is output when using `ls-sycl-device`, this is because llama.cpp cannot find the sycl device. On some laptops, the installation of the ARC driver may lead to a forced installation of `OpenCL, OpenGL, and Vulkan Compatibility Pack` by Microsoft, which inadvertently blocks the system from locating sycl devices. This issue can be resolved by manually uninstalling it in Microsoft store.

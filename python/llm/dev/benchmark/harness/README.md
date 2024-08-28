@@ -15,15 +15,21 @@ pip install -e .
 run `python run_llb.py`. `run_llb.py` combines some arguments in `main.py` to make evaluations easier. The mapping of arguments is defined as a dict in [`llb.py`](llb.py).
 
 ### Evaluation on CPU
-```python
+```bash
+export IPEX_LLM_LAST_LM_HEAD=0
+
 python run_llb.py --model ipex-llm --pretrained /path/to/model --precision nf3 sym_int4 nf4 --device cpu --tasks hellaswag arc mmlu truthfulqa --batch 1 --no_cache
 ```
 ### Evaluation on Intel GPU
-```python
+```bash
+export IPEX_LLM_LAST_LM_HEAD=0
+
 python run_llb.py --model ipex-llm --pretrained /path/to/model --precision nf3 sym_int4 nf4 --device xpu --tasks hellaswag arc mmlu truthfulqa --batch 1 --no_cache
 ```
 ### Evaluation using multiple Intel GPU
-```python
+```bash
+export IPEX_LLM_LAST_LM_HEAD=0
+
 python run_multi_llb.py --model ipex-llm --pretrained /path/to/model --precision nf3 sym_int4 nf4 --device xpu:0,2,3 --tasks hellaswag arc mmlu truthfulqa --batch 1 --no_cache
 ```
 Taking example above, the script will fork 3 processes, each for one xpu, to execute the tasks.
