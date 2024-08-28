@@ -23,7 +23,7 @@ Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-w
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
 Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
 
-### Recommended NPU Driver Version for LNL users
+### Recommended NPU Driver Version for LNL Users
 #### 32.0.100.2625
 Supported models: Llama2-7B, Qwen2-1.5B, MiniCPM-1B, Baichuan2-7B
 #### 32.0.101.2715
