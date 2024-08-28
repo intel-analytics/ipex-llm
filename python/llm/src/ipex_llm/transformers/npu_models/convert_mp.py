@@ -52,7 +52,6 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
                 lm_qtype = SYM_INT4
             else:
                 lm_qtype = SYM_INT8
-            print("!!!!!!!!! cpu_lm_head")
             # lm_head opt to mp opt (llama, qwen2)
             optimize_lm_head = model.config.model_type not in ["llama", "qwen2"]
             new_linear = LowBitLinear(model.lm_head.in_features,

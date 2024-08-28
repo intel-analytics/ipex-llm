@@ -17,7 +17,6 @@
 import torch
 import importlib
 from ipex_llm.transformers.npu_models.linear import QuantizedLinear
-from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
 
 
 def module_optimization(func) -> torch.nn.Module:
