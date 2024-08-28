@@ -19,7 +19,7 @@ repo_id:
   - 'openbmb/MiniCPM-V-2_6'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
-num_trials: 3
+num_trials: 1
 num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: 1 # default to 1
