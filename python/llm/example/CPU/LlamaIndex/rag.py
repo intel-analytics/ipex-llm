@@ -16,7 +16,6 @@
 
 
 import torch
-from llama_index.embeddings.ipex_llm import IpexLLMEmbedding
 from sqlalchemy import make_url
 from llama_index.vector_stores.postgres import PGVectorStore
 # from llama_index.llms.llama_cpp import LlamaCPP
@@ -161,6 +160,7 @@ def messages_to_prompt(messages):
     return prompt
 
 def main(args):
+    from llama_index.embeddings.ipex_llm import IpexLLMEmbedding
     embed_model = IpexLLMEmbedding(model_name=args.embedding_model_path)
     
     # Use custom LLM in BigDL
