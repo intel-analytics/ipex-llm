@@ -56,7 +56,7 @@ def replace_with_QuantizedLinear(layer, qtype, device):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
-    if isinstance(layer, torch.nn.Linear):
+    if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
         if qtype == "sym_int4_rtn":
             # workaround for qwen2 & int4
             if (layer.in_features == 3584 and layer.out_features == 152064) or \
