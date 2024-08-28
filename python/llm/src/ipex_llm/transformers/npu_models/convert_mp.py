@@ -15,6 +15,7 @@
 
 import torch
 import importlib
+from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
 
 
 def convert_forward(m, target_m, new_forward):
@@ -25,7 +26,7 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def optimize_llm_pre(model: torch.nn.Module):
+def optimize_llm_pre(model: torch.nn.Module, cpu_lm_head: bool, qtype):
     if model.config.model_type == "baichuan":
         # process NormHead module in Baichuan2 7B
         if hasattr(model, 'lm_head') and model.lm_head is not None:
@@ -39,6 +40,31 @@ def optimize_llm_pre(model: torch.nn.Module):
         if model.config.hidden_size in [4096, 2048]:
             from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
+
+    # lm_head to cpu optimization
+    if cpu_lm_head:
+        is_unsupported_model = (model.config.model_type == "llama"
+                                and model.vocab_size > 32000)
+        if not is_unsupported_model:
+            from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8
+            if qtype == "sym_int4_rtn":
+                lm_qtype = SYM_INT4
+            else:
+                lm_qtype = SYM_INT8
+            print("!!!!!!!!! cpu_lm_head")
+            new_linear = LowBitLinear(model.lm_head.in_features,
+                                      model.lm_head.out_features,
+                                      lm_qtype,
+                                      False,
+                                      optimize_lm_head=True)
+            paramsLowBit = FP4Params(data=model.lm_head.weight.data,
+                                     requires_grad=False,
+                                     quantized=False,
+                                     _shape=None,
+                                     qtype=lm_qtype,
+                                     in_features=model.lm_head.in_features).to("cpu")
+            new_linear._parameters['weight'] = paramsLowBit
+            model.lm_head = new_linear
 
 
 def optimize_llm(

@@ -57,37 +57,17 @@ def replace_with_QuantizedLinear(layer, qtype, device):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
-    lm_qtype = None
-    if isinstance(layer, torch.nn.Linear):
+    if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
         if qtype == "sym_int4_rtn":
-            lm_qtype = ggml_tensor_qtype["sym_int4"]
             # workaround for qwen2 & int4
             if (layer.in_features == 3584 and layer.out_features == 152064) or \
                (layer.in_features == 18944 and layer.out_features == 3584):
                 qtype = "sym_int8_rtn"
                 iqtype = ggml_tensor_qtype[qtype]
-        else:
-            lm_qtype = ggml_tensor_qtype["sym_int8"]
 
-        if layer.out_features >= 30_000:
-            print("!!! lm head")
-            new_linear = LowBitLinear(layer.in_features,
-                                      layer.out_features,
-                                      lm_qtype,
-                                      False,
-                                      optimize_lm_head=True)
-            paramsLowBit = FP4Params(data=layer.weight.data,
-                                     requires_grad=False,
-                                     quantized=False,
-                                     _shape=None,
-                                     qtype=lm_qtype,
-                                     in_features=layer.in_features).to("cpu")
-            new_linear._parameters['weight'] = paramsLowBit
-            return new_linear
-        else:
-            qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
-                                                 iqtype, device=device)
-            return QuantizedLinear(qweights, scale, layer.bias)
+        qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
+                                             iqtype, device=device)
+        return QuantizedLinear(qweights, scale, layer.bias)
 
 
 def convert_forward(m, target_m, new_forward):
