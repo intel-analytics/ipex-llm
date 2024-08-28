@@ -151,6 +151,7 @@ class _BaseAutoModelClass:
                 ),
             )
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
+
             with torch.no_grad():
                 optimize_llm_pre(model, qtype)
                 cls.load_convert(qtype, model, "cpu", *args, **kwargs)
