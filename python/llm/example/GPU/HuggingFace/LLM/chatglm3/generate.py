@@ -28,7 +28,7 @@ CHATGLM_V3_PROMPT_FORMAT = "<|user|>\n{prompt}\n<|assistant|>"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for ChatGLM3 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm3-6b",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="/mnt/disk1/models/chatglm3-6b",
                         help='The huggingface repo id for the ChatGLM3 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",

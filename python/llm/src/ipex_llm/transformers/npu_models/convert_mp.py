@@ -167,3 +167,33 @@ def optimize_llm(
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model, module.BaichuanModel, baichuan_model_forward)
+    elif model.config.model_type == "chatglm":
+        if intra_pp is None:
+            intra_pp = 2
+        if inter_pp is None:
+            inter_pp = 2
+
+        from ipex_llm.transformers.npu_models.chatglm3_mp import gen_chatglm_fused_model_forward
+        from ipex_llm.transformers.npu_models.chatglm3_mp import DecodeRunner, PrefillRunner
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+        prefill_runner = PrefillRunner(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_value_cache,
+        )
+        chatglm_model_forward = gen_chatglm_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
+        convert_forward(model, module.ChatGLMModel, chatglm_model_forward)
+        from ipex_llm.transformers.npu_models.chatglm_mp import chatglm_condition_forward
+        convert_forward(model, module.ChatGLMForConditionalGeneration, chatglm_condition_forward)
