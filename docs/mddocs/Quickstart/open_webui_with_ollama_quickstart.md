@@ -75,6 +75,7 @@ You may run below commands to install Open WebUI dependencies:
   # Install Dependencies
   cd ./backend
   pip install -r requirements.txt -U
+  pip install --pre --upgrade accelerate
   ```
 
 - For **Windows users**:
@@ -90,6 +91,7 @@ You may run below commands to install Open WebUI dependencies:
   :: Install Dependencies
   cd .\backend
   pip install -r requirements.txt -U
+  pip install --pre --upgrade accelerate
   ```
 
 ### 3. Start the Open-WebUI 
