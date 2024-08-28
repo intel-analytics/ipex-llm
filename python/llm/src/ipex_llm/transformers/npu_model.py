@@ -123,7 +123,6 @@ class _BaseAutoModelClass:
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
-        cpu_lm_head = kwargs.pop("cpu_lm_head", True)
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -154,7 +153,7 @@ class _BaseAutoModelClass:
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
 
             with torch.no_grad():
-                optimize_llm_pre(model, cpu_lm_head, qtype)
+                optimize_llm_pre(model, qtype)
                 cls.load_convert(qtype, model, "cpu", *args, **kwargs)
                 create_npu_kernels(model)
             model = model.eval()

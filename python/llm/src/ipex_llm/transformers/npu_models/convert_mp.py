@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import torch
 import importlib
 from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
@@ -26,7 +27,7 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def optimize_llm_pre(model: torch.nn.Module, cpu_lm_head: bool, qtype):
+def optimize_llm_pre(model: torch.nn.Module, qtype):
     if model.config.model_type == "baichuan":
         # process NormHead module in Baichuan2 7B
         if hasattr(model, 'lm_head') and model.lm_head is not None:
@@ -42,7 +43,7 @@ def optimize_llm_pre(model: torch.nn.Module, cpu_lm_head: bool, qtype):
             model.apply(pre_compute_inv_freq)
 
     # lm_head to cpu optimization
-    if cpu_lm_head:
+    if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "1") == "1":
         is_unsupported_model = (model.config.model_type == "llama"
                                 and model.vocab_size > 32000)
         if not is_unsupported_model:
@@ -52,11 +53,12 @@ def optimize_llm_pre(model: torch.nn.Module, cpu_lm_head: bool, qtype):
             else:
                 lm_qtype = SYM_INT8
             print("!!!!!!!!! cpu_lm_head")
+            # lm_head opt to mp opt
             new_linear = LowBitLinear(model.lm_head.in_features,
                                       model.lm_head.out_features,
                                       lm_qtype,
                                       False,
-                                      optimize_lm_head=True)
+                                      optimize_lm_head=False)
             paramsLowBit = FP4Params(data=model.lm_head.weight.data,
                                      requires_grad=False,
                                      quantized=False,
