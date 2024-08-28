@@ -207,27 +207,17 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
         )  # type: ignore[attr-defined]
         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
-        
-        x1 = self.slice(mm1, 0, 4608)
-        x2 = self.slice(mm1, 4608, 9216)
-        x3 = self.slice(mm1, 9216, 13824)
-        x4 = self.slice(mm1, 13824, 18944)
-        down1 = self.linear(
-            x1, self.hidden_size, 4608, bias=False, wt_dtype=self.dtype
-        )
-        down2 = self.linear(
-            x2, self.hidden_size, 4608, bias=False, wt_dtype=self.dtype
-        )
-        down3 = self.linear(
-            x3, self.hidden_size, 4608, bias=False, wt_dtype=self.dtype
-        )
-        down4 = self.linear(
-            x4, self.hidden_size, 4608, bias=False, wt_dtype=self.dtype
-        )
-        
-        hidden_states = down1 + down2 + down3 + down4
+        if self.intermediate_size == 18944:
+            # for qwen2-7b
+            hidden_states = self.linear(
+                mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=np.int8
+            )
+        else:
+            hidden_states = self.linear(
+                mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+            )
         return hidden_states
-    
+
     def build_decoder(
         self,
         hidden_states,
@@ -311,7 +301,6 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         self.transpose_value = transpose_value
         if isinstance(parameters[0], tuple):
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
-            assert np_dtype == np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
 
@@ -354,7 +343,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
-            self.backend_decoders[i].set_weights(self.op_id, op_parameters[start * 10:end * 10])
+            self.backend_decoders[i].set_weights(self.op_id, op_parameters[start * 7:end * 7])
 
     def forward(
         self,
@@ -438,7 +427,6 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         # self.rotary_emb = rotary_emb
         if isinstance(parameters[0], tuple):  # weight, scale from QuantizedLinear
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
-            assert np_dtype == np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
 
@@ -553,10 +541,7 @@ def run_decode(
             (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
             (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
             (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down1_proj.weight, mlp_layer.down1_proj.scale),
-            (mlp_layer.down2_proj.weight, mlp_layer.down2_proj.scale),
-            (mlp_layer.down3_proj.weight, mlp_layer.down3_proj.scale),
-            (mlp_layer.down4_proj.weight, mlp_layer.down4_proj.scale),
+            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
         ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
@@ -768,53 +753,52 @@ def run_prefill(
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
     layer_indexs = range(layer_start, layer_end)
-    for layer_idx in layer_indexs:
-        curr_layer = model.model.layers[layer_idx]
-        attn_layer = curr_layer.self_attn
-        mlp_layer = curr_layer.mlp
+    if model.config.intermediate_size == 8960:
+        # for qwen2-1.5b
+        for layer_idx in layer_indexs:
+            curr_layer = model.model.layers[layer_idx]
+            attn_layer = curr_layer.self_attn
+            mlp_layer = curr_layer.mlp
 
-        weights = [
-            (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
-            (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
-            (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
-            (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-            (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-            (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down1_proj.weight, mlp_layer.down1_proj.scale),
-            (mlp_layer.down2_proj.weight, mlp_layer.down2_proj.scale),
-            (mlp_layer.down3_proj.weight, mlp_layer.down3_proj.scale),
-            (mlp_layer.down4_proj.weight, mlp_layer.down4_proj.scale),
-        ]
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            ]
 
-        cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
-        cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+            cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
+            cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
 
-        layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
-        layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
+            layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
+            layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
-        new_decoderlayer = FusedQwenLowBitDecoderlayer(
-            weights,
-            num_heads=num_heads,
-            num_key_value_heads=num_key_value_heads,
-            cached_cos=cached_cos,
-            cached_sin=cached_sin,
-            layer_norm_0=layer_norm_0,
-            layer_norm_1=layer_norm_1,
-            q_bias=attn_layer.q_proj.bias.to(torch.float16),
-            k_bias=attn_layer.k_proj.bias.to(torch.float16),
-            v_bias=attn_layer.v_proj.bias.to(torch.float16),
-            layer_idx=layer_idx,
-            rms_norm_eps=rms_norm_eps,
-            intermediate_size=intermediate_size,
-            max_seq_len=max_output_len,
-            transpose_value=transpose_value_cache,
-        )
+            new_decoderlayer = FusedQwenLowBitDecoderlayer(
+                weights,
+                num_heads=num_heads,
+                num_key_value_heads=num_key_value_heads,
+                cached_cos=cached_cos,
+                cached_sin=cached_sin,
+                layer_norm_0=layer_norm_0,
+                layer_norm_1=layer_norm_1,
+                q_bias=attn_layer.q_proj.bias.to(torch.float16),
+                k_bias=attn_layer.k_proj.bias.to(torch.float16),
+                v_bias=attn_layer.v_proj.bias.to(torch.float16),
+                layer_idx=layer_idx,
+                rms_norm_eps=rms_norm_eps,
+                intermediate_size=intermediate_size,
+                max_seq_len=max_output_len,
+                transpose_value=transpose_value_cache,
+            )
 
-        layer_weights.extend(weights)
-        input_layer_norm_weights.append(layer_norm_0)
-        post_attn_layernorm_weights.append(layer_norm_1)
-        model.model.layers[layer_idx] = new_decoderlayer
-        deocderlayers.append(new_decoderlayer)
+            layer_weights.extend(weights)
+            input_layer_norm_weights.append(layer_norm_0)
+            post_attn_layernorm_weights.append(layer_norm_1)
+            model.model.layers[layer_idx] = new_decoderlayer
+            deocderlayers.append(new_decoderlayer)
 
     print("finish creating all decode layers in prefill")
     result_queue.put("loading finish")
@@ -1101,6 +1085,7 @@ def qwen2_casullm_forward(
         hidden_states=outputs.hidden_states,
         attentions=outputs.attentions,
     )
+
 
 from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb, repeat_kv
 import math
