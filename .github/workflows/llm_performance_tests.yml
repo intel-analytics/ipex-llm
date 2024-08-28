@@ -992,22 +992,22 @@ jobs:
       #     pip uninstall trl -y
       #     call conda deactivate
 
-      # - name: Concat csv and generate html (2048-256 int4+fp16)
-        shell: cmd
-        run: |
-          call conda activate html-gen
+      # # - name: Concat csv and generate html (2048-256 int4+fp16)
+      #   shell: cmd
+      #   run: |
+      #     call conda activate html-gen
 
-          cd python\llm\dev\benchmark\all-in-one
-          python ..\..\..\test\benchmark\concat_csv.py
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          del /q *test*.csv
-          move *.csv %CSV_SAVE_PATH%\2048-256_int4_fp16\
-          cd ..\..\..\test\benchmark
-          python csv_to_html.py -f %CSV_SAVE_PATH%\2048-256_int4_fp16\
-          if %ERRORLEVEL% neq 0 (exit /b 1)
-          move %CSV_SAVE_PATH%\2048-256_int4_fp16\*.html %CSV_SAVE_PATH%
+      #     cd python\llm\dev\benchmark\all-in-one
+      #     python ..\..\..\test\benchmark\concat_csv.py
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     del /q *test*.csv
+      #     move *.csv %CSV_SAVE_PATH%\2048-256_int4_fp16\
+      #     cd ..\..\..\test\benchmark
+      #     python csv_to_html.py -f %CSV_SAVE_PATH%\2048-256_int4_fp16\
+      #     if %ERRORLEVEL% neq 0 (exit /b 1)
+      #     move %CSV_SAVE_PATH%\2048-256_int4_fp16\*.html %CSV_SAVE_PATH%
 
-          call conda deactivate
+      #     call conda deactivate
 
       # 3072-384 int4+fp16
       - name: Prepare igpu perf test (3072-384 int4+fp16)
