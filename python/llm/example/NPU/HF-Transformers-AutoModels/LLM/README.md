@@ -129,7 +129,7 @@ python qwen2.py --disable-transpose-value-cache
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py --disable-transpose-value-cache
 
-# to run MiniCPM-2B-sft-bf16
+# to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
 ```
 
