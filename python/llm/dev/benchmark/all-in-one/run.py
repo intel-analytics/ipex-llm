@@ -2038,8 +2038,7 @@ if __name__ == '__main__':
     for api in conf.test_api:
         global csv_name
         csv_name = f'{current_dir}/{api}-results-{today}.csv'
-        print("-------------------- csv_name: {} --------------------".format(csv_name))
-        print(conf)
+
         try:
             line_counter = len(open(csv_name).readlines())
         except:
@@ -2071,6 +2070,8 @@ if __name__ == '__main__':
         print("-------------------- Results df:--------------------")
         print(df)
         print("-------------------- Results: {} --------------------".format(results))
+        print("-------------------- csv_name: {} --------------------".format(csv_name))
+        print(conf)
         if "pipeline" in api or "deepspeed" in api:
             if torch.distributed.get_rank() == 0:
                 df.index += max(line_counter - 1, 0)
