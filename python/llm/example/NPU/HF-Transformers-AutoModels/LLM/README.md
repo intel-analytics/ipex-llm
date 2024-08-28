@@ -23,6 +23,12 @@ Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-w
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
 Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
 
+### Recommended NPU Driver Version for LNL users
+#### 32.0.100.2625
+Supported models: Llama2-7B, Qwen2-1.5B, MiniCPM-1B, Baichuan2-7B
+#### 32.0.101.2715
+Supported models: Llama3-8B, MiniCPM-2B
+
 ## 1. Install
 ### 1.1 Installation on Windows
 We suggest using conda to manage environment:
@@ -88,7 +94,7 @@ The example below shows how to run the **_optimized model implementations_** on 
 # to run Llama-2-7b-chat-hf
 python llama.py
 
-# to run Meta-Llama-3-8B-Instruct
+# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
 # to run Qwen2-1.5B-Instruct
@@ -116,7 +122,7 @@ If you encounter output problem, please try to disable the optimization of trans
 # to run Llama-2-7b-chat-hf
 python  llama.py --disable-transpose-value-cache
 
-# to run Meta-Llama-3-8B-Instruct
+# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
 
 # to run Qwen2-1.5B-Instruct
