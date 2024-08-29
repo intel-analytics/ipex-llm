@@ -3,6 +3,7 @@ model="YOUR_MODEL_PATH"
 served_model_name="YOUR_MODEL_NAME"
  
 source /opt/intel/1ccl-wks/setvars.sh
+export BIGDL_LLM_SDP_IGNORE_MASK=0
 
 python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --served-model-name $served_model_name \
