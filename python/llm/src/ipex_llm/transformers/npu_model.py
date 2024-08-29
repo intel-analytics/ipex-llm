@@ -153,16 +153,16 @@ class _BaseAutoModelClass:
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
 
             with torch.no_grad():
-                optimize_llm_pre(model, qtype)
-                cls.load_convert(qtype, model, "cpu", *args, **kwargs)
-                create_npu_kernels(model)
+                optimize_llm_pre(model.llm, qtype)
+                cls.load_convert(qtype, model.llm, "cpu", *args, **kwargs)
+                create_npu_kernels(model.llm)
             model = model.eval()
             logger.info(f"Finish to convert model")
             model.config.update({"bigdl_transformers_low_bit": qtype})
             model.share_memory()
 
             optimize_llm(
-                model,
+                model.llm,
                 max_output_len=max_output_len,
                 max_prompt_len=max_prompt_len,
                 inter_pp=inter_pp,
