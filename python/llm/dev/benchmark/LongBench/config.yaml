@@ -1,7 +1,8 @@
 model_name:
-  - "mistral-7B-instruct-v0.2"
+  # - "mistral-7B-instruct-v0.2"
   - "llama2-7b-chat-4k"
-  - "chatglm4-9b"
+  # - "chatglm4-9b"
+  # - "qwen2-7b-instruct"
 
 full_kv: True
 optimize_model: True

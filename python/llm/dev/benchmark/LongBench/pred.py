@@ -15,7 +15,7 @@ valid_model_names = [
     "llama2-7b-chat-4k", "longchat-v1.5-7b-32k", "xgen-7b-8k", 
     "internlm-7b-8k", "chatglm2-6b", "chatglm2-6b-32k", "chatglm3-6b-32k", "vicuna-v1.5-7b-16k",
     "mistral-7B-instruct-v0.2", "mistral-7B-instruct-v0.1", "llama-2-7B-32k-instruct", "mixtral-8x7B-instruct-v0.1","lwm-text-chat-1m", "lwm-text-1m",
-    "qwen-2", "chatglm4-9b"]
+    "qwen2-7b-instruct", "chatglm4-9b"]
 
 valid_datasets_e = ["qasper", "multifieldqa_en", "hotpotqa", "2wikimqa", "gov_report", "multi_news", \
                     "trec", "triviaqa", "samsum", "passage_count", "passage_retrieval_en", "lcc", "repobench-p"]
