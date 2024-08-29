@@ -88,7 +88,7 @@ The example below shows how to run the **_optimized model implementations_** on 
 
 ### Recommended NPU Driver Version for LNL Users
 #### 32.0.100.2625
-Supported models: Llama2-7B, Qwen2-1.5B, MiniCPM-1B, Baichuan2-7B
+Supported models: Llama2-7B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, Baichuan2-7B
 #### 32.0.101.2715
 Supported models: Llama3-8B, MiniCPM-2B
 
