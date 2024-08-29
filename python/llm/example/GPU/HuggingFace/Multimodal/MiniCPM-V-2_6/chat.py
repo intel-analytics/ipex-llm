@@ -35,8 +35,6 @@ if __name__ == '__main__':
                         help='The URL or path to the image to infer')
     parser.add_argument('--prompt', type=str, default="What is in the image?",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=32,
-                        help='Max tokens to predict')
     parser.add_argument('--stream', action='store_true',
                         help='Whether to chat in streaming mode')
 
