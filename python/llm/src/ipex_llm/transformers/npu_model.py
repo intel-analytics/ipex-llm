@@ -152,17 +152,22 @@ class _BaseAutoModelClass:
             )
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
 
+            if model.config.model_type == "minicpmv":
+                llm = model.llm
+            else:
+                llm = model
+
             with torch.no_grad():
-                optimize_llm_pre(model.llm, qtype)
-                cls.load_convert(qtype, model.llm, "cpu", *args, **kwargs)
-                create_npu_kernels(model.llm)
+                optimize_llm_pre(llm, qtype)
+                cls.load_convert(qtype, llm, "cpu", *args, **kwargs)
+                create_npu_kernels(llm)
             model = model.eval()
             logger.info(f"Finish to convert model")
             model.config.update({"bigdl_transformers_low_bit": qtype})
             model.share_memory()
 
             optimize_llm(
-                model.llm,
+                llm,
                 max_output_len=max_output_len,
                 max_prompt_len=max_prompt_len,
                 inter_pp=inter_pp,
