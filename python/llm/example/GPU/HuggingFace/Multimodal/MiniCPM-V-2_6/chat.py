@@ -71,7 +71,6 @@ if __name__ == '__main__':
     model.chat(
         image=None,
         msgs=msgs,
-        context=None,
         tokenizer=tokenizer,
     )
 
@@ -79,7 +78,6 @@ if __name__ == '__main__':
         res = model.chat(
             image=None,
             msgs=msgs,
-            context=None,
             tokenizer=tokenizer,
             stream=True
         )
@@ -96,7 +94,6 @@ if __name__ == '__main__':
         res = model.chat(
             image=None,
             msgs=msgs,
-            context=None,
             tokenizer=tokenizer,
         )
         torch.xpu.synchronize()
