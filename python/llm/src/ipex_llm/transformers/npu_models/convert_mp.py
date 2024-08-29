@@ -107,12 +107,14 @@ def optimize_llm(
         from transformers.models.llama.modeling_llama import LlamaForCausalLM
         from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
         convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
-    elif model.config.model_type == "qwen2" and model.config.intermediate_size == 8960:
-        # for qwen2-1.5B
+    elif model.config.model_type == "qwen2" and model.config.num_hidden_layers == 28:
+        # for qwen2-1.5B and qwen2-7B
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 1
+            inter_pp = 4 if model.config.intermediate_size == 18944 else 1
+        if model.config.intermediate_size == 18944:
+            transpose_value_cache = False
 
         from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
         from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner
@@ -151,18 +153,25 @@ def optimize_llm(
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
 
+        if model.config.num_hidden_layers == 52:
+            # for minicpm-1b
+            transpose_cache = transpose_value_cache
+        elif model.config.num_hidden_layers == 40:
+            # for minicpm-2b
+            transpose_cache = False
+
         decode_runner = DecodeRunner(
             model,
             max_seq_len=max_output_len,
             inter_pp=inter_pp,
             intra_pp=intra_pp,
-            transpose_value_cache=transpose_value_cache,
+            transpose_value_cache=transpose_cache,
         )
         prefill_runner = PrefillRunner(
             model,
             max_output_len=max_output_len,
             max_prompt_len=max_prompt_len,
-            transpose_value_cache=transpose_value_cache,
+            transpose_value_cache=transpose_cache,
         )
         minicpm_model_forward = gen_minicpm_fused_model_forward(
             prefill_runner=prefill_runner, decode_runner=decode_runner

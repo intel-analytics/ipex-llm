@@ -81,7 +81,9 @@ The example below shows how to run the **_optimized model implementations_** on 
 - [Llama2-7B](./llama.py)
 - [Llama3-8B](./llama.py)
 - [Qwen2-1.5B](./qwen2.py)
+- [Qwen2-7B](./qwen2.py)
 - [MiniCPM-1B](./minicpm.py)
+- [MiniCPM-2B](./minicpm.py)
 - [Baichuan2-7B](./baichuan2.py)
 
 ```bash
@@ -94,8 +96,14 @@ python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 # to run Qwen2-1.5B-Instruct
 python qwen2.py
 
+# to run Qwen2-7B-Instruct
+python qwen2.py  --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --inter-pp 4
+
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py
+
+# to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
+python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16
 
 # to run Baichuan2-7B-Chat
 python baichuan2.py
@@ -124,6 +132,9 @@ python qwen2.py --disable-transpose-value-cache
 
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py --disable-transpose-value-cache
+
+# to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
+python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
 ```
 
 
