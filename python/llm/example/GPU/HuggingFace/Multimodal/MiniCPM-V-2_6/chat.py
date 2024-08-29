@@ -26,7 +26,7 @@ from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for openbmb/MiniCPM-V-2_6 model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for openbmb/MiniCPM-V-2_6 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6",
                         help='The huggingface repo id for the openbmb/MiniCPM-V-2_6 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
     parser.add_argument('--stream', action='store_true',
-                        help='Whether to generate in streaming mode')
+                        help='Whether to chat in streaming mode')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/README.md
     msgs = [{'role': 'user', 'content': [image, args.prompt]}]
 
-    # Warmup
+    # ipex_llm model needs a warmup, then inference time can be accurate
     model.chat(
         image=None,
         msgs=msgs,

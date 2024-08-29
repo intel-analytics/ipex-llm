@@ -5,7 +5,7 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `chat()` API
-In the example [generate.py](./generate.py), we show a basic use case for a MiniCPM-V-2_6 model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
+In the example [chat.py](./chat.py), we show a basic use case for a MiniCPM-V-2_6 model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -15,7 +15,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install timm peft transformers==4.40.0 trl
+pip install transformers==4.40.0 trl
 ```
 
 #### 1.2 Installation on Windows
@@ -27,7 +27,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install timm peft transformers==4.40.0 trl
+pip install transformers==4.40.0 trl
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -106,15 +106,24 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ### 4. Running examples
 
-```
-python ./generate.py --prompt 'What is in the image?'
-```
+- chat without streaming mode:
+  ```
+  python ./generate.py --prompt 'What is in the image?'
+  ```
+- chat in streaming mode:
+  ```
+  python ./generate.py --prompt 'What is in the image?' --stream
+  ```
+
+> [!TIP]
+> For chatting in streaming mode, it is recommended to set the environment variable `PYTHONUNBUFFERED=1`.
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MiniCPM-V-2_6 (e.g. `openbmb/MiniCPM-V-2_6`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2_6'`.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--stream`: flag to chat in streaming mode
 
 #### Sample Output
 
@@ -122,21 +131,20 @@ Arguments info:
 
 ```log
 Inference time: xxxx s
--------------------- Input --------------------
+-------------------- Input Image --------------------
 http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
--------------------- Prompt --------------------
+-------------------- Input Prompt --------------------
 What is in the image?
--------------------- Output --------------------
-The image features a young child holding a white teddy bear with a pink tutu. The child is wearing a striped dress and is standing in front of a stone wall with some red flowers in the background.
+-------------------- Chat Output --------------------
+The image features a young child holding a white teddy bear wearing a pink dress. The background shows some red flowers and stone walls, suggesting an outdoor setting.
 ```
 ```log
-Inference time: xxxx s
--------------------- Input --------------------
+-------------------- Input Image --------------------
 http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
--------------------- Prompt --------------------
+-------------------- Input Prompt --------------------
 图片里有什么？
--------------------- Output --------------------
-这幅图片展示了一个年幼的孩子，可能是一个蹒跚学步的幼儿，手里拿着一个毛绒玩具熊。孩子穿着一件条纹连衣裙，主要颜色是粉红色和白色。毛绒熊是白色的，戴着一条粉色的蝴蝶结围裙。背景中有红色的花朵，暗示着室外的环境，可能是一个花园或公园。
+-------------------- Stream Chat Output --------------------
+图片中有一个穿着粉红色连衣裙的小孩，手里拿着一只穿着粉色芭蕾裙的白色泰迪熊。背景中有红色花朵和石头墙，表明照片可能是在户外拍摄的。
 ```
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
 
