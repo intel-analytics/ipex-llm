@@ -3,6 +3,8 @@ import json
 import argparse
 import numpy as np
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
 from metrics import (
     qa_f1_score,
     rouge_zh_score,
@@ -74,44 +76,55 @@ def scorer(dataset, predictions, answers, all_classes):
         total_score += score
     return round(100 * total_score / len(predictions), 2)
 
+
+def result_path_range(full_kv: bool, configs: list[str], model_name: str, fa_name: str):
+    if full_kv:
+        yield f"{fa_name}/{model_name}"
+
+    for config in configs:
+        yield f"{fa_name}/{model_name}_{config}"
+
+
 if __name__ == '__main__':
-    args = parse_args()
-    scores = dict()
-    if args.e:
-        path = f"pred_e_4096/{args.model}/"
-    else:
-        path = f"pred_4096/{args.model}/"
-    all_files = os.listdir(path)
-    print("Evaluating on:", all_files)
-    for filename in all_files:
-        if not filename.endswith("jsonl"):
-            continue
-        predictions, answers, lengths = [], [], []
-        dataset = filename.split('.')[0]
-        with open(f"{path}{filename}", "r", encoding="utf-8") as f:
-            for line in f:
-                data = json.loads(line)
-                predictions.append(data["pred"])
-                answers.append(data["answers"])
-                all_classes = data["all_classes"]
-                if "length" in data:
-                    lengths.append(data["length"])
-        if args.e:
-            score = scorer_e(dataset, predictions, answers, lengths, all_classes)
-        else:
-            score = scorer(dataset, predictions, answers, all_classes)
-            if dataset == 'qasper':
-                score_e = scorer_e(dataset, predictions, answers, lengths, all_classes)
-        scores[dataset] = score
-        # if dataset == 'qasper':
-        #     scores[dataset + '_e'] = score_e
-    # if args.e:
-    #     out_path = f"H2O/results/{args.model}/result.json"
-    # else:
-    #     out_path = f"H2O/results/{args.model}/result.json"
-        # out_path_e = f"pred/{args.model}/result_e.json"
-        # with open(out_path_e, "w") as f:
-        #     json.dump(score_e, f, ensure_ascii=False, indent=4)
-    out_path = f"{path}/result.json"
-    with open(out_path, "w") as f:
-        json.dump(scores, f, ensure_ascii=False, indent=4)
+    from omegaconf import OmegaConf
+    conf = OmegaConf.load(f'{current_dir}/config.yaml')
+
+    model_names = conf['model_name'] if OmegaConf.is_list(conf['model_name']) else [conf['model_name']]
+    full_kv = conf['full_kv']
+    ees = conf['e'] if OmegaConf.is_list(conf['e']) else [conf['e']]
+    compresskv_configs = conf['compress_kv'] if OmegaConf.is_list(conf['compress_kv']) else [conf['compress_kv']]
+
+    model2maxlen = json.load(open(f"{current_dir}/config/model2maxlen.json", "r"))
+
+    for model_name in model_names:
+        max_length = model2maxlen[model_name]
+        for e in ees:
+            fa_dir_name = f"pred_{'e_' if e else ''}{max_length}"
+            for path in result_path_range(full_kv, compresskv_configs, model_name, fa_dir_name):
+                scores = dict()
+                all_files = os.listdir(path)
+                print("Evaluating on:", all_files)
+                for filename in all_files:
+                    if not filename.endswith("jsonl"):
+                        continue
+                    predictions, answers, lengths = [], [], []
+                    dataset = filename.split('.')[0]
+                    with open(f"{path}/{filename}", "r", encoding="utf-8") as f:
+                        for line in f:
+                            data = json.loads(line)
+                            predictions.append(data["pred"])
+                            answers.append(data["answers"])
+                            all_classes = data["all_classes"]
+                            if "length" in data:
+                                lengths.append(data["length"])
+                    if e:
+                        score = scorer_e(dataset, predictions, answers, lengths, all_classes)
+                    else:
+                        score = scorer(dataset, predictions, answers, all_classes)
+                        if dataset == 'qasper':
+                            score_e = scorer_e(dataset, predictions, answers, lengths, all_classes)
+                    scores[dataset] = score
+
+                out_path = f"{path}/result.json"
+                with open(out_path, "w") as f:
+                    json.dump(scores, f, ensure_ascii=False, indent=4)

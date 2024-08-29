@@ -8,26 +8,33 @@ import numpy as np
 import random
 import argparse
 import torch
-#from snapkv.monkeypatch.monkeypatch import replace_llama, replace_mistral, replace_mixtral
-def parse_args(args=None):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default=None, choices=[
-        "llama2-7b-chat-4k", "longchat-v1.5-7b-32k", "xgen-7b-8k", 
-        "internlm-7b-8k", "chatglm2-6b", "chatglm2-6b-32k", "chatglm3-6b-32k", "vicuna-v1.5-7b-16k",
-        "mistral-7B-instruct-v0.2", "mistral-7B-instruct-v0.1", "llama-2-7B-32k-instruct", "mixtral-8x7B-instruct-v0.1","lwm-text-chat-1m", "lwm-text-1m"])
-    parser.add_argument('--compress_args_path', type=str, default=None, help="Path to the compress args")
-    parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
-    parser.add_argument('--dataset', type=str, default='qasper', help="Dataset to evaluate on")
-    parser.add_argument('--dtype', type=str, default='fp32', help="torch.dtype", choices=['fp32', 'fp16'])
-    return parser.parse_args(args)
+
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+valid_model_names = [
+    "llama2-7b-chat-4k", "longchat-v1.5-7b-32k", "xgen-7b-8k", 
+    "internlm-7b-8k", "chatglm2-6b", "chatglm2-6b-32k", "chatglm3-6b-32k", "vicuna-v1.5-7b-16k",
+    "mistral-7B-instruct-v0.2", "mistral-7B-instruct-v0.1", "llama-2-7B-32k-instruct", "mixtral-8x7B-instruct-v0.1","lwm-text-chat-1m", "lwm-text-1m",
+    "qwen-2", "chatglm4-9b"]
+
+valid_datasets_e = ["qasper", "multifieldqa_en", "hotpotqa", "2wikimqa", "gov_report", "multi_news", \
+                    "trec", "triviaqa", "samsum", "passage_count", "passage_retrieval_en", "lcc", "repobench-p"]
+
+valid_datasets = ["narrativeqa", "qasper", "multifieldqa_en", "hotpotqa", "2wikimqa", "musique", \
+                "gov_report", "qmsum", "multi_news", "trec", "triviaqa", "samsum", \
+                "passage_count", "passage_retrieval_en", "lcc", "repobench-p"] + \
+                ["multifieldqa_zh", "dureader", "vcsum", "lsht", "passage_retrieval_zh"]
+
+valid_dtypes = ['fp16', 'fp32']
+
 
 # This is the customized building prompt for chat models
 def build_chat(tokenizer, prompt, model_name):
     if "chatglm3" in model_name:
         print('chatglm3')
         prompt = tokenizer.build_chat_input(prompt)
-    elif "chatglm" in model_name:
-        print('chatglm')
+    elif "chatglm2" in model_name:
+        print('chatglm2')
         prompt = tokenizer.build_prompt(prompt)
     elif "longchat" in model_name or "vicuna" in model_name:
         print('longchat')
@@ -51,11 +58,6 @@ def build_chat(tokenizer, prompt, model_name):
         prompt = f"<|User|>:{prompt}<eoh>\n<|Bot|>:"
     elif "mistral" in model_name or "mixtral" in model_name:
         print('mistral')
-        # from fastchat.model import get_conversation_template
-        # conv = get_conversation_template("mistral")
-        # conv.append_message(conv.roles[0], prompt)
-        # conv.append_message(conv.roles[1], None)
-        # prompt = conv.get_prompt()
         prompt = prompt
     return prompt
 
@@ -69,15 +71,16 @@ def post_process(response, model_name):
 @torch.inference_mode()
 def get_pred_single_gpu(data, max_length, max_gen, 
                         prompt_format, dataset, model_name, 
-                        model2path, out_path, 
+                        model2path, out_path, low_bit, dtype, optimize_model,
                         compress=False, 
                         window_sizes = None,
-                        max_capacity_prompts = None,
+                        default_max_capacity_prompts = None,
+                        specific_max_capcity_prompts = None,
                         kernel_sizes = None,
                         pooling = None):
     # device = torch.device(f'cuda:{rank}')
     # device = model.device
-    model, tokenizer = load_model_and_tokenizer(model2path[model_name], model_name, device = "xpu", dtype_=args.dtype, compress=compress)
+    model, tokenizer = load_model_and_tokenizer(model2path[model_name], model_name, device = "xpu", dtype_=dtype, low_bit=low_bit, optimize_model=optimize_model)
     device = model.device
     print(f"model_device: {model.device}")
     printed = False
@@ -88,19 +91,27 @@ def get_pred_single_gpu(data, max_length, max_gen,
         # load compress args
         count_prompt_under_maxlen += 1
         if compress:
-            layers = len(model.model.layers)
+            inner_model = model.model if hasattr(model, "model") else model.base_model.encoder
+            layers = len(inner_model.layers)
             # check if window_sizes is a list
             if not isinstance(window_sizes, list):
                 window_sizes = [window_sizes] * layers
-            if not isinstance(max_capacity_prompts, list):
-                max_capacity_prompts = [max_capacity_prompts] * layers
+            max_capacity_prompts = [default_max_capacity_prompts] * layers
+            if specific_max_capcity_prompts is not None:
+                for key, value in specific_max_capcity_prompts.items():
+                    max_capacity_prompts[key] = value
             if not isinstance(kernel_sizes, list):
                 kernel_sizes = [kernel_sizes] * layers
+            from transformers.configuration_utils import PretrainedConfig
             for i in range(layers):
-                model.model.layers[i].self_attn.config.window_size = window_sizes[i]
-                model.model.layers[i].self_attn.config.max_capacity_prompt = max_capacity_prompts[i]
-                model.model.layers[i].self_attn.config.kernel_size = kernel_sizes[i]
-                model.model.layers[i].self_attn.config.pooling = pooling
+                cur_layer = inner_model.layers[i]
+                cur_layer_attn = cur_layer.self_attn if hasattr(cur_layer, "self_attn") else cur_layer.self_attention
+                cur_layer_attn.config = cur_layer_attn.config if hasattr(cur_layer_attn, "config") else PretrainedConfig()
+
+                cur_layer_attn.config.window_size = window_sizes[i]
+                cur_layer_attn.config.max_capacity_prompt = max_capacity_prompts[i]
+                cur_layer_attn.config.kernel_size = kernel_sizes[i]
+                cur_layer_attn.config.pooling = pooling
         ############################################################################################################
         
         prompt = prompt_format.format(**json_obj)
@@ -108,10 +119,11 @@ def get_pred_single_gpu(data, max_length, max_gen,
         tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt").input_ids[0]
         if "chatglm3" in model_name:
             tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids[0]
+        #print(f'initial len = {tokenized_prompt.shape}')
         if len(tokenized_prompt) > max_length:
             count_prompt_under_maxlen -= 1
             half = int(max_length/2)
-            prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True)+tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
+            prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True) + tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
         if dataset not in ["trec", "triviaqa", "samsum", "lsht", "lcc", "repobench-p"]: # chat models are better off without build prompts on these tasks
             prompt = build_chat(tokenizer, prompt, model_name)
         if "chatglm3" in model_name:
@@ -119,6 +131,7 @@ def get_pred_single_gpu(data, max_length, max_gen,
         else:
             input = tokenizer(prompt, truncation=False, return_tensors="pt").to(device)
         context_length = input.input_ids.shape[-1]
+        print(f'context_length = {context_length}')
         if not printed:
             print(prompt)
             printed = True
@@ -147,7 +160,7 @@ def get_pred_single_gpu(data, max_length, max_gen,
             json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"], "length": json_obj["length"]}, f, ensure_ascii=False)
             f.write('\n')
 
-    count_out_path = os.path.join(os.path.split(out_path)[0], "prompt_count.json")
+    count_out_path = os.path.join(os.path.split(out_path)[0], "uncut_prompt_count.json")
     prompt_count_result = {}
     if os.path.isfile(count_out_path):
         with open(count_out_path, "r", encoding = "utf-8") as f:
@@ -167,7 +180,7 @@ def seed_everything(seed):
     torch.backends.cudnn.deterministic = True
     torch.cuda.manual_seed_all(seed)
 
-def load_model_and_tokenizer(path, model_name, device, dtype_, compress=False):
+def load_model_and_tokenizer(path, model_name, device, dtype_, low_bit, optimize_model):
     if (dtype_ == 'fp32'):
         dtype = torch.float32
     elif (dtype_ == 'fp16'):
@@ -176,188 +189,90 @@ def load_model_and_tokenizer(path, model_name, device, dtype_, compress=False):
         raise ValueError(f"dtype {dtype_} is not supported")
     model = AutoModelForCausalLM.from_pretrained(
                 path,
-                load_in_4bit=True,
-                #low_cpu_mem_usage=True,
-                device_map="auto",
+                optimize_model=optimize_model,
+                load_in_low_bit=low_bit,
                 use_cache=True,
+                trust_remote_code=True,
                 torch_dtype = dtype
-                #use_flash_attention_2=True
     ).to(device)
     tokenizer = AutoTokenizer.from_pretrained(
             path,
             padding_side="left",
             use_fast=False,
+            trust_remote_code=True,
     )
-    model = model.eval()
+    model = model.half().to(device)
     return model, tokenizer
 
-    
-    '''
-    if "chatglm" in model_name or "internlm" in model_name or "xgen" in model_name:
-        tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
-        model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True, torch_dtype=torch.bfloat16).to(device)
-    elif "llama2" in model_name:
-        tokenizer = AutoTokenizer.from_pretrained(path)
-        model = AutoModelForCausalLM.from_pretrained(path, torch_dtype=torch.bfloat16).to(device)
-    elif "longchat" in model_name or "vicuna" in model_name:
-        if not compress:
-            model = AutoModelForCausalLM.from_pretrained(
-                    path,
-                    torch_dtype=torch.float16,
-                    low_cpu_mem_usage=True,
-                    device_map="auto",
-                    use_cache=True,
-                    use_flash_attention_2=True
-                )
-        else:
-            model = AutoModelForCausalLM.from_pretrained(
-                    path,
-                    torch_dtype=torch.float16,
-                    low_cpu_mem_usage=True,
-                    device_map="auto",
-                    use_cache=True,
-                    use_flash_attention_2=True
-                )
-        tokenizer = AutoTokenizer.from_pretrained(
-            path,
-            use_fast=False,
-        )
-    elif "llama-2" in model_name or "lwm" in model_name:
-        if not compress:
-            model = AutoModelForCausalLM.from_pretrained(
-                    path,
-                    torch_dtype=torch.float16,
-                    low_cpu_mem_usage=True,
-                    device_map="auto",
-                    use_cache=True,
-                    use_flash_attention_2=True
-                )
-        else:
-            model = AutoModelForCausalLM.from_pretrained(
-                    path,
-                    torch_dtype=torch.float16,
-                    low_cpu_mem_usage=True,
-                    device_map="auto",
-                    use_cache=True,
-                    use_flash_attention_2=True
-                )
-        tokenizer = AutoTokenizer.from_pretrained(
-            path,
-            use_fast=False,
-        )
-    elif "mistral" in model_name:
-        if not compress:
-            model = AutoModelForCausalLM.from_pretrained(
-                path,
-                load_in_4bit=True,
-                #low_cpu_mem_usage=True,
-                device_map="auto",
-                use_cache=True,
-                #use_flash_attention_2=True
-            )
-            model = model.to(device)
-        else:
-            model = AutoModelForCausalLM.from_pretrained(
-                path,
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True,
-                device_map="auto",
-                use_cache=True,
-                use_flash_attention_2=True
-            )
-        tokenizer = AutoTokenizer.from_pretrained(
-            path,
-            padding_side="right",
-            use_fast=False,
-        )
-    elif "mixtral" in model_name:
-        if not compress:
-            model = AutoModelForCausalLM.from_pretrained(
-                path,
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True,
-                device_map="auto",
-                use_cache=True,
-                use_flash_attention_2=True
-            )
-        else:
-            model = AutoModelForCausalLM.from_pretrained(
-                path,
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True,
-                device_map="auto",
-                use_cache=True,
-                use_flash_attention_2=True
-            )
-        tokenizer = AutoTokenizer.from_pretrained(
-            path,
-            # padding_side="right",
-            # use_fast=False,
-        )
-    else:
-        raise ValueError(f"Model {model_name} not supported!")
-    model = model.eval()
-    return model, tokenizer
-    '''
+def compresskv_config_range(full_kv: bool, configs: list[str], model_name: str):
+    if full_kv:
+        os.environ["IPEX_LLM_COMPRESS_KV_CACHE"] = "0"
+        yield False, {}, model_name
+
+    os.environ["IPEX_LLM_COMPRESS_KV_CACHE"] = "1"
+    for config in configs:
+        yield True, json.load(open(os.path.join(f'{current_dir}/config', f"{config}.json"), "r")), f"{model_name}_{config}"
+
 
 if __name__ == '__main__':
     seed_everything(42)
-    args = parse_args()
-    # world_size = torch.cuda.device_count()
-    # mp.set_start_method('spawn', force=True)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    from omegaconf import OmegaConf
+    conf = OmegaConf.load(f'{current_dir}/config.yaml')
 
-    model2path = json.load(open("config/model2path.json", "r"))
-    model2maxlen = json.load(open("config/model2maxlen.json", "r"))
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model_name = args.model
-    # define your model
-    max_length = model2maxlen[model_name]
-    if args.e:
-        datasets = ["qasper", "multifieldqa_en", "hotpotqa", "2wikimqa", "gov_report", "multi_news", \
-            "trec", "triviaqa", "samsum", "passage_count", "passage_retrieval_en", "lcc", "repobench-p"]
-    else:
-        datasets = ["narrativeqa", "qasper", "multifieldqa_en", "hotpotqa", "2wikimqa", "musique", \
-            "gov_report", "qmsum", "multi_news", "trec", "triviaqa", "samsum", \
-            "passage_count", "passage_retrieval_en", "lcc", "repobench-p"]
+    model_names = conf['model_name'] if OmegaConf.is_list(conf['model_name']) else [conf['model_name']]
+    full_kv = conf['full_kv']
+    ees = conf['e'] if OmegaConf.is_list(conf['e']) else [conf['e']]
+    compresskv_configs = conf['compress_kv'] if OmegaConf.is_list(conf['compress_kv']) else [conf['compress_kv']]
+    datasets = conf['datasets'] if OmegaConf.is_list(conf['datasets']) else [conf['datasets']]
+    dtype = conf['dtype']
+    low_bit = conf['low_bit']
+    optimize_model = conf['optimize_model']
 
-    # check if args dataset in datasets
-    if args.dataset not in datasets:
-        raise ValueError(f"Dataset {args.dataset} not found in datasets")
-    # we design specific prompt format and max generation length for each task, feel free to modify them to optimize model output
-    dataset2prompt = json.load(open("config/dataset2prompt.json", "r"))
-    dataset2maxlen = json.load(open("config/dataset2maxlen.json", "r"))
-    # predict on each dataset
-    dataset = args.dataset
-    # for dataset in datasets:
-    if args.compress_args_path:
-        compress_args = json.load(open(os.path.join('config', args.compress_args_path), "r"))
-        compress = True
-        write_model_name = model_name + args.compress_args_path.split(".")[0]
-        #replace_llama()
-        #replace_mistral()
-        #replace_mixtral()
-    else:
-        compress = False
-        compress_args = None
-        write_model_name = model_name
-    if args.e:
-        data = load_dataset('THUDM/LongBench', f"{dataset}_e", split='test')
-        if not os.path.exists(f"pred_e_{max_length}"):
-            os.makedirs(f"pred_e_{max_length}")
-        if not os.path.exists(f"pred_e_{max_length}/{write_model_name}"):
-            os.makedirs(f"pred_e_{max_length}/{write_model_name}")
-        out_path = f"pred_e_{max_length}/{write_model_name}/{dataset}.jsonl"
-    else:
-        data = load_dataset('THUDM/LongBench', dataset, split='test')
-        if not os.path.exists(f"pred_{max_length}"):
-            os.makedirs(f"pred_{max_length}")
-        if not os.path.exists(f"pred_{max_length}/{write_model_name}"):
-            os.makedirs(f"pred_{max_length}/{write_model_name}")
-        out_path = f"pred_{max_length}/{write_model_name}/{dataset}.jsonl"
-    prompt_format = dataset2prompt[dataset]
-    max_gen = dataset2maxlen[dataset]
-    data_all = [data_sample for data_sample in data]
-    if compress_args is not None:
-        get_pred_single_gpu(data_all, max_length, max_gen, prompt_format, dataset, model_name, model2path, out_path, compress, **compress_args)
-    else:
-        get_pred_single_gpu(data_all, max_length, max_gen, prompt_format, dataset, model_name, model2path, out_path, compress)
+    model2path = json.load(open(f"{current_dir}/config/model2path.json", "r"))
+    model2maxlen = json.load(open(f"{current_dir}/config/model2maxlen.json", "r"))
+
+    dataset2prompt = json.load(open(f"{current_dir}/config/dataset2prompt.json", "r"))
+    dataset2maxlen = json.load(open(f"{current_dir}/config/dataset2maxlen.json", "r"))
+
+    ## check
+    for model_name in model_names:
+        if model_name not in valid_model_names:
+            raise ValueError(f"model {model_name} is not supported")
+    for e in ees:
+        if e not in [True, False]:
+            raise ValueError("e should be True or False")
+    for dataset in datasets:
+        if True in ees:
+            valid_dataset_check = valid_datasets_e
+        else:
+            valid_dataset_check = valid_datasets
+        # check if args dataset in datasets
+        if dataset not in valid_dataset_check:
+            raise ValueError(f"Dataset {dataset} not found in datasets")
+    if dtype not in valid_dtypes:
+        raise ValueError(f"dtype {dtype} is not supported")
+    
+    for model_name in model_names:
+        max_length = model2maxlen[model_name]
+        for compress, compress_args, write_model_name in compresskv_config_range(full_kv, compresskv_configs, model_name):
+            for e in ees:
+                for dataset in datasets:
+                    if e:
+                        data = load_dataset('THUDM/LongBench', f"{dataset}_e", split='test')
+                        if not os.path.exists(f"{current_dir}/pred_e_{max_length}"):
+                            os.makedirs(f"{current_dir}/pred_e_{max_length}")
+                        if not os.path.exists(f"{current_dir}/pred_e_{max_length}/{write_model_name}"):
+                            os.makedirs(f"{current_dir}/pred_e_{max_length}/{write_model_name}")
+                        out_path = f"{current_dir}/pred_e_{max_length}/{write_model_name}/{dataset}.jsonl"
+                    else:
+                        data = load_dataset('THUDM/LongBench', dataset, split='test')
+                        if not os.path.exists(f"{current_dir}/pred_{max_length}"):
+                            os.makedirs(f"{current_dir}/pred_{max_length}")
+                        if not os.path.exists(f"{current_dir}/pred_{max_length}/{write_model_name}"):
+                            os.makedirs(f"{current_dir}/pred_{max_length}/{write_model_name}")
+                        out_path = f"{current_dir}/pred_{max_length}/{write_model_name}/{dataset}.jsonl"
+                    prompt_format = dataset2prompt[dataset]
+                    max_gen = dataset2maxlen[dataset]
+                    data_all = [data_sample for data_sample in data]
+                    get_pred_single_gpu(data_all, max_length, max_gen, prompt_format, dataset, model_name, model2path, out_path, low_bit, dtype, compress, optimize_model, **compress_args)
