@@ -121,7 +121,7 @@ def _in_projection_packed(
 # for minicpm-v-2_6 benchmarking purposes
 def minicpmv_decode_stream_wrapper(origin_decode_stream):
     def minicpv_decode_stream(
-        self, 
+        self,
         inputs_embeds,
         tokenizer,
         **kwargs
@@ -138,7 +138,7 @@ def minicpmv_decode_stream_wrapper(origin_decode_stream):
 
             thread = Thread(target=self.llm.generate, kwargs=generation_kwargs)
             thread.start()
-        
+
             return streamer
         else:
             return origin_decode_stream(
