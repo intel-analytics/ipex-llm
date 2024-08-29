@@ -197,7 +197,9 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
+        print("start compiling")
         self.compile()
+        print("end compiling")
 
     def mlp(self, hidden_states):
         mm1 = self.linear(
@@ -369,6 +371,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         hidden_states, new_keys, new_values = LowBitQwenMultiDecoderlayer.run_decoders(
             inputs,
             decoders=self.backend_decoders)
+        print("[debug] finish run_decoders")
 
         if self.do_print:
             print("outputs:", hidden_states)
@@ -753,7 +756,8 @@ def run_prefill(
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
     layer_indexs = range(layer_start, layer_end)
-    if model.config.intermediate_size == 8960:
+    # if model.config.intermediate_size == 8960:
+    if True:
         # for qwen2-1.5b
         for layer_idx in layer_indexs:
             curr_layer = model.model.layers[layer_idx]
@@ -803,7 +807,8 @@ def run_prefill(
     print("finish creating all decode layers in prefill")
     result_queue.put("loading finish")
 
-    if model.config.intermediate_size == 18944:
+    # if model.config.intermediate_size == 18944:
+    if False:
         # for qwen2-7b
         from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention
         from ipex_llm.transformers.npu_models.convert_mp import convert_forward
@@ -862,6 +867,8 @@ class PrefillRunner:
         self.p.daemon = True
         self.p.start()
         output = self.prefill_result_queue.get()
+        print(Fore.GREEN + f"prefill process output: {output}")
+        print(Style.RESET_ALL)
 
     def forward(
         self,
@@ -1129,6 +1136,8 @@ def generate_qwen2_attention_forward(max_seq_len, transpose_value):
 
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
+        key_states = key_states.half()
+        value_states = value_states.half()
 
         attn_weights = None
         if query_states.size(2) == key_states.size(2):

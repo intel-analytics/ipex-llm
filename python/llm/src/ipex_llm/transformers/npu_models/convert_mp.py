@@ -52,20 +52,20 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             lm_qtype = SYM_INT8
         # lm_head opt to mp opt (llama, qwen2)
         optimize_lm_head = model.config.model_type not in ["llama", "qwen2"]
-        new_linear = LowBitLinear(model.lm_head.in_features,
-                                  model.lm_head.out_features,
-                                  lm_qtype,
-                                  False,
-                                  optimize_lm_head=optimize_lm_head)
-        paramsLowBit = FP4Params(data=model.lm_head.weight.data,
-                                 requires_grad=False,
-                                 quantized=False,
-                                 _shape=None,
-                                 qtype=lm_qtype,
-                                 in_features=model.lm_head.in_features).to("cpu")
-        new_linear._parameters['weight'] = paramsLowBit
-        model.lm_head = new_linear
-
+        if hasattr(model, 'lm_head') and model.lm_head is not None:
+            new_linear = LowBitLinear(model.lm_head.in_features,
+                                      model.lm_head.out_features,
+                                      lm_qtype,
+                                      False,
+                                      optimize_lm_head=optimize_lm_head)
+            paramsLowBit = FP4Params(data=model.lm_head.weight.data,
+                                     requires_grad=False,
+                                     quantized=False,
+                                      _shape=None,
+                                     qtype=lm_qtype,
+                                     in_features=model.lm_head.in_features).to("cpu")
+            new_linear._parameters['weight'] = paramsLowBit
+            model.lm_head = new_linear
 
 def optimize_llm(
     model: torch.nn.Module,
@@ -107,6 +107,7 @@ def optimize_llm(
         convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
     elif model.config.model_type == "qwen2" and model.config.num_hidden_layers == 28:
         # for qwen2-1.5B and qwen2-7B
+        print("[debug] enter qwen2 optimize llm !!!!!!")
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
