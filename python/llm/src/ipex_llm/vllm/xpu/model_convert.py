@@ -101,10 +101,16 @@ def _QWen_MLP_forward(self, x):
 def _ChatGLM_MLP_forward(self, hidden_states):
     # [s, b, 4hp]
     intermediate_parallel = self.dense_h_to_4h(hidden_states)
-    intermediate_parallel = self.activation_func(intermediate_parallel)
+    if isinstance(intermediate_parallel, tuple):
+        intermediate_parallel = self.activation_func(intermediate_parallel[0])
+    else:
+        intermediate_parallel = self.activation_func(intermediate_parallel)
     # [s, b, h]
     output = self.dense_4h_to_h(intermediate_parallel)
-    return output
+    if isinstance(output, tuple):
+        return output[0]
+    else:
+        return output
 
 
 def _Baichuan_Attention_forward(
