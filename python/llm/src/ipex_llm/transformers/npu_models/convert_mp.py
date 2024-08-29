@@ -44,29 +44,26 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
 
     # lm_head to cpu optimization
     if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "1") != "0":
-        is_unsupported_model = (model.config.model_type == "llama"
-                                and model.vocab_size > 32000)
-        if not is_unsupported_model:
-            from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8
-            if qtype == "sym_int4_rtn":
-                lm_qtype = SYM_INT4
-            else:
-                lm_qtype = SYM_INT8
-            # lm_head opt to mp opt (llama, qwen2)
-            optimize_lm_head = model.config.model_type not in ["llama", "qwen2"]
-            new_linear = LowBitLinear(model.lm_head.in_features,
-                                      model.lm_head.out_features,
-                                      lm_qtype,
-                                      False,
-                                      optimize_lm_head=optimize_lm_head)
-            paramsLowBit = FP4Params(data=model.lm_head.weight.data,
-                                     requires_grad=False,
-                                     quantized=False,
-                                     _shape=None,
-                                     qtype=lm_qtype,
-                                     in_features=model.lm_head.in_features).to("cpu")
-            new_linear._parameters['weight'] = paramsLowBit
-            model.lm_head = new_linear
+        from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8
+        if qtype == "sym_int4_rtn":
+            lm_qtype = SYM_INT4
+        else:
+            lm_qtype = SYM_INT8
+        # lm_head opt to mp opt (llama, qwen2)
+        optimize_lm_head = model.config.model_type not in ["llama", "qwen2"]
+        new_linear = LowBitLinear(model.lm_head.in_features,
+                                  model.lm_head.out_features,
+                                  lm_qtype,
+                                  False,
+                                  optimize_lm_head=optimize_lm_head)
+        paramsLowBit = FP4Params(data=model.lm_head.weight.data,
+                                 requires_grad=False,
+                                 quantized=False,
+                                 _shape=None,
+                                 qtype=lm_qtype,
+                                 in_features=model.lm_head.in_features).to("cpu")
+        new_linear._parameters['weight'] = paramsLowBit
+        model.lm_head = new_linear
 
 
 def optimize_llm(

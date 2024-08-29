@@ -86,11 +86,18 @@ The example below shows how to run the **_optimized model implementations_** on 
 - [MiniCPM-2B](./minicpm.py)
 - [Baichuan2-7B](./baichuan2.py)
 
+### Recommended NPU Driver Version for LNL Users
+#### 32.0.100.2625
+Supported models: Llama2-7B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, Baichuan2-7B
+#### 32.0.101.2715
+Supported models: Llama3-8B, MiniCPM-2B
+
+### Run Models
 ```bash
 # to run Llama-2-7b-chat-hf
 python llama.py
 
-# to run Meta-Llama-3-8B-Instruct
+# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
 # to run Qwen2-1.5B-Instruct
@@ -124,7 +131,7 @@ If you encounter output problem, please try to disable the optimization of trans
 # to run Llama-2-7b-chat-hf
 python  llama.py --disable-transpose-value-cache
 
-# to run Meta-Llama-3-8B-Instruct
+# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
 
 # to run Qwen2-1.5B-Instruct
