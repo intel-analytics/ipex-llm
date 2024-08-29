@@ -148,18 +148,25 @@ def optimize_llm(
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
 
+        if model.config.num_hidden_layers == 52:
+            # for minicpm-1b
+            transpose_cache = transpose_value_cache
+        elif model.config.num_hidden_layers == 40:
+            # for minicpm-2b
+            transpose_cache = False
+
         decode_runner = DecodeRunner(
             model,
             max_seq_len=max_output_len,
             inter_pp=inter_pp,
             intra_pp=intra_pp,
-            transpose_value_cache=transpose_value_cache,
+            transpose_value_cache=transpose_cache,
         )
         prefill_runner = PrefillRunner(
             model,
             max_output_len=max_output_len,
             max_prompt_len=max_prompt_len,
-            transpose_value_cache=transpose_value_cache,
+            transpose_value_cache=transpose_cache,
         )
         minicpm_model_forward = gen_minicpm_fused_model_forward(
             prefill_runner=prefill_runner, decode_runner=decode_runner
