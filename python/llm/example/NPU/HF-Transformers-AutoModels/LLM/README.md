@@ -127,7 +127,7 @@ If you encounter output problem, please try to disable the optimization of trans
 # to run Llama-2-7b-chat-hf
 python  llama.py --disable-transpose-value-cache
 
-# to run Meta-Llama-3-8B-Instruct
+# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
 
 # to run Qwen2-1.5B-Instruct
