@@ -126,6 +126,7 @@ Arguments info:
 
 ### Troubleshooting
 
+#### Output Problem
 If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
 ```bash
 # to run Llama-2-7b-chat-hf
@@ -143,6 +144,9 @@ python minicpm.py --disable-transpose-value-cache
 # to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
 ```
+
+#### High CPU Utilization
+You can reduce CPU utilization by setting the environment variable with `set IPEX_LLM_CPU_LM_HEAD=0`.
 
 
 ### Sample Output
