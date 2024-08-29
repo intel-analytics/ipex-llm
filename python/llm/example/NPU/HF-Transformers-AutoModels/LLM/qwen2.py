@@ -43,7 +43,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-output-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=512)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
-    parser.add_argument("--intra-pp", type=int, default=2)
+    parser.add_argument("--intra-pp", type=int, default=None)
     parser.add_argument("--inter-pp", type=int, default=None)
 
     args = parser.parse_args()
