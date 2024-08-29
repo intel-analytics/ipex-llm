@@ -154,6 +154,9 @@ class _BaseAutoModelClass:
 
             if model.config.model_type == "minicpmv":
                 llm = model.llm
+                if llm.config.hidden_size == 4096 and llm.config.vocab_size == 128256:
+                    # MiniCPM-llama3-V2.5
+                    llm.config.model_type = "llama"
             else:
                 llm = model
 
