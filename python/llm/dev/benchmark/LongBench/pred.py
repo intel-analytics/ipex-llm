@@ -258,20 +258,15 @@ if __name__ == '__main__':
         for compress, compress_args, write_model_name in compresskv_config_range(full_kv, compresskv_configs, model_name):
             for e in ees:
                 for dataset in datasets:
-                    if e:
-                        data = load_dataset('THUDM/LongBench', f"{dataset}_e", split='test')
-                        if not os.path.exists(f"{current_dir}/pred_e_{max_length}"):
-                            os.makedirs(f"{current_dir}/pred_e_{max_length}")
-                        if not os.path.exists(f"{current_dir}/pred_e_{max_length}/{write_model_name}"):
-                            os.makedirs(f"{current_dir}/pred_e_{max_length}/{write_model_name}")
-                        out_path = f"{current_dir}/pred_e_{max_length}/{write_model_name}/{dataset}.jsonl"
-                    else:
-                        data = load_dataset('THUDM/LongBench', dataset, split='test')
-                        if not os.path.exists(f"{current_dir}/pred_{max_length}"):
-                            os.makedirs(f"{current_dir}/pred_{max_length}")
-                        if not os.path.exists(f"{current_dir}/pred_{max_length}/{write_model_name}"):
-                            os.makedirs(f"{current_dir}/pred_{max_length}/{write_model_name}")
-                        out_path = f"{current_dir}/pred_{max_length}/{write_model_name}/{dataset}.jsonl"
+                    e_string = "_e" if e else ""
+                    data = load_dataset('THUDM/LongBench', f"{dataset}{e_string}", split='test')
+
+                    if not os.path.exists(f"{current_dir}/pred{e_string}_{max_length}"):
+                        os.makedirs(f"{current_dir}/pred{e_string}_{max_length}")
+                    if not os.path.exists(f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}"):
+                        os.makedirs(f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}")
+                    out_path = f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}/{dataset}.jsonl"
+                    
                     prompt_format = dataset2prompt[dataset]
                     max_gen = dataset2maxlen[dataset]
                     data_all = [data_sample for data_sample in data]
