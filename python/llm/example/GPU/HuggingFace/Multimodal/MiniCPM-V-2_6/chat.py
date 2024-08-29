@@ -79,11 +79,11 @@ if __name__ == '__main__':
 
     if args.stream:
         res = model.chat(
-        image=None,
-        msgs=msgs,
-        context=None,
-        tokenizer=tokenizer,
-        stream=True
+            image=None,
+            msgs=msgs,
+            context=None,
+            tokenizer=tokenizer,
+            stream=True
         )
 
         print('-'*20, 'Input Image', '-'*20)
@@ -96,11 +96,10 @@ if __name__ == '__main__':
     else:
         st = time.time()
         res = model.chat(
-        image=None,
-        msgs=msgs,
-        context=None,
-        tokenizer=tokenizer,
-        stream=args.stream
+            image=None,
+            msgs=msgs,
+            context=None,
+            tokenizer=tokenizer,
         )
         torch.xpu.synchronize()
         end = time.time()
