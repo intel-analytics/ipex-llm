@@ -104,7 +104,7 @@ python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 python qwen2.py
 
 # to run Qwen2-7B-Instruct
-python qwen2.py  --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --inter-pp 4
+python qwen2.py  --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
 
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py
