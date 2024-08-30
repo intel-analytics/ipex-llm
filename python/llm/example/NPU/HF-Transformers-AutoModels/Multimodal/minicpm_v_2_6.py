@@ -45,11 +45,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
-    
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+
     model = AutoModel.from_pretrained(model_path, 
                                       torch_dtype=torch.float32,
                                       trust_remote_code=True,
@@ -78,13 +74,14 @@ if __name__ == '__main__':
     # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/README.md
     msg = [{'role': 'user', 'content': args.prompt}]
     st = time.time()
-    res = model.chat(
-     image=image,
-     msgs=msg,
-     context=None,
-     tokenizer=tokenizer,
-     sampling=True,
-    )
+    with torch.inference_mode():
+        res = model.chat(
+            image=image,
+            msgs=msg,
+            context=None,
+            tokenizer=tokenizer,
+            sampling=True,
+        )
     end = time.time()
     print(f'Inference time: {end-st} s')
     print('-'*20, 'Input', '-'*20)
