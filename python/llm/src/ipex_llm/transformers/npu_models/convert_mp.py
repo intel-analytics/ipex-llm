@@ -42,18 +42,31 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
 
+    # MiniCPM-V 2.6 and minicpm-2b must put lm_head on CPU now
+    cpu_lm_head = (
+        (model.config.model_type == "minicpmv" and model.config.hidden_size == 3584 and
+         model.config.vocab_size == 151666)
+        or (
+            model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40
+        )
+        or os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0"
+    )
+
     if model.config.model_type == "minicpmv" and hasattr(model, "llm"):
         # MiniCPM-V
         if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
+            # MiniCPM-V 2
             model.llm.config.model_type = "minicpm"
         elif model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            # MiniCPM-V 2.6
             model.llm.config.model_type = "qwen2"
         elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
+            # MiniCPM-V 2.5
             model.llm.config.model_type = "llama"
         model = model.llm
 
     # lm_head to cpu optimization
-    if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0":
+    if cpu_lm_head:
         # disable the optimization by default
         from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8
         if qtype == "sym_int4_rtn":

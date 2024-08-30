@@ -66,6 +66,7 @@ if __name__ == "__main__":
         intra_pp=args.intra_pp,
         inter_pp=args.inter_pp,
         transpose_value_cache=not args.disable_transpose_value_cache,
+        modules_to_not_convert=['vpm', 'resampler']
     )
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
