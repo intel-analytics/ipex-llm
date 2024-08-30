@@ -41,11 +41,11 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
         if model.config.hidden_size in [4096, 2048]:
             from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
-    
+
     # MiniCPM-V 2.6 and minicpm-2b must put lm_head on CPU now
     cpu_lm_head = (model.config.model_type == "minicpmv" and model.config.hidden_size == 3584
-                   and model.config.vocab_size == 151666) or \
-                  (model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40) \
+                   and model.config.vocab_size == 151666) \
+                  or (model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40) \
                   or os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0"
 
     if model.config.model_type == "minicpmv" and hasattr(model, "llm"):
