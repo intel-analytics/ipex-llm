@@ -158,7 +158,7 @@ class _BaseAutoModelClass:
                 llm = model
 
             with torch.no_grad():
-                optimize_llm_pre(llm, qtype)
+                optimize_llm_pre(model, qtype)
                 cls.load_convert(qtype, model, "cpu", modules_to_not_convert, *args, **kwargs)
                 create_npu_kernels(llm)
             model = model.eval()

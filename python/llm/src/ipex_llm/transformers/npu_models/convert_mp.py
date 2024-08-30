@@ -50,6 +50,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             model.llm.config.model_type = "qwen2"
         elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
             model.llm.config.model_type = "llama"
+        model = model.llm
 
     # lm_head to cpu optimization
     if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0":
