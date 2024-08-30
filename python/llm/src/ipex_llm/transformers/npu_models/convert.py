@@ -56,7 +56,7 @@ def replace_with_QuantizedLinear(layer, qtype, device):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
-    if isinstance(layer, torch.nn.Linear):
+    if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
         if qtype == "sym_int4_rtn":
             # workaround for qwen2 & int4
             if (layer.in_features == 3584 and layer.out_features == 152064) or \
@@ -81,21 +81,16 @@ def optimize_llm(model: torch.nn.Module):
         from ipex_llm.transformers.npu_models.llama import merge_qkv
         from ipex_llm.transformers.npu_models.llama import merge_mlp
         from ipex_llm.transformers.npu_models.llama import llama_model_forward
-        from ipex_llm.transformers.npu_models.llama import llama_fused_model_forward
         from ipex_llm.transformers.npu_models.llama import llama_attention_forward
         from ipex_llm.transformers.npu_models.llama import llama_mlp_forward
         from transformers.models.llama.modeling_llama import LlamaModel
         from transformers.models.llama.modeling_llama import LlamaAttention
         from transformers.models.llama.modeling_llama import LlamaMLP
-        if hasattr(model, 'pipeline_parallel_stages'):
-            # experimental support for fused decoderlayer implementation
-            convert_forward(model, LlamaModel, llama_fused_model_forward)
-        else:
-            model.apply(merge_qkv)
-            model.apply(merge_mlp)
-            convert_forward(model, LlamaModel, llama_model_forward)
-            convert_forward(model, LlamaAttention, llama_attention_forward)
-            convert_forward(model, LlamaMLP, llama_mlp_forward)
+        model.apply(merge_qkv)
+        model.apply(merge_mlp)
+        convert_forward(model, LlamaModel, llama_model_forward)
+        convert_forward(model, LlamaAttention, llama_attention_forward)
+        convert_forward(model, LlamaMLP, llama_mlp_forward)
 
     elif model.config.model_type == "mistral":
         from ipex_llm.transformers.npu_models.mistral import merge_qkv

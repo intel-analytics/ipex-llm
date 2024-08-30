@@ -77,6 +77,8 @@ class _BaseAutoModelClass:
         :param load_in_low_bit: str value, options are ``'sym_int4'``, ``'sym_int8'``,
                                 ``'fp16'``, ``'fp32'``.
                                 Relevant low bit optimizations will be applied to the model.
+        :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
+                               Default to be ``False``.
         :return: a model instance
         """
         if kwargs.get("device_map", None) not in [None, "cpu", "auto"]:
@@ -110,16 +112,16 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "mixed_precision")
         ignore_argument(kwargs, "cpu_embedding")
         ignore_argument(kwargs, "embedding_qtype")
-        ignore_argument(kwargs, "optimize_model")
+        ignore_argument(kwargs, "enable_mp")
         ignore_argument(kwargs, "modules_to_not_convert")
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
-        enable_mp = kwargs.pop("enable_mp", False)
+        optimize_model = kwargs.pop("optimize_model", False)
         max_output_len = kwargs.pop("max_output_len", 1024)
-        max_prompt_len = kwargs.pop("max_prompt_len", max_output_len)
-        inter_pp = kwargs.pop("inter_pp", 2)
-        intra_pp = kwargs.pop("intra_pp", 2)
+        max_prompt_len = kwargs.pop("max_prompt_len", 512)
+        inter_pp = kwargs.pop("inter_pp", None)
+        intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
 
         _args = copy.deepcopy(args)
@@ -140,7 +142,7 @@ class _BaseAutoModelClass:
         logger.info(f"Converting model, it may takes up to several minutes ...")
         from intel_npu_acceleration_library.compiler import create_npu_kernels
 
-        if enable_mp:
+        if optimize_model:
             invalidInputError(
                 max_prompt_len < max_output_len,
                 (
@@ -148,9 +150,10 @@ class _BaseAutoModelClass:
                     " than max_output_len ({max_output_len})"
                 ),
             )
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
+            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
 
             with torch.no_grad():
+                optimize_llm_pre(model, qtype)
                 cls.load_convert(qtype, model, "cpu", *args, **kwargs)
                 create_npu_kernels(model)
             model = model.eval()

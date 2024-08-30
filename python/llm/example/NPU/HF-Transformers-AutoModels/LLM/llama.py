@@ -26,6 +26,19 @@ from transformers.utils import logging
 
 logger = logging.get_logger(__name__)
 
+def get_prompt(message: str, chat_history: list[tuple[str, str]],
+               system_prompt: str) -> str:
+    texts = [f'<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n']
+    # The first user input is _not_ stripped
+    do_strip = False
+    for user_input, response in chat_history:
+        user_input = user_input.strip() if do_strip else user_input
+        do_strip = True
+        texts.append(f'{user_input} [/INST] {response.strip()} </s><s>[INST] ')
+    message = message.strip() if do_strip else message
+    texts.append(f'{message} [/INST]')
+    return ''.join(texts)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Predict Tokens using `generate()` API for npu model"
@@ -33,8 +46,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default="Qwen/Qwen2-1.5B-Instruct",
-        help="The huggingface repo id for the Qwen2 model to be downloaded"
+        default="meta-llama/Llama-2-7b-chat-hf",
+        help="The huggingface repo id for the Llama2 model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
@@ -43,8 +56,8 @@ if __name__ == "__main__":
     parser.add_argument("--max-output-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=512)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
-    parser.add_argument("--intra-pp", type=int, default=None)
-    parser.add_argument("--inter-pp", type=int, default=None)
+    parser.add_argument("--intra-pp", type=int, default=2)
+    parser.add_argument("--inter-pp", type=int, default=2)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -65,17 +78,16 @@ if __name__ == "__main__":
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
+    DEFAULT_SYSTEM_PROMPT = """\
+    """
+
     print("-" * 80)
     print("done")
-    messages = [{"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": args.prompt}]
-    text = tokenizer.apply_chat_template(messages,
-                                         tokenize=False,
-                                         add_generation_prompt=True)
     with torch.inference_mode():
         print("finish to load")
-        for i in range(3):
-            _input_ids = tokenizer([text], return_tensors="pt").input_ids
+        for i in range(5):
+            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+            _input_ids = tokenizer.encode(prompt, return_tensors="pt")
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(

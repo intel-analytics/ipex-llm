@@ -14,9 +14,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 </table>
 
 > [!NOTE]
-> `ipex-llm[cpp]==2.5.0b20240527` is consistent with [c780e75](https://github.com/ggerganov/llama.cpp/commit/c780e75305dba1f67691a8dc0e8bc8425838a452) of llama.cpp.
+> `ipex-llm[cpp]==2.2.0b20240826` is consistent with [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) of llama.cpp.
 >
-> Our latest version is consistent with [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) of llama.cpp.
+> Our latest version is consistent with [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) of llama.cpp.
 
 ## Table of Contents
 - [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites)
@@ -24,8 +24,6 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 - [Setup for running llama.cpp](./llama_cpp_quickstart.md#2-setup-for-running-llamacpp)
 - [Example: Running community GGUF models with IPEX-LLM](./llama_cpp_quickstart.md#3-example-running-community-gguf-models-with-ipex-llm)
 - [Troubleshooting](./llama_cpp_quickstart.md#troubleshooting)
-
-
 
 ## Quick Start
 This quickstart guide walks you through installing and running `llama.cpp` with `ipex-llm`.
@@ -117,6 +115,7 @@ To use GPU acceleration, several environment variables are required or recommend
   ```bash
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
+  # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   # [optional] if you want to run on single GPU, use below command to limit GPU may improve performance
   export ONEAPI_DEVICE_SELECTOR=level_zero:0
@@ -128,11 +127,15 @@ To use GPU acceleration, several environment variables are required or recommend
 
   ```cmd
   set SYCL_CACHE_PERSISTENT=1
+  rem under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   ```
 
 > [!TIP]
 > When your machine has multi GPUs and you want to run on one of them, you need to set `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]`, here `[gpu_id]` varies based on your requirement. For more details, you can refer to [this section](../Overview/KeyFeatures/multi_gpus_selection.md#2-oneapi-device-selector).
+
+> [!NOTE]
+> The environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
 
 ### 3. Example: Running community GGUF models with IPEX-LLM
 
