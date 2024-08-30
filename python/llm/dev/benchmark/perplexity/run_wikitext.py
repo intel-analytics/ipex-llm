@@ -36,7 +36,7 @@ parser.add_argument("--max_length", type=int, default=None)
 parser.add_argument("--mixed_precision", action="store_true") 
 args = parser.parse_args()
 
-if args.precision == "fp16":  # ipex-llm fp16
+if args.precision == "fp16":  # ipex fp16
     from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(args.model_path,
                                                  use_cache=args.use_cache,
