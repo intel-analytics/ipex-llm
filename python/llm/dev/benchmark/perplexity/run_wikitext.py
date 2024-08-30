@@ -36,13 +36,13 @@ parser.add_argument("--max_length", type=int, default=None)
 parser.add_argument("--mixed_precision", action="store_true") 
 args = parser.parse_args()
 
-if args.precision == "fp16":  # ipex fp16
+if args.precision == "fp16":  # ipex-llm fp16
     from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(args.model_path,
                                                  use_cache=args.use_cache,
                                                  trust_remote_code=True)
     model = model.half()
-elif 'gptq' in args.model_path.lower():  # ipex gptq
+elif 'gptq' in args.model_path.lower():  # ipex-llm gptq
     from ipex_llm.transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(args.model_path,
                                                  load_in_4bit=True,
