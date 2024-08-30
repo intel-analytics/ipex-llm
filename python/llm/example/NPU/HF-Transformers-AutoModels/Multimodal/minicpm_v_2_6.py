@@ -26,8 +26,8 @@ from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for openbmb/MiniCPM-V-2_6 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6",
+    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for openbmb/MiniCPM-V-2_6 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6 model",
                         help='The huggingface repo id for the openbmb/MiniCPM-V-2_6 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--image-url-or-path', type=str,
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--intra-pp", type=int, default=2)
-    parser.add_argument("--inter-pp", type=int, default=4)
+    parser.add_argument("--inter-pp", type=int, default=2)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -59,7 +59,6 @@ if __name__ == '__main__':
                                       transpose_value_cache=not args.disable_transpose_value_cache,
                                       modules_to_not_convert=['vpm', 'resampler']
                                      )
-    print(model)
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     model.eval()
