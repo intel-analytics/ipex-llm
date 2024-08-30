@@ -69,15 +69,11 @@ if __name__ == "__main__":
     )
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    msgs = [{'role': 'user', 'content': args.prompt}]
-
     print("-" * 80)
     print("done")
 
-    image = Image.open("z.jpg").convert('RGB')
-    msgs = [{'role': 'user', 'content': [image, args.prompt]}]
+    msgs = [{'role': 'user', 'content': args.prompt}]
     image_path = args.image_url_or_path
-
     if os.path.exists(image_path):
        image = Image.open(image_path).convert('RGB')
     else:
@@ -85,7 +81,7 @@ if __name__ == "__main__":
 
     st = time.time()
     res = model.chat(
-        image=None,
+        image=image,
         msgs=msgs,
         tokenizer=tokenizer,
         sampling=True,
