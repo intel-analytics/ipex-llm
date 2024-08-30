@@ -383,7 +383,7 @@ class LLMBaseNNFactory(NNFactory):
             self.load_cache_async()
 
     def load_cache_async(self):
-        self.load_wt_fn(len(self.input_ops), self._mm, self.kv_cache_c_handle)
+        self.load_wt_fn(len(self.input_ops), self._mm, self.kv_cache_c_handle, verify_size=True)
 
     def set_weights(self, op_id, weights):
         self.set_weights_async(op_id, weights)
@@ -396,7 +396,7 @@ class LLMBaseNNFactory(NNFactory):
                           (f"weights size does not match graph, "
                            f"with weights size: {len(weights)} and "
                            f" graph linear size: {len(self.linear_ops)}"))
-        self.setWeights(offset, op_id, *weights)
+        self.setWeights(offset, op_id, *weights, verify_size=True)
 
     @staticmethod
     def run_decoders(inputs, decoders):
@@ -420,9 +420,11 @@ class LLMBaseNNFactory(NNFactory):
         new_key_states = []
         new_value_states = []
         for i in range(num_decoders):
-            for j in range(1, len(decoders[i].torch_out)):
+            for j in range(1, len(decoders[i].torch_out) - 1 ):
                 if j % 2 == 1:
                     new_key_states.append(decoders[i].torch_out[j])
                 else:
                     new_value_states.append(decoders[i].torch_out[j])
-        return hidden_states, new_key_states, new_value_states
+        res = decoders[-1].torch_out[-1]
+        return hidden_states, new_key_states, new_value_states, res
+        # return hidden_states, new_key_states, new_value_states
