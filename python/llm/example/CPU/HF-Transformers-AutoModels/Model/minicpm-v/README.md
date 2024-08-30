@@ -17,7 +17,7 @@ conda activate llm
 
 # install ipex-llm with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-pip install pillow torchvision
+pip install torchvision==0.16.2 --extra-index-url https://download.pytorch.org/whl/cpu
 ```
 On Windows:
 
@@ -26,7 +26,7 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
-pip install pillow torchvision
+pip install torchvision==0.16.2
 ```
 
 ### 2. Run
@@ -84,3 +84,16 @@ What is in the image?
 -------------------- Chat Output --------------------
 The image features a young child holding a white teddy bear dressed in pink. The background includes some red flowers and what appears to be a stone wall.
 ```
+
+```log
+-------------------- Input Image --------------------
+http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+-------------------- Input Prompt --------------------
+图片里有什么？
+-------------------- Stream Chat Output --------------------
+图片中有一个小女孩，她手里拿着一个穿着粉色裙子的白色小熊玩偶。背景中有红色花朵和石头结构，可能是一个花园或庭院。
+```
+
+The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
+
+<a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=400px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>

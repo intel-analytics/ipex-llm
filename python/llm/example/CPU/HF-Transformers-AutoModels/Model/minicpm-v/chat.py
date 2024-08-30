@@ -67,13 +67,6 @@ if __name__ == '__main__':
     # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/README.md
     msgs = [{'role': 'user', 'content': [image, args.prompt]}]
 
-    # ipex_llm model needs a warmup, then inference time can be accurate
-    model.chat(
-        image=None,
-        msgs=msgs,
-        tokenizer=tokenizer,
-    )
-
     if args.stream:
         res = model.chat(
             image=None,
