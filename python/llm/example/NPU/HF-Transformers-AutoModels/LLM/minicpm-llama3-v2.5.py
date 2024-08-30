@@ -30,13 +30,13 @@ logger = logging.get_logger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Predict Tokens using `generate()` API for npu model"
+        description="Predict Tokens using `chat()` API for npu model"
     )
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default="openbmb/MiniCPM-1B-sft-bf16",
-        help="The huggingface repo id for the Llama2 model to be downloaded"
+        default="openbmb/MiniCPM-Llama3-V-2_5",
+        help="The huggingface repo id for the MiniCPM-Llama3-V-2_5 model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument('--image-url-or-path', type=str,
@@ -88,7 +88,7 @@ if __name__ == "__main__":
         image=None,
         msgs=msgs,
         tokenizer=tokenizer,
-        sampling=False,
+        sampling=True,
         temperature=0.7,
         # system_prompt='' # pass system_prompt if needed
         )
