@@ -13,15 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# Some parts of this file is adapted from
+# https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/modeling_minicpmv.py
+# which is licensed under Apache License 2.0:
+#
+# https://github.com/OpenBMB/MiniCPM/blob/main/LICENSE
+#
 
 
 import math
 import torch
+from threading import Thread
 from typing import Optional, List
 from torch.nn.functional import linear
 from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.common import attention_softmax
-from transformers import AutoProcessor
+from transformers import AutoProcessor, TextIteratorStreamer
 from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
 
 
@@ -109,6 +116,38 @@ def _in_projection_packed(
         else:
             b_q, b_k, b_v = b.chunk(3)
         return linear(q, w_q, b_q), linear(k, w_k, b_k), linear(v, w_v, b_v)
+
+
+# for minicpm-v-2_6 benchmarking purposes
+def minicpmv_decode_stream_wrapper(origin_decode_stream):
+    def minicpv_decode_stream(
+        self,
+        inputs_embeds,
+        tokenizer,
+        **kwargs
+    ):
+        streamer = kwargs.get('streamer', None)
+        if streamer is not None:
+            terminators = [tokenizer.convert_tokens_to_ids(i) for i in self.terminators]
+            generation_kwargs = {
+                'inputs_embeds': inputs_embeds,
+                'pad_token_id': 0,
+                'eos_token_id': terminators,
+            }
+            generation_kwargs.update(kwargs)
+
+            thread = Thread(target=self.llm.generate, kwargs=generation_kwargs)
+            thread.start()
+
+            return streamer
+        else:
+            return origin_decode_stream(
+                self=self,
+                inputs_embeds=inputs_embeds,
+                tokenizer=tokenizer,
+                **kwargs
+            )
+    return minicpv_decode_stream
 
 
 # MiniCPM-V-2
@@ -209,6 +248,12 @@ def minicpmv_generate_wrapper(origin_generate):
         **kwargs
     ):
         RepetitionPenaltyLogitsProcessor.__call__ = patched_repetition_penalty_call
+
+        # for minicpm-v-2_6 benchmarking purposes
+        stream = kwargs.get("stream", False)
+        if isinstance(stream, TextIteratorStreamer):
+            kwargs.update({'streamer': stream})
+
         return origin_generate(
             *inputs,
             **kwargs,
