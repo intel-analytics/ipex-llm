@@ -40,7 +40,7 @@ if __name__ == '__main__':
     parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--intra-pp", type=int, default=2)
-    parser.add_argument("--inter-pp", type=int, default=2)
+    parser.add_argument("--inter-pp", type=int, default=4)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
