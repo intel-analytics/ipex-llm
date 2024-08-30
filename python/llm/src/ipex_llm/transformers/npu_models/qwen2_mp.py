@@ -237,8 +237,10 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             # for qwen2-7b
             mm1_0 = self.slice(mm1, begin=[0, 0, 0], end=[1, seq_len, 9472])
             mm1_1 = self.slice(mm1, begin=[0, 0, 9472], end=[1, seq_len, 18944])
-            hidden_states_0 = self.linear(mm1_0, self.hidden_size, 9472, bias=False, wt_dtype=self.dtype)
-            hidden_states_1 = self.linear(mm1_1, self.hidden_size, 9472, bias=False, wt_dtype=self.dtype)
+            hidden_states_0 = self.linear(mm1_0, self.hidden_size, 9472,
+                                          bias=False, wt_dtype=self.dtype)
+            hidden_states_1 = self.linear(mm1_1, self.hidden_size, 9472,
+                                          bias=False, wt_dtype=self.dtype)
             hidden_states = hidden_states_0 + hidden_states_1
         else:
             hidden_states = self.linear(
