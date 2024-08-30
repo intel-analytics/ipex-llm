@@ -270,7 +270,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
 LLM_URLS = [f"http://localhost:{PORT}/v1/completions" for PORT in [8000]]
 
 
-MODEL = "llm/models/" + model_name
+MODEL = "/llm/models/" + model_name
 MAX_TOKENS = 512
 
 PROMPT = PROMPT_1024
