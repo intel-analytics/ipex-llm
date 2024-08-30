@@ -37,7 +37,7 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-output-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument("--max-prompt-len", type=int, default=512)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--intra-pp", type=int, default=None)
     parser.add_argument("--inter-pp", type=int, default=None)
