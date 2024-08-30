@@ -157,19 +157,10 @@ class _BaseAutoModelClass:
             else:
                 llm = model
 
-            if model.config.model_type == "minicpmv":
-                # MiniCPM-V
-                if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
-                    # MiniCPM-V 2.6
-                    model.llm.config.model_type = "qwen2"
-
             with torch.no_grad():
                 optimize_llm_pre(llm, qtype)
                 cls.load_convert(qtype, model, "cpu", modules_to_not_convert, *args, **kwargs)
-                if hasattr(model, "llm"):
-                    create_npu_kernels(model.llm)
-                else:
-                    create_npu_kernels(model)
+                create_npu_kernels(llm)
             model = model.eval()
             logger.info(f"Finish to convert model")
             model.config.update({"bigdl_transformers_low_bit": qtype})
