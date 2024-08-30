@@ -1133,8 +1133,6 @@ def generate_qwen2_attention_forward(max_seq_len, transpose_value):
 
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
-        key_states = key_states.half()
-        value_states = value_states.half()
 
         attn_weights = None
         if query_states.size(2) == key_states.size(2):

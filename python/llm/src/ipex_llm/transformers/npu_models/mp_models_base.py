@@ -359,9 +359,9 @@ class LLMBaseNNFactory(NNFactory):
             for idx in indexes:
                 past_key = past_key_value.key_cache[idx]
                 past_value = past_key_value.value_cache[idx]
-                # invalidInputError(
-                #     past_key.dtype == torch.float16, f"past_key dtype is {past_key.dtype}"
-                # )
+                invalidInputError(
+                    past_key.dtype == torch.float16, f"past_key dtype is {past_key.dtype}"
+                )
                 new_size = (past_key.size(0), past_key.size(1), self.max_seq_len, past_key.size(3))
                 past_key = past_key.as_strided(new_size, past_key.stride(), storage_offset=0)
                 invalidInputError(past_key.is_contiguous(), "past_key is not contiguous")
@@ -383,7 +383,7 @@ class LLMBaseNNFactory(NNFactory):
             self.load_cache_async()
 
     def load_cache_async(self):
-        self.load_wt_fn(len(self.input_ops), self._mm, self.kv_cache_c_handle, verify_size=True)
+        self.load_wt_fn(len(self.input_ops), self._mm, self.kv_cache_c_handle)
 
     def set_weights(self, op_id, weights):
         self.set_weights_async(op_id, weights)
@@ -396,7 +396,7 @@ class LLMBaseNNFactory(NNFactory):
                           (f"weights size does not match graph, "
                            f"with weights size: {len(weights)} and "
                            f" graph linear size: {len(self.linear_ops)}"))
-        self.setWeights(offset, op_id, *weights, verify_size=True)
+        self.setWeights(offset, op_id, *weights)
 
     @staticmethod
     def run_decoders(inputs, decoders):

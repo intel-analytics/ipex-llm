@@ -52,20 +52,19 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             lm_qtype = SYM_INT8
         # lm_head opt to mp opt (llama, qwen2)
         optimize_lm_head = model.config.model_type not in ["llama", "qwen2"]
-        if hasattr(model, 'lm_head') and model.lm_head is not None:
-            new_linear = LowBitLinear(model.lm_head.in_features,
-                                      model.lm_head.out_features,
-                                      lm_qtype,
-                                      False,
-                                      optimize_lm_head=optimize_lm_head)
-            paramsLowBit = FP4Params(data=model.lm_head.weight.data,
-                                     requires_grad=False,
-                                     quantized=False,
-                                      _shape=None,
-                                     qtype=lm_qtype,
-                                     in_features=model.lm_head.in_features).to("cpu")
-            new_linear._parameters['weight'] = paramsLowBit
-            model.lm_head = new_linear
+        new_linear = LowBitLinear(model.lm_head.in_features,
+                                    model.lm_head.out_features,
+                                    lm_qtype,
+                                    False,
+                                    optimize_lm_head=optimize_lm_head)
+        paramsLowBit = FP4Params(data=model.lm_head.weight.data,
+                                    requires_grad=False,
+                                    quantized=False,
+                                    _shape=None,
+                                    qtype=lm_qtype,
+                                    in_features=model.lm_head.in_features).to("cpu")
+        new_linear._parameters['weight'] = paramsLowBit
+        model.lm_head = new_linear
 
 def optimize_llm(
     model: torch.nn.Module,
