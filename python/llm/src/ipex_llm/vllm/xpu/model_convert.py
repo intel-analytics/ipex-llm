@@ -101,10 +101,16 @@ def _QWen_MLP_forward(self, x):
 def _ChatGLM_MLP_forward(self, hidden_states):
     # [s, b, 4hp]
     intermediate_parallel = self.dense_h_to_4h(hidden_states)
-    intermediate_parallel = self.activation_func(intermediate_parallel)
+    if isinstance(intermediate_parallel, tuple):
+        intermediate_parallel = self.activation_func(intermediate_parallel[0])
+    else:
+        intermediate_parallel = self.activation_func(intermediate_parallel)
     # [s, b, h]
     output = self.dense_4h_to_h(intermediate_parallel)
-    return output
+    if isinstance(output, tuple):
+        return output[0]
+    else:
+        return output
 
 
 def _Baichuan_Attention_forward(
@@ -215,8 +221,12 @@ def get_load_function(low_bit):
             from ipex_llm import optimize_model
             import os
             not_convert_last_mlp = os.getenv("IPEX_LLM_NOT_CONVERT_LAST_MLP", None)
+<<<<<<< HEAD
             is_glm4_model = "glm-4" in self.model_config.model.lower()
             if not_convert_last_mlp is not None or is_glm4_model:
+=======
+            if not_convert_last_mlp is not None:
+>>>>>>> 8ec2f58cea (Fix glm4-9b-chat nan error on vllm 0.5.4 (#11969))
                 # only use to avoid nan value in last mlp forward running glm4-9b-chat
                 modules = ["35.mlp", "36.mlp", "37.mlp", "38.mlp", "39.mlp"]
             else:
