@@ -145,8 +145,8 @@ python minicpm.py --disable-transpose-value-cache
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
 ```
 
-#### High CPU Utilization
-You can reduce CPU utilization by setting the environment variable with `set IPEX_LLM_CPU_LM_HEAD=0`.
+#### Better Performance with High CPU Utilization
+You could enable optimization by setting the environment variable with `set IPEX_LLM_CPU_LM_HEAD=1` for better performance. But this will cause high CPU utilization.
 
 
 ### Sample Output
