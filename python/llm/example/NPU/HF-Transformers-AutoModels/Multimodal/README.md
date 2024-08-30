@@ -31,7 +31,7 @@ pip install torchvision
 pip install transformers==4.40
 
 # [optional] for MiniCPM-V-2_6
-pip install torch==2.1.2 torchvision==0.16.2
+pip install timm torch==2.1.2 torchvision==0.16.2
 ```
 
 ### 2. Runtime Configurations
