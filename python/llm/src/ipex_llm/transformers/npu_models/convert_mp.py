@@ -107,7 +107,6 @@ def optimize_llm(
         convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
     elif model.config.model_type == "qwen2" and model.config.num_hidden_layers == 28:
         # for qwen2-1.5B and qwen2-7B
-        print("[debug] enter qwen2 optimize llm !!!!!!")
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:

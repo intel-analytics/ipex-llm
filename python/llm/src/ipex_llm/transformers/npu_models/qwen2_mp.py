@@ -756,8 +756,7 @@ def run_prefill(
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
     layer_indexs = range(layer_start, layer_end)
-    # if model.config.intermediate_size == 8960:
-    if True:
+    if model.config.intermediate_size == 8960:
         # for qwen2-1.5b
         for layer_idx in layer_indexs:
             curr_layer = model.model.layers[layer_idx]
@@ -807,8 +806,7 @@ def run_prefill(
     print("finish creating all decode layers in prefill")
     result_queue.put("loading finish")
 
-    # if model.config.intermediate_size == 18944:
-    if False:
+    if model.config.intermediate_size == 18944:
         # for qwen2-7b
         from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention
         from ipex_llm.transformers.npu_models.convert_mp import convert_forward

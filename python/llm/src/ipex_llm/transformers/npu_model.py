@@ -113,7 +113,6 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "cpu_embedding")
         ignore_argument(kwargs, "embedding_qtype")
         ignore_argument(kwargs, "enable_mp")
-        # ignore_argument(kwargs, "modules_to_not_convert")
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
@@ -124,7 +123,6 @@ class _BaseAutoModelClass:
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
-        print("modules_to_not_convert is !!!  ", modules_to_not_convert)
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -176,8 +174,6 @@ class _BaseAutoModelClass:
             logger.info(f"Finish to convert model")
             model.config.update({"bigdl_transformers_low_bit": qtype})
             model.share_memory()
-
-            print("[debug] model type!!! ", llm.config.model_type)
 
             optimize_llm(
                 llm,
