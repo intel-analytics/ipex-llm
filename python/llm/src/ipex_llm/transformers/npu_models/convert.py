@@ -31,7 +31,7 @@ def module_optimization(func) -> torch.nn.Module:
         torch.nn.Module: optimized module
     """
 
-    def wrapper(model: torch.nn.Module, qtype, device, *args, **kwargs):
+    def wrapper(model: torch.nn.Module, qtype, device, modules_to_not_convert, *args, **kwargs):
         """Recursively apply the optimization function.
 
         Args:
@@ -41,18 +41,19 @@ def module_optimization(func) -> torch.nn.Module:
 
         """
         for name, layer in model.named_children():
-            new_layer = func(layer, qtype, device, *args, **kwargs)
-            if new_layer:
-                model.add_module(name, new_layer)
-                wrapper(new_layer, qtype, device, *args, **kwargs)
-            else:
-                wrapper(layer, qtype, device, *args, **kwargs)
+            if name not in modules_to_not_convert:
+                new_layer = func(layer, qtype, device, modules_to_not_convert, *args, **kwargs)
+                if new_layer:
+                    model.add_module(name, new_layer)
+                    wrapper(new_layer, qtype, device, modules_to_not_convert, *args, **kwargs)
+                else:
+                    wrapper(layer, qtype, device, modules_to_not_convert, *args, **kwargs)
 
     return wrapper
 
 
 @module_optimization
-def replace_with_QuantizedLinear(layer, qtype, device):
+def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]

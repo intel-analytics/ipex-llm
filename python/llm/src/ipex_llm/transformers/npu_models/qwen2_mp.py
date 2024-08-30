@@ -197,7 +197,9 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
+        print("start compiling")
         self.compile()
+        print("end compiling")
 
     def mlp(self, hidden_states):
         mm1 = self.linear(
@@ -862,6 +864,8 @@ class PrefillRunner:
         self.p.daemon = True
         self.p.start()
         output = self.prefill_result_queue.get()
+        print(Fore.GREEN + f"prefill process output: {output}")
+        print(Style.RESET_ALL)
 
     def forward(
         self,

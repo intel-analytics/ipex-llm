@@ -42,6 +42,16 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
 
+    if model.config.model_type == "minicpmv" and hasattr(model, "llm"):
+        # MiniCPM-V
+        if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
+            model.llm.config.model_type = "minicpm"
+        elif model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            model.llm.config.model_type = "qwen2"
+        elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
+            model.llm.config.model_type = "llama"
+        model = model.llm
+
     # lm_head to cpu optimization
     if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0":
         # disable the optimization by default

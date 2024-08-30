@@ -113,7 +113,6 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "cpu_embedding")
         ignore_argument(kwargs, "embedding_qtype")
         ignore_argument(kwargs, "enable_mp")
-        ignore_argument(kwargs, "modules_to_not_convert")
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
@@ -123,6 +122,7 @@ class _BaseAutoModelClass:
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -152,17 +152,14 @@ class _BaseAutoModelClass:
             )
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
 
-            if model.config.model_type == "minicpmv":
+            if hasattr(model, "llm"):
                 llm = model.llm
-                if llm.config.hidden_size == 4096 and llm.config.vocab_size == 128256:
-                    # MiniCPM-llama3-V2.5
-                    llm.config.model_type = "llama"
             else:
                 llm = model
 
             with torch.no_grad():
-                optimize_llm_pre(llm, qtype)
-                cls.load_convert(qtype, llm, "cpu", *args, **kwargs)
+                optimize_llm_pre(model, qtype)
+                cls.load_convert(qtype, model, "cpu", modules_to_not_convert, *args, **kwargs)
                 create_npu_kernels(llm)
             model = model.eval()
             logger.info(f"Finish to convert model")
@@ -181,8 +178,11 @@ class _BaseAutoModelClass:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
             with torch.no_grad():
-                cls.load_convert(qtype, model, "cpu", *args, **kwargs)
-                create_npu_kernels(model)
+                cls.load_convert(qtype, model, "cpu", modules_to_not_convert, *args, **kwargs)
+                if hasattr(model, "llm"):
+                    create_npu_kernels(model.llm)
+                else:
+                    create_npu_kernels(model)
             model = model.eval()
             logger.info(f"Finish to convert model")
             model.config.update({"bigdl_transformers_low_bit": qtype})
@@ -192,10 +192,11 @@ class _BaseAutoModelClass:
         return model
 
     @classmethod
-    def load_convert(cls, q_k, optimize_model, device, *arg, **kwarg):
+    def load_convert(cls, q_k, optimize_model, device, modules_to_not_convert, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear
 
-        replace_with_QuantizedLinear(optimize_model, q_k, device=device)
+        replace_with_QuantizedLinear(optimize_model, q_k, device=device,
+                                     modules_to_not_convert=modules_to_not_convert)
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
