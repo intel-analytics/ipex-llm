@@ -351,7 +351,7 @@ If you meet garbage output, please check if your GPU driver version is >= [31.0.
 If you meet `GGML_ASSERT: C:/Users/Administrator/actions-runner/cpp-release/_work/llm.cpp/llm.cpp/llama-cpp-bigdl/ggml-sycl.cpp:18283: main_gpu_id<g_all_sycl_device_count` error or similar error, and you find nothing is output when using `ls-sycl-device`, this is because llama.cpp cannot find the sycl device. On some laptops, the installation of the ARC driver may lead to a forced installation of `OpenCL, OpenGL, and Vulkan Compatibility Pack` by Microsoft, which inadvertently blocks the system from locating sycl devices. This issue can be resolved by manually uninstalling it in Microsoft store.
 
 #### 13. Core dump when having both integrated and dedicated graphics
-If you have both integrated and dedicated graphics on your computer and didn't specify which device to use, it will cause a core dump. Therefore, you need to run `export ONEAPI_DEVICE_SELECTOR=level_zero:0` before running `llama-cli`.
+If you have both integrated and dedicated graphics displayed in your llama.cpp's device log and don't specify which device to use, it will cause a core dump. In such case, you may need to specify `export ONEAPI_DEVICE_SELECTOR=level_zero:0` before running `llama-cli`.
 
 #### 14. `Native API failed` error
-On latest version of `ipex-llm`, you might come across `native API failed` error with certain models without the `-c` parameter. Simply adding `-c 1024` would resolve this problem.
+On latest version of `ipex-llm`, you might come across `native API failed` error with certain models without the `-c` parameter. Simply adding `-c xx` would resolve this problem.
