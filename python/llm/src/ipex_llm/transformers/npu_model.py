@@ -156,7 +156,7 @@ class _BaseAutoModelClass:
                 llm = model.llm
             else:
                 llm = model
-            
+
             if model.config.model_type == "minicpmv":
                 # MiniCPM-V
                 if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
