@@ -28,8 +28,6 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[npu]
 pip install torchvision
 
-pip install transformers==4.40
-
 # [optional] for MiniCPM-V-2_6
 pip install timm torch==2.1.2 torchvision==0.16.2
 ```
