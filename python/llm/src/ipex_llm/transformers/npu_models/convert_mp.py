@@ -41,7 +41,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
         if model.config.hidden_size in [4096, 2048]:
             from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
-    
+
     if model.config.model_type == "minicpmv" and hasattr(model, "llm"):
         # MiniCPM-V
         if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
