@@ -371,7 +371,6 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         hidden_states, new_keys, new_values = LowBitQwenMultiDecoderlayer.run_decoders(
             inputs,
             decoders=self.backend_decoders)
-        print("[debug] finish run_decoders")
 
         if self.do_print:
             print("outputs:", hidden_states)
