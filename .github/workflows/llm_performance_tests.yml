@@ -419,6 +419,8 @@ jobs:
           export https_proxy=${HTTPS_PROXY}
           source ipex-llm-init -t
           export OMP_NUM_THREADS=48
+          # upgrade for default transformers version
+          python -m pip install transformers==4.41.2, trl
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
@@ -499,6 +501,8 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
+          # upgrade for default transformers version
+          python -m pip install transformers==4.41.2, trl
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
