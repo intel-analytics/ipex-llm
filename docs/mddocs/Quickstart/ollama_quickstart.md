@@ -191,24 +191,24 @@ An example process of interacting with model with `ollama run example` looks lik
 </a>
 
 ### Troubleshooting
-#### Unable to run the initialization script
+#### 1. Unable to run the initialization script
 If you are unable to run `init-ollama.bat`, please make sure you have installed `ipex-llm[cpp]` in your conda environment. If you have installed it, please check if you have activated the correct conda environment. Also, if you are using Windows, please make sure you have run the script with administrator privilege in prompt terminal.
 
-#### Why model is always loaded again after several minutes
+#### 2. Why model is always loaded again after several minutes
 Ollama will unload model from gpu memory in every 5 minutes as default. For latest version of ollama, you could set `OLLAMA_KEEP_ALIVE=-1` to keep the model loaded in memory. Reference issue: https://github.com/intel-analytics/ipex-llm/issues/11608
 
-#### `exit status 0xc0000135` error when executing  `ollama serve`
+#### 3. `exit status 0xc0000135` error when executing  `ollama serve`
 When executing `ollama serve`, if you meet `llama runner process has terminated: exit status 0xc0000135` on Windows or you meet `ollama_llama_server: error while loading shared libraries: libmkl_core.so.2: cannot open shared object file` on Linux, this is most likely caused by the lack of sycl dependency. Please check:
 
 1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
 2. if you have executed `source /opt/intel/oneapi/setvars.sh` on Linux
 
-#### Program hang during initial model loading stage
+#### 4. Program hang during initial model loading stage
 When launching `ollama serve` for the first time on Windows, it may get stuck during the model loading phase. If you notice that the program is hanging for a long time during the first run, you can manually input a space or other characters on the server side to ensure the program is running.
 
-#### How to distinguish the community version of Ollama from the ipex-llm version of Ollama
+#### 5. How to distinguish the community version of Ollama from the ipex-llm version of Ollama
 In the server log of community version of Ollama, you may see `source=payload_common.go:139 msg="Dynamic LLM libraries [rocm_v60000 cpu_avx2 cuda_v11 cpu cpu_avx]"`.
 But in the server log of ipex-llm version of Ollama, you should only see `source=payload.go:44 msg="Dynamic LLM libraries [cpu cpu_avx cpu_avx2]"`.
 
-#### Ollama hang when multiple different questions is asked or context is long
+#### 6. Ollama hang when multiple different questions is asked or context is long
 If you find ollama hang when multiple different questions is asked or context is long, and you see `update_slots : failed to free spaces in the KV cache` in the server log, this could be because that sometimes the LLM context is larger than the default `n_ctx` value, you may increase the `n_ctx` and try it again.
