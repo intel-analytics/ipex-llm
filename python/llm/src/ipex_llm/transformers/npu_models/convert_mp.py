@@ -43,7 +43,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             model.apply(pre_compute_inv_freq)
 
     # lm_head to cpu optimization
-    if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "1") != "0":
+    if os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0":
+        # disable the optimization by default
         from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8
         if qtype == "sym_int4_rtn":
             lm_qtype = SYM_INT4
