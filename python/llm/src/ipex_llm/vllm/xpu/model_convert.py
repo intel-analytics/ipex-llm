@@ -101,10 +101,16 @@ def _QWen_MLP_forward(self, x):
 def _ChatGLM_MLP_forward(self, hidden_states):
     # [s, b, 4hp]
     intermediate_parallel = self.dense_h_to_4h(hidden_states)
-    intermediate_parallel = self.activation_func(intermediate_parallel)
+    if isinstance(intermediate_parallel, tuple):
+        intermediate_parallel = self.activation_func(intermediate_parallel[0])
+    else:
+        intermediate_parallel = self.activation_func(intermediate_parallel)
     # [s, b, h]
     output = self.dense_4h_to_h(intermediate_parallel)
-    return output
+    if isinstance(output, tuple):
+        return output[0]
+    else:
+        return output
 
 
 def _Baichuan_Attention_forward(
@@ -213,7 +219,15 @@ def get_load_function(low_bit):
                 cache_config=self.cache_config,
             )
             from ipex_llm import optimize_model
-            optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype)
+            import os
+            not_convert_last_mlp = os.getenv("IPEX_LLM_NOT_CONVERT_LAST_MLP", None)
+            if not_convert_last_mlp is not None:
+                # only use to avoid nan value in last mlp forward running glm4-9b-chat
+                modules = ["35.mlp", "36.mlp", "37.mlp", "38.mlp", "39.mlp"]
+            else:
+                modules = None
+            optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype,
+                           modules_to_not_convert=modules)
             self.model = self.model.to(device=self.device_config.device,
                                        dtype=self.model_config.dtype)
 
