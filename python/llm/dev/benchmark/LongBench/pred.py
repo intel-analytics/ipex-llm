@@ -78,8 +78,7 @@ def get_pred_single_gpu(data, max_length, max_gen,
                         specific_max_capcity_prompts = None,
                         kernel_sizes = None,
                         pooling = None):
-    # device = torch.device(f'cuda:{rank}')
-    # device = model.device
+
     model, tokenizer = load_model_and_tokenizer(model2path[model_name], model_name, device = "xpu", dtype_=dtype, low_bit=low_bit, optimize_model=optimize_model)
     device = model.device
     print(f"model_device: {model.device}")
@@ -173,12 +172,8 @@ def get_pred_single_gpu(data, max_length, max_gen,
 
 def seed_everything(seed):
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
-    torch.cuda.manual_seed_all(seed)
 
 def load_model_and_tokenizer(path, model_name, device, dtype_, low_bit, optimize_model):
     if (dtype_ == 'fp32'):
