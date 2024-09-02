@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
     model_names = conf['model_name'] if OmegaConf.is_list(conf['model_name']) else [conf['model_name']]
     full_kv = conf['full_kv']
-    ees = conf['e'] if OmegaConf.is_list(conf['e']) else [conf['e']]
+    e = conf['e']
     compresskv_configs = conf['compress_kv'] if OmegaConf.is_list(conf['compress_kv']) else [conf['compress_kv']]
     datasets = conf['datasets'] if OmegaConf.is_list(conf['datasets']) else [conf['datasets']]
     dtype = conf['dtype']
@@ -239,11 +239,10 @@ if __name__ == '__main__':
     for model_name in model_names:
         if model_name not in valid_model_names:
             raise ValueError(f"model {model_name} is not supported")
-    for e in ees:
-        if e not in [True, False]:
-            raise ValueError("e should be True or False")
+    if e not in [True, False]:
+        raise ValueError("e should be True or False")
     for dataset in datasets:
-        if True in ees:
+        if e:
             valid_dataset_check = valid_datasets_e
         else:
             valid_dataset_check = valid_datasets
@@ -256,18 +255,17 @@ if __name__ == '__main__':
     for model_name in model_names:
         max_length = model2maxlen[model_name]
         for compress, compress_args, write_model_name in compresskv_config_range(full_kv, compresskv_configs, model_name):
-            for e in ees:
-                for dataset in datasets:
-                    e_string = "_e" if e else ""
-                    data = load_dataset('THUDM/LongBench', f"{dataset}{e_string}", split='test')
+            for dataset in datasets:
+                e_string = "_e" if e else ""
+                data = load_dataset('THUDM/LongBench', f"{dataset}{e_string}", split='test')
 
-                    if not os.path.exists(f"{current_dir}/pred{e_string}_{max_length}"):
-                        os.makedirs(f"{current_dir}/pred{e_string}_{max_length}")
-                    if not os.path.exists(f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}"):
-                        os.makedirs(f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}")
-                    out_path = f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}/{dataset}.jsonl"
-                    
-                    prompt_format = dataset2prompt[dataset]
-                    max_gen = dataset2maxlen[dataset]
-                    data_all = [data_sample for data_sample in data]
-                    get_pred_single_gpu(data_all, max_length, max_gen, prompt_format, dataset, model_name, model2path, out_path, low_bit, dtype, compress, optimize_model, **compress_args)
+                if not os.path.exists(f"{current_dir}/pred{e_string}_{max_length}"):
+                    os.makedirs(f"{current_dir}/pred{e_string}_{max_length}")
+                if not os.path.exists(f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}"):
+                    os.makedirs(f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}")
+                out_path = f"{current_dir}/pred{e_string}_{max_length}/{write_model_name}/{dataset}.jsonl"
+                
+                prompt_format = dataset2prompt[dataset]
+                max_gen = dataset2maxlen[dataset]
+                data_all = [data_sample for data_sample in data]
+                get_pred_single_gpu(data_all, max_length, max_gen, prompt_format, dataset, model_name, model2path, out_path, low_bit, dtype, compress, optimize_model, **compress_args)

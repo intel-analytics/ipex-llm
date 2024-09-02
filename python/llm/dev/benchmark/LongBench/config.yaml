@@ -8,8 +8,8 @@ full_kv: True
 optimize_model: True
 dtype: 'fp16'
 low_bit: 'sym_int4'
-e:
-  - False
+
+e: False
 
 compress_kv:
   - "ablation_c512_w32_k7_maxpool"
