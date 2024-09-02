@@ -172,18 +172,14 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             )
             curr_key_values.append((new_key_states, new_value_states))
 
-        result = hidden_states
         if model_norm_weight is not None:
             # fuse norm and lm head
             model_norm_weight = self.constant(model_norm_weight)
 
-            # norm forward
-            # result = hidden_states
-            result = self.layer_norm(result, model_norm_weight)
-            
-            # lm_head forward
-            result = self.linear(
-                result, 32000, self.hidden_size, bias=False, wt_dtype=self.dtype
+            hidden_states = self.layer_norm(hidden_states, model_norm_weight)
+
+            hidden_states = self.linear(
+                hidden_states, 32000, self.hidden_size, bias=False, wt_dtype=self.dtype
             )
         
         # define outputs
@@ -193,12 +189,6 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
-        result = self.convert_to_fp16(result)
-
-        if self.mode == 'prefill':
-            print("prefill mode start compiling")
-        else:
-            print(f"{torch.distributed.get_rank()}, decode mode start compiling")
         print("start compiling")
         self.compile()
 
@@ -347,26 +337,21 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
 
-        hidden_states, new_keys, new_values, res = LowBitLlamaMultiDecoderlayer.run_decoders(
+        hidden_states, new_keys, new_values = LowBitLlamaMultiDecoderlayer.run_decoders(
             inputs,
             decoders=self.backend_decoders)
-        # hidden_states, new_keys, new_values = LowBitLlamaMultiDecoderlayer.run_decoders(
-        #     inputs,
-        #     decoders=self.backend_decoders)
 
         if self.do_print:
             print("outputs:", hidden_states)
 
         outputs = (hidden_states,)
         outputs += (past_key_value, new_keys, new_values)
-        outputs += (res,)
         return outputs
 
     def post_forward(self, past_key_value, new_keys, new_values, cache_position):
         key_value_states = []
         for i in range(self.intra_stages):
-            for j in range(1, len(self.backend_decoders[i].torch_out) - 1):
-            # for j in range(1, len(self.backend_decoders[i].torch_out)):
+            for j in range(1, len(self.backend_decoders[i].torch_out)):
                 key_value_states.append(self.backend_decoders[i].torch_out[j])
 
         cache_kwargs = {
@@ -462,7 +447,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         backend_cls = self.backend_cls_prefill
         inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
         inputs += (self.layer_norm_0, self.layer_norm_1)
-        hidden_states, past_key, past_value, res = run_model(
+        hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
         )
         cache_kwargs = {
@@ -476,7 +461,6 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
 
         outputs = (hidden_states,)
         outputs += (past_key_value,)
-        outputs += (res,)
         return outputs
 
 
@@ -543,7 +527,6 @@ def run_decode(
     if my_rank == my_size - 1 and layer_end == model.config.num_hidden_layers:
         model_norm_weight = model.model.norm.weight.to(torch.float16)
         layer_weights.append((model.lm_head.weight, model.lm_head.scale))
-        print(f'my rank is {my_rank}: layer_weights is {len(layer_weights)}')
     else:
         model_norm_weight = None
 
@@ -601,7 +584,6 @@ def run_decode(
                 padded_causal_mask[:, :, :, -1] = 0.0
                 dist.recv(hidden_states, src=rank - 1)
                 t1 = time.perf_counter()
-                print('run decode........')
                 layer_outputs = multi_decoder(
                     hidden_states,
                     attention_mask=padded_causal_mask,
@@ -613,18 +595,14 @@ def run_decode(
                 )
                 t2 = time.perf_counter()
                 hidden_states = layer_outputs[0]
-                # print(f'on my rank {my_rank}, hidden_states is {hidden_states.shape} and {hidden_states}')
                 t3 = time.perf_counter()
                 dist.send(hidden_states, dst=(rank + 1) % world_size)
                 t4 = time.perf_counter()
                 past_key_values = layer_outputs[1]
                 new_keys = layer_outputs[2]
                 new_values = layer_outputs[3]
-                res = layer_outputs[4]
-                print(f'on my rank {my_rank}, res is {res.shape}')
                 multi_decoder.post_forward(past_key_values, new_keys, new_values, cache_position)
-                # res = layer_outputs[4]
-                # print(f'on my rank {my_rank}, hidden_states is {res.shape} and {res}')
+                hidden_states = torch.empty((1, 1, head_dim * num_heads), dtype=torch.float16)
 
 
 class DecodeRunner:
@@ -707,9 +685,10 @@ class DecodeRunner:
         hidden_states = hidden_states.to(torch.float16)
         dist.send(hidden_states, dst=1)
         past_key_value.expand(self.transpose_value_cache)
-        dist.recv(hidden_states, src=self.world_size - 1)
+        res = torch.empty((1, 1, 32000), dtype=torch.float16)
+        dist.recv(res, src=self.world_size - 1)
         t1 = time.perf_counter()
-        return hidden_states, past_key_value
+        return res, past_key_value
 
     def shutdown(self):
         control = torch.tensor(-2, dtype=torch.int)
@@ -814,9 +793,7 @@ def run_prefill(
                 hidden_states = layer_outputs[0]
                 next_decoder_cache = layer_outputs[1]
 
-            res = layer_outputs[-1]
-            print(f'put queue res is {res.shape} and {res}')
-            result_queue.put((hidden_states, next_decoder_cache, res))
+            result_queue.put((hidden_states, next_decoder_cache))
 
 
 class PrefillRunner:
@@ -876,10 +853,10 @@ class PrefillRunner:
 
         args = (hidden_states, position_ids, attention_mask, past_key_value, cache_position)
         self.prefill_input_queue.put(args)
-        hidden_states, past_key_value, res = self.prefill_result_queue.get()
+        hidden_states, past_key_value = self.prefill_result_queue.get()
         # past_key_value.shrink(seq_len, self.transpose_value_cache)
         # hidden_states = hidden_states[:, :seq_len, :]
-        return hidden_states, past_key_value, res
+        return hidden_states, past_key_value
 
     def shutdown(self):
         self.prefill_input_queue.put("stop")
@@ -982,13 +959,13 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
 
         next_decoder_cache = layer_outputs[1]
 
-        hidden_states = self.norm(hidden_states)
+        # ipex-llm changes start
+        # hidden_states = self.norm(hidden_states)
 
         # add hidden states from the last decoder layer
         if output_hidden_states:
             all_hidden_states += (hidden_states,)
 
-        # ipex-llm changes start
         next_cache = next_decoder_cache if use_cache else None
         # ipex-llm changes end
         if not return_dict:
@@ -998,7 +975,7 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
                 if v is not None
             )
         t1 = time.perf_counter()
-        # print("fused model forward time: ", t1 - t0)
+
         return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=next_cache,
@@ -1045,21 +1022,21 @@ def llama2_casullm_forward(
         cache_position=cache_position,
     )
 
-    hidden_states = outputs[0]
-    # ipex-llm change start
-    hidden_states = reshape_lm_head_input(hidden_states)
-    # ipex-llm change end
-    if self.config.pretraining_tp > 1:
-        lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp,
-                                                   dim=0)
-        logits = [F.linear(hidden_states, lm_head_slices[i])
-                  for i in range(self.config.pretraining_tp)]
-        logits = torch.cat(logits, dim=-1)
-    else:
-        logits = self.lm_head(hidden_states)
-    logits = logits.float()
+    # hidden_states = outputs[0]
+    # # ipex-llm change start
+    # hidden_states = reshape_lm_head_input(hidden_states)
+    # # ipex-llm change end
+    # if self.config.pretraining_tp > 1:
+    #     lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp,
+    #                                                dim=0)
+    #     logits = [F.linear(hidden_states, lm_head_slices[i])
+    #               for i in range(self.config.pretraining_tp)]
+    #     logits = torch.cat(logits, dim=-1)
+    # else:
+    #     logits = self.lm_head(hidden_states)
+    # logits = logits.float()
 
-    # logits = outputs[0]
+    logits = outputs[0]
 
     loss = None
     if labels is not None:
