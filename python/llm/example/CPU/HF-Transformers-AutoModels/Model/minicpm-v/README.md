@@ -17,7 +17,7 @@ conda activate llm
 
 # install ipex-llm with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
-pip install torchvision==0.16.2 --extra-index-url https://download.pytorch.org/whl/cpu
+pip install torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cpu
 pip install transformers==4.40.0 trl
 ```
 On Windows:
@@ -27,7 +27,7 @@ conda create -n llm python=3.11
 conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
-pip install torchvision==0.16.2
+pip install torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cpu
 pip install transformers==4.40.0 trl
 ```
 
