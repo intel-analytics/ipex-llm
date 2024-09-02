@@ -587,6 +587,7 @@ def run_decode(
                 (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
                 (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
                 (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
                 (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
                 (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
             ]
