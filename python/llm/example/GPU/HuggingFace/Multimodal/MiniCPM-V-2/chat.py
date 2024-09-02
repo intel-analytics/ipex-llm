@@ -15,6 +15,7 @@
 #
 
 
+
 from typing import List, Tuple, Optional, Union
 import math
 import timm
@@ -110,23 +111,24 @@ import os
 import time
 import argparse
 import requests
+import torch
 from PIL import Image
 from ipex_llm.transformers import AutoModel
 from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for openbmb/MiniCPM-V-2 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2",
-                        help='The huggingface repo id for the openbmb/MiniCPM-V-2 model to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for openbmb/MiniCPM-V-2_6 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6",
+                        help='The huggingface repo id for the openbmb/MiniCPM-V-2_6 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--image-url-or-path', type=str,
                         default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg',
                         help='The URL or path to the image to infer')
     parser.add_argument('--prompt', type=str, default="What is in the image?",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=32,
-                        help='Max tokens to predict')
+    parser.add_argument('--stream', action='store_true',
+                        help='Whether to chat in streaming mode')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -140,9 +142,9 @@ if __name__ == '__main__':
                                       load_in_low_bit="asym_int4",
                                       optimize_model=True,
                                       trust_remote_code=True,
-                                      modules_to_not_convert=["vpm", "resampler", "lm_head"],
-                                      use_cache=True)
-    model = model.half().to(device='xpu')
+                                      use_cache=True,
+                                      modules_to_not_convert=["vpm", "resampler"])
+    model = model.half().to('xpu')
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     model.eval()
@@ -154,9 +156,10 @@ if __name__ == '__main__':
        image = Image.open(requests.get(image_path, stream=True).raw).convert('RGB')
 
     # Generate predicted tokens
-    # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2/blob/main/README.md
+    # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/README.md
     msgs = [{'role': 'user', 'content': args.prompt}]
-    st = time.time()
+
+    # ipex_llm model needs a warmup, then inference time can be accurate
     res, context, _ = model.chat(
      image=image,
      msgs=msgs,
@@ -165,12 +168,40 @@ if __name__ == '__main__':
      sampling=False,
      temperature=0.7
     )
-    end = time.time()
-    print(f'Inference time: {end-st} s')
-    print('-'*20, 'Input', '-'*20)
-    print(image_path)
-    print('-'*20, 'Prompt', '-'*20)
-    print(args.prompt)
-    output_str = res
-    print('-'*20, 'Output', '-'*20)
-    print(output_str)
+    if args.stream:
+        res, context, _ = model.chat(
+        image=image,
+        msgs=msgs,
+        context=None,
+        tokenizer=tokenizer,
+        sampling=False,
+        temperature=0.7
+        )
+
+        print('-'*20, 'Input Image', '-'*20)
+        print(image_path)
+        print('-'*20, 'Input Prompt', '-'*20)
+        print(args.prompt)
+        print('-'*20, 'Stream Chat Output', '-'*20)
+        for new_text in res:
+            print(new_text, flush=True, end='')
+    else:
+        st = time.time()
+        res, context, _ = model.chat(
+        image=image,
+        msgs=msgs,
+        context=None,
+        tokenizer=tokenizer,
+        sampling=False,
+        temperature=0.7
+        )
+        torch.xpu.synchronize()
+        end = time.time()
+
+        print(f'Inference time: {end-st} s')
+        print('-'*20, 'Input Image', '-'*20)
+        print(image_path)
+        print('-'*20, 'Input Prompt', '-'*20)
+        print(args.prompt)
+        print('-'*20, 'Chat Output', '-'*20)
+        print(res)
