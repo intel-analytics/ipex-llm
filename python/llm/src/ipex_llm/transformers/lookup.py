@@ -315,11 +315,9 @@ def lookup_generate(self,
         if step == 0:
             # first token use full model
             tic = time.time()
-            output = self(input_ids=input_ids,
-                          past_key_values=past_key_values,
-                          attention_mask=attention_mask,
-                          return_dict=True,
-                          use_cache=True)
+            model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            output = self(**model_inputs,
+                          return_dict=True)
             logits = output['logits']
             logits = logits[:, -1:]
             logits[:, -1, :] = logits_processor(input_ids, logits[:, -1, :])
