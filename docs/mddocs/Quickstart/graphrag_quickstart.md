@@ -239,7 +239,7 @@ and then use the following commands to create a new model in Ollama named `mistr
   ollama create mistral:latest-nctx4096 -f Modelfile
   ```
 
-Finally, update `settings.yml` inside the `ragtest` folder to use llm model `mistral:latest-nctx4096`:
+Finally, update `settings.yml` inside the `ragtest` folder to use `llm` model `mistral:latest-nctx4096`:
 
 ```yml
 llm:
