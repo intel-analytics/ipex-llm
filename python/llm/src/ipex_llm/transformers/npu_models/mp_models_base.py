@@ -340,6 +340,11 @@ class LLMBaseNNFactory(NNFactory):
         op = super().linear(*args, **kwargs)
         self.linear_ops.append(op)
         return op
+    
+    def groupwise_linear(self, *args, **kwargs):
+        op = super().groupwise_linear(*args, **kwargs)
+        self.linear_ops.append(op)
+        return op
 
     def parameter(self, shape):
         invalidInputError(False,
