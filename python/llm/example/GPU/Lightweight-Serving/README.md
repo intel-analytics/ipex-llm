@@ -190,9 +190,8 @@ curl http://localhost:8000/v1/chat/completions \
 
 ##### Image input
 
-image input only supports [internlm-xcomposer2-vl-7b](https://huggingface.co/internlm/internlm-xcomposer2-vl-7b) now, and it must install transformers==4.31.0 to run.
+image input only supports [internlm-xcomposer2-vl-7b](https://huggingface.co/internlm/internlm-xcomposer2-vl-7b) and [glm-4v-9b](https://huggingface.co/THUDM/glm-4v-9b) now. And `internlm-xcomposer2-vl-7b` must install transformers==4.31.0 to run.
 ```bash
-wget -O /llm/lightweight_serving/test.jpg http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -208,7 +207,7 @@ curl http://localhost:8000/v1/chat/completions \
           {
             "type": "image_url",
             "image_url": {
-              "url": "./test.jpg"
+              "url": "http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"
             }
           }
         ]
