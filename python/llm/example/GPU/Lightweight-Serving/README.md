@@ -40,6 +40,9 @@ pip install fastapi uvicorn openai
 pip install gradio # for gradio web UI
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 
+# for glm-4v-9b
+pip install transformers==4.42.4 trl
+
 # for internlm-xcomposer2-vl-7b
 pip install transformers==4.31.0
 pip install accelerate timm==0.4.12 sentencepiece==0.1.99 gradio==3.44.4 markdown2==2.4.10 xlsxwriter==3.1.2 einops
@@ -190,7 +193,7 @@ curl http://localhost:8000/v1/chat/completions \
 
 ##### Image input
 
-image input only supports [internlm-xcomposer2-vl-7b](https://huggingface.co/internlm/internlm-xcomposer2-vl-7b) and [glm-4v-9b](https://huggingface.co/THUDM/glm-4v-9b) now. And `internlm-xcomposer2-vl-7b` must install transformers==4.31.0 to run.
+image input only supports [internlm-xcomposer2-vl-7b](https://huggingface.co/internlm/internlm-xcomposer2-vl-7b) and [glm-4v-9b](https://huggingface.co/THUDM/glm-4v-9b) now. And they should both install specific transformers version to run.
 ```bash
 curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
