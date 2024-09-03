@@ -26,9 +26,9 @@ from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for MiniCPM-V model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for MiniCPM-V-2_6 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6",
-                        help='The huggingface repo id for the MiniCPM-V model to be downloaded'
+                        help='The huggingface repo id for the MiniCPM-V-2_6 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--image-url-or-path', type=str,
                         default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg',
