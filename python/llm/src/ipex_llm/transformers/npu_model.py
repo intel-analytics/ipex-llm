@@ -375,14 +375,16 @@ class _BaseAutoModelClass:
 
             with torch.no_grad():
                 optimize_llm_pre(model, qtype)
-                cls.load_convert(qtype, model, quant_device, modules_to_not_convert, *model_args, **kwargs)
+                cls.load_convert(qtype, model, quant_device, modules_to_not_convert,
+                                 *model_args, **kwargs)
                 create_npu_kernels(llm)
 
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
             with torch.no_grad():
-                cls.load_convert(qtype, model, quant_device, modules_to_not_convert, *model_args, **kwargs)
+                cls.load_convert(qtype, model, quant_device, modules_to_not_convert,
+                                 *model_args, **kwargs)
                 create_npu_kernels(model)
 
         if is_sharded:
