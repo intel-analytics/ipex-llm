@@ -220,6 +220,9 @@ FROM mistral:latest
 PARAMETER num_ctx 4096
 ```
 
+> [!TIP]
+> Here we increase `num_ctx` to 4096 as an example. You could adjust it accordingly.
+
 and then use the following commands to create a new model in Ollama named `mistral:latest-nctx4096`:
 
 - For **Linux users**:
