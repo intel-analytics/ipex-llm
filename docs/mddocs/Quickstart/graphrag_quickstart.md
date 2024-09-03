@@ -16,11 +16,11 @@ The [GraphRAG project](https://github.com/microsoft/graphrag) is designed to lev
 
 ### 1. Install and Start `Ollama` Service on Intel GPU 
 
-Follow the steps in [Run Ollama with IPEX-LLM on Intel GPU Guide](./ollama_quickstart.md) to install and run Ollama on Intel GPU. Ensure that `ollama serve` is running correctly and can be accessed through a local URL (e.g., `https://127.0.0.1:11434`).
+Follow the steps in [Run Ollama with IPEX-LLM on Intel GPU Guide](./ollama_quickstart.md) to install `ipex-llm[cpp]==2.1.0` and run Ollama on Intel GPU. Ensure that `ollama serve` is running correctly and can be accessed through a local URL (e.g., `https://127.0.0.1:11434`).
+
+**Please note that for GraphRAG, we highly recommand using the stable version of ipex-llm through `pip install ipex-llm[cpp]==2.1.0`**.
 
 ### 2. Prepare LLM and Embedding Model
-
-#### Download LLM and Embedding Model
 
 In another terminal window, separate from where you executed `ollama serve`, download the LLM and embedding model using the following commands:
 
@@ -44,31 +44,6 @@ In another terminal window, separate from where you executed `ollama serve`, dow
   ollama pull mistral
   :: Embedding model
   ollama pull nomic-embed-text
-  ```
-
-#### Prepare LLM model with Larger Context
-
-Next, prepare the LLM model to support larger context. To do this, we need to first create a file named `Modelfile`:
-
-```
-FROM mistral:latest
-PARAMETER num_ctx 4096
-```
-
-and then use the following commands to create a new model in Ollama named `mistral:latest-nctx4096`:
-
-- For **Linux users**:
-
-  ```bash
-  ./ollama create mistral:latest-nctx4096 -f Modelfile
-  ```
-
-- For **Windows users**:
-
-  Please run the following command in Miniforge or Anaconda Prompt.
-
-  ```cmd
-  ollama create mistral:latest-nctx4096 -f Modelfile
   ```
 
 > [!TIP]
@@ -146,25 +121,26 @@ Perpare the input corpus, and then initialize the workspace:
 
 #### Update `settings.yml`
 
-In the `settings.yml` file inside the `ragtest` folder, change the default `model` for `llm` to `mistral:latest-nctx4096`, and add the configuration `request_timeout: 1800.0` for `llm`. Besides, if you would like to use LLMs or embedding models other than `mistral` or `nomic-embed-text`, you are required to update the `settings.yml` in `ragtest` folder accordingly:
->
-> ```yml
-> llm:
->   api_key: ${GRAPHRAG_API_KEY}
->   type: openai_chat
->   model: mistral:latest-nctx4096 # change it accordingly if using another LLM, or LLM with larger num_ctx
->   model_supports_json: true
->   request_timeout: 1800.0 # add this configuration; you could also increase the request_timeout
->   api_base: http://localhost:11434/v1
-> 
-> embeddings:
->   async_mode: threaded
->   llm:
->     api_key: ${GRAPHRAG_API_KEY}
->     type: openai_embedding
->     model: nomic_embed_text # change it accordingly if using another embedding model
->     api_base: http://localhost:11434/api
-> ```
+In the `settings.yml` file inside the `ragtest` folder, add the configuration `request_timeout: 1800.0` for `llm`. Besides, if you would like to use LLMs or embedding models other than `mistral` or `nomic-embed-text`, you are required to update the `settings.yml` in `ragtest` folder accordingly:
+
+
+```yml
+llm:
+  api_key: ${GRAPHRAG_API_KEY}
+  type: openai_chat
+  model: mistral # change it accordingly if using another LLM
+  model_supports_json: true
+  request_timeout: 1800.0 # add this configuration; you could also increase the request_timeout
+  api_base: http://localhost:11434/v1
+
+embeddings:
+  async_mode: threaded
+  llm:
+    api_key: ${GRAPHRAG_API_KEY}
+    type: openai_embedding
+    model: nomic_embed_text # change it accordingly if using another embedding model
+    api_base: http://localhost:11434/api
+```
 
 #### Conduct GraphRAG indexing
 
@@ -235,6 +211,47 @@ Since its initial introduction, the Transformer model has been further developed
 
 #### `failed to find free space in the KV cache, retrying with smaller n_batch` when conducting GraphRAG Indexing, and `JSONDecodeError` when querying GraphRAG
 
-If you observe the Ollama server log showing `failed to find free space in the KV cache, retrying with smaller n_batch` while conducting GraphRAG indexing, and receive `JSONDecodeError` when querying GraphRAG, try to increase `num_ctx` for the LLM model and index/query GraphRAG again.
+If you observe the Ollama server log showing `failed to find free space in the KV cache, retrying with smaller n_batch` while conducting GraphRAG indexing, and receive `JSONDecodeError` when querying GraphRAG, try to increase context length for the LLM model and index/query GraphRAG again.
 
-You can refer to [this section](#prepare-llm-model-with-larger-context) and increase `num_ctx` from 4096 to a larger number to use the LLM model with a larger context.
+Here introduce how to make the LLM model support larger context. To do this, we need to first create a file named `Modelfile`:
+
+```
+FROM mistral:latest
+PARAMETER num_ctx 4096
+```
+
+and then use the following commands to create a new model in Ollama named `mistral:latest-nctx4096`:
+
+- For **Linux users**:
+
+  ```bash
+  ./ollama create mistral:latest-nctx4096 -f Modelfile
+  ```
+
+- For **Windows users**:
+
+  Please run the following command in Miniforge or Anaconda Prompt.
+
+  ```cmd
+  ollama create mistral:latest-nctx4096 -f Modelfile
+  ```
+
+Finally, update `settings.yml` inside the `ragtest` folder to use llm model `mistral:latest-nctx4096`:
+
+```yml
+llm:
+  api_key: ${GRAPHRAG_API_KEY}
+  type: openai_chat
+  model: mistral:latest-nctx4096 # change it accordingly if using another LLM, or LLM model with larger num_ctx
+  model_supports_json: true
+  request_timeout: 1800.0 # add this configuration; you could also increase the request_timeout
+  api_base: http://localhost:11434/v1
+
+embeddings:
+  async_mode: threaded
+  llm:
+    api_key: ${GRAPHRAG_API_KEY}
+    type: openai_embedding
+    model: nomic_embed_text # change it accordingly if using another embedding model
+    api_base: http://localhost:11434/api
+```
