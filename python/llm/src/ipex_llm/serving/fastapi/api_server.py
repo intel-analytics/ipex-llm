@@ -317,7 +317,10 @@ def get_prompt(messages) -> str:
                 if role == "system":
                     prompt += f"<<SYS>>\n{content}\n<</SYS>>\n\n"
                 elif role == "user":
-                    prompt += f"[INST] {content} [/INST] "
+                    if "glm" in local_model.model_name.lower():
+                        prompt += f"<|user|>\n{content}\n<|assistant|>"
+                    else:
+                        prompt += f"[INST] {content} [/INST] "
                 elif role == "assistant":
                     prompt += f"{content} "
                 else:
