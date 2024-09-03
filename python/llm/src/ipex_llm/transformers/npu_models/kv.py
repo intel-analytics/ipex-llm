@@ -173,7 +173,8 @@ class DynamicFusedNormalCache(DynamicCache):
                 head_dim,
                 0,
                 max_len,
-                key_states.dtype,
+                # key_states.dtype,
+                torch.float16,
                 key_states.device,
                 tranpose_value=transpose_value,
             )

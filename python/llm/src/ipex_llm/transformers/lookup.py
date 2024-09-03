@@ -60,21 +60,24 @@ def generate(
     lookahead = kwargs.pop("lookahead", None)
     perf_mode = os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None)
 
-    input_ids_shape = None
+    input_tensor_shape = None
+    is_inputs_embeds = False
     if inputs is not None:
-        input_ids_shape = inputs.shape
+        input_tensor_shape = inputs.shape
     else:
         input_ids = kwargs.get("input_ids", None)
         if input_ids is not None:
-            input_ids_shape = input_ids.shape
+            input_tensor_shape = input_ids.shape
         else:
             inputs_embeds = kwargs.get("inputs_embeds", None)
             if inputs_embeds is not None:
-                input_ids_shape = inputs_embeds.shape
+                is_inputs_embeds = True
+                input_tensor_shape = inputs_embeds.shape
 
     if perf_mode == "1" and lookahead is None:
-        if input_ids_shape is not None and \
-                input_ids_shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
+        if input_tensor_shape is not None and \
+                input_tensor_shape[1] >= PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD \
+                and not is_inputs_embeds:
             lookahead = 2  # default to 2 now
 
     if lookahead:
@@ -85,7 +88,7 @@ def generate(
             logger.warning("Prompt lookup is currently not supported on CPU with IPEX, "
                            "fallback to original generate.")
             kwargs.pop("max_matching_ngram_size", None)
-        elif input_ids_shape is not None and input_ids_shape[0] > 1:
+        elif input_tensor_shape is not None and input_tensor_shape[0] > 1:
             logger.warning("Prompt lookup is currently not supported with batch inference, "
                            "fallback to original generate.")
             kwargs.pop("max_matching_ngram_size", None)
@@ -175,7 +178,7 @@ class PromptLookupCandidateGenerator():
 
     def init_look_up_table(self,
                            input_ids: torch.LongTensor):
-        for ngram_size in range(self.max_matching_ngram_size, 0, -1):
+        for ngram_size in range(min(self.max_matching_ngram_size, input_ids.shape[1]), 0, -1):
             # Create sliding windows of size ngram_size
             windows = input_ids.cpu().unfold(dimension=1, size=ngram_size, step=1)
             for idx in range(windows.size(1)):
@@ -315,11 +318,9 @@ def lookup_generate(self,
         if step == 0:
             # first token use full model
             tic = time.time()
-            output = self(input_ids=input_ids,
-                          past_key_values=past_key_values,
-                          attention_mask=attention_mask,
-                          return_dict=True,
-                          use_cache=True)
+            model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
+            output = self(**model_inputs,
+                          return_dict=True)
             logits = output['logits']
             logits = logits[:, -1:]
             logits[:, -1, :] = logits_processor(input_ids, logits[:, -1, :])

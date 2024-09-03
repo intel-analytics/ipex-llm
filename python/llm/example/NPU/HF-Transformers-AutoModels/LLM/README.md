@@ -1,5 +1,5 @@
-# Run Large Language Model on Intel NPU
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on LLM models on [Intel NPUs](../../../README.md). See the table blow for verified models.
+# Run HuggingFace `transformers` Models on Intel NPU
+In this directory, you will find examples on how to directly run HuggingFace `transformers` models on Intel NPUs (leveraging *Intel NPU Acceleration Library*). See the table blow for verified models.
 
 ## Verified Models
 
@@ -52,7 +52,7 @@ For optimal performance, it is recommended to set several environment variables.
 set BIGDL_USE_NPU=1
 ```
 
-## 3. Run models
+## 3. Run Models
 In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
 
 ```
@@ -77,23 +77,34 @@ done
 ```
 
 ## 4. Run Optimized Models (Experimental)
-The example below shows how to run the **_optimized model implementations_** on Intel NPU, including
+The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU, including
 - [Llama2-7B](./llama.py)
 - [Llama3-8B](./llama.py)
 - [Qwen2-1.5B](./qwen2.py)
+- [Qwen2-7B](./qwen2.py)
 - [MiniCPM-1B](./minicpm.py)
 - [MiniCPM-2B](./minicpm.py)
 - [Baichuan2-7B](./baichuan2.py)
 
+### Recommended NPU Driver Version for LNL Users
+#### 32.0.100.2625
+Supported models: Llama2-7B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, Baichuan2-7B
+#### 32.0.101.2715
+Supported models: Llama3-8B, MiniCPM-2B
+
+### Run
 ```bash
 # to run Llama-2-7b-chat-hf
 python llama.py
 
-# to run Meta-Llama-3-8B-Instruct
+# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
 # to run Qwen2-1.5B-Instruct
 python qwen2.py
+
+# to run Qwen2-7B-Instruct
+python qwen2.py  --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
 
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py
@@ -115,12 +126,13 @@ Arguments info:
 
 ### Troubleshooting
 
+#### Output Problem
 If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
 ```bash
 # to run Llama-2-7b-chat-hf
 python  llama.py --disable-transpose-value-cache
 
-# to run Meta-Llama-3-8B-Instruct
+# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
 
 # to run Qwen2-1.5B-Instruct
@@ -132,6 +144,9 @@ python minicpm.py --disable-transpose-value-cache
 # to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
 ```
+
+#### Better Performance with High CPU Utilization
+You could enable optimization by setting the environment variable with `set IPEX_LLM_CPU_LM_HEAD=1` for better performance. But this will cause high CPU utilization.
 
 
 ### Sample Output

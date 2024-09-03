@@ -242,8 +242,9 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
   # Recommended Environment Variables for optimal performance
   export USE_XETLA=OFF
-  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   export SYCL_CACHE_PERSISTENT=1
+  # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
+  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   ```
 
 - For **Intel Data Center GPU Max**:
@@ -257,9 +258,10 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
   # Recommended Environment Variables for optimal performance
   export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
-  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   export SYCL_CACHE_PERSISTENT=1
   export ENABLE_SDP_FUSION=1
+  # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
+  export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   ```
 
   Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`
@@ -267,6 +269,8 @@ To use GPU acceleration on Linux, several environment variables are required or 
 > [!NOTE]
 > Please refer to [this guide](../Overview/install_gpu.md#runtime-configuration-1) for more details regarding runtime configuration.
 
+> [!NOTE]
+> The environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
 
 ## A Quick Example
 

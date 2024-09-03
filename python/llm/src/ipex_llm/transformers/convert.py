@@ -1997,6 +1997,11 @@ def _optimize_post(model, lightweight_bmm=False):
             resampler_module_name = model.resampler.__class__.__module__
             resampler_module = importlib.import_module(resampler_module_name)
             resampler_module._in_projection_packed = _in_projection_packed
+
+            # for minicpm-v-2_6 benchmarking purposes
+            from ipex_llm.transformers.models.minicpmv import minicpmv_decode_stream_wrapper
+            minicpmv_decode_stream = minicpmv_decode_stream_wrapper(module.MiniCPMV._decode_stream)
+            model._decode_stream = MethodType(minicpmv_decode_stream, model)
         elif model.vpm.config.model_type == "idefics2":
             # MiniCPM-V 2.5
             from ipex_llm.transformers.models.minicpmv import siglip_attention_forward

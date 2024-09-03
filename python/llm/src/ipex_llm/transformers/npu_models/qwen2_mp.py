@@ -42,6 +42,30 @@ from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
 from ipex_llm.transformers.npu_models.common import reshape_lm_head_input
 from transformers.modeling_outputs import CausalLMOutputWithPast
 from torch.nn import CrossEntropyLoss
+from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP
+
+
+def split_mlp_down_proj(module: torch.nn.Module):
+    if isinstance(module, Qwen2MLP) and module.down_proj.in_features == 18944:
+        new_linear_0 = torch.nn.Linear(0, 0, bias=False)
+        new_weight_0 = torch.nn.Parameter(module.down_proj.weight[:, :9472], requires_grad=False)
+        new_linear_0.weight = new_weight_0
+        new_linear_0.in_features = new_weight_0.size(1)
+        new_linear_0.out_features = new_weight_0.size(0)
+        module.down_proj_0 = new_linear_0
+        new_linear_1 = torch.nn.Linear(0, 0, bias=False)
+        new_weight_1 = torch.nn.Parameter(module.down_proj.weight[:, 9472:], requires_grad=False)
+        new_linear_1.weight = new_weight_1
+        new_linear_1.in_features = new_weight_1.size(1)
+        new_linear_1.out_features = new_weight_1.size(0)
+        module.down_proj_1 = new_linear_1
+
+        del module.down_proj
+
+
+def split_mlp_forward(self, x):
+    h = self.act_fn(self.gate_proj(x)) * self.up_proj(x)
+    return self.down_proj_0(h[:, :, :9472]) + self.down_proj_1(h[:, :, 9472:])
 
 
 class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
@@ -197,7 +221,32 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
+        print("start compiling")
         self.compile()
+        print("end compiling")
+
+    def mlp(self, hidden_states, seq_len):
+        mm1 = self.linear(
+            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )
+        mm2 = self.linear(
+            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )  # type: ignore[attr-defined]
+        mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+        if self.intermediate_size == 18944:
+            # for qwen2-7b
+            mm1_0 = self.slice(mm1, begin=[0, 0, 0], end=[1, seq_len, 9472])
+            mm1_1 = self.slice(mm1, begin=[0, 0, 9472], end=[1, seq_len, 18944])
+            hidden_states_0 = self.linear(mm1_0, self.hidden_size, 9472,
+                                          bias=False, wt_dtype=self.dtype)
+            hidden_states_1 = self.linear(mm1_1, self.hidden_size, 9472,
+                                          bias=False, wt_dtype=self.dtype)
+            hidden_states = hidden_states_0 + hidden_states_1
+        else:
+            hidden_states = self.linear(
+                mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+            )
+        return hidden_states
 
     def build_decoder(
         self,
@@ -236,7 +285,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         hidden_states = self.eltwise_add(residual, attn_output)
         residual = hidden_states
         hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
-        hidden_states = self.mlp(hidden_states)
+        hidden_states = self.mlp(hidden_states, self.seq_len)
         hidden_states = self.eltwise_add(residual, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
 
@@ -322,9 +371,13 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
             )
             self.backend_decoders.append(decoder)
 
+        offset = 0
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
-            self.backend_decoders[i].set_weights(self.op_id, op_parameters[start * 7:end * 7])
+            curr_linear_ops = len(self.backend_decoders[i].linear_ops)
+            curr_parameters = self.op_parameters[offset:offset + curr_linear_ops]
+            self.backend_decoders[i].set_weights(self.op_id, curr_parameters)
+            offset = offset + curr_linear_ops
 
     def forward(
         self,
@@ -515,15 +568,29 @@ def run_decode(
         attn_layer = curr_layer.self_attn
         mlp_layer = curr_layer.mlp
 
-        weights = [
-            (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
-            (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
-            (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
-            (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-            (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-            (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-        ]
+        if model.config.intermediate_size == 8960:
+            # for qwen2-1.5b
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            ]
+        elif model.config.intermediate_size == 18944:
+            # for qwen2-7b
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
+                (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
+            ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -739,15 +806,29 @@ def run_prefill(
         attn_layer = curr_layer.self_attn
         mlp_layer = curr_layer.mlp
 
-        weights = [
-            (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
-            (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
-            (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
-            (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-            (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-            (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-        ]
+        if model.config.intermediate_size == 8960:
+            # for qwen2-1.5b
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            ]
+        elif model.config.intermediate_size == 18944:
+            # for qwen2-7b
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
+                (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
+            ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -802,7 +883,6 @@ def run_prefill(
 
                 hidden_states = layer_outputs[0]
                 next_decoder_cache = layer_outputs[1]
-
             result_queue.put((hidden_states, next_decoder_cache))
 
 
@@ -830,6 +910,8 @@ class PrefillRunner:
         self.p.daemon = True
         self.p.start()
         output = self.prefill_result_queue.get()
+        print(Fore.GREEN + f"prefill process output: {output}")
+        print(Style.RESET_ALL)
 
     def forward(
         self,
