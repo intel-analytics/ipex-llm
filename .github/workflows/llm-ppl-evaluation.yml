@@ -12,10 +12,10 @@ permissions:
 on:
   # schedule:
   #   - cron: "00 12 * * *" # GMT time, 12:00 GMT == 20:00 China
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm-ppl-evaluation.yml"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm-ppl-evaluation.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
@@ -206,7 +206,7 @@ jobs:
           pip install --upgrade pip
           pip install jsonlines  pytablewriter regex
       - name: Download all results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@4.1.7
         with:
           name: ppl_results
           path: results        
@@ -245,7 +245,7 @@ jobs:
           fi
   
       - name: Download ppl results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@4.1.7
         with:
           name: ppl_results
           path: ${{ env.ACC_FOLDER}}/${{ env.DATE }}

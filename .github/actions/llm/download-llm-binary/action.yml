@@ -10,7 +10,7 @@ runs:
   using: "composite"
   steps:
     - name: Download all build files
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@4.1.7
     - name: Move build resources
       shell: bash
       run: |
