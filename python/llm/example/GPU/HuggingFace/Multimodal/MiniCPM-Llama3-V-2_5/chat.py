@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 
+
 import os
 import time
 import argparse
 import requests
+import torch
 from PIL import Image
 from ipex_llm.transformers import AutoModel
 from transformers import AutoTokenizer
@@ -33,8 +35,8 @@ if __name__ == '__main__':
                         help='The URL or path to the image to infer')
     parser.add_argument('--prompt', type=str, default="What is in the image?",
                         help='Prompt to infer')
-    parser.add_argument('--n-predict', type=int, default=32,
-                        help='Max tokens to predict')
+    parser.add_argument('--stream', action='store_true',
+                        help='Whether to chat in streaming mode')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -45,11 +47,12 @@ if __name__ == '__main__':
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModel.from_pretrained(model_path, 
-                                      load_in_4bit=True,
-                                      optimize_model=False,
+                                      load_in_low_bit="sym_int4",
+                                      optimize_model=True,
                                       trust_remote_code=True,
-                                      use_cache=True)
-    model = model.half().to(device='xpu')
+                                      use_cache=True,
+                                      modules_to_not_convert=["vpm", "resampler"])
+    model = model.half().to('xpu')
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     model.eval()
@@ -61,23 +64,45 @@ if __name__ == '__main__':
        image = Image.open(requests.get(image_path, stream=True).raw).convert('RGB')
 
     # Generate predicted tokens
-    # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5/blob/main/README.md
-    msgs = [{'role': 'user', 'content': args.prompt}]
-    st = time.time()
-    res = model.chat(
-     image=image,
-     msgs=msgs,
-     context=None,
-     tokenizer=tokenizer,
-     sampling=False,
-     temperature=0.7
+    # here the prompt tuning refers to https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/README.md
+    msgs = [{'role': 'user', 'content': [image, args.prompt]}]
+
+    # ipex_llm model needs a warmup, then inference time can be accurate
+    model.chat(
+        image=None,
+        msgs=msgs,
+        tokenizer=tokenizer,
     )
-    end = time.time()
-    print(f'Inference time: {end-st} s')
-    print('-'*20, 'Input', '-'*20)
-    print(image_path)
-    print('-'*20, 'Prompt', '-'*20)
-    print(args.prompt)
-    output_str = res
-    print('-'*20, 'Output', '-'*20)
-    print(output_str)
+
+    if args.stream:
+        res = model.chat(
+            image=None,
+            msgs=msgs,
+            tokenizer=tokenizer,
+            stream=True
+        )
+
+        print('-'*20, 'Input Image', '-'*20)
+        print(image_path)
+        print('-'*20, 'Input Prompt', '-'*20)
+        print(args.prompt)
+        print('-'*20, 'Stream Chat Output', '-'*20)
+        for new_text in res:
+            print(new_text, flush=True, end='')
+    else:
+        st = time.time()
+        res = model.chat(
+            image=None,
+            msgs=msgs,
+            tokenizer=tokenizer,
+        )
+        torch.xpu.synchronize()
+        end = time.time()
+
+        print(f'Inference time: {end-st} s')
+        print('-'*20, 'Input Image', '-'*20)
+        print(image_path)
+        print('-'*20, 'Input Prompt', '-'*20)
+        print(args.prompt)
+        print('-'*20, 'Chat Output', '-'*20)
+        print(res)

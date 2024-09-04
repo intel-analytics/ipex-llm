@@ -5,7 +5,7 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `chat()` API
-In the example [generate.py](./generate.py), we show a basic use case for a MiniCPM-V-2 model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
+In the example [chat.py](./chat.py), we show a basic use case for a MiniCPM-V-2 model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -106,15 +106,20 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ### 4. Running examples
 
-```
-python ./generate.py --prompt 'What is in the image?'
-```
+- chat without streaming mode:
+  ```
+  python ./chat.py --prompt 'What is in the image?'
+  ```
+- chat in streaming mode:
+  ```
+  python ./chat.py --prompt 'What is in the image?' --stream
+  ```
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MiniCPM-V-2 (e.g. `openbmb/MiniCPM-V-2`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2'`.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
-- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--stream`: flag to chat in streaming mode
 
 #### Sample Output
 
@@ -122,12 +127,20 @@ Arguments info:
 
 ```log
 Inference time: xxxx s
--------------------- Input --------------------
+-------------------- Input Image --------------------
 http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
--------------------- Prompt --------------------
+-------------------- Input Prompt --------------------
 What is in the image?
--------------------- Output --------------------
-In the image, there is a young child holding a teddy bear. The teddy bear appears to be dressed in a pink tutu. The child is also wearing a red and white striped dress. The background of the image includes a stone wall and some red flowers.
+-------------------- Chat Output --------------------
+In the image, there is a young child holding a teddy bear. The teddy bear is dressed in a pink tutu. The child is also wearing a red and white striped dress. The background of the image features a stone wall and some red flowers.
+```
+```log
+-------------------- Input Image --------------------
+http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+-------------------- Input Prompt --------------------
+图片里有什么？
+-------------------- Chat Output --------------------
+图中是一个小女孩，她手里拿着一只粉白相间的泰迪熊。
 ```
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
