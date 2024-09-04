@@ -216,7 +216,7 @@ jobs:
           OUTPUT_PATH="results_$DATE"
           echo "OUTPUT_PATH=$OUTPUT_PATH" >> $GITHUB_ENV
       - name: Download all results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@4.1.7
         with:
           name: harness_results
           path: ${{ env.OUTPUT_PATH }}        
