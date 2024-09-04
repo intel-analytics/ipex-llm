@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 import torch
-from typing import Optional
-from vllm.distributed import tensor_model_parallel_gather
+from typing import Optional, Union
+from vllm.distributed import tensor_model_parallel_gather, tensor_model_parallel_all_gather
 from vllm.logger import init_logger
 from vllm.model_executor.models.llama import LlamaMLP, LlamaAttention, LlamaForCausalLM
 from vllm.model_executor.models.qwen2 import Qwen2MLP, Qwen2Attention, Qwen2ForCausalLM
@@ -29,20 +29,28 @@ from vllm.model_executor.layers.vocab_parallel_embedding import (
 from vllm.attention import AttentionMetadata
 from vllm.config import DeviceConfig
 from typing import Tuple
+from ipex_llm.transformers.low_bit_linear import LowBitLinear
 
 
 def _sample_get_logits(
     self,
     hidden_states: torch.Tensor,
-    lm_head: VocabParallelEmbedding,
+    lm_head: Union[VocabParallelEmbedding, LowBitLinear],
     embedding_bias: Optional[torch.Tensor],
 ) -> torch.Tensor:
     # HINT: we do not support other types of quantization for now
-    logits = lm_head(hidden_states)
-    if embedding_bias is not None:
-        logits += embedding_bias
-    logits = tensor_model_parallel_gather(logits)
-    # Remove paddings in vocab (if any).
+    if isinstance(lm_head, VocabParallelEmbedding):
+        logits = lm_head.linear_method.apply(lm_head,
+                                             hidden_states,
+                                             bias=embedding_bias)
+    else:
+        logits = lm_head(hidden_states)
+        if embedding_bias is not None:
+            logits += embedding_bias
+    if self.use_gather:
+        logits = tensor_model_parallel_gather(logits)
+    else:
+        logits = tensor_model_parallel_all_gather(logits)
     if logits is not None:
         logits = logits[:, : self.org_vocab_size]
     return logits
@@ -237,20 +245,3 @@ def get_load_function(low_bit):
                     self.model_memory_usage / float(2**30))
 
     return _ipex_llm_load_model
-
-
-def _sample_get_logits(
-    self,
-    hidden_states: torch.Tensor,
-    lm_head: VocabParallelEmbedding,
-    embedding_bias: Optional[torch.Tensor],
-) -> torch.Tensor:
-    # HINT: we do not support other types of quantization for now
-    logits = lm_head(hidden_states)
-    if embedding_bias is not None:
-        logits += embedding_bias
-    logits = tensor_model_parallel_gather(logits)
-    # Remove paddings in vocab (if any).
-    if logits is not None:
-        logits = logits[:, : self.org_vocab_size]
-    return logits
