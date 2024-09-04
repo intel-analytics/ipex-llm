@@ -67,9 +67,9 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert):
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device)
         quant_linear = QuantizedLinear(qweights, scale, layer.in_features, layer.out_features, layer.bias)
-        if layer.in_features != layer.out_features:
-            print(f"layer.in_features: {layer.in_features}, layer.out_features: {layer.out_features}, weight_shape: {layer.weight.data.shape}")
-            print(f"qweights: {qweights.shape}, {qweights.dtype}, scale: {scale.shape}, {scale.dtype}")
+        # if layer.in_features != layer.out_features:
+        #     print(f"layer.in_features: {layer.in_features}, layer.out_features: {layer.out_features}, weight_shape: {layer.weight.data.shape}")
+        #     print(f"qweights: {qweights.shape}, {qweights.dtype}, scale: {scale.shape}, {scale.dtype}")
         return quant_linear
         # return QuantizedLinear(qweights, scale, layer.bias)
 

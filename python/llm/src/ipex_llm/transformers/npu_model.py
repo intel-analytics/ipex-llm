@@ -91,7 +91,7 @@ class _BaseAutoModelClass:
 
         low_bit = kwargs.pop("load_in_low_bit", "sym_int4")
         qtype_map = {
-            # "sym_int4": "sym_int4_npu",
+            "sym_int4_npu": "sym_int4_npu",
             "sym_int4": "sym_int4_rtn",
             "sym_int8": "sym_int8_rtn",
         }
