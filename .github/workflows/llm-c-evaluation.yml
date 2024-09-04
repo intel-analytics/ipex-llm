@@ -12,10 +12,10 @@ permissions:
 on:
   # schedule:
   #   - cron: "00 15 * * *" # GMT time, 15:00 GMT == 23:00 Beijing Time
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm-c-evaluation.yml"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm-c-evaluation.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
