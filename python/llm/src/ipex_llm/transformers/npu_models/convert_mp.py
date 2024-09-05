@@ -65,6 +65,11 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             model.llm.config.model_type = "llama"
         model = model.llm
 
+    if model.config.model_type == "qwen2":
+        from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_down_proj
+        from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_forward
+        model.apply(split_mlp_down_proj)
+
     # lm_head to cpu optimization
     if cpu_lm_head:
         # disable the optimization by default
@@ -134,8 +139,6 @@ def optimize_llm(
             intra_pp = 2
         if inter_pp is None:
             inter_pp = 4 if model.config.intermediate_size == 18944 else 1
-        if model.config.intermediate_size == 18944:
-            transpose_value_cache = False
 
         from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
         from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner

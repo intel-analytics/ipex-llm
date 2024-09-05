@@ -12,10 +12,10 @@ permissions:
 on:
   # schedule:
   #   - cron: "00 15 * * *" # GMT time, 15:00 GMT == 23:00 Beijing Time
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm-c-evaluation.yml"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm-c-evaluation.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
@@ -204,7 +204,7 @@ jobs:
           pip install pandas==1.5.3
 
       - name: Download ceval results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@4.1.7
         with:
           name: ceval_results
           path: results
@@ -259,7 +259,7 @@ jobs:
           fi
 
       - name: Download ceval results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@4.1.7
         with:
           name: results_${{ needs.set-matrix.outputs.date }}
           path:  ${{ env.ACC_FOLDER }}

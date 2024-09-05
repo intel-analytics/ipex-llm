@@ -12,10 +12,10 @@ permissions:
 on:
   # schedule:
   #   - cron: "00 13 * * *" # GMT time, 13:00 GMT == 21:00 China
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/llm-whisper-evaluation.yml"
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - ".github/workflows/llm-whisper-evaluation.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
@@ -176,14 +176,14 @@ jobs:
 
       - name: Download all results for nightly run
         if: github.event_name == 'schedule'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@4.1.7
         with:
           name: whisper_results
           path: ${{ env.NIGHTLY_FOLDER}}/${{ env.OUTPUT_PATH }}
 
       - name: Download all results for pr run
         if: github.event_name == 'pull_request'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@4.1.7
         with:
           name: whisper_results
           path: ${{ env.PR_FOLDER}}/${{ env.OUTPUT_PATH }}

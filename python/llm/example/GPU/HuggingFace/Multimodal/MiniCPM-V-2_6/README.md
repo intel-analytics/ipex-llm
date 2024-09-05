@@ -108,11 +108,11 @@ set SYCL_CACHE_PERSISTENT=1
 
 - chat without streaming mode:
   ```
-  python ./generate.py --prompt 'What is in the image?'
+  python ./chat.py --prompt 'What is in the image?'
   ```
 - chat in streaming mode:
   ```
-  python ./generate.py --prompt 'What is in the image?' --stream
+  python ./chat.py --prompt 'What is in the image?' --stream
   ```
 
 > [!TIP]
