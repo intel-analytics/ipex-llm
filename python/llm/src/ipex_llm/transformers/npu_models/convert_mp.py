@@ -42,32 +42,32 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
             from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
 
-    # MiniCPM-V 2.6 and minicpm-2b must put lm_head on CPU now
+    # MiniCPM-V 2.6 must put lm_head on CPU now
     cpu_lm_head = (
         (model.config.model_type == "minicpmv" and model.config.hidden_size == 3584 and
          model.config.vocab_size == 151666)
-        # or (
-        #     model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40
-        # )
         or os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0"
     )
 
+    # workaround for MiniCPM-2B
     if model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40:
-        print('======SPLIT LM_HEAD')
+        # 73440 is vocab_size of MiniCPM-1B
         new_linear_0 = torch.nn.Linear(0, 0, bias=False)
-        new_weight_0 = torch.nn.Parameter(model.lm_head.weight[:, :1536], requires_grad=False)
+        new_weight_0 = torch.nn.Parameter(model.lm_head.weight[:73440, :], requires_grad=False)
         new_linear_0.weight = new_weight_0
         new_linear_0.in_features = new_weight_0.size(1)
         new_linear_0.out_features = new_weight_0.size(0)
         model.lm_head_0 = new_linear_0
+
         new_linear_1 = torch.nn.Linear(0, 0, bias=False)
-        new_weight_1 = torch.nn.Parameter(model.lm_head.weight[:, 1536:], requires_grad=False)
+        import torch.nn.functional as F
+        padded_weight = F.pad(model.lm_head.weight[73440:, :],
+                              (0, 0, 0, 73440*2 - model.config.vocab_size))
+        new_weight_1 = torch.nn.Parameter(padded_weight, requires_grad=False)
         new_linear_1.weight = new_weight_1
         new_linear_1.in_features = new_weight_1.size(1)
         new_linear_1.out_features = new_weight_1.size(0)
         model.lm_head_1 = new_linear_1
-        print(f'lm_head_0 shape {model.lm_head_0.in_features} and {model.lm_head_0.out_features}, ')
-        print(f'lm_head_1 shape {model.lm_head_1.in_features} and {model.lm_head_1.out_features}, ')
         del model.lm_head
 
     if model.config.model_type == "minicpmv" and hasattr(model, "llm"):
