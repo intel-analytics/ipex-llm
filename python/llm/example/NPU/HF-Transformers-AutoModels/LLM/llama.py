@@ -53,7 +53,9 @@ if __name__ == "__main__":
     parser.add_argument("--lowbit-path", type=str,
         default="",
         # default="llama_low_bit_npu",
-        help="The path to the lowbit model folder, leave blank if you do not want to save. If path not exists, lowbit model will be saved there. Else, lowbit model will be loaded.",
+        help="The path to the lowbit model folder, leave blank if you do not want to save. \
+            If path not exists, lowbit model will be saved there. \
+            Else, lowbit model will be loaded.",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -82,15 +84,17 @@ if __name__ == "__main__":
             transpose_value_cache=not args.disable_transpose_value_cache,
         )
     else:
-        model = AutoModelForCausalLM.load_low_bit(args.lowbit_path,
-                                          attn_implementation="eager",
-                                          torch_dtype=torch.float16,
-                                          optimize_model=True,
-                                          max_output_len=args.max_output_len,
-                                          max_prompt_len=args.max_prompt_len,
-                                          intra_pp=args.intra_pp,
-                                          inter_pp=args.inter_pp,
-                                          transpose_value_cache=not args.disable_transpose_value_cache)
+        model = AutoModelForCausalLM.load_low_bit(
+            args.lowbit_path,
+            attn_implementation="eager",
+            torch_dtype=torch.float16,
+            optimize_model=True,
+            max_output_len=args.max_output_len,
+            max_prompt_len=args.max_prompt_len,
+            intra_pp=args.intra_pp,
+            inter_pp=args.inter_pp,
+            transpose_value_cache=not args.disable_transpose_value_cache,
+        )
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
