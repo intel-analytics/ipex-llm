@@ -72,27 +72,32 @@ RUN cd /tmp/ && \
 # # Install ipex-llm[serving] only will update ipex_llm source code without updating
 # # bigdl-core-xe, which will lead to problems
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev && \
-    mkdir -p /tmp/neo && \
-    cd /tmp/neo && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.15136.4/intel-igc-core_1.0.15136.4_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.15136.4/intel-igc-opencl_1.0.15136.4_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-level-zero-gpu-dbgsym_1.3.27191.9_amd64.ddeb && \
-    wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-level-zero-gpu_1.3.27191.9_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-opencl-icd-dbgsym_23.35.27191.9_amd64.ddeb && \
-    wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-opencl-icd_23.35.27191.9_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/libigdgmm12_22.3.11.ci17747749_amd64.deb && \
-    dpkg -i *.deb && \
+    apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
+    apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
+    # mkdir -p /tmp/neo && \
+    # cd /tmp/neo && \
+    # wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.15136.4/intel-igc-core_1.0.15136.4_amd64.deb && \
+    # wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.15136.4/intel-igc-opencl_1.0.15136.4_amd64.deb && \
+    # wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-level-zero-gpu-dbgsym_1.3.27191.9_amd64.ddeb && \
+    # wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-level-zero-gpu_1.3.27191.9_amd64.deb && \
+    # wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-opencl-icd-dbgsym_23.35.27191.9_amd64.ddeb && \
+    # wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/intel-opencl-icd_23.35.27191.9_amd64.deb && \
+    # wget https://github.com/intel/compute-runtime/releases/download/23.35.27191.9/libigdgmm12_22.3.11.ci17747749_amd64.deb && \
+    # dpkg -i *.deb && \
+    # mkdir -p /llm && \
+    # cd /llm && \
+    # rm -rf /tmp/neo && \
+    # Install ipex-llm vllm version
     mkdir -p /llm && \
     cd /llm && \
-    rm -rf /tmp/neo && \
+    # rm -rf /tmp/neo && \
     # Install ipex-llm vllm version
     pip uninstall -y ipex-llm && \
     git clone https://github.com/intel-analytics/ipex-llm.git -b ipex-vllm-mainline && \
     cd ipex-llm/python/llm && \
     python setup.py develop && \
     cd /llm && \
-    git clone -b xiangyu_test_202411_0806 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    git clone -b 0.5.4 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
     cd /llm/vllm && \
     pip install -r /llm/vllm/requirements-xpu.txt && \
     VLLM_TARGET_DEVICE=xpu python setup.py install && \
@@ -111,6 +116,6 @@ COPY ./start-pp_serving-service.sh       /llm/
 COPY ./start-lightweight_serving-service.sh       /llm/
 
 ENV LD_LIBRARY_PATH /usr/local/lib/python3.11/dist-packages/intel_extension_for_pytorch/lib/:/opt/intel/1ccl-wks/lib:/opt/intel/oneapi/tbb/2021.12/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.12/opt/mpi/libfabric/lib:/opt/intel/oneapi/mpi/2021.12/lib:/opt/intel/oneapi/mkl/2024.1/lib:/opt/intel/oneapi/ippcp/2021.11/lib/:/opt/intel/oneapi/ipp/2021.11/lib:/opt/intel/oneapi/dpl/2022.5/lib:/opt/intel/oneapi/dnnl/2024.1/lib:/opt/intel/oneapi/debugger/2024.1/opt/debugger/lib:/opt/intel/oneapi/dal/2024.2/lib:/opt/intel/oneapi/compiler/2024.1/opt/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2024.1/opt/compiler/lib:/opt/intel/oneapi/compiler/2024.1/lib:/opt/intel/oneapi/ccl/2021.12/lib/
-
+ENV BIGDL_LLM_SDP_IGNORE_MASK 0
 
 WORKDIR /llm/
