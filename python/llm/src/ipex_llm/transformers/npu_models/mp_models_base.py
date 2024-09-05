@@ -27,6 +27,8 @@ from filelock import FileLock
 import ctypes
 import math
 import numpy as np
+from typing import Optional, Any, List
+import numpy.typing as npt
 
 logger = logging.get_logger(__name__)
 
@@ -125,47 +127,47 @@ class LLMBaseNNFactory(NNFactory):
                   v_bias=None):
         hidden_size = num_heads * head_dim
         num_key_value_groups = num_heads // num_key_value_heads
-        linear_kwargs = {
-                "input_node": hidden_states,
-                "bias": False,
-                "wt_dtype": self.dtype,
-            }
-        if self.is_groupwise_quant:
-            linear_func = self.groupwise_linear
-            qk_size = 128
-            linear_kwargs["input_channels"]= hidden_size//qk_size
-            linear_kwargs["qk_size"] = qk_size
-        else:
-            linear_func = self.linear
-            linear_kwargs["input_channels"]= hidden_size
-        # query_states = self.linear(
-        #     hidden_states,
-        #     num_heads * head_dim,
-        #     hidden_size,
-        #     bias=False,
-        #     wt_dtype=self.dtype,
-        # )
-        query_states = linear_func(output_channels=num_heads * head_dim, **linear_kwargs)
+        # linear_kwargs = {
+        #         "input_node": hidden_states,
+        #         "bias": False,
+        #         "wt_dtype": self.dtype,
+        #     }
+        # if self.is_groupwise_quant:
+        #     linear_func = self.groupwise_linear
+        #     qk_size = 128
+        #     linear_kwargs["input_channels"]= hidden_size//qk_size
+        #     linear_kwargs["qk_size"] = qk_size
+        # else:
+        #     linear_func = self.linear
+        #     linear_kwargs["input_channels"]= hidden_size
+        query_states = self.linear(
+            hidden_states,
+            num_heads * head_dim,
+            hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        # query_states = linear_func(output_channels=num_heads * head_dim, **linear_kwargs)
         if q_bias is not None:
             query_states = query_states + q_bias
-        # key_states = self.linear(
-        #     hidden_states,
-        #     num_key_value_heads * head_dim,
-        #     hidden_size,
-        #     bias=False,
-        #     wt_dtype=self.dtype,
-        # )
-        key_states = linear_func(output_channels=num_key_value_heads * head_dim, **linear_kwargs)
+        key_states = self.linear(
+            hidden_states,
+            num_key_value_heads * head_dim,
+            hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        # key_states = linear_func(output_channels=num_key_value_heads * head_dim, **linear_kwargs)
         if k_bias is not None:
             key_states = key_states + k_bias
-        # value_states = self.linear(
-        #     hidden_states,
-        #     num_key_value_heads * head_dim,
-        #     hidden_size,
-        #     bias=False,
-        #     wt_dtype=self.dtype,
-        # )
-        value_states = linear_func(output_channels=num_key_value_heads * head_dim, **linear_kwargs)
+        value_states = self.linear(
+            hidden_states,
+            num_key_value_heads * head_dim,
+            hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        # value_states = linear_func(output_channels=num_key_value_heads * head_dim, **linear_kwargs)
         if v_bias is not None:
             value_states = value_states + v_bias
 
@@ -232,11 +234,11 @@ class LLMBaseNNFactory(NNFactory):
         attn_output = self.transpose(attn_output, [0, 2, 1, 3])
         attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
 
-        # attn_output = self.linear(
-        #     attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
-        # )
-        linear_kwargs["input_node"] = attn_output
-        attn_output = linear_func(output_channels=hidden_size, **linear_kwargs)
+        attn_output = self.linear(
+            attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
+        )
+        # linear_kwargs["input_node"] = attn_output
+        # attn_output = linear_func(output_channels=hidden_size, **linear_kwargs)
 
         return attn_output, new_key_states, new_value_states
 
@@ -355,8 +357,35 @@ class LLMBaseNNFactory(NNFactory):
         self.input_ops.append(op)
         return op
 
-    def linear(self, *args, **kwargs):
-        op = super().linear(*args, **kwargs)
+    def linear(self,
+               input_node: ctypes._Pointer,
+               output_channels: int,
+               input_channels: int,
+               bias: Optional[bool] = False,
+               act_dtype: npt.DTypeLike = np.float16,
+               wt_dtype: npt.DTypeLike = np.float16,
+               ):
+        if self.is_groupwise_quant:
+            qk_size = 128
+            input_channels = input_channels // qk_size
+            op = super().groupwise_linear(
+                input_node=input_node,
+                input_channels=input_channels,
+                output_channels=output_channels,
+                qk_size=qk_size,
+                bias=bias,
+                act_dtype=act_dtype,
+                wt_dtype=wt_dtype,
+            )
+        else:
+            op = super().linear(
+                input_node=input_node,
+                input_channels=input_channels,
+                output_channels=output_channels,
+                bias=bias,
+                act_dtype=act_dtype,
+                wt_dtype=wt_dtype,
+            )
         self.linear_ops.append(op)
         return op
     

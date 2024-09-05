@@ -134,6 +134,7 @@ class QuantizedLinear(torch.nn.Module):
         scale: torch.Tensor,
         inC: int,
         outC: int,
+        qtype: int,
         bias: Optional[torch.Tensor] = None,
     ):
         """Initialize the QuantizedLinear class.
@@ -161,6 +162,7 @@ class QuantizedLinear(torch.nn.Module):
 
         self.outC = outC
         self.inC = inC
+        self.qtype = qtype
         # if len(self.weight.shape) == 2:
         #     assert self.inC == self.weight.shape[1]
         #     assert self.outC == self.weight.shape[0]
