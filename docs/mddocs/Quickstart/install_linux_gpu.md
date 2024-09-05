@@ -19,14 +19,25 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
 #### For Linux kernel 6.2
 
-* Install wget, gpg-agent
-    ```bash
-    sudo apt-get install -y gpg-agent wget
-    wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
-    sudo gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
-    echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
-    sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
-    ```
+* Choose one option below depending on your CPU type:
+
+  1. **Option 1**: For `Intel Core CPU` with multiple A770 Arc GPUs. Use the following repository:
+      ```bash
+      sudo apt-get install -y gpg-agent wget
+      wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+      sudo gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+      echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
+      sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
+      ```
+
+  2. **Option 2**: For `Intel Xeon-W/SP CPU` with multiple A770 Arc GPUs. Use this repository for better performance:
+      ```bash
+      wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+      sudo gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy/lts/2350 unified" | \
+      sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
+      sudo apt update
+      ```
 
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
 
@@ -71,14 +82,25 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
 #### For Linux kernel 6.5
 
-* Install wget, gpg-agent
-    ```bash
-    sudo apt-get install -y gpg-agent wget
-    wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
-    sudo gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
-    echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
-    sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
-    ```
+* Choose one option below depending on your CPU type:
+
+  1. **Option 1**: For `Intel Core CPU` with multiple A770 Arc GPUs. Use the following repository:
+      ```bash
+      sudo apt-get install -y gpg-agent wget
+      wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+      sudo gpg --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+      echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
+      sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
+      ```
+
+  2. **Option 2**: For `Intel Xeon-W/SP CPU` with multiple A770 Arc GPUs. Use this repository for better performance:
+      ```bash
+      wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+      sudo gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+      echo "deb [arch=amd64 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy/lts/2350 unified" | \
+      sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
+      sudo apt update
+      ```
 
     <img src="https://llm-assets.readthedocs.io/en/latest/_images/wget.png" width=100%; />
 
