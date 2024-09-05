@@ -154,7 +154,7 @@ jobs:
           source /opt/intel/oneapi/setvars.sh
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          pip install transformers==4.36.2
+          pip install transformers==4.41.2, trl
           cp python/llm/test/benchmark/arc-perf-transformers-436.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           mkdir test_batch1
@@ -191,7 +191,7 @@ jobs:
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade for default transformers version
-          python -m pip install transformers==4.37.0
+          python -m pip install transformers==4.41.2, trl
           # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-437.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
@@ -223,7 +223,7 @@ jobs:
           export USE_XETLA=OFF
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade transformers for model Qwen/Qwen1.5-MoE-A2.7B-Chat
-          python -m pip install transformers==4.40.0
+          python -m pip install transformers==4.41.2
           python -m pip install trl
           # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-440.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -419,6 +419,8 @@ jobs:
           export https_proxy=${HTTPS_PROXY}
           source ipex-llm-init -t
           export OMP_NUM_THREADS=48
+          # upgrade for default transformers version
+          python -m pip install transformers==4.41.2, trl
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
@@ -499,6 +501,8 @@ jobs:
           cd python/llm/dev/benchmark/all-in-one
           export http_proxy=${HTTP_PROXY}
           export https_proxy=${HTTPS_PROXY}
+          # upgrade for default transformers version
+          python -m pip install transformers==4.41.2, trl
           # hide time info
           sed -i 's/str(end - st)/"xxxxxx"/g' run.py
           python run.py
@@ -557,7 +561,7 @@ jobs:
           pip install --upgrade pip
           pip install --upgrade wheel
           pip install --upgrade omegaconf pandas
-          pip install --upgrade tiktoken einops transformers_stream_generator matplotlib
+          pip install --upgrade tiktoken einops transformers_stream_generator matplotlib trl
 
           cd python\llm
           python setup.py clean --all bdist_wheel --win
@@ -653,6 +657,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
+          pip install transformers==4.41.2 trl
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
           REM for llava
@@ -678,7 +683,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.36.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -703,7 +708,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.38.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -775,7 +780,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.37.0
+          pip install transformers==4.41.0 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -802,7 +807,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.36.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -827,7 +832,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.38.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -898,7 +903,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.37.0
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -925,7 +930,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.36.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -950,7 +955,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.38.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1021,7 +1026,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.37.0
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1048,7 +1053,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.36.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1073,7 +1078,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.38.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1144,7 +1149,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.37.0
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1171,7 +1176,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.38.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1242,7 +1247,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.37.0
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1269,7 +1274,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.36.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1294,7 +1299,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.38.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1364,7 +1369,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.37.0
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1391,7 +1396,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.36.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1
@@ -1416,7 +1421,7 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          pip install transformers==4.38.2
+          pip install transformers==4.41.2 trl
 
           set SYCL_CACHE_PERSISTENT=1
           set BIGDL_LLM_XMX_DISABLED=1

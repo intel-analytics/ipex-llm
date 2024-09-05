@@ -1579,7 +1579,7 @@ def llama_attention_forward_4_41_original(
                     past_key_value.key_cache[self.layer_idx] = key_states
                     past_key_value.value_cache[self.layer_idx] = value_states
 
-    if cache_position is not None:
+    if attention_mask is not None:
         new_attention_mask = attention_mask[:, :, :, 0:kv_seq_len]
     else:
         new_attention_mask = attention_mask
