@@ -616,24 +616,26 @@ def transformers_int4_npu_win(repo_id,
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                          optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=True,
+                                          optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=False,
                                           torch_dtype=torch.float16, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
-                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=True,
+                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=False,
                                                      use_cache=True, attn_implementation="eager").eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
-                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=True,
+                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=False,
                                                      use_cache=True, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
 
-    model = BenchmarkWrapper(model)
+    print(model)
+
+    model = BenchmarkWrapper(model, do_print=True)
 
     result = {}
     with torch.inference_mode():
@@ -658,7 +660,7 @@ def transformers_int4_npu_win(repo_id,
                                             min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
-                output = tokenizer.batch_decode(output_ids)
+                output = tokenizer.batch_decode(output_ids[:, actual_in_len:])
                 print(output[0])
                 actual_out_len = output_ids.shape[1] - actual_in_len
                 if i >= warm_up:
