@@ -52,7 +52,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("--lowbit-path", type=str,
         default="",
-        # default="llama_low_bit_npu",
         help="The path to the lowbit model folder, leave blank if you do not want to save. \
             If path not exists, lowbit model will be saved there. \
             Else, lowbit model will be loaded.",
