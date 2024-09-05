@@ -86,6 +86,10 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [MiniCPM-2B](./minicpm.py)
 - [Baichuan2-7B](./baichuan2.py)
 
+### Recommended NPU Driver Version for MTL Users
+#### 32.0.100.2540
+Supported models: Llama2-7B, Llama3-8B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, MiniCPM-2B, Baichuan2-7B
+
 ### Recommended NPU Driver Version for LNL Users
 #### 32.0.100.2625
 Supported models: Llama2-7B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, Baichuan2-7B
