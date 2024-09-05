@@ -50,6 +50,8 @@ from transformers.cache_utils import Cache
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
+from transformers.modeling_outputs import CausalLMOutputWithPast
+from torch.nn import CrossEntropyLoss
 
 
 class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
@@ -987,8 +989,6 @@ def gen_minicpm_fused_model_forward(prefill_runner, decode_runner):
     return minicpm_fused_model_forward
 
 
-from transformers.modeling_outputs import CausalLMOutputWithPast
-from torch.nn import CrossEntropyLoss
 def minicpm_casullm_forward(
     self,
     input_ids: torch.LongTensor = None,
@@ -1002,9 +1002,11 @@ def minicpm_casullm_forward(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, CausalLMOutputWithPast]:
-    output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+    output_attentions = output_attentions if output_attentions is not None \
+        else self.config.output_attentions
     output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        output_hidden_states if output_hidden_states is not None
+        else self.config.output_hidden_states
     )
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
@@ -1023,15 +1025,19 @@ def minicpm_casullm_forward(
 
     hidden_states = outputs[0]
     if self.config.pretraining_tp > 1:
-        lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp, dim=0)
-        logits = [F.linear(hidden_states, lm_head_slices[i]) for i in range(self.config.pretraining_tp)]
+        lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp,
+                                                   dim=0)
+        logits = [F.linear(hidden_states, lm_head_slices[i])
+                  for i in range(self.config.pretraining_tp)]
         logits = torch.cat(logits, dim=-1)
     else:
-        ### ipex-llm change start
-        logits1 = self.lm_head_0(hidden_states / (self.config.hidden_size / self.config.dim_model_base))
-        logits2 = self.lm_head_1(hidden_states / (self.config.hidden_size / self.config.dim_model_base))
-        logits = torch.cat((logits1, logits2[:, :,:49313]), dim=-1)
-        ### ipex-llm change end
+        # ipex-llm change start
+        logits1 = self.lm_head_0(hidden_states / (self.config.hidden_size /
+                                                  self.config.dim_model_base))
+        logits2 = self.lm_head_1(hidden_states / (self.config.hidden_size /
+                                                  self.config.dim_model_base))
+        logits = torch.cat((logits1, logits2[:, :, :49313]), dim=-1)
+        # ipex-llm change end
     logits = logits.float()
 
     loss = None

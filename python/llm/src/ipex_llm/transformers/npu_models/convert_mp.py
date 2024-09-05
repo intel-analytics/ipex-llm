@@ -219,8 +219,10 @@ def optimize_llm(
             prefill_runner=prefill_runner, decode_runner=decode_runner
         )
         convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
-        from ipex_llm.transformers.npu_models.minicpm_mp import minicpm_casullm_forward
-        convert_forward(model, module.MiniCPMForCausalLM, minicpm_casullm_forward)
+        if model.config.num_hidden_layers == 40:
+            # for minicpm-2b
+            from ipex_llm.transformers.npu_models.minicpm_mp import minicpm_casullm_forward
+            convert_forward(model, module.MiniCPMForCausalLM, minicpm_casullm_forward)
     elif model.config.model_type == "baichuan" and model.config.num_hidden_layers == 32:
         # for Baichuan2-7B
         if intra_pp is None:
