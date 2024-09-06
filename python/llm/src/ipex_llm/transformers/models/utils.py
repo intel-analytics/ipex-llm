@@ -26,6 +26,7 @@ from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_
 FP8_KV_ALLOC_LENGTH = 512
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
+
 def decoding_fast_path_qtype_check(proj):
     qtype = getattr(proj, "qtype", None)
     return qtype in [SYM_INT4, FP8E5, FP4]
