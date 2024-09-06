@@ -534,7 +534,8 @@ def run_decode(
                 if past_seen_tokens is None or past_seen_tokens != past_key_values.get_seq_length():
                     past_seen_tokens = past_key_values.get_seq_length()
                     position_ids = torch.IntTensor([past_seen_tokens])
-                    padded_causal_mask = torch.ones(1, 1, 1, max_seq_len, dtype=torch.float16) * torch.finfo(torch.float16).min
+                    padded_causal_mask = torch.ones(1, 1, 1, max_seq_len, dtype=torch.float16) * \
+                        torch.finfo(torch.float16).min
                     padded_causal_mask[:, :, :, -1] = 0.0
                     padded_causal_mask[:, :, :, :past_seen_tokens] = 0
                 else:
