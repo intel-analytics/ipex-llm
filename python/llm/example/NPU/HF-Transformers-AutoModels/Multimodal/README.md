@@ -13,7 +13,7 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
 Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
-Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
+Right click and select **Update Driver** -> **Browse my computer for drivers**. And then manually select the unzipped driver folder to install.
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a phi-3-vision model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.

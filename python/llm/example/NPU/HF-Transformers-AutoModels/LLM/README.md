@@ -21,7 +21,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
 Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
-Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
+Right click and select **Update Driver** -> **Browse my computer for drivers**. And then manually select the unzipped driver folder to install.
 
 ## 1. Install
 ### 1.1 Installation on Windows
@@ -104,11 +104,11 @@ python llama.py
 # to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
-# to run Qwen2-1.5B-Instruct
+# to run Qwen2-1.5B-Instruct LNL driver version: 32.0.101.2715)
 python qwen2.py
 
-# to run Qwen2-7B-Instruct
-python qwen2.py  --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
+# to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
+python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
 
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py
@@ -135,19 +135,25 @@ Arguments info:
 If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
 ```bash
 # to run Llama-2-7b-chat-hf
-python  llama.py --disable-transpose-value-cache
+python llama.py --disable-transpose-value-cache
 
 # to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
 
-# to run Qwen2-1.5B-Instruct
+# to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen2.py --disable-transpose-value-cache
+
+# to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
+python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --disable-transpose-value-cache
 
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py --disable-transpose-value-cache
 
 # to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
+
+# to run Baichuan2-7B-Chat
+python baichuan2.py --disable-transpose-value-cache
 ```
 
 #### Better Performance with High CPU Utilization
