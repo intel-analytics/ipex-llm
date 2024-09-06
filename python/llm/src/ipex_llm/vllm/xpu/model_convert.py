@@ -227,7 +227,7 @@ def get_load_function(low_bit):
                 cache_config=self.cache_config,
             )
             if "qwen" in self.model_config.model.lower() and \
-                self.model.model.layers[0].mlp.down_proj.input_size_per_partition % 64 != 0:
+                self.model.model.layers[0].mlp.down_proj.input_size_per_partition % 256 != 0:
                 self.model.apply(padding_mlp)
             from ipex_llm import optimize_model
             import os
@@ -255,7 +255,7 @@ def padding_mlp(module: torch.nn.Module):
         hidden_size = module.down_proj.output_size
         # devide by rank
         intermediate_size = module.down_proj.input_size_per_partition
-        padding_size = 64
+        padding_size = 256
         padding_intermediate_size = (intermediate_size + padding_size - 1) // padding_size * padding_size
         if intermediate_size % padding_size == 0:
             return
