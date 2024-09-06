@@ -469,7 +469,6 @@ def run_decode(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
-    deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
@@ -520,8 +519,6 @@ def run_decode(
 
     past_key_values = None
     past_seen_tokens = None
-    padded_causal_mask = torch.ones(1, 1, 1, max_seq_len, dtype=torch.float16) * torch.finfo(torch.float16).min
-    padded_causal_mask[:, :, :, -1] = 0.0
 
     control = torch.empty((), dtype=torch.int)
     hidden_states = torch.empty((1, 1, head_dim * num_heads), dtype=torch.float16)
@@ -534,31 +531,17 @@ def run_decode(
             elif control.item() == -1:
                 past_key_values = input_queue.get()
             else:
-                if past_seen_tokens is None:
+                if past_seen_tokens is None or past_seen_tokens != past_key_values.get_seq_length():
                     past_seen_tokens = past_key_values.get_seq_length()
                     position_ids = torch.IntTensor([past_seen_tokens])
+                    padded_causal_mask = torch.ones(1, 1, 1, max_seq_len, dtype=torch.float16) * torch.finfo(torch.float16).min
+                    padded_causal_mask[:, :, :, -1] = 0.0
                     padded_causal_mask[:, :, :, :past_seen_tokens] = 0
                 else:
                     # TODO: not consider other case now
                     past_seen_tokens += 1
                     position_ids += 1
-                    padded_causal_mask[:, :, :, :past_seen_tokens] = 0
-                # attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
-                # # cache_position = torch.arange(
-                # #     past_seen_tokens, past_seen_tokens + 1, device=hidden_states.device
-                # # )
-
-                # # position_ids = cache_position.unsqueeze(0)
-                # causal_mask = model.model._update_causal_mask(
-                #     attention_mask, hidden_states, cache_position, past_seen_tokens
-                # )
-                # pad_len = multi_decoder.max_seq_len + 1 - causal_mask.size(-1)
-
-                # pad_mask = (0, pad_len)
-                # padded_causal_mask = F.pad(
-                #     causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
-                # )
-                # padded_causal_mask[:, :, :, -1] = 0.0
+                    padded_causal_mask[:, :, :, past_seen_tokens] = 0
                 dist.recv(hidden_states, src=rank - 1)
                 layer_outputs = multi_decoder(
                     hidden_states,
