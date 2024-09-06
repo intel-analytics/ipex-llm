@@ -405,16 +405,15 @@ class LLMBaseNNFactory(NNFactory):
         num_decoders = len(decoders)
         num_inputs = len(x_np)
 
-        with record_function(f"npu_factory"):
-
-            array_type = ctypes.POINTER(ctypes.c_char) * num_decoders
-            models_ptr = array_type(
-                *[decoders[i]._mm for i in range(num_decoders)]
-            )
-            inputs_ptr = (ctypes.c_void_p * num_inputs)(
-                *[x.ctypes.data_as(ctypes.c_void_p) for x in x_np]
-            )
-            backend_lib.run_decoders(models_ptr, inputs_ptr, num_decoders, num_inputs)
+        # with record_function(f"npu_factory"):
+        array_type = ctypes.POINTER(ctypes.c_char) * num_decoders
+        models_ptr = array_type(
+            *[decoders[i]._mm for i in range(num_decoders)]
+        )
+        inputs_ptr = (ctypes.c_void_p * num_inputs)(
+            *[x.ctypes.data_as(ctypes.c_void_p) for x in x_np]
+        )
+        backend_lib.run_decoders(models_ptr, inputs_ptr, num_decoders, num_inputs)
 
         hidden_states = decoders[-1].torch_out[0]
         new_key_states = []
