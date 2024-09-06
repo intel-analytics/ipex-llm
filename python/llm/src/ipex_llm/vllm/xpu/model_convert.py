@@ -227,7 +227,7 @@ def get_load_function(low_bit):
                 cache_config=self.cache_config,
             )
             if "qwen" in self.model_config.model.lower() and \
-                self.model.model.layers[0].mlp.down_proj.input_size_per_partition % 256 != 0:
+                    self.model.model.layers[0].mlp.down_proj.input_size_per_partition % 256 != 0:
                 self.model.apply(padding_mlp)
             from ipex_llm import optimize_model
             import os
@@ -250,24 +250,25 @@ def get_load_function(low_bit):
 
     return _ipex_llm_load_model
 
+
 def padding_mlp(module: torch.nn.Module):
     if isinstance(module, Qwen2MLP):
         hidden_size = module.down_proj.output_size
         # devide by rank
         intermediate_size = module.down_proj.input_size_per_partition
         padding_size = 256
-        padding_intermediate_size = (intermediate_size + padding_size - 1) // padding_size * padding_size
+        padding_intermediate_size = \
+            (intermediate_size + padding_size - 1) // padding_size * padding_size
         if intermediate_size % padding_size == 0:
             return
         gate_up_weight = module.gate_up_proj.weight.data
         new_gate_up_weight = torch.zeros([padding_intermediate_size * 2, hidden_size],
-                                      dtype=gate_up_weight.dtype, device=gate_up_weight.device)
+                                         dtype=gate_up_weight.dtype, device=gate_up_weight.device)
         # merge_gate_up_weight
         new_gate_up_weight[:intermediate_size, :] = gate_up_weight[:intermediate_size, :]
-        new_gate_up_weight[padding_intermediate_size:padding_intermediate_size+intermediate_size, :] = gate_up_weight[intermediate_size:, :]
+        new_gate_up_weight[padding_intermediate_size:padding_intermediate_size+intermediate_size, :] = gate_up_weight[intermediate_size:, :]  # noqa
         module.gate_up_proj.output_size_per_partition = padding_intermediate_size * 2
         module.gate_up_proj.weight = torch.nn.Parameter(new_gate_up_weight, requires_grad=False)
-
 
         down_weight = module.down_proj.weight.data
         new_down_weight = torch.zeros([hidden_size, padding_intermediate_size],
