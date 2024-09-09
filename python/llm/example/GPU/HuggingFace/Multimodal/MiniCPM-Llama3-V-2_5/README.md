@@ -5,7 +5,7 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `chat()` API
-In the example [generate.py](./generate.py), we show a basic use case for a MiniCPM-Llama3-V-2_5 model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
+In the example [chat.py](./chat.py), we show a basic use case for a MiniCPM-Llama3-V-2_5 model to predict the next N tokens using `chat()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -106,15 +106,20 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ### 4. Running examples
 
-```
-python ./generate.py --prompt 'What is in the image?'
-```
+- chat without streaming mode:
+  ```
+  python ./chat.py --prompt 'What is in the image?'
+  ```
+- chat in streaming mode:
+  ```
+  python ./chat.py --prompt 'What is in the image?' --stream
+  ```
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MiniCPM-Llama3-V-2_5 (e.g. `openbmb/MiniCPM-Llama3-V-2_5`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-Llama3-V-2_5'`.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
-- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--stream`: flag to chat in streaming mode
 
 #### Sample Output
 
@@ -122,12 +127,21 @@ Arguments info:
 
 ```log
 Inference time: xxxx s
--------------------- Input --------------------
+-------------------- Input Image --------------------
 http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
--------------------- Prompt --------------------
+-------------------- Input Prompt --------------------
 What is in the image?
--------------------- Output --------------------
-The image features a young child holding a white teddy bear. The teddy bear is dressed in a pink outfit. The child appears to be outdoors, with a stone wall and some red flowers in the background.
+-------------------- Chat Output --------------------
+The image features a young child holding a white teddy bear. The teddy bear is dressed in a pink dress with a ribbon on it. The child appears to be smiling and enjoying the moment.
+```
+```log
+Inference time: xxxx s
+-------------------- Input Image --------------------
+http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
+-------------------- Input Prompt --------------------
+图片里有什么？
+-------------------- Chat Output --------------------
+图片中有一个小孩，手里拿着一个白色的玩具熊。这个孩子看起来很开心，正在微笑并与玩具互动。背景包括红色的花朵和石墙，为这个场景增添了色彩和质感。
 ```
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):

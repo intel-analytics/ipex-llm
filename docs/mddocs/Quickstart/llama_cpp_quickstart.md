@@ -1,6 +1,6 @@
 # Run llama.cpp with IPEX-LLM on Intel GPU 
 
-[ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) prvoides fast LLM inference in in pure C++ across a variety of hardware; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `llama.cpp` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
+[ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) prvoides fast LLM inference in pure C++ across a variety of hardware; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `llama.cpp` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
@@ -149,7 +149,7 @@ Before running, you should download or copy community GGUF model to your current
 - For **Linux users**:
   
   ```bash
-  ./main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 99 --color
+  ./llama-cli -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -c 1024 -t 8 -e -ngl 99 --color
   ```
 
   > **Note**:
@@ -161,7 +161,7 @@ Before running, you should download or copy community GGUF model to your current
   Please run the following command in Miniforge Prompt.
 
   ```cmd
-  main -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -t 8 -e -ngl 99 --color
+  llama-cli -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -c 1024 -t 8 -e -ngl 99 --color
   ```
 
   > **Note**:
@@ -171,24 +171,10 @@ Before running, you should download or copy community GGUF model to your current
 #### Sample Output
 ```
 Log start
-main: build = 1 (38bcbd4)
-main: built with Intel(R) oneAPI DPC++/C++ Compiler 2024.0.0 (2024.0.0.20231017) for x86_64-unknown-linux-gnu
-main: seed  = 1710359960
-ggml_init_sycl: GGML_SYCL_DEBUG: 0
-ggml_init_sycl: GGML_SYCL_F16: no
-found 8 SYCL devices:
-|ID| Name                                        |compute capability|Max compute units|Max work group|Max sub group|Global mem size|
-|--|---------------------------------------------|------------------|-----------------|--------------|-------------|---------------|
-| 0|               Intel(R) Arc(TM) A770 Graphics|               1.3|              512|          1024|           32|    16225243136|
-| 1|               Intel(R) FPGA Emulation Device|               1.2|               32|      67108864|           64|    67181625344|
-| 2|         13th Gen Intel(R) Core(TM) i9-13900K|               3.0|               32|          8192|           64|    67181625344|
-| 3|               Intel(R) Arc(TM) A770 Graphics|               3.0|              512|          1024|           32|    16225243136|
-| 4|               Intel(R) Arc(TM) A770 Graphics|               3.0|              512|          1024|           32|    16225243136|
-| 5|                    Intel(R) UHD Graphics 770|               3.0|               32|           512|           32|    53745299456|
-| 6|               Intel(R) Arc(TM) A770 Graphics|               1.3|              512|          1024|           32|    16225243136|
-| 7|                    Intel(R) UHD Graphics 770|               1.3|               32|           512|           32|    53745299456|
-detect 2 SYCL GPUs: [0,6] with Max compute units:512
-llama_model_loader: loaded meta data with 20 key-value pairs and 291 tensors from ~/mistral-7b-instruct-v0.1.Q4_K_M.gguf (version GGUF V2)
+main: build = 1 (6f4ec98)
+main: built with MSVC 19.39.33519.0 for
+main: seed  = 1724921424
+llama_model_loader: loaded meta data with 20 key-value pairs and 291 tensors from D:\gguf-models\mistral-7b-instruct-v0.1.Q4_K_M.gguf (version GGUF V2)
 llama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.
 llama_model_loader: - kv   0:                       general.architecture str              = llama
 llama_model_loader: - kv   1:                               general.name str              = mistralai_mistral-7b-instruct-v0.1
@@ -213,18 +199,21 @@ llama_model_loader: - kv  19:               general.quantization_version u32    
 llama_model_loader: - type  f32:   65 tensors
 llama_model_loader: - type q4_K:  193 tensors
 llama_model_loader: - type q6_K:   33 tensors
-llm_load_vocab: special tokens definition check successful ( 259/32000 ).
+llm_load_vocab: special tokens cache size = 3
+llm_load_vocab: token to piece cache size = 0.1637 MB
 llm_load_print_meta: format           = GGUF V2
 llm_load_print_meta: arch             = llama
 llm_load_print_meta: vocab type       = SPM
 llm_load_print_meta: n_vocab          = 32000
 llm_load_print_meta: n_merges         = 0
+llm_load_print_meta: vocab_only       = 0
 llm_load_print_meta: n_ctx_train      = 32768
 llm_load_print_meta: n_embd           = 4096
+llm_load_print_meta: n_layer          = 32
 llm_load_print_meta: n_head           = 32
 llm_load_print_meta: n_head_kv        = 8
-llm_load_print_meta: n_layer          = 32
 llm_load_print_meta: n_rot            = 128
+llm_load_print_meta: n_swa            = 0
 llm_load_print_meta: n_embd_head_k    = 128
 llm_load_print_meta: n_embd_head_v    = 128
 llm_load_print_meta: n_gqa            = 4
@@ -234,112 +223,135 @@ llm_load_print_meta: f_norm_eps       = 0.0e+00
 llm_load_print_meta: f_norm_rms_eps   = 1.0e-05
 llm_load_print_meta: f_clamp_kqv      = 0.0e+00
 llm_load_print_meta: f_max_alibi_bias = 0.0e+00
+llm_load_print_meta: f_logit_scale    = 0.0e+00
 llm_load_print_meta: n_ff             = 14336
 llm_load_print_meta: n_expert         = 0
 llm_load_print_meta: n_expert_used    = 0
-llm_load_print_meta: causal attm      = 1
+llm_load_print_meta: causal attn      = 1
 llm_load_print_meta: pooling type     = 0
 llm_load_print_meta: rope type        = 0
 llm_load_print_meta: rope scaling     = linear
 llm_load_print_meta: freq_base_train  = 10000.0
 llm_load_print_meta: freq_scale_train = 1
-llm_load_print_meta: n_yarn_orig_ctx  = 32768
+llm_load_print_meta: n_ctx_orig_yarn  = 32768
 llm_load_print_meta: rope_finetuned   = unknown
 llm_load_print_meta: ssm_d_conv       = 0
 llm_load_print_meta: ssm_d_inner      = 0
 llm_load_print_meta: ssm_d_state      = 0
 llm_load_print_meta: ssm_dt_rank      = 0
+llm_load_print_meta: ssm_dt_b_c_rms   = 0
 llm_load_print_meta: model type       = 7B
 llm_load_print_meta: model ftype      = Q4_K - Medium
 llm_load_print_meta: model params     = 7.24 B
-llm_load_print_meta: model size       = 4.07 GiB (4.83 BPW) 
+llm_load_print_meta: model size       = 4.07 GiB (4.83 BPW)
 llm_load_print_meta: general.name     = mistralai_mistral-7b-instruct-v0.1
 llm_load_print_meta: BOS token        = 1 '<s>'
 llm_load_print_meta: EOS token        = 2 '</s>'
 llm_load_print_meta: UNK token        = 0 '<unk>'
 llm_load_print_meta: LF token         = 13 '<0x0A>'
-get_memory_info: [warning] ext_intel_free_memory is not supported (export/set ZES_ENABLE_SYSMAN=1 to support), use total memory as free memory
-get_memory_info: [warning] ext_intel_free_memory is not supported (export/set ZES_ENABLE_SYSMAN=1 to support), use total memory as free memory
-llm_load_tensors: ggml ctx size =    0.33 MiB
+llm_load_print_meta: max token length = 48
+ggml_sycl_init: GGML_SYCL_FORCE_MMQ:   no
+ggml_sycl_init: SYCL_USE_XMX: yes
+ggml_sycl_init: found 1 SYCL devices:
+llm_load_tensors: ggml ctx size =    0.27 MiB
 llm_load_tensors: offloading 32 repeating layers to GPU
 llm_load_tensors: offloading non-repeating layers to GPU
 llm_load_tensors: offloaded 33/33 layers to GPU
-llm_load_tensors:      SYCL0 buffer size =  2113.28 MiB
-llm_load_tensors:      SYCL6 buffer size =  1981.77 MiB
-llm_load_tensors:  SYCL_Host buffer size =    70.31 MiB
-...............................................................................................
+llm_load_tensors:      SYCL0 buffer size =  4095.05 MiB
+llm_load_tensors:        CPU buffer size =    70.31 MiB
+..............................................................................................
 llama_new_context_with_model: n_ctx      = 512
+llama_new_context_with_model: n_batch    = 512
+llama_new_context_with_model: n_ubatch   = 512
+llama_new_context_with_model: flash_attn = 0
 llama_new_context_with_model: freq_base  = 10000.0
 llama_new_context_with_model: freq_scale = 1
-llama_kv_cache_init:      SYCL0 KV buffer size =    34.00 MiB
-llama_kv_cache_init:      SYCL6 KV buffer size =    30.00 MiB
+[SYCL] call ggml_check_sycl
+ggml_check_sycl: GGML_SYCL_DEBUG: 0
+ggml_check_sycl: GGML_SYCL_F16: no
+found 1 SYCL devices:
+|  |                   |                                       |       |Max    |        |Max  |Global |                     |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
+|ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
+|--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
+| 0| [level_zero:gpu:0]|                     Intel Arc Graphics|    1.3|    112|    1024|   32| 13578M|            1.3.27504|
+llama_kv_cache_init:      SYCL0 KV buffer size =    64.00 MiB
 llama_new_context_with_model: KV self size  =   64.00 MiB, K (f16):   32.00 MiB, V (f16):   32.00 MiB
-llama_new_context_with_model:  SYCL_Host input buffer size   =    10.01 MiB
-llama_new_context_with_model:      SYCL0 compute buffer size =    73.00 MiB
-llama_new_context_with_model:      SYCL6 compute buffer size =    73.00 MiB
-llama_new_context_with_model:  SYCL_Host compute buffer size =     8.00 MiB
-llama_new_context_with_model: graph splits (measure): 3
-system_info: n_threads = 8 / 32 | AVX = 1 | AVX_VNNI = 1 | AVX2 = 1 | AVX512 = 0 | AVX512_VBMI = 0 | AVX512_VNNI = 0 | FMA = 1 | NEON = 0 | ARM_FMA = 0 | F16C = 1 | FP16_VA = 0 | WASM_SIMD = 0 | BLAS = 1 | SSE3 = 1 | SSSE3 = 1 | VSX = 0 | MATMUL_INT8 = 0 | 
-sampling: 
-        repeat_last_n = 64, repeat_penalty = 1.100, frequency_penalty = 0.000, presence_penalty = 0.000
+llama_new_context_with_model:  SYCL_Host  output buffer size =     0.12 MiB
+llama_new_context_with_model:      SYCL0 compute buffer size =    81.00 MiB
+llama_new_context_with_model:  SYCL_Host compute buffer size =     9.01 MiB
+llama_new_context_with_model: graph nodes  = 902
+llama_new_context_with_model: graph splits = 2
+
+system_info: n_threads = 8 / 18 | AVX = 1 | AVX_VNNI = 0 | AVX2 = 1 | AVX512 = 0 | AVX512_VBMI = 0 | AVX512_VNNI = 0 | AVX512_BF16 = 0 | FMA = 1 | NEON = 0 | SVE = 0 | ARM_FMA = 0 | F16C = 1 | FP16_VA = 0 | WASM_SIMD = 0 | BLAS = 1 | SSE3 = 1 | SSSE3 = 1 | VSX = 0 | MATMUL_INT8 = 0 | LLAMAFILE = 1 |
+sampling:
+        repeat_last_n = 64, repeat_penalty = 1.000, frequency_penalty = 0.000, presence_penalty = 0.000
         top_k = 40, tfs_z = 1.000, top_p = 0.950, min_p = 0.050, typical_p = 1.000, temp = 0.800
         mirostat = 0, mirostat_lr = 0.100, mirostat_ent = 5.000
-sampling order: 
-CFG -> Penalties -> top_k -> tfs_z -> typical_p -> top_p -> min_p -> temperature 
-generate: n_ctx = 512, n_batch = 512, n_predict = 32, n_keep = 1
- Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun exploring the world around her. Her parents were kind and let her do what she wanted, as long as she stayed safe.
-One day, the little
-llama_print_timings:        load time =   10096.78 ms
+sampling order:
+CFG -> Penalties -> top_k -> tfs_z -> typical_p -> top_p -> min_p -> temperature
+generate: n_ctx = 512, n_batch = 2048, n_predict = 32, n_keep = 1
+
+
+ Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun exploring the world. She lived in a small village where there weren't many opportunities for adventures, but that didn't stop her. She would often read
+llama_print_timings:        load time =    xxxx ms
 llama_print_timings:      sample time =     x.xx ms /    32 runs   (   xx.xx ms per token,  xx.xx tokens per second)
 llama_print_timings: prompt eval time =    xx.xx ms /    31 tokens (   xx.xx ms per token,  xx.xx tokens per second)
 llama_print_timings:        eval time =    xx.xx ms /    31 runs   (   xx.xx ms per token,  xx.xx tokens per second)
 llama_print_timings:       total time =    xx.xx ms /    62 tokens
 Log end
+
 ```
 
 ### Troubleshooting
 
-#### Unable to run the initialization script
+#### 1. Unable to run the initialization script
 If you are unable to run `init-llama-cpp.bat`, please make sure you have installed `ipex-llm[cpp]` in your conda environment. If you have installed it, please check if you have activated the correct conda environment. Also, if you are using Windows, please make sure you have run the script with administrator privilege in prompt terminal.
 
-#### `DeviceList is empty. -30 (PI_ERROR_INVALID_VALUE)` error
+#### 2. `DeviceList is empty. -30 (PI_ERROR_INVALID_VALUE)` error
 On Linux, this error happens when devices starting with `[ext_oneapi_level_zero]` are not found. Please make sure you have installed level-zero, and have sourced `/opt/intel/oneapi/setvars.sh` before running the command.
 
-#### `Prompt is too long` error
+#### 3. `Prompt is too long` error
 If you encounter `main: prompt is too long (xxx tokens, max xxx)`, please increase the `-c` parameter to set a larger size of context.
 
-#### `gemm: cannot allocate memory on host` error / `could not create an engine` error
+#### 4. `gemm: cannot allocate memory on host` error / `could not create an engine` error
 If you meet `oneapi::mkl::oneapi::mkl::blas::gemm: cannot allocate memory on host` error, or `could not create an engine` on Linux, this is probably caused by pip installed OneAPI dependencies. You should prevent installing like `pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0`, and instead use `apt` to install on Linux. Please refer to [this guide](./install_linux_gpu.md) for more details.
 
-#### Fail to quantize model
+#### 5. Fail to quantize model
 If you encounter `main: failed to quantize model from xxx`, please make sure you have created related output directory.
 
-#### Program hang during model loading
+#### 6. Program hang during model loading
 If your program hang after `llm_load_tensors:  SYCL_Host buffer size =    xx.xx MiB`, you can add `--no-mmap` in your command.
 
-#### How to set `-ngl` parameter
+#### 7. How to set `-ngl` parameter
 `-ngl` means the number of layers to store in VRAM. If your VRAM is enough, we recommend putting all layers on GPU, you can just set `-ngl` to a large number like 999 to achieve this goal.
 
 If `-ngl` is set to 0, it means that the entire model will run on CPU. If `-ngl` is set to greater than 0 and less than model layers, then it's mixed GPU + CPU scenario.
 
-#### How to specificy GPU
+#### 8. How to specificy GPU
 If your machine has multi GPUs, `llama.cpp` will default use all GPUs which may slow down your inference for model which can run on single GPU. You can add `-sm none` in your command to use one GPU only.
 
 Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device before excuting your command, more details can refer to [here](../Overview/KeyFeatures/multi_gpus_selection.md#2-oneapi-device-selector).
 
-#### Program crash with Chinese prompt
+#### 9. Program crash with Chinese prompt
 If you run the llama.cpp program on Windows and find that your program crashes or outputs abnormally when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
 
 For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).
 
-#### sycl7.dll not found error
+#### 10. sycl7.dll not found error
 If you meet `System Error: sycl7.dll not found` on Windows or you meet similar error on Linux, please check:
 
 1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
 2. if you have executed `source /opt/intel/oneapi/setvars.sh` on Linux
 
-#### Check driver first when you meet garbage output
+#### 11. Check driver first when you meet garbage output
 If you meet garbage output, please check if your GPU driver version is >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html). If not, please follow the instructions in [this section](./install_linux_gpu.md#install-gpu-driver) to update your GPU driver.
 
-#### Why my program can't find sycl device
+#### 12. Why my program can't find sycl device
 If you meet `GGML_ASSERT: C:/Users/Administrator/actions-runner/cpp-release/_work/llm.cpp/llm.cpp/llama-cpp-bigdl/ggml-sycl.cpp:18283: main_gpu_id<g_all_sycl_device_count` error or similar error, and you find nothing is output when using `ls-sycl-device`, this is because llama.cpp cannot find the sycl device. On some laptops, the installation of the ARC driver may lead to a forced installation of `OpenCL, OpenGL, and Vulkan Compatibility Pack` by Microsoft, which inadvertently blocks the system from locating sycl devices. This issue can be resolved by manually uninstalling it in Microsoft store.
+
+#### 13. Core dump when having both integrated and dedicated graphics
+If you have both integrated and dedicated graphics displayed in your llama.cpp's device log and don't specify which device to use, it will cause a core dump. In such case, you may need to specify `export ONEAPI_DEVICE_SELECTOR=level_zero:0` before running `llama-cli`.
+
+#### 14. `Native API failed` error
+On latest version of `ipex-llm`, you might come across `native API failed` error with certain models without the `-c` parameter. Simply adding `-c xx` would resolve this problem.
