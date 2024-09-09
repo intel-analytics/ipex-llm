@@ -990,6 +990,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "minicpm":
         from ipex_llm.transformers.models.minicpm import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "minicpm3":
+        from ipex_llm.transformers.models.minicpm3 import pre_compute_inv_freq
+        model.apply(pre_compute_inv_freq)
     if model.config.model_type == "minicpmv":
         from ipex_llm.transformers.models.minicpmv import merge_qkv
         model.vpm.apply(merge_qkv)
@@ -1961,6 +1964,13 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.MiniCPMRMSNorm, llama_rms_norm_forward)
         minicpm_model_forward = minicpm_model_forward_wrapper(module.MiniCPMModel.forward)
         convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
+    elif model.config.model_type == "minicpm3":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        convert_forward(model, module.MiniCPMRMSNorm, rms_norm_forward)
+        from ipex_llm.transformers.models.minicpm3 import minicpm3_attention_forward
+        convert_forward(model, module.MiniCPMAttention, minicpm3_attention_forward)
     elif model.config.model_type == "minicpmv":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
