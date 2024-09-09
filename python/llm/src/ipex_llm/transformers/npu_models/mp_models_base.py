@@ -449,7 +449,7 @@ class LLMBaseNNFactory(NNFactory):
                           (f"weights size does not match graph, "
                            f"with weights size: {len(weights)} and "
                            f" graph linear size: {len(self.linear_ops)}"))
-        self.setWeights(offset, op_id, *weights)
+        self.setWeights(offset, op_id, *weights, verify_size=True)
 
     @staticmethod
     def run_decoders(inputs, decoders):

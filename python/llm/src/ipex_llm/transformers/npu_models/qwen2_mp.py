@@ -223,9 +223,9 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
-        print("start compiling")
+        print(f"{mode} start compiling")
         self.compile()
-        print("end compiling")
+        print(f"{mode} end compiling")
 
     def mlp(self, hidden_states, seq_len):
         mm1 = self.linear(

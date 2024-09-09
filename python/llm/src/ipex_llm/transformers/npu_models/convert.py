@@ -56,6 +56,7 @@ def module_optimization(func) -> torch.nn.Module:
 def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
+    from ipex_llm.transformers.low_bit_linear import SYM_INT4_NPU
     iqtype = ggml_tensor_qtype[qtype]
     if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
         if qtype == "sym_int4_rtn":
@@ -66,6 +67,9 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert):
                 iqtype = ggml_tensor_qtype[qtype]
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device)
+        # if iqtype == SYM_INT4_NPU:
+        #     qweights = torch.permute(qweights, (1, 2, 0)).contiguous()
+        #     scale = torch.permute(scale, (1, 2, 0)).contiguous()
         quant_linear = QuantizedLinear(qweights, scale, layer.in_features, layer.out_features,
                                        qtype=iqtype, bias=layer.bias)
         # if layer.in_features != layer.out_features:
