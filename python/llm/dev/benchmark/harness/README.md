@@ -36,11 +36,18 @@ Taking example above, the script will fork 3 processes, each for one xpu, to exe
 ## Results
 We follow [Open LLM Leaderboard](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard) to record our metrics, `acc_norm` for `hellaswag` and `arc_challenge`, `mc2` for `truthful_qa` and `acc` for `mmlu`. For `mmlu`, there are 57 subtasks which means users may need to average them manually to get final result.
 ## Summarize the results
-
+```python
+python make_table.py <input_dir>
+```
 
 ## Known Issues
 ### 1.Encountered problem loading the low bit models
-Harness evaluation is meant for unquantified models and by passing the argument precision can the model be converted to target precision. However, you can replace the following code in <ipex-11m-repo-root>/python/11m/dev/benchmark/harness/ipexllm.py line 52
+Harness evaluation is meant for unquantified models and by passing the argument precision can the model be converted to target precision. If you load the quantified models, you may encounter the following error:
+```
+********************************Usage Error********************************
+Detected model is a low-bit(sym int4) model, Please use load_low_bit to load this model.
+```
+ However, you can replace the following code in <ipex-11m-repo-root>/python/11m/dev/benchmark/harness/ipexllm.py line 52
 ```
 AutoModelForCausalLM.from_pretrained = partial(AutoModelForCausalLM.from_pretrained,**self.bigdl_llm_kwargs)
 ```
@@ -55,7 +62,12 @@ class ModifiedAutoModelForCausalLM(AutoModelForCausalLM): @classmethod
 AutoModelForCausalLM.from_pretrained=partial(ModifiedAutoModelForCausalLM.load_low_bit, *self.bigdl_llm_kwargs)
 ```
 ## Enable to pass trust_remote_code=true to winogrande task
-lm-evaluation-harness doesn't pass `trust_remote_code=true` to datasets.
+lm-evaluation-harness doesn't pass `trust_remote_code=true` to datasets. This may cause errors similar to the following error: 
+```
+RuntimeError: Job config of task=winogrande, precision=sym_int4 failed. 
+Error Message: The repository for winogrande con tains custom code which must be executed to correctly load the dataset. You can inspect the repository content at https: //hf. co/datasets/winogrande.
+please pass the argument trust_remote_code=True' to allow custom code to be run. 
+```
 Please Refer to these:
 
 [trust_remote_code error in simple evaluate for hellaswag · Issue #2222 · EleutherAI/lm-evaluation-harness (github.com) ](https://github.com/EleutherAI/lm-evaluation-harness/issues/2222)
