@@ -56,7 +56,7 @@ if __name__ == '__main__':
         model = AutoModelForCausalLM.load_low_bit(
             args.lowbit_path,
             trust_remote_code=True,
-            load_in_low_bit=args.load_in_low_bit,
+            bigdl_transformers_low_bit=args.load_in_low_bit,
             attn_implementation="eager"
         )
     
