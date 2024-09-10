@@ -84,6 +84,7 @@ Q5_K = ggml_tensor_qtype["q5_k"]
 FP6_K = ggml_tensor_qtype["fp6_k"]
 SYM_INT4_RTN = ggml_tensor_qtype["sym_int4_rtn"]
 SYM_INT8_RTN = ggml_tensor_qtype["sym_int8_rtn"]
+SYM_INT4_NPU = ggml_tensor_qtype["sym_int4_npu"]
 RTN_DTYPE = {
     SYM_INT4_RTN: torch.uint8,
     SYM_INT8_RTN: torch.int8,
@@ -229,6 +230,13 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK)
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
+    elif qtype == SYM_INT4_NPU:
+        dst_tensor = torch.empty(dst_size, dtype=RTN_DTYPE[SYM_INT4_RTN],
+                                 device=device)
+        dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK, QK // ggml.ggml_qk_size(SYM_INT4_RTN))
+        scale = torch.empty(n // QK, dtype=torch.float32,
+                            device=device)
+        scale = scale.reshape(dst_tensor.shape[0], dst_tensor.shape[1], -1)
     elif qtype == NF4:
         # Deepspeed zero3 requires unified dtype,
         # thus here uses bfloat16 consistent to other layers
@@ -244,7 +252,7 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
         hist = (ctypes.c_int64 * 16)()
         if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K, FP6_K]:
-            if qtype in [SYM_INT8_RTN, SYM_INT4_RTN]:
+            if qtype in [SYM_INT8_RTN, SYM_INT4_RTN, SYM_INT4_NPU]:
                 scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
                 ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n,
                                               k, hist, enable_scale_search)

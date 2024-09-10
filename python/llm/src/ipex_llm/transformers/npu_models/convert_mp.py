@@ -92,7 +92,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
     if cpu_lm_head:
         # disable the optimization by default
         from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8
-        if qtype == "sym_int4_rtn":
+        if qtype == "sym_int4_rtn" or qtype == "sym_int4_npu":
             lm_qtype = SYM_INT4
         else:
             lm_qtype = SYM_INT8
@@ -156,7 +156,7 @@ def optimize_llm(
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 4 if model.config.intermediate_size == 18944 else 1
+            inter_pp = 4 if model.config.intermediate_size == 18944 else 2
 
         from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
         from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner

@@ -132,6 +132,9 @@ class QuantizedLinear(torch.nn.Module):
         self,
         weight: torch.Tensor,
         scale: torch.Tensor,
+        inC: int,
+        outC: int,
+        qtype: int,
         bias: Optional[torch.Tensor] = None,
     ):
         """Initialize the QuantizedLinear class.
@@ -156,10 +159,21 @@ class QuantizedLinear(torch.nn.Module):
                     " dtype instead of {self.weight.dtype}"
                 )
             )
-        self.outC, self.inC = self.weight.shape
-        if self.weight.dtype == torch.uint8:
-            # In case is Int4 we need to double the input channels because weights are compressed
-            self.inC *= 2
+
+        self.outC = outC
+        self.inC = inC
+        self.qtype = qtype
+        # if len(self.weight.shape) == 2:
+        #     assert self.inC == self.weight.shape[1]
+        #     assert self.outC == self.weight.shape[0]
+        # else:
+        #     assert self.outC == self.weight.shape[0]
+        #     assert self.inC == self.weight.shape[1] * self.weight.shape[2]
+        
+        # self.outC, self.inC = self.weight.shape
+        # if self.weight.dtype == torch.uint8:
+        #     # In case is Int4 we need to double the input channels because weights are compressed
+        #     self.inC *= 2
         self.scale = Parameter(scale * math.sqrt(self.inC), requires_grad=False)
         self.bias = bias
         self.op_id = str(uuid.uuid4())

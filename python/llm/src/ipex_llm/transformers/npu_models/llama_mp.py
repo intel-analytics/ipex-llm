@@ -67,12 +67,14 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         device: str = "NPU",
         rms_norm_eps,
         intermediate_size,
+        is_groupwise_quant,
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
                          dtype=dtype,
                          profile=profile,
-                         device=device)
+                         device=device, 
+                         is_groupwise_quant=is_groupwise_quant)
         self.max_seq_len = max_seq_len
         self.intermediate_size = intermediate_size
         self.dtype = dtype
@@ -181,6 +183,10 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         print("start compiling")
         self.compile()
 
+        xml_path = "llama-npu-gw-" + mode + "-" + str(num_layers) + ".xml"
+        # if not os.path.exists(xml_path):
+        self.save(xml_path)
+
     def build_decoder(
         self,
         hidden_states,
@@ -244,9 +250,11 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         self.do_print = do_print
 
         op_parameters = []
+        is_groupwise_quant = False
         for w in parameters:
             if isinstance(w, tuple):  # from QuantizedLinear
                 op_parameters.append((w[0].numpy(), w[1].numpy()))
+                is_groupwise_quant = (len(w[0].numpy().shape) > 2)
             else:
                 op_parameters.append(w.to(torch.float16).numpy())
         self.op_parameters = op_parameters
@@ -289,6 +297,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
                 mode="decode",
                 transpose_value=self.transpose_value,
                 dtype=np_dtype,
+                is_groupwise_quant=is_groupwise_quant,
             )
             self.backend_decoders.append(decoder)
 
@@ -379,6 +388,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         # self.rotary_emb = rotary_emb
         if isinstance(parameters[0], tuple):  # weight, scale from QuantizedLinear
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+            is_groupwise_quant = (len(parameters[0][0].shape) > 2)
         else:  # FP16 Linear
             np_dtype = np.float16
 
@@ -397,6 +407,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             mode="prefill",
             transpose_value=self.transpose_value,
             dtype=np_dtype,
+            is_groupwise_quant=is_groupwise_quant
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
