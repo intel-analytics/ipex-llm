@@ -464,7 +464,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if any(key in full_module_name for key in modules_to_not_convert):
             continue
 
-        if is_linear and getattr(model_config, "model_type", None) == "chatglm" and name == "lm_head":
+        if is_linear and getattr(model_config, "model_type", None) == "chatglm" and \
+                name == "lm_head":
             # Now we re-reference it to output_layer
             model._modules[name] = model._modules["transformer"]._modules["output_layer"]
             continue

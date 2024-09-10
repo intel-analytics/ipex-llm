@@ -125,7 +125,7 @@ class AsyncEngineRPCServer:
                     [identity, cloudpickle.dumps(request_output)])
 
         except Exception as e:
-            ### Notify client of all failures
+            # Notify client of all failures
             await self.socket.send_multipart([identity, cloudpickle.dumps(e)])
 
     async def check_health(self, identity):
@@ -168,10 +168,10 @@ class AsyncEngineRPCServer:
             elif request == RPCUtilityRequest.IS_TRACING_ENABLED:
                 return self.is_tracing_enabled(identity)
             else:
-                raise ValueError(f"Unknown RPCUtilityRequest type: {request}")
+                raise ValueError(f"Unknown RPCUtilityRequest type: {request}")  # noqa
 
         else:
-            raise ValueError(f"Unknown RPCRequest type: {request}")
+            raise ValueError(f"Unknown RPCRequest type: {request}")  # noqa
 
     async def run_server_loop(self):
         """Inner RPC Server Loop"""
