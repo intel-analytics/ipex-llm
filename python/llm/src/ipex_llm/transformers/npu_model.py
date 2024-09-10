@@ -49,7 +49,6 @@ def save_low_bit(self, model_dir: str, *args, **kwargs):
     kwargs["safe_serialization"] = False
     self.save_pretrained(model_dir, *args, **kwargs)
     import json
-    import os
 
     # We conveniently save all the keys of the model to have them on hand,
     # so that when using 'low_cpumem load',
@@ -391,7 +390,6 @@ class _BaseAutoModelClass:
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
         else:
-            import os
             import json
 
             with open(
