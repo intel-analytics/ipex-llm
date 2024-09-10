@@ -69,6 +69,16 @@ def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):
         return module.down_proj(module.act_fn(module.gate_proj(x)) * module.up_proj(x))
 
 
+def mlp_silu_forward(self, x: torch.Tensor):
+    from ipex_llm.transformers.models.utils import SILU
+    return fuse_mlp_base(self, SILU, x)
+
+
+def mlp_gelu_forward(self, x: torch.Tensor):
+    from ipex_llm.transformers.models.utils import GELU
+    return fuse_mlp_base(self, GELU, x)
+
+
 def attention_softmax(attn_weights: torch.Tensor, training: bool):
     if attn_weights.is_contiguous() and attn_weights.device.type == "xpu" and not training:
         import xe_addons
