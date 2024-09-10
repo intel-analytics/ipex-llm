@@ -993,6 +993,8 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "minicpm3":
         from ipex_llm.transformers.models.minicpm3 import pre_compute_inv_freq
         model.apply(pre_compute_inv_freq)
+        from ipex_llm.transformers.models.minicpm3 import padding_v_head_dim
+        model.apply(padding_v_head_dim)
     if model.config.model_type == "minicpmv":
         from ipex_llm.transformers.models.minicpmv import merge_qkv
         model.vpm.apply(merge_qkv)
@@ -1775,7 +1777,7 @@ def _optimize_post(model, lightweight_bmm=False):
     elif model.config.model_type == "gemma2":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.common import mlp_gelu_forward
         from ipex_llm.transformers.models.gemma import gemma_rms_norm_forward
         from ipex_llm.transformers.models.gemma2 import gemma2_attention_forward
         from ipex_llm.transformers.models.gemma2 import gemma2_model_forward
@@ -1784,7 +1786,7 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, Gemma2RMSNorm, gemma_rms_norm_forward)
         convert_forward(model, Gemma2Attention, gemma2_attention_forward)
         convert_forward(model, Gemma2Model, gemma2_model_forward)
-        convert_forward(model, Gemma2MLP, mlp_silu_forward)
+        convert_forward(model, Gemma2MLP, mlp_gelu_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1969,10 +1971,13 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.common import rms_norm_forward
         from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.minicpm3 import minicpm3_attention_forward
+        from ipex_llm.transformers.models.minicpm3 import minicpm3_model_forward_wrapper
         convert_forward(model, module.MiniCPMRMSNorm, rms_norm_forward)
         convert_forward(model, module.MiniCPMMLP, mlp_silu_forward)
-        from ipex_llm.transformers.models.minicpm3 import minicpm3_attention_forward
         convert_forward(model, module.MiniCPMAttention, minicpm3_attention_forward)
+        minicpm3_model_forward = minicpm3_model_forward_wrapper(module.MiniCPM3Model.forward)
+        convert_forward(model, module.MiniCPM3Model, minicpm3_model_forward)
     elif model.config.model_type == "minicpmv":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
