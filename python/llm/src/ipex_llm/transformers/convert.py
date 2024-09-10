@@ -1981,7 +1981,6 @@ def _optimize_post(model, lightweight_bmm=False):
         minicpmv_generate = minicpmv_generate_wrapper(module.MiniCPMV.generate)
         model.generate = MethodType(minicpmv_generate, model)
 
-<<<<<<< HEAD
         if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
             # MiniCPM-V 2
             model.llm.config.model_type = "minicpm"
@@ -2025,6 +2024,3 @@ def _optimize_post(model, lightweight_bmm=False):
             model.chat = MethodType(minicpmv_chat, model)
 
     return model
-=======
-    return model
->>>>>>> 56b851402b (Add vllm awq loading logic (#11987))
