@@ -464,7 +464,8 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
         if any(key in full_module_name for key in modules_to_not_convert):
             continue
 
-        if is_linear and getattr(model_config, "model_type", None) == "chatglm" and name == "lm_head":
+        if is_linear and getattr(model_config, "model_type", None) == "chatglm" and \
+                name == "lm_head":
             # Now we re-reference it to output_layer
             model._modules[name] = model._modules["transformer"]._modules["output_layer"]
             continue
@@ -1981,7 +1982,6 @@ def _optimize_post(model, lightweight_bmm=False):
         minicpmv_generate = minicpmv_generate_wrapper(module.MiniCPMV.generate)
         model.generate = MethodType(minicpmv_generate, model)
 
-<<<<<<< HEAD
         if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
             # MiniCPM-V 2
             model.llm.config.model_type = "minicpm"
@@ -2025,6 +2025,3 @@ def _optimize_post(model, lightweight_bmm=False):
             model.chat = MethodType(minicpmv_chat, model)
 
     return model
-=======
-    return model
->>>>>>> 56b851402b (Add vllm awq loading logic (#11987))
