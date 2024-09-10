@@ -39,6 +39,7 @@ def _sample_get_logits(
     embedding_bias: Optional[torch.Tensor],
 ) -> torch.Tensor:
     # HINT: we do not support other types of quantization for now
+    # TODO: we may encounter tie-word-embedding problems
     if isinstance(lm_head, VocabParallelEmbedding):
         logits = lm_head.linear_method.apply(lm_head,
                                              hidden_states,
@@ -61,144 +62,6 @@ def _model_sample_convert():
     setattr(LogitsProcessor, "_get_logits", _sample_get_logits)
 
 
-def _MLP_forward(self, x):
-    gate_up = self.gate_up_proj(x)
-    x = self.act_fn(gate_up)
-    x = self.down_proj(x)
-    return x
-
-
-def _Attention_forward(
-    self,
-    positions: torch.Tensor,
-    hidden_states: torch.Tensor,
-    kv_cache: torch.Tensor,
-    attn_metadata: AttentionMetadata,
-) -> torch.Tensor:
-    qkv = self.qkv_proj(hidden_states)
-    q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
-    q, k = self.rotary_emb(positions, q, k)
-    # k_cache, v_cache = kv_cache
-    attn_output = self.attn(q, k, v, kv_cache, attn_metadata)
-    output = self.o_proj(attn_output)
-    return output
-
-
-def _QWen_Attention_forward(
-    self,
-    positions: torch.Tensor,
-    hidden_states: torch.Tensor,
-    kv_cache: Tuple[torch.Tensor, torch.Tensor],
-    attn_metadata: AttentionMetadata,
-) -> torch.Tensor:
-    qkv = self.c_attn(hidden_states)
-    q, k, v = qkv.chunk(chunks=3, dim=-1)
-    q, k = self.rotary_emb(positions, q, k)
-    attn_output = self.attn(q, k, v, kv_cache, attn_metadata)
-    output = self.c_proj(attn_output)
-    return output
-
-
-def _QWen_MLP_forward(self, x):
-    gate_up = self.gate_up_proj(x)
-    x = self.act_fn(gate_up)
-    x = self.c_proj(x)
-    return x
-
-
-def _ChatGLM_MLP_forward(self, hidden_states):
-    # [s, b, 4hp]
-    intermediate_parallel = self.dense_h_to_4h(hidden_states)
-    if isinstance(intermediate_parallel, tuple):
-        intermediate_parallel = self.activation_func(intermediate_parallel[0])
-    else:
-        intermediate_parallel = self.activation_func(intermediate_parallel)
-    # [s, b, h]
-    output = self.dense_4h_to_h(intermediate_parallel)
-    if isinstance(output, tuple):
-        return output[0]
-    else:
-        return output
-
-
-def _Baichuan_Attention_forward(
-    self,
-    positions: torch.Tensor,
-    hidden_states: torch.Tensor,
-    kv_cache: torch.Tensor,
-    attn_metadata: AttentionMetadata,
-) -> torch.Tensor:
-    qkv = self.W_pack(hidden_states)
-    q, k, v = qkv.chunk(chunks=3, dim=-1)
-    if self.postion_embedding != "ALIBI":
-        q, k = self.rotary_emb(positions, q, k)
-    attn_output = self.attn(q, k, v, kv_cache, attn_metadata)
-    output = self.o_proj(attn_output)
-    return output
-
-
-def _ChatGLM_Attention_forward(
-    self,
-    hidden_states: torch.Tensor,
-    position_ids: torch.Tensor,
-    kv_cache: torch.Tensor,
-    attn_metadata: AttentionMetadata,
-) -> torch.Tensor:
-    qkv = self.query_key_value(hidden_states)
-    q, k, v = qkv.split([self.q_size, self.kv_size, self.kv_size], dim=-1)
-    q, k = self.rotary_emb(position_ids, q, k)
-    # key_cache, value_cache = kv_cache
-    context_layer = self.attn(
-        q,
-        k,
-        v,
-        kv_cache,
-        attn_metadata,
-    )
-    attn_output = self.dense(context_layer)
-    return attn_output
-
-_REPLACED_MLP_LAYERS = {
-    LlamaMLP: _MLP_forward,
-    Qwen2MLP: _MLP_forward,
-    BaiChuanMLP: _MLP_forward,
-    QWenMLP: _QWen_MLP_forward,
-    GLMMLP: _ChatGLM_MLP_forward
-}
-
-_REPLACED_ATTENTION_LAYERS = {
-    LlamaAttention: _Attention_forward,
-    Qwen2Attention: _Attention_forward,
-    QWenAttention: _QWen_Attention_forward,
-    BaiChuanAttention: _Baichuan_Attention_forward,
-    GLMAttention: _ChatGLM_Attention_forward
-}
-
-# _REPLACED_SAMPLER_LAYERS = {
-#     LlamaForCausalLM: _Llama_sample,
-#     QWenLMHeadModel: _Llama_sample,
-#     ChatGLMForCausalLM: _Chatglm_sample,
-#     Qwen2ForCausalLM: _Qwen2_sample,
-#     BaiChuanBaseForCausalLM: _Llama_sample,
-# }
-
-
-def _model_mlp_convert():
-    for module, replaced_func in _REPLACED_MLP_LAYERS.items():
-        setattr(module, "forward", replaced_func)
-
-
-# def _model_sample_convert():
-#     setattr(Sampler, "_get_logits", _sample_get_logits)
-#     for module, replaced_func in _REPLACED_SAMPLER_LAYERS.items():
-#         setattr(module, "sample", replaced_func)
-
-
-def _model_attention_convert():
-    for module, replaced_func in _REPLACED_ATTENTION_LAYERS.items():
-        setattr(module, "forward", replaced_func)
-
-
 def _ipex_llm_convert(load_in_low_bit):
     from vllm.worker.xpu_model_runner import XPUModelRunner
     from ipex_llm.vllm.xpu.ipex_llm_wrapper import get_ipex_llm_wrapper
@@ -209,8 +72,6 @@ def _ipex_llm_convert(load_in_low_bit):
 
 def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
-        # _model_mlp_convert()
-        # _model_attention_convert()
         _model_sample_convert()
 
         # from vllm.utils import measure_device_memory
