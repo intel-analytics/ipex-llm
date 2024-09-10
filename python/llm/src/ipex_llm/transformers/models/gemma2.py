@@ -34,7 +34,7 @@
 import torch
 
 from typing import Optional, Tuple
-from ipex_llm.transformers.models.common import merge_qkv_base, fuse_mlp_base
+from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.utils import GELU
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, use_sdp, use_sdp_causal
 from transformers.cache_utils import Cache
@@ -184,7 +184,3 @@ def gemma2_attention_forward(
         attn_weights = None
 
     return attn_output, attn_weights, past_key_value
-
-
-def gemma2_mlp_forward(self, x: torch.Tensor):
-    return fuse_mlp_base(self, GELU, x)

@@ -92,8 +92,9 @@ def minicpm3_attention_forward(
             xe_addons.rotary_half_inplaced(inv_freq, position_ids,
                                            query_states[:, :, :, self.qk_nope_head_dim:],
                                            key_states[:, :, :, self.qk_nope_head_dim:])
-            query_states[:, :, :, self.qk_nope_head_dim:] *= self.rotary_emb.scaling_factor
-            key_states[:, :, :, self.qk_nope_head_dim:] *= self.rotary_emb.scaling_factor
+            if self.rotary_emb.scaling_factor != 1.0:
+                query_states[:, :, :, self.qk_nope_head_dim:] *= self.rotary_emb.scaling_factor
+                key_states[:, :, :, self.qk_nope_head_dim:] *= self.rotary_emb.scaling_factor
         else:
             invalidInputError(f"unknown rope method: {self.rotary_emb.__class__.__name__}")
     else:
