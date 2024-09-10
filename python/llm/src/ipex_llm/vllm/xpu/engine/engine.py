@@ -44,10 +44,6 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
 
 
 class IPEXLLMClass(LLM):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def __init__(
         self,
         model: str,
