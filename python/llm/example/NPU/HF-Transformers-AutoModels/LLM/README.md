@@ -131,6 +131,9 @@ Arguments info:
 
 ### Troubleshooting
 
+#### `TypeError: can't convert meta device type tensor to numpy.` Error
+If you encounter `TypeError: can't convert meta device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.` error when loading lowbit model, please try re-saving the lowbit model with the example script you are currently using. Please note that lowbit models saved by `qwen2.py`, `llama.py`, etc. cannot be loaded by `generate.py`.
+
 #### Output Problem
 If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
 ```bash
