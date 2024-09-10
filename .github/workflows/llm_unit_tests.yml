@@ -263,7 +263,7 @@ jobs:
         run: |
           pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
           pip install transformers==4.36.2
-          pip install "pydantic>=2.0.0"
+          pip install "pydantic<2.9.1,>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests.sh
       - name: Run sentence-transformers uninstallation
         if: ${{ always() }}
@@ -485,7 +485,7 @@ jobs:
             fi
           fi
           pip install transformers==4.36.2
-          pip install "pydantic>=2.0.0"
+          pip install "pydantic<2.9.1,>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests-gpu.sh
       - name: Run sentence-transformers uninstallation
         if: ${{ always() }}
