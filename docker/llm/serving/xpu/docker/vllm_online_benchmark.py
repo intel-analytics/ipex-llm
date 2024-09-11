@@ -176,7 +176,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
             cur_len = len(cur_llm_urls)
             if dataset is None:
                 payload = {
-                    "model": model_name,
+                    "model": model,
                     "prompt": prompt,
                     "n": 1,
                     "best_of": 1,
@@ -193,7 +193,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
                 for index in range(num_requests):
                     prompt, prompt_len, output_len = sampled_requests[index]
                     payload = {
-                        "model": model_name,
+                        "model": model,
                         "prompt": prompt,
                         "n": 1,
                         "best_of": 1,
@@ -279,7 +279,7 @@ max_batch=int(max_seq)
 
 for MAX_CONCURRENT_REQUESTS in [max_batch]:
     NUM_WARMUP = 2 * MAX_CONCURRENT_REQUESTS
-    NUM_REQUESTS = 5 * MAX_CONCURRENT_REQUESTS  # 总请求次数
+    NUM_REQUESTS = 4 * MAX_CONCURRENT_REQUESTS  # 总请求次数
 
     # to avoid warm_up time out
     benchmark(LLM_URLS, MODEL, PROMPT_1024, 2, 1, 32, is_warmup = True)
