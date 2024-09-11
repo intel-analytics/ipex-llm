@@ -66,8 +66,7 @@ if __name__ == '__main__':
         model.save_low_bit(args.lowbit_path)
 
     with torch.inference_mode():
-        prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
-        input_ids = tokenizer.encode(prompt, return_tensors="pt")
+        input_ids = tokenizer.encode(args.prompt, return_tensors="pt")
         print("finish to load")
         print('input length:', len(input_ids[0]))
         st = time.time()
