@@ -211,14 +211,33 @@ class LowBitWhisperMultiEncoderlayer(LLMBaseNNFactory):
         print("start compiling")
         self.compile()
 
+    # def layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):
+    #     hidden_states = self.convert_to_fp32(hidden_states)
+    #     # axis = hidden_states.shape.index(self.hidden_size)
+    #     hidden_states = self.normL2(hidden_states, axis=-1, eps=1e-5)
+    #     hidden_states = self.reshape(hidden_states, [-1, self.hidden_size])
+    #     print(f'hidden_states is {hidden_states.shape}, layernorm_weight is {layernorm_weight.shape}')
+    #     layernorm_weight = self.convert_to_fp32(layernorm_weight)
+    #     hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
+    #     layernorm_bias = self.convert_to_fp32(layernorm_bias)
+    #     hidden_states = self.eltwise_add(layernorm_bias, hidden_states)
+    #     hidden_states = self.convert_to_fp16(hidden_states)
+    #     return hidden_states
+
     def layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):
         hidden_states = self.convert_to_fp32(hidden_states)
-        axis = hidden_states.shape.index(self.hidden_size)
-        hidden_states = self.normL2(hidden_states, axis=axis, eps=1e-5)
+        mean_res = self.reduce_mean(hidden_states, -1, keep_dims=True,)
+        variance = self.reduce_mean(
+            self.power(hidden_states, self.constant(np.array([[2]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
+        eps = self.constant(1e-5)
+        hidden_states = self.eltwise_div(hidden_states - mean_res, self.sqrt(self.eltwise_add(variance, eps)))
         layernorm_weight = self.convert_to_fp32(layernorm_weight)
-        hidden_states = self.eltwise_mul(hidden_states, layernorm_weight)
+        hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
         layernorm_bias = self.convert_to_fp32(layernorm_bias)
-        hidden_states = self.eltwise_add(hidden_states, layernorm_bias)
+        hidden_states = self.eltwise_add(layernorm_bias, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
         return hidden_states
 
@@ -326,7 +345,9 @@ class LowBitWhisperMultiEncoderlayer(LLMBaseNNFactory):
     ):
         residual = hidden_states
         hidden_states = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
+
         hidden_states = self.layer_norm(hidden_states, self_attn_layer_norm_weight, self_attn_layer_norm_bias)
+        # hidden_states = self.layer_norm(hidden_states, self_attn_layer_norm_weight) # test llama layer norm
         
         hidden_states = self.self_attn(
             hidden_states=hidden_states,
@@ -339,14 +360,17 @@ class LowBitWhisperMultiEncoderlayer(LLMBaseNNFactory):
         hidden_states = self.eltwise_add(residual, hidden_states)
 
         residual = hidden_states
+
         hidden_states = self.layer_norm(hidden_states, final_layer_norm_weight, final_layer_norm_bias)
-        
+        # hidden_states = self.layer_norm(hidden_states, final_layer_norm_weight) # test llama layer norm
+
         # hidden_states = self.activation_fn(self.fc1(hidden_states))
         hidden_states = self.linear(
             hidden_states, self.encoder_ffn_dim, self.hidden_size, bias=False, wt_dtype=self.dtype
         )
         hidden_states = hidden_states + fc1_bias # fc1 bias=True
         hidden_states = self.gelu(hidden_states)
+        # hidden_states = self.swish(hidden_states) # test llama activation
 
         hidden_states = self.linear(
             hidden_states, self.hidden_size, self.encoder_ffn_dim, bias=False, wt_dtype=self.dtype
@@ -440,7 +464,7 @@ class FusedWhisperLowBitEncoderlayer(torch.nn.Module):
 
         hidden_states = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
-        )
+        )[-1]
         outputs = (hidden_states,)
         return outputs
 
@@ -514,7 +538,7 @@ def run_prefill(
 
         hidden_states, attention_mask, layer_head_mask, output_attentions = result
         with torch.inference_mode():
-            for layer in encoderlayers:
+            for idx, layer in enumerate(encoderlayers):
                 layer_outputs = layer(
                     hidden_states,
                     attention_mask=attention_mask,
@@ -522,6 +546,7 @@ def run_prefill(
                     output_attentions=output_attentions,
                 )
                 hidden_states = layer_outputs[0]
+                print(f'=====layer {idx}, hidden_states is {hidden_states}')
             result_queue.put((hidden_states))
 
 
@@ -628,7 +653,9 @@ def gen_whisper_encoder_forward(prefill_runner):
                                                None,
                                                output_attentions)
 
+        hidden_states = hidden_states.to(torch.float32)
         hidden_states = self.layer_norm(hidden_states)
+        print(f'=====test encoder result: {hidden_states.shape}_{hidden_states}')
         if output_hidden_states:
             encoder_states = encoder_states + (hidden_states,)
 
