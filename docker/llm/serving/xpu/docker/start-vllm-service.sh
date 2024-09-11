@@ -11,7 +11,6 @@ export CCL_ATL_SHM=1
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export TORCH_LLM_ALLREDUCE=0
-export CCL_DG2_ALLREDUCE=1
  
 source /opt/intel/1ccl-wks/setvars.sh
 
