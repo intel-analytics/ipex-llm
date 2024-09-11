@@ -89,7 +89,7 @@ def get_load_function(low_bit):
             )
             if "qwen" in self.model_config.model.lower() or \
                     "baichuan" in self.model_config.model.lower() or \
-                    "glm" in self.model_config.model.lower():
+                    "chatglm" in self.model_config.model.lower():
                 self.model.apply(padding_mlp)
             from ipex_llm import optimize_model
             import os
