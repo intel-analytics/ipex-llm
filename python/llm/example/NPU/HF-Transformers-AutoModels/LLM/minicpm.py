@@ -55,7 +55,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     if not args.lowbit_path or not os.path.exists(args.lowbit_path):
-        st = time.perf_counter()
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
             torch_dtype=torch.float16,
@@ -69,10 +68,7 @@ if __name__ == "__main__":
             inter_pp=args.inter_pp,
             transpose_value_cache=not args.disable_transpose_value_cache,
         )
-        end = time.perf_counter()
-        print(f"Loading time (from pretrained): {end-st} s")
     else:
-        st = time.perf_counter()
         model = AutoModelForCausalLM.load_low_bit(
             args.lowbit_path,
             attn_implementation="eager",
@@ -85,13 +81,11 @@ if __name__ == "__main__":
             transpose_value_cache=not args.disable_transpose_value_cache,
             trust_remote_code=True,
         )
-        end = time.perf_counter()
-        print(f"Loading time (from lowbit): {end-st} s")
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     if args.lowbit_path and not os.path.exists(args.lowbit_path):
         model.save_low_bit(args.lowbit_path)
-        
+
     print("-" * 80)
     print("done")
     with torch.inference_mode():
