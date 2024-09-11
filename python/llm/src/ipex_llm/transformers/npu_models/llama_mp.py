@@ -530,7 +530,6 @@ def run_decode(
             elif control.item() == -1:
                 past_key_values = input_queue.get()
             else:
-                t0 = time.perf_counter()
                 past_seen_tokens = past_key_values.get_seq_length()
                 attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
                 cache_position = torch.arange(
@@ -549,7 +548,6 @@ def run_decode(
                 )
                 padded_causal_mask[:, :, :, -1] = 0.0
                 dist.recv(hidden_states, src=rank - 1)
-                t1 = time.perf_counter()
                 layer_outputs = multi_decoder(
                     hidden_states,
                     attention_mask=padded_causal_mask,
@@ -559,11 +557,8 @@ def run_decode(
                     use_cache=True,
                     cache_position=cache_position,
                 )
-                t2 = time.perf_counter()
                 hidden_states = layer_outputs[0]
-                t3 = time.perf_counter()
                 dist.send(hidden_states, dst=(rank + 1) % world_size)
-                t4 = time.perf_counter()
                 past_key_values = layer_outputs[1]
                 new_keys = layer_outputs[2]
                 new_values = layer_outputs[3]
@@ -645,14 +640,11 @@ class DecodeRunner:
             dist.broadcast(control, src=0)
             for i in range(len(self.decoder_processes)):
                 self.input_queues[i].put(past_key_value)
-        t0 = time.perf_counter()
         dist.broadcast(self.forward_signal, src=0, async_op=True)
-        t1 = time.perf_counter()
         hidden_states = hidden_states.to(torch.float16)
         dist.send(hidden_states, dst=1)
         past_key_value.expand(self.transpose_value_cache)
         dist.recv(hidden_states, src=self.world_size - 1)
-        t2 = time.perf_counter()
         return hidden_states, past_key_value
 
     def shutdown(self):
@@ -841,7 +833,6 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
         return_dict: Optional[bool] = None,
         cache_position: Optional[torch.LongTensor] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
-        t0 = time.perf_counter()
         output_attentions = (
             output_attentions if output_attentions is not None else self.config.output_attentions
         )
@@ -932,8 +923,6 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
                 for v in [hidden_states, next_cache, all_hidden_states, all_self_attns]
                 if v is not None
             )
-        t1 = time.perf_counter()
-        # print("fused model forward time: ", t1 - t0)
         return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=next_cache,
