@@ -49,7 +49,6 @@ def save_low_bit(self, model_dir: str, *args, **kwargs):
     kwargs["safe_serialization"] = False
     self.save_pretrained(model_dir, *args, **kwargs)
     import json
-    import os
 
     # We conveniently save all the keys of the model to have them on hand,
     # so that when using 'low_cpumem load',
@@ -203,9 +202,6 @@ class _BaseAutoModelClass:
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
     def load_low_bit(cls, pretrained_model_name_or_path: str, *model_args, **kwargs):
-        if kwargs.pop("torch_dtype", None) not in [None, "auto", torch.float]:
-            warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
-
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
         ignore_argument(kwargs, "lightweight_bmm")
@@ -391,7 +387,6 @@ class _BaseAutoModelClass:
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
         else:
-            import os
             import json
 
             with open(
@@ -403,6 +398,10 @@ class _BaseAutoModelClass:
         # restore default dtype
         if dtype_orig is not None:
             torch.set_default_dtype(dtype_orig)
+
+        # set tie_word_embeddings to False to avoid possible lm_head error
+        if hasattr(model.config, "tie_word_embeddings"):
+            model.config.tie_word_embeddings = False
 
         (
             model,
