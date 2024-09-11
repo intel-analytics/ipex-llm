@@ -40,7 +40,7 @@ For optimal performance, it is recommended to set several environment variables.
 
 > [!NOTE]
 > For optimal performance, we recommend running code in `conhost` rather than Windows Terminal:
-> - Press <kbd>Win</kbd>+<kbd>R</kbd> and input `conhost`, then press Enter to launch `conhost`.
+> - Search for `conhost` in the Windows search bar and run as administrator
 > - Run following command to use conda in `conhost`. Replace `<your conda install location>` with your conda install location.
 > ```
 > call <your conda install location>\Scripts\activate
