@@ -412,11 +412,6 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         return outputs
 
     def post_forward(self, past_key_value, new_keys, new_values):
-        key_value_states = []
-        for i in range(self.intra_stages):
-            for j in range(1, len(self.backend_decoders[i].torch_out)):
-                key_value_states.append(self.backend_decoders[i].torch_out[j])
-
         cache_kwargs = {
             "max_seq_len": self.max_seq_len,
             "transpose": self.transpose_value,
@@ -555,7 +550,6 @@ def run_decode(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
-    deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
