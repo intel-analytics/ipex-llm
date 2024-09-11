@@ -176,7 +176,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
             cur_len = len(cur_llm_urls)
             if dataset is None:
                 payload = {
-                    "model": model,
+                    "model": model_name,
                     "prompt": prompt,
                     "n": 1,
                     "best_of": 1,
@@ -193,7 +193,7 @@ def benchmark(llm_urls, model, prompt, num_requests, max_concurrent_requests, ma
                 for index in range(num_requests):
                     prompt, prompt_len, output_len = sampled_requests[index]
                     payload = {
-                        "model": model,
+                        "model": model_name,
                         "prompt": prompt,
                         "n": 1,
                         "best_of": 1,
