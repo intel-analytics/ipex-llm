@@ -412,11 +412,6 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         return outputs
 
     def post_forward(self, past_key_value, new_keys, new_values):
-        key_value_states = []
-        for i in range(self.intra_stages):
-            for j in range(1, len(self.backend_decoders[i].torch_out)):
-                key_value_states.append(self.backend_decoders[i].torch_out[j])
-
         cache_kwargs = {
             "max_seq_len": self.max_seq_len,
             "transpose": self.transpose_value,
@@ -555,7 +550,6 @@ def run_decode(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
-    deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
@@ -640,7 +634,6 @@ def run_decode(
             elif control.item() == -1:
                 past_key_values = input_queue.get()
             else:
-                t0 = time.perf_counter()
                 past_seen_tokens = past_key_values.get_seq_length()
                 attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
                 position_ids = torch.arange(
@@ -669,7 +662,6 @@ def run_decode(
                 )
                 padded_causal_mask[:, :, :, -1] = 0.0
                 dist.recv(hidden_states, src=rank - 1)
-                t1 = time.perf_counter()
                 layer_outputs = multi_decoder(
                     hidden_states,
                     attention_mask=padded_causal_mask,
@@ -678,11 +670,8 @@ def run_decode(
                     output_attentions=False,
                     use_cache=True,
                 )
-                t2 = time.perf_counter()
                 hidden_states = layer_outputs[0]
-                t3 = time.perf_counter()
                 dist.send(hidden_states, dst=(rank + 1) % world_size)
-                t4 = time.perf_counter()
                 past_key_values = layer_outputs[1]
                 new_keys = layer_outputs[2]
                 new_values = layer_outputs[3]
@@ -757,22 +746,17 @@ class DecodeRunner:
         use_cache: bool = False,
         **kwargs,
     ):
-        t0 = time.perf_counter()
-
         if self.cache_past_key_value != past_key_value:
             control = torch.tensor(-1, dtype=torch.int)
             dist.broadcast(control, src=0)
             for i in range(len(self.decoder_processes)):
                 self.input_queues[i].put(past_key_value)
 
-        t0 = time.perf_counter()
         dist.broadcast(self.forward_signal, src=0, async_op=True)
-        t1 = time.perf_counter()
         hidden_states = hidden_states.to(torch.float16)
         dist.send(hidden_states, dst=1)
         past_key_value.expand(self.transpose_value_cache)
         dist.recv(hidden_states, src=self.world_size - 1)
-        t2 = time.perf_counter()
         return hidden_states, past_key_value
 
     def shutdown(self):
