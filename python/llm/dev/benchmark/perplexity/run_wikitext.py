@@ -36,7 +36,18 @@ parser.add_argument("--max_length", type=int, default=None)
 parser.add_argument("--mixed_precision", action="store_true") 
 args = parser.parse_args()
 
-if args.precision == "fp16":  # ipex fp16
+if args.device == "npu":
+    from ipex_llm.transformers.npu_model import AutoModelForCausalLM
+    model = AutoModelForCausalLM.from_pretrained(
+            args.model_path,
+            trust_remote_code=True,
+            torch_dtype=torch.float16,
+            max_output_len=4096,
+            max_prompt_len=4096,
+            load_in_low_bit=args.precision,
+            attn_implementation="eager"
+        )
+elif args.precision == "fp16":  # ipex fp16
     from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained(args.model_path,
                                                  use_cache=args.use_cache,
@@ -57,7 +68,7 @@ else:  # ipex-llm
                                                  trust_remote_code=True,
                                                  mixed_precision=args.mixed_precision)   
     model = model.half()
-model = model.to(args.device)
+
 model = model.eval()
 
 from transformers import AutoTokenizer
@@ -98,7 +109,7 @@ for i in tqdm(range(num_chunks)):
     else:
         end_loc = begin_loc + stride
         trg_len = -stride//2
-    input_ids = encodings.input_ids[:, begin_loc:end_loc].to(args.device)
+    input_ids = encodings.input_ids[:, begin_loc:end_loc]
     if args.stride == 0: input_ids[:, 0] = tokenizer.bos_token_id
     target_ids = input_ids.clone()
     target_ids[:, :-trg_len] = -100
@@ -110,6 +121,7 @@ for i in tqdm(range(num_chunks)):
         # N.B. the model only calculates loss over trg_len - 1 labels, because it internally shifts the labels
         # to the left by 1.
         neg_log_likelihood = outputs.loss
+        print(neg_log_likelihood)
 
     nlls.append(neg_log_likelihood)
     if "xpu" in args.device:
@@ -118,6 +130,6 @@ for i in tqdm(range(num_chunks)):
     prev_end_loc = end_loc
     if end_loc == seq_len:
         break
-
+print(neg_log_likelihood)
 ppl = torch.exp(torch.stack(nlls).mean())
 print("Final ppl estimate: {}".format(ppl.item()))
