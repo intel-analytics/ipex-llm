@@ -22,19 +22,16 @@
 #
 
 from intel_npu_acceleration_library.quantization import quantize_tensor, compress_to_i4
-from intel_npu_acceleration_library.nn.autograd import AutogradMatMul
-from intel_npu_acceleration_library.backend import run_matmul
 from intel_npu_acceleration_library.dtypes import NPUDtype
 import os
 import torch
 from torch.nn import Parameter
 import uuid
 import math
-from intel_npu_acceleration_library.backend import Linear, QLinear
-from intel_npu_acceleration_library.backend import MatMul, QMatMul
+from intel_npu_acceleration_library.backend import QMatMul
 from intel_npu_acceleration_library.backend import NNFactory
 from intel_npu_acceleration_library.backend.runtime import set_contiguous, adapt_output_tensor
-from typing import Optional, Any, List, Dict, Deque, Union
+from typing import Optional, Dict, Deque, Union
 from functools import partial
 from collections import deque
 import numpy as np
@@ -67,7 +64,6 @@ class Linear(torch.nn.Module):
         self.bias = torch.nn.Parameter(bias) if isinstance(bias, torch.Tensor) else None
         self.outC, self.inC = self.weight.shape
         self.op_id = str(uuid.uuid4())
-        self._mm = AutogradMatMul.apply
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Torch module forward method.
@@ -148,7 +144,6 @@ class QMatMul(NNFactory):
         inC: int,
         outC: int,
         batch: int,
-        op_id: Optional[str] = None,
         profile: bool = False,
         device: str = "NPU",
         dtype: np.dtype = np.int8,
@@ -166,12 +161,11 @@ class QMatMul(NNFactory):
         super().__init__(profile, device)
         self.inC, self.outC = inC, outC
         self.batch = batch
-        self.op_id = op_id
         input = self.parameter((self.batch, self.inC))
         _ = self.linear(input, outC, inC, bias=False, wt_dtype=dtype)
         self.compile()
 
-    def run(self, X: np.ndarray, W: np.ndarray, scale: np.ndarray) -> np.ndarray:
+    def run(self, X: np.ndarray, W: np.ndarray, scale: np.ndarray, op_id: str = None) -> np.ndarray:
         """Run the layer:  X * (W * S)^T.
 
         Args:
@@ -190,7 +184,8 @@ class QMatMul(NNFactory):
                 f"Input shape {X.shape} different from expected one {(self.batch, self.inC)}"
             )
 
-        return super().run(X, (W, scale), {"op_id": self.op_id})
+        # return super().run(X, (W, scale), {"op_id": op_id})
+        return super().run(X, (W, scale))
 
 
 @torch.no_grad()
