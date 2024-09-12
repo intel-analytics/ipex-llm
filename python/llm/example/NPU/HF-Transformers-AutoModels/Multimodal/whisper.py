@@ -62,7 +62,7 @@ if __name__ == '__main__':
                                                       intra_pp=args.intra_pp,
                                                       inter_pp=args.inter_pp,
                                                       transpose_value_cache=False,
-                                                      modules_to_not_convert=['decoder']
+                                                      modules_to_not_convert=['decoder', 'proj_out']
                                                       )
     print(model)
     model.config.forced_decoder_ids = None
