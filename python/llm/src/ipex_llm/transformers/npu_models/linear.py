@@ -284,6 +284,64 @@ def set_contiguous(tensor: torch.Tensor) -> torch.Tensor:
     return tensor
 
 
+class LMHeadLinear(NNFactory):
+    """Quantized Linear class, computing a matrix matrix multiplication with weights prefetching."""
+
+    def __init__(
+        self,
+        inC: int,
+        outC: int,
+        batch: int,
+        op_id: str = None,
+        profile: bool = False,
+        device: str = "NPU",
+        dtype: np.dtype = np.int8,
+    ):
+        """Initialize the QLinear class.
+
+        Args:
+            inC (int): input channels
+            outC (int): output channels
+            batch (int): batch
+            profile (bool): Enable/Disable profiling. Defaults to False.
+            device (str): Target device, default to "NPU".
+            dtype (np.dtype): weights datatype. Defaults to np.int8.
+
+        """
+        super().__init__(profile, device)
+        self.inC, self.outC = inC, outC
+        self.batch = batch
+
+        input = self.parameter((self.batch, self.inC))
+        _ = self.linear(input, outC, inC, bias=False, wt_dtype=dtype)
+        print("start compile lm_head .")
+        self.compile()
+        print("end compile lm_head.")
+        self.prefetch = False
+
+    def run(
+        self, X: np.ndarray
+    ) -> np.ndarray:
+        """Run the layer:  $X * (W * S)^T$ .
+
+        Args:
+            X (np.ndarray): activation
+
+        Raises:
+            RuntimeError: Input, weights or scale shape mismatch
+
+        Returns:
+            np.ndarray: result
+        """
+        from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
+        self.prefetchWeights(1, verify_size=False)
+        self.set_input_tensor(X, 0)
+        self.elapsed = backend_lib.run(self._mm)
+        if len(self.out) == 1:
+            return self.out[0]
+        return self.out
+
+
 class QuantizedLinear(torch.nn.Module):
     """Torch Quantized Linear operation NPU backend."""
 
@@ -323,6 +381,16 @@ class QuantizedLinear(torch.nn.Module):
         self.bias = bias
         self.op_id = str(uuid.uuid4())
 
+        # if self.outC == 152064:
+        #     np_dtype = np.uint8 if self.weight.dtype == torch.uint8 else np.int8
+        #     self.lm_head = LMHeadLinear(self.inC, self.outC, 1,
+        #                                 self.op_id, False, "NPU", dtype=np_dtype)
+        #     print("debug dtype: ", self.weight.data.numpy().dtype)
+        #     self.lm_head.setWeights(1, self.op_id,
+        #                             (self.weight.data.numpy(), self.scale.data.numpy()),
+        #                             verify_size=False)
+        #     print("finish set weights")
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Torch module forward method.
 
@@ -353,7 +421,17 @@ class QuantizedLinear(torch.nn.Module):
                 )
             )
         # out = run_matmul(x, self.weight.data, self.scale.data, self.op_id)
-        out = run_matmul(x, self.inC, self.outC, self.weight.data, self.scale.data, self.op_id)
+        original_shape = x.shape
+        x_2d = x.view(-1, x.shape[-1])
+        target_shape = tuple(list(original_shape[:-1]) + [self.outC])
+
+        if x_2d.shape[0] > 1:
+            out = run_matmul(x_2d, self.inC, self.outC, self.weight.data, self.scale.data, self.op_id)
+        else:
+            out = self.lm_head.run(x_2d.numpy())
+            out = torch.from_numpy(out)
+
+        out = out.view(target_shape)
 
         if self.bias is None:
             return out

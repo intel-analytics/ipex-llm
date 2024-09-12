@@ -16,6 +16,8 @@
 import os
 import torch
 import importlib
+import numpy as np
+from ipex_llm.transformers.npu_models.linear import LMHeadLinear
 from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
 
 
@@ -182,6 +184,14 @@ def optimize_llm(
         from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
         from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
+        # Test lm_head optimization
+        np_dtype = np.uint8 if model.lm_head.weight.dtype == torch.uint8 else np.int8
+        model.lm_head.lm_head = LMHeadLinear(model.lm_head.inC, model.lm_head.outC, 1,
+                                             model.lm_head.op_id, False, "NPU", dtype=np_dtype)
+        print("debug dtype: ", model.lm_head.weight.data.numpy().dtype)
+        model.lm_head.lm_head.setWeights(1, model.lm_head.op_id,
+                                        (model.lm_head.weight.data.numpy(), model.lm_head.scale.data.numpy()),
+                                         verify_size=False)
     elif model.config.model_type == "minicpm":
         # for minicpm-1b
         if intra_pp is None:
