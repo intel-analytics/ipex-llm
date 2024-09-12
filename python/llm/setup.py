@@ -277,6 +277,9 @@ def setup_package():
     oneapi_2024_0_requires = ["dpcpp-cpp-rt==2024.0.2;platform_system=='Windows'",
                               "mkl-dpcpp==2024.0.0;platform_system=='Windows'",
                               "onednn==2024.0.0;platform_system=='Windows'"]
+    oneapi_2024_2_requires = ["dpcpp-cpp-rt==2024.2.1;platform_system=='Windows'",
+                              "mkl-dpcpp==2024.2.1;platform_system=='Windows'",
+                              "onednn==2024.2.1;platform_system=='Windows'"]
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_21_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
@@ -294,8 +297,8 @@ def setup_package():
 
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
-                    "onednn-devel==2024.0.0;platform_system=='Windows'"]
-    cpp_requires += oneapi_2024_0_requires
+                    "onednn-devel==2024.2.1;platform_system=='Windows'"]
+    cpp_requires += oneapi_2024_2_requires
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
