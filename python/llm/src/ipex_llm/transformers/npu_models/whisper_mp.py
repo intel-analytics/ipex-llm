@@ -211,24 +211,11 @@ class LowBitWhisperMultiEncoderlayer(LLMBaseNNFactory):
         print("start compiling")
         self.compile()
 
-    # def layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):
-    #     hidden_states = self.convert_to_fp32(hidden_states)
-    #     # axis = hidden_states.shape.index(self.hidden_size)
-    #     hidden_states = self.normL2(hidden_states, axis=-1, eps=1e-5)
-    #     hidden_states = self.reshape(hidden_states, [-1, self.hidden_size])
-    #     print(f'hidden_states is {hidden_states.shape}, layernorm_weight is {layernorm_weight.shape}')
-    #     layernorm_weight = self.convert_to_fp32(layernorm_weight)
-    #     hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
-    #     layernorm_bias = self.convert_to_fp32(layernorm_bias)
-    #     hidden_states = self.eltwise_add(layernorm_bias, hidden_states)
-    #     hidden_states = self.convert_to_fp16(hidden_states)
-    #     return hidden_states
-
     def layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):
         hidden_states = self.convert_to_fp32(hidden_states)
         mean_res = self.reduce_mean(hidden_states, -1, keep_dims=True,)
         variance = self.reduce_mean(
-            self.power(hidden_states, self.constant(np.array([[2]], dtype=np.float32))),
+            self.power(hidden_states - mean_res, self.constant(np.array([[2]], dtype=np.float32))),
             -1,
             keep_dims=True,
         )
@@ -302,11 +289,8 @@ class LowBitWhisperMultiEncoderlayer(LLMBaseNNFactory):
             value_states, [1 * self.num_heads, self.seq_len, self.head_dim]
         )
 
-        # attn_weights = self.matmul(query_states, self.transpose(value_states, [0, 2, 1]), False, False)
-        attn_weights = self.matmul(query_states, value_states, False, True)
+        attn_weights = self.matmul(query_states, key_states, False, True)
         attn_weights = self.softmax(attn_weights, -1)
-        # print(f'attn_weights is {attn_weights.shape}, {attn_weights.dtype}')
-        # print(f'value_states is {value_states.shape}, {value_states.dtype}')
         attn_output = self.matmul(attn_weights, value_states, False, False)
         attn_output = self.reshape(
             attn_output, [1, self.num_heads, self.seq_len, self.head_dim]
@@ -464,7 +448,7 @@ class FusedWhisperLowBitEncoderlayer(torch.nn.Module):
 
         hidden_states = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
-        )[-1]
+        )[-1:]
         outputs = (hidden_states,)
         return outputs
 
@@ -482,6 +466,7 @@ def run_prefill(
     
     encoderlayers = []
     layer_indexs = range(layer_start, layer_end)
+    # print(f'scale is {model.model.encoder.layers[0].self_attn.q_proj.scale}')
     for layer_idx in layer_indexs:
         curr_layer = model.model.encoder.layers[layer_idx]
         attn_layer = curr_layer.self_attn
@@ -546,7 +531,7 @@ def run_prefill(
                     output_attentions=output_attentions,
                 )
                 hidden_states = layer_outputs[0]
-                print(f'=====layer {idx}, hidden_states is {hidden_states}')
+                # print(f'=====layer {idx}, hidden_states is {hidden_states}')
             result_queue.put((hidden_states))
 
 
