@@ -82,7 +82,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install -r /llm/vllm/requirements-xpu.txt && \
     VLLM_TARGET_DEVICE=xpu python setup.py install && \
     pip install mpi4py fastapi uvicorn openai && \
-    pip install gradio && \
+    pip install gradio==4.43.0 && \
     # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
     pip install ray && \
     patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
