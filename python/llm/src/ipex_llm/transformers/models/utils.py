@@ -22,7 +22,6 @@ from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4,\
     FP6, ASYM_INT4
-from ipex_llm.transformers.convert import is_deepspeed_available
 
 FP8_KV_ALLOC_LENGTH = 512
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
@@ -330,15 +329,6 @@ def use_sdp(q_len, kv_len, head_dim, query_states):
         query_states.device.type == "xpu"
         and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
         and head_dim in [-1, 64, 80, 96, 128]
-        and q_len != kv_len     # next token
-        and q_len <= 32         # lookup
-    )
-
-
-def use_sdp_fp8(q_len, kv_len, query_states):
-    return (
-        query_states.device.type == "xpu"
-        and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
         and q_len != kv_len     # next token
         and q_len <= 32         # lookup
     )

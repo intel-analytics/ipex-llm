@@ -261,7 +261,9 @@ jobs:
       - name: Run LLM llamaindex test
         shell: bash
         run: |
-          pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+          pip install "llama-index-readers-file<0.2.0"
+          pip install "llama-index-vector-stores-postgres<0.2.0"
+          pip install "llama-index-embeddings-huggingface<0.3.0"
           pip install transformers==4.36.2
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests.sh
@@ -471,7 +473,9 @@ jobs:
       - name: Run LLM llamaindex GPU test
         shell: bash
         run: |
-          pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+          pip install "llama-index-readers-file<0.2.0"
+          pip install "llama-index-vector-stores-postgres<0.2.0"
+          pip install "llama-index-embeddings-huggingface<0.3.0"
           # Specific oneapi position on arc ut test machines
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/

@@ -21,7 +21,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
 Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
-Right click and select **Update Driver**. And then manually select the folder unzipped from the driver.
+Right click and select **Update Driver** -> **Browse my computer for drivers**. And then manually select the unzipped driver folder to install.
 
 ## 1. Install
 ### 1.1 Installation on Windows
@@ -40,7 +40,7 @@ For optimal performance, it is recommended to set several environment variables.
 
 > [!NOTE]
 > For optimal performance, we recommend running code in `conhost` rather than Windows Terminal:
-> - Press <kbd>Win</kbd>+<kbd>R</kbd> and input `conhost`, then press Enter to launch `conhost`.
+> - Search for `conhost` in the Windows search bar and run as administrator
 > - Run following command to use conda in `conhost`. Replace `<your conda install location>` with your conda install location.
 > ```
 > call <your conda install location>\Scripts\activate
@@ -61,7 +61,8 @@ python ./generate.py
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (e.g. `meta-llama/Llama-2-7b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`, and more verified models please see the list in [Verified Models](#verified-models).
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun'`.
+- `--lowbit-path LOWBIT_MODEL_PATH`: argument defining the path to save/load lowbit version of the model. If it is an empty string, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded. If it is an existing path, the lowbit model in `LOWBIT_MODEL_PATH` will be loaded. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the converted lowbit version will be saved into `LOWBIT_MODEL_PATH`. It is default to be `''`, i.e. an empty string.
+- `--prompt PROMPT`: argument defining the prompt to be infered. It is default to be `'Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--load_in_low_bit`: argument defining the `load_in_low_bit` format used. It is default to be `sym_int8`, `sym_int4` can also be used.
 
@@ -86,11 +87,15 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [MiniCPM-2B](./minicpm.py)
 - [Baichuan2-7B](./baichuan2.py)
 
+### Recommended NPU Driver Version for MTL Users
+#### 32.0.100.2540
+Supported models: Llama2-7B, Llama3-8B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, MiniCPM-2B, Baichuan2-7B
+
 ### Recommended NPU Driver Version for LNL Users
 #### 32.0.100.2625
-Supported models: Llama2-7B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, Baichuan2-7B
+Supported models: Llama2-7B, MiniCPM-1B, Baichuan2-7B
 #### 32.0.101.2715
-Supported models: Llama3-8B, MiniCPM-2B
+Supported models: Llama3-8B, MiniCPM-2B, Qwen2-7B, Qwen2-1.5B
 
 ### Run
 ```bash
@@ -100,11 +105,11 @@ python llama.py
 # to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
-# to run Qwen2-1.5B-Instruct
+# to run Qwen2-1.5B-Instruct LNL driver version: 32.0.101.2715)
 python qwen2.py
 
-# to run Qwen2-7B-Instruct
-python qwen2.py  --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
+# to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
+python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
 
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py
@@ -118,6 +123,7 @@ python baichuan2.py
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (i.e. `meta-llama/Llama-2-7b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
+- `--lowbit-path LOWBIT_MODEL_PATH`: argument defining the path to save/load lowbit version of the model. If it is an empty string, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded. If it is an existing path, the lowbit model in `LOWBIT_MODEL_PATH` will be loaded. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the converted lowbit version will be saved into `LOWBIT_MODEL_PATH`. It is default to be `''`, i.e. an empty string.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `What is AI?`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--max-output-len MAX_OUTPUT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
@@ -126,23 +132,32 @@ Arguments info:
 
 ### Troubleshooting
 
+#### `TypeError: can't convert meta device type tensor to numpy.` Error
+If you encounter `TypeError: can't convert meta device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.` error when loading lowbit model, please try re-saving the lowbit model with the example script you are currently using. Please note that lowbit models saved by `qwen2.py`, `llama.py`, etc. cannot be loaded by `generate.py`.
+
 #### Output Problem
 If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
 ```bash
 # to run Llama-2-7b-chat-hf
-python  llama.py --disable-transpose-value-cache
+python llama.py --disable-transpose-value-cache
 
 # to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
 
-# to run Qwen2-1.5B-Instruct
+# to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen2.py --disable-transpose-value-cache
+
+# to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
+python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --disable-transpose-value-cache
 
 # to run MiniCPM-1B-sft-bf16
 python minicpm.py --disable-transpose-value-cache
 
 # to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
+
+# to run Baichuan2-7B-Chat
+python baichuan2.py --disable-transpose-value-cache
 ```
 
 #### Better Performance with High CPU Utilization

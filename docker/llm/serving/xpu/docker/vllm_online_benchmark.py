@@ -279,7 +279,7 @@ max_batch=int(max_seq)
 
 for MAX_CONCURRENT_REQUESTS in [max_batch]:
     NUM_WARMUP = 2 * MAX_CONCURRENT_REQUESTS
-    NUM_REQUESTS = 5 * MAX_CONCURRENT_REQUESTS  # 总请求次数
+    NUM_REQUESTS = 4 * MAX_CONCURRENT_REQUESTS  # 总请求次数
 
     # to avoid warm_up time out
     benchmark(LLM_URLS, MODEL, PROMPT_1024, 2, 1, 32, is_warmup = True)

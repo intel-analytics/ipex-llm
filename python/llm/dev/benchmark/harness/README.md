@@ -39,3 +39,42 @@ We follow [Open LLM Leaderboard](https://huggingface.co/spaces/HuggingFaceH4/ope
 ```python
 python make_table.py <input_dir>
 ```
+
+## Known Issues
+### 1.Detected model is a low-bit(sym int4) model, please use `load_low_bit` to load this model
+Harness evaluation is meant for unquantified models and by passing the argument `--precision` can the model be converted to target precision. If you load the quantified models, you may encounter the following error:
+```bash
+********************************Usage Error********************************
+Detected model is a low-bit(sym int4) model, Please use load_low_bit to load this model.
+```
+ However, you can replace the following code in [this line](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/dev/benchmark/harness/ipexllm.py#L52):
+```python
+AutoModelForCausalLM.from_pretrained = partial(AutoModelForCausalLM.from_pretrained,**self.bigdl_llm_kwargs)
+```
+to the following codes to load the low bit models.
+```python
+class ModifiedAutoModelForCausalLM(AutoModelForCausalLM): 
+    @classmethod
+    def load_low_bit(cls,*args,**kwargs):
+        for k in ['load_in_low_bit', 'device_map', 'max_memory', 'load_in_8bit','load_in_4bit']: 
+        kwargs.pop(k)
+    return super().load_low_bit(*args, **kwargs)
+
+AutoModelForCausalLM.from_pretrained=partial(ModifiedAutoModelForCausalLM.load_low_bit, *self.bigdl_llm_kwargs)
+```
+### 2.Please pass the argument `trust_remote_code=True` to allow custom code to be run.
+`lm-evaluation-harness` doesn't pass `trust_remote_code=true` argument to datasets. This may cause errors similar to the following one: 
+```
+RuntimeError: Job config of task=winogrande, precision=sym_int4 failed. 
+Error Message: The repository for winogrande contains custom code which must be executed to correctly load the dataset. You can inspect the repository content at https://hf.co/datasets/winogrande.
+please pass the argument trust_remote_code=True to allow custom code to be run. 
+```
+Please refer to these:
+
+- [trust_remote_code error in simple evaluate for hellaswag · Issue #2222 · EleutherAI/lm-evaluation-harness (github.com) ](https://github.com/EleutherAI/lm-evaluation-harness/issues/2222)
+
+- [Setting trust_remote_code to True for HuggingFace datasets compatibility by veekaybee · Pull Request #1467 · EleutherAI/lm-evaluation-harness (github.com)](https://github.com/EleutherAI/lm-evaluation-harness/pull/1467#issuecomment-1964282427)
+
+- [Security features from the Hugging Face datasets library · Issue #1135 · EleutherAI/lm-evaluation-harness (github.com)](https://github.com/EleutherAI/lm-evaluation-harness/issues/1135#issuecomment-1961928695)
+
+You have to manually run `export HF_DATASETS_TRUST_REMOTE_CODE=1` to solve the problem.

@@ -69,6 +69,16 @@ def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):
         return module.down_proj(module.act_fn(module.gate_proj(x)) * module.up_proj(x))
 
 
+def mlp_silu_forward(self, x: torch.Tensor):
+    from ipex_llm.transformers.models.utils import SILU
+    return fuse_mlp_base(self, SILU, x)
+
+
+def mlp_gelu_forward(self, x: torch.Tensor):
+    from ipex_llm.transformers.models.utils import GELU
+    return fuse_mlp_base(self, GELU, x)
+
+
 def attention_softmax(attn_weights: torch.Tensor, training: bool):
     if attn_weights.is_contiguous() and attn_weights.device.type == "xpu" and not training:
         import xe_addons
@@ -77,3 +87,22 @@ def attention_softmax(attn_weights: torch.Tensor, training: bool):
         attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
                                                    dtype=torch.float32).to(attn_weights.dtype)
     return attn_weights
+
+
+def rms_norm_forward(self, hidden_states: torch.Tensor):
+    weight = self.weight
+    if hasattr(self, "variance_epsilon"):
+        eps = self.variance_epsilon
+    else:
+        eps = self.epsilon
+
+    if hidden_states.device.type == 'xpu':
+        import xe_addons
+        x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
+        output = xe_addons.rms_norm(weight, x_2d, eps)
+        return output.reshape(hidden_states.shape)
+    else:
+        input_dtype = hidden_states.dtype
+        variance = hidden_states.to(torch.float32).pow(2).mean(dim=-1, keepdim=True)
+        hidden_states = hidden_states * torch.rsqrt(variance + eps)
+        return weight * hidden_states.to(input_dtype)

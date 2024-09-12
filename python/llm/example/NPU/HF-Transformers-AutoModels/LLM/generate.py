@@ -17,6 +17,7 @@
 import torch
 import time
 import argparse
+import os
 
 from ipex_llm.transformers.npu_model import AutoModelForCausalLM
 from transformers import AutoTokenizer
@@ -27,6 +28,11 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
+    parser.add_argument("--lowbit-path", type=str,
+        default="",
+        help='The path to the lowbit model folder, leave blank if you do not want to save. \
+            If path not exists, lowbit model will be saved there. \
+            Else, lowbit model will be loaded.')
     parser.add_argument('--prompt', type=str, default="Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
@@ -39,15 +45,28 @@ if __name__ == '__main__':
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
-                                                 load_in_low_bit=args.load_in_low_bit,
-                                                 attn_implementation="eager")
+    if not args.lowbit_path or not os.path.exists(args.lowbit_path):
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            trust_remote_code=True,
+            load_in_low_bit=args.load_in_low_bit,
+            attn_implementation="eager"
+        )
+    else:
+        model = AutoModelForCausalLM.load_low_bit(
+            args.lowbit_path,
+            trust_remote_code=True,
+            bigdl_transformers_low_bit=args.load_in_low_bit,
+            attn_implementation="eager"
+        )
     
     print(model)
 
+    if args.lowbit_path and not os.path.exists(args.lowbit_path):
+        model.save_low_bit(args.lowbit_path)
+
     with torch.inference_mode():
-        prompt = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
-        input_ids = tokenizer.encode(prompt, return_tensors="pt")
+        input_ids = tokenizer.encode(args.prompt, return_tensors="pt")
         print("finish to load")
         print('input length:', len(input_ids[0]))
         st = time.time()

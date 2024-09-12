@@ -160,7 +160,7 @@ def is_linear_module(module):
         if is_module_in_classes(module, VLLM_LINEAR_LIST):
             if 'xpu' in _VLLM_VERSION:
                 # For vllm xpu
-                from vllm.model_executor.parallel_utils.parallel_state import (
+                from vllm.distributed.parallel_state import (
                     get_tensor_model_parallel_group,
                     get_tensor_model_parallel_world_size
                 )
@@ -183,8 +183,8 @@ def is_linear_module(module):
             mp_group = None
             # Check for attribute qweight
             if (not _USE_VLLM_AWQ
-               and hasattr(module.linear_method, "quant_config")
-               and module.linear_method.quant_config.get_name() == "awq"):
+               and hasattr(module.quant_method, "quant_config")
+               and module.quant_method.quant_config.get_name() == "awq"):
                 _USE_VLLM_AWQ = True
             invalidInputError(module.skip_bias_add is not True, "Currently, ipex-vllm does not"
                               " support linear layers with skip_bias_add argument")
@@ -231,7 +231,6 @@ def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
     from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
         FP16Linear, BF16Linear, vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
-    # Currently, vLLM does not support optimize_lm_head = True
     optimize_lm_head = False
     if isinstance(module, ParallelLMHead):
         if qtype == ggml_tensor_qtype["fp16"]:
@@ -301,7 +300,7 @@ def convert_vllm_awq(module):
                        dtype=torch.int32) * 4).unsqueeze(0)
     # vLLM only supports load 4-bits model, so this has been checked
     bits = 4
-    group_size = module.linear_method.quant_config.group_size
+    group_size = module.quant_method.quant_config.group_size
 
     zeros = torch.bitwise_right_shift(
         torch.unsqueeze(module.qzeros, 2).expand(-1, -1, 32 // bits),
@@ -464,6 +463,12 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
 
         # use sub-string to match, it may match `10` if user only pass a number like `0`
         if any(key in full_module_name for key in modules_to_not_convert):
+            continue
+
+        if is_linear and getattr(model_config, "model_type", None) == "chatglm" and \
+                name == "lm_head":
+            # Now we re-reference it to output_layer
+            model._modules[name] = model._modules["transformer"]._modules["output_layer"]
             continue
 
         if is_linear and not isinstance(module, LowBitLinear):
@@ -990,6 +995,11 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "minicpm":
         from ipex_llm.transformers.models.minicpm import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "minicpm3":
+        from ipex_llm.transformers.models.minicpm3 import pre_compute_inv_freq
+        model.apply(pre_compute_inv_freq)
+        from ipex_llm.transformers.models.minicpm3 import padding_v_head_dim
+        model.apply(padding_v_head_dim)
     if model.config.model_type == "minicpmv":
         from ipex_llm.transformers.models.minicpmv import merge_qkv
         model.vpm.apply(merge_qkv)
@@ -1772,16 +1782,16 @@ def _optimize_post(model, lightweight_bmm=False):
     elif model.config.model_type == "gemma2":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import mlp_gelu_forward
         from ipex_llm.transformers.models.gemma import gemma_rms_norm_forward
         from ipex_llm.transformers.models.gemma2 import gemma2_attention_forward
         from ipex_llm.transformers.models.gemma2 import gemma2_model_forward
-        from ipex_llm.transformers.models.gemma2 import gemma2_mlp_forward
         from transformers.models.gemma2.modeling_gemma2 import Gemma2RMSNorm, Gemma2Attention
         from transformers.models.gemma2.modeling_gemma2 import Gemma2Model, Gemma2MLP
         convert_forward(model, Gemma2RMSNorm, gemma_rms_norm_forward)
         convert_forward(model, Gemma2Attention, gemma2_attention_forward)
         convert_forward(model, Gemma2Model, gemma2_model_forward)
-        convert_forward(model, Gemma2MLP, gemma2_mlp_forward)
+        convert_forward(model, Gemma2MLP, mlp_gelu_forward)
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1961,6 +1971,18 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.MiniCPMRMSNorm, llama_rms_norm_forward)
         minicpm_model_forward = minicpm_model_forward_wrapper(module.MiniCPMModel.forward)
         convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
+    elif model.config.model_type == "minicpm3":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.minicpm3 import minicpm3_attention_forward
+        from ipex_llm.transformers.models.minicpm3 import minicpm3_model_forward_wrapper
+        convert_forward(model, module.MiniCPMRMSNorm, rms_norm_forward)
+        convert_forward(model, module.MiniCPMMLP, mlp_silu_forward)
+        convert_forward(model, module.MiniCPMAttention, minicpm3_attention_forward)
+        minicpm3_model_forward = minicpm3_model_forward_wrapper(module.MiniCPM3Model.forward)
+        convert_forward(model, module.MiniCPM3Model, minicpm3_model_forward)
     elif model.config.model_type == "minicpmv":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

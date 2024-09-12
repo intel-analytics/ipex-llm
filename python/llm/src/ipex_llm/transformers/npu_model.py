@@ -49,7 +49,6 @@ def save_low_bit(self, model_dir: str, *args, **kwargs):
     kwargs["safe_serialization"] = False
     self.save_pretrained(model_dir, *args, **kwargs)
     import json
-    import os
 
     # We conveniently save all the keys of the model to have them on hand,
     # so that when using 'low_cpumem load',
@@ -118,6 +117,7 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "pipeline_parallel_stages")
         optimize_model = kwargs.pop("optimize_model", False)
         max_output_len = kwargs.pop("max_output_len", 1024)
+        max_output_len = max_output_len - 1
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
@@ -202,9 +202,6 @@ class _BaseAutoModelClass:
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
     def load_low_bit(cls, pretrained_model_name_or_path: str, *model_args, **kwargs):
-        if kwargs.pop("torch_dtype", None) not in [None, "auto", torch.float]:
-            warnings.warn("`torch_dtype` will be ignored, `torch.float` will be used")
-
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
         ignore_argument(kwargs, "lightweight_bmm")
@@ -273,7 +270,7 @@ class _BaseAutoModelClass:
         invalidInputError(
             qtype in ["sym_int8_rtn", "sym_int4_rtn"],
             f"Unknown bigdl_transformers_low_bit value: {qtype},"
-            f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.",
+            f" expected: sym_int8_rtn, sym_int4_rtn. "
         )
 
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
@@ -390,7 +387,6 @@ class _BaseAutoModelClass:
         if is_sharded:
             loaded_state_dict_keys = sharded_metadata["all_checkpoint_keys"]
         else:
-            import os
             import json
 
             with open(
@@ -402,6 +398,10 @@ class _BaseAutoModelClass:
         # restore default dtype
         if dtype_orig is not None:
             torch.set_default_dtype(dtype_orig)
+
+        # set tie_word_embeddings to False to avoid possible lm_head error
+        if hasattr(model.config, "tie_word_embeddings"):
+            model.config.tie_word_embeddings = False
 
         (
             model,
