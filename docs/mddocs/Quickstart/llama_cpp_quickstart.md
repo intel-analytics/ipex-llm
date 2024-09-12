@@ -18,6 +18,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 >
 > Our latest version is consistent with [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) of llama.cpp.
 
+> [!NOTE]
+> Starting from `ipex-llm[cpp]==2.2.0b20240912`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.0.0` to `2024.2.1` .
+
 ## Table of Contents
 - [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites)
 - [Install IPEX-LLM for llama.cpp](./llama_cpp_quickstart.md#1-install-ipex-llm-for-llamacpp)

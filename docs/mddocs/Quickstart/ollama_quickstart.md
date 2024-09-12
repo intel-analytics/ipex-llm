@@ -18,6 +18,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 >
 > Our current version is consistent with [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) of ollama.
 
+> [!NOTE]
+> Starting from `ipex-llm[cpp]==2.2.0b20240912`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.0.0` to `2024.2.1` .
+
 ## Table of Contents
 - [Install IPEX-LLM for Ollama](./ollama_quickstart.md#1-install-ipex-llm-for-ollama)
 - [Initialize Ollama](./ollama_quickstart.md#2-initialize-ollama)
