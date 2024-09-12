@@ -58,7 +58,7 @@ permissions:
 
 jobs:
   ipex-llm-finetune-lora-cpu:
-    if: ${{ inputs.artifact == 'ipex-llm-finetune-lora-cpu' || inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-lora-cpu' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -96,7 +96,7 @@ jobs:
         fi
 
   ipex-llm-finetune-qlora-cpu:
-    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu' || inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -134,7 +134,7 @@ jobs:
           fi
 
   ipex-llm-finetune-qlora-cpu-k8s:
-    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu-k8s' || inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-qlora-cpu-k8s' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -172,7 +172,7 @@ jobs:
           fi
 
   ipex-llm-finetune-xpu:
-    if: ${{ inputs.artifact == 'ipex-llm-finetune-xpu' || inputs.artifact == 'all' }}
+    if: ${{ inputs.artifact == 'ipex-llm-finetune-xpu' }}
     runs-on: [self-hosted, Shire]
     
     steps:
