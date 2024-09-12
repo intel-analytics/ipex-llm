@@ -57,7 +57,6 @@ if __name__ == "__main__":
 
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        torch_dtype=torch.bfloat16,
         trust_remote_code=True,
         attn_implementation="eager",
         load_in_low_bit="sym_int4",
