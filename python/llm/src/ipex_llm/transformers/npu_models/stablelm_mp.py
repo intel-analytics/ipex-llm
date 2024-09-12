@@ -275,15 +275,11 @@ class LowBitStableLmMultiDecoderlayer(LLMBaseNNFactory):
             kv_seq_len = self.max_seq_len + 1
         else:
             kv_seq_len = seq_len
-        print("cos size: ", cos.shape)
-        print("kv_seq_len: ", kv_seq_len)
         cos = cos[:, :kv_seq_len, ...]
         sin = sin[:, :kv_seq_len, ...]
         print("cos size: ", cos.shape)
         rotary_emb_dim = int(self.partial_rotary_factor * head_dim)
-        print("rotary_emb_dim: ", rotary_emb_dim)
-        print("query_states shape: ", query_states.shape)
-        # query_rot = query_states[:, :, :, :rotary_emb_dim]
+        # print("rotary_emb_dim: ", rotary_emb_dim)
         query_rot, query_pass = (
             query_states[..., :rotary_emb_dim],
             query_states[..., rotary_emb_dim:],
@@ -293,7 +289,7 @@ class LowBitStableLmMultiDecoderlayer(LLMBaseNNFactory):
             key_states[..., rotary_emb_dim :],
         )
         # [batch_size, seq_length, num_heads, head_dim * config.partial_rotary_factor]
-        query_states, key_states = self.apply_rotary_pos_emb(
+        query_rot, key_rot = self.apply_rotary_pos_emb(
             q=query_rot,
             k=key_rot,
             cos=cos,
@@ -303,8 +299,8 @@ class LowBitStableLmMultiDecoderlayer(LLMBaseNNFactory):
             seq_len=seq_len,
             head_dim=rotary_emb_dim,
         )
-        print("query_states after rope: ", query_states.shape)
-        print("key_states after rope: ", key_states.shape)
+        # print("query_rot after rope: ", query_rot.shape)
+        # print("key_rot after rope: ", key_rot.shape)
 
         # [batch_size, seq_length, num_heads, head_dim]
         query_states = self.concat(query_rot, query_pass, axis=-1)
@@ -328,20 +324,20 @@ class LowBitStableLmMultiDecoderlayer(LLMBaseNNFactory):
                                       kv_seq_len=kv_seq_len,
                                       head_dim=head_dim,
                                       transpose=self.transpose_value)
-        print("query_states shape: ", query_states.shape)
-        print("key_states shape: ", key_states.shape)
+        # print("query_states shape: ", query_states.shape)
+        # print("key_states shape: ", key_states.shape)
         attn_weight = self.matmul(query_states, key_states, False, True) / (
             math.sqrt(head_dim)
         )
-        print("attn_weight shape: ", attn_weight.shape)
-        print("attention_mask shape: ", attention_mask.shape)
+        # print("attn_weight shape: ", attn_weight.shape)
+        # print("attention_mask shape: ", attention_mask.shape)
         attn_weight = self.eltwise_add(attn_weight, attention_mask)
         attn_weight = self.convert_to_fp32(attn_weight)
         attn_weight = self.softmax(attn_weight, -1)
         attn_weight = self.convert_to_fp16(attn_weight)
-        print("attn_weight shape: ", attn_weight.shape)
+        # print("attn_weight shape: ", attn_weight.shape)
         attn_output = self.matmul(attn_weight, value_states, False, self.transpose_value)
-        print("attn_output shape: ", attn_output.shape)
+        # print("attn_output shape: ", attn_output.shape)
 
         attn_output = self.transpose(attn_output, [0, 2, 1, 3])
         attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
@@ -352,6 +348,9 @@ class LowBitStableLmMultiDecoderlayer(LLMBaseNNFactory):
         
         new_key_states = key_states
         new_value_states = value_states
+        # print("new_key_states shape: ", new_key_states.shape)
+        # print("new_value_states shape: ", new_value_states.shape)
+        # print("attn_output shape: ", attn_output.shape)
 
         return attn_output, new_key_states, new_value_states
 
@@ -375,10 +374,8 @@ class LowBitStableLmMultiDecoderlayer(LLMBaseNNFactory):
 
         residual = hidden_states
 
-        # hidden_states = self.layer_norm(hidden_states, input_layernorm_weight, input_layernorm_bias)
-        print("hidden_states size: ", hidden_states.shape)
+        hidden_states = self.layer_norm(hidden_states, input_layernorm_weight, input_layernorm_bias)
         input_2d = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
-        
 
         # attention
         attn_output, new_key_states, new_value_states = self.attention(
@@ -398,12 +395,12 @@ class LowBitStableLmMultiDecoderlayer(LLMBaseNNFactory):
 
         hidden_states = self.eltwise_add(residual, attn_output)
         residual = hidden_states
-        # hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight, post_attention_layernorm_bias)
+        hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight, post_attention_layernorm_bias)
         hidden_states = self.mlp(hidden_states)
         # dropout is no need in inference
         hidden_states = self.eltwise_add(residual, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
-        print("hidden_states after build decoder: ", hidden_states.shape)
+        # print("hidden_states after build decoder: ", hidden_states.shape)
 
         return hidden_states, new_key_states, new_value_states
 
@@ -633,6 +630,7 @@ class FusedStableLmLowBitDecoderlayer(torch.nn.Module):
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
         )
+
         cache_kwargs = {
             "max_seq_len": self.max_seq_len,
             "transpose": self.transpose_value,
@@ -706,15 +704,6 @@ def run_decode(
         layer_norm_0_bias = curr_layer.input_layernorm.bias.to(torch.float16)
         layer_norm_1_weight = curr_layer.post_attention_layernorm.weight.to(torch.float16)
         layer_norm_1_bias = curr_layer.post_attention_layernorm.bias.to(torch.float16)
-        print("layer_norm_0_weight: ", layer_norm_0_weight)
-        print("layer_norm_0_weight shape: ", layer_norm_0_weight.shape)
-        print("layer_norm_0_bias: ", layer_norm_0_bias)
-        print("layer_norm_0_bias shape: ", layer_norm_0_bias.shape)
-        print("layer_norm_1_weight: ", layer_norm_1_weight)
-        print("layer_norm_1_weight shape: ", layer_norm_1_weight.shape)
-        print("layer_norm_1_bias: ", layer_norm_1_bias)
-        print("layer_norm_1_bias shape: ", layer_norm_1_bias.shape)
-
 
         layer_weights.extend(weights)
         input_layer_norm_weights.append(layer_norm_0_weight)
@@ -746,6 +735,7 @@ def run_decode(
     dist.barrier()
 
     past_key_values = None
+    past_seen_tokens = None
 
     control = torch.empty((), dtype=torch.int)
     hidden_states = torch.empty((1, 1, head_dim * num_heads), dtype=torch.float16)
@@ -759,24 +749,18 @@ def run_decode(
                 past_key_values = input_queue.get()
             else:
                 t0 = time.perf_counter()
-                past_key_values_length = past_key_values.get_seq_length()
-                seq_length_with_past = 1 + past_key_values_length
-                position_ids = torch.arange(
-                    past_key_values_length, seq_length_with_past, dtype=torch.long
-                )
-                position_ids = position_ids.unsqueeze(0)
-                attention_mask = None
-                attention_mask = _prepare_4d_causal_attention_mask(
-                    attention_mask, (1, 1), hidden_states, past_key_values_length
-                    )
-
-                pad_len = multi_decoder.max_seq_len + 1 - attention_mask.size(-1)
-
-                pad_mask = (0, pad_len)
-                padded_causal_mask = F.pad(
-                    attention_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
-                )
-                padded_causal_mask[:, :, :, -1] = 0.0
+                if past_seen_tokens is None or past_seen_tokens != past_key_values.get_seq_length():
+                    past_seen_tokens = past_key_values.get_seq_length()
+                    position_ids = torch.IntTensor([past_seen_tokens])
+                    padded_causal_mask = torch.ones(1, 1, 1, max_seq_len, dtype=torch.float16) * \
+                        torch.finfo(torch.float16).min
+                    padded_causal_mask[:, :, :, -1] = 0.0
+                    padded_causal_mask[:, :, :, :past_seen_tokens] = 0
+                else:
+                    # TODO: not consider other case now
+                    past_seen_tokens += 1
+                    position_ids += 1
+                    padded_causal_mask[:, :, :, past_seen_tokens] = 0
                 dist.recv(hidden_states, src=rank - 1)
                 t1 = time.perf_counter()
                 layer_outputs = multi_decoder(
@@ -931,9 +915,9 @@ def run_prefill(
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
 
         layer_norm_0_weight = curr_layer.input_layernorm.weight.to(torch.float16)
-        # print("layer_norm_0_weight: ", layer_norm_0_weight)
+        print("layer_norm_0_weight size: ", layer_norm_0_weight.shape)
         layer_norm_0_bias = curr_layer.input_layernorm.bias.to(torch.float16)
-        # print("layer_norm_0_bias: ", layer_norm_0_bias)
+        print("layer_norm_0_bias size: ", layer_norm_0_bias.size())
         layer_norm_1_weight = curr_layer.post_attention_layernorm.weight.to(torch.float16)
         layer_norm_1_bias = curr_layer.post_attention_layernorm.bias.to(torch.float16)
 
@@ -1170,6 +1154,7 @@ def gen_stablelm_fused_model_forward(prefill_runner, decode_runner):
         if use_cache:
             next_decoder_cache = layer_outputs[1]
 
+        hidden_states = hidden_states.to(torch.float32)
         hidden_states = self.norm(hidden_states)
 
         # add hidden states from the last decoder layer
