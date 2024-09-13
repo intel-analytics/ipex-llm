@@ -376,7 +376,6 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             curr_linear_ops = len(self.backend_decoders[i].linear_ops)
             curr_parameters = self.op_parameters[offset:offset + curr_linear_ops]
-            # print(f'curr_parameters {i} len!!!: {len(curr_parameters)}')
             self.backend_decoders[i].set_weights(self.op_id, curr_parameters)
             offset = offset + curr_linear_ops
 
@@ -919,21 +918,23 @@ class PrefillRunner:
                 " to max_prompt_len {self.max_prompt_len}"
             ),
         )
-        pad_len = self.max_prompt_len - seq_len
-        hidden_states = F.pad(hidden_states.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
-        position_ids = F.pad(position_ids, (0, pad_len), value=0)
-        attention_mask = F.pad(
-            attention_mask.to(torch.float16),
-            (0, pad_len, 0, pad_len),
-            value=torch.finfo(torch.float16).min,
-        )
+        # pad_len = self.max_prompt_len - seq_len
+        # hidden_states = F.pad(hidden_states.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
+        # position_ids = F.pad(position_ids, (0, pad_len), value=0)
+        # attention_mask = F.pad(
+        #     attention_mask.to(torch.float16),
+        #     (0, pad_len, 0, pad_len),
+        #     value=torch.finfo(torch.float16).min,
+        # )
 
-        args = (hidden_states, position_ids, attention_mask, past_key_value)
-        self.prefill_input_queue.put(args)
-        hidden_states, past_key_value = self.prefill_result_queue.get()
-        past_key_value.shrink(seq_len, self.transpose_value_cache)
-        hidden_states = hidden_states[:, :seq_len, :]
-        return hidden_states, past_key_value
+        # args = (hidden_states, position_ids, attention_mask, past_key_value)
+        # self.prefill_input_queue.put(args)
+        # hidden_states, past_key_value = self.prefill_result_queue.get()
+        # past_key_value.shrink(seq_len, self.transpose_value_cache)
+        # hidden_states = hidden_states[:, :seq_len, :]
+        # return hidden_states, past_key_value
+        self.prefill_input_queue.put((hidden_states, position_ids, attention_mask, past_key_value))
+        return self.prefill_result_queue.get()
 
     def shutdown(self):
         self.prefill_input_queue.put("stop")
@@ -1108,7 +1109,7 @@ def qwen2_casullm_forward(
     hidden_states = outputs[0]
     # ipex-llm change start
     hidden_states = reshape_lm_head_input(hidden_states)
-    # ipex-llm change end
+    
     if self.config.hidden_size == 3584 and self.config.vocab_size == 152064:
         # for Qwen2-7B-Insturct
         if hidden_states.size(0) * hidden_states.size(1) == 1:
@@ -1134,7 +1135,7 @@ def qwen2_casullm_forward(
                     logits += logits_slice
     else:
         logits = self.lm_head(hidden_states)
-    print
+    # ipex-llm change end
     logits = logits.float()
 
     loss = None

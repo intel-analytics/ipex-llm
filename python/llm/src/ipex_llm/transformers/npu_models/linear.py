@@ -314,24 +314,24 @@ class LMHeadLinear(NNFactory):
 
         input = self.parameter((self.batch, self.inC))
 
-        split_size = 512
-        input_0 = self.slice(input, begin = [0, 0], end = [self.batch, split_size])
-        input_1 = self.slice(input, begin = [0, split_size], end = [self.batch, 2 * split_size])
-        input_2 = self.slice(input, begin = [0, 2 * split_size], end = [self.batch, 3 * split_size])
-        input_3 = self.slice(input, begin = [0, 3 * split_size], end = [self.batch, 4 * split_size])
-        input_4 = self.slice(input, begin = [0, 4 * split_size], end = [self.batch, 5 * split_size])
-        input_5 = self.slice(input, begin = [0, 5 * split_size], end = [self.batch, 6 * split_size])
-        input_6 = self.slice(input, begin = [0, 6 * split_size], end = [self.batch, self.inC])
+        split_num = 7
+        split_size = self.inC // split_num // 2 * 2
 
-        linear_0 = self.linear(input_0, outC, split_size, bias=False, wt_dtype=dtype)
-        linear_1 = self.linear(input_1, outC, split_size, bias=False, wt_dtype=dtype)
-        linear_2 = self.linear(input_2, outC, split_size, bias=False, wt_dtype=dtype)
-        linear_3 = self.linear(input_3, outC, split_size, bias=False, wt_dtype=dtype)
-        linear_4 = self.linear(input_4, outC, split_size, bias=False, wt_dtype=dtype)
-        linear_5 = self.linear(input_5, outC, split_size, bias=False, wt_dtype=dtype)
-        linear_6 = self.linear(input_6, outC, split_size, bias=False, wt_dtype=dtype)
+        for i in range(7):
+            start_idx = i * split_size
+            if i == split_num - 1:
+                end_idx = self.inC
+            else:
+                end_idx = (i + 1) * split_size
 
-        _ = linear_0 + linear_1 + linear_2 + linear_3 + linear_4 + linear_5 + linear_6
+            input_slice = self.slice(input, begin = [0, start_idx], \
+                                     end = [self.batch, end_idx])
+            linear_slice = self.linear(input_slice, outC, split_size, bias=False, wt_dtype=dtype)
+
+            if i == 0:
+                res = linear_slice
+            else:
+                res += linear_slice
 
         print("start compile lm_head .")
         self.compile()
@@ -360,22 +360,6 @@ class LMHeadLinear(NNFactory):
         if len(self.out) == 1:
             return self.out[0]
         return self.out
-    
-    # def set_weights(self, op_id, weights):
-    #     from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
-    #     from filelock import FileLock
-    #     self.set_weights_async(op_id, weights)
-    #     with FileLock(f"decoder_run.lock"):
-    #         backend_lib.run(self._mm)
-
-    # def set_weights_async(self, op_id, weights):
-    #     offset = len(self.input_ops) + len(self.cache_parameter_ops)
-    #     invalidInputError(len(weights) == len(self.linear_ops),
-    #                       (f"weights size does not match graph, "
-    #                        f"with weights size: {len(weights)} and "
-    #                        f" graph linear size: {len(self.linear_ops)}"))
-    #     self.setWeights(offset, op_id, *weights)
-
 
 
 class QuantizedLinear(torch.nn.Module):
@@ -417,15 +401,6 @@ class QuantizedLinear(torch.nn.Module):
         self.bias = bias
         self.op_id = str(uuid.uuid4())
 
-        # if self.outC == 152064:
-        #     np_dtype = np.uint8 if self.weight.dtype == torch.uint8 else np.int8
-        #     self.lm_head = LMHeadLinear(self.inC, self.outC, 1,
-        #                                 self.op_id, False, "NPU", dtype=np_dtype)
-        #     print("debug dtype: ", self.weight.data.numpy().dtype)
-        #     self.lm_head.setWeights(1, self.op_id,
-        #                             (self.weight.data.numpy(), self.scale.data.numpy()),
-        #                             verify_size=False)
-        #     print("finish set weights")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Torch module forward method.
@@ -464,7 +439,10 @@ class QuantizedLinear(torch.nn.Module):
         if x_2d.shape[0] > 1:
             out = run_matmul(x_2d, self.inC, self.outC, self.weight.data, self.scale.data, self.op_id)
         else:
-            out = self.fused_lm_head.run(x_2d.numpy())
+            if hasattr(self, 'fused_lm_head'):
+                out = self.fused_lm_head.run(x_2d.numpy())
+            else:
+                out = self.run(x_2d.numpy())
             out = torch.from_numpy(out)
 
         out = out.view(target_shape)

@@ -92,7 +92,6 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
 
         # for Qwen2-7B-Insturct, divide lm_head into 7 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064:
-            print('------------lm head split------------')
             split_num = 7
             split_size = model.lm_head.weight.size(1) // split_num // 2 * 2
  
@@ -111,9 +110,6 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
                 new_linear.out_features = new_weight.size(0)
  
                 setattr(model, f'lm_head_{i}', new_linear)
-                print(f"weight size {i}: ({new_weight.size(0)}, {new_weight.size(1)})")
-   
-            print('------------lm head split finish------------')
  
             del model.lm_head
 
@@ -218,7 +214,6 @@ def optimize_llm(
             np_dtype = np.uint8 if model.lm_head_0.weight.dtype == torch.uint8 else np.int8
             model.lm_head_0.fused_lm_head = LMHeadLinear(model.config.hidden_size, model.lm_head_0.outC, 1,
                                                model.lm_head_0.op_id, False, "NPU", dtype=np_dtype)
-            print("debug dtype: ", model.lm_head_0.weight.data.numpy().dtype)
             weights = [
                 (model.lm_head_0.weight, model.lm_head_0.scale),
                 (model.lm_head_1.weight, model.lm_head_1.scale),
