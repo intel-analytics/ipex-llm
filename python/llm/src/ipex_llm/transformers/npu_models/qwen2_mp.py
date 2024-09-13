@@ -45,6 +45,28 @@ from torch.nn import CrossEntropyLoss
 from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP
 
 
+def split_linear(module, module_name, n_splits=2):
+    weight_split = torch.tensor_split(module.weight, n_splits, dim=1)
+    linear_list = torch.nn.ModuleList()
+    for idx, weight in enumerate(weight_split):
+        new_linear = torch.nn.Linear(weight.size(1),
+                                     weight.size(0),
+                                     bias=module.bias)
+        new_linear.weight = torch.nn.Parameter(weight.contiguous(), requires_grad=False)
+        linear_list.add_module(f"{module_name}_dq_{idx}", new_linear)
+    return linear_list
+
+
+def split_mlp(module: torch.nn.Module, n_splits=2):
+    if isinstance(module, Qwen2MLP):
+        module.down_proj_dq_list = split_linear(module.down_proj, "down_proj", n_splits=n_splits)
+        del module.down_proj
+        module.up_proj_dq_list = split_linear(module.up_proj, "up_proj", n_splits=n_splits)
+        del module.up_proj
+        module.gate_proj_dq_list = split_linear(module.gate_proj, "gate_proj", n_splits=n_splits)
+        del module.gate_proj
+
+
 def split_mlp_down_proj(module: torch.nn.Module):
     if isinstance(module, Qwen2MLP) and module.down_proj.in_features == 18944:
         new_linear_0 = torch.nn.Linear(0, 0, bias=False)
@@ -94,6 +116,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         device: str = "NPU",
         rms_norm_eps,
         intermediate_size,
+        n_splits: int = 1,
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
@@ -110,6 +133,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         self.rms_norm_eps = rms_norm_eps
         self.transpose_value = transpose_value
         self.num_layers = num_layers
+        self.n_splits = n_splits
 
         cos = self.constant(self.cached_cos)
         self.cos = self.unsqueeze(cos, axis=0)
@@ -221,17 +245,41 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
-        print("start compiling")
+        print(f"{mode} start compiling - {num_layers}")
         self.compile()
-        print("end compiling")
+        print(f"{mode} end compiling - {num_layers}")
+        xml_path = "qwen15-npu-dq2-" + mode + "-" + str(num_layers) + "-" + str(transpose_value) + ".xml"
+
+        if not os.path.exists(xml_path):
+            self.save(xml_path)
+
 
     def mlp(self, hidden_states, seq_len):
-        mm1 = self.linear(
-            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-        )
-        mm2 = self.linear(
-            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-        )  # type: ignore[attr-defined]
+        mm1_to_concat = []
+        mm2_to_concat = []
+        gate_up_groupsize = self.hidden_size // self.n_splits
+        down_groupsize = self.intermediate_size // self.n_splits
+        for i in range(self.n_splits):
+            sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
+                                           end=[1, seq_len, (i + 1) * gate_up_groupsize])
+            mm1_to_concat.append(
+                self.linear(
+                    sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                )
+            )
+            mm2_to_concat.append(
+                self.linear(
+                    sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                )
+            )
+        mm1 = sum(mm1_to_concat)
+        mm2 = sum(mm2_to_concat)
+        # mm1 = self.linear(
+        #     hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        # )
+        # mm2 = self.linear(
+        #     hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+        # )  # type: ignore[attr-defined]
         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
         if self.intermediate_size == 18944:
             # for qwen2-7b
@@ -243,9 +291,19 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
                                           bias=False, wt_dtype=self.dtype)
             hidden_states = hidden_states_0 + hidden_states_1
         else:
-            hidden_states = self.linear(
-                mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
-            )
+            hidden_states_to_concat = []
+            for i in range(self.n_splits):
+                sub_mm1 = self.slice(mm1, begin=[0, 0, i * down_groupsize],
+                                     end=[1, seq_len, (i + 1) * down_groupsize])
+                hidden_states_to_concat.append(
+                    self.linear(
+                        sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype
+                    )
+                )
+            hidden_states = sum(hidden_states_to_concat)
+            # hidden_states = self.linear(
+            #     mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+            # )
         return hidden_states
 
     def build_decoder(
@@ -314,6 +372,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         max_seq_len: int = 1024,
         transpose_value: bool = False,
         do_print: bool = False,
+        n_splits: int = 1
     ):
         super().__init__()
 
@@ -368,6 +427,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
                 mode="decode",
                 transpose_value=self.transpose_value,
                 dtype=np_dtype,
+                n_splits=n_splits
             )
             self.backend_decoders.append(decoder)
 
@@ -446,6 +506,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         intermediate_size,
         max_seq_len: int = 128,
         transpose_value: bool = False,
+        n_splits: int = 1,
     ):
         super().__init__()
         self.op_parameters = parameters
@@ -474,6 +535,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
             mode="prefill",
             transpose_value=self.transpose_value,
             dtype=np_dtype,
+            n_splits=n_splits,
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
@@ -557,6 +619,7 @@ def run_decode(
     k_biases = []
     v_biases = []
     layer_indexs = range(layer_start, layer_end)
+    n_splits = len(model.model.layers[0].mlp.gate_proj_dq_list)
     for layer_idx in layer_indexs:
         curr_layer = model.model.layers[layer_idx]
         attn_layer = curr_layer.self_attn
@@ -569,10 +632,17 @@ def run_decode(
                 (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
                 (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
                 (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+                # (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                # (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                # (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
             ]
+            
+            for l in mlp_layer.gate_proj_dq_list:
+                weights.append((l.weight, l.scale))
+            for l in mlp_layer.up_proj_dq_list:
+                weights.append((l.weight, l.scale))
+            for l in mlp_layer.down_proj_dq_list:
+                weights.append((l.weight, l.scale))
         elif model.config.intermediate_size == 18944:
             # for qwen2-7b
             weights = [
@@ -617,6 +687,7 @@ def run_decode(
         max_seq_len=max_seq_len,
         transpose_value=transpose_value_cache,
         do_print=False,
+        n_splits=n_splits,
     )
 
     dist.barrier()
@@ -788,6 +859,7 @@ def run_prefill(
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
     layer_indexs = range(layer_start, layer_end)
+    n_splits = len(model.model.layers[0].mlp.gate_proj_dq_list)
     for layer_idx in layer_indexs:
         curr_layer = model.model.layers[layer_idx]
         attn_layer = curr_layer.self_attn
@@ -800,10 +872,16 @@ def run_prefill(
                 (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
                 (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
                 (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+                # (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                # (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                # (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
             ]
+            for l in mlp_layer.gate_proj_dq_list:
+                weights.append((l.weight, l.scale))
+            for l in mlp_layer.up_proj_dq_list:
+                weights.append((l.weight, l.scale))
+            for l in mlp_layer.down_proj_dq_list:
+                weights.append((l.weight, l.scale))
         elif model.config.intermediate_size == 18944:
             # for qwen2-7b
             weights = [
@@ -839,6 +917,7 @@ def run_prefill(
             intermediate_size=intermediate_size,
             max_seq_len=max_output_len,
             transpose_value=transpose_value_cache,
+            n_splits=n_splits
         )
 
         layer_weights.extend(weights)

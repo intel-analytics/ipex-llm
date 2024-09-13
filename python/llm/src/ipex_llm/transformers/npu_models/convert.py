@@ -64,6 +64,8 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert):
                (layer.in_features == 18944 and layer.out_features == 3584):
                 qtype = "sym_int8_rtn"
                 iqtype = ggml_tensor_qtype[qtype]
+        if layer.in_features == 4480 or layer.in_features == 768:
+            print(layer)
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device)
         return QuantizedLinear(qweights, scale, layer.bias)
