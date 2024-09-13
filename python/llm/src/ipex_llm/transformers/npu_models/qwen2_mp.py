@@ -248,7 +248,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         print(f"{mode} start compiling - {num_layers}")
         self.compile()
         print(f"{mode} end compiling - {num_layers}")
-        xml_path = "qwen15-npu-dq2-" + mode + "-" + str(num_layers) + "-" + str(transpose_value) + ".xml"
+        xml_path = f"qwen15-npu-dq2-{mode}-{num_layers}-{transpose_value}-{n_splits}.xml"
 
         if not os.path.exists(xml_path):
             self.save(xml_path)
@@ -267,6 +267,9 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
                     sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
                 )
             )
+        for i in range(self.n_splits):
+            sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
+                                           end=[1, seq_len, (i + 1) * gate_up_groupsize])
             mm2_to_concat.append(
                 self.linear(
                     sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype

@@ -87,7 +87,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
         from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_down_proj, split_mlp
         from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_forward
         # model.apply(split_mlp_down_proj)
-        model.apply(lambda m: split_mlp(m, n_splits=2))
+        model.apply(lambda m: split_mlp(m, n_splits=1))
 
     # lm_head to cpu optimization
     if cpu_lm_head:
