@@ -102,6 +102,12 @@ def get_load_function(low_bit):
                 modules = ["35.mlp", "36.mlp", "37.mlp", "38.mlp", "39.mlp"]
             else:
                 modules = None
+            if "minicpm" in self.model_config.model.lower():
+                modules = ["vpm", "resampler"]
+            # only for minicpm_2_6
+            if "minicpm-v" in self.model_config.model.lower():
+                from ipex_llm.transformers.models.minicpmv import merge_qkv
+                self.model.vpm.apply(merge_qkv)
             optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype,
                            modules_to_not_convert=modules)
             self.model = self.model.to(device=self.device_config.device,
