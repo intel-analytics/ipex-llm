@@ -376,6 +376,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             curr_linear_ops = len(self.backend_decoders[i].linear_ops)
             curr_parameters = self.op_parameters[offset:offset + curr_linear_ops]
+            # print(f'curr_parameters {i} len!!!: {len(curr_parameters)}')
             self.backend_decoders[i].set_weights(self.op_id, curr_parameters)
             offset = offset + curr_linear_ops
 
@@ -1108,7 +1109,32 @@ def qwen2_casullm_forward(
     # ipex-llm change start
     hidden_states = reshape_lm_head_input(hidden_states)
     # ipex-llm change end
-    logits = self.lm_head(hidden_states)
+    if self.config.hidden_size == 3584 and self.config.vocab_size == 152064:
+        # for Qwen2-7B-Insturct
+        if hidden_states.size(0) * hidden_states.size(1) == 1:
+            logits = self.lm_head_0(hidden_states)
+        else:
+            split_num = 7
+            split_size = hidden_states.size(-1) // split_num // 2 * 2
+    
+            logits = None
+            for i in range(split_num):
+                start_idx = i * split_size
+                if i == split_num - 1:
+                    end_idx = hidden_states.size(-1)
+                else:
+                    end_idx = (i + 1) * split_size
+    
+                hidden_states_slice = hidden_states[:, :, start_idx:end_idx]
+                logits_slice = getattr(self, f'lm_head_{i}')(hidden_states_slice)
+    
+                if logits is None:
+                    logits = logits_slice
+                else:
+                    logits += logits_slice
+    else:
+        logits = self.lm_head(hidden_states)
+    print
     logits = logits.float()
 
     loss = None

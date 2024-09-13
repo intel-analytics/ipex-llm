@@ -313,7 +313,26 @@ class LMHeadLinear(NNFactory):
         self.batch = batch
 
         input = self.parameter((self.batch, self.inC))
-        _ = self.linear(input, outC, inC, bias=False, wt_dtype=dtype)
+
+        split_size = 512
+        input_0 = self.slice(input, begin = [0, 0], end = [self.batch, split_size])
+        input_1 = self.slice(input, begin = [0, split_size], end = [self.batch, 2 * split_size])
+        input_2 = self.slice(input, begin = [0, 2 * split_size], end = [self.batch, 3 * split_size])
+        input_3 = self.slice(input, begin = [0, 3 * split_size], end = [self.batch, 4 * split_size])
+        input_4 = self.slice(input, begin = [0, 4 * split_size], end = [self.batch, 5 * split_size])
+        input_5 = self.slice(input, begin = [0, 5 * split_size], end = [self.batch, 6 * split_size])
+        input_6 = self.slice(input, begin = [0, 6 * split_size], end = [self.batch, self.inC])
+
+        linear_0 = self.linear(input_0, outC, split_size, bias=False, wt_dtype=dtype)
+        linear_1 = self.linear(input_1, outC, split_size, bias=False, wt_dtype=dtype)
+        linear_2 = self.linear(input_2, outC, split_size, bias=False, wt_dtype=dtype)
+        linear_3 = self.linear(input_3, outC, split_size, bias=False, wt_dtype=dtype)
+        linear_4 = self.linear(input_4, outC, split_size, bias=False, wt_dtype=dtype)
+        linear_5 = self.linear(input_5, outC, split_size, bias=False, wt_dtype=dtype)
+        linear_6 = self.linear(input_6, outC, split_size, bias=False, wt_dtype=dtype)
+
+        _ = linear_0 + linear_1 + linear_2 + linear_3 + linear_4 + linear_5 + linear_6
+
         print("start compile lm_head .")
         self.compile()
         print("end compile lm_head.")
@@ -335,11 +354,28 @@ class LMHeadLinear(NNFactory):
         """
         from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
         self.prefetchWeights(1, verify_size=False)
+
         self.set_input_tensor(X, 0)
         self.elapsed = backend_lib.run(self._mm)
         if len(self.out) == 1:
             return self.out[0]
         return self.out
+    
+    # def set_weights(self, op_id, weights):
+    #     from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
+    #     from filelock import FileLock
+    #     self.set_weights_async(op_id, weights)
+    #     with FileLock(f"decoder_run.lock"):
+    #         backend_lib.run(self._mm)
+
+    # def set_weights_async(self, op_id, weights):
+    #     offset = len(self.input_ops) + len(self.cache_parameter_ops)
+    #     invalidInputError(len(weights) == len(self.linear_ops),
+    #                       (f"weights size does not match graph, "
+    #                        f"with weights size: {len(weights)} and "
+    #                        f" graph linear size: {len(self.linear_ops)}"))
+    #     self.setWeights(offset, op_id, *weights)
+
 
 
 class QuantizedLinear(torch.nn.Module):
@@ -428,7 +464,7 @@ class QuantizedLinear(torch.nn.Module):
         if x_2d.shape[0] > 1:
             out = run_matmul(x_2d, self.inC, self.outC, self.weight.data, self.scale.data, self.op_id)
         else:
-            out = self.lm_head.run(x_2d.numpy())
+            out = self.fused_lm_head.run(x_2d.numpy())
             out = torch.from_numpy(out)
 
         out = out.view(target_shape)
