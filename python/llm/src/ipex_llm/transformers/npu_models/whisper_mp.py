@@ -592,7 +592,8 @@ class PrefillRunner:
         self.shutdown()
 
 
-from transformers.modeling_outputs import BaseModelOutput
+from transformers.modeling_outputs import BaseModelOutput, BaseModelOutputWithPastAndCrossAttentions
+from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask, _prepare_4d_causal_attention_mask_for_sdpa
 def gen_whisper_encoder_forward(prefill_runner):
 
     def whisper_fused_encoder_forward(
@@ -651,3 +652,291 @@ def gen_whisper_encoder_forward(prefill_runner):
         )
         
     return whisper_fused_encoder_forward
+
+
+def run_decode(
+    model,
+    rank,
+    world_size,
+    port,
+    layer_start,
+    layer_end,
+    intra_stages,
+    max_seq_len,
+    transpose_value_cache,
+    input_queue,
+    result_queue,
+):
+
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = port
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world_size)
+
+    print("start init process group, rank: ", rank, "world_size: ", world_size)
+
+    dist.init_process_group()
+    my_rank = dist.get_rank()
+    my_size = dist.get_world_size()
+    logger.info(f"rank: {my_rank}, size: {my_size}")
+
+    #### directly use quantizedlinear
+    dist.barrier()
+
+    past_key_value = None
+
+    control = torch.empty((), dtype=torch.int)
+    with torch.inference_mode():
+        while True:
+
+            dist.broadcast(control, src=0)
+            if control.item() == -2:
+                break
+            elif control.item() == -1:
+                attention_mask, encoder_hidden_states, past_key_value = input_queue.get()
+            else:
+                # hidden_states = torch.empty((1, control.item(), model.config.d_model), dtype=torch.float16)
+                hidden_states = torch.empty((1, control.item(), model.config.d_model), dtype=torch.float32)
+                dist.recv(hidden_states, src=rank - 1)
+                for idx in range(layer_start, layer_end):
+                    decoder_layer = model.model.decoder.layers[idx]
+                    layer_outputs = decoder_layer(
+                        hidden_states,
+                        attention_mask=attention_mask,
+                        encoder_hidden_states=encoder_hidden_states,
+                        layer_head_mask=None,
+                        cross_attn_layer_head_mask=None,
+                        past_key_value=past_key_value,
+                        output_attentions=False,
+                        use_cache=True,
+                    )
+                    hidden_states = layer_outputs[0]
+                    past_key_value = layer_outputs[1]
+                    print(f'test past kv is None: {past_key_value is None}')
+                dist.send(hidden_states, dst=(rank + 1) % world_size)
+
+
+class DecodeRunner:
+    def __init__(self, model, max_seq_len, intra_pp=2, inter_pp=2, transpose_value_cache=True):
+        self.model = model
+        self.max_seq_len = max_seq_len
+        self.transpose_value_cache = transpose_value_cache
+        world_size = inter_pp + 1
+        intra_stages = intra_pp
+        num_layers = self.model.model.config.decoder_layers
+
+        port = "54791"
+        os.environ["MASTER_ADDR"] = "127.0.0.1"
+        os.environ["MASTER_PORT"] = port
+        os.environ["RANK"] = "0"
+        os.environ["WORLD_SIZE"] = str(world_size)
+
+        self.input_queues = []
+        self.output_queues = []
+        self.decoder_processes = []
+
+        for rank in range(1, world_size):
+            input_q = mp.Queue()
+            output_q = mp.Queue()
+            start_layer = (rank - 1) * (num_layers // (world_size - 1))
+            end_layer = (rank) * (num_layers // (world_size - 1))
+            if rank == world_size - 1:
+                end_layer = num_layers
+            p = mp.Process(
+                target=run_decode,
+                args=(
+                    self.model,
+                    rank,
+                    world_size,
+                    port,
+                    start_layer,
+                    end_layer,
+                    intra_stages,
+                    self.max_seq_len,
+                    self.transpose_value_cache,
+                    input_q,
+                    output_q,
+                ),
+            )
+            p.daemon = True
+            p.start()
+            self.input_queues.append(input_q)
+            self.output_queues.append(output_q)
+            self.decoder_processes.append(p)
+
+        dist.init_process_group()
+        my_rank = dist.get_rank()
+        self.world_size = dist.get_world_size()
+        logger.info(f"rank: {my_rank}, size: {self.world_size}")
+
+        dist.barrier()
+        self.cache_past_key_value = None
+
+    def forward(
+        self,
+        hidden_states,
+        attention_mask,
+        encoder_hidden_states,
+        layer_head_mask,
+        cross_attn_layer_head_mask,
+        past_key_value,
+        output_attentions,
+        use_cache,
+        **kwargs,
+    ):
+        if self.cache_past_key_value != past_key_value:
+            control = torch.tensor(-1, dtype=torch.int)
+            dist.broadcast(control, src=0)
+            for i in range(len(self.decoder_processes)):
+                self.input_queues[i].put((attention_mask, encoder_hidden_states, past_key_value))
+
+        control = torch.tensor(hidden_states.shape[1], dtype=torch.int)
+        dist.broadcast(control, src=0)
+        # hidden_states = hidden_states.to(torch.float16)
+        hidden_states = hidden_states.to(torch.float32)
+        dist.send(hidden_states, dst=1)
+        past_key_value.expand(self.transpose_value_cache)
+        dist.recv(hidden_states, src=self.world_size - 1)
+        return hidden_states, past_key_value
+
+    def shutdown(self):
+        control = torch.tensor(-2, dtype=torch.int)
+        dist.broadcast(control, src=0)
+        for p in self.decoder_processes:
+            p.join(3)
+        for p in self.decoder_processes:
+            if p.exitcode is None:
+                p.kill()
+
+    def __del__(self):
+        self.shutdown()
+
+
+def gen_whisper_decoder_forward(decode_runner):
+
+    def whisper_fused_decoder_forward(
+        self,
+        input_ids=None,
+        attention_mask=None,
+        encoder_hidden_states=None,
+        head_mask=None,
+        cross_attn_head_mask=None,
+        past_key_values=None,
+        inputs_embeds=None,
+        position_ids=None,
+        use_cache=None,
+        output_attentions=None,
+        output_hidden_states=None,
+        return_dict=None,
+    ):
+        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+        output_hidden_states = (
+            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+        )
+        use_cache = use_cache if use_cache is not None else self.config.use_cache
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+        # retrieve input_ids and inputs_embeds
+        if input_ids is not None and inputs_embeds is not None:
+            raise ValueError("You cannot specify both decoder_input_ids and decoder_inputs_embeds at the same time")
+        elif input_ids is not None:
+            input_shape = input_ids.size()
+            input_ids = input_ids.view(-1, input_shape[-1])
+        elif inputs_embeds is not None:
+            input_shape = inputs_embeds.size()[:-1]
+        else:
+            raise ValueError("You have to specify either decoder_input_ids or decoder_inputs_embeds")
+
+        # past_key_values_length
+        # past_key_values_length = past_key_values[0][0].shape[2] if past_key_values is not None else 0
+        from ipex_llm.transformers.npu_models.kv import DynamicFusedNormalCache
+        if use_cache and not isinstance(past_key_values, DynamicFusedNormalCache):
+            past_key_values = DynamicFusedNormalCache.from_legacy_cache(past_key_values)
+        past_key_values_length = past_key_values.get_seq_length()
+
+        if inputs_embeds is None:
+            inputs_embeds = self.embed_tokens(input_ids)
+
+        if self._use_flash_attention_2:
+            # 2d mask is passed through the layers
+            attention_mask = attention_mask if (attention_mask is not None and 0 in attention_mask) else None
+        elif self._use_sdpa and head_mask is None and not output_attentions:
+            # output_attentions=True & head_mask can not be supported when using SDPA.
+            attention_mask = _prepare_4d_causal_attention_mask_for_sdpa(
+                attention_mask, input_shape, inputs_embeds, past_key_values_length
+            )
+        else:
+            # 4d mask is passed through the layers
+            attention_mask = _prepare_4d_causal_attention_mask(
+                attention_mask, input_shape, inputs_embeds, past_key_values_length
+            )
+
+        # embed positions
+        if input_ids is not None:
+            positions = self.embed_positions(
+                input_ids, past_key_values_length=past_key_values_length, position_ids=position_ids
+            )
+        else:
+            positions = self.embed_positions(
+                inputs_embeds, past_key_values_length=past_key_values_length, position_ids=position_ids
+            )
+
+        hidden_states = inputs_embeds + positions
+        hidden_states = torch.nn.functional.dropout(hidden_states, p=self.dropout, training=self.training)
+
+        if self.gradient_checkpointing and self.training:
+            if use_cache:
+                logger.warning_once(
+                    "`use_cache = True` is incompatible with gradient checkpointing. Setting `use_cache = False`..."
+                )
+                use_cache = False
+        # decoder layers
+        all_hidden_states = () if output_hidden_states else None
+        all_self_attns = () if output_attentions else None
+        all_cross_attentions = () if (output_attentions and encoder_hidden_states is not None) else None
+        next_decoder_cache = () if use_cache else None
+
+        # check if head_mask/cross_attn_head_mask has a correct number of layers specified if desired
+        for attn_mask, mask_name in zip([head_mask, cross_attn_head_mask], ["head_mask", "cross_attn_head_mask"]):
+            if attn_mask is not None:
+                assert attn_mask.size()[0] == (len(self.layers)), (
+                    f"The `{mask_name}` should be specified for {len(self.layers)} layers, but it is for"
+                    f" {head_mask.size()[0]}."
+                )
+
+        layer_outputs = decode_runner.forward(
+            hidden_states,
+            attention_mask=attention_mask,
+            encoder_hidden_states=encoder_hidden_states,
+            layer_head_mask=head_mask,
+            cross_attn_layer_head_mask=cross_attn_head_mask,
+            past_key_value=past_key_values,
+            output_attentions=output_attentions,
+            use_cache=use_cache,
+        )
+        hidden_states = layer_outputs[0]
+
+        next_decoder_cache += (layer_outputs[1],)
+
+        hidden_states = hidden_states.to(torch.float32)
+        hidden_states = self.layer_norm(hidden_states)
+        # add hidden states from the last decoder layer
+        if output_hidden_states:
+            all_hidden_states += (hidden_states,)
+
+        next_cache = next_decoder_cache if use_cache else None
+        if not return_dict:
+            return tuple(
+                v
+                for v in [hidden_states, next_cache, all_hidden_states, all_self_attns, all_cross_attentions]
+                if v is not None
+            )
+        return BaseModelOutputWithPastAndCrossAttentions(
+            last_hidden_state=hidden_states,
+            past_key_values=next_cache,
+            hidden_states=all_hidden_states,
+            attentions=all_self_attns,
+            cross_attentions=all_cross_attentions,
+        )
+
+    return whisper_fused_decoder_forward
