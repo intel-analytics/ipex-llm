@@ -207,7 +207,6 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "lightweight_bmm")
         ignore_argument(kwargs, "cpu_embedding")
         ignore_argument(kwargs, "embedding_qtype")
-        ignore_argument(kwargs, "modules_to_not_convert")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
         optimize_model = kwargs.pop("optimize_model", False)

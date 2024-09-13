@@ -29,6 +29,11 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="microsoft/Phi-3-vision-128k-instruct",
                         help='The huggingface repo id for the phi-3-vision model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
+    parser.add_argument("--lowbit-path", type=str,
+        default="",
+        help='The path to the lowbit model folder, leave blank if you do not want to save. \
+            If path not exists, lowbit model will be saved there. \
+            Else, lowbit model will be loaded.')
     parser.add_argument('--image-url-or-path', type=str,
                         default="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg",
                         help='The URL or path to the image to infer')
@@ -49,12 +54,27 @@ if __name__ == '__main__':
     # You could also try `'sym_int8'` for INT8
     # `_attn_implementation="eager"` is required for phi-3-vision
     # `modules_to_not_convert=["vision_embed_tokens"]` and `model = model.half()` are for acceleration and are optional
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 trust_remote_code=True,
-                                                 load_in_low_bit=args.load_in_low_bit,
-                                                 _attn_implementation="eager",
-                                                 modules_to_not_convert=["vision_embed_tokens"])
-    
+
+    if not args.lowbit_path or not os.path.exists(args.lowbit_path):
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            trust_remote_code=True,
+            load_in_low_bit=args.load_in_low_bit,
+            _attn_implementation="eager",
+            modules_to_not_convert=["vision_embed_tokens"]
+        )
+    else:
+        model = AutoModelForCausalLM.load_low_bit(
+            args.lowbit_path,
+            trust_remote_code=True,
+            bigdl_transformers_low_bit=args.load_in_low_bit,
+            attn_implementation="eager",
+            modules_to_not_convert=["vision_embed_tokens"]
+        )
+
+    if args.lowbit_path and not os.path.exists(args.lowbit_path):
+        model.save_low_bit(args.lowbit_path)
+
     # Load processor
     processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
     
