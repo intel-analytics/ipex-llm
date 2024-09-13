@@ -20,6 +20,8 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 > [!NOTE]
 > Starting from `ipex-llm[cpp]==2.2.0b20240912`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.0.0` to `2024.2.1` .
+> 
+> For this update, it's necessary to create a new conda environment to install the latest version on Windows. If you directly upgrade to `ipex-llm[cpp]>=2.2.0b20240912` in the previous cpp conda environment, you may encounter the error `Can't find syml7. dll`.
 
 ## Table of Contents
 - [Install IPEX-LLM for Ollama](./ollama_quickstart.md#1-install-ipex-llm-for-ollama)
@@ -215,3 +217,6 @@ But in the server log of ipex-llm version of Ollama, you should only see `source
 
 #### 6. Ollama hang when multiple different questions is asked or context is long
 If you find ollama hang when multiple different questions is asked or context is long, and you see `update_slots : failed to free spaces in the KV cache` in the server log, this could be because that sometimes the LLM context is larger than the default `n_ctx` value, you may increase the `n_ctx` and try it again.
+
+#### 7. `signal: bus error (core dumped)` error
+If you meet this error, please check your Linux kernel version first. You may encounter this issue on higher kernel versions (like kernel 6.15). You can also refer to [this issue](https://github.com/intel-analytics/ipex-llm/issues/10955) to see if it helps.
