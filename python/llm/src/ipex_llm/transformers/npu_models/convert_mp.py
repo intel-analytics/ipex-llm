@@ -250,3 +250,25 @@ def optimize_llm(
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model, module.BaichuanModel, baichuan_model_forward)
+
+def optimize_funasr(
+    model: torch.nn.Module,
+    max_output_len=1024,
+    max_prompt_len=1024,
+    inter_pp=None,
+    intra_pp=None,
+    transpose_value_cache=True,
+):
+    from ipex_llm.transformers.npu_models.biciparaformer_mp import gen_funasr_fused_encoder_forward
+    from ipex_llm.transformers.npu_models.biciparaformer_mp import PrefillRunner
+    prefill_runner = PrefillRunner(
+        model,
+        max_output_len=max_output_len,
+        max_prompt_len=max_prompt_len,
+        transpose_value_cache=transpose_value_cache,
+    )
+    encoder_forward = gen_funasr_fused_encoder_forward(
+        prefill_runner=prefill_runner
+    )
+    from funasr.models.sanm.encoder import SANMEncoder
+    convert_forward(model.model, SANMEncoder, encoder_forward)
