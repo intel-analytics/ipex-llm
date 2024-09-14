@@ -22,7 +22,7 @@ from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
 
 
 class LMHeadLinear(NNFactory):
-    """Quantized Linear class, computing a matrix matrix multiplication with weights prefetching."""
+    """Quantized Linear class for sliced lm_head, computing a matrix matrix multiplication with weights prefetching."""
 
     def __init__(
         self,
@@ -34,12 +34,13 @@ class LMHeadLinear(NNFactory):
         device: str = "NPU",
         dtype: np.dtype = np.int8,
     ):
-        """Initialize the QLinear class.
+        """Initialize the LMHeadLinear class.
 
         Args:
             inC (int): input channels
             outC (int): output channels
             batch (int): batch
+            split_num (int): split in_features of lm_head to how many parts
             profile (bool): Enable/Disable profiling. Defaults to False.
             device (str): Target device, default to "NPU".
             dtype (np.dtype): weights datatype. Defaults to np.int8.
@@ -111,7 +112,7 @@ class SlicedLMHead(nn.Module):
         self.bias = bias
 
     def forward(self, hidden_states):
-        if hidden_states.size(0) * hidden_states.size(1) == 1 and hasattr(self, "fused_lm_head"):
+        if hidden_states.size(0) * hidden_states.size(1) == 1:
             original_shape = hidden_states.shape
             x_2d = hidden_states.view(-1, hidden_states.shape[-1])
             target_shape = tuple(list(original_shape[:-1]) + [self.outC])

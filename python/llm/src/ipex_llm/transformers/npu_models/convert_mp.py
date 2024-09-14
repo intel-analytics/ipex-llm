@@ -194,7 +194,7 @@ def optimize_llm(
 
         # for Qwen2-7B-Insturct, divide lm_head into 7 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
-                hasattr(model.lm_head, "lm_heads"):
+                isinstance(model.lm_head, SlicedLMHead):
             model.lm_head.get_fused_lm_head()
     elif model.config.model_type == "minicpm":
         # for minicpm-1b
