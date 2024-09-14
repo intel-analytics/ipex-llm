@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This file is adapted from
-# https://github.com/insuhan/hyper-attn/blob/main/benchmark_patch_llm.py
-#
+
+# This code is for evaluating the results of LongBench.
 
 import os
 import json

@@ -1,8 +1,6 @@
 # LongBench Benchmark Test
 
-LongBench is the first benchmark for bilingual, multitask, and comprehensive assessment of long context understanding capabilities of large language models. This benchmark implementation is adapted from [THUDM/LongBench](https://github.com/THUDM/LongBench) and [experiments/LongBench](https://github.com/FasterDecoding/SnapKV/tree/main/experiments/LongBench)
-
-LongBench Benchmark allows users to test LongBench benchmark and record them in some json files. Users can provide models and related information in `config.yaml` and `config` directory.
+LongBench is the first benchmark for bilingual, multitask, and comprehensive assessment of long context understanding capabilities of large language models. This benchmark implementation is adapted from [THUDM/LongBench](https://github.com/THUDM/LongBench) and [SnapKV/experiments/LongBench](https://github.com/FasterDecoding/SnapKV/tree/main/experiments/LongBench).
 
 
 ## Environment Preparation
