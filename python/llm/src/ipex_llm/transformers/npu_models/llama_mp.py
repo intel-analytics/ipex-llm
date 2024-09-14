@@ -40,6 +40,7 @@ from transformers.modeling_outputs import BaseModelOutputWithPast
 from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
 from ipex_llm.transformers.npu_models.mp_models_base import BasePrefillRunner
+from ipex_llm.transformers.npu_models.mp_models_base import llama
 from ipex_llm.transformers.npu_models.common import reshape_lm_head_input
 from transformers.modeling_outputs import CausalLMOutputWithPast
 from torch.nn import CrossEntropyLoss
@@ -498,7 +499,7 @@ def run_decode(
         input_layer_norm_weights.append(layer_norm_0)
         post_attn_layernorm_weights.append(layer_norm_1)
 
-    multi_decoder = FusedLlamaLowBitMultiDecoderlayer(
+    multi_decoder = llama.FusedLlamaLowBitMultiDecoderlayer(
         parameters=layer_weights,
         input_laynorm_weights=input_layer_norm_weights,
         post_attn_layernorm_weights=post_attn_layernorm_weights,

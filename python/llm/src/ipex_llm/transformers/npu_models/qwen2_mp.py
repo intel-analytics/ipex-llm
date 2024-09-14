@@ -44,6 +44,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 from torch.nn import CrossEntropyLoss
 from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP
 from ipex_llm.transformers.npu_models.mp_models_base import BasePrefillRunner
+from ipex_llm.transformers.npu_models.mp_models_base import qwen
 
 
 def split_mlp_down_proj(module: torch.nn.Module):
@@ -599,7 +600,7 @@ def run_decode(
         k_biases.append(attn_layer.k_proj.bias.to(torch.float16))
         v_biases.append(attn_layer.v_proj.bias.to(torch.float16))
 
-    multi_decoder = FusedQwenLowBitMultiDecoderlayer(
+    multi_decoder = qwen.FusedQwenLowBitMultiDecoderlayer(
         parameters=layer_weights,
         input_laynorm_weights=input_layer_norm_weights,
         post_attn_layernorm_weights=post_attn_layernorm_weights,

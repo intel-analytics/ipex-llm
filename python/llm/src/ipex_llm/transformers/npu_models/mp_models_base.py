@@ -1282,7 +1282,8 @@ def run_prefill(
 ):
 
     model_type = model.config.model_type
-
+    print("MODEL TYPE: ", model_type)
+    
     layer_start = 0
     layer_end = len(model.model.layers)
     num_heads = model.model.layers[layer_start].self_attn.num_heads
@@ -1341,6 +1342,7 @@ def run_prefill(
         layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
         if model_type == "llama":
+            print("You are using llama")
             new_decoderlayer = llama.FusedLlamaLowBitDecoderlayer(
                 weights,
                 num_heads=num_heads,
@@ -1356,6 +1358,7 @@ def run_prefill(
                 transpose_value=transpose_value_cache,
             )
         elif model_type == "qwen2":
+            print("You are using qwen")
             new_decoderlayer = qwen.FusedQwenLowBitDecoderlayer(
                 weights,
                 num_heads=num_heads,
