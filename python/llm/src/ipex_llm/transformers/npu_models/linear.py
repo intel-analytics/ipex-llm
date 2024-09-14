@@ -15,8 +15,6 @@
 
 # This file is adapted from
 # https://github.com/intel/intel-npu-acceleration-library/blob/main/intel_npu_acceleration_library/nn/linear.py
-# https://github.com/intel/intel-npu-acceleration-library/blob/main/intel_npu_acceleration_library/backend/runtime.py
-# https://github.com/intel/intel-npu-acceleration-library/blob/main/intel_npu_acceleration_library/backend/qlinear.py
 
 #
 # Copyright © 2024 Intel Corporation
@@ -30,7 +28,7 @@ import torch
 from torch.nn import Parameter
 import uuid
 import math
-from intel_npu_acceleration_library.backend import NNFactory
+from intel_npu_acceleration_library.backend import NNFactory, run_matmul
 from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
 from typing import Optional, Dict, Deque, Union
 from functools import partial
@@ -131,163 +129,6 @@ class Linear(torch.nn.Module):
                               f"NPU do not support yet the requeste datatype: {dtype}")
 
 
-class QLinear(NNFactory):
-    """Quantized Linear class, computing a matrix matrix multiplication with weights prefetching."""
-
-    def __init__(
-        self,
-        inC: int,
-        outC: int,
-        batch: int,
-        profile: bool = False,
-        device: str = "NPU",
-        dtype: np.dtype = np.int8,
-    ):
-        """Initialize the QLinear class.
-
-        Args:
-            inC (int): input channels
-            outC (int): output channels
-            batch (int): batch
-            profile (bool): Enable/Disable profiling. Defaults to False.
-            device (str): Target device, default to "NPU".
-            dtype (np.dtype): weights datatype. Defaults to np.int8.
-
-        """
-        super().__init__(profile, device)
-        self.inC, self.outC = inC, outC
-        self.batch = batch
-
-        input = self.parameter((self.batch, self.inC))
-        _ = self.linear(input, outC, inC, bias=False, wt_dtype=dtype)
-        self.compile()
-
-    def run(
-        self, X: np.ndarray, W: np.ndarray, scale: np.ndarray, op_id: str
-    ) -> np.ndarray:
-        """Run the layer:  $X * (W * S)^T$ .
-
-        Args:
-            X (np.ndarray): activation
-            W (np.ndarray): quantized weights
-            scale (np.ndarray): quantization scale
-            op_id (str): operation id
-
-        Raises:
-            RuntimeError: Input, weights or scale shape mismatch
-
-        Returns:
-            np.ndarray: result
-        """
-        invalidInputError(X.shape[0] == self.batch and X.shape[1] == self.inC,
-                          f"Input shape {X.shape} different from expected "
-                          "one {(self.batch, self.inC)}")
-        return super().run(X, (W, scale), op_id=op_id)
-
-
-@torch.no_grad()
-def run_matmul(
-    x: torch.Tensor,
-    inC,
-    outC,
-    weights: torch.Tensor,
-    scale: Optional[torch.Tensor] = None,
-    op_id: Optional[str] = None,
-) -> torch.Tensor:
-    """Run a matmul operation. Depending on the datatype of the weights it runs a float or
-    quantized operation.
-
-    Args:
-        x (torch.Tensor): Activation tensor. Its dtype must be torch.float16
-        weights (torch.Tensor): Weights tensor.  Its dtype can be torch.float16 or torch.int8
-        scale (Optional[torch.Tensor], optional): Quantization scale.
-            If weights.dtype == torch.int8 then it must be set. Defaults to None.
-        op_id (Optional[str], optional): Operation ID. Defaults to None.
-
-    Raises:
-        RuntimeError: Unsupported weights datatype. Supported types: [torch.float16, torch.int8]
-
-    Returns:
-        torch.Tensor: result
-    """
-    global _model_cache
-
-    # Set tensors as contiguous in memory
-    x = set_contiguous(x)
-
-    if weights.dtype in (torch.int8, torch.uint8):
-        invalidInputError(scale is not None,
-                          "Quantized weights require a not null scale")
-        op_class = QLinear
-        op_class_name = op_class.__name__
-        np_dtype = np.int8 if weights.dtype == torch.int8 else np.uint8
-        create_op = partial(op_class, dtype=np_dtype)
-        op_args = [weights.numpy(), scale.numpy()]
-    else:
-        invalidInputError(False, f"Unsupported dtype for weights {weights.dtype}")
-
-    # Use or not op_id depending on the class used
-    op_kwargs = {"op_id": op_id} if op_id else {}
-
-    original_input_shape = x.shape
-    expected_output_shape = list(original_input_shape[:-1]) + [outC]
-
-    # Reshape input
-    input_dtype = x.dtype
-    x = x.to(torch.float16) if input_dtype != torch.float16 else x
-    if len(x.shape) > 2 or x.shape[-1] != inC:
-        x = x.view([-1, inC])
-    x_np = x.numpy()
-    batch = x_np.shape[0]
-
-    key = f"{str(op_class_name)}_{batch}_{inC}_x_{outC}_{inC}_{x_np.dtype}"
-    models = _model_cache.get(key, None)
-
-    if models is None:
-        _model_cache[key] = deque([create_op(inC, outC, batch)])
-
-    # Get the model
-    model = _model_cache[key][0]
-
-    ret = model.run(x_np, *op_args, **op_kwargs)
-
-    return adapt_output_tensor(ret, expected_output_shape, input_dtype)
-
-
-def adapt_output_tensor(
-    output: np.ndarray, original_shape: torch.Size, input_dtype: torch.dtype
-) -> torch.Tensor:
-    """Adapt the output tensor to the original shape and dtype.
-
-    Args:
-        output (np.ndarray): output tensor
-        original_shape (torch.Size): original shape
-        input_dtype (torch.dtype): input dtype
-
-    Returns:
-        torch.Tensor: output tensor
-    """
-    output = torch.from_numpy(output)
-    if output.shape != original_shape:
-        output = output.view(original_shape)
-    # needs to copy as the same buffer can be reutilized
-    return output.to(input_dtype, copy=True)
-
-
-def set_contiguous(tensor: torch.Tensor) -> torch.Tensor:
-    """Set tensor to be contiguous in memory.
-
-    Args:
-        tensor (torch.Tensor): input tensor
-
-    Returns:
-        torch.Tensor: output, contiguous tensor
-    """
-    if not tensor.is_contiguous():
-        return tensor.contiguous()
-    return tensor
-
-
 class LMHeadLinear(NNFactory):
     """Quantized Linear class, computing a matrix matrix multiplication with weights prefetching."""
 
@@ -321,7 +162,7 @@ class LMHeadLinear(NNFactory):
         self.split_num = split_num
         split_size = self.inC // split_num // 2 * 2
 
-        for i in range(7):
+        for i in range(self.split_num):
             start_idx = i * split_size
             if i == split_num - 1:
                 end_idx = self.inC
@@ -432,19 +273,8 @@ class QuantizedLinear(torch.nn.Module):
                     "Use `.eval()` to do inference only"
                 )
             )
-        # out = run_matmul(x, self.weight.data, self.scale.data, self.op_id)
-        original_shape = x.shape
-        x_2d = x.view(-1, x.shape[-1])
-        target_shape = tuple(list(original_shape[:-1]) + [self.outC])
 
-        if x_2d.shape[0] > 1 or not hasattr(self, 'fused_lm_head'):
-            out = run_matmul(x_2d, self.inC, self.outC, self.weight.data,
-                             self.scale.data, self.op_id)
-        else:
-            out = self.fused_lm_head.run(x_2d.numpy())
-            out = torch.from_numpy(out)
-
-        out = out.view(target_shape)
+        out = run_matmul(x, self.weight.data, self.scale.data, self.op_id)
 
         if self.bias is None:
             return out

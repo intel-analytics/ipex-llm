@@ -19,6 +19,7 @@ import importlib
 import numpy as np
 from ipex_llm.transformers.npu_models.linear import LMHeadLinear
 from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
+from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 
 
 def convert_forward(m, target_m, new_forward):
@@ -92,23 +93,10 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
         # for Qwen2-7B-Insturct, divide lm_head into 7 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
                 not cpu_lm_head:
-            split_num = 7
-            split_size = model.lm_head.weight.size(1) // split_num // 2 * 2
-            for i in range(split_num):
-                new_linear = torch.nn.Linear(0, 0, bias=False)
-                start_idx = i * split_size
-                if i == split_num - 1:
-                    end_idx = model.lm_head.weight.size(1)
-                else:
-                    end_idx = (i + 1) * split_size
-                new_weight = torch.nn.Parameter(model.lm_head.weight[:, start_idx:end_idx],
-                                                requires_grad=False)
-
-                new_linear.weight = new_weight
-                new_linear.in_features = new_weight.size(1)
-                new_linear.out_features = new_weight.size(0)
-                setattr(model, f'lm_head_{i}', new_linear)
+            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=7,
+                                       bias=model.lm_head.bias)
             del model.lm_head
+            model.lm_head = new_lm_head
 
     # lm_head to cpu optimization
     if cpu_lm_head:
@@ -206,19 +194,21 @@ def optimize_llm(
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
 
         # for Qwen2-7B-Insturct, divide lm_head into 7 parts
+        print(model)
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
                 os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") == "0":
-            np_dtype = np.uint8 if model.lm_head_0.weight.dtype == torch.uint8 else np.int8
-            split_num = 7
-            model.lm_head_0.fused_lm_head = LMHeadLinear(model.config.hidden_size,
-                                                         model.lm_head_0.outC,
-                                                         1, split_num, False, "NPU",
-                                                         dtype=np_dtype)
-            fused_lm_head_weights = [(getattr(model, f"lm_head_{i}").weight.data.numpy(),
-                                      getattr(model, f"lm_head_{i}").scale.data.numpy())
-                                     for i in range(0, split_num)]
-            model.lm_head_0.fused_lm_head.setWeights(1, model.lm_head_0.op_id,
+            model.lm_head.fused_lm_head = LMHeadLinear(model.config.hidden_size,
+                                                       model.lm_head.outC,
+                                                       1, model.lm_head.split_num,
+                                                       False, "NPU",
+                                                       dtype=model.lm_head.np_dtype)
+            fused_lm_head_weights = [(model.lm_head.lm_heads[i].weight.data.numpy(),
+                                      model.lm_head.lm_heads[i].scale.data.numpy())
+                                     for i in range(model.lm_head.split_num)]
+            print("start set weight")
+            model.lm_head.fused_lm_head.setWeights(1, model.lm_head.lm_heads[0].op_id,
                                                      *fused_lm_head_weights)
+            print("finish set weight")
 
     elif model.config.model_type == "minicpm":
         # for minicpm-1b
