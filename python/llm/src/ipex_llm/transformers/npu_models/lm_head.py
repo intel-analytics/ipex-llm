@@ -22,7 +22,8 @@ from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
 
 
 class LMHeadLinear(NNFactory):
-    """Quantized Linear class for sliced lm_head, computing a matrix matrix multiplication with weights prefetching."""
+    """Quantized Linear class for sliced lm_head, computing a matrix matrix multiplication
+    with weights prefetching."""
 
     def __init__(
         self,
