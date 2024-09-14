@@ -1108,9 +1108,7 @@ def qwen2_casullm_forward(
     # ipex-llm change start
     hidden_states = reshape_lm_head_input(hidden_states)
     # ipex-llm change end
-    print("before self.lm_head(hidden_states) ")
     logits = self.lm_head(hidden_states)
-    print("end self.lm_head(hidden_states) ")
     logits = logits.float()
 
     loss = None

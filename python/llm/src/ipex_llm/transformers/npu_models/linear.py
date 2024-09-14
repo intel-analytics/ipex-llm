@@ -28,16 +28,9 @@ import torch
 from torch.nn import Parameter
 import uuid
 import math
-from intel_npu_acceleration_library.backend import NNFactory, run_matmul
-from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
-from typing import Optional, Dict, Deque, Union
-from functools import partial
-from collections import deque
-import numpy as np
+from intel_npu_acceleration_library.backend import run_matmul
+from typing import Optional, Union
 from ipex_llm.utils.common import invalidInputError
-
-
-_model_cache: Dict[str, Deque[NNFactory]] = {}
 
 
 class Linear(torch.nn.Module):
@@ -127,82 +120,6 @@ class Linear(torch.nn.Module):
         else:
             invalidInputError(False,
                               f"NPU do not support yet the requeste datatype: {dtype}")
-
-
-class LMHeadLinear(NNFactory):
-    """Quantized Linear class, computing a matrix matrix multiplication with weights prefetching."""
-
-    def __init__(
-        self,
-        inC: int,
-        outC: int,
-        batch: int,
-        split_num: int = 2,
-        profile: bool = False,
-        device: str = "NPU",
-        dtype: np.dtype = np.int8,
-    ):
-        """Initialize the QLinear class.
-
-        Args:
-            inC (int): input channels
-            outC (int): output channels
-            batch (int): batch
-            profile (bool): Enable/Disable profiling. Defaults to False.
-            device (str): Target device, default to "NPU".
-            dtype (np.dtype): weights datatype. Defaults to np.int8.
-
-        """
-        super().__init__(profile, device)
-        self.inC, self.outC = inC, outC
-        self.batch = batch
-
-        input = self.parameter((self.batch, self.inC))
-
-        self.split_num = split_num
-        split_size = self.inC // split_num // 2 * 2
-
-        for i in range(self.split_num):
-            start_idx = i * split_size
-            if i == split_num - 1:
-                end_idx = self.inC
-            else:
-                end_idx = (i + 1) * split_size
-
-            input_slice = self.slice(input, begin=[0, start_idx],
-                                     end=[self.batch, end_idx])
-            linear_slice = self.linear(input_slice, outC, split_size, bias=False, wt_dtype=dtype)
-
-            if i == 0:
-                res = linear_slice
-            else:
-                res += linear_slice
-
-        print("start compiling lm_head")
-        self.compile()
-        print("end compiling lm_head")
-
-    def run(
-        self, X: np.ndarray
-    ) -> np.ndarray:
-        """Run the layer:  $X * (W * S)^T$ .
-
-        Args:
-            X (np.ndarray): activation
-
-        Raises:
-            RuntimeError: Input, weights or scale shape mismatch
-
-        Returns:
-            np.ndarray: result
-        """
-        self.prefetchWeights(1, verify_size=False)
-
-        self.set_input_tensor(X, 0)
-        self.elapsed = backend_lib.run(self._mm)
-        if len(self.out) == 1:
-            return self.out[0]
-        return self.out
 
 
 class QuantizedLinear(torch.nn.Module):
