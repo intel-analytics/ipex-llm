@@ -216,7 +216,7 @@ def optimize_llm(
                                                          dtype=np_dtype)
             fused_lm_head_weights = [(getattr(model, f"lm_head_{i}").weight.data.numpy(),
                                       getattr(model, f"lm_head_{i}").scale.data.numpy())
-                                      for i in range(0, split_num)]
+                                     for i in range(0, split_num)]
             model.lm_head_0.fused_lm_head.setWeights(1, model.lm_head_0.op_id,
                                                      *fused_lm_head_weights)
 
