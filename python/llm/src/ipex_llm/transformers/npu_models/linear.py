@@ -194,7 +194,7 @@ def run_matmul(
     scale: Optional[torch.Tensor] = None,
     op_id: Optional[str] = None,
 ) -> torch.Tensor:
-    """Run a matmul operation. Depending on the datatype of the weights it runs a float or 
+    """Run a matmul operation. Depending on the datatype of the weights it runs a float or
     quantized operation.
 
     Args:
