@@ -16,7 +16,9 @@
 import os
 import torch
 import importlib
+import numpy as np
 from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
+from ipex_llm.transformers.npu_models.lm_head import LMHeadLinear, SlicedLMHead
 
 
 def convert_forward(m, target_m, new_forward):
@@ -85,8 +87,15 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
 
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_down_proj
-        from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_forward
         model.apply(split_mlp_down_proj)
+
+        # for Qwen2-7B-Insturct, divide lm_head into 7 parts
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
+                not cpu_lm_head:
+            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=7,
+                                       bias=model.lm_head.bias)
+            del model.lm_head
+            model.lm_head = new_lm_head
 
     # lm_head to cpu optimization
     if cpu_lm_head:
@@ -182,6 +191,11 @@ def optimize_llm(
         from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
         from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
+
+        # for Qwen2-7B-Insturct, divide lm_head into 7 parts
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
+                isinstance(model.lm_head, SlicedLMHead):
+            model.lm_head.get_fused_lm_head()
     elif model.config.model_type == "minicpm":
         # for minicpm-1b
         if intra_pp is None:
