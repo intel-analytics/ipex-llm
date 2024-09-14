@@ -94,7 +94,7 @@ def run_model(
 
 class LLMBaseNNFactory(NNFactory):
 
-    def __init__(self, max_seq_len, transpose_value, dtype, profile=False, device="NPU"):
+    def __init__(self, max_seq_len, transpose_value, dtype, profile=False, device="NPU", n_splits=1):
         super().__init__(profile, device)
         self.cache_parameter_ops = []
         self.input_ops = []
@@ -104,6 +104,7 @@ class LLMBaseNNFactory(NNFactory):
         self.max_seq_len = max_seq_len
         self.transpose_value = transpose_value
         self.dtype = dtype
+        self.n_splits=n_splits
 
     def attention(self,
                   *,
@@ -124,31 +125,74 @@ class LLMBaseNNFactory(NNFactory):
                   v_bias=None):
         hidden_size = num_heads * head_dim
         num_key_value_groups = num_heads // num_key_value_heads
-        query_states = self.linear(
-            hidden_states,
-            num_heads * head_dim,
-            hidden_size,
-            bias=False,
-            wt_dtype=self.dtype,
-        )
+        groupsize = hidden_size // self.n_splits
+        # print(f"hidden states: {hidden_states.shape}")
+        if self.n_splits == 1:
+            query_states = self.linear(
+                hidden_states,
+                num_heads * head_dim,
+                hidden_size,
+                bias=False,
+                wt_dtype=self.dtype,
+            )
+            
+            key_states = self.linear(
+                hidden_states,
+                num_key_value_heads * head_dim,
+                hidden_size,
+                bias=False,
+                wt_dtype=self.dtype,
+            )
+
+            value_states = self.linear(
+                hidden_states,
+                num_key_value_heads * head_dim,
+                hidden_size,
+                bias=False,
+                wt_dtype=self.dtype,
+            )
+        else:
+            query_states_to_concat = []
+            key_states_to_concat = []
+            value_states_to_concat = []
+            for i in range(self.n_splits):
+                sub_hidden_states = self.slice(hidden_states,
+                                               begin=[0, i * groupsize],
+                                               end=[seq_len, (i + 1) * groupsize])
+                query_states_to_concat.append(
+                    self.linear(
+                        sub_hidden_states,
+                        num_heads * head_dim,
+                        groupsize,
+                        bias=False,
+                        wt_dtype=self.dtype,
+                    )
+                )
+                key_states_to_concat.append(
+                    self.linear(
+                        sub_hidden_states,
+                        num_key_value_heads * head_dim,
+                        groupsize,
+                        bias=False,
+                        wt_dtype=self.dtype,
+                    )
+                )
+                value_states_to_concat.append(
+                    self.linear(
+                        sub_hidden_states,
+                        num_key_value_heads * head_dim,
+                        groupsize,
+                        bias=False,
+                        wt_dtype=self.dtype,
+                    )
+                )
+            query_states = sum(query_states_to_concat)
+            key_states = sum(key_states_to_concat)
+            value_states = sum(value_states_to_concat)
         if q_bias is not None:
             query_states = query_states + q_bias
-        key_states = self.linear(
-            hidden_states,
-            num_key_value_heads * head_dim,
-            hidden_size,
-            bias=False,
-            wt_dtype=self.dtype,
-        )
         if k_bias is not None:
             key_states = key_states + k_bias
-        value_states = self.linear(
-            hidden_states,
-            num_key_value_heads * head_dim,
-            hidden_size,
-            bias=False,
-            wt_dtype=self.dtype,
-        )
         if v_bias is not None:
             value_states = value_states + v_bias
 
@@ -215,10 +259,24 @@ class LLMBaseNNFactory(NNFactory):
         attn_output = self.transpose(attn_output, [0, 2, 1, 3])
         attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
 
-        attn_output = self.linear(
-            attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
-        )
-
+        # print(f"attn_output: {attn_output.shape}")
+        if self.n_splits == 1:
+            attn_output = self.linear(
+                attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
+            )
+        else:
+            attn_output_to_concat = []
+            for i in range(self.n_splits):
+                sub_attn_output = self.slice(attn_output,
+                                             begin=[0, 0, i * groupsize],
+                                             end=[1, seq_len, (i + 1) * groupsize])
+                attn_output_to_concat.append(
+                    self.linear(
+                        sub_attn_output, hidden_size, groupsize, bias=False, wt_dtype=self.dtype
+                    )
+                )
+            attn_output = sum(attn_output_to_concat)
+                
         return attn_output, new_key_states, new_value_states
 
     def mlp(self, hidden_states):
