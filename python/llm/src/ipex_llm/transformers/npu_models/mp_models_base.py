@@ -27,6 +27,12 @@ from filelock import FileLock
 import ctypes
 import math
 import numpy as np
+import torch.multiprocessing as mp
+from colorama import Fore, Back, Style
+from typing import Optional, Sequence, List, Union, Any, Tuple
+from transformers.cache_utils import Cache
+import uuid
+from functools import partial
 
 logger = logging.get_logger(__name__)
 
@@ -426,3 +432,1032 @@ class LLMBaseNNFactory(NNFactory):
                 else:
                     new_value_states.append(decoders[i].torch_out[j])
         return hidden_states, new_key_states, new_value_states
+
+
+class qwen:
+    class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
+        def __init__(
+            self,
+            # batch_size: int,
+            # seq_len: int,
+            # hidden_size: int,
+            hidden_shape: Sequence[int],
+            *shapes,
+            num_heads: int,
+            num_key_value_heads: int,
+            num_layers: int,
+            cached_cos,
+            cached_sin,
+            input_layernorm_weights=None,
+            post_attn_layernorm_weights=None,
+            q_biases=None,
+            k_biases=None,
+            v_biases=None,
+            mode: str = "prefill",
+            dtype: np.dtype = np.int8,
+            max_seq_len: int = 1024,
+            transpose_value: bool = False,
+            profile: bool = False,
+            device: str = "NPU",
+            rms_norm_eps,
+            intermediate_size,
+        ):
+            super().__init__(max_seq_len=max_seq_len,
+                            transpose_value=transpose_value,
+                            dtype=dtype,
+                            profile=profile,
+                            device=device)
+            self.max_seq_len = max_seq_len
+            self.intermediate_size = intermediate_size
+            self.dtype = dtype
+            self.cached_cos = cached_cos
+            self.cached_sin = cached_sin
+            self.batch_size, self.seq_len, self.hidden_size = hidden_shape
+            self.mode = mode
+            self.rms_norm_eps = rms_norm_eps
+            self.transpose_value = transpose_value
+            self.num_layers = num_layers
+
+            cos = self.constant(self.cached_cos)
+            self.cos = self.unsqueeze(cos, axis=0)
+
+            sin = self.constant(self.cached_sin)
+            self.sin = self.unsqueeze(sin, axis=0)
+
+            if mode == "decode":
+                self.kv_seq_len = self.max_seq_len + 1
+            else:
+                self.kv_seq_len = self.seq_len
+
+            self.num_heads = num_heads
+            self.num_key_value_heads = num_key_value_heads
+
+            self.head_dim = self.hidden_size // self.num_heads
+            self.num_key_value_groups = self.num_heads // self.num_key_value_heads
+
+            # define input, the order self.parameter matters
+            input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
+
+            # Self Attention
+            if mode == "decode":
+                attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1))
+            else:
+                attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len))
+
+            position_ids = self.create_input_op((self.batch_size, self.seq_len))
+            past_keys = []
+            past_values = []
+            if mode == "decode":
+                for i in range(num_layers):
+                    past_key = self.create_cache_op(
+                        (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                    )
+                    if transpose_value:
+                        past_value = self.create_cache_op(
+                            (self.batch_size, self.num_key_value_heads, self.head_dim, self.max_seq_len)
+                        )
+                    else:
+                        past_value = self.create_cache_op(
+                            (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                        )
+                    past_keys.append(past_key)
+                    past_values.append(past_value)
+            else:
+                past_keys = [None] * num_layers
+                past_values = [None] * num_layers
+
+            if input_layernorm_weights is None:
+                input_layernorm_weights = []
+                post_attn_layernorm_weights = []
+                for i in range(num_layers):
+                    input_layernorm_weights.append(
+                        self.create_input_op(
+                            (
+                                1,
+                                self.hidden_size,
+                            )
+                        )
+                    )
+                    post_attn_layernorm_weights.append(
+                        self.create_input_op(
+                            (
+                                1,
+                                self.hidden_size,
+                            )
+                        )
+                    )
+            else:
+                input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
+                post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
+
+            if q_biases is None:
+                q_biases = []
+                k_biases = []
+                v_biases = []
+                for i in range(num_layers):
+                    q_biases.append(self.create_input_op((self.num_heads * self.head_dim,)))
+                    k_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
+                    v_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
+            else:
+                q_biases = [self.constant(w) for w in q_biases]
+                k_biases = [self.constant(w) for w in k_biases]
+                v_biases = [self.constant(w) for w in v_biases]
+
+            hidden_states = input
+
+            curr_key_values = []
+            for i in range(num_layers):
+                hidden_states, new_key_states, new_value_states = self.build_decoder(
+                    hidden_states=hidden_states,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    input_layernorm_weight=input_layernorm_weights[i],
+                    post_attention_layernorm_weight=post_attn_layernorm_weights[i],
+                    q_bias=q_biases[i],
+                    k_bias=k_biases[i],
+                    v_bias=v_biases[i],
+                    past_key=past_keys[i],
+                    past_value=past_values[i],
+                )
+                curr_key_values.append((new_key_states, new_value_states))
+
+            # define outputs
+            hidden_states = self.convert_to_fp16(hidden_states)
+
+            for i in range(num_layers):
+                new_key_states = self.convert_to_fp16(curr_key_values[i][0])
+                new_value_states = self.convert_to_fp16(curr_key_values[i][1])
+
+            print("start compiling")
+            self.compile()
+            print("end compiling")
+
+        def mlp(self, hidden_states, seq_len):
+            mm1 = self.linear(
+                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+            )
+            mm2 = self.linear(
+                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+            )  # type: ignore[attr-defined]
+            mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+            if self.intermediate_size == 18944:
+                # for qwen2-7b
+                mm1_0 = self.slice(mm1, begin=[0, 0, 0], end=[1, seq_len, 9472])
+                mm1_1 = self.slice(mm1, begin=[0, 0, 9472], end=[1, seq_len, 18944])
+                hidden_states_0 = self.linear(mm1_0, self.hidden_size, 9472,
+                                            bias=False, wt_dtype=self.dtype)
+                hidden_states_1 = self.linear(mm1_1, self.hidden_size, 9472,
+                                            bias=False, wt_dtype=self.dtype)
+                hidden_states = hidden_states_0 + hidden_states_1
+            else:
+                hidden_states = self.linear(
+                    mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+                )
+            return hidden_states
+
+        def build_decoder(
+            self,
+            hidden_states,
+            attention_mask,
+            position_ids,
+            input_layernorm_weight,
+            post_attention_layernorm_weight,
+            q_bias,
+            k_bias,
+            v_bias,
+            past_key=None,
+            past_value=None,
+        ):
+
+            residual = hidden_states
+            input_2d = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
+            input_2d = self.layer_norm(input_2d, input_layernorm_weight)
+            attn_output, new_key_states, new_value_states = self.attention(
+                hidden_states=input_2d,
+                position_ids=position_ids,
+                attention_mask=attention_mask,
+                past_key=past_key,
+                past_value=past_value,
+                cos=self.cos,
+                sin=self.sin,
+                mode=self.mode,
+                num_heads=self.num_heads,
+                num_key_value_heads=self.num_key_value_heads,
+                head_dim=self.head_dim,
+                seq_len=self.seq_len,
+                q_bias=q_bias,
+                k_bias=k_bias,
+                v_bias=v_bias,
+            )
+            hidden_states = self.eltwise_add(residual, attn_output)
+            residual = hidden_states
+            hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
+            hidden_states = self.mlp(hidden_states, self.seq_len)
+            hidden_states = self.eltwise_add(residual, hidden_states)
+            hidden_states = self.convert_to_fp16(hidden_states)
+
+            return hidden_states, new_key_states, new_value_states
+
+
+    class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
+
+        def __init__(
+            self,
+            parameters: List[Tuple[torch.Tensor]],
+            input_laynorm_weights: List[torch.Tensor],
+            post_attn_layernorm_weights: List[torch.Tensor],
+            q_biases: List[torch.Tensor],
+            k_biases: List[torch.Tensor],
+            v_biases: List[torch.Tensor],
+            layer_indexes: List[int],
+            intra_stages: int,
+            cached_cos: torch.Tensor,
+            cached_sin: torch.Tensor,
+            num_heads: int,
+            head_dim: int,
+            num_key_value_heads: int,
+            rms_norm_eps,
+            intermediate_size,
+            max_seq_len: int = 1024,
+            transpose_value: bool = False,
+            do_print: bool = False,
+        ):
+            super().__init__()
+
+            self.do_print = do_print
+
+            op_parameters = []
+            for w in parameters:
+                if isinstance(w, tuple):  # from QuantizedLinear
+                    op_parameters.append((w[0].numpy(), w[1].numpy()))
+                else:
+                    op_parameters.append(w.to(torch.float16).numpy())
+            self.op_parameters = op_parameters
+            self.op_id = str(uuid.uuid4())
+            self.max_seq_len = max_seq_len
+            self.transpose_value = transpose_value
+            if isinstance(parameters[0], tuple):
+                np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+            else:  # FP16 Linear
+                np_dtype = np.float16
+
+            self.intra_stages = intra_stages
+            self.layer_indexes = layer_indexes
+            num_layers = len(self.layer_indexes) // intra_stages
+            self.layer_ranges = []
+            for i in range(intra_stages):
+                if i == intra_stages - 1:
+                    self.layer_ranges.append((i * num_layers, len(self.layer_indexes)))
+                else:
+                    self.layer_ranges.append((i * num_layers, (i + 1) * num_layers))
+
+            self.backend_decoders = []
+
+            for i in range(intra_stages):
+                start, end = self.layer_ranges[i]
+                lm_0 = input_laynorm_weights[start:end]
+                lm_1 = post_attn_layernorm_weights[start:end]
+                decoder = qwen.LowBitQwenMultiDecoderlayer(
+                    [1, 1, num_heads * head_dim],
+                    input_layernorm_weights=lm_0,
+                    post_attn_layernorm_weights=lm_1,
+                    q_biases=q_biases[start:end],
+                    k_biases=k_biases[start:end],
+                    v_biases=v_biases[start:end],
+                    cached_cos=cached_cos,
+                    cached_sin=cached_sin,
+                    num_heads=num_heads,
+                    num_key_value_heads=num_key_value_heads,
+                    num_layers=end - start,
+                    max_seq_len=max_seq_len,
+                    rms_norm_eps=rms_norm_eps,
+                    intermediate_size=intermediate_size,
+                    mode="decode",
+                    transpose_value=self.transpose_value,
+                    dtype=np_dtype,
+                )
+                self.backend_decoders.append(decoder)
+
+            offset = 0
+            for i in range(intra_stages):
+                start, end = self.layer_ranges[i]
+                curr_linear_ops = len(self.backend_decoders[i].linear_ops)
+                curr_parameters = self.op_parameters[offset:offset + curr_linear_ops]
+                self.backend_decoders[i].set_weights(self.op_id, curr_parameters)
+                offset = offset + curr_linear_ops
+
+        def forward(
+            self,
+            hidden_states: torch.Tensor,
+            attention_mask: Optional[torch.Tensor] = None,
+            position_ids: Optional[torch.LongTensor] = None,
+            past_key_value: Optional[Cache] = None,
+            output_attentions: bool = False,
+            use_cache: bool = False,
+            **kwargs,
+        ) -> torch.Tensor:
+
+            inputs = (
+                hidden_states.to(torch.float16),
+                attention_mask,
+                position_ids,
+            )
+
+            for i in range(self.intra_stages):
+                start, end = self.layer_ranges[i]
+                self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
+
+            hidden_states, new_keys, new_values = qwen.LowBitQwenMultiDecoderlayer.run_decoders(
+                inputs,
+                decoders=self.backend_decoders)
+
+            if self.do_print:
+                print("outputs:", hidden_states)
+
+            outputs = (hidden_states,)
+            outputs += (past_key_value, new_keys, new_values)
+            return outputs
+
+        def post_forward(self, past_key_value, new_keys, new_values):
+            cache_kwargs = {
+                "max_seq_len": self.max_seq_len,
+                "transpose": self.transpose_value,
+            }
+            for i in range(len(self.layer_indexes)):
+                key_states, value_states = past_key_value.update(
+                    new_keys[i],
+                    new_values[i],
+                    self.layer_indexes[i],
+                    cache_kwargs,
+                )
+
+            for i in range(self.intra_stages):
+                self.backend_decoders[i].load_cache_async()
+
+
+    class FusedQwenLowBitDecoderlayer(torch.nn.Module):
+        def __init__(
+            self,
+            parameters: List[torch.Tensor],
+            cached_cos,
+            cached_sin,
+            layer_norm_0,
+            layer_norm_1,
+            q_bias,
+            k_bias,
+            v_bias,
+            num_heads: int,
+            num_key_value_heads: int,
+            layer_idx: int,
+            rms_norm_eps,
+            intermediate_size,
+            max_seq_len: int = 128,
+            transpose_value: bool = False,
+        ):
+            super().__init__()
+            self.op_parameters = parameters
+            self.op_id = str(uuid.uuid4())
+            self.layer_idx = layer_idx
+            self.max_seq_len = max_seq_len
+            self.transpose_value = transpose_value
+            # self.rotary_emb = rotary_emb
+            if isinstance(parameters[0], tuple):  # weight, scale from QuantizedLinear
+                np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+            else:  # FP16 Linear
+                np_dtype = np.float16
+
+            self.backend_cls_prefill = partial(
+                qwen.LowBitQwenMultiDecoderlayer,
+                num_heads=num_heads,
+                num_key_value_heads=num_key_value_heads,
+                num_layers=1,
+                cached_cos=cached_cos,
+                cached_sin=cached_sin,
+                input_layernorm_weights=None,
+                post_attn_layernorm_weights=None,
+                max_seq_len=max_seq_len,
+                rms_norm_eps=rms_norm_eps,
+                intermediate_size=intermediate_size,
+                mode="prefill",
+                transpose_value=self.transpose_value,
+                dtype=np_dtype,
+            )
+            self.layer_norm_0 = layer_norm_0
+            self.layer_norm_1 = layer_norm_1
+            self.q_bias = q_bias
+            self.k_bias = k_bias
+            self.v_bias = v_bias
+
+        def forward(
+            self,
+            hidden_states: torch.Tensor,
+            attention_mask: Optional[torch.Tensor] = None,
+            position_ids: Optional[torch.LongTensor] = None,
+            past_key_value: Optional[Cache] = None,
+            output_attentions: bool = False,
+            use_cache: bool = False,
+            **kwargs,
+        ) -> torch.Tensor:
+            """Torch module forward method.
+
+            Args:
+                x (torch.Tensor): Input tensor
+
+            Returns:
+                torch.Tensor: result
+            """
+
+            seq_len = hidden_states.shape[1]
+
+            backend_cls = self.backend_cls_prefill
+            inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
+            inputs += (self.layer_norm_0, self.layer_norm_1)
+            inputs += (self.q_bias, self.k_bias, self.v_bias)
+            hidden_states, past_key, past_value = run_model(
+                inputs, self.op_parameters, backend_cls, self.op_id, replica=2
+            )
+            cache_kwargs = {"max_seq_len": self.max_seq_len, "transpose": self.transpose_value}
+            key_states, value_states = past_key_value.update(
+                past_key, past_value, self.layer_idx, cache_kwargs
+            )
+
+            outputs = (hidden_states,)
+            outputs += (past_key_value,)
+            return outputs
+
+class llama:
+    class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
+        def __init__(
+            self,
+            # batch_size: int,
+            # seq_len: int,
+            # hidden_size: int,
+            hidden_shape: Sequence[int],
+            *shapes,
+            num_heads: int,
+            num_key_value_heads: int,
+            num_layers: int,
+            cached_cos,
+            cached_sin,
+            input_layernorm_weights=None,
+            post_attn_layernorm_weights=None,
+            mode: str = "prefill",
+            dtype: np.dtype = np.int8,
+            max_seq_len: int = 1024,
+            transpose_value: bool = False,
+            profile: bool = False,
+            device: str = "NPU",
+            rms_norm_eps,
+            intermediate_size,
+        ):
+            super().__init__(max_seq_len=max_seq_len,
+                            transpose_value=transpose_value,
+                            dtype=dtype,
+                            profile=profile,
+                            device=device)
+            self.max_seq_len = max_seq_len
+            self.intermediate_size = intermediate_size
+            self.dtype = dtype
+            self.cached_cos = cached_cos
+            self.cached_sin = cached_sin
+            self.batch_size, self.seq_len, self.hidden_size = hidden_shape
+            self.mode = mode
+            self.rms_norm_eps = rms_norm_eps
+            self.transpose_value = transpose_value
+            self.num_layers = num_layers
+
+            cos = self.constant(self.cached_cos)
+            self.cos = self.unsqueeze(cos, axis=0)
+
+            sin = self.constant(self.cached_sin)
+            self.sin = self.unsqueeze(sin, axis=0)
+
+            if mode == "decode":
+                self.kv_seq_len = self.max_seq_len + 1
+            else:
+                self.kv_seq_len = self.seq_len
+
+            self.num_heads = num_heads
+            self.num_key_value_heads = num_key_value_heads
+
+            self.head_dim = self.hidden_size // self.num_heads
+            self.num_key_value_groups = self.num_heads // self.num_key_value_heads
+
+            # define input, the order self.parameter matters
+            input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
+
+            # Self Attention
+            if mode == "decode":
+                attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1))
+            else:
+                attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len))
+
+            position_ids = self.create_input_op((self.batch_size, self.seq_len))
+            past_keys = []
+            past_values = []
+            if mode == "decode":
+                for i in range(num_layers):
+                    past_key = self.create_cache_op(
+                        (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                    )
+                    if transpose_value:
+                        past_value = self.create_cache_op(
+                            (self.batch_size, self.num_key_value_heads, self.head_dim, self.max_seq_len)
+                        )
+                    else:
+                        past_value = self.create_cache_op(
+                            (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                        )
+                    past_keys.append(past_key)
+                    past_values.append(past_value)
+            else:
+                past_keys = [None] * num_layers
+                past_values = [None] * num_layers
+
+            if input_layernorm_weights is None:
+                input_layernorm_weights = []
+                post_attn_layernorm_weights = []
+                for i in range(num_layers):
+                    input_layernorm_weights.append(
+                        self.create_input_op(
+                            (
+                                1,
+                                self.hidden_size,
+                            )
+                        )
+                    )
+                    post_attn_layernorm_weights.append(
+                        self.create_input_op(
+                            (
+                                1,
+                                self.hidden_size,
+                            )
+                        )
+                    )
+            else:
+                input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
+                post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
+
+            hidden_states = input
+
+            curr_key_values = []
+            for i in range(num_layers):
+                hidden_states, new_key_states, new_value_states = self.build_decoder(
+                    hidden_states=hidden_states,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    input_layernorm_weight=input_layernorm_weights[i],
+                    post_attention_layernorm_weight=post_attn_layernorm_weights[i],
+                    past_key=past_keys[i],
+                    past_value=past_values[i],
+                )
+                curr_key_values.append((new_key_states, new_value_states))
+
+            # define outputs
+            hidden_states = self.convert_to_fp16(hidden_states)
+
+            for i in range(num_layers):
+                new_key_states = self.convert_to_fp16(curr_key_values[i][0])
+                new_value_states = self.convert_to_fp16(curr_key_values[i][1])
+
+            print("start compiling")
+            self.compile()
+
+        def build_decoder(
+            self,
+            hidden_states,
+            attention_mask,
+            position_ids,
+            input_layernorm_weight,
+            post_attention_layernorm_weight,
+            past_key=None,
+            past_value=None,
+        ):
+
+            residual = hidden_states
+            input_2d = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
+            input_2d = self.layer_norm(input_2d, input_layernorm_weight)
+            attn_output, new_key_states, new_value_states = self.attention(
+                hidden_states=input_2d,
+                position_ids=position_ids,
+                attention_mask=attention_mask,
+                past_key=past_key,
+                past_value=past_value,
+                cos=self.cos,
+                sin=self.sin,
+                mode=self.mode,
+                num_heads=self.num_heads,
+                num_key_value_heads=self.num_key_value_heads,
+                head_dim=self.head_dim,
+                seq_len=self.seq_len,
+            )
+            hidden_states = self.eltwise_add(residual, attn_output)
+            residual = hidden_states
+            hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
+            hidden_states = self.mlp(hidden_states)
+            hidden_states = self.eltwise_add(residual, hidden_states)
+            hidden_states = self.convert_to_fp16(hidden_states)
+
+            return hidden_states, new_key_states, new_value_states
+        
+    class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
+
+        def __init__(
+            self,
+            parameters: List[Tuple[torch.Tensor]],
+            input_laynorm_weights: List[torch.Tensor],
+            post_attn_layernorm_weights: List[torch.Tensor],
+            layer_indexes: List[int],
+            intra_stages: int,
+            cached_cos: torch.Tensor,
+            cached_sin: torch.Tensor,
+            num_heads: int,
+            head_dim: int,
+            num_key_value_heads: int,
+            rms_norm_eps,
+            intermediate_size,
+            max_seq_len: int = 1024,
+            transpose_value: bool = False,
+            do_print: bool = False,
+        ):
+            super().__init__()
+
+            self.do_print = do_print
+
+            op_parameters = []
+            for w in parameters:
+                if isinstance(w, tuple):  # from QuantizedLinear
+                    op_parameters.append((w[0].numpy(), w[1].numpy()))
+                else:
+                    op_parameters.append(w.to(torch.float16).numpy())
+            self.op_parameters = op_parameters
+            self.op_id = str(uuid.uuid4())
+            self.max_seq_len = max_seq_len
+            self.transpose_value = transpose_value
+            if isinstance(parameters[0], tuple):
+                np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+            else:  # FP16 Linear
+                np_dtype = np.float16
+
+            self.intra_stages = intra_stages
+            self.layer_indexes = layer_indexes
+            num_layers = len(self.layer_indexes) // intra_stages
+            self.layer_ranges = []
+            for i in range(intra_stages):
+                if i == intra_stages - 1:
+                    self.layer_ranges.append((i * num_layers, len(self.layer_indexes)))
+                else:
+                    self.layer_ranges.append((i * num_layers, (i + 1) * num_layers))
+
+            self.backend_decoders = []
+
+            for i in range(intra_stages):
+                start, end = self.layer_ranges[i]
+                lm_0 = input_laynorm_weights[start:end]
+                lm_1 = post_attn_layernorm_weights[start:end]
+                decoder = llama.LowBitLlamaMultiDecoderlayer(
+                    [1, 1, num_heads * head_dim],
+                    input_layernorm_weights=lm_0,
+                    post_attn_layernorm_weights=lm_1,
+                    cached_cos=cached_cos,
+                    cached_sin=cached_sin,
+                    num_heads=num_heads,
+                    num_key_value_heads=num_key_value_heads,
+                    num_layers=end - start,
+                    max_seq_len=max_seq_len,
+                    rms_norm_eps=rms_norm_eps,
+                    intermediate_size=intermediate_size,
+                    mode="decode",
+                    transpose_value=self.transpose_value,
+                    dtype=np_dtype,
+                )
+                self.backend_decoders.append(decoder)
+
+            for i in range(intra_stages):
+                start, end = self.layer_ranges[i]
+                self.backend_decoders[i].set_weights(self.op_id, op_parameters[start * 7:end * 7])
+
+        def forward(
+            self,
+            hidden_states: torch.Tensor,
+            attention_mask: Optional[torch.Tensor] = None,
+            position_ids: Optional[torch.LongTensor] = None,
+            past_key_value: Optional[Cache] = None,
+            output_attentions: bool = False,
+            use_cache: bool = False,
+            cache_position: Optional[torch.LongTensor] = None,
+            **kwargs,
+        ) -> torch.Tensor:
+
+            inputs = (
+                hidden_states.to(torch.float16),
+                attention_mask,
+                position_ids,
+            )
+
+            for i in range(self.intra_stages):
+                start, end = self.layer_ranges[i]
+                self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
+
+            hidden_states, new_keys, new_values = llama.LowBitLlamaMultiDecoderlayer.run_decoders(
+                inputs,
+                decoders=self.backend_decoders)
+
+            if self.do_print:
+                print("outputs:", hidden_states)
+
+            outputs = (hidden_states,)
+            outputs += (past_key_value, new_keys, new_values)
+            return outputs
+
+        def post_forward(self, past_key_value, new_keys, new_values, cache_position):
+            cache_kwargs = {
+                "cache_position": cache_position,
+                "max_seq_len": self.max_seq_len,
+                "transpose": self.transpose_value,
+            }
+            for i in range(len(self.layer_indexes)):
+                key_states, value_states = past_key_value.update(
+                    new_keys[i],
+                    new_values[i],
+                    self.layer_indexes[i],
+                    cache_kwargs,
+                )
+
+            for i in range(self.intra_stages):
+                self.backend_decoders[i].load_cache_async()
+
+    class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
+        """LLAMA MLP operation NPU backend."""
+
+        def __init__(
+            self,
+            parameters: List[torch.Tensor],
+            cached_cos,
+            cached_sin,
+            layer_norm_0,
+            layer_norm_1,
+            num_heads: int,
+            num_key_value_heads: int,
+            layer_idx: int,
+            rms_norm_eps,
+            intermediate_size,
+            max_seq_len: int = 128,
+            transpose_value: bool = False,
+        ):
+            super().__init__()
+            self.op_parameters = parameters
+            self.op_id = str(uuid.uuid4())
+            self.layer_idx = layer_idx
+            self.max_seq_len = max_seq_len
+            self.transpose_value = transpose_value
+            # self.rotary_emb = rotary_emb
+            if isinstance(parameters[0], tuple):  # weight, scale from QuantizedLinear
+                np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+            else:  # FP16 Linear
+                np_dtype = np.float16
+
+            self.backend_cls_prefill = partial(
+                llama.LowBitLlamaMultiDecoderlayer,
+                num_heads=num_heads,
+                num_key_value_heads=num_key_value_heads,
+                num_layers=1,
+                cached_cos=cached_cos,
+                cached_sin=cached_sin,
+                input_layernorm_weights=None,
+                post_attn_layernorm_weights=None,
+                max_seq_len=max_seq_len,
+                rms_norm_eps=rms_norm_eps,
+                intermediate_size=intermediate_size,
+                mode="prefill",
+                transpose_value=self.transpose_value,
+                dtype=np_dtype,
+            )
+            self.layer_norm_0 = layer_norm_0
+            self.layer_norm_1 = layer_norm_1
+
+        def forward(
+            self,
+            hidden_states: torch.Tensor,
+            attention_mask: Optional[torch.Tensor] = None,
+            position_ids: Optional[torch.LongTensor] = None,
+            past_key_value: Optional[Cache] = None,
+            output_attentions: bool = False,
+            use_cache: bool = False,
+            cache_position: Optional[torch.LongTensor] = None,
+            **kwargs,
+        ) -> torch.Tensor:
+            """Torch module forward method.
+
+            Args:
+                x (torch.Tensor): Input tensor
+
+            Returns:
+                torch.Tensor: result
+            """
+
+            seq_len = hidden_states.shape[1]
+
+            backend_cls = self.backend_cls_prefill
+            inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
+            inputs += (self.layer_norm_0, self.layer_norm_1)
+            hidden_states, past_key, past_value = run_model(
+                inputs, self.op_parameters, backend_cls, self.op_id, replica=2
+            )
+            cache_kwargs = {
+                "cache_position": cache_position,
+                "max_seq_len": self.max_seq_len,
+                "transpose": self.transpose_value,
+            }
+            key_states, value_states = past_key_value.update(
+                past_key, past_value, self.layer_idx, cache_kwargs
+            )
+
+            outputs = (hidden_states,)
+            outputs += (past_key_value,)
+            return outputs
+    
+def run_prefill(
+    model, max_output_len, max_prompt_len, transpose_value_cache, input_queue, result_queue
+):
+
+    model_type = model.config.model_type
+
+    layer_start = 0
+    layer_end = len(model.model.layers)
+    num_heads = model.model.layers[layer_start].self_attn.num_heads
+    num_key_value_heads = model.model.layers[layer_start].self_attn.num_key_value_heads
+    head_dim = model.model.layers[layer_start].self_attn.head_dim
+    rms_norm_eps = model.config.rms_norm_eps
+    intermediate_size = model.config.intermediate_size
+    deocderlayers = []
+    layer_weights = []
+    input_layer_norm_weights = []
+    post_attn_layernorm_weights = []
+    layer_indexs = range(layer_start, layer_end)
+    for layer_idx in layer_indexs:
+        curr_layer = model.model.layers[layer_idx]
+        attn_layer = curr_layer.self_attn
+        mlp_layer = curr_layer.mlp
+
+        if model_type == "qwen2" and model.config.intermediate_size == 8960:
+            # for qwen2-1.5b
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            ]
+        elif model_type == "qwen2" and model.config.intermediate_size == 18944:
+            # for qwen2-7b
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
+                (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
+            ]
+        elif model_type == "llama":
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            ]
+
+        cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
+        cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+
+        layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
+        layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
+
+        if model_type == "llama":
+            new_decoderlayer = llama.FusedLlamaLowBitDecoderlayer(
+                weights,
+                num_heads=num_heads,
+                num_key_value_heads=num_key_value_heads,
+                cached_cos=cached_cos,
+                cached_sin=cached_sin,
+                layer_norm_0=layer_norm_0,
+                layer_norm_1=layer_norm_1,
+                layer_idx=layer_idx,
+                rms_norm_eps=rms_norm_eps,
+                intermediate_size=intermediate_size,
+                max_seq_len=max_output_len,
+                transpose_value=transpose_value_cache,
+            )
+        elif model_type == "qwen2":
+            new_decoderlayer = qwen.FusedQwenLowBitDecoderlayer(
+                weights,
+                num_heads=num_heads,
+                num_key_value_heads=num_key_value_heads,
+                cached_cos=cached_cos,
+                cached_sin=cached_sin,
+                layer_norm_0=layer_norm_0,
+                layer_norm_1=layer_norm_1,
+                q_bias=attn_layer.q_proj.bias.to(torch.float16),
+                k_bias=attn_layer.k_proj.bias.to(torch.float16),
+                v_bias=attn_layer.v_proj.bias.to(torch.float16),
+                layer_idx=layer_idx,
+                rms_norm_eps=rms_norm_eps,
+                intermediate_size=intermediate_size,
+                max_seq_len=max_output_len,
+                transpose_value=transpose_value_cache,
+            )
+
+        layer_weights.extend(weights)
+        input_layer_norm_weights.append(layer_norm_0)
+        post_attn_layernorm_weights.append(layer_norm_1)
+        model.model.layers[layer_idx] = new_decoderlayer
+        deocderlayers.append(new_decoderlayer)
+
+    print("finish creating all decode layers in prefill")
+    result_queue.put("loading finish")
+
+    while True:
+
+        result = input_queue.get()
+        if result == "stop":
+            break
+        
+        if model_type == "llama":
+            hidden_states, position_ids, causal_mask, past_key_values, cache_position = result
+            with torch.inference_mode():
+                for decoder_layer in deocderlayers:
+                    layer_outputs = decoder_layer(
+                        hidden_states,
+                        attention_mask=causal_mask,
+                        position_ids=position_ids,
+                        past_key_value=past_key_values,
+                        output_attentions=False,
+                        use_cache=True,
+                        cache_position=cache_position,
+                    )
+
+                    hidden_states = layer_outputs[0]
+                    next_decoder_cache = layer_outputs[1]
+
+                result_queue.put((hidden_states, next_decoder_cache))
+        
+        elif model_type == "qwen2":
+            hidden_states, position_ids, causal_mask, past_key_values = result
+            with torch.inference_mode():
+                for decoder_layer in deocderlayers:
+                    layer_outputs = decoder_layer(
+                        hidden_states,
+                        attention_mask=causal_mask,
+                        position_ids=position_ids,
+                        past_key_value=past_key_values,
+                        output_attentions=False,
+                        use_cache=True,
+                    )
+
+                    hidden_states = layer_outputs[0]
+                    next_decoder_cache = layer_outputs[1]
+                result_queue.put((hidden_states, next_decoder_cache))
+
+
+class BasePrefillRunner:
+    def __init__(self, model, max_output_len, max_prompt_len, transpose_value_cache):
+        self.model = model
+        self.max_output_len = max_output_len
+        self.max_prompt_len = max_prompt_len
+        self.transpose_value_cache = transpose_value_cache
+
+        self.prefill_result_queue = mp.Queue()
+        self.prefill_input_queue = mp.Queue()
+
+        self.p = mp.Process(
+            target=run_prefill,
+            args=(
+                model,
+                max_output_len,
+                max_prompt_len,
+                transpose_value_cache,
+                self.prefill_input_queue,
+                self.prefill_result_queue,
+            ),
+        )
+        self.p.daemon = True
+        self.p.start()
+        output = self.prefill_result_queue.get()
+        print(Fore.GREEN + f"prefill process output: {output}")
+        print(Style.RESET_ALL)
+    
+    def shutdown(self):
+        self.prefill_input_queue.put("stop")
+        self.p.join(3)
+        if self.p.exitcode is None:
+            self.p.kill()
+
+    def __del__(self):
+        self.shutdown()
