@@ -1108,14 +1108,15 @@ def qwen2_casullm_forward(
     # ipex-llm change start
     hidden_states = reshape_lm_head_input(hidden_states)
 
-    if self.config.hidden_size == 3584 and self.config.vocab_size == 152064:
+    if self.config.hidden_size == 3584 and self.config.vocab_size == 152064 and \
+            hasattr(self, "lm_head_0"):
         # for Qwen2-7B-Insturct
         if hidden_states.size(0) * hidden_states.size(1) == 1:
             logits = self.lm_head_0(hidden_states)
         else:
             split_num = 7
             split_size = hidden_states.size(-1) // split_num // 2 * 2
-    
+
             logits = None
             for i in range(split_num):
                 start_idx = i * split_size
@@ -1123,10 +1124,10 @@ def qwen2_casullm_forward(
                     end_idx = hidden_states.size(-1)
                 else:
                     end_idx = (i + 1) * split_size
-    
+
                 hidden_states_slice = hidden_states[:, :, start_idx:end_idx]
                 logits_slice = getattr(self, f'lm_head_{i}')(hidden_states_slice)
-    
+
                 if logits is None:
                     logits = logits_slice
                 else:

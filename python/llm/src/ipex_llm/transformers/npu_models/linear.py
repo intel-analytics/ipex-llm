@@ -179,10 +179,8 @@ class QLinear(NNFactory):
         Returns:
             np.ndarray: result
         """
-        if not (X.shape[0] == self.batch and X.shape[1] == self.inC):
-            raise RuntimeError(
-                f"Input shape {X.shape} different from expected one {(self.batch, self.inC)}"
-            )
+        invalidInputError(X.shape[0] == self.batch and X.shape[1] == self.inC,
+                          f"Input shape {X.shape} different from expected one {(self.batch, self.inC)}")
         return super().run(X, (W, scale), op_id=op_id)
 
 
@@ -195,12 +193,14 @@ def run_matmul(
     scale: Optional[torch.Tensor] = None,
     op_id: Optional[str] = None,
 ) -> torch.Tensor:
-    """Run a matmul operation. Depending on the datatype of the weights it runs a float or quantized operation.
+    """Run a matmul operation. Depending on the datatype of the weights it runs a float or 
+    quantized operation.
 
     Args:
         x (torch.Tensor): Activation tensor. Its dtype must be torch.float16
         weights (torch.Tensor): Weights tensor.  Its dtype can be torch.float16 or torch.int8
-        scale (Optional[torch.Tensor], optional): Quantization scale. If weights.dtype == torch.int8 then it must be set. Defaults to None.
+        scale (Optional[torch.Tensor], optional): Quantization scale.
+            If weights.dtype == torch.int8 then it must be set. Defaults to None.
         op_id (Optional[str], optional): Operation ID. Defaults to None.
 
     Raises:
@@ -215,15 +215,15 @@ def run_matmul(
     x = set_contiguous(x)
 
     if weights.dtype in (torch.int8, torch.uint8):
-        if scale is None:
-            raise RuntimeError("Quantized weights require a not null scale")
+        invalidInputError(scale is not None,
+                          "Quantized weights require a not null scale")
         op_class = QLinear
         op_class_name = op_class.__name__
         np_dtype = np.int8 if weights.dtype == torch.int8 else np.uint8
         create_op = partial(op_class, dtype=np_dtype)
         op_args = [weights.numpy(), scale.numpy()]
     else:
-        raise RuntimeError(f"Unsupported dtype for weights {weights.dtype}")
+        invalidInputError(False, f"Unsupported dtype for weights {weights.dtype}")
 
     # Use or not op_id depending on the class used
     op_kwargs = {"op_id": op_id} if op_id else {}
@@ -327,8 +327,8 @@ class LMHeadLinear(NNFactory):
             else:
                 end_idx = (i + 1) * split_size
 
-            input_slice = self.slice(input, begin = [0, start_idx], \
-                                     end = [self.batch, end_idx])
+            input_slice = self.slice(input, begin=[0, start_idx],
+                                     end=[self.batch, end_idx])
             linear_slice = self.linear(input_slice, outC, split_size, bias=False, wt_dtype=dtype)
 
             if i == 0:

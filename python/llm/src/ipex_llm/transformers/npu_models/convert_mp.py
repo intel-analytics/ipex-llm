@@ -91,7 +91,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
 
         # for Qwen2-7B-Insturct, divide lm_head into 7 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
-            not cpu_lm_head:
+                not cpu_lm_head:
             split_num = 7
             split_size = model.lm_head.weight.size(1) // split_num // 2 * 2
  
@@ -103,7 +103,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
                     end_idx = model.lm_head.weight.size(1)
                 else:
                     end_idx = (i + 1) * split_size
-                new_weight = torch.nn.Parameter(model.lm_head.weight[:, start_idx:end_idx], requires_grad=False)
+                new_weight = torch.nn.Parameter(model.lm_head.weight[:, start_idx:end_idx],
+                                                requires_grad=False)
  
                 new_linear.weight = new_weight
                 new_linear.in_features = new_weight.size(1)
@@ -112,7 +113,6 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
                 setattr(model, f'lm_head_{i}', new_linear)
  
             del model.lm_head
-
 
     # lm_head to cpu optimization
     if cpu_lm_head:
@@ -214,7 +214,8 @@ def optimize_llm(
                 os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") == "0":
             np_dtype = np.uint8 if model.lm_head_0.weight.dtype == torch.uint8 else np.int8
             split_num = 7
-            model.lm_head_0.fused_lm_head = LMHeadLinear(model.config.hidden_size, model.lm_head_0.outC,
+            model.lm_head_0.fused_lm_head = LMHeadLinear(model.config.hidden_size,
+                                                         model.lm_head_0.outC,
                                                          1, split_num, False, "NPU",
                                                          dtype=np_dtype)
             fused_lm_head_weights = [(getattr(model, f"lm_head_{i}").weight.data.numpy(),
