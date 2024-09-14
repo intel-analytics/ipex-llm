@@ -15,6 +15,8 @@
 
 # This file is adapted from
 # https://github.com/intel/intel-npu-acceleration-library/blob/main/intel_npu_acceleration_library/nn/linear.py
+# https://github.com/intel/intel-npu-acceleration-library/blob/main/intel_npu_acceleration_library/backend/runtime.py
+# https://github.com/intel/intel-npu-acceleration-library/blob/main/intel_npu_acceleration_library/backend/qlinear.py
 
 #
 # Copyright © 2024 Intel Corporation
@@ -29,6 +31,7 @@ from torch.nn import Parameter
 import uuid
 import math
 from intel_npu_acceleration_library.backend import NNFactory
+from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
 from typing import Optional, Dict, Deque, Union
 from functools import partial
 from collections import deque
@@ -292,7 +295,7 @@ class LMHeadLinear(NNFactory):
         inC: int,
         outC: int,
         batch: int,
-        op_id: str = None,
+        split_num: int = 2,
         profile: bool = False,
         device: str = "NPU",
         dtype: np.dtype = np.int8,
@@ -314,7 +317,7 @@ class LMHeadLinear(NNFactory):
 
         input = self.parameter((self.batch, self.inC))
 
-        split_num = 7
+        self.split_num = split_num
         split_size = self.inC // split_num // 2 * 2
 
         for i in range(7):
@@ -333,10 +336,9 @@ class LMHeadLinear(NNFactory):
             else:
                 res += linear_slice
 
-        print("start compile lm_head .")
+        print("start compiling lm_head")
         self.compile()
-        print("end compile lm_head.")
-        self.prefetch = False
+        print("end compiling lm_head")
 
     def run(
         self, X: np.ndarray
@@ -352,7 +354,6 @@ class LMHeadLinear(NNFactory):
         Returns:
             np.ndarray: result
         """
-        from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
         self.prefetchWeights(1, verify_size=False)
 
         self.set_input_tensor(X, 0)
@@ -436,13 +437,10 @@ class QuantizedLinear(torch.nn.Module):
         x_2d = x.view(-1, x.shape[-1])
         target_shape = tuple(list(original_shape[:-1]) + [self.outC])
 
-        if x_2d.shape[0] > 1:
+        if x_2d.shape[0] > 1 or not hasattr(self, 'fused_lm_head'):
             out = run_matmul(x_2d, self.inC, self.outC, self.weight.data, self.scale.data, self.op_id)
         else:
-            if hasattr(self, 'fused_lm_head'):
-                out = self.fused_lm_head.run(x_2d.numpy())
-            else:
-                out = self.run(x_2d.numpy())
+            out = self.fused_lm_head.run(x_2d.numpy())
             out = torch.from_numpy(out)
 
         out = out.view(target_shape)

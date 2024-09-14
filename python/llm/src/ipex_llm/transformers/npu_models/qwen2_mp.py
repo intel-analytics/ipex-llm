@@ -1107,7 +1107,7 @@ def qwen2_casullm_forward(
     hidden_states = outputs[0]
     # ipex-llm change start
     hidden_states = reshape_lm_head_input(hidden_states)
-    
+
     if self.config.hidden_size == 3584 and self.config.vocab_size == 152064:
         # for Qwen2-7B-Insturct
         if hidden_states.size(0) * hidden_states.size(1) == 1:

@@ -87,11 +87,11 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
 
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_down_proj
-        from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_forward
         model.apply(split_mlp_down_proj)
 
         # for Qwen2-7B-Insturct, divide lm_head into 7 parts
-        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064:
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
+            not cpu_lm_head:
             split_num = 7
             split_size = model.lm_head.weight.size(1) // split_num // 2 * 2
  
@@ -210,24 +210,16 @@ def optimize_llm(
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
 
         # for Qwen2-7B-Insturct, divide lm_head into 7 parts
-        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064:
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
+                os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") == "0":
             np_dtype = np.uint8 if model.lm_head_0.weight.dtype == torch.uint8 else np.int8
-            model.lm_head_0.fused_lm_head = LMHeadLinear(model.config.hidden_size, model.lm_head_0.outC, 1,
-                                               model.lm_head_0.op_id, False, "NPU", dtype=np_dtype)
-            weights = [
-                (model.lm_head_0.weight, model.lm_head_0.scale),
-                (model.lm_head_1.weight, model.lm_head_1.scale),
-                (model.lm_head_2.weight, model.lm_head_2.scale),
-                (model.lm_head_3.weight, model.lm_head_3.scale),
-                (model.lm_head_4.weight, model.lm_head_4.scale),
-                (model.lm_head_5.weight, model.lm_head_5.scale),
-                (model.lm_head_6.weight, model.lm_head_6.scale),
-            ]
-
-            fused_lm_head_weights = []
-            for w in weights:
-                fused_lm_head_weights.append((w[0].numpy(), w[1].numpy()))
-            
+            split_num = 7
+            model.lm_head_0.fused_lm_head = LMHeadLinear(model.config.hidden_size, model.lm_head_0.outC,
+                                                         1, split_num, False, "NPU",
+                                                         dtype=np_dtype)
+            fused_lm_head_weights = [(getattr(model, f"lm_head_{i}").weight.data.numpy(),
+                                      getattr(model, f"lm_head_{i}").scale.data.numpy())
+                                      for i in range(0, split_num)]
             model.lm_head_0.fused_lm_head.setWeights(1, model.lm_head_0.op_id, *fused_lm_head_weights)
 
     elif model.config.model_type == "minicpm":
