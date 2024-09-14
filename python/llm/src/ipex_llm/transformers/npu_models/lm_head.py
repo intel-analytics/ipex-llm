@@ -56,15 +56,10 @@ class LMHeadLinear(NNFactory):
 
         for i in range(self.split_num):
             start_idx = i * split_size
-            if i == split_num - 1:
-                end_idx = self.inC
-            else:
-                end_idx = (i + 1) * split_size
-
+            end_idx = (i + 1) * split_size if i < self.split_num - 1 else self.inC
             input_slice = self.slice(input, begin=[0, start_idx],
                                      end=[self.batch, end_idx])
             linear_slice = self.linear(input_slice, outC, split_size, bias=False, wt_dtype=dtype)
-
             if i == 0:
                 res = linear_slice
             else:
@@ -89,7 +84,6 @@ class LMHeadLinear(NNFactory):
             np.ndarray: result
         """
         self.prefetchWeights(1, verify_size=False)
-
         self.set_input_tensor(X, 0)
         self.elapsed = backend_lib.run(self._mm)
         if len(self.out) == 1:
@@ -107,10 +101,7 @@ class SlicedLMHead(nn.Module):
         for i in range(split_num):
             new_linear = torch.nn.Linear(0, 0, bias=False)
             start_idx = i * split_size
-            if i == split_num - 1:
-                end_idx = weight.size(1)
-            else:
-                end_idx = (i + 1) * split_size
+            end_idx = (i + 1) * split_size if i < split_num - 1 else weight.size(1)
             new_weight = torch.nn.Parameter(weight[:, start_idx:end_idx],
                                             requires_grad=False)
             new_linear.weight = new_weight
@@ -130,18 +121,12 @@ class SlicedLMHead(nn.Module):
             logits = logits.view(target_shape)
         else:
             split_size = hidden_states.size(-1) // self.split_num // 2 * 2
-
             logits = None
             for i in range(self.split_num):
                 start_idx = i * split_size
-                if i == self.split_num - 1:
-                    end_idx = hidden_states.size(-1)
-                else:
-                    end_idx = (i + 1) * split_size
-
+                end_idx = (i + 1) * split_size if i < self.split_num - 1 else self.inC
                 hidden_states_slice = hidden_states[:, :, start_idx:end_idx]
                 logits_slice = self.lm_heads[i](hidden_states_slice)
-
                 if logits is None:
                     logits = logits_slice
                 else:
