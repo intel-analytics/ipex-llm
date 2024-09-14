@@ -153,3 +153,13 @@ class SlicedLMHead(nn.Module):
 
     def get_weight_dtype(self):
         return self.lm_heads[0].weight.dtype
+
+    def get_fused_lm_head(self):
+        np_dtype = np.uint8 if self.get_weight_dtype() == torch.uint8 else np.int8
+        self.fused_lm_head = LMHeadLinear(self.inC, self.outC, 1, self.split_num,
+                                          False, "NPU", dtype=np_dtype)
+        fused_lm_head_weights = [(self.lm_heads[i].weight.data.numpy(),
+                                  self.lm_heads[i].scale.data.numpy())
+                                 for i in range(self.split_num)]
+        self.fused_lm_head.setWeights(1, self.lm_heads[0].op_id,
+                                      *fused_lm_head_weights)
