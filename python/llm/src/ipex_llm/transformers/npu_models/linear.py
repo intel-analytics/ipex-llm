@@ -180,7 +180,8 @@ class QLinear(NNFactory):
             np.ndarray: result
         """
         invalidInputError(X.shape[0] == self.batch and X.shape[1] == self.inC,
-                          f"Input shape {X.shape} different from expected one {(self.batch, self.inC)}")
+                          f"Input shape {X.shape} different from expected "
+                          "one {(self.batch, self.inC)}")
         return super().run(X, (W, scale), op_id=op_id)
 
 
@@ -402,7 +403,6 @@ class QuantizedLinear(torch.nn.Module):
         self.bias = bias
         self.op_id = str(uuid.uuid4())
 
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Torch module forward method.
 
@@ -438,7 +438,8 @@ class QuantizedLinear(torch.nn.Module):
         target_shape = tuple(list(original_shape[:-1]) + [self.outC])
 
         if x_2d.shape[0] > 1 or not hasattr(self, 'fused_lm_head'):
-            out = run_matmul(x_2d, self.inC, self.outC, self.weight.data, self.scale.data, self.op_id)
+            out = run_matmul(x_2d, self.inC, self.outC, self.weight.data,
+                             self.scale.data, self.op_id)
         else:
             out = self.fused_lm_head.run(x_2d.numpy())
             out = torch.from_numpy(out)

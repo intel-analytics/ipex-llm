@@ -94,10 +94,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
                 not cpu_lm_head:
             split_num = 7
             split_size = model.lm_head.weight.size(1) // split_num // 2 * 2
- 
             for i in range(split_num):
                 new_linear = torch.nn.Linear(0, 0, bias=False)
- 
                 start_idx = i * split_size
                 if i == split_num - 1:
                     end_idx = model.lm_head.weight.size(1)
@@ -105,13 +103,11 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
                     end_idx = (i + 1) * split_size
                 new_weight = torch.nn.Parameter(model.lm_head.weight[:, start_idx:end_idx],
                                                 requires_grad=False)
- 
+
                 new_linear.weight = new_weight
                 new_linear.in_features = new_weight.size(1)
                 new_linear.out_features = new_weight.size(0)
- 
                 setattr(model, f'lm_head_{i}', new_linear)
- 
             del model.lm_head
 
     # lm_head to cpu optimization
