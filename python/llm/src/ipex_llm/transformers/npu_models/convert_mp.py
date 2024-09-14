@@ -195,7 +195,7 @@ def optimize_llm(
         # for Qwen2-7B-Insturct, divide lm_head into 7 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
                 hasattr(model.lm_head, "lm_heads"):
-            np_dtype = np.uint8 if model.lm_head.lm_heads[0].weight.dtype == torch.uint8 else np.int8
+            np_dtype = np.uint8 if model.lm_head.get_weight_dtype() == torch.uint8 else np.int8
             model.lm_head.fused_lm_head = LMHeadLinear(model.config.hidden_size,
                                                        model.lm_head.outC,
                                                        1, model.lm_head.split_num,
@@ -205,7 +205,7 @@ def optimize_llm(
                                       model.lm_head.lm_heads[i].scale.data.numpy())
                                      for i in range(model.lm_head.split_num)]
             model.lm_head.fused_lm_head.setWeights(1, model.lm_head.lm_heads[0].op_id,
-                                                     *fused_lm_head_weights)
+                                                   *fused_lm_head_weights)
     elif model.config.model_type == "minicpm":
         # for minicpm-1b
         if intra_pp is None:

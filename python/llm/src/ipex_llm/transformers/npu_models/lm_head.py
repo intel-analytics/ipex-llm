@@ -150,3 +150,6 @@ class SlicedLMHead(nn.Module):
         if self.bias is None:
             return logits
         return logits + self.bias
+
+    def get_weight_dtype(self):
+        return self.lm_heads[0].weight.dtype
