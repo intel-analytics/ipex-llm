@@ -302,7 +302,6 @@ def convert_vllm_awq(module, gptq=False, act_order=False):
 
     scales = module.scales
     # vLLM only supports load 4-bits model, so this has been checked
-    bits = 4
     if gptq:
         bits = module.quant_method.quant_config.weight_bits
         wf = (torch.tensor([0, 1, 2, 3, 4, 5, 6, 7],
