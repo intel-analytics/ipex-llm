@@ -654,6 +654,697 @@ def gen_whisper_encoder_forward(prefill_runner):
     return whisper_fused_encoder_forward
 
 
+class LowBitWhisperMultiDecoderlayer(LLMBaseNNFactory):
+    def __init__(
+        self,
+        # batch_size: int,
+        # seq_len: int,
+        # hidden_size: int,
+        hidden_shape: Sequence[int],
+        *shapes,
+        num_heads: int,
+        # num_key_value_heads: int,
+        num_layers: int,
+        self_attn_layer_norm_weights=None,
+        self_attn_layer_norm_biases=None,
+        encoder_attn_layer_norm_weights=None,
+        encoder_attn_layer_norm_biases=None,
+        final_layer_norm_weights=None,
+        final_layer_norm_biases=None,
+        v_proj_biases=None,
+        q_proj_biases=None,
+        out_proj_biases=None,
+        enc_v_proj_biases=None,
+        enc_q_proj_biases=None,
+        enc_out_proj_biases=None,
+        fc1_biases=None,
+        fc2_biases=None,
+        mode: str = "prefill",  # still need to distinguish 1st token and rest
+        cross_past_keys=None,
+        cross_past_values=None, # only 1st token need to calculate cross_past_kv, this is constant in following forward
+        dtype: np.dtype = np.int8,
+        max_seq_len: int = 1024,
+        transpose_value: bool = False,
+        profile: bool = False,
+        device: str = "NPU",
+        decoder_ffn_dim,
+        max_source_positions,
+    ):
+        super().__init__(max_seq_len=max_seq_len,
+                         transpose_value=transpose_value,
+                         dtype=dtype,
+                         profile=profile,
+                         device=device)
+        self.max_seq_len = max_seq_len
+        self.dtype = dtype
+        self.batch_size, self.seq_len, self.hidden_size = hidden_shape
+        self.mode = mode
+        self.decoder_ffn_dim = decoder_ffn_dim
+        self.transpose_value = transpose_value
+        self.num_layers = num_layers
+        self.max_source_positions = max_source_positions
+
+        self.kv_seq_len = self.max_seq_len + 1
+
+        self.num_heads = num_heads
+
+        self.head_dim = self.hidden_size // self.num_heads
+
+        # define input, the order self.parameter matters
+        input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
+
+        # seems attention_mask is not None only during 1st token forward
+        if self.mode == "prefill":
+            assert self.seq_len > 1
+            attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len))
+        else:
+            assert self.seq_len == 1
+            attention_mask = None
+
+        encoder_hidden_states = self.create_input_op((self.batch_size, self.max_source_positions, self.hidden_size))
+
+        # suppose layer_head_mask and cross_attn_layer_head_mask is None
+
+        # self_attn_past_key_value and cross_attn_past_key_value
+        past_keys, past_values, cross_past_keys, cross_past_values = [], [], [], []
+        if self.seq_len == 1:
+            for i in range(num_layers):
+                past_key = self.create_cache_op(
+                    (self.batch_size, self.num_heads, self.max_seq_len, self.head_dim)
+                )
+                if transpose_value:
+                    past_value = self.create_cache_op(
+                        (self.batch_size, self.num_heads, self.head_dim, self.max_seq_len)
+                    )
+                else:
+                    past_value = self.create_cache_op(
+                        (self.batch_size, self.num_heads, self.max_seq_len, self.head_dim)
+                    ) 
+                past_keys.append(past_key)
+                past_values.append(past_value)
+        else:
+            past_keys = [None] * num_layers
+            past_values = [None] * num_layers
+            
+        if self.mode == 'prefill':
+            cross_past_keys = [None] * num_layers
+            cross_past_values = [None] * num_layers
+        else:
+            assert cross_past_keys is not None and cross_past_values is not None
+            cross_past_keys = [self.constant(w) for w in cross_past_keys]
+            cross_past_values = [self.constant(w) for w in cross_past_values]
+
+        if self_attn_layer_norm_weights is None:
+            self_attn_layer_norm_weights, self_attn_layer_norm_biases = [], []
+            encoder_attn_layer_norm_weights, encoder_attn_layer_norm_biases = [], []
+            final_layer_norm_weights, final_layer_norm_biases = [], []
+            for i in range(num_layers):
+                self_attn_layer_norm_weights.append(
+                    self.create_input_op(
+                        (
+                            1,
+                            self.hidden_size,
+                        )
+                    )
+                )
+                self_attn_layer_norm_biases.append(
+                    self.create_input_op(
+                        (
+                            1,
+                            self.hidden_size,
+                        )
+                    )
+                )
+                encoder_attn_layer_norm_weights.append(
+                    self.create_input_op(
+                        (
+                            1,
+                            self.hidden_size,
+                        )
+                    )
+                )
+                encoder_attn_layer_norm_biases.append(
+                    self.create_input_op(
+                        (
+                            1,
+                            self.hidden_size,
+                        )
+                    )
+                )
+                final_layer_norm_weights.append(
+                    self.create_input_op(
+                        (
+                            1,
+                            self.hidden_size,
+                        )
+                    )
+                )
+                final_layer_norm_biases.append(
+                    self.create_input_op(
+                        (
+                            1,
+                            self.hidden_size,
+                        )
+                    )
+                )
+        else:
+            self_attn_layer_norm_weights = [self.constant(w) for w in self_attn_layer_norm_weights]
+            self_attn_layer_norm_biases = [self.constant(w) for w in self_attn_layer_norm_biases]
+            encoder_attn_layer_norm_weights = [self.constant(w) for w in encoder_attn_layer_norm_weights]
+            encoder_attn_layer_norm_biases = [self.constant(w) for w in encoder_attn_layer_norm_biases]
+            final_layer_norm_weights = [self.constant(w) for w in final_layer_norm_weights]
+            final_layer_norm_biases = [self.constant(w) for w in final_layer_norm_biases]
+
+        if v_proj_biases is None:
+            v_proj_biases, q_proj_biases, out_proj_biases = [], [], []
+            enc_v_proj_biases, enc_q_proj_biases, enc_out_proj_biases = [], [], []
+            fc1_biases, fc2_biases = [], []
+            for i in range(num_layers):
+                v_proj_biases.append(self.create_input_op((self.hidden_size,)))
+                q_proj_biases.append(self.create_input_op((self.hidden_size,)))
+                out_proj_biases.append(self.create_input_op((self.hidden_size,)))
+                enc_v_proj_biases.append(self.create_input_op((self.hidden_size,)))
+                enc_q_proj_biases.append(self.create_input_op((self.hidden_size,)))
+                enc_out_proj_biases.append(self.create_input_op((self.hidden_size,)))
+                fc1_biases.append(self.create_input_op((self.decoder_ffn_dim,)))
+                fc2_biases.append(self.create_input_op((self.hidden_size,)))
+        else:
+            v_proj_biases = [self.constant(w) for w in v_proj_biases]
+            q_proj_biases = [self.constant(w) for w in q_proj_biases]
+            out_proj_biases = [self.constant(w) for w in out_proj_biases]
+            enc_v_proj_biases = [self.constant(w) for w in enc_v_proj_biases]
+            enc_q_proj_biases = [self.constant(w) for w in enc_q_proj_biases]
+            enc_out_proj_biases = [self.constant(w) for w in enc_out_proj_biases]
+            fc1_biases = [self.constant(w) for w in fc1_biases]
+            fc2_biases = [self.constant(w) for w in fc2_biases]
+        
+        hidden_states = input
+
+        curr_key_values = []
+        for i in range(num_layers):
+            hidden_states, new_key_states, new_value_states, new_cross_key_states, new_cross_value_states = self.build_decoder(
+                hidden_states=hidden_states,
+                attention_mask=attention_mask,
+                encoder_hidden_states=encoder_hidden_states,
+                layer_head_mask=None,
+                self_attn_layer_norm_weight=self_attn_layer_norm_weights[i],
+                self_attn_layer_norm_bias=self_attn_layer_norm_biases[i],
+                encoder_attn_layer_norm_weight=encoder_attn_layer_norm_weights[i],
+                encoder_attn_layer_norm_bias=encoder_attn_layer_norm_biases[i],
+                final_layer_norm_weight=final_layer_norm_weights[i],
+                final_layer_norm_bias=final_layer_norm_biases[i],
+                v_proj_bias=v_proj_biases[i],
+                q_proj_bias=q_proj_biases[i],
+                out_proj_bias=out_proj_biases[i],
+                enc_v_proj_bias=enc_v_proj_biases[i],
+                enc_q_proj_bias=enc_q_proj_biases[i],
+                enc_out_proj_bias=enc_out_proj_biases[i],
+                fc1_bias=fc1_biases[i],
+                fc2_bias=fc2_biases[i],
+                past_key=past_keys[i],
+                past_value=past_values[i],
+                cross_past_key=cross_past_keys[i],
+                cross_past_value=cross_past_values[i],
+            )
+            curr_key_values.append((new_key_states, new_value_states, new_cross_key_states, new_cross_value_states))
+
+        # define outputs
+        hidden_states = self.convert_to_fp16(hidden_states)
+
+        for i in range(num_layers):
+            new_key_states = self.convert_to_fp16(curr_key_values[i][0])
+            new_value_states = self.convert_to_fp16(curr_key_values[i][1])
+            new_cross_key_states = self.convert_to_fp16(curr_key_values[i][2])
+            new_cross_value_states = self.convert_to_fp16(curr_key_values[i][3])
+
+        print("start compiling")
+        self.compile()
+        print("end compiling")
+
+    def build_decoder(self,
+                      hidden_states,
+                      attention_mask,
+                      encoder_hidden_states,
+                      layer_head_mask,
+                      self_attn_layer_norm_weight,
+                      self_attn_layer_norm_bias,
+                      encoder_attn_layer_norm_weight,
+                      encoder_attn_layer_norm_bias,
+                      final_layer_norm_weight,
+                      final_layer_norm_bias,
+                      v_proj_bias,
+                      q_proj_bias,
+                      out_proj_bias,
+                      enc_v_proj_bias,
+                      enc_q_proj_bias,
+                      enc_out_proj_bias,
+                      fc1_bias,
+                      fc2_bias,
+                      past_key,
+                      past_value,
+                      cross_past_key,
+                      cross_past_value,):
+        residual = hidden_states
+        hidden_states = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
+
+        hidden_states = self.layer_norm(hidden_states, self_attn_layer_norm_weight, self_attn_layer_norm_bias)
+    
+        hidden_states, new_key_states, new_value_states = self.self_attn(
+            hidden_states=hidden_states,
+            past_key=past_key,
+            past_value=past_value,
+            attention_mask=attention_mask,
+            layer_head_mask=layer_head_mask,
+            v_proj_bias=v_proj_bias,
+            q_proj_bias=q_proj_bias,
+            out_proj_bias=out_proj_bias,
+        )
+        hidden_states = self.eltwise_add(residual, hidden_states)
+
+        # Cross-Attention Block
+        new_cross_key_states = None
+        new_cross_value_states = None
+        if encoder_hidden_states is not None:
+            residual = hidden_states
+            hidden_states = self.layer_norm(hidden_states, encoder_attn_layer_norm_weight, encoder_attn_layer_norm_bias)
+            hidden_states, new_cross_key_states, new_cross_value_states = self.encoder_attn(
+                hidden_states=hidden_states,
+                key_value_states=encoder_hidden_states,
+                attention_mask=None,
+                layer_head_mask=None,
+                past_key=cross_past_key,
+                past_value=cross_past_value,
+                v_proj_bias=enc_v_proj_bias,
+                q_proj_bias=enc_q_proj_bias,
+                out_proj_bias=enc_out_proj_bias,
+            )
+            hidden_states = self.eltwise_add(residual, hidden_states)
+        
+        # Fully Connected
+        residual = hidden_states
+        hidden_states = self.layer_norm(hidden_states, final_layer_norm_weight, final_layer_norm_bias)
+
+        hidden_states = self.linear(
+            hidden_states, self.decoder_ffn_dim, self.hidden_size, bias=False, wt_dtype=self.dtype
+        )
+        hidden_states = hidden_states + fc1_bias # fc1 bias=True
+        hidden_states = self.gelu(hidden_states)
+
+        hidden_states = self.linear(
+            hidden_states, self.hidden_size, self.decoder_ffn_dim, bias=False, wt_dtype=self.dtype
+        )
+        hidden_states = hidden_states + fc2_bias # fc2 bias=True
+        
+        hidden_states = self.eltwise_add(residual, hidden_states)
+        hidden_states = self.convert_to_fp16(hidden_states)
+
+        return hidden_states, new_key_states, new_value_states, new_cross_key_states, new_cross_value_states
+    
+    def layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):
+        hidden_states = self.convert_to_fp32(hidden_states)
+        mean_res = self.reduce_mean(hidden_states, -1, keep_dims=True,)
+        variance = self.reduce_mean(
+            self.power(hidden_states - mean_res, self.constant(np.array([[2]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
+        eps = self.constant(1e-5)
+        hidden_states = self.eltwise_div(hidden_states - mean_res, self.sqrt(self.eltwise_add(variance, eps)))
+        layernorm_weight = self.convert_to_fp32(layernorm_weight)
+        hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
+        layernorm_bias = self.convert_to_fp32(layernorm_bias)
+        hidden_states = self.eltwise_add(layernorm_bias, hidden_states)
+        hidden_states = self.convert_to_fp16(hidden_states)
+        return hidden_states
+
+    def self_attn(self,
+                  hidden_states,
+                  past_key,
+                  past_value,
+                  attention_mask,
+                  layer_head_mask,
+                  v_proj_bias,
+                  q_proj_bias,
+                  out_proj_bias,
+        ):
+        # is_cross_attention = False
+        scaling = self.head_dim**-0.5
+        query_states = self.linear(
+            hidden_states,
+            self.hidden_size,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        query_states = query_states + q_proj_bias # q_proj bias=True
+        query_states = query_states * scaling
+        query_states = self.reshape(
+            query_states, [1, self.seq_len, self.num_heads, self.head_dim]
+        )
+        query_states = self.transpose(query_states, [0, 2, 1, 3])
+
+        # TODO: add more caese, now only consider self_attention for encoder
+        # key_states = self._shape(self.k_proj(hidden_states), -1, bsz)
+        # value_states = self._shape(self.v_proj(hidden_states), -1, bsz)
+        key_states = self.linear(
+            hidden_states,
+            self.hidden_size,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        ) # k_proj bias=False
+        key_states = self.reshape(
+            key_states, [1, self.seq_len, self.num_heads, self.head_dim]
+        )
+        key_states = self.transpose(key_states, [0, 2, 1, 3])
+
+        value_states = self.linear(
+            hidden_states,
+            self.hidden_size,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        ) # v_proj bias=True
+        value_states = value_states + v_proj_bias
+        value_states = self.reshape(
+            value_states, [1, self.seq_len, self.num_heads, self.head_dim]
+        )
+        value_states = self.transpose(value_states, [0, 2, 1, 3])
+
+        if past_key is not None:
+            key_states = self.concat(past_key, key_states, axis=-2)
+            if self.transpose_value:
+                value_states = self.concat(past_value, value_states, axis=-1)
+            else:
+                value_states = self.concat(past_value, value_states, axis=-2)
+
+        new_key_states = key_states
+        new_value_states = value_states
+
+        query_states = self.reshape(
+            query_states, [1 * self.num_heads, self.seq_len, self.head_dim]
+        )
+        key_states = self.reshape(
+            key_states, [1 * self.num_heads, self.seq_len, self.head_dim]
+        )
+        value_states = self.reshape(
+            value_states, [1 * self.num_heads, self.seq_len, self.head_dim]
+        )
+
+        attn_weights = self.matmul(query_states, key_states, False, True)
+
+        if attention_mask is not None:
+            attn_weights = self.reshape(
+                attn_weights, [1, self.num_heads, self.seq_len, self.seq_len]
+            )
+            attn_weights = attn_weights + attention_mask
+            attn_weights = self.reshape(
+                attn_weights, [1 * self.num_heads, self.seq_len, self.seq_len]
+            )
+
+        attn_weights = self.softmax(attn_weights, -1)
+        attn_output = self.matmul(attn_weights, value_states, False, False)
+        attn_output = self.reshape(
+            attn_output, [1, self.num_heads, self.seq_len, self.head_dim]
+        )
+        attn_output = self.transpose(attn_output, [0, 2, 1, 3])
+        attn_output = self.reshape(
+            attn_output, [1, self.seq_len, self.hidden_size]
+        )
+
+        attn_output = self.linear(
+            attn_output,
+            self.hidden_size,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        ) # out_proj bias=True
+        attn_output = attn_output + out_proj_bias
+
+        # attn_weights_reshaped is None
+        return attn_output, new_key_states, new_value_states
+
+    def encoder_attn(self,
+                  hidden_states,
+                  key_value_states,
+                  past_key,
+                  past_value,
+                  attention_mask,
+                  layer_head_mask,
+                  v_proj_bias,
+                  q_proj_bias,
+                  out_proj_bias,
+        ):
+        # is_cross_attention = True
+        scaling = self.head_dim**-0.5
+        query_states = self.linear(
+            hidden_states,
+            self.hidden_size,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        )
+        query_states = query_states + q_proj_bias # q_proj bias=True
+        query_states = query_states * scaling
+        query_states = self.reshape(
+            query_states, [1, self.seq_len, self.num_heads, self.head_dim]
+        )
+        query_states = self.transpose(query_states, [0, 2, 1, 3])
+
+        if past_key is not None:
+            assert self.mode == 'decode'
+            # reuse k,v, cross_attentions
+            key_states = past_key
+            value_states = past_value
+        else:
+            assert self.mode == 'prefill'
+            key_states = self.linear(
+                key_value_states,
+                self.hidden_size,
+                self.hidden_size,
+                bias=False,
+                wt_dtype=self.dtype,
+            ) # k_proj bias=False
+            key_states = self.reshape(
+                key_states, [1, self.max_source_positions, self.num_heads, self.head_dim]
+            )
+            key_states = self.transpose(key_states, [0, 2, 1, 3])
+
+            value_states = self.linear(
+                key_value_states,
+                self.hidden_size,
+                self.hidden_size,
+                bias=False,
+                wt_dtype=self.dtype,
+            ) # v_proj bias=True
+            value_states = value_states + v_proj_bias
+            value_states = self.reshape(
+                value_states, [1, self.max_source_positions, self.num_heads, self.head_dim]
+            )
+            value_states = self.transpose(value_states, [0, 2, 1, 3])
+
+        new_key_states = key_states
+        new_value_states = value_states
+
+        query_states = self.reshape(
+            query_states, [1 * self.num_heads, self.seq_len, self.head_dim]
+        )
+        key_states = self.reshape(
+            key_states, [1 * self.num_heads, self.max_source_positions, self.head_dim]
+        )
+        value_states = self.reshape(
+            value_states, [1 * self.num_heads, self.max_source_positions, self.head_dim]
+        )
+
+        attn_weights = self.matmul(query_states, key_states, False, True)
+
+        if attention_mask is not None:
+            attn_weights = self.reshape(
+                attn_weights, [1, self.num_heads, self.seq_len, self.seq_len]
+            )
+            attn_weights = attn_weights + attention_mask
+            attn_weights = self.reshape(
+                attn_weights, [1 * self.num_heads, self.seq_len, self.seq_len]
+            )
+
+        attn_weights = self.softmax(attn_weights, -1)
+        attn_output = self.matmul(attn_weights, value_states, False, False)
+        attn_output = self.reshape(
+            attn_output, [1, self.num_heads, self.seq_len, self.head_dim]
+        )
+        attn_output = self.transpose(attn_output, [0, 2, 1, 3])
+        attn_output = self.reshape(
+            attn_output, [1, self.seq_len, self.hidden_size]
+        )
+
+        attn_output = self.linear(
+            attn_output,
+            self.hidden_size,
+            self.hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+        ) # out_proj bias=True
+        attn_output = attn_output + out_proj_bias
+
+        # attn_weights_reshaped is None
+        return attn_output, new_key_states, new_value_states
+
+
+class FusedWhisperLowBitMultiDecoderlayer(torch.nn.Module):
+    def __init__(
+        self,
+        parameters: List[torch.Tensor],
+        self_attn_layer_norm_weights,
+        self_attn_layer_norm_biases,
+        encoder_attn_layer_norm_weights,
+        encoder_attn_layer_norm_biases,
+        final_layer_norm_weights,
+        final_layer_norm_biases,
+        v_proj_biases,
+        q_proj_biases,
+        out_proj_biases,
+        enc_v_proj_biases,
+        enc_q_proj_biases,
+        enc_out_proj_biases,
+        fc1_biases,
+        fc2_biases,
+        num_heads: int,
+        head_dim: int,
+        # num_key_value_heads: int,
+        layer_indexes: List[int],
+        intra_stages: int,
+        decoder_ffn_dim,
+        max_source_positions,
+        max_seq_len: int = 128,
+        transpose_value: bool = False,
+        do_print: bool = False,
+    ):
+        super().__init__()
+
+        self.do_print = do_print
+
+        op_parameters = []
+        for w in parameters:
+            if isinstance(w, tuple):  # from QuantizedLinear
+                op_parameters.append((w[0].numpy(), w[1].numpy()))
+            else:
+                op_parameters.append(w.to(torch.float16).numpy())
+        self.op_parameters = op_parameters
+        self.op_id = str(uuid.uuid4())
+        self.max_seq_len = max_seq_len
+        self.transpose_value = transpose_value
+        if isinstance(parameters[0], tuple):
+            np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+        else:  # FP16 Linear
+            np_dtype = np.float16
+
+        self.intra_stages = intra_stages
+        self.layer_indexes = layer_indexes
+        num_layers = len(self.layer_indexes) // intra_stages
+        self.layer_ranges = []
+        for i in range(intra_stages):
+            if i == intra_stages - 1:
+                self.layer_ranges.append((i * num_layers, len(self.layer_indexes)))
+            else:
+                self.layer_ranges.append((i * num_layers, (i + 1) * num_layers))
+
+        self.backend_decoders = []
+
+        for i in range(intra_stages):
+            start, end = self.layer_ranges[i]
+            decoder = LowBitWhisperMultiDecoderlayer(
+                [1, 1, num_heads * head_dim],
+                self_attn_layer_norm_weights=self_attn_layer_norm_weights[start:end],
+                self_attn_layer_norm_biases=self_attn_layer_norm_biases[start:end],
+                encoder_attn_layer_norm_weights=encoder_attn_layer_norm_weights[start:end],
+                encoder_attn_layer_norm_biases=encoder_attn_layer_norm_biases[start:end],
+                final_layer_norm_weights=final_layer_norm_weights[start:end],
+                final_layer_norm_biases=final_layer_norm_biases[start:end],
+                v_proj_biases=v_proj_biases[start:end],
+                q_proj_biases=q_proj_biases[start:end],
+                out_proj_biases=out_proj_biases[start:end],
+                enc_v_proj_biases=enc_v_proj_biases[start:end],
+                enc_q_proj_biases=enc_q_proj_biases[start:end],
+                enc_out_proj_biases=enc_out_proj_biases[start:end],
+                fc1_biases=fc1_biases[start:end],
+                fc2_biases=fc2_biases[start:end],
+                num_heads=num_heads,
+                num_layers=end-start,
+                max_seq_len=max_seq_len,
+                transpose_value=self.transpose_value,
+                dtype=np_dtype,
+                decoder_ffn_dim=decoder_ffn_dim,
+                max_source_positions=max_source_positions,
+            )
+            self.backend_decoders.append(decoder)
+
+        offset = 0
+        for i in range(intra_stages):
+            start, end = self.layer_ranges[i]
+            curr_linear_ops = len(self.backend_decoders[i].linear_ops)
+            curr_parameters = self.op_parameters[offset:offset + curr_linear_ops]
+            self.backend_decoders[i].set_weights(self.op_id, curr_parameters)
+            offset = offset + curr_linear_ops
+
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        encoder_hidden_states: Optional[torch.Tensor] = None,
+        encoder_attention_mask: Optional[torch.Tensor] = None,
+        layer_head_mask: Optional[torch.Tensor] = None,
+        cross_attn_layer_head_mask: Optional[torch.Tensor] = None,
+        past_key_value: Optional[Tuple[torch.Tensor]] = None,
+        cross_past_key_value: Optional[Tuple[torch.Tensor]] = None,
+        output_attentions: Optional[bool] = False,
+        use_cache: Optional[bool] = True,
+    ) -> torch.Tensor:
+
+        inputs = (
+            hidden_states.to(torch.float16),
+            attention_mask,
+            encoder_hidden_states.to(torch.float16),
+        )
+
+        for i in range(self.intra_stages):
+            start, end = self.layer_ranges[i]
+            self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
+            self.backend_decoders[i].update_cache(cross_past_key_value, self.layer_indexes[start:end])
+
+        hidden_states, new_keys, new_values, new_cross_keys, new_cross_values = LowBitWhisperMultiDecoderlayer.run_decoders(
+            inputs,
+            decoders=self.backend_decoders)
+
+        if self.do_print:
+            print("outputs:", hidden_states)
+
+        outputs = (hidden_states,)
+        outputs += (past_key_value, cross_past_key_value, new_keys, new_values, new_cross_keys, new_cross_values)
+        return outputs
+
+    def post_forward(self, past_key_value, cross_past_key_value, new_keys, new_values, new_cross_keys, new_cross_values):
+        cache_kwargs = {
+            "max_seq_len": self.max_seq_len,
+            "transpose": self.transpose_value,
+        }
+        for i in range(len(self.layer_indexes)):
+            key_states, value_states = past_key_value.update(
+                new_keys[i],
+                new_values[i],
+                self.layer_indexes[i],
+                cache_kwargs,
+            )
+            key_states, value_states = cross_past_key_value.update(
+                new_cross_keys[i],
+                new_cross_values[i],
+                self.layer_indexes[i],
+                cache_kwargs,
+            )
+
+        for i in range(self.intra_stages):
+            self.backend_decoders[i].load_cache_async()
+
+
 def run_decode(
     model,
     rank,
