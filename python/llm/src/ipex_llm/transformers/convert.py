@@ -311,6 +311,8 @@ def convert_vllm_awq(module, gptq=False, act_order=False):
         wf = (torch.tensor([0, 4, 1, 5, 2, 6, 3, 7],
                            dtype=torch.int32) * 4).unsqueeze(0)
     group_size = module.quant_method.quant_config.group_size
+    if int(group_size) % Q4_1 != 0:
+        invalidInputError(False, (f"group_size:{group_size} must be divisible by "f"{Q4_1}."))
 
     zeros = torch.bitwise_right_shift(
         torch.unsqueeze(module.qzeros, 2).expand(-1, -1, 32 // bits),
