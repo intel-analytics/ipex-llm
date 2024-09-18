@@ -94,7 +94,8 @@ def run_model(
 
 class LLMBaseNNFactory(NNFactory):
 
-    def __init__(self, max_seq_len, transpose_value, dtype, profile=False, device="NPU", n_splits=1):
+    def __init__(self, max_seq_len, transpose_value, dtype, profile=False, device="NPU",
+                 n_splits_linear=1, n_splits_down_proj=1):
         super().__init__(profile, device)
         self.cache_parameter_ops = []
         self.input_ops = []
@@ -104,7 +105,8 @@ class LLMBaseNNFactory(NNFactory):
         self.max_seq_len = max_seq_len
         self.transpose_value = transpose_value
         self.dtype = dtype
-        self.n_splits=n_splits
+        self.n_splits_linear=n_splits_linear
+        self.n_splits_down_proj=n_splits_down_proj
 
     def attention(self,
                   *,
@@ -125,9 +127,9 @@ class LLMBaseNNFactory(NNFactory):
                   v_bias=None):
         hidden_size = num_heads * head_dim
         num_key_value_groups = num_heads // num_key_value_heads
-        groupsize = hidden_size // self.n_splits
+        groupsize = hidden_size // self.n_splits_linear
         # print(f"hidden states: {hidden_states.shape}")
-        if self.n_splits == 1:
+        if self.n_splits_linear == 1:
             query_states = self.linear(
                 hidden_states,
                 num_heads * head_dim,
@@ -155,7 +157,7 @@ class LLMBaseNNFactory(NNFactory):
             query_states_to_concat = []
             key_states_to_concat = []
             value_states_to_concat = []
-            for i in range(self.n_splits):
+            for i in range(self.n_splits_linear):
                 sub_hidden_states = self.slice(hidden_states,
                                                begin=[0, i * groupsize],
                                                end=[seq_len, (i + 1) * groupsize])
@@ -260,13 +262,13 @@ class LLMBaseNNFactory(NNFactory):
         attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
 
         # print(f"attn_output: {attn_output.shape}")
-        if self.n_splits == 1:
+        if self.n_splits_linear == 1:
             attn_output = self.linear(
                 attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
             )
         else:
             attn_output_to_concat = []
-            for i in range(self.n_splits):
+            for i in range(self.n_splits_linear):
                 sub_attn_output = self.slice(attn_output,
                                              begin=[0, 0, i * groupsize],
                                              end=[1, seq_len, (i + 1) * groupsize])
@@ -281,7 +283,7 @@ class LLMBaseNNFactory(NNFactory):
 
     def mlp(self, hidden_states, seq_len=-1):
         print(f"mp_models_base mlp")
-        if self.n_splits == 1:
+        if self.n_splits_linear == 1:
             mm1 = self.linear(
                 hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
             )
@@ -289,16 +291,12 @@ class LLMBaseNNFactory(NNFactory):
                 hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
             )  # type: ignore[attr-defined]
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
-            hidden_states = self.linear(
-                mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
-            )
         else:
             invalidInputError(seq_len > 0, "seq_len should be provided if use split linear")
-            gate_up_groupsize = self.hidden_size // self.n_splits
-            down_groupsize = self.intermediate_size // self.n_splits
+            gate_up_groupsize = self.hidden_size // self.n_splits_linear
             mm1_to_concat = []
             mm2_to_concat = []
-            for i in range(self.n_splits):
+            for i in range(self.n_splits_linear):
                 sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
                                             end=[1, seq_len, (i + 1) * gate_up_groupsize])
                 mm1_to_concat.append(
@@ -315,8 +313,15 @@ class LLMBaseNNFactory(NNFactory):
             mm2 = sum(mm2_to_concat)
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
 
+        if self.n_splits_down_proj == 1:
+            hidden_states = self.linear(
+                mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+            )
+        else:
+            invalidInputError(seq_len > 0, "seq_len should be provided if use split linear")
+            down_groupsize = self.intermediate_size // self.n_splits_down_proj
             hidden_states_to_concat = []
-            for i in range(self.n_splits):
+            for i in range(self.n_splits_down_proj):
                 sub_mm1 = self.slice(mm1, begin=[0, 0, i * down_groupsize],
                                         end=[1, seq_len, (i + 1) * down_groupsize])
                 hidden_states_to_concat.append(
