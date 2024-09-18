@@ -43,9 +43,14 @@ from ipex_llm.transformers.npu_models.common import reshape_lm_head_input
 from transformers.modeling_outputs import CausalLMOutputWithPast
 from torch.nn import CrossEntropyLoss
 from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP, Qwen2Attention
+from ipex_llm.utils.common.log4Error import invalidInputError
 
 
 def split_linear(module, module_name, n_splits=2):
+    in_features = module.in_features
+    invalidInputError(in_features % n_splits == 0,
+                      f"in_features of the linear layer {module_name} must be divisible by n_splits, " \
+                      f"but got in_features: {in_features}, n_splits: {n_splits}")
     weight_split = torch.tensor_split(module.weight, n_splits, dim=1)
     linear_list = torch.nn.ModuleList()
     bias = module.bias
@@ -262,77 +267,77 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         print(f"{mode} start compiling - {num_layers}-{transpose_value}-{n_splits}")
         self.compile()
         print(f"{mode} end compiling - {num_layers}-{transpose_value}-{n_splits}")
-        xml_path = f"qwen15-npu-both-dq-{mode}-{num_layers}-{transpose_value}-{n_splits}.xml"
+        xml_path = f"qwen7-npu-both-dq-{mode}-{num_layers}-{transpose_value}-{n_splits}.xml"
 
         if not os.path.exists(xml_path) and mode=="decode":
             self.save(xml_path)
 
 
-    def mlp(self, hidden_states, seq_len):
-        mm1_to_concat = []
-        mm2_to_concat = []
-        if self.n_splits == 1:
-            mm1 = self.linear(
-                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-            )
-            mm2 = self.linear(
-                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-            )  # type: ignore[attr-defined]
-            mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
-            hidden_states = self.linear(
-                mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
-            )
-        else:
-            gate_up_groupsize = self.hidden_size // self.n_splits
-            down_groupsize = self.intermediate_size // self.n_splits
-            for i in range(self.n_splits):
-                sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
-                                            end=[1, seq_len, (i + 1) * gate_up_groupsize])
-                mm1_to_concat.append(
-                    self.linear(
-                        sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
-                    )
-                )
-                mm2_to_concat.append(
-                    self.linear(
-                        sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
-                    )
-                )
-            # for i in range(self.n_splits):
-            #     sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
-            #                                 end=[1, seq_len, (i + 1) * gate_up_groupsize])
-            #     mm2_to_concat.append(
-            #         self.linear(
-            #             sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
-            #         )
-            #     )
-            mm1 = sum(mm1_to_concat)
-            mm2 = sum(mm2_to_concat)
-            mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
-            if self.intermediate_size == 18944:
-                # for qwen2-7b
-                mm1_0 = self.slice(mm1, begin=[0, 0, 0], end=[1, seq_len, 9472])
-                mm1_1 = self.slice(mm1, begin=[0, 0, 9472], end=[1, seq_len, 18944])
-                hidden_states_0 = self.linear(mm1_0, self.hidden_size, 9472,
-                                            bias=False, wt_dtype=self.dtype)
-                hidden_states_1 = self.linear(mm1_1, self.hidden_size, 9472,
-                                            bias=False, wt_dtype=self.dtype)
-                hidden_states = hidden_states_0 + hidden_states_1
-            else:
-                hidden_states_to_concat = []
-                for i in range(self.n_splits):
-                    sub_mm1 = self.slice(mm1, begin=[0, 0, i * down_groupsize],
-                                         end=[1, seq_len, (i + 1) * down_groupsize])
-                    hidden_states_to_concat.append(
-                        self.linear(
-                            sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype
-                        )
-                    )
-                # print(hidden_states_to_concat[0].shape)
-                # hidden_states = self.concat_list(hidden_states_to_concat, 0)
-                # hidden_states = self.reduce_sum(hidden_states, 0)
-                hidden_states = sum(hidden_states_to_concat)
-        return hidden_states
+    # def mlp(self, hidden_states, seq_len):
+    #     mm1_to_concat = []
+    #     mm2_to_concat = []
+    #     if self.n_splits == 1:
+    #         mm1 = self.linear(
+    #             hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+    #         )
+    #         mm2 = self.linear(
+    #             hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+    #         )  # type: ignore[attr-defined]
+    #         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+    #         hidden_states = self.linear(
+    #             mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+    #         )
+    #     else:
+    #         gate_up_groupsize = self.hidden_size // self.n_splits
+    #         down_groupsize = self.intermediate_size // self.n_splits
+    #         for i in range(self.n_splits):
+    #             sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
+    #                                         end=[1, seq_len, (i + 1) * gate_up_groupsize])
+    #             mm1_to_concat.append(
+    #                 self.linear(
+    #                     sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+    #                 )
+    #             )
+    #             mm2_to_concat.append(
+    #                 self.linear(
+    #                     sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+    #                 )
+    #             )
+    #         # for i in range(self.n_splits):
+    #         #     sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
+    #         #                                 end=[1, seq_len, (i + 1) * gate_up_groupsize])
+    #         #     mm2_to_concat.append(
+    #         #         self.linear(
+    #         #             sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+    #         #         )
+    #         #     )
+    #         mm1 = sum(mm1_to_concat)
+    #         mm2 = sum(mm2_to_concat)
+    #         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+    #         if self.intermediate_size == 18944:
+    #             # for qwen2-7b
+    #             mm1_0 = self.slice(mm1, begin=[0, 0, 0], end=[1, seq_len, 9472])
+    #             mm1_1 = self.slice(mm1, begin=[0, 0, 9472], end=[1, seq_len, 18944])
+    #             hidden_states_0 = self.linear(mm1_0, self.hidden_size, 9472,
+    #                                         bias=False, wt_dtype=self.dtype)
+    #             hidden_states_1 = self.linear(mm1_1, self.hidden_size, 9472,
+    #                                         bias=False, wt_dtype=self.dtype)
+    #             hidden_states = hidden_states_0 + hidden_states_1
+    #         else:
+    #             hidden_states_to_concat = []
+    #             for i in range(self.n_splits):
+    #                 sub_mm1 = self.slice(mm1, begin=[0, 0, i * down_groupsize],
+    #                                      end=[1, seq_len, (i + 1) * down_groupsize])
+    #                 hidden_states_to_concat.append(
+    #                     self.linear(
+    #                         sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype
+    #                     )
+    #                 )
+    #             # print(hidden_states_to_concat[0].shape)
+    #             # hidden_states = self.concat_list(hidden_states_to_concat, 0)
+    #             # hidden_states = self.reduce_sum(hidden_states, 0)
+    #             hidden_states = sum(hidden_states_to_concat)
+    #     return hidden_states
 
     def build_decoder(
         self,
@@ -653,46 +658,46 @@ def run_decode(
         attn_layer = curr_layer.self_attn
         mlp_layer = curr_layer.mlp
 
-        if model.config.intermediate_size == 8960:
+        # if model.config.intermediate_size == 8960:
             # for qwen2-1.5b
-            weights = [
-                # (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
-                # (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
-                # (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
-                # (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-                # (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-                # (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-                # (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-            ]
+        weights = [
+            # (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+            # (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+            # (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+            # (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+            # (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+            # (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+            # (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+        ]
 
-            for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
-                weights.append((q.weight, q.scale))
-                weights.append((k.weight, k.scale))
-                weights.append((v.weight, v.scale))
-            for l in attn_layer.o_proj_dq_list:
-                weights.append((l.weight, l.scale))
-            
-            # for l in mlp_layer.gate_proj_dq_list:
-            #     weights.append((l.weight, l.scale))
-            # for l in mlp_layer.up_proj_dq_list:
-            #     weights.append((l.weight, l.scale))
-            for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
-                weights.append((g.weight, g.scale))
-                weights.append((u.weight, u.scale))
-            for l in mlp_layer.down_proj_dq_list:
-                weights.append((l.weight, l.scale))
-        elif model.config.intermediate_size == 18944:
-            # for qwen2-7b
-            weights = [
-                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
-                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
-                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
-                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-                (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
-                (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
-            ]
+        for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
+            weights.append((q.weight, q.scale))
+            weights.append((k.weight, k.scale))
+            weights.append((v.weight, v.scale))
+        for l in attn_layer.o_proj_dq_list:
+            weights.append((l.weight, l.scale))
+        
+        # for l in mlp_layer.gate_proj_dq_list:
+        #     weights.append((l.weight, l.scale))
+        # for l in mlp_layer.up_proj_dq_list:
+        #     weights.append((l.weight, l.scale))
+        for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
+            weights.append((g.weight, g.scale))
+            weights.append((u.weight, u.scale))
+        for l in mlp_layer.down_proj_dq_list:
+            weights.append((l.weight, l.scale))
+        # elif model.config.intermediate_size == 18944:
+        #     # for qwen2-7b
+        #     weights = [
+        #         (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+        #         (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+        #         (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+        #         (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+        #         (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+        #         (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+        #         (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
+        #         (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
+        #     ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -811,11 +816,15 @@ class DecodeRunner:
 
         self.forward_signal = torch.tensor(0, dtype=torch.int)
 
+        n_layers_per_rank = num_layers // (world_size - 1)
+        if num_layers % (world_size - 1) > 0:
+            n_layers_per_rank += 1
+
         for rank in range(1, world_size):
             input_q = mp.Queue()
             output_q = mp.Queue()
-            start_layer = (rank - 1) * (num_layers // (world_size - 1))
-            end_layer = (rank) * (num_layers // (world_size - 1))
+            start_layer = (rank - 1) * n_layers_per_rank
+            end_layer = (rank) * n_layers_per_rank
             if rank == world_size - 1:
                 end_layer = num_layers
             p = mp.Process(
@@ -906,44 +915,44 @@ def run_prefill(
         attn_layer = curr_layer.self_attn
         mlp_layer = curr_layer.mlp
 
-        if model.config.intermediate_size == 8960:
-            # for qwen2-1.5b
-            weights = [
-                # (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
-                # (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
-                # (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
-                # (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-                # (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-                # (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-                # (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-            ]
-            for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
-                weights.append((q.weight, q.scale))
-                weights.append((k.weight, k.scale))
-                weights.append((v.weight, v.scale))
-            for l in attn_layer.o_proj_dq_list:
-                weights.append((l.weight, l.scale))
-            # for l in mlp_layer.gate_proj_dq_list:
-            #     weights.append((l.weight, l.scale))
-            # for l in mlp_layer.up_proj_dq_list:
-            #     weights.append((l.weight, l.scale))
-            for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
-                weights.append((g.weight, g.scale))
-                weights.append((u.weight, u.scale))
-            for l in mlp_layer.down_proj_dq_list:
-                weights.append((l.weight, l.scale))
-        elif model.config.intermediate_size == 18944:
-            # for qwen2-7b
-            weights = [
-                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
-                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
-                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
-                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-                (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
-                (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
-            ]
+        # if model.config.intermediate_size == 8960:
+        # for qwen2-1.5b
+        weights = [
+            # (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+            # (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+            # (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+            # (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+            # (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+            # (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+            # (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+        ]
+        for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
+            weights.append((q.weight, q.scale))
+            weights.append((k.weight, k.scale))
+            weights.append((v.weight, v.scale))
+        for l in attn_layer.o_proj_dq_list:
+            weights.append((l.weight, l.scale))
+        # for l in mlp_layer.gate_proj_dq_list:
+        #     weights.append((l.weight, l.scale))
+        # for l in mlp_layer.up_proj_dq_list:
+        #     weights.append((l.weight, l.scale))
+        for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
+            weights.append((g.weight, g.scale))
+            weights.append((u.weight, u.scale))
+        for l in mlp_layer.down_proj_dq_list:
+            weights.append((l.weight, l.scale))
+        # elif model.config.intermediate_size == 18944:
+        #     # for qwen2-7b
+        #     weights = [
+        #         (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+        #         (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+        #         (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+        #         (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+        #         (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+        #         (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+        #         (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
+        #         (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
+        #     ]
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)

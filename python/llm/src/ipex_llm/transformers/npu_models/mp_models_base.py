@@ -279,17 +279,55 @@ class LLMBaseNNFactory(NNFactory):
                 
         return attn_output, new_key_states, new_value_states
 
-    def mlp(self, hidden_states):
-        mm1 = self.linear(
-            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-        )
-        mm2 = self.linear(
-            hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-        )  # type: ignore[attr-defined]
-        mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
-        hidden_states = self.linear(
-            mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
-        )
+    def mlp(self, hidden_states, seq_len=-1):
+        print(f"mp_models_base mlp")
+        if self.n_splits == 1:
+            mm1 = self.linear(
+                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+            )
+            mm2 = self.linear(
+                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+            )  # type: ignore[attr-defined]
+            mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+            hidden_states = self.linear(
+                mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype
+            )
+        else:
+            invalidInputError(seq_len > 0, "seq_len should be provided if use split linear")
+            gate_up_groupsize = self.hidden_size // self.n_splits
+            down_groupsize = self.intermediate_size // self.n_splits
+            mm1_to_concat = []
+            mm2_to_concat = []
+            for i in range(self.n_splits):
+                sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
+                                            end=[1, seq_len, (i + 1) * gate_up_groupsize])
+                mm1_to_concat.append(
+                    self.linear(
+                        sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                    )
+                )
+                mm2_to_concat.append(
+                    self.linear(
+                        sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                    )
+                )
+            mm1 = sum(mm1_to_concat)
+            mm2 = sum(mm2_to_concat)
+            mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
+
+            hidden_states_to_concat = []
+            for i in range(self.n_splits):
+                sub_mm1 = self.slice(mm1, begin=[0, 0, i * down_groupsize],
+                                        end=[1, seq_len, (i + 1) * down_groupsize])
+                hidden_states_to_concat.append(
+                    self.linear(
+                        sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype
+                    )
+                )
+            # print(hidden_states_to_concat[0].shape)
+            # hidden_states = self.concat_list(hidden_states_to_concat, 0)
+            # hidden_states = self.reduce_sum(hidden_states, 0)
+            hidden_states = sum(hidden_states_to_concat)
         return hidden_states
 
     def layer_norm(self, hidden_states, layernorm_weight):
