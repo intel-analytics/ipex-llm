@@ -308,7 +308,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         hidden_states = self.eltwise_add(residual, attn_output)
         residual = hidden_states
         hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
-        hidden_states = self.mlp(hidden_states, self.seq_len)
+        hidden_states = self.mlp(hidden_states, self.seq_len, self.mode)
         hidden_states = self.eltwise_add(residual, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
 

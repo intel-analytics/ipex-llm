@@ -108,6 +108,10 @@ class LLMBaseNNFactory(NNFactory):
         self.n_splits_linear=n_splits_linear
         self.n_splits_down_proj=n_splits_down_proj
 
+    def reduce_linear(self, to_concat):
+        concat = self.sequence_concat(to_concat, axis=0)
+        return self.reduce_sum(concat, reduction_axes=0, keep_dims=True)
+
     def attention(self,
                   *,
                   hidden_states,
@@ -188,9 +192,14 @@ class LLMBaseNNFactory(NNFactory):
                         wt_dtype=self.dtype,
                     )
                 )
-            query_states = sum(query_states_to_concat)
-            key_states = sum(key_states_to_concat)
-            value_states = sum(value_states_to_concat)
+            if mode == "decode":
+                query_states = self.reduce_linear(query_states_to_concat)
+                key_states = self.reduce_linear(key_states_to_concat)
+                value_states = self.reduce_linear(value_states_to_concat)
+            else:
+                query_states = sum(query_states_to_concat)
+                key_states = sum(key_states_to_concat)
+                value_states = sum(value_states_to_concat)
         if q_bias is not None:
             query_states = query_states + q_bias
         if k_bias is not None:
@@ -277,12 +286,16 @@ class LLMBaseNNFactory(NNFactory):
                         sub_attn_output, hidden_size, groupsize, bias=False, wt_dtype=self.dtype
                     )
                 )
-            attn_output = sum(attn_output_to_concat)
+            if mode == "decode":
+                attn_output = self.reduce_linear(attn_output_to_concat)
+            else:
+                attn_output = sum(attn_output_to_concat)
                 
         return attn_output, new_key_states, new_value_states
 
-    def mlp(self, hidden_states, seq_len=-1):
+    def mlp(self, hidden_states, seq_len=-1, mode="prefill"):
         print(f"mp_models_base mlp")
+        use_concat_reduce = (mode == "decode" and False)
         if self.n_splits_linear == 1:
             mm1 = self.linear(
                 hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
@@ -309,8 +322,12 @@ class LLMBaseNNFactory(NNFactory):
                         sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
                     )
                 )
-            mm1 = sum(mm1_to_concat)
-            mm2 = sum(mm2_to_concat)
+            if use_concat_reduce:
+                mm1 = self.reduce_linear(mm1_to_concat)
+                mm2 = self.reduce_linear(mm2_to_concat)
+            else:
+                mm1 = sum(mm1_to_concat)
+                mm2 = sum(mm2_to_concat)
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
 
         if self.n_splits_down_proj == 1:
@@ -332,7 +349,10 @@ class LLMBaseNNFactory(NNFactory):
             # print(hidden_states_to_concat[0].shape)
             # hidden_states = self.concat_list(hidden_states_to_concat, 0)
             # hidden_states = self.reduce_sum(hidden_states, 0)
-            hidden_states = sum(hidden_states_to_concat)
+            if use_concat_reduce:
+                hidden_states = self.reduce_linear(hidden_states_to_concat)
+            else:
+                hidden_states = sum(hidden_states_to_concat)
         return hidden_states
 
     def layer_norm(self, hidden_states, layernorm_weight):
