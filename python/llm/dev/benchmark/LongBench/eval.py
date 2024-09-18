@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# This code is for evaluating the results of LongBench.
+# This file is adapted from
+# https://github.com/THUDM/LongBench/blob/main/eval.py
+# and
+# https://github.com/FasterDecoding/SnapKV/blob/main/experiments/LongBench/eval.py
 
 import os
 import json

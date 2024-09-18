@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+# This file is adapted from
+# https://github.com/THUDM/LongBench/blob/main/metrics.py
+# and
+# https://github.com/FasterDecoding/SnapKV/blob/main/experiments/LongBench/metrics.py
 
 
 import re
