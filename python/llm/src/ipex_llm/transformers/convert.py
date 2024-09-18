@@ -599,7 +599,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         invalidInputError(device.type != "meta",
                                           "converting from meta device is not supported")
                         weight, g_idx_map = convert_vllm_awq_or_gptq(module, gptq=_USE_VLLM_GPTQ,
-                                                             act_order=act_order)
+                                                                     act_order=act_order)
                         if act_order:
                             new_linear.g_idx_map = g_idx_map
                         # Copy the weights
