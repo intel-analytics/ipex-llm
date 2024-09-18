@@ -296,7 +296,7 @@ def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
     return new_linear
 
 
-def convert_vllm_awq(module, gptq=False, act_order=False):
+def convert_vllm_awq_or_gptq(module, gptq=False, act_order=False):
     from ipex_llm.transformers.low_bit_linear import get_block_size
     Q4_1 = get_block_size("asym_int4")
 
@@ -598,7 +598,7 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         device = module.qweight.data.device
                         invalidInputError(device.type != "meta",
                                           "converting from meta device is not supported")
-                        weight, g_idx_map = convert_vllm_awq(module, gptq=_USE_VLLM_GPTQ,
+                        weight, g_idx_map = convert_vllm_awq_or_gptq(module, gptq=_USE_VLLM_GPTQ,
                                                              act_order=act_order)
                         if act_order:
                             new_linear.g_idx_map = g_idx_map
