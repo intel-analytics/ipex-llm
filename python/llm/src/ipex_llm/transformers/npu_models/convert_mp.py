@@ -87,7 +87,17 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
 
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_down_proj
-        model.apply(split_mlp_down_proj)
+        from ipex_llm.transformers.npu_models.qwen2_mp import split_linears
+        # model.apply(split_mlp_down_proj)
+        n_splits_linear = max(1, int(os.environ.get("IPEX_LLM_N_SPLITS_LINEAR", "1")))
+        n_splits_down_proj = max(1, int(os.environ.get("IPEX_LLM_N_SPLITS_DOWN_PROJ", "1")))
+
+        if n_splits_down_proj == 1 and model.config.intermediate_size == 18944:
+            n_splits_down_proj = 2
+
+        model.apply(lambda m: split_linears(m, n_splits_hidden_size=n_splits_linear,
+                                            n_splits_down_proj=n_splits_down_proj))
+        print(model)
 
         # for Qwen2-7B-Insturct, divide lm_head into 14 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
