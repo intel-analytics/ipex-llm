@@ -1,0 +1,29 @@
+model_name:
+  # - "mistral-7B-instruct-v0.2"
+  - "llama2-7b-chat-4k"
+  # - "chatglm4-9b"
+  # - "qwen2-7b-instruct"
+
+full_kv: True
+optimize_model: True
+dtype: 'fp16'
+low_bit: 'sym_int4'
+
+e: False
+
+compress_kv:
+  - "ablation_c512_w32_k7_maxpool"
+  - "ablation_c1024_w32_k7_maxpool"
+
+datasets:
+  - "multi_news"
+  - "qasper"
+  - "hotpotqa"
+  - "trec"
+  - "passage_count"
+  - "lcc"
+  # - "multifieldqa_zh"
+  # - "dureader"
+  # - "vcsum"
+  # - "lsht"
+  # - "passage_retrieval_zh"
