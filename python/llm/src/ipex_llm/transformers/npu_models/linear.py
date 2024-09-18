@@ -22,16 +22,14 @@
 #
 
 from intel_npu_acceleration_library.quantization import quantize_tensor, compress_to_i4
-from intel_npu_acceleration_library.nn.autograd import AutogradMatMul
-from intel_npu_acceleration_library.backend import run_matmul
 from intel_npu_acceleration_library.dtypes import NPUDtype
-from typing import Optional, Union
 import os
 import torch
 from torch.nn import Parameter
 import uuid
 import math
-
+from intel_npu_acceleration_library.backend import run_matmul
+from typing import Optional, Union
 from ipex_llm.utils.common import invalidInputError
 
 
@@ -52,7 +50,6 @@ class Linear(torch.nn.Module):
         self.bias = torch.nn.Parameter(bias) if isinstance(bias, torch.Tensor) else None
         self.outC, self.inC = self.weight.shape
         self.op_id = str(uuid.uuid4())
-        self._mm = AutogradMatMul.apply
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Torch module forward method.
@@ -147,7 +144,7 @@ class QuantizedLinear(torch.nn.Module):
         """
         super().__init__()
 
-        self.weight = Parameter(weight, requires_grad=False)
+        self.weight = Parameter(weight, requires_grad=False).contiguous()
         if self.weight.dtype not in (torch.int8, torch.uint8):
             invalidInputError(
                 False,
@@ -163,7 +160,6 @@ class QuantizedLinear(torch.nn.Module):
         self.scale = Parameter(scale * math.sqrt(self.inC), requires_grad=False)
         self.bias = bias
         self.op_id = str(uuid.uuid4())
-        self._mm = AutogradMatMul.apply
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Torch module forward method.
@@ -194,6 +190,7 @@ class QuantizedLinear(torch.nn.Module):
                     "Use `.eval()` to do inference only"
                 )
             )
+
         out = run_matmul(x, self.weight.data, self.scale.data, self.op_id)
 
         if self.bias is None:

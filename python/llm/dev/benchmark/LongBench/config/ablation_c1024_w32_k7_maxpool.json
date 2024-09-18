@@ -1,0 +1,7 @@
+{
+    "window_sizes": 32, 
+    "default_max_capacity_prompts": 1024, 
+    "specific_max_capcity_prompts": {},
+    "kernel_sizes": 7, 
+    "pooling": "maxpool"
+}
