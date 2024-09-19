@@ -27,6 +27,8 @@ from filelock import FileLock
 import ctypes
 import math
 import numpy as np
+from typing import Optional, Any, List
+import numpy.typing as npt
 
 logger = logging.get_logger(__name__)
 
@@ -100,6 +102,7 @@ class LLMBaseNNFactory(NNFactory):
         self.cache_parameter_ops = []
         self.input_ops = []
         self.linear_ops = []
+        self.num_scale_ops = 0
         self.kv_cache_c_handle = None
         self.kv_cache_torch = []
         self.max_seq_len = max_seq_len
@@ -461,6 +464,64 @@ class LLMBaseNNFactory(NNFactory):
         op = super().linear(*args, **kwargs)
         self.linear_ops.append(op)
         return op
+        
+    def dq_linear(self,
+                  input_node: ctypes._Pointer,
+                  output_channels: int,
+                  input_channels: int,
+                  scale_node: ctypes._Pointer = None,
+                  scale_after: bool = True,
+                  bias: Optional[bool] = False,
+                  act_dtype: npt.DTypeLike = np.float16,
+                  wt_dtype: npt.DTypeLike = np.float16):
+        n_splits = self.n_splits_linear
+        qk_size = input_channels // n_splits
+        input_chunks = []
+
+        use_splited_input = False
+        if isinstance(input_node, list):
+            use_splited_input = True
+        else:
+            seq_len = input_node.shape[0]
+
+        for i in range(n_splits):
+            if use_splited_input:
+                input_slice = input_node[i]
+            else:
+                input_slice = self.slice(input_node, begin=[0, i * qk_size], end=[seq_len, (i + 1) * qk_size])
+            if scale_after:
+                op = self.dq_sub_linear(
+                    input_node=input_slice,
+                    output_channels=output_channels,
+                    input_channels=qk_size,
+                    bias=bias,
+                    act_dtype=act_dtype,
+                    wt_dtype=wt_dtype
+                )
+            else:
+                op = self.linear(
+                    input_node=input_slice,
+                    output_channels=output_channels,
+                    input_channels=qk_size,
+                    bias=bias,
+                    act_dtype=act_dtype,
+                    wt_dtype=wt_dtype
+                )
+            input_chunks.append(op)
+        if scale_after:
+            concat = self.sequence_concat(input_chunks, axis=0)
+            # concat = self.mul_scale(concat, scale_node, qk_size)
+            concat = self.mul_scale(concat, output_channels, qk_size, n_splits)
+            self.num_scale_ops += 1
+            return self.reduce_sum(concat, reduction_axes=0, keep_dims=True)
+        else:
+            result = sum(input_chunks)
+            return result
+
+    def dq_sub_linear(self, *args, **kwargs):
+        op = super().dq_sub_linear(*args, **kwargs)
+        self.linear_ops.append(op)
+        return op
 
     def parameter(self, shape):
         invalidInputError(False,
@@ -513,10 +574,13 @@ class LLMBaseNNFactory(NNFactory):
 
     def set_weights_async(self, op_id, weights):
         offset = len(self.input_ops) + len(self.cache_parameter_ops)
-        invalidInputError(len(weights) == len(self.linear_ops),
+        print(f"graph linear size: {len(self.linear_ops)}"
+              f" graph scale size: {self.num_scale_ops}")
+        invalidInputError(len(weights) == (len(self.linear_ops) + self.num_scale_ops),
                           (f"weights size does not match graph, "
                            f"with weights size: {len(weights)} and "
-                           f" graph linear size: {len(self.linear_ops)}"))
+                           f" graph linear size: {len(self.linear_ops)}"
+                           f" graph scale size: {self.num_scale_ops}"))
         self.setWeights(offset, op_id, *weights)
 
     @staticmethod
