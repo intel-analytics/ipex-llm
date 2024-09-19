@@ -41,4 +41,4 @@ streaming: False # whether output in streaming way (only available now for gpu w
 optimize_model: False # whether apply further optimization on NPU (only available now for transformers_int4_npu_win test_api)
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
-transpose_value_cache: True
+transpose_value_cache: True # whether apply transposed v_cache optimization on NPU (only available now for transformers_int4_npu_win test_api)
