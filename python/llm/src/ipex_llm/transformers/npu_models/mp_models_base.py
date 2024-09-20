@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import os
 import torch
 from intel_npu_acceleration_library.backend.factory import NNFactory
 from typing import List, Union, Any
@@ -33,6 +34,9 @@ from typing import Optional, Sequence, List, Union, Any, Tuple
 from transformers.cache_utils import Cache
 import uuid
 from functools import partial
+import torch.distributed as dist
+import torch.nn.functional as F
+
 
 logger = logging.get_logger(__name__)
 
@@ -1276,7 +1280,310 @@ class llama:
             outputs = (hidden_states,)
             outputs += (past_key_value,)
             return outputs
-    
+
+def run_decode(
+    model,
+    rank,
+    world_size,
+    port,
+    layer_start,
+    layer_end,
+    intra_stages,
+    max_seq_len,
+    transpose_value_cache,
+    input_queue,
+    result_queue,
+):
+    model_type = model.config.model_type
+
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = port
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world_size)
+
+    print("start init process group, rank: ", rank, "world_size: ", world_size)
+
+    dist.init_process_group()
+    my_rank = dist.get_rank()
+    my_size = dist.get_world_size()
+    logger.info(f"rank: {my_rank}, size: {my_size}")
+
+    num_heads = model.model.layers[layer_start].self_attn.num_heads
+    num_key_value_heads = model.model.layers[layer_start].self_attn.num_key_value_heads
+    head_dim = model.model.layers[layer_start].self_attn.head_dim
+    rms_norm_eps = model.config.rms_norm_eps
+    intermediate_size = model.config.intermediate_size
+    layer_weights = []
+    input_layer_norm_weights = []
+    post_attn_layernorm_weights = []
+    if model_type == "qwen2":
+        q_biases = []
+        k_biases = []
+        v_biases = []
+    layer_indexs = range(layer_start, layer_end)
+    for layer_idx in layer_indexs:
+        curr_layer = model.model.layers[layer_idx]
+        attn_layer = curr_layer.self_attn
+        mlp_layer = curr_layer.mlp
+
+        if model_type == "qwen2" and model.config.intermediate_size == 8960:
+            # for qwen2-1.5b
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            ]
+        
+        elif model_type == "qwen2" and model.config.intermediate_size == 18944:
+            # for qwen2-7b
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
+                (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
+            ]
+        
+        elif model_type == "llama":
+            weights = [
+                (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
+                (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
+                (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
+                (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+            ]
+
+        cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
+        cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+        layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
+        layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
+
+        layer_weights.extend(weights)
+        input_layer_norm_weights.append(layer_norm_0)
+        post_attn_layernorm_weights.append(layer_norm_1)
+
+        if model_type == "qwen2":
+            q_biases.append(attn_layer.q_proj.bias.to(torch.float16))
+            k_biases.append(attn_layer.k_proj.bias.to(torch.float16))
+            v_biases.append(attn_layer.v_proj.bias.to(torch.float16))            
+
+    if model_type == "llama":
+        multi_decoder = llama.FusedLlamaLowBitMultiDecoderlayer(
+            parameters=layer_weights,
+            input_laynorm_weights=input_layer_norm_weights,
+            post_attn_layernorm_weights=post_attn_layernorm_weights,
+            layer_indexes=layer_indexs,
+            intra_stages=intra_stages,
+            cached_cos=cached_cos,
+            cached_sin=cached_sin,
+            num_heads=num_heads,
+            head_dim=head_dim,
+            num_key_value_heads=num_key_value_heads,
+            rms_norm_eps=rms_norm_eps,
+            intermediate_size=intermediate_size,
+            max_seq_len=max_seq_len,
+            transpose_value=transpose_value_cache,
+            do_print=False,
+        )
+    elif model_type == "qwen2":
+        multi_decoder = qwen.FusedQwenLowBitMultiDecoderlayer(
+            parameters=layer_weights,
+            input_laynorm_weights=input_layer_norm_weights,
+            post_attn_layernorm_weights=post_attn_layernorm_weights,
+            q_biases=q_biases,
+            k_biases=k_biases,
+            v_biases=v_biases,
+            layer_indexes=layer_indexs,
+            intra_stages=intra_stages,
+            cached_cos=cached_cos,
+            cached_sin=cached_sin,
+            num_heads=num_heads,
+            head_dim=head_dim,
+            num_key_value_heads=num_key_value_heads,
+            rms_norm_eps=rms_norm_eps,
+            intermediate_size=intermediate_size,
+            max_seq_len=max_seq_len,
+            transpose_value=transpose_value_cache,
+            do_print=False,
+        )
+
+    dist.barrier()
+
+    past_key_values = None
+
+    control = torch.empty((), dtype=torch.int)
+    hidden_states = torch.empty((1, 1, head_dim * num_heads), dtype=torch.float16)
+    with torch.inference_mode():
+        while True:
+
+            dist.broadcast(control, src=0, async_op=False)
+            if control.item() == -2:
+                break
+            elif control.item() == -1:
+                past_key_values = input_queue.get()
+            else:
+                
+                if model_type == "llama":
+                    past_seen_tokens = past_key_values.get_seq_length()
+                    attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
+                    cache_position = torch.arange(
+                        past_seen_tokens, past_seen_tokens + 1, device=hidden_states.device
+                    )
+
+                    position_ids = position_ids = cache_position.unsqueeze(0)
+                    causal_mask = model.model._update_causal_mask(
+                        attention_mask, hidden_states, cache_position, past_seen_tokens
+                    )
+                    pad_len = multi_decoder.max_seq_len + 1 - causal_mask.size(-1)
+
+                    pad_mask = (0, pad_len)
+                    padded_causal_mask = F.pad(
+                        causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
+                    )
+                    padded_causal_mask[:, :, :, -1] = 0.0
+                    dist.recv(hidden_states, src=rank - 1)
+                    layer_outputs = multi_decoder(
+                        hidden_states,
+                        attention_mask=padded_causal_mask,
+                        position_ids=position_ids,
+                        past_key_value=past_key_values,
+                        output_attentions=False,
+                        use_cache=True,
+                        cache_position=cache_position,
+                    )
+
+                    hidden_states = layer_outputs[0]
+                    dist.send(hidden_states, dst=(rank + 1) % world_size)
+                    past_key_values = layer_outputs[1]
+                    new_keys = layer_outputs[2]
+                    new_values = layer_outputs[3]
+                    multi_decoder.post_forward(past_key_values, new_keys, new_values, cache_position)
+
+                elif model_type == "qwen2":
+                    past_seen_tokens = past_key_values.get_seq_length()
+                    attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
+                    position_ids = torch.arange(
+                        past_seen_tokens,
+                        1 + past_seen_tokens,
+                        dtype=torch.long,
+                        device=hidden_states.device,
+                    )
+                    position_ids = position_ids.unsqueeze(0).view(-1, 1)
+
+                    from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
+
+                    causal_mask = _prepare_4d_causal_attention_mask(
+                        attention_mask,
+                        (hidden_states.shape[0], hidden_states.shape[1]),
+                        hidden_states,
+                        past_seen_tokens,
+                        sliding_window=model.model.config.sliding_window,
+                    )
+                    pad_len = multi_decoder.max_seq_len + 1 - causal_mask.size(-1)
+
+                    causal_mask[:, :, :, -1] = torch.finfo(torch.float16).min
+                    pad_mask = (0, pad_len)
+                    padded_causal_mask = F.pad(
+                        causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
+                    )
+                    padded_causal_mask[:, :, :, -1] = 0.0
+                    dist.recv(hidden_states, src=rank - 1)
+                    layer_outputs = multi_decoder(
+                        hidden_states,
+                        attention_mask=padded_causal_mask,
+                        position_ids=position_ids,
+                        past_key_value=past_key_values,
+                        output_attentions=False,
+                        use_cache=True,
+                    )
+
+                    hidden_states = layer_outputs[0]
+                    dist.send(hidden_states, dst=(rank + 1) % world_size)
+                    past_key_values = layer_outputs[1]
+                    new_keys = layer_outputs[2]
+                    new_values = layer_outputs[3]
+                    multi_decoder.post_forward(past_key_values, new_keys, new_values)
+
+
+class BaseDecodeRunner:
+    def __init__(self, model, max_seq_len, intra_pp=2, inter_pp=2, transpose_value_cache=True):
+        self.model = model
+        self.max_seq_len = max_seq_len
+        self.transpose_value_cache = transpose_value_cache
+        world_size = inter_pp + 1
+        intra_stages = intra_pp
+        num_layers = self.model.model.config.num_hidden_layers
+
+        port = "54791"
+        os.environ["MASTER_ADDR"] = "127.0.0.1"
+        os.environ["MASTER_PORT"] = port
+        os.environ["RANK"] = "0"
+        os.environ["WORLD_SIZE"] = str(world_size)
+
+        self.input_queues = []
+        self.output_queues = []
+        self.decoder_processes = []
+
+        self.forward_signal = torch.tensor(0, dtype=torch.int)
+
+        for rank in range(1, world_size):
+            input_q = mp.Queue()
+            output_q = mp.Queue()
+            start_layer = (rank - 1) * (num_layers // (world_size - 1))
+            end_layer = (rank) * (num_layers // (world_size - 1))
+            if rank == world_size - 1:
+                end_layer = num_layers
+            p = mp.Process(
+                target=run_decode,
+                args=(
+                    self.model,
+                    rank,
+                    world_size,
+                    port,
+                    start_layer,
+                    end_layer,
+                    intra_stages,
+                    self.max_seq_len,
+                    self.transpose_value_cache,
+                    input_q,
+                    output_q,
+                ),
+            )
+            p.daemon = True
+            p.start()
+            self.input_queues.append(input_q)
+            self.output_queues.append(output_q)
+            self.decoder_processes.append(p)
+
+        dist.init_process_group()
+        my_rank = dist.get_rank()
+        self.world_size = dist.get_world_size()
+        logger.info(f"rank: {my_rank}, size: {self.world_size}")
+
+        dist.barrier()
+        self.cache_past_key_value = None
+
+    def shutdown(self):
+        control = torch.tensor(-2, dtype=torch.int)
+        dist.broadcast(control, src=0)
+        for p in self.decoder_processes:
+            p.join(3)
+        for p in self.decoder_processes:
+            if p.exitcode is None:
+                p.kill()
+
+    def __del__(self):
+        self.shutdown()
+
 def run_prefill(
     model, max_output_len, max_prompt_len, transpose_value_cache, input_queue, result_queue
 ):
