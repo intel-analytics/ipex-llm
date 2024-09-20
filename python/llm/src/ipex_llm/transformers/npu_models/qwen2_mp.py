@@ -990,35 +990,39 @@ def gen_qwen2_fused_model_forward(prefill_runner, decode_runner):
         if inputs_embeds is None:
             inputs_embeds = self.embed_tokens(input_ids)
 
-        past_key_values_length = 0
+        if seq_length > 1:
+            past_key_values_length = 0
 
-        from ipex_llm.transformers.npu_models.kv import DynamicFusedNormalCache
+            from ipex_llm.transformers.npu_models.kv import DynamicFusedNormalCache
 
-        if use_cache and not isinstance(past_key_values, DynamicFusedNormalCache):
-            past_key_values = DynamicFusedNormalCache.from_legacy_cache(past_key_values)
-            past_key_values_length = past_key_values.get_seq_length()
+            if use_cache and not isinstance(past_key_values, DynamicFusedNormalCache):
+                past_key_values = DynamicFusedNormalCache.from_legacy_cache(past_key_values)
+                past_key_values_length = past_key_values.get_seq_length()
 
-        if position_ids is None:
-            device = input_ids.device if input_ids is not None else inputs_embeds.device
-            position_ids = torch.arange(
+            if position_ids is None:
+                device = input_ids.device if input_ids is not None else inputs_embeds.device
+                position_ids = torch.arange(
+                    past_key_values_length,
+                    seq_length + past_key_values_length,
+                    dtype=torch.long,
+                    device=device,
+                )
+                position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+            else:
+                position_ids = position_ids.view(-1, seq_length).long()
+
+            from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
+
+            attention_mask = _prepare_4d_causal_attention_mask(
+                attention_mask,
+                (batch_size, seq_length),
+                inputs_embeds,
                 past_key_values_length,
-                seq_length + past_key_values_length,
-                dtype=torch.long,
-                device=device,
+                sliding_window=self.config.sliding_window,
             )
-            position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
         else:
-            position_ids = position_ids.view(-1, seq_length).long()
-
-        from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
-
-        attention_mask = _prepare_4d_causal_attention_mask(
-            attention_mask,
-            (batch_size, seq_length),
-            inputs_embeds,
-            past_key_values_length,
-            sliding_window=self.config.sliding_window,
-        )
+            attention_mask = None
+            position_ids = None
 
         # embed positions
         hidden_states = inputs_embeds
