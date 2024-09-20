@@ -1000,6 +1000,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "qwen2_audio":
         from ipex_llm.transformers.models.qwen2 import merge_qkv
         model.language_model.apply(merge_qkv)
+    if model.config.model_type == "qwen2_vl":
+        from ipex_llm.transformers.models.qwen2_vl import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
@@ -1651,6 +1654,17 @@ def _optimize_post(model, lightweight_bmm=False):
                         qwen2_attention_forward)
     elif model.config.model_type == "qwen2_audio":
         _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
+    elif model.config.model_type == "qwen2_vl":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_mlp_forward
+        from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_model_forward
+        from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_attention_forward
+        convert_forward(model, module.Qwen2RMSNorm, rms_norm_forward)
+        convert_forward(model, module.Qwen2MLP, qwen2_mlp_forward)
+        convert_forward(model, module.Qwen2VLModel, qwen2_vl_model_forward)
+        convert_forward(model, module.Qwen2VLAttention, qwen2_vl_attention_forward)
     elif model.config.model_type == "cohere":
         # for CohereForAI/c4ai-command-r-v01
         invalidInputError(version.parse(trans_version) >= version.parse("4.40.0"),
