@@ -3,8 +3,8 @@
  
 ---
 
-# <p align="center"> 💫 Intel® LLM Library for PyTorch* </p>
-<p align="center">
+#  💫 Intel® LLM Library for PyTorch* 
+<p>
   <b>English</b> · <a href='./README.zh-CN.md'>简体中文</a> 
 </p>
 
