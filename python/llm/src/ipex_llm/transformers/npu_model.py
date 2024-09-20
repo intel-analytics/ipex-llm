@@ -213,6 +213,7 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "embedding_qtype")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
+        ignore_argument(kwargs, "mixed_precision")
         optimize_model = kwargs.pop("optimize_model", False)
         max_output_len = kwargs.pop("max_output_len", 1024)
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
