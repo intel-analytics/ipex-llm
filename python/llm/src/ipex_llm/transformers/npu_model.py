@@ -161,6 +161,7 @@ class _BaseAutoModelClass:
                 llm = model
 
             with torch.no_grad():
+                model.config.update({"mixed_precision": mixed_precision})
                 optimize_llm_pre(model, qtype, mixed_precision)
                 cls.load_convert(qtype, model, "cpu", modules_to_not_convert, *args, **kwargs)
                 create_npu_kernels(llm)
@@ -219,7 +220,6 @@ class _BaseAutoModelClass:
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
-        mixed_precision = kwargs.pop('mixed_precision', False)
 
         from transformers.models.auto.configuration_auto import AutoConfig
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
@@ -262,6 +262,7 @@ class _BaseAutoModelClass:
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         qtype = config_dict.pop("bigdl_transformers_low_bit", False)
         bigdl_lcmu_enabled = config_dict.pop("bigdl_lcmu_enabled", True)
+        mixed_precision = config_dict.pop("mixed_precision", False)
 
         invalidInputError(
             qtype,
