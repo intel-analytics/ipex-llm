@@ -163,7 +163,7 @@ python baichuan2.py --disable-transpose-value-cache
 For [Qwen2-7B](./qwen2.py), you could also try to enable mixed precision optimization when encountering output problems:
 
 ```cmd
-python --repo-id-or-model-path Qwen/Qwen2-7B-Instruct qwen2.py --mixed-precision
+python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --mixed-precision
 ``` 
 
 #### Better Performance with High CPU Utilization
