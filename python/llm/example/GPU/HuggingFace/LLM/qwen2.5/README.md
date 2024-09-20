@@ -1,11 +1,11 @@
-# Qwen2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) as reference Qwen2 models.
+# Qwen2.5
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2.5 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) and [Qwen/Qwen2.5-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct) as reference Qwen2.5 models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Qwen2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a Qwen2.5 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
@@ -14,8 +14,6 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
-pip install transformers==4.37.0 # install transformers which supports Qwen2
 ```
 
 #### 1.2 Installation on Windows
@@ -26,8 +24,6 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
-pip install transformers==4.37.0 # install transformers which supports Qwen2
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -111,18 +107,18 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Qwen2 model (e.g. `Qwen/Qwen2-7B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen2-7B-Instruct'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Qwen2.5 model (e.g. `Qwen/Qwen2.5-7B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen2.5-7B-Instruct'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
-##### [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct)
+##### [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
 AI是什么？
 -------------------- Output --------------------
-AI是人工智能（Artificial Intelligence）的缩写。它指的是由计算机系统表现出来的智能行为，这些行为通常包括学习、推理、问题解决
+AI是Artificial Intelligence的缩写，意为“人工智能”，是指由人制造出来的系统，能够进行类似于人类智慧的行为，如学习、推理
 ```
 
 ```log
@@ -130,16 +126,16 @@ Inference time: xxxx s
 -------------------- Prompt --------------------
 What is AI?
 -------------------- Output --------------------
-AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans and mimic their actions. The term may
+AI, or Artificial Intelligence, refers to the ability exhibited by machines to imitate human behavior and intelligence. This includes learning, problem-solving, perception, understanding language
 ```
 
-##### [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct)
+##### [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
 AI是什么？
 -------------------- Output --------------------
-AI是人工智能的简称，是一种计算机科学和技术领域，旨在使机器能够完成通常需要人类智能的任务。这包括识别和理解语言、图像处理
+AI是“人工智能”（Artificial Intelligence）的缩写。它是一门研究如何创建智能机器的学科，这些机器能够执行通常需要人类
 ```
 
 ```log
@@ -147,5 +143,22 @@ Inference time: xxxx s
 -------------------- Prompt --------------------
 What is AI?
 -------------------- Output --------------------
-Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and work like humans. It involves creating computer programs, algorithms
+Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think, learn, and perform tasks that typically require human intelligence.
+```
+
+##### [Qwen/Qwen2.5-14B-Instruct](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct)
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+AI是什么？
+-------------------- Output --------------------
+AI是“人工智能”的简称，是指由人结合科学原理设计，并通过工程实践创造的能够完成特定任务的软件或硬件系统。这些系统
+```
+
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+What is AI?
+-------------------- Output --------------------
+Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that would typically require human intelligence. These tasks can include things like visual perception
 ```
