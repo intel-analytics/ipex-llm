@@ -117,6 +117,7 @@ Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the InternVL2 (e.g. `OpenGVLab/InternVL2-4B`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'OpenGVLab/InternVL2-4B'`.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'https://raw.githubusercontent.com/open-mmlab/mmdeploy/main/tests/data/tiger.jpeg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
+- `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `64`.
 
 #### Sample Output
 

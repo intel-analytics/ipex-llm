@@ -35,18 +35,20 @@ if __name__ == '__main__':
                         help='The URL or path to the image to infer')
     parser.add_argument('--prompt', type=str, default="What is in the image?",
                         help='Prompt to infer')
+    parser.add_argument('--n-predict', type=int, default=64, help='Max tokens to predict')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
+    n_predict = args.n_predict
     
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
-                                             load_in_low_bit="sym_int4",
-                                             modules_to_not_convert=["vision_model"])
+                                                 load_in_low_bit="sym_int4",
+                                                 modules_to_not_convert=["vision_model"])
     model = model.half().to('xpu')
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
@@ -66,29 +68,29 @@ if __name__ == '__main__':
     question = "<image>" + query
 
     generation_config = {
-        "max_new_tokens": 64,
+        "max_new_tokens": n_predict,
         "do_sample": False,
     }
 
-    # ipex_llm model needs a warmup, then inference time can be accurate
-    model.chat(
-        pixel_values=None,
-        question=question,
-        generation_config=generation_config,
-        tokenizer=tokenizer,
-    )
+    with torch.inference_mode():
+        # ipex_llm model needs a warmup, then inference time can be accurate
+        model.chat(
+            pixel_values=None,
+            question=question,
+            generation_config=generation_config,
+            tokenizer=tokenizer,
+        )
 
-    
-    st = time.time()
-    res = model.chat(
-        tokenizer=tokenizer,
-        pixel_values=pixel_values,
-        question=question,
-        generation_config=generation_config,
-        history=[]
-    )
-    torch.xpu.synchronize()
-    end = time.time()
+        st = time.time()
+        res = model.chat(
+            tokenizer=tokenizer,
+            pixel_values=pixel_values,
+            question=question,
+            generation_config=generation_config,
+            history=[]
+        )
+        torch.xpu.synchronize()
+        end = time.time()
 
     print(f'Inference time: {end-st} s')
     print('-'*20, 'Input Image', '-'*20)
