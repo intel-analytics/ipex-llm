@@ -78,6 +78,9 @@ class _BaseAutoModelClass:
                                 Relevant low bit optimizations will be applied to the model.
         :param optimize_model: boolean value, Whether to further optimize the low_bit llm model.
                                Default to be ``False``.
+        :param mixed_precision: boolean value, Whether to use mixed precision quantization.
+            Default to be False. If set to ``True``, we will use ``'sym_int8'`` for lm_head when
+            ``load_in_low_bit`` is '``sym_int4``' for certain models.
         :return: a model instance
         """
         if kwargs.get("device_map", None) not in [None, "cpu", "auto"]:
@@ -108,7 +111,6 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "load_in_4bit")
         ignore_argument(kwargs, "load_in_8bit")
         ignore_argument(kwargs, "imatrix")
-        ignore_argument(kwargs, "mixed_precision")
         ignore_argument(kwargs, "cpu_embedding")
         ignore_argument(kwargs, "embedding_qtype")
         ignore_argument(kwargs, "enable_mp")
@@ -123,6 +125,7 @@ class _BaseAutoModelClass:
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        mixed_precision = kwargs.pop('mixed_precision', False)
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
