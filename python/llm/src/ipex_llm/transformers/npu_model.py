@@ -161,7 +161,7 @@ class _BaseAutoModelClass:
                 llm = model
 
             with torch.no_grad():
-                optimize_llm_pre(model, qtype)
+                optimize_llm_pre(model, qtype, mixed_precision)
                 cls.load_convert(qtype, model, "cpu", modules_to_not_convert, *args, **kwargs)
                 create_npu_kernels(llm)
             model = model.eval()
@@ -219,6 +219,7 @@ class _BaseAutoModelClass:
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        mixed_precision = kwargs.pop('mixed_precision', False)
 
         from transformers.models.auto.configuration_auto import AutoConfig
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
@@ -373,7 +374,7 @@ class _BaseAutoModelClass:
                 llm = model
 
             with torch.no_grad():
-                optimize_llm_pre(model, qtype)
+                optimize_llm_pre(model, qtype, mixed_precision)
                 cls.load_convert(qtype, model, quant_device, modules_to_not_convert,
                                  *model_args, **kwargs)
                 create_npu_kernels(llm)
