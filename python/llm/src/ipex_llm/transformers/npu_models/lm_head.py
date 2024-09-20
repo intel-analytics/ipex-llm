@@ -85,7 +85,6 @@ class LMHeadLinear(NNFactory):
         Returns:
             np.ndarray: result
         """
-        # self.prefetchWeights(1, verify_size=False)
         self.set_input_tensor(X, 0)
         self.elapsed = backend_lib.run(self._mm)
         if len(self.out) == 1:
