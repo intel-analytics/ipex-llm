@@ -16,7 +16,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 # transformers>=4.33.0 is required for Llama3 with IPEX-LLM optimizations
-pip install transformers==4.37.0 
+pip install transformers==4.41.2
 ```
 
 #### 1.2 Installation on Windows
@@ -29,7 +29,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 # transformers>=4.33.0 is required for Llama3 with IPEX-LLM optimizations
-pip install transformers==4.37.0 
+pip install "transformers>=4.37.0,<4.42.0"
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
