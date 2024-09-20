@@ -17,7 +17,7 @@
 import os
 import torch
 import time
-
+import ctypes
 from typing import Optional, Sequence, List, Union, Any, Tuple
 import numpy as np
 
@@ -379,6 +379,9 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
             self.backend_decoders[i].set_weights(self.op_id, curr_parameters)
             offset = offset + curr_linear_ops
 
+        array_type = ctypes.POINTER(ctypes.c_char) * intra_stages
+        self.models_ptr = array_type(*[self.backend_decoders[i]._mm for i in range(intra_stages)])
+
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -402,7 +405,8 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
         hidden_states, new_keys, new_values = LowBitQwenMultiDecoderlayer.run_decoders(
             inputs,
-            decoders=self.backend_decoders)
+            self.backend_decoders,
+            self.models_ptr)
 
         if self.do_print:
             print("outputs:", hidden_states)
