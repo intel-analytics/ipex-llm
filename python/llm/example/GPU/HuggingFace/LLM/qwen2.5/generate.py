@@ -22,7 +22,7 @@ from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Qwen2.5-7B-Instruct')
+    parser = argparse.ArgumentParser(description='Predict Tokens using generate() API for Qwen2.5 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="Qwen/Qwen2.5-7B-Instruct",
                         help='The huggingface repo id for the Qwen2.5 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
