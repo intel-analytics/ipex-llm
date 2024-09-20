@@ -26,11 +26,11 @@ Right click and select **Update Driver** -> **Browse my computer for drivers**. 
 ## 1. Install
 ### 1.1 Installation on Windows
 We suggest using conda to manage environment:
-```bash
+```cmd
 conda create -n llm python=3.10
 conda activate llm
 
-# install ipex-llm with 'npu' option
+:: install ipex-llm with 'npu' option
 pip install --pre --upgrade ipex-llm[npu]
 ```
 
@@ -98,26 +98,26 @@ Supported models: Llama2-7B, MiniCPM-1B, Baichuan2-7B
 Supported models: Llama3-8B, MiniCPM-2B, Qwen2-7B, Qwen2-1.5B
 
 ### Run
-```bash
-# to run Llama-2-7b-chat-hf
+```cmd
+:: to run Llama-2-7b-chat-hf
 python llama.py
 
-# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
+:: to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
-# to run Qwen2-1.5B-Instruct LNL driver version: 32.0.101.2715)
+:: to run Qwen2-1.5B-Instruct LNL driver version: 32.0.101.2715)
 python qwen2.py
 
-# to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
+:: to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
 python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
 
-# to run MiniCPM-1B-sft-bf16
+:: to run MiniCPM-1B-sft-bf16
 python minicpm.py
 
-# to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
+:: to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16
 
-# to run Baichuan2-7B-Chat
+:: to run Baichuan2-7B-Chat
 python baichuan2.py
 ```
 
@@ -137,28 +137,34 @@ If you encounter `TypeError: can't convert meta device type tensor to numpy. Use
 
 #### Output Problem
 If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
-```bash
-# to run Llama-2-7b-chat-hf
+```cmd
+:: to run Llama-2-7b-chat-hf
 python llama.py --disable-transpose-value-cache
 
-# to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
+:: to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
 
-# to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
+:: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen2.py --disable-transpose-value-cache
 
-# to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
+:: to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
 python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --disable-transpose-value-cache
 
-# to run MiniCPM-1B-sft-bf16
+:: to run MiniCPM-1B-sft-bf16
 python minicpm.py --disable-transpose-value-cache
 
-# to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
+:: to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
 python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
 
-# to run Baichuan2-7B-Chat
+:: to run Baichuan2-7B-Chat
 python baichuan2.py --disable-transpose-value-cache
 ```
+
+For [Qwen2-7B](./qwen2.py), you could also try to enable mixed precision optimization for better outputs:
+
+```cmd
+python --repo-id-or-model-path Qwen/Qwen2-7B-Instruct qwen2.py
+``` 
 
 #### Better Performance with High CPU Utilization
 You could enable optimization by setting the environment variable with `set IPEX_LLM_CPU_LM_HEAD=1` for better performance. But this will cause high CPU utilization.
