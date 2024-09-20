@@ -43,7 +43,7 @@ if __name__ == "__main__":
             If path not exists, lowbit model will be saved there. \
             Else, lowbit model will be loaded.",
     )
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="AI是什么?",
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-output-len", type=int, default=1024)
