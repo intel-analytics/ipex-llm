@@ -3,7 +3,11 @@
  
 ---
 
-# 💫 Intel® LLM Library for PyTorch*
+# <p align="center"> 💫 Intel® LLM Library for PyTorch* </p>
+<p align="center">
+  <b>English</b> · <a href='./README.zh-CN.md'>简体中文</a> 
+</p>
+
 **`IPEX-LLM`** is a PyTorch library for running **LLM** on Intel CPU and GPU *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)* with very low latency[^1]. 
 > [!NOTE]
 > - *It is built on top of the excellent work of **`llama.cpp`**, **`transformers`**, **`bitsandbytes`**, **`vLLM`**, **`qlora`**, **`AutoGPTQ`**, **`AutoAWQ`**, etc.*
