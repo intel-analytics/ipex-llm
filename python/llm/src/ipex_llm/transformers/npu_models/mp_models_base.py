@@ -62,6 +62,12 @@ def run_model(
             op_args.append((set_contiguous(w[0]).numpy(), set_contiguous(w[1]).numpy()))
             op_args_flatten.append(op_args[-1][0])
             op_args_flatten.append(op_args[-1][1])
+        elif w.dtype in [torch.int8, torch.uint8]:    # QuantizedLinear weight
+            op_args.append(w.numpy())
+            op_args_flatten.append(op_args[-1])
+        elif isinstance(w, np.ndarray): # scale
+            op_args.append(w)
+            op_args_flatten.append(op_args[-1])
         else:
             op_args.append(set_contiguous(w).to(torch.float16).numpy())
             op_args_flatten.append(op_args[-1])
@@ -164,41 +170,56 @@ class LLMBaseNNFactory(NNFactory):
             query_states_to_concat = []
             key_states_to_concat = []
             value_states_to_concat = []
+            sub_hidden_states_list = []
             for i in range(self.n_splits_linear):
                 sub_hidden_states = self.slice(hidden_states,
                                                begin=[0, i * groupsize],
                                                end=[seq_len, (i + 1) * groupsize])
-                query_states_to_concat.append(
-                    self.linear(
-                        sub_hidden_states,
-                        num_heads * head_dim,
-                        groupsize,
-                        bias=False,
-                        wt_dtype=self.dtype,
+                sub_hidden_states_list.append(sub_hidden_states)
+                
+                
+                if mode == "prefill":
+                    query_states_to_concat.append(
+                        self.linear(
+                            sub_hidden_states,
+                            num_heads * head_dim,
+                            groupsize,
+                            bias=False,
+                            wt_dtype=self.dtype,
+                        )
                     )
-                )
-                key_states_to_concat.append(
-                    self.linear(
-                        sub_hidden_states,
-                        num_key_value_heads * head_dim,
-                        groupsize,
-                        bias=False,
-                        wt_dtype=self.dtype,
+                    key_states_to_concat.append(
+                        self.linear(
+                            sub_hidden_states,
+                            num_key_value_heads * head_dim,
+                            groupsize,
+                            bias=False,
+                            wt_dtype=self.dtype,
+                        )
                     )
-                )
-                value_states_to_concat.append(
-                    self.linear(
-                        sub_hidden_states,
-                        num_key_value_heads * head_dim,
-                        groupsize,
-                        bias=False,
-                        wt_dtype=self.dtype,
+                    value_states_to_concat.append(
+                        self.linear(
+                            sub_hidden_states,
+                            num_key_value_heads * head_dim,
+                            groupsize,
+                            bias=False,
+                            wt_dtype=self.dtype,
+                        )
                     )
-                )
+            
             if mode == "decode":
-                query_states = self.reduce_linear(query_states_to_concat)
-                key_states = self.reduce_linear(key_states_to_concat)
-                value_states = self.reduce_linear(value_states_to_concat)
+                query_states = self.dq_linear(sub_hidden_states_list, num_heads * head_dim,
+                                              hidden_size, n_splits=self.n_splits_linear,
+                                              bias=False, wt_dtype=self.dtype)
+                key_states = self.dq_linear(sub_hidden_states_list, num_key_value_heads * head_dim,
+                                            hidden_size, n_splits=self.n_splits_linear,
+                                            bias=False, wt_dtype=self.dtype)
+                value_states = self.dq_linear(sub_hidden_states_list, num_key_value_heads * head_dim,
+                                              hidden_size, n_splits=self.n_splits_linear,
+                                              bias=False, wt_dtype=self.dtype)
+                # query_states = self.reduce_linear(query_states_to_concat)
+                # key_states = self.reduce_linear(key_states_to_concat)
+                # value_states = self.reduce_linear(value_states_to_concat)
             else:
                 query_states = sum(query_states_to_concat)
                 key_states = sum(key_states_to_concat)
@@ -280,17 +301,23 @@ class LLMBaseNNFactory(NNFactory):
             )
         else:
             attn_output_to_concat = []
+            sub_attn_output_list = []
             for i in range(self.n_splits_linear):
                 sub_attn_output = self.slice(attn_output,
                                              begin=[0, 0, i * groupsize],
                                              end=[1, seq_len, (i + 1) * groupsize])
-                attn_output_to_concat.append(
-                    self.linear(
-                        sub_attn_output, hidden_size, groupsize, bias=False, wt_dtype=self.dtype
+                sub_attn_output_list.append(sub_attn_output)
+                if mode == "prefill":
+                    attn_output_to_concat.append(
+                        self.linear(
+                            sub_attn_output, hidden_size, groupsize, bias=False, wt_dtype=self.dtype
+                        )
                     )
-                )
             if mode == "decode":
-                attn_output = self.reduce_linear(attn_output_to_concat)
+                attn_output = self.dq_linear(sub_attn_output_list, hidden_size, hidden_size,
+                                             n_splits=self.n_splits_linear,
+                                             bias=False, wt_dtype=self.dtype)
+                # attn_output = self.reduce_linear(attn_output_to_concat)
             else:
                 attn_output = sum(attn_output_to_concat)
                 
@@ -312,9 +339,12 @@ class LLMBaseNNFactory(NNFactory):
             gate_up_groupsize = self.hidden_size // self.n_splits_linear
             mm1_to_concat = []
             mm2_to_concat = []
+            # sub_hidden_states_list = []
             for i in range(self.n_splits_linear):
                 sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
                                             end=[1, seq_len, (i + 1) * gate_up_groupsize])
+                # sub_hidden_states_list.append(sub_hidden_states)
+                # if mode == "prefill":
                 mm1_to_concat.append(
                     self.linear(
                         sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
@@ -325,7 +355,13 @@ class LLMBaseNNFactory(NNFactory):
                         sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
                     )
                 )
-            if use_concat_reduce:
+            if mode == "decode":
+                # mm1 = self.dq_linear(sub_hidden_states_list, self.intermediate_size, self.hidden_size,
+                #                      n_splits=self.n_splits_linear,
+                #                      bias=False, wt_dtype=self.dtype)
+                # mm2 = self.dq_linear(sub_hidden_states_list, self.intermediate_size, self.hidden_size,
+                #                      n_splits=self.n_splits_linear,
+                #                      bias=False, wt_dtype=self.dtype)
                 mm1 = self.reduce_linear(mm1_to_concat)
                 mm2 = self.reduce_linear(mm2_to_concat)
             else:
@@ -341,19 +377,25 @@ class LLMBaseNNFactory(NNFactory):
             invalidInputError(seq_len > 0, "seq_len should be provided if use split linear")
             down_groupsize = self.intermediate_size // self.n_splits_down_proj
             hidden_states_to_concat = []
+            sub_mm1_list = []
             for i in range(self.n_splits_down_proj):
                 sub_mm1 = self.slice(mm1, begin=[0, 0, i * down_groupsize],
-                                        end=[1, seq_len, (i + 1) * down_groupsize])
-                hidden_states_to_concat.append(
-                    self.linear(
-                        sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype
+                                     end=[1, seq_len, (i + 1) * down_groupsize])
+                sub_mm1_list.append(sub_mm1)
+                if mode == "prefill":
+                    hidden_states_to_concat.append(
+                        self.linear(
+                            sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype
+                        )
                     )
-                )
             # print(hidden_states_to_concat[0].shape)
             # hidden_states = self.concat_list(hidden_states_to_concat, 0)
             # hidden_states = self.reduce_sum(hidden_states, 0)
-            if use_concat_reduce:
-                hidden_states = self.reduce_linear(hidden_states_to_concat)
+            if mode == "decode":
+                hidden_states = self.dq_linear(sub_mm1_list, self.hidden_size,
+                                               self.intermediate_size, n_splits=self.n_splits_down_proj,
+                                               bias=False, wt_dtype=self.dtype)
+                # hidden_states = self.reduce_linear(hidden_states_to_concat)
             else:
                 hidden_states = sum(hidden_states_to_concat)
         return hidden_states
@@ -469,12 +511,11 @@ class LLMBaseNNFactory(NNFactory):
                   input_node: ctypes._Pointer,
                   output_channels: int,
                   input_channels: int,
-                  scale_node: ctypes._Pointer = None,
+                  n_splits: int,
                   scale_after: bool = True,
                   bias: Optional[bool] = False,
                   act_dtype: npt.DTypeLike = np.float16,
                   wt_dtype: npt.DTypeLike = np.float16):
-        n_splits = self.n_splits_linear
         qk_size = input_channels // n_splits
         input_chunks = []
 
@@ -509,11 +550,12 @@ class LLMBaseNNFactory(NNFactory):
                 )
             input_chunks.append(op)
         if scale_after:
-            concat = self.sequence_concat(input_chunks, axis=0)
+            axis = 0 if len(input_chunks[0].shape) == 2 else 1
+            concat = self.sequence_concat(input_chunks, axis=axis)
             # concat = self.mul_scale(concat, scale_node, qk_size)
             concat = self.mul_scale(concat, output_channels, qk_size, n_splits)
             self.num_scale_ops += 1
-            return self.reduce_sum(concat, reduction_axes=0, keep_dims=True)
+            return self.reduce_sum(concat, reduction_axes=axis, keep_dims=True)
         else:
             result = sum(input_chunks)
             return result
@@ -581,7 +623,7 @@ class LLMBaseNNFactory(NNFactory):
                            f"with weights size: {len(weights)} and "
                            f" graph linear size: {len(self.linear_ops)}"
                            f" graph scale size: {self.num_scale_ops}"))
-        self.setWeights(offset, op_id, *weights)
+        self.setWeights(offset, op_id, *weights)#, verify_size=True)
 
     @staticmethod
     def run_decoders(inputs, decoders):

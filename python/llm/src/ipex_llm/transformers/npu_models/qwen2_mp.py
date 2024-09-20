@@ -265,7 +265,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         print(f"{mode} start compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
         self.compile()
         print(f"{mode} end compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
-        xml_path = f"/scaleafter/qwen15-npu-sa-dq-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
+        xml_path = f"scaleafter/qwen15-npu-sa-dq-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
 
         if not os.path.exists(xml_path) and mode=="decode":
             self.save(xml_path)
@@ -348,6 +348,10 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         for w in parameters:
             if isinstance(w, tuple):  # from QuantizedLinear
                 op_parameters.append((w[0].numpy(), w[1].numpy()))
+            elif w.dtype in [torch.int8, torch.uint8]:    # QuantizedLinear weight
+                op_parameters.append(w.numpy())
+            elif isinstance(w, np.ndarray): # scale
+                op_parameters.append(w)
             else:
                 op_parameters.append(w.to(torch.float16).numpy())
         self.op_parameters = op_parameters
@@ -356,6 +360,10 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         self.transpose_value = transpose_value
         if isinstance(parameters[0], tuple):
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+        elif parameters[0].dtype == torch.int8:
+            np_dtype = np.int8
+        elif parameters[0].dtype == torch.uint8:
+            np_dtype = np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
 
@@ -401,7 +409,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         offset = 0
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
-            curr_linear_ops = len(self.backend_decoders[i].linear_ops)
+            curr_linear_ops = len(self.backend_decoders[i].linear_ops) + self.backend_decoders[i].num_scale_ops
             curr_parameters = self.op_parameters[offset:offset + curr_linear_ops]
             self.backend_decoders[i].set_weights(self.op_id, curr_parameters)
             offset = offset + curr_linear_ops
@@ -596,19 +604,54 @@ def run_decode(
         mlp_layer = curr_layer.mlp
 
         weights = []
+        if n_splits_linear == 1:
+            for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
+                weights.append((q.weight, q.scale))
+                weights.append((k.weight, k.scale))
+                weights.append((v.weight, v.scale))
 
-        for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
-            weights.append((q.weight, q.scale))
-            weights.append((k.weight, k.scale))
-            weights.append((v.weight, v.scale))
-        for l in attn_layer.o_proj_dq_list:
-            weights.append((l.weight, l.scale))
+            for l in attn_layer.o_proj_dq_list:
+                weights.append((l.weight, l.scale))
+        else:
+            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                            attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list]:
+                scales = []
+                for l in layer_list:
+                    weights.append(l.weight)
+                    scales.append(l.scale)
+                weights.append(np.stack(scales, axis=0))
+
+        # for q, k in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list):
+        #     weights.append((q.weight, q.scale))
+        #     weights.append((k.weight, k.scale))
+        # scales = []
+        # for v in attn_layer.v_proj_dq_list:
+        #     weights.append(v.weight)
+        #     scales.append(v.scale)
+        # weights.append(np.stack(scales, axis=0))
+
         
+        # if n_splits_linear == 1:
         for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
             weights.append((g.weight, g.scale))
             weights.append((u.weight, u.scale))
-        for l in mlp_layer.down_proj_dq_list:
-            weights.append((l.weight, l.scale))
+        # else:
+        #     for layer_list in [mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
+        #         scales = []
+        #         for l in layer_list:
+        #             weights.append(l.weight)
+        #             scales.append(l.scale)
+        #         weights.append(np.stack(scales, axis=0))
+
+        if n_splits_down_proj == 1:
+            for l in mlp_layer.down_proj_dq_list:
+                weights.append((l.weight, l.scale))
+        else:
+            scales = []
+            for l in mlp_layer.down_proj_dq_list:
+                weights.append(l.weight)
+                scales.append(l.scale)
+            weights.append(np.stack(scales, axis=0))
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -829,10 +872,15 @@ def run_prefill(
         mlp_layer = curr_layer.mlp
 
         weights = []
+        scales = []
         for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
             weights.append((q.weight, q.scale))
             weights.append((k.weight, k.scale))
             weights.append((v.weight, v.scale))
+        #     weights.append(v.weight)
+        #     scales.append(v.scale)
+        # weights.append(np.stack(scales, axis=0))
+        
         for l in attn_layer.o_proj_dq_list:
             weights.append((l.weight, l.scale))
         for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
