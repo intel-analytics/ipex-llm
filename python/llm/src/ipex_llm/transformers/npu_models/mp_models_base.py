@@ -399,22 +399,22 @@ class LLMBaseNNFactory(NNFactory):
         self.setWeights(offset, op_id, *weights)
 
     @staticmethod
-    def run_decoders(inputs, decoders):
+    def run_decoders(inputs, decoders, models_ptr=None):
         x_np = [elem.to(torch.float16).numpy() for elem in inputs]
 
         num_decoders = len(decoders)
         num_inputs = len(x_np)
 
-        with record_function(f"npu_factory"):
-
+        if models_ptr is None:
             array_type = ctypes.POINTER(ctypes.c_char) * num_decoders
             models_ptr = array_type(
                 *[decoders[i]._mm for i in range(num_decoders)]
             )
-            inputs_ptr = (ctypes.c_void_p * num_inputs)(
-                *[x.ctypes.data_as(ctypes.c_void_p) for x in x_np]
-            )
-            backend_lib.run_decoders(models_ptr, inputs_ptr, num_decoders, num_inputs)
+
+        inputs_ptr = (ctypes.c_void_p * num_inputs)(
+            *[x.ctypes.data_as(ctypes.c_void_p) for x in x_np]
+        )
+        backend_lib.run_decoders(models_ptr, inputs_ptr, num_decoders, num_inputs)
 
         hidden_states = decoders[-1].torch_out[0]
         new_key_states = []
