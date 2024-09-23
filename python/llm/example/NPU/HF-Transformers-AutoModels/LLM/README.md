@@ -10,6 +10,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 | Chatglm3 | [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) |
 | Chatglm2 | [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b) |
 | Qwen2 | [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct), [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
+| Qwen2.5 | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
 | MiniCPM | [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
 | Phi-3 | [microsoft/Phi-3-mini-4k-instruct](https://huggingface.co/microsoft/Phi-3-mini-4k-instruct) |
 | Stablelm | [stabilityai/stablelm-zephyr-3b](https://huggingface.co/stabilityai/stablelm-zephyr-3b) |
@@ -83,6 +84,7 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [Llama3-8B](./llama.py)
 - [Qwen2-1.5B](./qwen2.py)
 - [Qwen2-7B](./qwen2.py)
+- [Qwen2.5-7B](./qwen2.5.py)
 - [MiniCPM-1B](./minicpm.py)
 - [MiniCPM-2B](./minicpm.py)
 - [Baichuan2-7B](./baichuan2.py)
@@ -95,7 +97,7 @@ Supported models: Llama2-7B, Llama3-8B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, MiniCP
 #### 32.0.100.2625
 Supported models: Llama2-7B, MiniCPM-1B, Baichuan2-7B
 #### 32.0.101.2715
-Supported models: Llama3-8B, MiniCPM-2B, Qwen2-7B, Qwen2-1.5B
+Supported models: Llama3-8B, MiniCPM-2B, Qwen2-7B, Qwen2-1.5B, Qwen2.5-7B
 
 ### Run
 ```cmd
@@ -105,11 +107,14 @@ python llama.py
 :: to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
-:: to run Qwen2-1.5B-Instruct LNL driver version: 32.0.101.2715)
+:: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen2.py
 
-:: to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
+:: to run Qwen2-7B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
+
+:: to run Qwen2-7B-Instruct (LNL driver version: 32.0.101.2715)
+python qwen2.5.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct
 
 :: to run MiniCPM-1B-sft-bf16
 python minicpm.py
