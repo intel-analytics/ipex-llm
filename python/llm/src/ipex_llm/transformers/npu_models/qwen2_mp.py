@@ -265,7 +265,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         print(f"{mode} start compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
         self.compile()
         print(f"{mode} end compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
-        xml_path = f"scaleafter/qwen15-npu-sa-dq-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
+        xml_path = f"scaleafter/qwen2-npu-sa-dq-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
 
         if not os.path.exists(xml_path) and mode=="decode":
             self.save(xml_path)
@@ -631,17 +631,17 @@ def run_decode(
         # weights.append(np.stack(scales, axis=0))
 
         
-        # if n_splits_linear == 1:
-        for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
-            weights.append((g.weight, g.scale))
-            weights.append((u.weight, u.scale))
-        # else:
-        #     for layer_list in [mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
-        #         scales = []
-        #         for l in layer_list:
-        #             weights.append(l.weight)
-        #             scales.append(l.scale)
-        #         weights.append(np.stack(scales, axis=0))
+        if n_splits_linear == 1:
+            for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
+                weights.append((g.weight, g.scale))
+                weights.append((u.weight, u.scale))
+        else:
+            for layer_list in [mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
+                scales = []
+                for l in layer_list:
+                    weights.append(l.weight)
+                    scales.append(l.scale)
+                weights.append(np.stack(scales, axis=0))
 
         if n_splits_down_proj == 1:
             for l in mlp_layer.down_proj_dq_list:

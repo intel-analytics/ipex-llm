@@ -339,31 +339,31 @@ class LLMBaseNNFactory(NNFactory):
             gate_up_groupsize = self.hidden_size // self.n_splits_linear
             mm1_to_concat = []
             mm2_to_concat = []
-            # sub_hidden_states_list = []
+            sub_hidden_states_list = []
             for i in range(self.n_splits_linear):
                 sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
                                             end=[1, seq_len, (i + 1) * gate_up_groupsize])
-                # sub_hidden_states_list.append(sub_hidden_states)
-                # if mode == "prefill":
-                mm1_to_concat.append(
-                    self.linear(
-                        sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                sub_hidden_states_list.append(sub_hidden_states)
+                if mode == "prefill":
+                    mm1_to_concat.append(
+                        self.linear(
+                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                        )
                     )
-                )
-                mm2_to_concat.append(
-                    self.linear(
-                        sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                    mm2_to_concat.append(
+                        self.linear(
+                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                        )
                     )
-                )
             if mode == "decode":
-                # mm1 = self.dq_linear(sub_hidden_states_list, self.intermediate_size, self.hidden_size,
-                #                      n_splits=self.n_splits_linear,
-                #                      bias=False, wt_dtype=self.dtype)
-                # mm2 = self.dq_linear(sub_hidden_states_list, self.intermediate_size, self.hidden_size,
-                #                      n_splits=self.n_splits_linear,
-                #                      bias=False, wt_dtype=self.dtype)
-                mm1 = self.reduce_linear(mm1_to_concat)
-                mm2 = self.reduce_linear(mm2_to_concat)
+                mm1 = self.dq_linear(sub_hidden_states_list, self.intermediate_size, self.hidden_size,
+                                     n_splits=self.n_splits_linear,
+                                     bias=False, wt_dtype=self.dtype)
+                mm2 = self.dq_linear(sub_hidden_states_list, self.intermediate_size, self.hidden_size,
+                                     n_splits=self.n_splits_linear,
+                                     bias=False, wt_dtype=self.dtype)
+                # mm1 = self.reduce_linear(mm1_to_concat)
+                # mm2 = self.reduce_linear(mm2_to_concat)
             else:
                 mm1 = sum(mm1_to_concat)
                 mm2 = sum(mm2_to_concat)
