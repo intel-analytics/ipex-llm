@@ -44,10 +44,11 @@ import torch
 
 from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
-from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
+from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal, should_use_fuse_rope
 from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
+from ipex_llm.utils.common import invalidInputError
 
-from transformers.models.qwen2_vl.modeling_qwen2_vl import Qwen2VLAttention, Qwen2VLModel
+from transformers.models.qwen2_vl.modeling_qwen2_vl import Qwen2VLAttention
 from transformers.models.qwen2_vl.modeling_qwen2_vl import apply_multimodal_rotary_pos_emb
 from transformers.models.qwen2_vl.modeling_qwen2_vl import repeat_kv
 from transformers.modeling_outputs import BaseModelOutputWithPast
@@ -71,9 +72,18 @@ def qwen2_vl_model_forward(
     return_dict: Optional[bool] = None,
     cache_position: Optional[torch.LongTensor] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
-    inputs = input_ids if input_ids is not None else inputs_embeds
+    output_attentions = (
+        output_attentions if output_attentions is not None
+        else self.config.output_attentions
+    )
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None
+        else self.config.output_hidden_states
+    )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
+
+    # IPEX-LLM OPT start: kv cache and quantize kv cache
+    inputs = input_ids if input_ids is not None else inputs_embeds
     use_cache = True if inputs.device.type == "xpu" else use_cache
     use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs)
     if use_cache:
@@ -81,19 +91,86 @@ def qwen2_vl_model_forward(
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
         elif not use_quantize_kv and not isinstance(past_key_values, DynamicNormalCache):
             past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
+    # IPEX-LLM OPT end
 
-    return Qwen2VLModel.forward(
-        self=self,
-        input_ids=input_ids,
-        attention_mask=attention_mask,
-        position_ids=position_ids,
-        past_key_values=past_key_values,
-        inputs_embeds=inputs_embeds,
-        use_cache=use_cache,
-        output_attentions=output_attentions,
-        output_hidden_states=output_hidden_states,
-        return_dict=return_dict,
-        cache_position=cache_position,
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    invalidInputError((input_ids is None) ^ (inputs_embeds is None),
+                      "You cannot specify both input_ids and inputs_embeds at the same time, "
+                      "and must specify either one")
+
+    if inputs_embeds is None:
+        inputs_embeds = self.embed_tokens(input_ids)
+
+    if cache_position is None:
+        past_seen_tokens = past_key_values.get_seq_length() if past_key_values is not None else 0
+        cache_position = torch.arange(past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1],
+                                      device=inputs_embeds.device)
+
+    # the hard coded `3` is for temporal, height and width.
+    if position_ids is None:
+        position_ids = cache_position.view(1, 1, -1).expand(3, inputs_embeds.shape[0], -1)
+    elif position_ids.dim() == 2:
+        position_ids = position_ids[None, ...].expand(3, position_ids.shape[0], -1)
+
+    causal_mask = self._update_causal_mask(
+        attention_mask, inputs_embeds, cache_position, past_key_values, output_attentions
+    )
+
+    hidden_states = inputs_embeds
+
+    # create position embeddings to be shared across the decoder layers
+    position_embeddings = self.rotary_emb(hidden_states, position_ids)
+
+    # IPEX-LLM OPT start: use fused 2D rope
+    if (torch.equal(position_ids[0], position_ids[1])
+            and torch.equal(position_ids[0], position_ids[2])
+            and should_use_fuse_rope(hidden_states, position_ids, False)):
+        position_ids = position_ids[0].contiguous()
+        position_embeddings = self.rotary_emb.inv_freq
+    # IEPX_LLM OPT end
+
+    # decoder layers
+    all_hidden_states = () if output_hidden_states else None
+    all_self_attns = () if output_attentions else None
+    next_decoder_cache = None
+
+    for decoder_layer in self.layers:
+        layer_outputs = decoder_layer(
+            hidden_states,
+            attention_mask=causal_mask,
+            position_ids=position_ids,
+            past_key_value=past_key_values,
+            output_attentions=output_attentions,
+            use_cache=use_cache,
+            cache_position=cache_position,
+            position_embeddings=position_embeddings,
+        )
+
+        hidden_states = layer_outputs[0]
+
+        if use_cache:
+            next_decoder_cache = layer_outputs[2 if output_attentions else 1]
+
+        if output_attentions:
+            all_self_attns += (layer_outputs[1],)
+
+    hidden_states = self.norm(hidden_states)
+
+    # add hidden states from the last decoder layer
+    if output_hidden_states:
+        all_hidden_states += (hidden_states,)
+
+    next_cache = next_decoder_cache if use_cache else None
+
+    if not return_dict:
+        return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns]
+                     if v is not None)
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=next_cache,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attns,
     )
 
 
@@ -117,19 +194,23 @@ def qwen2_vl_attention_forward(
                                                         self.num_key_value_heads,
                                                         self.num_key_value_heads], dim=1)
 
-    if position_embeddings is None:
-        cos, sin = self.rotary_emb(value_states, position_ids)
+    if position_ids.dim() == 2:
+        import xe_addons
+        inv_freq = position_embeddings
+        xe_addons.rotary_half_inplaced(inv_freq, position_ids, query_states, key_states)
     else:
-        cos, sin = position_embeddings
-    query_states, key_states = apply_multimodal_rotary_pos_emb(
-        query_states, key_states, cos, sin, self.rope_scaling["mrope_section"]
-    )
+        if position_embeddings is None:
+            cos, sin = self.rotary_emb(value_states, position_ids)
+        else:
+            cos, sin = position_embeddings
+        query_states, key_states = apply_multimodal_rotary_pos_emb(
+            query_states, key_states, cos, sin, self.rope_scaling["mrope_section"]
+        )
 
     kv_seq_len = key_states.shape[-2]
     if past_key_value is not None:
-        cache_kwargs = {"sin": sin, "cos": cos, "cache_position": cache_position}
         key_states, value_states = past_key_value.update(key_states, value_states,
-                                                         self.layer_idx, cache_kwargs)
+                                                         self.layer_idx, None)
         kv_seq_len = key_states.shape[-2]
 
     attn_weights = None
