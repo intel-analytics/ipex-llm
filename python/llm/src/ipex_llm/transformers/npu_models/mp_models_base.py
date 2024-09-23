@@ -171,12 +171,12 @@ class LLMBaseNNFactory(NNFactory):
             key_states_to_concat = []
             value_states_to_concat = []
             sub_hidden_states_list = []
+            hidden_states = self.unsqueeze(hidden_states, axis=0)
             for i in range(self.n_splits_linear):
                 sub_hidden_states = self.slice(hidden_states,
-                                               begin=[0, i * groupsize],
-                                               end=[seq_len, (i + 1) * groupsize])
+                                               begin=[0, 0, i * groupsize],
+                                               end=[1, seq_len, (i + 1) * groupsize])
                 sub_hidden_states_list.append(sub_hidden_states)
-                
                 
                 if mode == "prefill":
                     query_states_to_concat.append(
@@ -550,12 +550,13 @@ class LLMBaseNNFactory(NNFactory):
                 )
             input_chunks.append(op)
         if scale_after:
-            axis = 0 if len(input_chunks[0].shape) == 2 else 1
-            concat = self.sequence_concat(input_chunks, axis=axis)
+            concat = self.sequence_concat(input_chunks, axis=0)
             # concat = self.mul_scale(concat, scale_node, qk_size)
             concat = self.mul_scale(concat, output_channels, qk_size, n_splits)
             self.num_scale_ops += 1
-            return self.reduce_sum(concat, reduction_axes=axis, keep_dims=True)
+            reshape_reduce = self.reshape(concat, [1, n_splits, -1, output_channels])
+            reshape_reduce = self.reduce_sum(reshape_reduce, reduction_axes=1, keep_dims=True)
+            return self.reshape(reshape_reduce, [1, -1, output_channels])
         else:
             result = sum(input_chunks)
             return result
