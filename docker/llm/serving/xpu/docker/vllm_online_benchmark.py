@@ -435,12 +435,14 @@ LLM_URLS = [f"http://localhost:{PORT}/v1/completions" for PORT in [8000]]
 MODEL = "/llm/models/" + model_name
 MAX_TOKENS = output_length  # 修改 MAX_TOKENS 为 output_length
 
-if "Qwen" not in MODEL and "chatglm" not in MODEL:
-    # print("using Llama PROMPT")
-    PROMPT = ENGLISH_PROMPT
-else:
-    # print("using Qwen/chatglm PROMPT")
-    PROMPT = CHINESE_PROMPT
+# if "Qwen" not in MODEL and "chatglm" not in MODEL:
+#     print("using Llama PROMPT")
+#     PROMPT = ENGLISH_PROMPT
+# else:
+#     print("using Qwen/chatglm PROMPT")
+#     PROMPT = CHINESE_PROMPT
+
+PROMPT = ENGLISH_PROMPT
 
 # 加载模型的 tokenizer
 from transformers import AutoTokenizer
