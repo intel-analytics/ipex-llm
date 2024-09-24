@@ -1080,7 +1080,7 @@ class llama:
             hidden_states = self.convert_to_fp16(hidden_states)
 
             return hidden_states, new_key_states, new_value_states
-        
+
     class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         def __init__(
             self,
