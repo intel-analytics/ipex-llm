@@ -671,7 +671,6 @@ class qwen:
 
             return hidden_states, new_key_states, new_value_states
 
-
     class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         def __init__(
             self,
@@ -759,7 +758,7 @@ class qwen:
                 offset = offset + curr_linear_ops
 
             array_type = ctypes.POINTER(ctypes.c_char) * intra_stages
-            self.models_ptr = array_type(*[self.backend_decoders[i]._mm\
+            self.models_ptr = array_type(*[self.backend_decoders[i]._mm
                                            for i in range(intra_stages)])
 
         def forward(
@@ -1016,7 +1015,7 @@ class llama:
                     )
             else:
                 input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
-                post_attn_layernorm_weights = [self.constant(w)\
+                post_attn_layernorm_weights = [self.constant(w)
                                                for w in post_attn_layernorm_weights]
 
             hidden_states = input
@@ -1083,7 +1082,6 @@ class llama:
             return hidden_states, new_key_states, new_value_states
         
     class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
-
         def __init__(
             self,
             parameters: List[Tuple[torch.Tensor]],
@@ -1299,6 +1297,7 @@ class llama:
             outputs += (past_key_value,)
             return outputs
 
+
 def run_decode(
     model,
     rank,
@@ -1355,7 +1354,7 @@ def run_decode(
                 (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
                 (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
             ]
-        
+
         elif model_type == "qwen2" and model.config.intermediate_size == 18944:
             # for qwen2-7b
             weights = [
@@ -1368,7 +1367,7 @@ def run_decode(
                 (mlp_layer.down_proj_0.weight, mlp_layer.down_proj_0.scale),
                 (mlp_layer.down_proj_1.weight, mlp_layer.down_proj_1.scale)
             ]
-        
+
         elif model_type == "llama":
             weights = [
                 (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
@@ -1392,7 +1391,7 @@ def run_decode(
         if model_type == "qwen2":
             q_biases.append(attn_layer.q_proj.bias.to(torch.float16))
             k_biases.append(attn_layer.k_proj.bias.to(torch.float16))
-            v_biases.append(attn_layer.v_proj.bias.to(torch.float16))            
+            v_biases.append(attn_layer.v_proj.bias.to(torch.float16))
 
     if model_type == "llama":
         multi_decoder = llama.FusedLlamaLowBitMultiDecoderlayer(
@@ -1449,7 +1448,6 @@ def run_decode(
             elif control.item() == -1:
                 past_key_values = input_queue.get()
             else:
-                
                 if model_type == "llama":
                     past_seen_tokens = past_key_values.get_seq_length()
                     attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
@@ -1465,7 +1463,8 @@ def run_decode(
 
                     pad_mask = (0, pad_len)
                     padded_causal_mask = F.pad(
-                        causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
+                        causal_mask.to(torch.float16), pad_mask,
+                        value=torch.finfo(torch.float16).min
                     )
                     padded_causal_mask[:, :, :, -1] = 0.0
                     dist.recv(hidden_states, src=rank - 1)
@@ -1484,7 +1483,8 @@ def run_decode(
                     past_key_values = layer_outputs[1]
                     new_keys = layer_outputs[2]
                     new_values = layer_outputs[3]
-                    multi_decoder.post_forward(past_key_values, new_keys, new_values, cache_position)
+                    multi_decoder.post_forward(past_key_values, new_keys,
+                                               new_values, cache_position)
 
                 elif model_type == "qwen2":
                     past_seen_tokens = past_key_values.get_seq_length()
@@ -1497,7 +1497,8 @@ def run_decode(
                     )
                     position_ids = position_ids.unsqueeze(0).view(-1, 1)
 
-                    from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
+                    from transformers.modeling_attn_mask_utils \
+                        import _prepare_4d_causal_attention_mask
 
                     causal_mask = _prepare_4d_causal_attention_mask(
                         attention_mask,
@@ -1511,7 +1512,8 @@ def run_decode(
                     causal_mask[:, :, :, -1] = torch.finfo(torch.float16).min
                     pad_mask = (0, pad_len)
                     padded_causal_mask = F.pad(
-                        causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
+                        causal_mask.to(torch.float16), pad_mask,
+                        value=torch.finfo(torch.float16).min
                     )
                     padded_causal_mask[:, :, :, -1] = 0.0
                     dist.recv(hidden_states, src=rank - 1)
