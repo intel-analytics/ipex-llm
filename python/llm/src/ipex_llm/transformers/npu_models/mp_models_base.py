@@ -467,10 +467,10 @@ class qwen:
             intermediate_size,
         ):
             super().__init__(max_seq_len=max_seq_len,
-                            transpose_value=transpose_value,
-                            dtype=dtype,
-                            profile=profile,
-                            device=device)
+                        transpose_value=transpose_value,
+                        dtype=dtype,
+                        profile=profile,
+                        device=device)
             self.max_seq_len = max_seq_len
             self.intermediate_size = intermediate_size
             self.dtype = dtype
@@ -506,7 +506,8 @@ class qwen:
             if mode == "decode":
                 attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1))
             else:
-                attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len))
+                attention_mask = self.create_input_op((self.batch_size, 1,
+                                                       self.seq_len, self.seq_len))
 
             position_ids = self.create_input_op((self.batch_size, self.seq_len))
             past_keys = []
@@ -518,11 +519,13 @@ class qwen:
                     )
                     if transpose_value:
                         past_value = self.create_cache_op(
-                            (self.batch_size, self.num_key_value_heads, self.head_dim, self.max_seq_len)
+                            (self.batch_size, self.num_key_value_heads,
+                             self.head_dim, self.max_seq_len)
                         )
                     else:
                         past_value = self.create_cache_op(
-                            (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                            (self.batch_size, self.num_key_value_heads,
+                             self.max_seq_len, self.head_dim)
                         )
                     past_keys.append(past_key)
                     past_values.append(past_value)
@@ -552,7 +555,8 @@ class qwen:
                     )
             else:
                 input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
-                post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
+                post_attn_layernorm_weights = \
+                [self.constant(w) for w in post_attn_layernorm_weights]
 
             if q_biases is None:
                 q_biases = []
@@ -560,8 +564,10 @@ class qwen:
                 v_biases = []
                 for i in range(num_layers):
                     q_biases.append(self.create_input_op((self.num_heads * self.head_dim,)))
-                    k_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
-                    v_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
+                    k_biases.append(self.create_input_op(\
+                        (self.num_key_value_heads * self.head_dim,)))
+                    v_biases.append(self.create_input_op(\
+                        (self.num_key_value_heads * self.head_dim,)))
             else:
                 q_biases = [self.constant(w) for w in q_biases]
                 k_biases = [self.constant(w) for w in k_biases]
@@ -598,10 +604,12 @@ class qwen:
 
         def mlp(self, hidden_states, seq_len):
             mm1 = self.linear(
-                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+                hidden_states, self.intermediate_size,
+                self.hidden_size, bias=False, wt_dtype=self.dtype
             )
             mm2 = self.linear(
-                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+                hidden_states, self.intermediate_size,
+                self.hidden_size, bias=False, wt_dtype=self.dtype
             )  # type: ignore[attr-defined]
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
             if self.intermediate_size == 18944:
@@ -609,9 +617,9 @@ class qwen:
                 mm1_0 = self.slice(mm1, begin=[0, 0, 0], end=[1, seq_len, 9472])
                 mm1_1 = self.slice(mm1, begin=[0, 0, 9472], end=[1, seq_len, 18944])
                 hidden_states_0 = self.linear(mm1_0, self.hidden_size, 9472,
-                                            bias=False, wt_dtype=self.dtype)
+                                              bias=False, wt_dtype=self.dtype)
                 hidden_states_1 = self.linear(mm1_1, self.hidden_size, 9472,
-                                            bias=False, wt_dtype=self.dtype)
+                                              bias=False, wt_dtype=self.dtype)
                 hidden_states = hidden_states_0 + hidden_states_1
             else:
                 hidden_states = self.linear(
@@ -634,7 +642,8 @@ class qwen:
         ):
 
             residual = hidden_states
-            input_2d = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
+            input_2d = self.reshape(hidden_states,
+                                    (self.batch_size * self.seq_len, self.hidden_size))
             input_2d = self.layer_norm(input_2d, input_layernorm_weight)
             attn_output, new_key_states, new_value_states = self.attention(
                 hidden_states=input_2d,
