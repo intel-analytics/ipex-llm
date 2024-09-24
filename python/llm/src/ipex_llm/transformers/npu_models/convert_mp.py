@@ -259,8 +259,8 @@ def optimize_funasr(
     intra_pp=None,
     transpose_value_cache=True,
 ):
-    from ipex_llm.transformers.npu_models.biciparaformer_mp import gen_funasr_fused_encoder_forward
-    from ipex_llm.transformers.npu_models.biciparaformer_mp import PrefillRunner
+    from ipex_llm.transformers.npu_models.paraformer_mp import gen_funasr_fused_encoder_forward
+    from ipex_llm.transformers.npu_models.paraformer_mp import PrefillRunner
     prefill_runner = PrefillRunner(
         model,
         max_output_len=max_output_len,

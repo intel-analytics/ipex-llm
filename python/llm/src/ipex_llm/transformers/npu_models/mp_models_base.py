@@ -221,6 +221,112 @@ class LLMBaseNNFactory(NNFactory):
 
         return attn_output, new_key_states, new_value_states
 
+    def paraformer_layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):
+        hidden_states = self.convert_to_fp32(hidden_states)
+        mean_res = self.reduce_mean(hidden_states, -1, keep_dims=True,)
+        variance = self.reduce_mean(
+            self.power(hidden_states - mean_res, self.constant(np.array([[2]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
+        eps = self.constant(1e-12)
+        hidden_states = self.eltwise_div(hidden_states - mean_res, self.sqrt(self.eltwise_add(variance, eps)))
+        layernorm_weight = self.convert_to_fp32(layernorm_weight)
+        hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
+        layernorm_bias = self.convert_to_fp32(layernorm_bias)
+        hidden_states = self.eltwise_add(layernorm_bias, hidden_states)
+        hidden_states = self.convert_to_fp16(hidden_states)
+        return hidden_states
+    
+    def self_attn_sanm(self,
+                        x,
+                        mask,
+                        in_feat,
+                        n_feat,
+                        n_head,
+                        fsmn_weight,
+                        qkv_bias,
+                        out_bias):
+        d_k = n_feat // n_head
+        h = n_head
+        b, t, d = x.size()
+
+        print("x_size:", x.size)
+
+        q_k_v = self.linear(x,
+                            1536,
+                            512,
+                            bias=False, 
+                            wt_dtype=self.dtype)
+        q_k_v = q_k_v + qkv_bias
+        
+        print("q_k_v:", q_k_v)
+
+        res = q_k_v.chunk(3, -1)
+
+        q = res[0]
+        k = res[1]
+        v = res[2]
+        
+        q_h = self.reshape(q, [b, t, h, d_k])
+        k_h = self.reshape(k, [b, t, h, d_k])
+        v_h = self.reshape(v, [b, t, h, d_k])
+
+        #print(v_h)
+
+        q_h = self.transpose(q_h, [0, 2, 1, 3])
+        k_h = self.transpose(k_h, [0, 2, 1, 3])
+        v_h = self.transpose(v_h, [0, 2, 1, 3]) # (batch, head, time2, d_k)
+
+        b_v, t_v, d_v = v.size()
+        
+        if mask is not None:
+            mask = self.reshape(mask, [b_v, -1, 1])
+            v = self.eltwise_mul(v, mask)
+        
+        v_x = self.transpose(v, [0, 2, 1])
+
+        fsmn_out = self.convolution(input_node=v_x,
+                                    weights_node=fsmn_weight,
+                                    bias=None,
+                                    strides=1,
+                                    padding=5,#(left_padding, right_padding),
+                                    groups=512,
+                                    n_spatial_dims=1)
+        
+        fsmn_out = self.transpose(fsmn_out, [0, 2, 1])
+        fsmn_out = self.eltwise_add(v, fsmn_out)
+
+        q_h = q_h * d_k ** (-0.5)
+
+        scores = self.matmul(q_h, k_h, False, True)
+
+        n_batch = v_h.size(0)
+        p_attn = self.softmax(scores, -1)
+
+        x_attn = self.matmul(p_attn, v_h, False, False)
+        x_attn = self.transpose(x_attn, [0, 2, 1, 3])
+        x_attn = self.reshape(x_attn, [n_batch, -1, h * d_k])
+
+        attn_out = self.linear(x_attn,
+                               512,
+                               512,
+                               bias=False,
+                               wt_dtype=self.dtype)
+        attn_out = attn_out + out_bias
+
+        attn_res = self.eltwise_add(attn_out, fsmn_out)
+        
+        return attn_res
+
+    def sanm_feed_forward(self, x, hidden_units, idim, w1_bias, w2_bias):
+        mm = self.linear(x, 2048, 512, bias=False, wt_dtype=self.dtype)
+        mm = mm + w1_bias
+        mm_act = self.relu(mm)
+        output = self.linear(mm_act, 512, 2048, bias=False, wt_dtype=self.dtype)
+        output = output + w2_bias
+        return output
+
     def mlp(self, hidden_states):
         mm1 = self.linear(
             hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
