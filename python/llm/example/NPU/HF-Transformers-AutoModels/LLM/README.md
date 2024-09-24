@@ -113,7 +113,7 @@ python qwen2.py
 :: to run Qwen2-7B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
 
-:: to run Qwen2-7B-Instruct (LNL driver version: 32.0.101.2715)
+:: to run Qwen2.5-7B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen2.5.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct
 
 :: to run MiniCPM-1B-sft-bf16
@@ -155,6 +155,9 @@ python qwen2.py --disable-transpose-value-cache
 :: to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
 python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --disable-transpose-value-cache
 
+:: to run Qwen2.5-7B-Instruct LNL driver version: 32.0.101.2715)
+python qwen2.5.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --disable-transpose-value-cache
+
 :: to run MiniCPM-1B-sft-bf16
 python minicpm.py --disable-transpose-value-cache
 
@@ -165,10 +168,13 @@ python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-
 python baichuan2.py --disable-transpose-value-cache
 ```
 
-For [Qwen2-7B](./qwen2.py), you could also try to enable mixed precision optimization when encountering output problems:
+For [Qwen2-7B](./qwen2.py) and [Qwen2.5-7B](./qwen2.5.py), you could also try to enable mixed precision optimization when encountering output problems:
 
 ```cmd
 python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --mixed-precision
+``` 
+```cmd
+python qwen2.5.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --mixed-precision
 ``` 
 
 #### Better Performance with High CPU Utilization
