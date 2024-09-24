@@ -467,10 +467,10 @@ class qwen:
             intermediate_size,
         ):
             super().__init__(max_seq_len=max_seq_len,
-                        transpose_value=transpose_value,
-                        dtype=dtype,
-                        profile=profile,
-                        device=device)
+                             transpose_value=transpose_value,
+                             dtype=dtype,
+                             profile=profile,
+                             device=device)
             self.max_seq_len = max_seq_len
             self.intermediate_size = intermediate_size
             self.dtype = dtype
@@ -556,7 +556,7 @@ class qwen:
             else:
                 input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
                 post_attn_layernorm_weights = \
-                [self.constant(w) for w in post_attn_layernorm_weights]
+                    [self.constant(w) for w in post_attn_layernorm_weights]
 
             if q_biases is None:
                 q_biases = []
@@ -564,9 +564,9 @@ class qwen:
                 v_biases = []
                 for i in range(num_layers):
                     q_biases.append(self.create_input_op((self.num_heads * self.head_dim,)))
-                    k_biases.append(self.create_input_op(\
+                    k_biases.append(self.create_input_op(
                         (self.num_key_value_heads * self.head_dim,)))
-                    v_biases.append(self.create_input_op(\
+                    v_biases.append(self.create_input_op(
                         (self.num_key_value_heads * self.head_dim,)))
             else:
                 q_biases = [self.constant(w) for w in q_biases]
@@ -673,7 +673,6 @@ class qwen:
 
 
     class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
-
         def __init__(
             self,
             parameters: List[Tuple[torch.Tensor]],
@@ -760,7 +759,8 @@ class qwen:
                 offset = offset + curr_linear_ops
 
             array_type = ctypes.POINTER(ctypes.c_char) * intra_stages
-            self.models_ptr = array_type(*[self.backend_decoders[i]._mm for i in range(intra_stages)])
+            self.models_ptr = array_type(*[self.backend_decoders[i]._mm\
+                                           for i in range(intra_stages)])
 
         def forward(
             self,
@@ -810,7 +810,6 @@ class qwen:
 
             for i in range(self.intra_stages):
                 self.backend_decoders[i].load_cache_async()
-
 
     class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         def __init__(
@@ -902,6 +901,7 @@ class qwen:
             outputs += (past_key_value,)
             return outputs
 
+
 class llama:
     class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         def __init__(
@@ -928,10 +928,10 @@ class llama:
             intermediate_size,
         ):
             super().__init__(max_seq_len=max_seq_len,
-                            transpose_value=transpose_value,
-                            dtype=dtype,
-                            profile=profile,
-                            device=device)
+                             transpose_value=transpose_value,
+                             dtype=dtype,
+                             profile=profile,
+                             device=device)
             self.max_seq_len = max_seq_len
             self.intermediate_size = intermediate_size
             self.dtype = dtype
@@ -967,7 +967,8 @@ class llama:
             if mode == "decode":
                 attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1))
             else:
-                attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len))
+                attention_mask = self.create_input_op(
+                    (self.batch_size, 1, self.seq_len, self.seq_len))
 
             position_ids = self.create_input_op((self.batch_size, self.seq_len))
             past_keys = []
@@ -979,11 +980,13 @@ class llama:
                     )
                     if transpose_value:
                         past_value = self.create_cache_op(
-                            (self.batch_size, self.num_key_value_heads, self.head_dim, self.max_seq_len)
+                            (self.batch_size, self.num_key_value_heads,
+                             self.head_dim, self.max_seq_len)
                         )
                     else:
                         past_value = self.create_cache_op(
-                            (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                            (self.batch_size, self.num_key_value_heads,
+                             self.max_seq_len, self.head_dim)
                         )
                     past_keys.append(past_key)
                     past_values.append(past_value)
@@ -1013,7 +1016,8 @@ class llama:
                     )
             else:
                 input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
-                post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
+                post_attn_layernorm_weights = [self.constant(w)\
+                                               for w in post_attn_layernorm_weights]
 
             hidden_states = input
 
@@ -1052,7 +1056,8 @@ class llama:
         ):
 
             residual = hidden_states
-            input_2d = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
+            input_2d = self.reshape(hidden_states,
+                                    (self.batch_size * self.seq_len, self.hidden_size))
             input_2d = self.layer_norm(input_2d, input_layernorm_weight)
             attn_output, new_key_states, new_value_states = self.attention(
                 hidden_states=input_2d,
@@ -1597,13 +1602,14 @@ class BaseDecodeRunner:
     def __del__(self):
         self.shutdown()
 
+
 def run_prefill(
     model, max_output_len, max_prompt_len, transpose_value_cache, input_queue, result_queue
 ):
 
     model_type = model.config.model_type
     print("MODEL TYPE: ", model_type)
-    
+
     layer_start = 0
     layer_end = len(model.model.layers)
     num_heads = model.model.layers[layer_start].self_attn.num_heads
@@ -1711,7 +1717,7 @@ def run_prefill(
         result = input_queue.get()
         if result == "stop":
             break
-        
+
         if model_type == "llama":
             hidden_states, position_ids, causal_mask, past_key_values, cache_position = result
             with torch.inference_mode():
@@ -1730,7 +1736,7 @@ def run_prefill(
                     next_decoder_cache = layer_outputs[1]
 
                 result_queue.put((hidden_states, next_decoder_cache))
-        
+
         elif model_type == "qwen2":
             hidden_states, position_ids, causal_mask, past_key_values = result
             with torch.inference_mode():
@@ -1775,7 +1781,7 @@ class BasePrefillRunner:
         output = self.prefill_result_queue.get()
         print(Fore.GREEN + f"prefill process output: {output}")
         print(Style.RESET_ALL)
-    
+
     def shutdown(self):
         self.prefill_input_queue.put("stop")
         self.p.join(3)
