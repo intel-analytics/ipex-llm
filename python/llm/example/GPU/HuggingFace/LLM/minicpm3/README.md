@@ -14,7 +14,6 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-pip install "transformers>=4.36"
 
 pip install jsonschema datamodel_code_generator
 ```
@@ -27,7 +26,6 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-pip install "transformers>=4.36"
 
 pip install jsonschema datamodel_code_generator
 ```
@@ -119,9 +117,22 @@ Arguments info:
 
 #### Sample Output
 #### [openbmb/MiniCPM3-4B](https://huggingface.co/openbmb/MiniCPM3-4B)
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+<|im_start|>user
+AI是什么?<|im_end|>
+<|im_start|>assistant
+
+-------------------- Output --------------------
+<s><|im_start|> user
+AI是什么?<|im_end|>
+<|im_start|> assistant
+AI，即人工智能（Artificial Intelligence），是指由人类创造的、能够模拟人类智能的相关理论和实践的一门新兴技术。它使计算机 或其他
+```
 
 ```log
-Inference time: xxx s
+Inference time: xxxx s
 -------------------- Prompt --------------------
 <|im_start|>user
 What is AI?<|im_end|>

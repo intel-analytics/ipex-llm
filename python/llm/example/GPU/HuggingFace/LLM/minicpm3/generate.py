@@ -45,7 +45,7 @@ if __name__ == '__main__':
                                                  optimize_model=True,
                                                  use_cache=True)
     
-    model = model.to('xpu')
+    model = model.half().to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -53,12 +53,11 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
-        
+        # here the prompt formatting refers to: https://huggingface.co/openbmb/MiniCPM3-4B#inference-with-transformers
         chat = [
             { "role": "user", "content": args.prompt },
         ]
 
-        #prompt = tokenizer.apply_chat_template(chat, return_tensors="pt", tokenize=False, add_generation_prompt=False)
         prompt = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
 
