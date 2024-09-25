@@ -82,9 +82,9 @@ done
 The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU, including
 - [Llama2-7B](./llama.py)
 - [Llama3-8B](./llama.py)
-- [Qwen2-1.5B](./qwen2.py)
-- [Qwen2-7B](./qwen2.py)
-- [Qwen2.5-7B](./qwen2.5.py)
+- [Qwen2-1.5B](./qwen.py)
+- [Qwen2-7B](./qwen.py)
+- [Qwen2.5-7B](./qwen.py)
 - [MiniCPM-1B](./minicpm.py)
 - [MiniCPM-2B](./minicpm.py)
 - [Baichuan2-7B](./baichuan2.py)
@@ -108,13 +108,13 @@ python llama.py
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
 :: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen2.py
+python qwen.py
 
 :: to run Qwen2-7B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
+python qwen.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
 
 :: to run Qwen2.5-7B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen2.5.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct
+python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct
 
 :: to run MiniCPM-1B-sft-bf16
 python minicpm.py
@@ -138,7 +138,7 @@ Arguments info:
 ### Troubleshooting
 
 #### `TypeError: can't convert meta device type tensor to numpy.` Error
-If you encounter `TypeError: can't convert meta device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.` error when loading lowbit model, please try re-saving the lowbit model with the example script you are currently using. Please note that lowbit models saved by `qwen2.py`, `llama.py`, etc. cannot be loaded by `generate.py`.
+If you encounter `TypeError: can't convert meta device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.` error when loading lowbit model, please try re-saving the lowbit model with the example script you are currently using. Please note that lowbit models saved by `qwen.py`, `llama.py`, etc. cannot be loaded by `generate.py`.
 
 #### Output Problem
 If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
@@ -150,13 +150,13 @@ python llama.py --disable-transpose-value-cache
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
 
 :: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen2.py --disable-transpose-value-cache
+python qwen.py --disable-transpose-value-cache
 
 :: to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
-python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --disable-transpose-value-cache
+python qwen.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --disable-transpose-value-cache
 
 :: to run Qwen2.5-7B-Instruct LNL driver version: 32.0.101.2715)
-python qwen2.5.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --disable-transpose-value-cache
+python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --disable-transpose-value-cache
 
 :: to run MiniCPM-1B-sft-bf16
 python minicpm.py --disable-transpose-value-cache
@@ -168,13 +168,13 @@ python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-
 python baichuan2.py --disable-transpose-value-cache
 ```
 
-For [Qwen2-7B](./qwen2.py) and [Qwen2.5-7B](./qwen2.5.py), you could also try to enable mixed precision optimization when encountering output problems:
+For [Qwen2-7B](./qwen.py) and [Qwen2.5-7B](./qwen.py), you could also try to enable mixed precision optimization when encountering output problems:
 
 ```cmd
-python qwen2.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --mixed-precision
+python qwen.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --mixed-precision
 ``` 
 ```cmd
-python qwen2.5.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --mixed-precision
+python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --mixed-precision
 ``` 
 
 #### Better Performance with High CPU Utilization
