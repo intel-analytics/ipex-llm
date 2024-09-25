@@ -34,7 +34,7 @@ if __name__ == "__main__":
         "--repo-id-or-model-path",
         type=str,
         default="Qwen/Qwen2-1.5B-Instruct",
-        help="The huggingface repo id for the Qwen2 model to be downloaded"
+        help="The huggingface repo id for the Qwen2 or Qwen2.5 model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument("--lowbit-path", type=str,
