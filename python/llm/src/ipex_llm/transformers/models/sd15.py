@@ -108,7 +108,7 @@ class AttnProcessor2_0:
         if head_dim in [40, 80]:
             import xe_addons
             hidden_states = xe_addons.sdp_non_causal(query, key.contiguous(),
-                                                   value.contiguous(), attention_mask)
+                                                     value.contiguous(), attention_mask)
         else:
             scale = 1 / math.sqrt(head_dim)
             attn_weights = torch.matmul(query * scale, key.transpose(-1, -2))
