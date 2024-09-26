@@ -92,7 +92,7 @@ Prompt: 'The future of AI is', Generated text: ' vast and complex, with many dif
 
 Before performing benchmark or starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#runtime-configurations) to setup our recommended runtime configurations.
 
-### Service
+### Serving
 
 #### Single card serving
 
@@ -111,6 +111,7 @@ served_model_name="llama2-7b-chat"
 
   </a>
 3. Using following curl command to test the server
+
 ```bash
 curl http://localhost:8000/v1/completions \
      -H "Content-Type: application/json" \
@@ -122,14 +123,26 @@ curl http://localhost:8000/v1/completions \
 
 The expected output should be as follows:
 
-```bash
+```json
 {
-"id":"cmpl-0a86629065c3414396358743d7823385",
-"object":"text_completion",
-"created":1727273935,
-"model":"llama2-7b-chat",
-"choices":[{"index":0,"text": "city that is known for its iconic landmarks, vibrant culture, and diverse neighborhoods. Here are some of the top things to do in San Francisco:. Visit Alcatraz Island: Take a ferry to the infamous former prison and experience the history of Alcatraz Island.2. Explore Golden Gate Park: This sprawling urban park is home to several museums, gardens, and the famous Japanese Tea Garden.3. Walk or Bike the Golden Gate Bridge: Take in the stunning views of the San Francisco Bay and the bridge from various v","logprobs":null,"finish_reason":"length","stop_reason":null}],
-"usage":{"prompt_tokens":5,"total_tokens":133,"completion_tokens":128}
+    "id": "cmpl-0a86629065c3414396358743d7823385",
+    "object": "text_completion",
+    "created": 1727273935,
+    "model": "llama2-7b-chat",
+    "choices": [
+        {
+            "index": 0,
+            "text": "city that is known for its iconic landmarks, vibrant culture, and diverse neighborhoods. Here are some of the top things to do in San Francisco:. Visit Alcatraz Island: Take a ferry to the infamous former prison and experience the history of Alcatraz Island.2. Explore Golden Gate Park: This sprawling urban park is home to several museums, gardens, and the famous Japanese Tea Garden.3. Walk or Bike the Golden Gate Bridge: Take in the stunning views of the San Francisco Bay and the bridge from various v",
+            "logprobs": null,
+            "finish_reason": "length",
+            "stop_reason": null
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 5,
+        "total_tokens": 133,
+        "completion_tokens": 128
+    }
 }
 ```
 
@@ -137,7 +150,7 @@ The expected output should be as follows:
 
 For larger models (greater than 10b), we need to use multiple graphics cards for deployment. In the above single-card script(`/llm/start-vllm-service.sh`), we need to make some modifications to achieve multi-card serving.
 
-1. Tensor Parallel Serving: need modify the `-tensor-parallel-size` num, for example, using 2 cards for tp serving, add following parameter:
+1. **Tensor Parallel Serving**: need modify the `-tensor-parallel-size` num, for example, using 2 cards for tp serving, add following parameter:
 
 ```bash
 --tensor-parallel-size 2
@@ -149,7 +162,7 @@ or shortening:
 -tp 2
 ```
 
-2. Pipeline Parallel Serving: need modify the `-pipeline-parallel-size` num, for example, using 2 cards for pp serving, add following parameter:
+2. **Pipeline Parallel Serving**: need modify the `-pipeline-parallel-size` num, for example, using 2 cards for pp serving, add following parameter:
 
 ```bash
 --pipeline-parallel-size 2
@@ -161,7 +174,7 @@ or shortening:
 -pp 2
 ```
 
-3. TP+PP: using tensor-parallel and pipline-parallel mixed, for example, using 2 cards for tp and 2 cards for pp serving, add following parameter:
+3. **TP+PP Serving**: using tensor-parallel and pipline-parallel mixed, for example, using 2 cards for tp and 2 cards for pp serving, add following parameter:
 
 ```bash
 --pipeline-parallel-size 2 \
@@ -208,7 +221,75 @@ You can refer to this [doc](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Qu
 
 #### Preifx Caching
 
-#### Lora Adapter
+#### LoRA Adapter
+
+This chapter shows how to use LoRA adapters with vLLM on top of a base model. Adapters can be efficiently served on a per request basis with minimal overhead.
+
+1. Download the adapter(s) and save them locally first, for example, for `llama-2-7b`:
+
+```bash
+git clone https://huggingface.co/yard1/llama-2-7b-sql-lora-test
+```
+
+2. Start vllm server with LoRA adapter, setting `--enable-lora` and `--lora-modules` is necessary
+
+```bash
+export SQL_LOARA=your_sql_lora_model_path
+python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
+  --served-model-name Llama-2-7b-hf \
+  --port 8000 \
+  --model meta-llama/Llama-2-7b-hf \
+  --trust-remote-code \
+  --gpu-memory-utilization 0.75 \
+  --device xpu \
+  --dtype float16 \
+  --enforce-eager \
+  --load-in-low-bit fp8 \
+  --max-model-len 4096 \
+  --max-num-batched-tokens 10240 \
+  --max-num-seqs 12 \
+  --tensor-parallel-size 1 \
+  --enable-lora \
+  --lora-modules sql-lora=$SQL_LOARA
+```
+
+3. Send a request to sql-lora
+
+```bash
+curl http://localhost:8000/v1/completions \
+     -H "Content-Type: application/json" \
+     -d '{
+     "model": "sql-lora",
+     "prompt": "San Francisco is a",
+     "max_tokens": 128,
+     "temperature": 0
+     }'
+```
+
+4. Result expected show below:
+
+```json
+{
+    "id": "cmpl-d6fa55b2bc404628bd9c9cf817326b7e",
+    "object": "text_completion",
+    "created": 1727367966,
+    "model": "Llama-2-7b-hf",
+    "choices": [
+        {
+            "index": 0,
+            "text": " city in Northern California that is known for its vibrant cultural scene, beautiful architecture, and iconic landmarks like the Golden Gate Bridge and Alcatraz Island. Here are some of the best things to do in San Francisco:\n\n1. Explore Golden Gate Park: This sprawling urban park is home to several museums, gardens, and the famous Japanese Tea Garden. It's a great place to escape the hustle and bustle of the city and enjoy some fresh air and greenery.\n2. Visit Alcatraz Island: Take a ferry to the former prison and",
+            "logprobs": null,
+            "finish_reason": "length",
+            "stop_reason": null
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 5,
+        "total_tokens": 133,
+        "completion_tokens": 128
+    }
+}
+```
 
 #### Cpu Offloading
 
