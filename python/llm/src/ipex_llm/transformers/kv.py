@@ -24,12 +24,18 @@ from .models.utils import (
     init_fp8_kv_cache, append_fp8_kv_cache,
     init_kv_cache, append_kv_cache, extend_kv_cache
 )
-from typing import Optional, Dict, Tuple, Any
+from typing import Optional, Dict, Tuple, Any, List
 from transformers.cache_utils import DynamicCache
 from ipex_llm.utils.common.log4Error import invalidInputError
 
 
 class DynamicFp8Cache(DynamicCache):
+    def __init__(self, num_hidden_layers: Optional[int] = None) -> None:
+        super().__init__()
+        # fix transformers >= 4.45
+        self.key_cache: List[torch.Tensor] = []
+        self.value_cache: List[torch.Tensor] = []
+
     def update(
         self,
         key_states: torch.Tensor,
@@ -37,6 +43,9 @@ class DynamicFp8Cache(DynamicCache):
         layer_idx: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # fix converting empty DynamicCache in transformers >= 4.45
+        if key_states == []:
+            return key_states, value_states
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
@@ -71,6 +80,12 @@ class DynamicFp8Cache(DynamicCache):
 class DynamicNormalCache(DynamicCache):
     KV_ALLOC_BLOCK_LENGTH = 256
 
+    def __init__(self, num_hidden_layers: Optional[int] = None) -> None:
+        super().__init__()
+        # fix transformers >= 4.45
+        self.key_cache: List[torch.Tensor] = []
+        self.value_cache: List[torch.Tensor] = []
+
     def update(
         self,
         key_states: torch.Tensor,
@@ -78,6 +93,9 @@ class DynamicNormalCache(DynamicCache):
         layer_idx: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # fix converting empty DynamicCache in transformers >= 4.45
+        if key_states == []:
+            return key_states, value_states
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
