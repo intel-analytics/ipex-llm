@@ -22,7 +22,7 @@ import requests
 import torch
 from PIL import Image
 from ipex_llm.transformers import AutoModel
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoProcessor
 
 
 if __name__ == '__main__':
@@ -30,6 +30,13 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6",
                         help='The huggingface repo id for the openbmb/MiniCPM-V-2_6 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
+    parser.add_argument("--lowbit-path", type=str,
+        default="",
+        help="The path to the saved model folder with IPEX-LLM low-bit optimization. "
+             "Leave it blank if you want to load from the original model. "
+             "If the path does not exist, model with low-bit optimization will be saved there."
+             "Otherwise, model with low-bit optimization will be loaded from the path.",
+    )
     parser.add_argument('--image-url-or-path', type=str,
                         default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg',
                         help='The URL or path to the image to infer')
@@ -41,21 +48,42 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
+
+    lowbit_path = args.lowbit_path
     
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
-    model = AutoModel.from_pretrained(model_path, 
-                                      load_in_low_bit="sym_int4",
-                                      optimize_model=True,
-                                      trust_remote_code=True,
-                                      use_cache=True,
-                                      modules_to_not_convert=["vpm", "resampler"])
-    model = model.half().to('xpu')
-    tokenizer = AutoTokenizer.from_pretrained(model_path,
-                                              trust_remote_code=True)
+    if not lowbit_path or not os.path.exists(lowbit_path):
+        # Load model in 4 bit,
+        # which convert the relevant layers in the model into INT4 format
+        # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
+        # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
+        model = AutoModel.from_pretrained(model_path, 
+                                        load_in_low_bit="sym_int4",
+                                        optimize_model=True,
+                                        trust_remote_code=True,
+                                        use_cache=True,
+                                        modules_to_not_convert=["vpm", "resampler"])
+
+        tokenizer = AutoTokenizer.from_pretrained(model_path,
+                                                  trust_remote_code=True)
+    else:
+        model = AutoModel.load_low_bit(lowbit_path, 
+                                       optimize_model=True,
+                                       trust_remote_code=True,
+                                       use_cache=True,
+                                       modules_to_not_convert=["vpm", "resampler"])
+        tokenizer = AutoTokenizer.from_pretrained(lowbit_path,
+                                                  trust_remote_code=True)
+    
     model.eval()
+
+    if lowbit_path and not os.path.exists(lowbit_path):
+        processor = AutoProcessor.from_pretrained(model_path,
+                                                trust_remote_code=True)
+        model.save_low_bit(lowbit_path)
+        tokenizer.save_pretrained(lowbit_path)
+        processor.save_pretrained(lowbit_path)
+
+    model = model.half().to('xpu')
 
     query = args.prompt
     if os.path.exists(image_path):
