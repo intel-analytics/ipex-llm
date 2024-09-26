@@ -114,12 +114,21 @@ set SYCL_CACHE_PERSISTENT=1
   ```
   python ./chat.py --prompt 'What is in the image?' --stream
   ```
+- save model with low-bit optimization (if `LOWBIT_MODEL_PATH` does not exist)
+  ```
+  python ./chat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --lowbit-path LOWBIT_MODEL_PATH --prompt 'What is in the image?'
+  ```
+- chat with saved model with low-bit optimization (if `LOWBIT_MODEL_PATH` exists):
+  ```
+  python ./chat.py --lowbit-path LOWBIT_MODEL_PATH --prompt 'What is in the image?'
+  ```
 
 > [!TIP]
 > For chatting in streaming mode, it is recommended to set the environment variable `PYTHONUNBUFFERED=1`.
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MiniCPM-V-2_6 (e.g. `openbmb/MiniCPM-V-2_6`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2_6'`.
+- `--lowbit-path LOWBIT_MODEL_PATH`: argument defining the path to save/load the model with IPEX-LLM low-bit optimization. If it is an empty string, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded. If it is an existing path, the saved model with low-bit optimization in `LOWBIT_MODEL_PATH` will be loaded. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the optimized low-bit model will be saved into `LOWBIT_MODEL_PATH`. It is default to be `''`, i.e. an empty string.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
 - `--stream`: flag to chat in streaming mode
