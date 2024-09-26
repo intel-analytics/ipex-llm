@@ -1060,7 +1060,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         logger.info(f"Converting the current model to "
                     f"{list(ggml_tensor_qtype.keys())[index]} "
                     f"format......")
-    else:
+    elif qtype in gguf_mixed_qtype.values():
         index = list(gguf_mixed_qtype.values()).index(qtype)
         logger.info(f"Converting the current model to "
                     f"{list(gguf_mixed_qtype.keys())[index]} "
@@ -1089,34 +1089,35 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     enable_scale_search = use_scale_search(model_config, qtype)
 
     # mixed quantization needs model_config to choose custom quantization strategy
-    model, has_been_replaced = _replace_with_low_bit_linear(
-        model, qtype, modules_to_not_convert,
-        convert_shape_only, cpu_embedding,
-        imatrix_data=imatrix_data,
-        embedding_qtype=embedding_qtype,
-        model_config=model_config,
-        torch_dtype=torch_dtype,
-        enable_xetla=enable_xetla,
-        mixed_precision=mixed_precision,
-        act_order=act_order,
-        enable_scale_search=enable_scale_search,
-    )
-    if not has_been_replaced:
-        warnings.warn(
-            "No linear modules were found in "
-            "your model. This can happen for some architectures such as gpt2 that uses Conv1D "
-            "instead of Linear layers. Please double check your model architecture, or submit "
-            "an issue on github if you think this is a bug."
+    if qtype is not None:
+        model, has_been_replaced = _replace_with_low_bit_linear(
+            model, qtype, modules_to_not_convert,
+            convert_shape_only, cpu_embedding,
+            imatrix_data=imatrix_data,
+            embedding_qtype=embedding_qtype,
+            model_config=model_config,
+            torch_dtype=torch_dtype,
+            enable_xetla=enable_xetla,
+            mixed_precision=mixed_precision,
+            act_order=act_order,
+            enable_scale_search=enable_scale_search,
         )
-    elif device == "cpu":
-        if not (getattr(model, "quantization_method", None) == "gptq"):
-            if torch_dtype == "auto":
-                convert_bigdl_other_module(model, torch.float32)
-            else:
-                convert_bigdl_other_module(model, torch_dtype)
-    elif device == "meta":
-        # Do nothing here for weights are empty.
-        pass
+        if not has_been_replaced:
+            warnings.warn(
+                "No linear modules were found in "
+                "your model. This can happen for some architectures such as gpt2 that uses Conv1D "
+                "instead of Linear layers. Please double check your model architecture, or submit "
+                "an issue on github if you think this is a bug."
+            )
+        elif device == "cpu":
+            if not (getattr(model, "quantization_method", None) == "gptq"):
+                if torch_dtype == "auto":
+                    convert_bigdl_other_module(model, torch.float32)
+                else:
+                    convert_bigdl_other_module(model, torch_dtype)
+        elif device == "meta":
+            # Do nothing here for weights are empty.
+            pass
 
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
@@ -1221,6 +1222,15 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
 
 
 def _optimize_post(model, lightweight_bmm=False):
+    try:
+        from diffusers import StableDiffusionPipeline
+        if isinstance(model, StableDiffusionPipeline):
+            from ipex_llm.transformers.models.sd15 import AttnProcessor2_0
+            model.unet.set_attn_processor(AttnProcessor2_0())
+            return model
+    except ModuleNotFoundError:
+        pass
+
     try:
         from sentence_transformers.SentenceTransformer import SentenceTransformer
         if isinstance(model, SentenceTransformer):
