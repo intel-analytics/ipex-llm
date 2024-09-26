@@ -202,7 +202,7 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     :param model: The original PyTorch model (nn.module)
     :param low_bit: str value, options are ``'sym_int4'``, ``'asym_int4'``, ``'sym_int5'``,
                     ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``, ``'nf4'``, ``'fp4'``,
-                    ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``, ``'fp16'`` or ``'bf16'``,
+                    ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``, ``'fp16'``, ``'bf16'`` or None,
                     ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means
                     asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc.
                     Relevant low bit optimizations will be applied to the model.
@@ -225,10 +225,11 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
     >>> # (Optional) you can also save the optimized model by calling 'save_low_bit'
     >>> model.save_low_bit(saved_dir)
     """
-    invalidInputError(low_bit in ggml_tensor_qtype,
+    invalidInputError(low_bit is None or low_bit in ggml_tensor_qtype,
                       f"Unknown load_in_low_bit value: {low_bit}, expected:"
                       f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
-    invalidInputError(isinstance(model, torch.nn.Module),
+    invalidInputError(isinstance(model, torch.nn.Module) or
+                      model.__class__.__name__ == "StableDiffusionPipeline",
                       "model should be an instance of "
                       f"`torch.nn.Module`, but got {type(model)} at last.")
     # To adapt vLLM models
@@ -249,7 +250,7 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
             torch_dtype = torch.float16
     else:
         torch_dtype = kwargs.get("torch_dtype", "auto")
-    qtype = ggml_tensor_qtype[low_bit]
+    qtype = ggml_tensor_qtype[low_bit] if low_bit is not None else None
     model = ggml_convert_low_bit(model,
                                  qtype=qtype,
                                  torch_dtype=torch_dtype,
