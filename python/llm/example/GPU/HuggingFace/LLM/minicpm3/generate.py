@@ -23,9 +23,9 @@ from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for MiniCPM model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for MiniCPM3 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM3-4B",
-                        help='The huggingface repo id for the MiniCPM model to be downloaded'
+                        help='The huggingface repo id for the MiniCPM3 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -63,9 +63,8 @@ if __name__ == '__main__':
 
         # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict,
-                                top_p=0.7,
-                                temperature=0.7)
+                                do_sample=False,
+                                max_new_tokens=args.n_predict)
         # start inference
         st = time.time()
 
