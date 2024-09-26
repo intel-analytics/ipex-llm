@@ -31,10 +31,8 @@ from ipex_llm.utils.common.log4Error import invalidInputError
 
 class DynamicFp8Cache(DynamicCache):
     def __init__(self, num_hidden_layers: Optional[int] = None) -> None:
+        # ignore num_hidden_layers to fix transformers >= 4.45
         super().__init__()
-        # fix transformers >= 4.45
-        self.key_cache: List[torch.Tensor] = []
-        self.value_cache: List[torch.Tensor] = []
 
     def update(
         self,
@@ -81,10 +79,8 @@ class DynamicNormalCache(DynamicCache):
     KV_ALLOC_BLOCK_LENGTH = 256
 
     def __init__(self, num_hidden_layers: Optional[int] = None) -> None:
+        # ignore num_hidden_layers to fix transformers >= 4.45
         super().__init__()
-        # fix transformers >= 4.45
-        self.key_cache: List[torch.Tensor] = []
-        self.value_cache: List[torch.Tensor] = []
 
     def update(
         self,
@@ -275,6 +271,9 @@ class DynamicCompressCache(DynamicCache):
         KV_CACHE_ALLOC_BLOCK_LENGTH: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # fix converting empty DynamicCache in transformers >= 4.45
+        if key_states == []:
+            return key_states, value_states
 
         bsz, num_heads, seq_len, head_dim = key_states.shape
 
@@ -372,6 +371,10 @@ class DynamicCompressFp8Cache(DynamicCompressCache, DynamicFp8Cache):
         KV_CACHE_ALLOC_BLOCK_LENGTH: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # fix converting empty DynamicCache in transformers >= 4.45
+        if key_states == []:
+            return key_states, value_states
+
         bsz, num_heads, seq_len, head_dim = key_states.shape
 
         if layer_idx == 0:

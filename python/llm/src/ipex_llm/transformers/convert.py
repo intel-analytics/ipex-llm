@@ -1273,8 +1273,8 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.common import rms_norm_forward
         from ipex_llm.transformers.models.common import mlp_silu_forward
-        from ipex_llm.transformers.models.llama_new import llama_model_forward
-        from ipex_llm.transformers.models.llama_new import llama_attention_forward
+        from ipex_llm.transformers.models.llama32 import llama_model_forward
+        from ipex_llm.transformers.models.llama32 import llama_attention_forward
         convert_forward(model, module.LlamaRMSNorm, rms_norm_forward)
         convert_forward(model, module.LlamaMLP, mlp_silu_forward)
         convert_forward(model, module.LlamaModel, llama_model_forward)
