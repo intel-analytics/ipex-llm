@@ -123,21 +123,15 @@ To monitor your GPU's performance and status (e.g. memory consumption, utilizati
 
 ## A Quick Example
 
-Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://huggingface.co/Qwen/Qwen-1_8B-Chat) model, a 1.8 billion parameter LLM for this demonstration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
+Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) model, a 1.8 billion parameter LLM for this demonstration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
 
 - Step 1: Follow [Runtime Configurations Section](#step-1-runtime-configurations) above to prepare your runtime environment.
 
-- Step 2: Install additional package required for Qwen-1.8B-Chat to conduct:
-
-   ```cmd
-   pip install tiktoken transformers_stream_generator einops
-   ```
-
-- Step 3: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
+- Step 2: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
 
   - For **loading model from Hugging Face**:
     
-    Create a new file named `demo.py` and insert the code snippet below to run [Qwen-1.8B-Chat](https://huggingface.co/Qwen/Qwen-1_8B-Chat) model with IPEX-LLM optimizations.
+    Create a new file named `demo.py` and insert the code snippet below to run [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) model with IPEX-LLM optimizations.
 
       ```python
       # Copy/Paste the contents to a new file demo.py
@@ -147,11 +141,11 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
       generation_config = GenerationConfig(use_cache=True)
 
       print('Now start loading Tokenizer and optimizing Model...')
-      tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat",
+      tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-1.5B-Instruct",
                                                 trust_remote_code=True)
 
       # Load Model using ipex-llm and load it to GPU
-      model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-1_8B-Chat",
+      model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2-1.5B-Instruct",
                                                    load_in_4bit=True,
                                                    cpu_embedding=True,
                                                    trust_remote_code=True)
@@ -195,7 +189,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
     pip install modelscope==1.11.0
     ```
 
-    Create a new file named `demo.py` and insert the code snippet below to run [Qwen-1.8B-Chat](https://www.modelscope.cn/models/qwen/Qwen-1_8B-Chat/summary) model with IPEX-LLM optimizations.
+    Create a new file named `demo.py` and insert the code snippet below to run [Qwen2-1.5B-Instruct](https://www.modelscope.cn/models/qwen/Qwen2-1.5B-Instruct/summary) model with IPEX-LLM optimizations.
 
       ```python
 
@@ -207,11 +201,11 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
       generation_config = GenerationConfig(use_cache=True)
 
       print('Now start loading Tokenizer and optimizing Model...')
-      tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-1_8B-Chat",
+      tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-1.5B-Instruct",
                                                 trust_remote_code=True)
 
       # Load Model using ipex-llm and load it to GPU
-      model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-1_8B-Chat",
+      model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2-1.5B-Instruct",
                                                    load_in_4bit=True,
                                                    cpu_embedding=True,
                                                    trust_remote_code=True,
@@ -257,7 +251,7 @@ Now let's play with a real LLM. We'll be using the [Qwen-1.8B-Chat](https://hugg
 > When running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
 > This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
 
-- Step 4. Run `demo.py` within the activated Python environment using the following command:
+- Step 3. Run `demo.py` within the activated Python environment using the following command:
 
   ```cmd
   python demo.py
@@ -269,7 +263,7 @@ Example output on a system equipped with an Intel Core Ultra 5 125H CPU and Inte
 ```
 user: What is AI?
 
-assistant: AI stands for Artificial Intelligence, which refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception, speech recognition,
+assistant: AI, or artificial intelligence, refers to the simulation of human intelligence in machines that are programmed to think and act like humans. It involves the development of algorithms,
 ```
 
 ## Tips & Troubleshooting
