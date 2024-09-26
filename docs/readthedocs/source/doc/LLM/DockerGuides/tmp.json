@@ -1,0 +1,20 @@
+{
+    "id": "cmpl-0a86629065c3414396358743d7823385",
+    "object": "text_completion",
+    "created": 1727273935,
+    "model": "llama2-7b-chat",
+    "choices": [
+        {
+            "index": 0,
+            "text": "city that is known for its iconic landmarks, vibrant culture, and diverse neighborhoods. Here are some of the top things to do in San Francisco:. Visit Alcatraz Island: Take a ferry to the infamous former prison and experience the history of Alcatraz Island.2. Explore Golden Gate Park: This sprawling urban park is home to several museums, gardens, and the famous Japanese Tea Garden.3. Walk or Bike the Golden Gate Bridge: Take in the stunning views of the San Francisco Bay and the bridge from various v",
+            "logprobs": null,
+            "finish_reason": "length",
+            "stop_reason": null
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 5,
+        "total_tokens": 133,
+        "completion_tokens": 128
+    }
+}
