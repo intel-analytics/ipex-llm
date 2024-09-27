@@ -64,12 +64,12 @@ def generate(
                                  **kwargs)
     else:
         return self.npu_generate(inputs=inputs,
-                                generation_config=generation_config,
-                                streamer=streamer,
-                                logits_processor=logits_processor,
-                                stopping_criteria=stopping_criteria,
-                                prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
-                                **kwargs)
+                                 generation_config=generation_config,
+                                 streamer=streamer,
+                                 logits_processor=logits_processor,
+                                 stopping_criteria=stopping_criteria,
+                                 prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                 **kwargs)
 
 
 GenerationMixin.generate = generate
@@ -83,7 +83,7 @@ def clear_benchmarks(self):
 
 def _update_model_kwargs_for_generation(outputs,
                                         model_kwargs: Dict[str, Any]):
-    model_kwargs["past_key_values"]= outputs.past_key_values
+    model_kwargs["past_key_values"] = outputs.past_key_values
     if "attention_mask" in model_kwargs:
         attention_mask = model_kwargs["attention_mask"]
         model_kwargs["attention_mask"] = torch.cat(
@@ -175,7 +175,7 @@ def npu_generate(self,
         model_kwargs = _update_model_kwargs_for_generation(
             output, model_kwargs
         )
-        
+
         toc = time.time()
         if self.first_token_time is None:
             self.first_token_time = toc - tic
@@ -201,13 +201,12 @@ def npu_generate(self,
     step = min(step, max_new_tokens)
     self.n_token_generated = step
 
-
     print(f"=========First token cost {self.first_token_time:.4f} s=========")
     if len(self.last_token_time) > 1:
         self.first_cost = self.first_token_time
         self.rest_cost_mean = np.mean(self.last_token_time)
-        print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(self.last_token_time)}"
-              f" tokens in all)=========")
+        print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s "
+              f"({len(self.last_token_time)} tokens in all)=========")
 
     if streamer is not None:
         streamer.end()
