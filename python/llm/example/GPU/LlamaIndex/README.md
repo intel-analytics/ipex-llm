@@ -8,17 +8,31 @@ This folder contains examples showcasing how to use [**LlamaIndex**](https://git
 ## Retrieval-Augmented Generation (RAG) Example
 The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index RAG example](https://docs.llamaindex.ai/en/stable/examples/low_level/oss_ingestion_retrieval.html). This example builds a pipeline to ingest data (e.g. llama2 paper in pdf format) into a vector database (e.g. PostgreSQL), and then build a retrieval pipeline from that vector database. 
 
+### 1. Install Prerequisites
+
+To benefit from IPEX-LLM on Intel GPUs, there are several prerequisite steps for tools installation and environment preparation.
+
+If you are a Windows user, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](../../../../../docs/mddocs/Quickstart/install_windows_gpu.md), and follow [Install Prerequisites](../../../../../docs/mddocs/Quickstart/install_windows_gpu.md#install-prerequisites) to update GPU driver (optional) and install Conda.
+
+If you are a Linux user, visit the [Install IPEX-LLM on Linux with Intel GPU](../../../../../docs/mddocs/Quickstart/install_linux_gpu.md), and follow [Install Prerequisites](../../../../../docs/mddocs/Quickstart/install_linux_gpu.md#install-prerequisites) to install GPU driver, Intel® oneAPI Base Toolkit 2024.0, and Conda.
 
 
-### 1. Setting up Dependencies 
+### 2. Setting up Dependencies 
 
 * **Install LlamaIndex Packages**
     ```bash
-    pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+    conda activate <your-conda-env-name>
+    pip install llama-index-llms-ipex-llm[xpu]==0.1.8 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+    pip install llama-index-embeddings-ipex-llm[xpu]==0.1.5 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+    pip install llama-index-readers-file==0.1.33
+    pip install llama-index-vector-stores-postgres==0.1.14
+    pip install pymupdf
     ```
-* **Install IPEX-LLM**
-
-    Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install.html) to install ipex-llm.
+> [!NOTE]
+> - You could refer [llama-index-llms-ipex-llm](https://docs.llamaindex.ai/en/stable/examples/llm/ipex_llm_gpu/) and [llama-index-embeddings-ipex-llm](https://docs.llamaindex.ai/en/stable/examples/embeddings/ipex_llm_gpu/) for more information.
+> - The installation of `llama-index-llms-ipex-llm` or `llama-index-embeddings-ipex-llm` will also install `IPEX-LLM` and its dependencies. 
+> - You can also use `https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/` as the `extra-indel-url`.
+> - `IpexLLMEmbedding` currently only provides optimization for Hugging Face Bge models.
 
 * **Database Setup (using PostgreSQL)**:
     * Linux
@@ -71,7 +85,7 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
     wget --user-agent "Mozilla" "https://arxiv.org/pdf/2307.09288.pdf" -O "data/llama2.pdf"
     ```
 
-### 2. Configures OneAPI environment variables for Linux
+### 3. Configures OneAPI environment variables for Linux
 
 > [!NOTE]
 > Skip this step if you are running on Windows.
@@ -82,9 +96,9 @@ This is a required step on Linux for APT or offline installed oneAPI. Skip this 
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Runtime Configurations
+### 4. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
-#### 3.1 Configurations for Linux
+#### 4.1 Configurations for Linux
 <details>
 
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
@@ -121,7 +135,7 @@ export BIGDL_LLM_XMX_DISABLED=1
 
 </details>
 
-#### 3.2 Configurations for Windows
+#### 4.2 Configurations for Windows
 <details>
 
 <summary>For Intel iGPU</summary>
@@ -147,7 +161,7 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
 
-### 4. Running the RAG example
+### 5. Running the RAG example
 
 In the current directory, run the example with command:
 
@@ -164,7 +178,7 @@ python rag.py -m <path_to_model> -t <path_to_tokenizer>
 - `-n N_PREDICT`: max predict tokens
 - `-t TOKENIZER_PATH`: **Required**, path to the tokenizer model
 
-### 5. Example Output
+### 6. Example Output
 
 A query such as **"How does Llama 2 compare to other open-source models?"** with the Llama2 paper as the data source, using the `Llama-2-7b-chat-hf` model, will produce the output like below:
 
@@ -178,6 +192,6 @@ However, it's important to note that the performance of Llama 2 can vary dependi
 In conclusion, while Llama 2 performs well on most benchmarks compared to other open-source models, its performance
 ```
 
-### 6. Trouble shooting
-#### 6.1 Core dump
+### 7. Trouble shooting
+#### 7.1 Core dump
 If you encounter a core dump error in your Python code, it is crucial to verify that the `import torch` statement is placed at the top of your Python file, just as what we did in `rag.py`.

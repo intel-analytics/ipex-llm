@@ -10,6 +10,7 @@ pip install datasets evaluate soundfile librosa jiwer
 
 ## Run
 ```bash
+export IPEX_LLM_LAST_LM_HEAD=0
 python run_whisper.py --model_path /path/to/model --data_type other --device cpu
 ```
 

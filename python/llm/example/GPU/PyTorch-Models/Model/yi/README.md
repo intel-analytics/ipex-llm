@@ -1,5 +1,5 @@
 # Yi
-In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API on Yi models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [01-ai/Yi-6B](https://huggingface.co/01-ai/Yi-6B) as a reference Yi model.
+In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API on Yi models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [01-ai/Yi-6B](https://huggingface.co/01-ai/Yi-6B) and [01-ai/Yi-6B-Chat](https://huggingface.co/01-ai/Yi-1.5-6B-Chat) as reference Yi models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -112,7 +112,7 @@ python ./generate.py
 
 In the example, several arguments can be passed to satisfy your requirements:
 
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Yi model (e.g. `01-ai/Yi-6B`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'01-ai/Yi-6B'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Yi model (e.g. `01-ai/Yi-6B` and `01-ai/Yi-6B-Chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'01-ai/Yi-6B-Chat'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -126,4 +126,14 @@ AI是什么？
 -------------------- Output --------------------
 AI是什么？
 人工智能（Artificial Intelligence），英文缩写为AI。它是研究、开发用于模拟、延伸和扩展人的智能的理论、方法、技术及
+```
+
+#### [01-ai/Yi-6B-Chat](https://huggingface.co/01-ai/Yi-6B-Chat)
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+AI是什么？
+-------------------- Output --------------------
+AI是什么？
+人工智能（Artificial Intelligence, AI）是计算机科学的一个分支，它研究如何让计算机模拟人类的智能行为。人工智能可以通过模仿人类的思维过程和
 ```

@@ -128,6 +128,35 @@ curl http://localhost:8000/v1/completions \
  }' &
 ```
 
+##### Image input
+
+image input only supports [MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6)now.
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "MiniCPM-V-2_6",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "图片里有什么?"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"
+            }
+          }
+        ]
+      }
+    ],
+    "max_tokens": 128
+  }'
+```
+
 #### Tensor parallel
 
 > Note: We recommend to use docker for tensor parallel deployment.

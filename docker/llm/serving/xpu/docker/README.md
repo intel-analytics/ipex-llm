@@ -6,7 +6,7 @@ docker build \
   --build-arg http_proxy=.. \
   --build-arg https_proxy=.. \
   --build-arg no_proxy=.. \
-  --rm --no-cache -t intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT .
+  --rm --no-cache -t intelanalytics/ipex-llm-serving-xpu:2.2.0-SNAPSHOT .
 ```
 
 
@@ -18,7 +18,7 @@ To map the `xpu` into the container, you need to specify `--device=/dev/dri` whe
 An example could be:
 ```bash
 #/bin/bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:2.1.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:2.2.0-SNAPSHOT
 
 sudo docker run -itd \
         --net=host \
@@ -85,8 +85,9 @@ We can benchmark the api_server to get an estimation about TPS (transactions per
 
 After starting vllm service, Sending reqs through `vllm_online_benchmark.py`
 ```bash
-python vllm_online_benchmark.py $model_name $max_seqs
+python vllm_online_benchmark.py $model_name $max_seqs $input_length $output_length
 ```
+If `input_length` and `output_length` are not provided, the script will use the default values of 1024 and 512, respectively.
 
 And it will output like this:
 ```bash

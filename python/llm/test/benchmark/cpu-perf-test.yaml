@@ -5,7 +5,7 @@ repo_id:
   - 'THUDM/chatglm3-6b'
   - 'baichuan-inc/Baichuan2-7B-Chat'
   - 'baichuan-inc/Baichuan2-13B-Chat'
-  - 'Qwen/Qwen-14B-Chat'
+  # - 'Qwen/Qwen-14B-Chat' # requires transformers < 4.37.0
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3

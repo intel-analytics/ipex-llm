@@ -1,0 +1,15 @@
+{
+    "zero_optimization": {
+      "stage": 3,
+      "contiguous_gradients": true,
+      "overlap_comm": true,
+      "offload_optimizer": {"device": "cpu"}
+    },
+    "bf16": {
+      "enabled": true
+    },
+    "world_size": 2,
+    "train_batch_size": 32,
+    "train_micro_batch_size_per_gpu": 2,
+    "gradient_accumulation_steps": 8
+}

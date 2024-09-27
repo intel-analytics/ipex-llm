@@ -171,11 +171,12 @@ Below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_i
 </a>
 
 > [!TIP]
-> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), it is recommended to additionaly set the following environment variable for optimal performance before starting the service:
+> If your local LLM is running on Intel Arc™ A-Series Graphics with Linux OS (Kernel 6.2), setting the following environment variable before starting the service may potentially improve performance.
 >
 > ```bash
 > export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 > ```
+> The environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
 
 ### 4. About Tensor Parallel
 

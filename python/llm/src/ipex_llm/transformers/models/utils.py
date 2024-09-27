@@ -22,7 +22,6 @@ from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4,\
     FP6, ASYM_INT4
-from ipex_llm.transformers.convert import is_deepspeed_available
 
 FP8_KV_ALLOC_LENGTH = 512
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
@@ -335,15 +334,6 @@ def use_sdp(q_len, kv_len, head_dim, query_states):
     )
 
 
-def use_sdp_fp8(q_len, kv_len, query_states):
-    return (
-        query_states.device.type == "xpu"
-        and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
-        and q_len != kv_len     # next token
-        and q_len <= 32         # lookup
-    )
-
-
 def use_sdp_causal(q_len, kv_len, head_dim, query_states, training):
     return (
         q_len == kv_len     # first token
@@ -487,14 +477,18 @@ def update_past_key_value(past_key_value, key_states, value_states,
 
 def should_use_compresskv(x: torch.Tensor, prompt_len: int):
     use_compress_kv = os.environ.get("IPEX_LLM_COMPRESS_KV_CACHE", None)
-    if use_compress_kv is None:
-        return (
-            get_xpu_device_type(x) == "mtl"
-            and prompt_len >= 1800
-            and prompt_len <= 4500
-        )
+    perf_mode = os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None)
+    if perf_mode == "1":
+        return False
     else:
-        return x.device.type == 'xpu' and use_compress_kv == "1"
+        if use_compress_kv is None:
+            return (
+                get_xpu_device_type(x) == "mtl"
+                and prompt_len >= 1800
+                and prompt_len <= 4500
+            )
+        else:
+            return x.device.type == 'xpu' and use_compress_kv == "1"
 
 
 def get_compresskv_attn_mask(key_states: torch.Tensor,

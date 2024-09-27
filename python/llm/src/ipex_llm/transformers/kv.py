@@ -24,12 +24,16 @@ from .models.utils import (
     init_fp8_kv_cache, append_fp8_kv_cache,
     init_kv_cache, append_kv_cache, extend_kv_cache
 )
-from typing import Optional, Dict, Tuple, Any
+from typing import Optional, Dict, Tuple, Any, List
 from transformers.cache_utils import DynamicCache
 from ipex_llm.utils.common.log4Error import invalidInputError
 
 
 class DynamicFp8Cache(DynamicCache):
+    def __init__(self, num_hidden_layers: Optional[int] = None) -> None:
+        # ignore num_hidden_layers to fix transformers >= 4.45
+        super().__init__()
+
     def update(
         self,
         key_states: torch.Tensor,
@@ -37,6 +41,9 @@ class DynamicFp8Cache(DynamicCache):
         layer_idx: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # fix converting empty DynamicCache in transformers >= 4.45
+        if key_states == []:
+            return key_states, value_states
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
@@ -71,6 +78,10 @@ class DynamicFp8Cache(DynamicCache):
 class DynamicNormalCache(DynamicCache):
     KV_ALLOC_BLOCK_LENGTH = 256
 
+    def __init__(self, num_hidden_layers: Optional[int] = None) -> None:
+        # ignore num_hidden_layers to fix transformers >= 4.45
+        super().__init__()
+
     def update(
         self,
         key_states: torch.Tensor,
@@ -78,6 +89,9 @@ class DynamicNormalCache(DynamicCache):
         layer_idx: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # fix converting empty DynamicCache in transformers >= 4.45
+        if key_states == []:
+            return key_states, value_states
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
@@ -120,6 +134,21 @@ class DynamicNormalCache(DynamicCache):
             self.value_cache[layer_idx] = v_cache
 
         return self.key_cache[layer_idx], self.value_cache[layer_idx]
+
+    @classmethod
+    def from_reserved(cls, layers: int,
+                      bsz: int, n_head: int, length: int, head_dim: int,
+                      dtype: torch.dtype, device: torch.device):
+        past_key_values = cls()
+        for _i in range(layers):
+            k_cache, v_cache = init_kv_cache(
+                bsz, n_head, head_dim,
+                0, length + cls.KV_ALLOC_BLOCK_LENGTH,
+                dtype, device
+            )
+            past_key_values.key_cache.append(k_cache)
+            past_key_values.value_cache.append(v_cache)
+        return past_key_values
 
 
 # Copied from transformers.models.llama.modeling_llama.repeat_kv
@@ -218,8 +247,6 @@ class DynamicCompressCache(DynamicCache):
     def __init__(self, quant_kv=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.real_kv_len = 0
-        self.quant_kv = quant_kv
-        self.append_kv_func = append_fp8_kv_cache if quant_kv else append_kv_cache
 
     def update_seen_tokens(self, layer_idx, q_len):
         if layer_idx == 0:
@@ -244,6 +271,9 @@ class DynamicCompressCache(DynamicCache):
         KV_CACHE_ALLOC_BLOCK_LENGTH: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # fix converting empty DynamicCache in transformers >= 4.45
+        if key_states == []:
+            return key_states, value_states
 
         bsz, num_heads, seq_len, head_dim = key_states.shape
 
@@ -266,46 +296,33 @@ class DynamicCompressCache(DynamicCache):
                 value_states=value_states,
                 attention_mask=attention_mask,
                 num_key_value_groups=num_key_value_groups)
-            self.key_cache.append(key_states_compress)
-            self.value_cache.append(value_states_compress)
 
-            if not self.quant_kv:
-                k_cache_compressed, v_cache_compressed = init_kv_cache(
-                    bsz, num_heads, head_dim,
-                    0, key_states_compress.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                    key_states.dtype, key_states.device
-                )
-            else:
-                k_cache_compressed, v_cache_compressed = init_fp8_kv_cache(
-                    bsz, num_heads, seq_len, head_dim,
-                    device=key_states.device,
-                )
-            k_cache_compressed, v_cache_compressed = self.append_kv_func(
+            k_cache_compressed, v_cache_compressed = init_kv_cache(
+                bsz, num_heads, head_dim,
+                0, key_states_compress.size(2) + KV_CACHE_ALLOC_BLOCK_LENGTH,
+                key_states.dtype, key_states.device
+            )
+            k_cache_compressed, v_cache_compressed = append_kv_cache(
                 k_cache_compressed, v_cache_compressed,
                 key_states_compress, value_states_compress)
-            self.key_cache[layer_idx] = k_cache_compressed
-            self.value_cache[layer_idx] = v_cache_compressed
+            self.key_cache.append(k_cache_compressed)
+            self.value_cache.append(v_cache_compressed)
 
             if key_states.stride(2) != head_dim:
-                if not self.quant_kv:
-                    k_cache, v_cache = init_kv_cache(
-                        bsz, num_heads, head_dim,
-                        0, key_states.size(2),
-                        key_states.dtype, key_states.device
-                    )
-                else:
-                    k_cache, v_cache = init_fp8_kv_cache(
-                        bsz, num_heads, 0, head_dim, key_states.device
-                    )
-                k_cache, v_cache = self.append_kv_func(k_cache, v_cache,
-                                                       key_states, value_states)
+                k_cache, v_cache = init_kv_cache(
+                    bsz, num_heads, head_dim,
+                    0, key_states.size(2),
+                    key_states.dtype, key_states.device
+                )
+                k_cache, v_cache = append_kv_cache(k_cache, v_cache,
+                                                   key_states, value_states)
                 return k_cache, v_cache
             else:
                 return key_states, value_states
         else:
             cache_k = self.key_cache[layer_idx]
             cache_v = self.value_cache[layer_idx]
-            if not enough_kv_room and not self.quant_kv:
+            if not enough_kv_room:
                 # allocate new
                 new_c_k, new_c_v = extend_kv_cache(
                     bsz,
@@ -321,10 +338,10 @@ class DynamicCompressCache(DynamicCache):
                 cache_k = new_c_k
                 cache_v = new_c_v
 
-            key_states, value_states = self.append_kv_func(cache_k,
-                                                           cache_v,
-                                                           key_states,
-                                                           value_states)
+            key_states, value_states = append_kv_cache(cache_k,
+                                                       cache_v,
+                                                       key_states,
+                                                       value_states)
 
             # update past_key_value
             self.key_cache[layer_idx] = key_states
@@ -339,13 +356,78 @@ class DynamicCompressCache(DynamicCache):
             return 0
         return self.real_kv_len
 
-    @classmethod
-    def from_legacy_cache(cls, past_key_values: Optional[Tuple[Tuple[torch.FloatTensor]]] = None,
-                          quantize_kv: Optional[bool] = False) -> "DynamicCache":
-        """Converts a cache in the legacy cache format into an equivalent `DynamicCache`."""
-        cache = cls(quantize_kv)
-        if past_key_values is not None:
-            for layer_idx in range(len(past_key_values)):
-                key_states, value_states = past_key_values[layer_idx]
-                cache.update(key_states, value_states, layer_idx)
-        return cache
+
+class DynamicCompressFp8Cache(DynamicCompressCache, DynamicFp8Cache):
+    def update(
+        self,
+        key_states: torch.Tensor,
+        value_states: torch.Tensor,
+        layer_idx: int,
+        query_states: torch.Tensor,
+        attention_mask: torch.Tensor,
+        num_key_value_groups: int,
+        attn_config: Dict[str, Any],
+        enough_kv_room: bool,
+        KV_CACHE_ALLOC_BLOCK_LENGTH: int,
+        cache_kwargs: Optional[Dict[str, Any]]=None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        # fix converting empty DynamicCache in transformers >= 4.45
+        if key_states == []:
+            return key_states, value_states
+
+        bsz, num_heads, seq_len, head_dim = key_states.shape
+
+        if layer_idx == 0:
+            if hasattr(self, "_seen_tokens"):
+                # 4.39 uses `_seen_tokens`
+                self._seen_tokens += seq_len
+            else:
+                # 4.37 uses `seen_tokens`
+                self.seen_tokens += seq_len
+            self.real_kv_len += seq_len
+
+        # Update the cache
+        if len(self.key_cache) <= layer_idx:
+            # First token, compress kv cache
+            key_states_compress, value_states_compress = compress_kv(
+                attn_config=attn_config,
+                key_states=key_states,
+                query_states=query_states,
+                value_states=value_states,
+                attention_mask=attention_mask,
+                num_key_value_groups=num_key_value_groups)
+
+            k_cache_compressed, v_cache_compressed = init_fp8_kv_cache(
+                bsz, num_heads, seq_len, head_dim,
+                device=key_states.device,
+            )
+
+            k_cache_compressed, v_cache_compressed = append_fp8_kv_cache(
+                k_cache_compressed, v_cache_compressed,
+                key_states_compress, value_states_compress)
+            self.key_cache.append(k_cache_compressed)
+            self.value_cache.append(v_cache_compressed)
+
+            if key_states.stride(2) != head_dim:
+                k_cache, v_cache = init_fp8_kv_cache(
+                    bsz, num_heads, 0, head_dim, key_states.device
+                )
+                k_cache, v_cache = append_fp8_kv_cache(k_cache, v_cache,
+                                                       key_states, value_states)
+                return k_cache, v_cache
+            else:
+                return key_states, value_states
+        else:
+            cache_k = self.key_cache[layer_idx]
+            cache_v = self.value_cache[layer_idx]
+
+            key_states, value_states = append_fp8_kv_cache(cache_k,
+                                                           cache_v,
+                                                           key_states,
+                                                           value_states)
+
+            # update past_key_value
+            self.key_cache[layer_idx] = key_states
+            self.value_cache[layer_idx] = value_states
+
+            return self.key_cache[layer_idx], self.value_cache[layer_idx]

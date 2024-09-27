@@ -27,8 +27,8 @@ Vicuna_PROMPT_FORMAT = "### Human:\n{prompt} \n ### Assistant:\n"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Vicuna model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="lmsys/vicuna-13b-v1.3",
-                        help='The huggingface repo id for the Vicuna (e.g. `lmsys/vicuna-13b-v1.3` and `eachadea/vicuna-7b-1.1`) to be downloaded'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="lmsys/vicuna-13b-v1.5",
+                        help='The huggingface repo id for the Vicuna (e.g. `lmsys/vicuna-13b-v1.5` and `lmsys/vicuna-7b-v1.5`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -57,7 +57,7 @@ if __name__ == '__main__':
         # enabling `use_cache=True` allows the model to utilize the previous
         # key/values attentions to speed up decoding;
         # to obtain optimal performance with IPEX-LLM INT4 optimizations,
-        # it is important to set use_cache=True for vicuna-v1.3 models
+        # it is important to set use_cache=True for vicuna-v1.5 models
         output = model.generate(input_ids,
                                 use_cache=True,
                                 max_new_tokens=args.n_predict)

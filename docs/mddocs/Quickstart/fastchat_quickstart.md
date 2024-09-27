@@ -60,6 +60,7 @@ python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOU
 # Available low_bit format including sym_int4, sym_int8, fp16 etc.
 source /opt/intel/oneapi/setvars.sh
 export USE_XETLA=OFF
+# [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --low-bit "sym_int4" --trust-remote-code --device "xpu"
@@ -87,6 +88,7 @@ python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7
 source /opt/intel/oneapi/setvars.sh
 export ENABLE_SDP_FUSION=1
 export SYCL_CACHE_PERSISTENT=1
+# [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 python3 -m ipex_llm.serving.fastchat.ipex_llm_worker --model-path lmsys/vicuna-7b-v1.5 --low-bit "fp16" --trust-remote-code --device "xpu" --speculative
 ```
@@ -117,9 +119,13 @@ python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MO
 # On GPU
 source /opt/intel/oneapi/setvars.sh
 export USE_XETLA=OFF
+# [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 python3 -m ipex_llm.serving.fastchat.vllm_worker --model-path REPO_ID_OR_YOUR_MODEL_PATH --device xpu --load-in-low-bit "sym_int4" --enforce-eager
 ```
+
+> [!NOTE]
+> The environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
 
 #### Launch multiple workers
 

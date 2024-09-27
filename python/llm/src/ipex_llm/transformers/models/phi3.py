@@ -37,12 +37,14 @@ import torch
 import warnings
 from torch import nn
 
+from ipex_llm.transformers.models.common import attention_softmax
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, rotate_half
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
-from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
+from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal, get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
 from ipex_llm.transformers.models.utils import should_use_compresskv, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache, DynamicCompressCache
+from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache, \
+    DynamicCompressCache, DynamicCompressFp8Cache
 
 from typing import Optional, Tuple, List
 from transformers.models.phi.modeling_phi import repeat_kv
@@ -99,6 +101,7 @@ def attention_forward(
 
     # [CompressKV]
     use_compresskv = isinstance(past_key_value, DynamicCompressCache)
+    use_quantizekv = isinstance(past_key_value, DynamicFp8Cache)
 
     qkv = self.qkv_proj(hidden_states)
     qkv = qkv.view(bsz, q_len, self.num_heads + 2 * self.num_key_value_heads, self.head_dim)
@@ -149,44 +152,41 @@ def attention_forward(
     if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
         # [CompressKV]
         if use_compresskv:
-            # print(attention_mask.shape)
-            context_len = key_states.size(2)
-            attention_mask = attention_mask[:, :, :, -context_len:]
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         import xe_addons
-        if isinstance(past_key_value,
-                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
+        if use_quantizekv:
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
                                             attention_mask)
         else:
             attn_output = xe_addons.sdp(query_states, key_states, value_states,
                                         attention_mask)
-    # disable sdp_causal to avoid overflow for now
-    # elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-    #     import xe_addons
-    #     if isinstance(past_key_value, DynamicFp8Cache):
-    #         attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
-    #                                                value_states, attention_mask)
-    #     else:
-    #         attn_output = xe_addons.sdp_causal(query_states, key_states,
-    #                                            value_states, attention_mask)
+    elif (
+        use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training)
+        and os.environ.get("IPEX_LLM_LOW_MEM", "0") == "1"
+    ):
+        import xe_addons
+        if isinstance(past_key_value, DynamicFp8Cache):
+            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
+                                                   value_states, attention_mask)
+        else:
+            attn_output = xe_addons.sdp_causal(query_states, key_states,
+                                               value_states, attention_mask)
     else:
-        if isinstance(past_key_value,
-                      DynamicFp8Cache) or (use_compresskv and past_key_value.quant_kv):
+        if use_quantizekv:
             key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
                                                             query_states.dtype)
         # repeat k/v heads if n_kv_heads < n_heads
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
 
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3))
 
+        # use inplaced div, add and softmax to avoid double attn_weights memory usage
+        attn_weights.div_(math.sqrt(self.head_dim))
         if attention_mask is not None:
-            attn_weights = attn_weights + attention_mask
+            attn_weights.add_(attention_mask)
+        attn_weights = attention_softmax(attn_weights, self.training)
 
-        # upcast attention to fp32
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                   dtype=torch.float32).to(value_states.dtype)
         attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
                                                    training=self.training)
         attn_output = torch.matmul(attn_weights, value_states)
@@ -256,23 +256,31 @@ def phi3_model_forward_wrapper(origin_model_forward):
     ):
         # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
         use_cache = use_cache if use_cache is not None else self.config.use_cache
-        input = input_ids if input_ids is not None else inputs_embeds
-        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input)
-        use_compress_kv = should_use_compresskv(input, input.shape[-1])
+        inputs = input_ids if input_ids is not None else inputs_embeds
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs)
+        use_compress_kv = should_use_compresskv(inputs, inputs.shape[1]) or \
+            isinstance(past_key_values, DynamicCompressCache)
         if use_cache:
             if use_compress_kv and not isinstance(past_key_values,
                                                   DynamicCompressCache):
-                past_key_values = DynamicCompressCache.\
-                    from_legacy_cache(past_key_values,
-                                      quantize_kv=use_quantize_kv)
-            if use_quantize_kv and not isinstance(past_key_values,
-                                                  (DynamicFp8Cache, DynamicCompressCache)):
+                if use_quantize_kv:
+                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+                else:
+                    past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+            if use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
+                                                                          DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
             if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                              (DynamicNormalCache,
-                                                                               DynamicCompressCache
-                                                                               )):
+                                                                              DynamicNormalCache):
                 past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
+                if past_key_values.get_seq_length() == 0:
+                    n_layer = self.config.num_hidden_layers
+                    n_head = self.config.num_attention_heads
+                    head_dim = self.config.hidden_size // self.config.num_attention_heads
+                    past_key_values = DynamicNormalCache.from_reserved(
+                        n_layer, inputs.size(0), n_head, inputs.size(1), head_dim,
+                        self.dtype, inputs.device
+                    )
         return origin_model_forward(
             self=self,
             input_ids=input_ids,

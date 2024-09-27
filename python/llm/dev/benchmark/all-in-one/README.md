@@ -4,6 +4,8 @@ All in one benchmark test allows users to test all the benchmarks and record the
 
 Before running, make sure to have [ipex-llm](../../../../../README.md) installed.
 
+> The prompts for benchmarking are from datasets [abisee/cnn_dailymail](https://huggingface.co/datasets/abisee/cnn_dailymail), [Open-Orca/OpenOrca](https://huggingface.co/datasets/Open-Orca/OpenOrca), [THUDM/LongBench](https://huggingface.co/datasets/THUDM/LongBench), etc.
+
 ## Dependencies
 
 ```bash
