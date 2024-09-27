@@ -1,5 +1,5 @@
 # Qwen2-VL
-In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [Qwen/Qwen2-VL-7B-Instruct](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct) as a reference InternLM model.
+In this directory, you will find examples on how you could use IPEX-LLM `optimize_model` API to accelerate Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [Qwen/Qwen2-VL-7B-Instruct](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct) as a reference Qwen2-VL model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -15,7 +15,8 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install transformers==4.37.0 # install transformers which supports Qwen2-VL
+pip install transformers==4.45.0 # install transformers which supports Qwen2-VL
+pip install qwen_vl_utils
 ```
 
 #### 1.2 Installation on Windows
@@ -27,7 +28,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-pip install git+https://github.com/huggingface/transformers
+pip install transformers==4.45.0 # install transformers which supports Qwen2-VL
 pip install qwen_vl_utils
 ```
 
@@ -121,15 +122,7 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-AI是什么？
+Describe this image.
 -------------------- Output --------------------
-AI是人工智能（Artificial Intelligence）的缩写。它指的是通过计算机程序、算法和模型来模拟、延伸和扩展人类智能的一门学科
-```
-
-```log
-Inference time: xxxx s
--------------------- Prompt --------------------
-What is AI?
--------------------- Output --------------------
-AI stands for Artificial Intelligence. It refers to the simulation of human intelligence in machines that are programmed to think and work like humans. This includes learning from experience,
+The image depicts depicts a woman and a dog sitting in shallow water on a beach. The
 ```
