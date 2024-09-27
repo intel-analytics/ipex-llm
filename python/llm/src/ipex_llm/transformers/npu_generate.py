@@ -29,6 +29,7 @@ from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteria
 from ipex_llm.transformers.speculative import greedy, deepmind_sample, logits_to_probs,\
     _crop_past_key_values, _prepare_generate_args
 from ipex_llm.utils.common import invalidInputError
+from transformers.modeling_outputs import CausalLMOutputWithPast
 
 logger = logging.getLogger("ipex_llm.npu")
 
@@ -81,17 +82,6 @@ def clear_benchmarks(self):
     self.encoder_time = 0
 
 
-def _update_model_kwargs_for_generation(outputs,
-                                        model_kwargs: Dict[str, Any]):
-    model_kwargs["past_key_values"] = outputs.past_key_values
-    if "attention_mask" in model_kwargs:
-        attention_mask = model_kwargs["attention_mask"]
-        model_kwargs["attention_mask"] = torch.cat(
-            [attention_mask, attention_mask.new_ones((attention_mask.shape[0], 1))], dim=-1
-        )
-    return model_kwargs
-
-
 @torch.no_grad()
 def npu_generate(self,
                  inputs: Optional[torch.Tensor] = None,
@@ -110,6 +100,14 @@ def npu_generate(self,
 
     step = 0
     max_new_tokens = generation_config.max_new_tokens
+    attn_mask = model_kwargs.get("attention_mask", None)
+
+    if self.config.model_type == "qwen2":
+        from transformers.generation.logits_process import MinNewTokensLengthLogitsProcessor
+        docoder_logits_processor = LogitsProcessorList([item for item in logits_processor \
+                                                        if not isinstance(item, MinNewTokensLengthLogitsProcessor)])
+    else:
+        docoder_logits_processor = LogitsProcessorList()
 
     clear_benchmarks(self)
 
@@ -126,14 +124,20 @@ def npu_generate(self,
         if step >= max_new_tokens:
             break
 
-        tic = time.time()
+        tic = time.perf_counter()
 
         if step == 0:
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
             output = self(**model_inputs,
                           return_dict=True)
-            logits = output['logits']
-            logits = logits[:, -1:]
+            # output = CausalLMOutputWithPast(
+            #     loss=None,
+            #     logits=torch.empty([1, 1, self.config.vocab_size]),
+            #     past_key_values=None,
+            #     hidden_states=None,
+            #     attentions=None,
+            # )
+            logits = output['logits'][:, -1:]
             logits[:, -1, :] = logits_processor(input_ids, logits[:, -1, :])
             if generation_config.do_sample:
                 output_ids, prob_list = deepmind_sample(logits,
@@ -146,18 +150,28 @@ def npu_generate(self,
         else:
             model_inputs = {
                 "input_ids": input_ids[:, -1:],
-                "past_key_values": model_kwargs["past_key_values"],
+                "past_key_values": past_key_values,
                 # "position_ids": model_kwargs["position_ids"],
                 "use_cache": True,
-                "attention_mask": model_kwargs.get("attention_mask", None),
+                "attention_mask": attn_mask,
             }
 
             output = output = self(**model_inputs,
                                    return_dict=True)
+            # output = CausalLMOutputWithPast(
+            #     loss=None,
+            #     logits=torch.empty([1, 1, self.config.vocab_size]),
+            #     past_key_values=None,
+            #     hidden_states=None,
+            #     attentions=None,
+            # )
+            t1 = time.perf_counter()
+
             logits = output['logits']
 
-            logits[:, -1, :] = logits_processor(input_ids,
-                                                logits[:, -1, :])
+            logits[:, -1, :] = docoder_logits_processor(input_ids,
+                                                        logits[:, -1, :])
+            t2 = time.perf_counter()
 
             if generation_config.do_sample:
                 output_ids, prob_list = deepmind_sample(logits,
@@ -167,20 +181,29 @@ def npu_generate(self,
                 output_ids = output_ids.transpose(0, 1)
             else:
                 output_ids = torch.argmax(logits, dim=-1)
+            
+            t3 = time.perf_counter()
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
+            t4 = time.perf_counter()
 
         step += 1
 
-        model_kwargs = _update_model_kwargs_for_generation(
-            output, model_kwargs
+        past_key_values = output.past_key_values
+        if attn_mask is not None:
+            attn_mask = torch.cat(
+            [attn_mask, attn_mask.new_ones((attn_mask.shape[0], 1))], dim=-1
         )
 
-        toc = time.time()
+        toc = time.perf_counter()
+
         if self.first_token_time is None:
             self.first_token_time = toc - tic
         else:
             self.last_token_time.append(toc - tic)
+            print(f"Prepare input & dummy output: {(t1 - tic)*1000} ms, update attn mask: {(toc - t4)*1000} ms, "
+                  f"argmax: {(t3 - t2)*1000} ms, cat input id: {(t4 - t3) * 1000} ms, logtis processor: {(t2 - t1)*1000} ms"
+                  f" total generate: {(toc - t1)*1000} ms")
 
         # Stop on eos and remove content after eos
         if eos_token_id_set is not None:
