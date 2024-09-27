@@ -88,6 +88,7 @@ def run_vllm(
               seed=seed,
               trust_remote_code=trust_remote_code,
               dtype=dtype,
+              block_size=8,
               max_model_len=max_model_len,
               gpu_memory_utilization=gpu_memory_utilization,
               enforce_eager=enforce_eager,
