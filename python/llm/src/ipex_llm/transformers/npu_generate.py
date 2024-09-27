@@ -29,9 +29,8 @@ import random
 import logging
 from transformers import GenerationConfig, LogitsProcessorList, StoppingCriteriaList
 from ipex_llm.transformers.speculative import greedy, deepmind_sample, logits_to_probs,\
-    _crop_past_key_values, _prepare_generate_args, _non_cpu_ipex_verify
+    _crop_past_key_values, _prepare_generate_args
 from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers.utils import get_xpu_device_type
 
 logger = logging.getLogger("ipex_llm.npu")
 
@@ -54,35 +53,26 @@ def generate(
     streamer: Optional["BaseStreamer"] = None,
     **kwargs,
 ):
-    return self.npu_generate(inputs=inputs,
-                             generation_config=generation_config,
-                             streamer=streamer,
-                             logits_processor=logits_processor,
-                             stopping_criteria=stopping_criteria,
-                             prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
-                             **kwargs)
-    # if True:
-    #     return self.lookup_generate(inputs=inputs,
-    #                                 num_output_tokens=lookahead,
-    #                                 generation_config=generation_config,
-    #                                 streamer=streamer,
-    #                                 logits_processor=logits_processor,
-    #                                 stopping_criteria=stopping_criteria,
-    #                                 prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
-    #                                 **kwargs)
-    
+    if kwargs.get("num_beams", None) not in [None, 1]:
+        return original_generate(self,
+                                 inputs=inputs,
+                                 generation_config=generation_config,
+                                 logits_processor=logits_processor,
+                                 stopping_criteria=stopping_criteria,
+                                 prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                 synced_gpus=synced_gpus,
+                                 assistant_model=assistant_model,
+                                 streamer=streamer,
+                                 **kwargs)
+    else:
+        return self.npu_generate(inputs=inputs,
+                                generation_config=generation_config,
+                                streamer=streamer,
+                                logits_processor=logits_processor,
+                                stopping_criteria=stopping_criteria,
+                                prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                **kwargs)
 
-
-    # return original_generate(self,
-    #                          inputs=inputs,
-    #                          generation_config=generation_config,
-    #                          logits_processor=logits_processor,
-    #                          stopping_criteria=stopping_criteria,
-    #                          prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
-    #                          synced_gpus=synced_gpus,
-    #                          assistant_model=assistant_model,
-    #                          streamer=streamer,
-    #                          **kwargs)
 
 GenerationMixin.generate = generate
 
@@ -112,7 +102,6 @@ def npu_generate(self,
                  stopping_criteria: Optional[StoppingCriteriaList] = None,
                  streamer: Optional["BaseStreamer"] = None,
                  **sampling_kwargs):
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     input_ids, generation_config, logits_processor, stopping_criteria, \
         model_kwargs = _prepare_generate_args(self, inputs, generation_config,
                                               logits_processor=logits_processor,
@@ -158,7 +147,6 @@ def npu_generate(self,
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
 
         else:
-            # model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
             model_inputs = {
                 "input_ids": input_ids[:, -1:],
                 "past_key_values": model_kwargs["past_key_values"],
@@ -182,8 +170,6 @@ def npu_generate(self,
                 output_ids = output_ids.transpose(0, 1)
             else:
                 output_ids = torch.argmax(logits, dim=-1)
-
-            
 
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
 
