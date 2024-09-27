@@ -15,8 +15,6 @@
 #
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/main/src/transformers/generation
-# /candidate_generator.py and
-# https://github.com/huggingface/transformers/blob/main/src/transformers/generation
 # /utils.py
 #
 
@@ -85,7 +83,7 @@ def clear_benchmarks(self):
 
 def _update_model_kwargs_for_generation(outputs,
                                         model_kwargs: Dict[str, Any]):
-    model_kwargs["past_key_values"]= outputs["past_key_values"]
+    model_kwargs["past_key_values"]= outputs.past_key_values
     if "attention_mask" in model_kwargs:
         attention_mask = model_kwargs["attention_mask"]
         model_kwargs["attention_mask"] = torch.cat(
@@ -145,14 +143,13 @@ def npu_generate(self,
             else:
                 output_ids = torch.argmax(logits, dim=-1)
             input_ids = torch.cat((input_ids, output_ids), dim=-1)
-
         else:
             model_inputs = {
                 "input_ids": input_ids[:, -1:],
                 "past_key_values": model_kwargs["past_key_values"],
                 # "position_ids": model_kwargs["position_ids"],
                 "use_cache": True,
-                "attention_mask": model_kwargs["attention_mask"],
+                "attention_mask": model_kwargs.get("attention_mask", None),
             }
 
             output = output = self(**model_inputs,
@@ -202,19 +199,15 @@ def npu_generate(self,
             streamer.put(output_ids.cpu())
 
     step = min(step, max_new_tokens)
-    # e2e_toc = time.time()
     self.n_token_generated = step
-    # self.e2e_time_without_first = e2e_toc - e2e_tic
 
 
-    # if self.do_print:
     print(f"=========First token cost {self.first_token_time:.4f} s=========")
     if len(self.last_token_time) > 1:
         self.first_cost = self.first_token_time
         self.rest_cost_mean = np.mean(self.last_token_time)
-        # if self.do_print:
         print(f"=========Rest tokens cost average {self.rest_cost_mean:.4f} s ({len(self.last_token_time)}"
-                f" tokens in all)=========")
+              f" tokens in all)=========")
 
     if streamer is not None:
         streamer.end()

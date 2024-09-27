@@ -554,7 +554,8 @@ def _prepare_generate_args(self, inputs, generation_config, streamer=None, logit
 
     # 2. Set generation parameters if not already defined
     logits_processor = logits_processor if logits_processor is not None else LogitsProcessorList()
-    stopping_criteria = stopping_criteria if stopping_criteria is not None else StoppingCriteriaList()
+    stopping_criteria = stopping_criteria if stopping_criteria is not None \
+        else StoppingCriteriaList()
 
     # 3. Define model inputs
     # inputs_tensor has to be defined
