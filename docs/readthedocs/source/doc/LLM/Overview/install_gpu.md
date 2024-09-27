@@ -284,6 +284,10 @@ IPEX-LLM GPU support on Linux has been verified on:
 
             .. code-block:: bash
 
+               # First, Create a Python 3.11 enviroment and activate it.
+               conda create -n llm python=3.11
+               conda activate llm
+
                export PYTHONUSERBASE=~/intel/oneapi
                pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0 --user
 
@@ -300,6 +304,9 @@ IPEX-LLM GPU support on Linux has been verified on:
             .. note::
                You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
                You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
+            
+            .. note::
+               If you are using ``zsh`` instead of ``bash``, remember to replace ``~`` by ``${HOME}`` when setting environment variables.
 
             .. note::
 
@@ -385,6 +392,10 @@ IPEX-LLM GPU support on Linux has been verified on:
 
             .. code-block:: bash
 
+               # First, Create a Python 3.11 enviroment and activate it.
+               conda create -n llm python=3.11
+               conda activate llm
+
                export PYTHONUSERBASE=~/intel/oneapi
                pip install dpcpp-cpp-rt==2023.2.0 mkl-dpcpp==2023.2.0 onednn-cpu-dpcpp-gpu-dpcpp==2023.2.0 --user
 
@@ -401,7 +412,10 @@ IPEX-LLM GPU support on Linux has been verified on:
             .. note::
                You can view the configured environment variables for your environment (e.g. with name ``llm``) by running ``conda env config vars list -n llm``.
                You can continue with your working conda environment and install ``ipex-llm`` as guided in the next section.
-
+            
+            .. note::
+               If you are using ``zsh`` instead of ``bash``, remember to replace ``~`` by ``${HOME}`` when setting environment variables.
+               
             .. note::
 
                You are recommended not to install other pip packages in the user-defined folder for oneAPI (e.g. ``~/intel/oneapi``).
@@ -457,6 +471,7 @@ We recommend using [Miniforge](https://conda-forge.org/download/ to create a pyt
 
             .. code-block:: bash
 
+               # Skip these two steps for PIP-installed oneAPI since the environment has already been created.
                conda create -n llm python=3.11
                conda activate llm
 
@@ -473,7 +488,8 @@ We recommend using [Miniforge](https://conda-forge.org/download/ to create a pyt
          .. tab:: CN
 
             .. code-block:: bash
-
+            
+               # Skip these two steps for PIP-installed oneAPI since the environment has already been created.
                conda create -n llm python=3.11
                conda activate llm
 
@@ -496,6 +512,7 @@ We recommend using [Miniforge](https://conda-forge.org/download/ to create a pyt
 
             .. code-block:: bash
 
+               # Skip these two steps for PIP-installed oneAPI since the environment has already been created.
                conda create -n llm python=3.11
                conda activate llm
 
@@ -505,6 +522,7 @@ We recommend using [Miniforge](https://conda-forge.org/download/ to create a pyt
 
             .. code-block:: bash
 
+               # Skip these two steps for PIP-installed oneAPI since the environment has already been created.
                conda create -n llm python=3.11
                conda activate llm
 
