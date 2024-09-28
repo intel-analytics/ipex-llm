@@ -194,6 +194,9 @@ You can refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/
 
 ### Quantization
 
+The accuracy of the quantitative model is reduced from FP16 to INT4, which effectively reduces the file size by about 70 %. The main advantage is lower delay and memory usage.
+Quantizing reduces the model’s precision from FP16 to INT4 which effectively reduces the file size by ~70%. The main benefits are lower latency and memory usage.
+
 #### IPEX-LLM
 
 Below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_int4`:
@@ -203,6 +206,27 @@ Below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_i
 </a>
 
 #### AWQ
+
+Use AWQ as a way to reduce memory footprint.
+
+1. First download the model after awq quantification, taking `Llama-2-7B-Chat-AWQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ>
+
+2. Change the `/llm/vllm_offline_inference` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`:
+
+```python
+llm = LLM(model="/llm/models/Llama-2-7B-Chat-AWQ/",
+          quantization="AWQ",
+          load_in_low_bit="sym_int4",
+          device="xpu",
+          dtype="float16",
+          enforce_eager=True,
+          max_model_len=2000,
+          max_num_batched_tokens=2000,
+          tensor_parallel_size=1)
+```
+
+3. Expected result shows as below:
+[TODO]: can't not run now???
 
 #### GPTQ
 
@@ -289,6 +313,17 @@ curl http://localhost:8000/v1/completions \
         "completion_tokens": 128
     }
 }
+```
+
+5. For multi lora adapters, modify the sever start script's `--lora-modules` like this:
+```bash
+export SQL_LOARA_1=your_sql_lora_model_path_1
+export SQL_LOARA_2=your_sql_lora_model_path_2
+python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
+  #other codes...
+  --enable-lora \
+  --lora-modules sql-lora-1=$SQL_LOARA_1 sql-lora-2=$SQL_LOARA_2
+
 ```
 
 #### Cpu Offloading
