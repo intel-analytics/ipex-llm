@@ -121,8 +121,13 @@ Arguments info:
 ##### [Qwen/Qwen2-VL-7B-Instruct](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct)
 ```log
 Inference time: xxxx s
+-------------------- Input Image --------------------
+https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg
 -------------------- Prompt --------------------
 Describe this image.
 -------------------- Output --------------------
 The image depicts depicts a woman and a dog sitting in shallow water on a beach. The
 ```
+The sample input image is (which is fetched from [Qwen2-VL quickstart](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct#quickstart)):
+
+<a href='https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg'><img width=400px src='https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg' ></a>

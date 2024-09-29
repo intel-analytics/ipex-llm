@@ -30,6 +30,10 @@ if __name__ == '__main__':
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="Describe this image.",
                         help='Prompt to infer') 
+    parser.add_argument('--image-url-or-path', type=str,
+                        default='https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg' ,
+                        help='The URL or path to the image to infer')
+    
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
 
@@ -45,14 +49,15 @@ if __name__ == '__main__':
                                                  torch_dtype = 'auto',
                                                  use_cache=True)
     model = optimize_model(model, low_bit='sym_int4')
-    model = model.to("xpu")
+    model = model.float().to("xpu")
 
-    # Load processor
+    # The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
     min_pixels = 256*28*28
     max_pixels = 1280*28*28
     processor = AutoProcessor.from_pretrained(model_path, min_pixels=min_pixels, max_pixels=max_pixels)
 
     prompt = args.prompt
+    image_path = args.image_url_or_path
 
     # The following code for generation is adapted from https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct#quickstart
     messages = [
@@ -61,7 +66,7 @@ if __name__ == '__main__':
             "content": [
                 {
                     "type": "image",
-                    "image": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg",
+                    "image": image_path,
                 },
                 {"type": "text", "text": prompt},
             ],
@@ -101,6 +106,8 @@ if __name__ == '__main__':
 
         response = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
         print(f'Inference time: {end-st} s')
+        print('-'*20, 'Input Image', '-'*20)
+        print(image_path)
         print('-'*20, 'Prompt', '-'*20)
         print(prompt)
         print('-'*20, 'Output', '-'*20)
