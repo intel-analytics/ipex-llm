@@ -152,6 +152,8 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
       print('Successfully loaded Tokenizer and optimized Model!')
 
       # Format the prompt
+      # you could tune the prompt based on your own model,
+      # here the prompt tuning refers to https://huggingface.co/Qwen/Qwen2-1.5B-Instruct
       question = "What is AI?"
       messages = [
           {"role": "system", "content": "You are a helpful assistant."},
@@ -221,6 +223,8 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
       print('Successfully loaded Tokenizer and optimized Model!')
 
       # Format the prompt
+      # you could tune the prompt based on your own model,
+      # here the prompt tuning refers to https://huggingface.co/Qwen/Qwen2-1.5B-Instruct
       question = "What is AI?"
       messages = [
           {"role": "system", "content": "You are a helpful assistant."},
