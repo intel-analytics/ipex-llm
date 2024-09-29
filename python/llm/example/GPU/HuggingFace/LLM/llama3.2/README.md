@@ -1,5 +1,5 @@
 # Llama3.2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3.2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Meta-Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.2-3B-Instruct) as a reference Llama3.2 models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3.2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Meta-Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.2-3B-Instruct) as a reference Llama3.2 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -137,4 +137,21 @@ What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
 Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that would typically require human intelligence, such as learning, problem-solving, and
+```
+
+#### [meta-llama/Meta-Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.2-1B-Instruct)
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+<|begin_of_text|><|start_header_id|>user<|end_header_id|>
+
+What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+
+-------------------- Output (skip_special_tokens=False) --------------------
+<|begin_of_text|><|begin_of_text|><|start_header_id|>user<|end_header_id|>
+
+What is AI?<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
+Artificial Intelligence (AI) refers to the development of computer systems that can perform tasks that typically require human intelligence, such as learning, problem-solving, and decision
 ```
