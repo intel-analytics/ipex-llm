@@ -155,17 +155,19 @@ class _BaseAutoModelClass:
                 ),
             )
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
-
+            from ipex_llm.transformers.npu_models.convert_mp import optimize_funasr
             if funasr_model:
-                # Only Encoders Now
-                llm = model.model.encoder.encoders
+                encoders = model.model.encoder.encoders
+                decoders = model.model.decoder.decoders
                 with torch.no_grad():
-                    cls.load_convert(qtype, llm, "cpu", modules_to_not_convert, *args, **kwargs)
-                    create_npu_kernels(llm)
+                    cls.load_convert(qtype, encoders, "cpu", modules_to_not_convert, *args, **kwargs)
+                    create_npu_kernels(encoders)
+                    cls.load_convert(qtype, decoders, "cpu", modules_to_not_convert, *args, **kwargs)
+                    create_npu_kernels(decoders)
                 logger.info(f"Finish to convert model")
                 model.model.share_memory()
 
-                optimize_llm(
+                optimize_funasr(
                     model,
                     max_output_len=max_output_len,
                     max_prompt_len=max_prompt_len,
@@ -189,8 +191,8 @@ class _BaseAutoModelClass:
                 model.config.update({"bigdl_transformers_low_bit": qtype})
                 model.share_memory()
 
-                optimize_funasr(
-                    llm,
+                optimize_llm(
+                    model,
                     max_output_len=max_output_len,
                     max_prompt_len=max_prompt_len,
                     inter_pp=inter_pp,

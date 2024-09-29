@@ -47,15 +47,15 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
         *shapes,
         num_layers: int,
         rms_norm_eps,
-        input_layernorm_weights=None,
-        input_layernorm_bias=None,
-        post_attn_layernorm_weights=None,
-        post_attn_layernorm_bias=None,
-        fsmn_weight=None,
-        qkv_bias=None,
-        out_bias=None,
-        w1_bias=None,
-        w2_bias=None,
+        layer_norm_0_weights=None,
+        layer_norm_0_biases=None,
+        layer_norm_1_weights=None,
+        layer_norm_1_biases=None,
+        fsmn_weights=None,
+        qkv_biases=None,
+        out_biases=None,
+        w1_biases=None,
+        w2_biases=None,
         mode: str = "prefill",
         dtype: np.dtype = np.int8,
         max_seq_len: int = 1024,
@@ -82,93 +82,92 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
         mask = self.create_input_op((self.batch_size, self.time))
 
         x = input_x
-        
-        if input_layernorm_weights is None:
-            input_layernorm_weights = []
-            input_layernorm_bias = []
-            post_attn_layernorm_weights = []
-            post_attn_layernorm_bias = []
-            fsmn_weight = []
-            qkv_bias = []
-            out_bias = []
-            w1_bias = []
-            w2_bias = []
+
+        if layer_norm_0_weights is None:
+            layer_norm_0_weights = []
+            layer_norm_0_biases = []
+            layer_norm_1_weights = []
+            layer_norm_1_biases = []
+            fsmn_weights = []
+            qkv_biases = []
+            out_biases = []
+            w1_biases = []
+            w2_biases = []
             for i in range(self.num_layers):
-                input_layernorm_weights.append(
+                layer_norm_0_weights.append(
                     self.create_input_op(
                         (
-                            #1,
+                            1,
                             self.size,
                         )
                     )
                 )
-                input_layernorm_bias.append(
+                layer_norm_0_biases.append(
                     self.create_input_op(
                         (
-                            #1,
+                            1,
                             self.size,
                         )
                     )
                 )
-                post_attn_layernorm_weights.append(
+                layer_norm_1_weights.append(
                     self.create_input_op(
                         (
-                            #1,
+                            1,
                             self.size,
                         )
                     )
                 )
-                post_attn_layernorm_bias.append(
+                layer_norm_1_biases.append(
                     self.create_input_op(
                         (
-                            #1,
+                            1,
                             self.size,
                         )
                     )
                 )
-                fsmn_weight.append(
-                    self.create_input_op((512, 512, 11))
+                fsmn_weights.append(
+                    self.create_input_op((512, 1, 1, 11))
                 )
-                qkv_bias.append(
-                    self.create_input_op((1536,))
+                qkv_biases.append(
+                    self.create_input_op((1, 1536,))
                 )
-                out_bias.append(
-                    self.create_input_op((512,))
+                out_biases.append(
+                    self.create_input_op((1, 512,))
                 )
-                w1_bias.append(
-                    self.create_input_op((2048,))
+                w1_biases.append(
+                    self.create_input_op((1, 2048,))
                 )
-                w2_bias.append(
-                    self.create_input_op((512,))
+                w2_biases.append(
+                    self.create_input_op((1, 512,))
                 )
         else:
-            input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
-            input_layernorm_bias = [self.constant(w) for w in input_layernorm_bias]
-            post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
-            post_attn_layernorm_bias = [self.constant(w) for w in post_attn_layernorm_bias]
-            fsmn_weight = [self.constant(w) for w in fsmn_weight]
-            qkv_bias = [self.constant(w) for w in qkv_bias]
-            out_bias = [self.constant(w) for w in out_bias]
-            w1_bias = [self.constant(w) for w in w1_bias]
-            w2_bias = [self.constant(w) for w in w2_bias]
-        
+            layer_norm_0_weights = [self.constant(w) for w in layer_norm_0_weights]
+            layer_norm_0_biases = [self.constant(w) for w in layer_norm_0_biases]
+            layer_norm_1_weights = [self.constant(w) for w in layer_norm_1_weights]
+            layer_norm_1_biases = [self.constant(w) for w in layer_norm_1_biases]
+            fsmn_weights = [self.constant(w) for w in fsmn_weights]
+            qkv_biases = [self.constant(w) for w in qkv_biases]
+            out_biases = [self.constant(w) for w in out_biases]
+            w1_biases = [self.constant(w) for w in w1_biases]
+            w2_biases = [self.constant(w) for w in w2_biases]
+
         
         for i in range(self.num_layers):
             x, mask = self.build_encoder( 
                 x=x,
                 mask=mask,
-                input_layernorm_weight=input_layernorm_weights[i],
-                input_layernorm_bias=input_layernorm_bias[i],
-                post_attention_layernorm_weight=post_attn_layernorm_weights[i],
-                post_attention_layernorm_bias=post_attn_layernorm_bias[i],
-                fsmn_weight=fsmn_weight[i],
-                qkv_bias=qkv_bias[i],
-                out_bias=out_bias[i],
-                w1_bias=w1_bias[i],
-                w2_bias=w2_bias[i],
+                layer_norm_0_weight=layer_norm_0_weights[i],
+                layer_norm_0_bias=layer_norm_0_biases[i],
+                layer_norm_1_weight=layer_norm_1_weights[i],
+                layer_norm_1_bias=layer_norm_1_biases[i],
+                fsmn_weight=fsmn_weights[i],
+                qkv_bias=qkv_biases[i],
+                out_bias=out_biases[i],
+                w1_bias=w1_biases[i],
+                w2_bias=w2_biases[i],
             )
-            #curr_caches.append((cache))
-        
+
         # define outputs
         x = self.convert_to_fp16(x)
         mask = self.convert_to_fp16(mask)
@@ -180,16 +179,15 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
     def build_encoder(self,
                       x,
                       mask,
-                      #cache=None,
-                      input_layernorm_weight=None,
-                      input_layernorm_bias=None,
-                      post_attention_layernorm_weight=None,
-                      post_attention_layernorm_bias=None,
-                      fsmn_weight=None,
-                      qkv_bias=None,
-                      out_bias=None,
-                      w1_bias=None,
-                      w2_bias=None,
+                      layer_norm_0_weight,
+                      layer_norm_0_bias,
+                      layer_norm_1_weight,
+                      layer_norm_1_bias,
+                      fsmn_weight,
+                      qkv_bias,
+                      out_bias,
+                      w1_bias,
+                      w2_bias,
         ):
         # EncoderLayerSANM forward
  
@@ -201,14 +199,14 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
 
         stoch_layer_coeff = 1.0
         residual = x
-        x = self.paraformer_layer_norm(x, input_layernorm_weight, input_layernorm_bias)
+        x = self.paraformer_layer_norm(x, layer_norm_0_weight, layer_norm_0_bias)
 
         x = self.self_attn_sanm(x, mask, in_feat, n_feat, n_head, fsmn_weight, qkv_bias, out_bias)
         x = self.eltwise_add(residual, x)
 
         residual = x
         
-        x = self.paraformer_layer_norm(x, post_attention_layernorm_weight, post_attention_layernorm_bias)
+        x = self.paraformer_layer_norm(x, layer_norm_1_weight, layer_norm_1_bias)
         x = self.convert_to_fp16(x)
 
         x = self.sanm_feed_forward(x, hidden_units, idim, w1_bias, w2_bias)
@@ -224,14 +222,15 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
     def __init__(
         self,
         parameters: List[torch.Tensor],
-        layer_norm_0,
-        layer_norm_0_bias,
-        layer_norm_1,
-        layer_norm_1_bias,
-        qkv_bias,
-        out_bias,
-        w1_bias,
-        w2_bias,
+        layer_norm_0_weights,
+        layer_norm_0_biases,
+        layer_norm_1_weights,
+        layer_norm_1_biases,
+        fsmn_weights,
+        qkv_biases,
+        out_biases,
+        w1_biases,
+        w2_biases,
         rms_norm_eps,
         layer_idx: int,
         max_seq_len: int = 128,
@@ -245,35 +244,39 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         self.max_seq_len = max_seq_len
         self.transpose_value = transpose_value
 
-        np_dtype = np.uint8
+        if isinstance(parameters[0], tuple):  # weight, scale from QuantizedLinear
+            np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+        else:  # FP16 Linear
+            np_dtype = np.float16
 
         self.backend_cls_prefill = partial(
             LowBitMultiEncoderlayer,
             num_layers=1,
             rms_norm_eps=rms_norm_eps,
-            max_seq_len=max_seq_len,
-            input_layernorm_weights=None,
-            input_layernorm_bias=None,
-            post_attn_layernorm_weights=None,
-            post_attn_layernorm_bias=None,
-            fsmn_weight=None,
-            qkv_bias=None,
-            out_bias=None,
-            w1_bias=None,
-            w2_bias=None,
+            #max_seq_len=max_seq_len,
+            layer_norm_0_weights=None,
+            layer_norm_0_biases=None,
+            layer_norm_1_weights=None,
+            layer_norm_1_biases=None,
+            fsmn_weights=None,
+            qkv_biases=None,
+            out_biases=None,
+            w1_biases=None,
+            w2_biases=None,
             mode="prefill",
             transpose_value=self.transpose_value,
             dtype=np_dtype,
         )
         
-        self.layer_norm_0 = layer_norm_0
-        self.layer_norm_0_bias = layer_norm_0_bias
-        self.layer_norm_1 = layer_norm_1
-        self.layer_norm_1_bias = layer_norm_1_bias
-        self.qkv_bias = qkv_bias
-        self.out_bias = out_bias
-        self.w1_bias = w1_bias
-        self.w2_bias = w2_bias
+        self.layer_norm_0_weights = layer_norm_0_weights
+        self.layer_norm_0_biases = layer_norm_0_biases
+        self.layer_norm_1_weights = layer_norm_1_weights
+        self.layer_norm_1_biases = layer_norm_1_biases
+        self.qkv_biases = qkv_biases
+        self.out_biases = out_biases
+        self.w1_biases = w1_biases
+        self.w2_biases = w2_biases
+        self.fsmn_weights = fsmn_weights
 
     def forward(
         self,
@@ -290,26 +293,19 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         Returns:
             torch.Tensor: result
         """
-        conv = torch.nn.Conv1d(
-            512, 512, 11, stride=1, padding=0, groups=1, bias=False).half()
-        print(conv)
-        print("conv shape:", conv.weight.shape)
-        fsmn_weight = conv.weight
-
         backend_cls = self.backend_cls_prefill
         inputs = (x.to(torch.float16),
                   masks.to(torch.float16),
-                  self.layer_norm_0,
-                  self.layer_norm_0_bias,
-                  self.layer_norm_1,
-                  self.layer_norm_1_bias,
-                  fsmn_weight.to(torch.float16),
-                  self.qkv_bias,
-                  self.out_bias,
-                  self.w1_bias,
-                  self.w2_bias,
+                  self.layer_norm_0_weights,
+                  self.layer_norm_0_biases,
+                  self.layer_norm_1_weights,
+                  self.layer_norm_1_biases,
+                  self.fsmn_weights,
+                  self.qkv_biases,
+                  self.out_biases,
+                  self.w1_biases,
+                  self.w2_biases,
                   )
-        
 
         outputs = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
@@ -341,28 +337,30 @@ def run_prefill(
             (attn_layer.linear_q_k_v.weight, attn_layer.linear_q_k_v.scale),
             (attn_layer.linear_out.weight, attn_layer.linear_out.scale),
             (feed_layer.w_1.weight, feed_layer.w_1.scale),
-            (feed_layer.w_2.weight, feed_layer.w_2.scale),
+            #(feed_layer.w_2.weight, feed_layer.w_2.scale),
         ]
 
-        layer_norm_0 = curr_layer.norm1.weight.to(torch.float16)
-        layer_norm_0_bias = curr_layer.norm1.bias.to(torch.float16)
-        layer_norm_1 = curr_layer.norm2.weight.to(torch.float16)
-        layer_norm_1_bias = curr_layer.norm2.bias.to(torch.float16)
-        qkv_bias = attn_layer.linear_q_k_v.bias.to(torch.float16)
-        out_bias = attn_layer.linear_out.bias.to(torch.float16)
-        w1_bias = feed_layer.w_1.bias.to(torch.float16)
-        w2_bias = feed_layer.w_2.bias.to(torch.float16)
+        layer_norm_0_weights = curr_layer.norm1.weight.to(torch.float16)
+        layer_norm_0_biases = curr_layer.norm1.bias.to(torch.float16)
+        layer_norm_1_weights = curr_layer.norm2.weight.to(torch.float16)
+        layer_norm_1_biases = curr_layer.norm2.bias.to(torch.float16)
+        qkv_biases = attn_layer.linear_q_k_v.bias.to(torch.float16)
+        out_biases = attn_layer.linear_out.bias.to(torch.float16)
+        w1_biases = feed_layer.w_1.bias.to(torch.float16)
+        w2_biases = feed_layer.w_2.bias.to(torch.float16)
+        fsmn_weights = attn_layer.fsmn_block.weight.to(torch.float16)
 
         new_decoderlayer = FusedLlamaLowBitDecoderlayer(
             weights,
-            layer_norm_0=layer_norm_0,
-            layer_norm_0_bias=layer_norm_0_bias,
-            layer_norm_1=layer_norm_1,
-            layer_norm_1_bias=layer_norm_1_bias,
-            qkv_bias=qkv_bias,
-            out_bias=out_bias,
-            w1_bias=w1_bias,
-            w2_bias=w2_bias,
+            layer_norm_0_weights=layer_norm_0_weights,
+            layer_norm_0_biases=layer_norm_0_biases,
+            layer_norm_1_weights=layer_norm_1_weights,
+            layer_norm_1_biases=layer_norm_1_biases,
+            fsmn_weights=fsmn_weights,
+            qkv_biases=qkv_biases,
+            out_biases=out_biases,
+            w1_biases=w1_biases,
+            w2_biases=w2_biases,
             rms_norm_eps=rms_norm_eps,
             layer_idx=layer_idx,
             max_seq_len=max_output_len,
@@ -370,8 +368,6 @@ def run_prefill(
         )
 
         layer_weights.extend(weights)
-        input_layer_norm_weights.append(layer_norm_0)
-        post_attn_layernorm_weights.append(layer_norm_1)
 
         model.model.encoder.encoders[layer_idx] = new_decoderlayer
         deocderlayers.append(new_decoderlayer)
@@ -446,6 +442,565 @@ class PrefillRunner:
         self.shutdown()
 
 
+class LowBitMultiDecoderlayer(LLMBaseNNFactory):
+    def __init__(
+        self,
+        hidden_shape: Sequence[int],
+        *shapes,
+        layer_norm_0_weights=None,
+        layer_norm_0_biases=None,
+        layer_norm_1_weights=None,
+        layer_norm_1_biases=None,
+        layer_norm_2_weights=None,
+        layer_norm_2_biases=None,
+        q_biases=None,
+        kv_biases=None,
+        out_biases=None,
+        w1_biases=None,
+        feed_norm_weights=None,
+        feed_norm_biases=None,
+        fsmn_weights=None,
+        num_layers: int,
+        #rms_norm_eps,
+        mode: str = "prefill",
+        dtype: np.dtype = np.int8,
+        max_seq_len: int = 1024,
+        transpose_value: bool = False,
+        profile: bool = False,
+        device: str = "NPU",
+    ):
+        super().__init__(max_seq_len=max_seq_len,
+                         transpose_value=transpose_value,
+                         dtype=dtype,
+                         profile=profile,
+                         device=device)
+
+        self.mode = mode
+        self.dtype = dtype
+        self.num_layers = num_layers
+        #self.rms_norm_eps = rms_norm_eps
+
+        self.batch_size = 1
+        self.time = 218
+        self.size = 512
+
+        #input = self.create_input_op((1, 66, 512))
+        input = self.create_input_op((1, 218, 512))
+        tgt_mask = self.create_input_op((1, 218, 1))
+        memory = self.create_input_op((1, 218, 512))
+        memory_mask = self.create_input_op((1, 1, 218))
+        
+        if layer_norm_0_weights is None:
+            layer_norm_0_weights = []
+            layer_norm_0_biases = []
+            layer_norm_1_weights = []
+            layer_norm_1_biases = []
+            layer_norm_2_weights = []
+            layer_norm_2_biases = []
+            q_biases = []
+            kv_biases = []
+            out_biases = []
+            w1_biases = []
+            feed_norm_weights = []
+            feed_norm_biases = []
+            fsmn_weights = []
+
+            for i in range(self.num_layers):
+                layer_norm_0_weights.append(self.create_input_op((1, self.size,))
+                )
+                layer_norm_0_biases.append(
+                    self.create_input_op((1, self.size,))
+                )
+                layer_norm_1_weights.append(
+                    self.create_input_op((1, self.size,))
+                )
+                layer_norm_1_biases.append(
+                    self.create_input_op((1, self.size,))
+                )
+                layer_norm_2_weights.append(
+                    self.create_input_op((1, self.size,))
+                )
+                layer_norm_2_biases.append(
+                    self.create_input_op((1, self.size,))
+                )
+                q_biases.append(
+                    self.create_input_op((1, 512,))
+                )
+                kv_biases.append(
+                    self.create_input_op((1, 1024,))
+                )
+                out_biases.append(
+                    self.create_input_op((1, 512,))
+                )
+                w1_biases.append(
+                    self.create_input_op((1, 2048,))
+                )
+                feed_norm_weights.append(
+                    self.create_input_op((1, 2048,))
+                )
+                feed_norm_biases.appened(
+                    self.create_input_op((1, 2048,))
+                )
+                fsmn_weights.append(
+                    self.create_input_op((512, 1, 1, 11))
+                )
+        else:
+            layer_norm_0_weights = [self.constant(w) for w in layer_norm_0_weights]
+            layer_norm_0_biases = [self.constant(w) for w in layer_norm_0_biases]
+            layer_norm_1_weights = [self.constant(w) for w in layer_norm_1_weights]
+            layer_norm_1_biases = [self.constant(w) for w in layer_norm_1_biases]
+            layer_norm_2_weights = [self.constant(w) for w in layer_norm_2_weights]
+            layer_norm_2_biases = [self.constant(w) for w in layer_norm_2_biases]
+            q_biases = [self.constant(w) for w in q_biases]
+            kv_biases = [self.constant(w) for w in kv_biases]
+            out_biases = [self.constant(w) for w in out_biases]
+            w1_biases = [self.constant(w) for w in w1_biases]
+            feed_norm_weights = [self.constant(w) for w in feed_norm_weights]
+            feed_norm_biases = [self.constant(w) for w in feed_norm_biases]
+            fsmn_weights = [self.constant(w) for w in fsmn_weights]
+        
+        x = input
+        for i in range(self.num_layers):
+            x, tgt_mask, memory, memory_mask = self.build_decoder( 
+                x=x,
+                tgt_mask=tgt_mask,
+                memory=memory,
+                memory_mask=memory_mask,
+                norm1_weight=layer_norm_0_weights[i],
+                norm1_bias=layer_norm_0_biases[i],
+                norm2_weight=layer_norm_1_weights[i],
+                norm2_bias=layer_norm_1_biases[i],
+                norm3_weight=layer_norm_2_weights[i],
+                norm3_bias=layer_norm_2_biases[i],
+                q_bias=q_biases[i],
+                kv_bias=kv_biases[i],
+                out_bias=out_biases[i],
+                w1_bias=w1_biases[i],
+                feed_norm_weight=feed_norm_weights[i],
+                feed_norm_bias=feed_norm_biases[i],
+                fsmn_weight=fsmn_weights[i],
+            )
+        
+        # define outputs
+        x = self.convert_to_fp16(x)
+        tgt_mask = self.convert_to_fp16(tgt_mask)
+        memory = self.convert_to_fp16(memory)
+        memory_mask = self.convert_to_fp16(memory_mask)
+
+        print("start compiling")
+        self.compile()
+    
+
+    def build_decoder(self,
+                      x,
+                      tgt_mask,
+                      memory,
+                      memory_mask=None,
+                      #cache=None,
+                      norm1_weight=None,
+                      norm1_bias=None,
+                      norm2_weight=None,
+                      norm2_bias=None,
+                      norm3_weight=None,
+                      norm3_bias=None,
+                      fsmn_weight=None,
+                      q_bias=None,
+                      kv_bias=None,
+                      out_bias=None,
+                      w1_bias=None,
+                      feed_norm_weight=None,
+                      feed_norm_bias=None,
+        ):
+        in_feat = 512
+        n_feat = 512
+        n_head = 4
+        hidden_units = 2048
+        idim = 512
+
+        stoch_layer_coeff = 1.0
+
+        residual = x
+        
+        # norm1
+        x = self.paraformer_layer_norm(x, norm1_weight, norm1_bias)
+        x = self.feed_forward_sanm_decoder(x, w1_bias, feed_norm_weight, feed_norm_bias)
+
+        # # norm2
+        x = self.paraformer_layer_norm(x, norm2_weight, norm2_bias)
+        x, _ = self.multihead_attn_sanm_decoder(x, tgt_mask, fsmn_weight)
+        x = self.eltwise_add(residual, x)
+
+        residual = x
+        # norm3
+        x = self.paraformer_layer_norm(x, norm3_weight, norm3_bias)
+        x_src_attn = self.sanm_cross_attn(x, memory, memory_mask, q_bias, kv_bias, out_bias, n_feat, n_head)
+
+        x = self.eltwise_add(residual, x_src_attn)
+        x = self.convert_to_fp16(x)
+        
+        return x, tgt_mask, memory, memory_mask #, cache
+
+
+class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
+
+    def __init__(
+        self,
+        parameters,
+        layer_norm_0_weights,
+        layer_norm_0_biases,
+        layer_norm_1_weights,
+        layer_norm_1_biases,
+        layer_norm_2_weights,
+        layer_norm_2_biases,
+        q_biases,
+        kv_biases,
+        out_biases,
+        w1_biases,
+        feed_norm_weights,
+        feed_norm_biases,
+        fsmn_weights,
+        layer_indexes,
+        intra_stages,
+        #num_heads: int,
+        #head_dim: int,
+        #num_key_value_heads: int,
+        #rms_norm_eps,
+        #intermediate_size,
+        max_seq_len: int = 1024,
+        transpose_value: bool = False,
+        do_print: bool = False,
+    ):
+        super().__init__()
+
+        self.do_print = do_print
+
+        op_parameters = []
+        for w in parameters:
+            if isinstance(w, tuple):  # from QuantizedLinear
+                op_parameters.append((w[0].numpy(), w[1].numpy()))
+            else:
+                op_parameters.append(w.to(torch.float16).numpy())
+        self.op_parameters = op_parameters
+        self.op_id = str(uuid.uuid4())
+        self.max_seq_len = max_seq_len
+        self.transpose_value = transpose_value
+        if isinstance(parameters[0], tuple):
+            np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+        else:  # FP16 Linear
+            np_dtype = np.float16
+
+        self.intra_stages = intra_stages
+        self.layer_indexes = layer_indexes
+        num_layers = len(self.layer_indexes) // intra_stages
+        self.layer_ranges = []
+        for i in range(intra_stages):
+            if i == intra_stages - 1:
+                self.layer_ranges.append((i * num_layers, len(self.layer_indexes)))
+            else:
+                self.layer_ranges.append((i * num_layers, (i + 1) * num_layers))
+
+        self.backend_decoders = []
+
+        for i in range(intra_stages):
+            start, end = self.layer_ranges[i]
+            decoder = LowBitMultiDecoderlayer(
+                [1, 218, 512],
+                layer_norm_0_weights=layer_norm_0_weights[start:end],
+                layer_norm_0_biases=layer_norm_0_biases[start:end],
+                layer_norm_1_weights=layer_norm_1_weights[start:end],
+                layer_norm_1_biases=layer_norm_1_biases[start:end],
+                layer_norm_2_weights=layer_norm_2_weights[start:end],
+                layer_norm_2_biases=layer_norm_2_biases[start:end],
+                q_biases=q_biases[start:end],
+                kv_biases=kv_biases[start:end],
+                out_biases=out_biases[start:end],
+                w1_biases=w1_biases[start:end],
+                feed_norm_weights=feed_norm_weights[start:end],
+                feed_norm_biases=feed_norm_biases[start:end],
+                fsmn_weights=fsmn_weights[start:end],
+                num_layers=end - start,
+                max_seq_len=max_seq_len,
+                mode="decode",
+                transpose_value=self.transpose_value,
+                dtype=np_dtype,
+            )
+            self.backend_decoders.append(decoder)
+
+        for i in range(intra_stages):
+            start, end = self.layer_ranges[i]
+            self.backend_decoders[i].set_weights(self.op_id, op_parameters[start * 5:end * 5])
+
+    def forward(
+        self,
+        x,
+        tgt_mask,
+        memory,
+        memory_mask=None,
+        cache=None,
+        **kwargs,
+    ) -> torch.Tensor:
+
+        inputs = (
+            x.to(torch.float16),
+            tgt_mask,
+            memory.to(torch.float16),
+            memory_mask,
+        )
+
+        x, tgt_mask, memory, memory_mask = LowBitMultiDecoderlayer.run_decoders(
+            inputs,
+            decoders=self.backend_decoders)
+
+        if self.do_print:
+            print("outputs:", x)
+
+        outputs = (x, tgt_mask, memory, memory_mask)
+        return outputs
+
+
+def run_decode(
+    model,
+    rank,
+    world_size,
+    port,
+    layer_start,
+    layer_end,
+    intra_stages,
+    max_seq_len,
+    transpose_value_cache,
+    input_queue,
+    result_queue,
+):
+
+    os.environ["MASTER_ADDR"] = "127.0.0.1"
+    os.environ["MASTER_PORT"] = port
+    os.environ["RANK"] = str(rank)
+    os.environ["WORLD_SIZE"] = str(world_size)
+
+    print("start init process group, rank: ", rank, "world_size: ", world_size)
+
+    dist.init_process_group()
+    my_rank = dist.get_rank()
+    my_size = dist.get_world_size()
+    logger.info(f"rank: {my_rank}, size: {my_size}")
+
+    deocderlayers = []
+    
+    layer_weights = []
+    layer_norm_0_weights = []
+    layer_norm_0_biases = []
+    layer_norm_1_weights = []
+    layer_norm_1_biases = []
+    layer_norm_2_weights = []
+    layer_norm_2_biases = []
+    fsmn_weights = []
+    q_biases = []
+    kv_biases = []
+    out_biases = []
+    w1_biases = []
+    feed_norm_weights = []
+    feed_norm_biases = []
+    
+    layer_indexs = range(layer_start, layer_end)
+    
+    for layer_idx in layer_indexs:
+        curr_layer = model.model.decoder.decoders[layer_idx]
+        attn_layer = curr_layer.self_attn
+        src_attn_layer = curr_layer.src_attn
+        feed_layer = curr_layer.feed_forward
+
+        weights = [
+            (feed_layer.w_1.weight, feed_layer.w_1.scale),
+            (feed_layer.w_2.weight, feed_layer.w_2.scale),
+            (src_attn_layer.linear_q.weight, src_attn_layer.linear_q.scale),
+            (src_attn_layer.linear_k_v.weight, src_attn_layer.linear_k_v.scale),
+            (src_attn_layer.linear_out.weight, src_attn_layer.linear_out.scale),
+        ]
+
+        layer_weights.extend(weights)
+        # norm_0
+        layer_norm_0_weights.append(curr_layer.norm1.weight.to(torch.float16))
+        layer_norm_0_biases.append(curr_layer.norm1.bias.to(torch.float16))
+        # norm_1
+        layer_norm_1_weights.append(curr_layer.norm2.bias.to(torch.float16))
+        layer_norm_1_biases.append(curr_layer.norm2.bias.to(torch.float16))
+        # norm_2
+        layer_norm_2_weights.append(curr_layer.norm3.weight.to(torch.float16))
+        layer_norm_2_biases.append(curr_layer.norm3.bias.to(torch.float16))
+        # linear_q
+        q_biases.append(src_attn_layer.linear_q.bias.to(torch.float16))
+        # linear_kv
+        kv_biases.append(src_attn_layer.linear_k_v.bias.to(torch.float16))
+        # linear_out
+        out_biases.append(src_attn_layer.linear_out.bias.to(torch.float16))
+        # linear_w1
+        w1_biases.append(feed_layer.w_1.bias.to(torch.float16))
+        # feed_norm
+        feed_norm_weights.append(feed_layer.norm.weight.to(torch.float16))
+        feed_norm_biases.append(feed_layer.norm.bias.to(torch.float16))
+        # conv weights
+
+        conv = torch.nn.Conv1d(
+            512, 512, 11, stride=1, padding=0, groups=1, bias=False).half()
+        fsmn_weights.append(conv.weight)
+        #fsmn_weights.append(attn_layer.fsmn_block.weight.to(torch.float16))
+
+        print("CONV SHAPE:", fsmn_weights[0].shape)
+    
+    multi_decoder = FusedLlamaLowBitMultiDecoderlayer(
+        parameters=layer_weights,
+        layer_norm_0_weights=layer_norm_0_weights,
+        layer_norm_0_biases=layer_norm_0_biases,
+        layer_norm_1_weights=layer_norm_1_weights,
+        layer_norm_1_biases=layer_norm_1_biases,
+        layer_norm_2_weights=layer_norm_2_weights,
+        layer_norm_2_biases=layer_norm_2_biases,
+        q_biases=q_biases,
+        kv_biases=kv_biases,
+        out_biases=out_biases,
+        w1_biases=w1_biases,
+        feed_norm_weights=feed_norm_weights,
+        feed_norm_biases=feed_norm_biases,
+        fsmn_weights=fsmn_weights,
+        layer_indexes=layer_indexs,
+        intra_stages=intra_stages,
+        max_seq_len=max_seq_len,
+        transpose_value=transpose_value_cache,
+        do_print=True,
+    )
+
+    dist.barrier()
+    cache = None
+
+    control = torch.empty((), dtype=torch.int)
+    x = torch.empty((1, 218, 512), dtype=torch.float16)
+
+    with torch.inference_mode():
+        while True:
+            dist.broadcast(control, src=0)
+            if control.item() == -2:
+                break
+            elif control.item() == -1:
+                tgt_mask, memory, memory_mask = input_queue.get()
+            else:
+                dist.recv(x, src=rank - 1)
+                t1 = time.perf_counter()
+                
+                layer_outputs = multi_decoder(
+                    x=x,
+                    tgt_mask=tgt_mask,
+                    memory=memory,
+                    memory_mask=memory_mask,
+                    cache=None,
+                )
+
+                t2 = time.perf_counter()
+                x = layer_outputs[0]
+                t3 = time.perf_counter()
+                dist.send(x, dst=(rank + 1) % world_size)
+                t4 = time.perf_counter()
+                tgt_mask = layer_outputs[1]
+                memory = layer_outputs[2]
+                memory_mask = layer_outputs[3]
+
+
+
+class DecodeRunner:
+    def __init__(self, model, max_seq_len, intra_pp=2, inter_pp=2, transpose_value_cache=True):
+        self.model = model
+        self.max_seq_len = max_seq_len
+        self.transpose_value_cache = transpose_value_cache
+        world_size = inter_pp + 1
+        intra_stages = intra_pp
+        num_layers = 16
+
+        port = "54791"
+        os.environ["MASTER_ADDR"] = "127.0.0.1"
+        os.environ["MASTER_PORT"] = port
+        os.environ["RANK"] = "0"
+        os.environ["WORLD_SIZE"] = str(world_size)
+
+        self.input_queues = []
+        self.output_queues = []
+        self.decoder_processes = []
+
+        self.forward_signal = torch.tensor(0, dtype=torch.int)
+
+        for rank in range(1, world_size):
+            input_q = mp.Queue()
+            output_q = mp.Queue()
+            start_layer = (rank - 1) * (num_layers // (world_size - 1))
+            end_layer = (rank) * (num_layers // (world_size - 1))
+            if rank == world_size - 1:
+                end_layer = num_layers
+            p = mp.Process(
+                target=run_decode,
+                args=(
+                    self.model,
+                    rank,
+                    world_size,
+                    port,
+                    start_layer,
+                    end_layer,
+                    intra_stages,
+                    self.max_seq_len,
+                    self.transpose_value_cache,
+                    input_q,
+                    output_q,
+                ),
+            )
+            p.daemon = True
+            p.start() 
+            self.input_queues.append(input_q)
+            self.output_queues.append(output_q)
+            self.decoder_processes.append(p)
+
+        dist.init_process_group()
+        my_rank = dist.get_rank()
+        self.world_size = dist.get_world_size()
+        logger.info(f"rank: {my_rank}, size: {self.world_size}")
+
+        dist.barrier()
+        self.prev_cache = None
+
+    def forward(
+        self,
+        x,
+        tgt_mask,
+        memory,
+        memory_mask=None,
+        cache=None,
+        **kwargs,
+    ):
+        t0 = time.perf_counter()
+
+        if self.prev_cache is None:
+            control = torch.tensor(-1, dtype=torch.int)
+            dist.broadcast(control, src=0)
+            for i in range(len(self.decoder_processes)):
+                self.input_queues[i].put((tgt_mask, memory, memory_mask))
+        
+        dist.broadcast(self.forward_signal, src=0, async_op=True)
+        x = x.to(torch.float16)
+        dist.send(x, dst=1)
+        dist.recv(x, src=self.world_size - 1)
+
+        t1 = time.perf_counter()
+        return x, tgt_mask, memory, memory_mask, cache
+
+    def shutdown(self):
+        control = torch.tensor(-2, dtype=torch.int)
+        dist.broadcast(control, src=0)
+        for p in self.decoder_processes:
+            p.join(3)
+        for p in self.decoder_processes:
+            if p.exitcode is None:
+                p.kill()
+
+    def __del__(self):
+        self.shutdown()
+
+
 from funasr.models.transformer.utils.nets_utils import make_pad_mask
 from funasr.models.transformer.utils.subsampling import Conv2dSubsampling, Conv2dSubsampling2, Conv2dSubsampling6, Conv2dSubsampling8
 from funasr.models.transformer.utils.subsampling import TooShortUttError, check_short_utt
@@ -488,15 +1043,60 @@ def gen_funasr_fused_encoder_forward(prefill_runner):
         # Prefill runner
         encoder_outs = prefill_runner.forward(xs_pad, masks[0])
         xs_pad, new_masks = encoder_outs[0], encoder_outs[1]
-
         xs_pad = xs_pad.to(torch.float32)
+
+        # intermediate outputs are also normalized
+        # if self.normalize_before:
+        #     encoder_out = self.after_norm(encoder_out[0])
 
         if self.normalize_before:
            xs_pad = self.after_norm(xs_pad)
 
-
         olens = masks.squeeze(1).sum(1)
-
         return xs_pad, olens, None
 
     return funasr_fused_encoder_forward
+
+from funasr.models.scama import utils as myutils
+
+def gen_funasr_fused_decoder_forward(decode_runner):
+
+    def funasr_fused_decoder_forward(
+        self,
+        hs_pad: torch.Tensor,
+        hlens: torch.Tensor,
+        ys_in_pad: torch.Tensor,
+        ys_in_lens: torch.Tensor,
+        chunk_mask: torch.Tensor = None,
+        return_hidden: bool = False,
+        return_both: bool = False,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        
+        tgt = ys_in_pad
+        tgt_mask = myutils.sequence_mask(ys_in_lens, device=tgt.device)[:, :, None]
+
+        memory = hs_pad
+        memory_mask = myutils.sequence_mask(hlens, device=memory.device)[:, None, :]
+        if chunk_mask is not None:
+            memory_mask = memory_mask * chunk_mask
+            if tgt_mask.size(1) != memory_mask.size(1):
+                memory_mask = torch.cat((memory_mask, memory_mask[:, -2:-1, :]), dim=1)
+
+        x = tgt
+        x, tgt_mask, memory, memory_mask, _ = decode_runner.forward(x, tgt_mask, memory, memory_mask)
+        x = x.to(torch.float32)
+
+        x, tgt_mask, memory, memory_mask, _ = self.decoders3(x, tgt_mask, memory, memory_mask)
+        if self.normalize_before:
+            hidden = self.after_norm(x)
+
+        olens = tgt_mask.sum(1)
+        if self.output_layer is not None and return_hidden is False:
+            x = self.output_layer(hidden)
+            return x, olens
+        if return_both:
+            x = self.output_layer(hidden)
+            return x, hidden, olens
+        return hidden, olens
+
+    return funasr_fused_decoder_forward
