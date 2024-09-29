@@ -22,7 +22,7 @@ from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://llama.meta.com/docs/model-cards-and-prompt-formats/llama3_1
+# here the prompt tuning refers to https://www.llama.com/docs/model-cards-and-prompt-formats/llama3_2/
 DEFAULT_SYSTEM_PROMPT = """\
 """
 
