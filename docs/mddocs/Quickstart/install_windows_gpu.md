@@ -134,7 +134,6 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
     Create a new file named `demo.py` and insert the code snippet below to run [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) model with IPEX-LLM optimizations.
 
       ```python
-
       # Copy/Paste the contents to a new file demo.py
       import torch
       from ipex_llm.transformers import AutoModelForCausalLM
@@ -203,7 +202,6 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
     Create a new file named `demo.py` and insert the code snippet below to run [Qwen2-1.5B-Instruct](https://www.modelscope.cn/models/qwen/Qwen2-1.5B-Instruct/summary) model with IPEX-LLM optimizations.
 
       ```python
-
       # Copy/Paste the contents to a new file demo.py
       import torch
       from ipex_llm.transformers import AutoModelForCausalLM
@@ -281,9 +279,12 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
 
 Example output on a system equipped with an Intel Core Ultra 5 125H CPU and Intel Arc Graphics iGPU:
 ```
-user: What is AI?
-
-assistant: AI, or artificial intelligence, refers to the simulation of human intelligence in machines that are programmed to think and act like humans. It involves the development of algorithms,
+<|im_start|>system
+You are a helpful assistant.<|im_end|>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and act like humans. It involves the development of algorithms,
 ```
 
 ## Tips & Troubleshooting
