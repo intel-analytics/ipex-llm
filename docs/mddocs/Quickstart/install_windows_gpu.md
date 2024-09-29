@@ -134,7 +134,6 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
     Create a new file named `demo.py` and insert the code snippet below to run [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) model with IPEX-LLM optimizations.
 
       ```python
-      # Copy/Paste the contents to a new file demo.py
       import torch
       from ipex_llm.transformers import AutoModelForCausalLM
       from transformers import AutoTokenizer, GenerationConfig
@@ -154,11 +153,19 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
 
       # Format the prompt
       question = "What is AI?"
-      prompt = "user: {prompt}\n\nassistant:".format(prompt=question)
+      messages = [
+          {"role": "system", "content": "You are a helpful assistant."},
+          {"role": "user", "content": question}
+      ]
+      text = tokenizer.apply_chat_template(
+          messages,
+          tokenize=False,
+          add_generation_prompt=True
+      )
 
       # Generate predicted tokens
       with torch.inference_mode():
-         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+         input_ids = tokenizer.encode(text, return_tensors="pt").to('xpu')
 
          print('--------------------------------------Note-----------------------------------------')
          print('| For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or |')
@@ -179,7 +186,7 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
                                  do_sample=False,
                                  max_new_tokens=32,
                                  generation_config=generation_config).cpu()
-         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+         output_str = tokenizer.decode(output[0], skip_special_tokens=False)
          print(output_str)
       ```
   - For **loading model ModelScopee**:
@@ -215,12 +222,19 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
 
       # Format the prompt
       question = "What is AI?"
-      prompt = "user: {prompt}\n\nassistant:".format(prompt=question)
-
+      messages = [
+          {"role": "system", "content": "You are a helpful assistant."},
+          {"role": "user", "content": question}
+      ]
+      text = tokenizer.apply_chat_template(
+          messages,
+          tokenize=False,
+          add_generation_prompt=True
+      )
+      
       # Generate predicted tokens
       with torch.inference_mode():
-         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
-
+         input_ids = tokenizer.encode(text, return_tensors="pt").to('xpu')
          print('--------------------------------------Note-----------------------------------------')
          print('| For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or |')
          print('| Pro A60, it may take several minutes for GPU kernels to compile and initialize. |')
@@ -240,7 +254,7 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
                                  do_sample=False,
                                  max_new_tokens=32,
                                  generation_config=generation_config).cpu()
-         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+         output_str = tokenizer.decode(output[0], skip_special_tokens=False)
          print(output_str)
       ```
       > **Note**:
