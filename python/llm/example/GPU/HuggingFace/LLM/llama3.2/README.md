@@ -1,5 +1,5 @@
 # Llama3.2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3.2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Meta-Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.2-3B-Instruct) as a reference Llama3.2 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3.2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Meta-Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.2-3B-Instruct) and [meta-llama/Meta-Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.2-1B-Instruct) as reference Llama3.2 models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -15,7 +15,6 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-# transformers>=4.45.0 is required for Llama3.2 with IPEX-LLM optimizations
 pip install transformers==4.45.0
 pip install accelerate==0.33.0
 pip install trl
@@ -30,7 +29,6 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-# transformers>=4.45.0 is required for Llama3.2 with IPEX-LLM optimizations
 pip install transformers==4.45.0
 pip install accelerate==0.33.0
 pip install trl 
