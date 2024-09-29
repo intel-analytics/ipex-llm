@@ -134,6 +134,8 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
     Create a new file named `demo.py` and insert the code snippet below to run [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) model with IPEX-LLM optimizations.
 
       ```python
+
+      # Copy/Paste the contents to a new file demo.py
       import torch
       from ipex_llm.transformers import AutoModelForCausalLM
       from transformers import AutoTokenizer, GenerationConfig
@@ -153,7 +155,7 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
 
       # Format the prompt
       # you could tune the prompt based on your own model,
-      # here the prompt tuning refers to https://huggingface.co/Qwen/Qwen2-1.5B-Instruct
+      # here the prompt tuning refers to https://huggingface.co/Qwen/Qwen2-1.5B-Instruct#quickstart
       question = "What is AI?"
       messages = [
           {"role": "system", "content": "You are a helpful assistant."},
@@ -224,7 +226,7 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
 
       # Format the prompt
       # you could tune the prompt based on your own model,
-      # here the prompt tuning refers to https://huggingface.co/Qwen/Qwen2-1.5B-Instruct
+      # here the prompt tuning refers to https://huggingface.co/Qwen/Qwen2-1.5B-Instruct#quickstart
       question = "What is AI?"
       messages = [
           {"role": "system", "content": "You are a helpful assistant."},
