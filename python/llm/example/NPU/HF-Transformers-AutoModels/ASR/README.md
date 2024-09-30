@@ -9,7 +9,7 @@ Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost
 Right click and select **Update Driver** -> **Browse my computer for drivers**. And then manually select the unzipped driver folder to install.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a phi-3-vision model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a paraformer model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
 ### 1. Install
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
