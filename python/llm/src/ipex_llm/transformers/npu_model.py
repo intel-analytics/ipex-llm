@@ -131,7 +131,7 @@ class _BaseAutoModelClass:
             try:
                 # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
                 kwargs.pop("device_map", None)
-                model = cls.HF_Model.from_pretrained(*args, **kwargs)
+                model = cls.HF_Model(*args, **kwargs)
             except NotImplementedError:
                 logger.info(
                     "Failed to load models with `low_cpu_mem_usage` specified, "
@@ -522,6 +522,6 @@ class AutoModelForMultipleChoice(_BaseAutoModelClass):
 class AutoModelForTokenClassification(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForTokenClassification
 
-class AutoFunASR(_BaseAutoModelClass):
+class AutoASR(_BaseAutoModelClass):
     import funasr
     HF_Model = funasr.AutoModel
