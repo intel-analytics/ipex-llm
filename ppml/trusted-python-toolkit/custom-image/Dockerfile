@@ -24,10 +24,6 @@ COPY --from=temp /ppml/bash.manifest.sgx /ppml/bash.manifest.sgx
 COPY --from=temp /ppml/bash.sig /ppml/bash.sig
 COPY --from=temp /ppml/bash.manifest /ppml/bash.manifest
 
-# 2.2 output mr_enclave and mr_signer to customer
-RUN cd /ppml && \
-    gramine-sgx-get-token --output bash.token --sig bash.sig
-
 WORKDIR /ppml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
