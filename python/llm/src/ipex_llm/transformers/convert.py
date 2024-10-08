@@ -1279,6 +1279,16 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.LlamaMLP, mlp_silu_forward)
         convert_forward(model, module.LlamaModel, llama_model_forward)
         convert_forward(model, module.LlamaAttention, llama_attention_forward)
+    elif model.config.model_type == "mllama":
+        # llama 3.2 vision
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.mllama import mllama_vision_attention_forward
+        convert_forward(model, module.MllamaVisionAttention, mllama_vision_attention_forward)
+        convert_forward(model, module.MllamaTextRMSNorm, rms_norm_forward)
+        convert_forward(model, module.MllamaTextMLP, mlp_silu_forward)
     elif model.config.model_type == "llama":
         from transformers.models.llama.modeling_llama import LlamaRMSNorm
         from transformers.models.llama.modeling_llama import LlamaMLP
