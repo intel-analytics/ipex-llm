@@ -26,7 +26,7 @@ from transformers import MllamaForConditionalGeneration, AutoProcessor
 from ipex_llm import optimize_model
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for Llama3.2-Vision model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama3.2-Vision model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-3.2-11B-Vision-Instruct",
                         help='The huggingface repo id for the Llama3.2-Vision model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     with torch.inference_mode():
         for i in range(3):
             st = time.time()
-            output = model.generate(**inputs, do_sample=False, max_new_tokens=64)
+            output = model.generate(**inputs, do_sample=False, max_new_tokens=args.n_predict)
             et = time.time()
             print(et - st)
     print(processor.decode(output[0]))
