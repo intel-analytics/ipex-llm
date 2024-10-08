@@ -93,10 +93,19 @@ Prompt: 'The future of AI is', Generated text: ' vast and complex, with many dif
 Before performing benchmark or starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#runtime-configurations) to setup our recommended runtime configurations.
 
 ### Serving
+>
+> A script named `/llm/start-vllm-service.sh` have been included in the image for starting the service conveniently. You can tune the service using these four arguments:
+
+|parameters|explanation|
+|:---|:---|
+|`--gpu-memory-utilization`| The fraction of GPU memory to be used for the model executor, which can range from 0 to 1. For example, a value of 0.5 would imply 50% GPU memory utilization. If unspecified, will use the default value of 0.9.|
+|`--max-model-len`| Model context length. If unspecified, will be automatically derived from the model config.|
+|`--max-num-batched-token`| Maximum number of batched tokens per iteration.|
+|`--max-num-seq`| Maximum number of sequences per iteration. Default: 256|
 
 #### Single card serving
 
-A script named `/llm/start-vllm-service.sh` have been included in the image for starting the service conveniently. Here are the steps to use it.
+Here are the steps to serve on a single card.
 
 1. Modify the `model` and `served_model_name` in the script so that it fits your requirement. The `served_model_name` indicates the model name used in the API, for example:
 
@@ -148,7 +157,7 @@ The expected output should be as follows:
 
 #### Multi-card serving
 
-For larger models (greater than 10b), we need to use multiple graphics cards for deployment. In the above single-card script(`/llm/start-vllm-service.sh`), we need to make some modifications to achieve multi-card serving.
+For larger models (greater than 10b), we need to use multiple graphics cards for deployment. In the above script(`/llm/start-vllm-service.sh`), we need to make some modifications to achieve multi-card serving.
 
 1. **Tensor Parallel Serving**: need modify the `-tensor-parallel-size` num, for example, using 2 cards for tp serving, add following parameter:
 
@@ -188,9 +197,7 @@ or shortening:
 -tp 2
 ```
 
-vLLM supports to utilize multiple cards through tensor parallel.
-
-You can refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#about-tensor-parallel) on how to utilize the `tensor-parallel` feature and start the service.
+You can refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#about-tensor-parallel) for more information on how to utilize the `tensor-parallel` feature and start the service.
 
 ### Quantization
 
@@ -199,7 +206,60 @@ Quantizing reduces the model’s precision from FP16 to INT4 which effectively r
 
 #### IPEX-LLM
 
-Below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_int4`:
+Two scripts are provided in the docker image for model inference.
+
+1. vllm offline inference: `vllm_offline_inference.py`
+
+> Only need change the `load_in_low_bit` value to use different quantization dtype. Support dtype containes:`sym_int4`, `fp6`, `fp8`, `fp8_e4m3` and `fp16`.
+
+```python
+llm = LLM(model="YOUR_MODEL",
+          device="xpu",
+          dtype="float16",
+          enforce_eager=True,
+          # Simply change here for the desired load_in_low_bit value
+          load_in_low_bit="sym_int4",
+          tensor_parallel_size=1,
+          trust_remote_code=True)
+```
+
+then run
+
+```bash
+python vllm_offline_inference.py
+```
+
+2. vllm online service `start-vllm-service.sh`
+
+> To fully utilize the continuous batching feature of the vLLM, you can send requests to the service using curl or other similar methods. The requests sent to the engine will be batched at token level. Queries will be executed in the same forward step of the LLM and be removed when they are finished instead of waiting for all sequences to be finished.
+  
+Modify the `--load-in-low-bit` value to `fp6`, `fp8`, `fp8_e4m3` or `fp16`
+
+```bash
+ # Change value --load-in-low-bit to [fp6, fp8, fp8_e4m3, fp16] to use different low-bit formats
+python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
+  --served-model-name $served_model_name \
+  --port 8000 \
+  --model $model \
+  --trust-remote-code \
+  --gpu-memory-utilization 0.75 \
+  --device xpu \
+  --dtype float16 \
+  --enforce-eager \
+  --load-in-low-bit sym_int4 \
+  --max-model-len 4096 \
+  --max-num-batched-tokens 10240 \
+  --max-num-seqs 12 \
+  --tensor-parallel-size 1
+```
+  
+then run following command to start vllm service
+
+```bash
+bash start-vllm-service.sh
+```
+  
+Lastly, using curl command to send a request to service, below shows an example output using `Qwen1.5-7B-Chat` with low-bit format `sym_int4`:
 
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/vllm-curl-result.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/vllm-curl-result.png" width=100%; />
@@ -211,39 +271,79 @@ Use AWQ as a way to reduce memory footprint.
 
 1. First download the model after awq quantification, taking `Llama-2-7B-Chat-AWQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ>
 
-2. Change the `/llm/vllm_offline_inference` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`:
+2. Change the `/llm/vllm_offline_inference.py` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`:
 
 ```python
-llm = LLM(model="/llm/models/Llama-2-7B-Chat-AWQ/",
+llm = LLM(model="/llm/models/Llama-2-7B-chat-AWQ/",
           quantization="AWQ",
-          load_in_low_bit="sym_int4",
+          load_in_low_bit="asym_int4",
           device="xpu",
           dtype="float16",
           enforce_eager=True,
-          max_model_len=2000,
-          max_num_batched_tokens=2000,
+          tensor_parallel_size=1)
+```
+
+then run the following command
+
+```bash
+python vllm_offline_inference.py
+```
+
+3. Expected result shows as below:
+
+```bash
+2024-09-29 10:06:34,272 - INFO - Converting the current model to asym_int4 format......
+2024-09-29 10:06:34,272 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+2024-09-29 10:06:40,080 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+2024-09-29 10:06:41,258 - INFO - Loading model weights took 3.7381 GB
+WARNING 09-29 10:06:47 utils.py:564] Pin memory is not supported on XPU.
+INFO 09-29 10:06:47 gpu_executor.py:108] # GPU blocks: 1095, # CPU blocks: 512
+Processed prompts: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:22<00:00,  5.67s/it, est. speed input: 1.19 toks/s, output: 2.82 toks/s]
+Prompt: 'Hello, my name is', Generated text: ' [Your Name], and I am a resident of [Your City/Town'
+Prompt: 'The president of the United States is', Generated text: ' the head of the executive branch and is one of the most powerful political figures in'
+Prompt: 'The capital of France is', Generated text: ' Paris. It is the most populous urban agglomeration in the European'
+Prompt: 'The future of AI is', Generated text: ' vast and exciting, with many potential applications across various industries. Here are'
+r
+```
+
+#### GPTQ
+
+Use GPTQ as a way to reduce memory footprint.
+
+1. First download the model after gptq quantification, taking `Llama-2-13B-Chat-GPTQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-13B-chat-GPTQ>
+
+2. Change the `/llm/vllm_offline_inference` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`:
+
+```python
+llm = LLM(model="/llm/models/Llama-2-7B-Chat-GPTQ/",
+          quantization="GPTQ",
+          load_in_low_bit="asym_int4",
+          device="xpu",
+          dtype="float16",
+          enforce_eager=True,
           tensor_parallel_size=1)
 ```
 
 3. Expected result shows as below:
-[TODO]: can't not run now???
 
-#### GPTQ
+```bash
+2024-10-08 10:55:18,296 - INFO - Converting the current model to asym_int4 format......
+2024-10-08 10:55:18,296 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+2024-10-08 10:55:23,478 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+2024-10-08 10:55:24,581 - INFO - Loading model weights took 3.7381 GB
+WARNING 10-08 10:55:31 utils.py:564] Pin memory is not supported on XPU.
+INFO 10-08 10:55:31 gpu_executor.py:108] # GPU blocks: 1095, # CPU blocks: 512
+Processed prompts:   0%|                                                          | 0/4 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts: 100%|██████████████████████████████████████████████████| 4/4 [00:22<00:00,  5.73s/it, est. speed input: 1.18 toks/s, output: 2.79 toks/s]Prompt: 'Hello, my name is', Generated text: ' [Your Name] and I am a [Your Profession] with [Your'
+Prompt: 'The president of the United States is', Generated text: ' the head of the executive branch of the federal government and is one of the most'
+Prompt: 'The capital of France is', Generated text: ' Paris, which is located in the northern part of the country.\nwhere is'
+Prompt: 'The future of AI is', Generated text: ' vast and exciting, with many possibilities for growth and innovation. Here are'
+```
 
 ### Advanced Features
 
-#### Multi-modal Model
+#### Multi-modal Model[todo]
 
-You can tune the service using these four arguments:
-
-- `--gpu-memory-utilization`
-- `--max-model-len`
-- `--max-num-batched-token`
-- `--max-num-seq`
-
-You can refer to this [doc](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#service) for a detailed explaination on these parameters.
-
-#### Preifx Caching
+#### Preifx Caching[todo]
 
 #### LoRA Adapter
 
@@ -316,6 +416,7 @@ curl http://localhost:8000/v1/completions \
 ```
 
 5. For multi lora adapters, modify the sever start script's `--lora-modules` like this:
+
 ```bash
 export SQL_LOARA_1=your_sql_lora_model_path_1
 export SQL_LOARA_2=your_sql_lora_model_path_2
@@ -326,6 +427,24 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
 
 ```
 
-#### Cpu Offloading
+#### Cpu Offloading[todo]
 
 ### Validated Models List
+
+|models (fp8)| gpus|
+|--|:-:|
+|llama-3-8b |1|
+|Llama-2-7B| 1 |
+|Qwen2-7B |1|
+|Qwen1.5-7B| 1|
+|GLM4-9B |1|
+|chatglm3-6b| 1|
+|Baichuan2-7B |1|
+Codegeex4-all-9b| 1
+Llama-2-13B|2
+Qwen1.5-14b|2
+Baichuan2-13B|4
+TeleChat-13B|2
+Qwen1.5-32b|4
+Yi-1.5-34B|4|
+CodeLlama-34B|4
