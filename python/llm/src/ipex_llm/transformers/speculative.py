@@ -526,7 +526,9 @@ def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=Fa
     return past_key_values
 
 
-def _prepare_generate_args(self, inputs, generation_config, streamer=None, **sampling_kwargs):
+def _prepare_generate_args(self, inputs, generation_config, streamer=None, logits_processor=None,
+                           stopping_criteria=None, generate_attention_mask=False,
+                           **sampling_kwargs):
     if generation_config is None:
         generation_config = self.generation_config
 
@@ -551,8 +553,9 @@ def _prepare_generate_args(self, inputs, generation_config, streamer=None, **sam
         generation_config.pad_token_id = eos_token_id
 
     # 2. Set generation parameters if not already defined
-    logits_processor = LogitsProcessorList()
-    stopping_criteria = StoppingCriteriaList()
+    logits_processor = logits_processor if logits_processor is not None else LogitsProcessorList()
+    stopping_criteria = stopping_criteria if stopping_criteria is not None \
+        else StoppingCriteriaList()
 
     # 3. Define model inputs
     # inputs_tensor has to be defined
@@ -574,15 +577,17 @@ def _prepare_generate_args(self, inputs, generation_config, streamer=None, **sam
     # else:
     #     model_kwargs["use_cache"] = generation_config.use_cache
 
-    # accepts_attention_mask = "attention_mask" in set(
-    #     inspect.signature(self.forward).parameters.keys())
-    # requires_attention_mask = "encoder_outputs" not in model_kwargs
+    if generate_attention_mask:
+        import inspect
+        accepts_attention_mask = "attention_mask" in set(
+            inspect.signature(self.forward).parameters.keys())
+        requires_attention_mask = "encoder_outputs" not in model_kwargs
 
-    # if model_kwargs.get("attention_mask", None) is None and \
-    #         requires_attention_mask and accepts_attention_mask:
-    #     model_kwargs["attention_mask"] = self._prepare_attention_mask_for_generation(
-    #         inputs_tensor, generation_config.pad_token_id, generation_config.eos_token_id
-    #     )
+        if model_kwargs.get("attention_mask", None) is None and \
+                requires_attention_mask and accepts_attention_mask:
+            model_kwargs["attention_mask"] = self._prepare_attention_mask_for_generation(
+                inputs_tensor, generation_config.pad_token_id, generation_config.eos_token_id
+            )
 
     # decoder-only models should use left-padding for generation
     if not self.config.is_encoder_decoder:
@@ -604,6 +609,8 @@ def _prepare_generate_args(self, inputs, generation_config, streamer=None, **sam
 
     # 5. Prepare `input_ids` which will be used for auto-regressive generation
     input_ids = inputs_tensor if model_input_name == "input_ids" else model_kwargs.pop("input_ids")
+
+    # Skip max length
 
     if streamer is not None:
         streamer.put(input_ids.cpu())

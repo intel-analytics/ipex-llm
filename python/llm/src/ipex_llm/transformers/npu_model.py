@@ -179,6 +179,9 @@ class _BaseAutoModelClass:
                 transpose_value_cache=transpose_value_cache,
             )
             model.save_low_bit = types.MethodType(save_low_bit, model)
+            if model.config.model_type in ["qwen2", "llama"]:
+                from ipex_llm.transformers.npu_generate import npu_generate
+                model.npu_generate = types.MethodType(npu_generate, model)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
