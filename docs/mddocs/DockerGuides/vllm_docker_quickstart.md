@@ -4,7 +4,7 @@ This guide demonstrates how to run `vLLM` serving with `IPEX-LLM` on Intel GPUs 
 
 ## Install docker
 
-Follow the instructions in this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html#linux) to install Docker on Linux.
+Follow the instructions in this [guide](./docker_windows_gpu.md#linux) to install Docker on Linux.
 
 ## Pull the latest image
 
@@ -67,7 +67,8 @@ We have included multiple vLLM-related files in `/llm/`:
     |:---|:---|
     |`model="YOUR_MODEL"`| the model path in docker, for example "/llm/models/Llama-2-7b-chat-hf"|
     |`load_in_low_bit="fp8"`| model quantization accuracy, acceptable `fp8`, `fp6`, `sym_int4`, default is `fp8`|
-    |`tensor_parallel_size=1`| number of graphics cards used by the model, default is `1`|
+    |`tensor_parallel_size=1`| number of tensor parallel replicas, default is `1`|
+    |`pipeline_parallel_size=1`| number of pipeline stages, default is `1`|
 
     2. Run the python script
 
@@ -90,7 +91,7 @@ Prompt: 'The future of AI is', Generated text: ' vast and complex, with many dif
 3. `payload-1024.lua`: Used for testing request per second using 1k-128 request
 4. `start-vllm-service.sh`: Used for template for starting vLLM service
 
-Before performing benchmark or starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#runtime-configurations) to setup our recommended runtime configurations.
+Before performing benchmark or starting the service, you can refer to this [section](../Quickstart/install_linux_gpu.md#runtime-configurations) to setup our recommended runtime configurations.
 
 ### Serving
 >
@@ -196,8 +197,6 @@ or shortening:
 -pp 2 \
 -tp 2
 ```
-
-You can refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#about-tensor-parallel) for more information on how to utilize the `tensor-parallel` feature and start the service.
 
 ### Quantization
 
