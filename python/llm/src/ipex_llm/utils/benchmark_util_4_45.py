@@ -34,6 +34,7 @@
 # limitations under the License.
 
 import copy
+import time
 import inspect
 import warnings
 from dataclasses import dataclass
