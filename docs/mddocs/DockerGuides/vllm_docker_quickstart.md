@@ -66,7 +66,7 @@ We have included multiple vLLM-related files in `/llm/`:
     |parameters|explanation|
     |:---|:---|
     |`model="YOUR_MODEL"`| the model path in docker, for example "/llm/models/Llama-2-7b-chat-hf"|
-    |`load_in_low_bit="fp8"`| model quantization accuracy, acceptable `fp8`, `fp6`, `sym_int4`, default is `fp8`|
+    |`load_in_low_bit="fp8"`| model quantization accuracy, acceptable ``'sym_int4'``, ``'asym_int4'``, ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``, ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``, ``'fp6'``, ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``, ``'gguf_iq1_s'``, ``'gguf_q4k_m'``, ``'gguf_q4k_s'``, ``'fp16'``, ``'bf16'``, ``'fp6_k'``, ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc. Relevant low bit optimizations will be applied to the model. default is ``'fp8'``|
     |`tensor_parallel_size=1`| number of tensor parallel replicas, default is `1`|
     |`pipeline_parallel_size=1`| number of pipeline stages, default is `1`|
 
@@ -208,7 +208,7 @@ Two scripts are provided in the docker image for model inference.
 
 1. vllm offline inference: `vllm_offline_inference.py`
 
-> Only need change the `load_in_low_bit` value to use different quantization dtype. Support dtype containes:`sym_int4`, `fp6`, `fp8`, `fp8_e4m3` and `fp16`.
+> Only need change the `load_in_low_bit` value to use different quantization dtype. Commonly supported dtype containes:`sym_int4`, `fp6`, `fp8`, and `fp16`, full supported dtype refer to [load_in_low_bit](./vllm_docker_quickstart.md#running-vllm-serving-with-ipex-llm-on-intel-gpu-in-docker) in the llm class parameter table.
 
 ```python
 llm = LLM(model="YOUR_MODEL",
@@ -269,7 +269,7 @@ Use AWQ as a way to reduce memory footprint.
 
 1. First download the model after awq quantification, taking `Llama-2-7B-Chat-AWQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ>
 
-2. Change the `/llm/vllm_offline_inference.py` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`:
+2. Change the `/llm/vllm_offline_inference.py` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`, note that `load_in_low_bit` should be set to `asym_int4` instead of `int4`:
 
 ```python
 llm = LLM(model="/llm/models/Llama-2-7B-chat-AWQ/",
@@ -310,7 +310,7 @@ Use GPTQ as a way to reduce memory footprint.
 
 1. First download the model after gptq quantification, taking `Llama-2-13B-Chat-GPTQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-13B-chat-GPTQ>
 
-2. Change the `/llm/vllm_offline_inference` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`:
+2. Change the `/llm/vllm_offline_inference` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`, note that `load_in_low_bit` should be set to `asym_int4` instead of `int4`:
 
 ```python
 llm = LLM(model="/llm/models/Llama-2-7B-Chat-GPTQ/",
