@@ -184,7 +184,7 @@ or shortening:
 -pp 2
 ```
 
-3. **TP+PP Serving**: using tensor-parallel and pipline-parallel mixed, for example, using 2 cards for tp and 2 cards for pp serving, add following parameter:
+3. **TP+PP Serving**: using tensor-parallel and pipline-parallel mixed, for example, if you have 4 GPUs in 2 nodes (2GPUs per node), you can set the tensor parallel size to 2 and the pipeline parallel size to 2.
 
 ```bash
 --pipeline-parallel-size 2 \
@@ -200,8 +200,7 @@ or shortening:
 
 ### Quantization
 
-The accuracy of the quantitative model is reduced from FP16 to INT4, which effectively reduces the file size by about 70 %. The main advantage is lower delay and memory usage.
-Quantizing reduces the model’s precision from FP16 to INT4 which effectively reduces the file size by ~70%. The main benefits are lower latency and memory usage.
+Quantizing model from FP16 to INT4 can effectively reduce the model size loaded into gpu memory by about 70 %. The main advantage is lower delay and memory usage.
 
 #### IPEX-LLM
 
