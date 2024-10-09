@@ -297,15 +297,15 @@ def setup_package():
     # default to ipex 2.1 for linux and windows
     xpu_requires = copy.deepcopy(xpu_21_requires)
 
-    lnl_requires = copy.deepcopy(all_requires)
+    xpu_23_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
-        lnl_requires.remove(exclude_require)
-    lnl_requires += ["torch==2.3.1+cxx11.abi",
-                     "torchvision==0.18.1+cxx11.abi",
-                     "intel-extension-for-pytorch==2.3.110+xpu",
-                     "bigdl-core-xe-23==" + CORE_XE_VERSION,
-                     "bigdl-core-xe-batch-23==" + CORE_XE_VERSION,
-                     "bigdl-core-xe-addons-23==" + CORE_XE_VERSION]
+        xpu_23_requires.remove(exclude_require)
+    xpu_23_requires += ["torch==2.3.1+cxx11.abi",
+                        "torchvision==0.18.1+cxx11.abi",
+                        "intel-extension-for-pytorch==2.3.110+xpu",
+                        "bigdl-core-xe-23==" + CORE_XE_VERSION,
+                        "bigdl-core-xe-batch-23==" + CORE_XE_VERSION,
+                        "bigdl-core-xe-addons-23==" + CORE_XE_VERSION]
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
                     "onednn-devel==2024.2.1;platform_system=='Windows'"]
@@ -345,7 +345,7 @@ def setup_package():
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
                         "npu": npu_requires,
                         "xpu-2-1": xpu_21_requires,
-                        "lnl": lnl_requires,
+                        "xpu-2-3": xpu_23_requires,
                         "serving": serving_requires,
                         "cpp": cpp_requires,
                         "llama-index": llama_index_requires}, # for internal usage when upstreaming for llama-index
