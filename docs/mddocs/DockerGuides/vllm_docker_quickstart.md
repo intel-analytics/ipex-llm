@@ -66,7 +66,7 @@ We have included multiple vLLM-related files in `/llm/`:
     |parameters|explanation|
     |:---|:---|
     |`model="YOUR_MODEL"`| the model path in docker, for example "/llm/models/Llama-2-7b-chat-hf"|
-    |`load_in_low_bit="fp8"`| model quantization accuracy, acceptable ``'sym_int4'``, ``'asym_int4'``, ``'sym_int5'``, ``'asym_int5'``, ``'sym_int8'``, ``'nf3'``, ``'nf4'``, ``'fp4'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``, ``'fp6'``, ``'gguf_iq2_xxs'``, ``'gguf_iq2_xs'``, ``'gguf_iq1_s'``, ``'gguf_q4k_m'``, ``'gguf_q4k_s'``, ``'fp16'``, ``'bf16'``, ``'fp6_k'``, ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means asymmetric int 4, ``'nf4'`` means 4-bit NormalFloat, etc. Relevant low bit optimizations will be applied to the model. default is ``'fp8'``|
+    |`load_in_low_bit="fp8"`| model quantization accuracy, acceptable ``'sym_int4'``, ``'asym_int4'``,  ``'fp6'``, ``'fp8'``, ``'fp8_e4m3'``, ``'fp8_e5m2'``,  ``'fp16'``; ``'sym_int4'`` means symmetric int 4, ``'asym_int4'`` means asymmetric int 4, etc. Relevant low bit optimizations will be applied to the model. default is ``'fp8'``, which is the same as ``'fp8_e5m2'``|
     |`tensor_parallel_size=1`| number of tensor parallel replicas, default is `1`|
     |`pipeline_parallel_size=1`| number of pipeline stages, default is `1`|
 
