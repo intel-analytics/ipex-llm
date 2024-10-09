@@ -470,20 +470,19 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
 
 ### Validated Models List
 
-|models (fp8)| gpus|
-|--|:-:|
-|llama-3-8b |1|
-|Llama-2-7B| 1 |
-|Qwen2-7B |1|
-|Qwen1.5-7B| 1|
-|GLM4-9B |1|
-|chatglm3-6b| 1|
-|Baichuan2-7B |1|
-Codegeex4-all-9b| 1
-Llama-2-13B|2
-Qwen1.5-14b|2
-Baichuan2-13B|4
-TeleChat-13B|2
-Qwen1.5-32b|4
-Yi-1.5-34B|4|
-CodeLlama-34B|4
+| models (fp8)     | gpus  |
+| ---------------- | :---: |
+| llama-3-8b       |   1   |
+| Llama-2-7B       |   1   |
+| Qwen2-7B         |   1   |
+| Qwen1.5-7B       |   1   |
+| GLM4-9B          |   1   |
+| chatglm3-6b      |   1   |
+| Baichuan2-7B     |   1   |
+| Codegeex4-all-9b |   1   |
+| Llama-2-13B      |   2   |
+| Qwen1.5-14b      |   2   |
+| TeleChat-13B     |   2   |
+| Qwen1.5-32b      |   4   |
+| Yi-1.5-34B       |   4   |
+| CodeLlama-34B    |   4   |
