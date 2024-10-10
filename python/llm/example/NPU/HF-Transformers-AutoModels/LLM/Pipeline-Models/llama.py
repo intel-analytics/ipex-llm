@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 
-import os
+
 import torch
 import time
 import argparse
-
-from ipex_llm.transformers.npu_level0.npu_pipeline_model import AutoModelForCausalLM
+from ipex_llm.transformers.npu.npu_pipeline_model import AutoModelForCausalLM
 from transformers import AutoTokenizer
-
 from transformers.utils import logging
 
 logger = logging.get_logger(__name__)
@@ -46,15 +44,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default=r"D:\llm-models\Llama-2-7b-chat-hf",
-        help="The huggingface repo id for the Llama2 model to be downloaded"
-        ", or the path to the huggingface checkpoint folder",
-    )
-    parser.add_argument("--lowbit-path", type=str,
-        default="",
-        help="The path to the lowbit model folder, leave blank if you do not want to save. \
-            If path not exists, lowbit model will be saved there. \
-            Else, lowbit model will be loaded.",
+        default=r"C:\\Llama2-converted-weights\\",
+        help="The folder path of converted model blobs",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -64,14 +55,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    model = AutoModelForCausalLM.load_from_blob(1023, 32, 128, 32, 32000,
-                                                "llama2_dumps", "Model70", "llama2-optionB-i4dq-first.blob",
-                                                "llama2-optionB-i4dq-last.blob", "llama2-optionB-i4dq-rest.blob")
+    model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                 ov_model=True,
+                                                 max_output_len=args.max_output_len,
+                                                 model_name="Model70")
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    if args.lowbit_path and not os.path.exists(args.lowbit_path):
-        model.save_low_bit(args.lowbit_path)
 
     DEFAULT_SYSTEM_PROMPT = """\
     """
@@ -80,22 +69,21 @@ if __name__ == "__main__":
     print("done")
     with torch.inference_mode():
         print("finish to load")
-        for i in range(5):
-            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
-            _input_ids = tokenizer.encode(prompt, return_tensors="pt")
-            print("input length:", len(_input_ids[0]))
-            st = time.time()
-            output = model.generate(
-                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict
-            )
-            end = time.time()
-            print(f"Inference time: {end-st} s")
-            input_str = tokenizer.decode(_input_ids[0], skip_special_tokens=False)
-            print("-" * 20, "Input", "-" * 20)
-            print(input_str)
-            output_str = tokenizer.decode(output[0], skip_special_tokens=False)
-            print("-" * 20, "Output", "-" * 20)
-            print(output_str)
+        prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+        _input_ids = tokenizer.encode(prompt, return_tensors="pt")
+        print("input length:", len(_input_ids[0]))
+        st = time.time()
+        output = model.generate(
+            _input_ids, max_new_tokens=args.n_predict,
+        )
+        end = time.time()
+        print(f"Inference time: {end-st} s")
+        input_str = tokenizer.decode(_input_ids[0], skip_special_tokens=False)
+        print("-" * 20, "Input", "-" * 20)
+        print(input_str)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=False)
+        print("-" * 20, "Output", "-" * 20)
+        print(output_str)
 
     print("-" * 80)
     print("done")
