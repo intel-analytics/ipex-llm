@@ -51,6 +51,7 @@ To use GPU acceleration, several environment variables are required or recommend
   ```bash
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
+  # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   # [optional] if you want to run on single GPU, use below command to limit GPU may improve performance
   export ONEAPI_DEVICE_SELECTOR=level_zero:0
@@ -62,11 +63,15 @@ To use GPU acceleration, several environment variables are required or recommend
 
   ```cmd
   set SYCL_CACHE_PERSISTENT=1
+  rem under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   ```
 
 > [!TIP]
 > When your machine has multi GPUs and you want to run on one of them, you need to set `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]`, here `[gpu_id]` varies based on your requirement. For more details, you can refer to [this section](../Overview/KeyFeatures/multi_gpus_selection.md#2-oneapi-device-selector).
+
+> [!NOTE]
+> The environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
 
 ##### Run llama3
 
@@ -75,7 +80,7 @@ Under your current directory, exceuting below command to do inference with Llama
 - For **Linux users**:
   
   ```bash
-  ./main -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -t 8 -e -ngl 33 --color --no-mmap
+  ./llama-cli -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -c 1024 -t 8 -e -ngl 33 --color --no-mmap
   ```
 
 - For **Windows users**:
@@ -83,7 +88,7 @@ Under your current directory, exceuting below command to do inference with Llama
   Please run the following command in Miniforge Prompt.
 
   ```cmd
-  main -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -e -ngl 33 --color --no-mmap
+  llama-cli -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun doing something" -c 1024 -e -ngl 33 --color --no-mmap
   ```
 
 Under your current directory, you can also execute below command to have interactive chat with Llama3:
@@ -91,7 +96,7 @@ Under your current directory, you can also execute below command to have interac
 - For **Linux users**:
   
   ```bash
-  ./main -ngl 33 --interactive-first --color -e --in-prefix '<|start_header_id|>user<|end_header_id|>\n\n' --in-suffix '<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n' -r '<|eot_id|>' -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
+  ./llama-cli -ngl 33 --interactive-first --color -e --in-prefix '<|start_header_id|>user<|end_header_id|>\n\n' --in-suffix '<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n' -r '<|eot_id|>' -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -c 1024
   ```
 
 - For **Windows users**:
@@ -99,7 +104,7 @@ Under your current directory, you can also execute below command to have interac
   Please run the following command in Miniforge Prompt.
 
   ```cmd
-  main -ngl 33 --interactive-first --color -e --in-prefix "<|start_header_id|>user<|end_header_id|>\n\n" --in-suffix "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n" -r "<|eot_id|>" -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf
+  llama-cli -ngl 33 --interactive-first --color -e --in-prefix "<|start_header_id|>user<|end_header_id|>\n\n" --in-suffix "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n" -r "<|eot_id|>" -m <model_dir>/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf -c 1024
   ```
 
 Below is a sample output on Intel Arc GPU:
@@ -131,6 +136,7 @@ Launch the Ollama service:
   export OLLAMA_NUM_GPU=999
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
+  # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   # [optional] if you want to run on single GPU, use below command to limit GPU may improve performance
   export ONEAPI_DEVICE_SELECTOR=level_zero:0
@@ -147,6 +153,7 @@ Launch the Ollama service:
   set ZES_ENABLE_SYSMAN=1
   set OLLAMA_NUM_GPU=999
   set SYCL_CACHE_PERSISTENT=1
+  rem under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
   ollama serve
@@ -160,6 +167,8 @@ Launch the Ollama service:
 > [!TIP]
 > When your machine has multi GPUs and you want to run on one of them, you need to set `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]`, here `[gpu_id]` varies based on your requirement. For more details, you can refer to [this section](../Overview/KeyFeatures/multi_gpus_selection.md#2-oneapi-device-selector).
 
+> [!NOTE]
+> The environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
 
 ##### 2.2.2 Using Ollama Run Llama3
 

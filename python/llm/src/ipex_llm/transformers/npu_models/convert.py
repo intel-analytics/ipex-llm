@@ -31,7 +31,7 @@ def module_optimization(func) -> torch.nn.Module:
         torch.nn.Module: optimized module
     """
 
-    def wrapper(model: torch.nn.Module, qtype, device, *args, **kwargs):
+    def wrapper(model: torch.nn.Module, qtype, device, modules_to_not_convert, *args, **kwargs):
         """Recursively apply the optimization function.
 
         Args:
@@ -41,29 +41,31 @@ def module_optimization(func) -> torch.nn.Module:
 
         """
         for name, layer in model.named_children():
-            new_layer = func(layer, qtype, device, *args, **kwargs)
-            if new_layer:
-                model.add_module(name, new_layer)
-                wrapper(new_layer, qtype, device, *args, **kwargs)
-            else:
-                wrapper(layer, qtype, device, *args, **kwargs)
+            if name not in modules_to_not_convert:
+                new_layer = func(layer, qtype, device, modules_to_not_convert, *args, **kwargs)
+                if new_layer:
+                    model.add_module(name, new_layer)
+                    wrapper(new_layer, qtype, device, modules_to_not_convert, *args, **kwargs)
+                else:
+                    wrapper(layer, qtype, device, modules_to_not_convert, *args, **kwargs)
 
     return wrapper
 
 
 @module_optimization
-def replace_with_QuantizedLinear(layer, qtype, device):
+def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
-    if isinstance(layer, torch.nn.Linear):
+    if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
         if qtype == "sym_int4_rtn":
             # workaround for qwen2 & int4
             if (layer.in_features == 3584 and layer.out_features == 152064) or \
                (layer.in_features == 18944 and layer.out_features == 3584):
                 qtype = "sym_int8_rtn"
                 iqtype = ggml_tensor_qtype[qtype]
-        qweights, scale = ggml_convert_qtype(layer.weight.data, iqtype, device=device)
+        qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
+                                             iqtype, device=device)
         return QuantizedLinear(qweights, scale, layer.bias)
 
 
@@ -79,15 +81,14 @@ def optimize_llm(model: torch.nn.Module):
     if model.config.model_type == "llama":
         from ipex_llm.transformers.npu_models.llama import merge_qkv
         from ipex_llm.transformers.npu_models.llama import merge_mlp
-        model.apply(merge_qkv)
-        model.apply(merge_mlp)
-
         from ipex_llm.transformers.npu_models.llama import llama_model_forward
         from ipex_llm.transformers.npu_models.llama import llama_attention_forward
         from ipex_llm.transformers.npu_models.llama import llama_mlp_forward
         from transformers.models.llama.modeling_llama import LlamaModel
         from transformers.models.llama.modeling_llama import LlamaAttention
         from transformers.models.llama.modeling_llama import LlamaMLP
+        model.apply(merge_qkv)
+        model.apply(merge_mlp)
         convert_forward(model, LlamaModel, llama_model_forward)
         convert_forward(model, LlamaAttention, llama_attention_forward)
         convert_forward(model, LlamaMLP, llama_mlp_forward)
@@ -207,3 +208,28 @@ def optimize_llm(model: torch.nn.Module):
         from ipex_llm.transformers.npu_models.phi3 import phi3_attention_forward
 
         convert_forward(model, module.Phi3Attention, phi3_attention_forward)
+
+
+def optimize_llm_post(model: torch.nn.Module):
+    # experimental support for fused decoderlayer implementation
+    if model.config.model_type == "llama":
+        model.model.embed_tokens.to(torch.float32)
+        model.model.norm.to(torch.float32)
+        model.lm_head.to(torch.float32)
+
+        from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
+            ggml_tensor_qtype, FP4Params
+
+        if isinstance(model.lm_head, torch.nn.Linear):
+            new_linear = LowBitLinear(model.lm_head.in_features,
+                                      model.lm_head.out_features,
+                                      ggml_tensor_qtype["sym_int4"],
+                                      False)
+            paramsLowBit = FP4Params(data=model.lm_head.weight.data,
+                                     requires_grad=False,
+                                     quantized=False,
+                                     _shape=None,
+                                     qtype=ggml_tensor_qtype["sym_int4"],
+                                     in_features=model.lm_head.in_features).to("cpu")
+            new_linear._parameters['weight'] = paramsLowBit
+            model.lm_head = new_linear

@@ -22,6 +22,7 @@ import gc
 import traceback
 import threading
 import csv
+import warnings
 
 import numpy as np
 from datetime import date
@@ -29,6 +30,8 @@ from datetime import date
 import os
 current_dir = os.path.dirname(os.path.realpath(__file__))
 import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
 from ipex_llm.utils import BenchmarkWrapper
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.utils.common import invalidInputError
@@ -46,6 +49,8 @@ PHI3VISION_IDS = ['microsoft/phi-3-vision-128k-instruct']
 
 QWENVL_IDS = ['Qwen/Qwen-VL-Chat']
 
+MINICPM_V_IDS = ['openbmb/MiniCPM-V-2_6', 'openbmb/MiniCPM-Llama3-V-2_5']
+
 results = []
 excludes = []
 
@@ -53,8 +58,8 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
     for i in range(num_trials + warm_up):
         st = time.perf_counter()
         if lookahead:
-            output_ids = model.generate(input_ids, lookahead=3, do_sample=False, max_matching_ngram_size=2, max_new_tokens=out_len,
-                                    min_new_tokens=out_len, num_beams=num_beams)
+            output_ids = model.generate(input_ids, lookahead=2, do_sample=False, max_matching_ngram_size=2, max_new_tokens=out_len,
+                                        min_new_tokens=out_len, num_beams=num_beams)
         else:
             output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
                                         min_new_tokens=out_len, num_beams=num_beams)
@@ -67,38 +72,46 @@ def run_model_in_thread(model, in_out, tokenizer, result, warm_up, num_beams, in
         torch.xpu.empty_cache()
         actual_out_len = output_ids.shape[1] - actual_in_len
         if i >= warm_up:
-            if lookahead:
-                result[in_out].append([model.first_token_time, (end - st - model.first_token_time)/model.n_token_generated, 0,
+            if lookahead or os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None) == "1":
+                result[in_out].append([model.first_token_time, (end - st - model.first_token_time)/(model.n_token_generated - 1), 0,
                                        actual_in_len, actual_out_len, load_time, 0])
             else:
                 result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
                                         actual_in_len, actual_out_len, load_time, model.peak_memory])
 
 
-def get_continuation_input_str(in_len):
-    # in_len.txt maybe shorter than we need,
-    # use much longer context to make sure input length
-    test_length = min(in_len*2, 8192)
-    while test_length not in [32, 256, 1024, 2048, 8192] and test_length < 8192:
-        test_length = test_length * 2
-    # Force the test_length to be 8192, such that we can use 8192.txt
-    if test_length > 8192:
-        test_length = 8192
-    return open(f"prompt/continuation/{test_length}.txt", 'r').read()
+def get_continuation_input_str(in_len, tokenizer=None):
+    # keep 'utf-8' as character encoding mode
+    if tokenizer is not None:
+        if in_len > 128 and in_len <= 4096:
+            if in_len <= 2048:
+                input_str = open("prompt/continuation/longbench_2k.txt", 'r', encoding='utf-8').read()
+            else:
+                input_str = open("prompt/continuation/longbench_4k.txt", 'r', encoding='utf-8').read()
+
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            if input_ids.shape[1] < in_len:
+                return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
+            else:
+                half_idx = in_len // 2
+                input_ids_truncated = torch.cat((input_ids[:, :half_idx], input_ids[:, -(in_len-half_idx):]), dim=1)
+                return tokenizer.batch_decode(input_ids_truncated)[0]
+
+    return open(f"prompt/continuation/8192.txt", 'r', encoding='utf-8').read()
 
 
 def preprocess_prompt(tokenizer, in_len, task):
     if task == 'summarize':
         if in_len == 512:
-            input_str = open(f"prompt/summarize/cnn_239.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_239.txt", 'r', encoding='utf-8').read()
         elif in_len == 1024:
-            input_str = open(f"prompt/summarize/cnn_615.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_615.txt", 'r', encoding='utf-8').read()
         elif in_len == 2048:
-            input_str = open(f"prompt/summarize/cnn_824.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_824.txt", 'r', encoding='utf-8').read()
         elif in_len <= 256:
-            input_str = open(f"prompt/summarize/cnn_64.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_64.txt", 'r', encoding='utf-8').read()
         else:
-            input_str = open(f"prompt/summarize/cnn_5618.txt", 'r').read()
+            input_str = open(f"prompt/summarize/cnn_5618.txt", 'r', encoding='utf-8').read()
         question = "Can you please summarize this article?"
         prompt_format = "[INST] Article:```{}``` \n\n Question: {} \n\n [/INST]"
         special_tokens_len = len(tokenizer.encode(prompt_format.format("", question), add_special_tokens=False))
@@ -111,19 +124,19 @@ def preprocess_prompt(tokenizer, in_len, task):
         input_ids = tokenizer.encode(final_prompt, return_tensors="pt", truncation=True, max_length=in_len)
     elif task == 'QA':
         if in_len == 512:
-            input_str = open(f"prompt/QA/orca_776.txt", 'r').read()
+            input_str = open(f"prompt/QA/orca_776.txt", 'r', encoding='utf-8').read()
         elif in_len == 1024:
-            input_str = open(f"prompt/QA/orca_99.txt", 'r').read()
+            input_str = open(f"prompt/QA/orca_99.txt", 'r', encoding='utf-8').read()
         elif in_len == 2048:
-            input_str = open(f"prompt/QA/orca_401.txt", 'r').read()
+            input_str = open(f"prompt/QA/orca_401.txt", 'r', encoding='utf-8').read()
         elif in_len == 4096:
-            input_str = open(f"prompt/QA/orca_497.txt", 'r').read()
+            input_str = open(f"prompt/QA/orca_497.txt", 'r', encoding='utf-8').read()
         else:
             raise ValueError("No corresponding prompt available now, will be added later.")          
         input_ids = tokenizer.encode(input_str, return_tensors="pt")    
     return input_ids
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation'):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation', optimize_model=False, transpose_value_cache=True):
     # TODO: make a parameter
     result= {}
     if test_api == 'transformer_int4':
@@ -175,7 +188,9 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'pipeline_parallel_gpu':
         result = run_pipeline_parallel_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=use_fp16_torch_dtype)
     elif test_api == 'transformers_int4_npu_win':
-        result = transformers_int4_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size)
+        result = transformers_int4_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache)
+    elif test_api == 'transformers_int4_loadlowbit_npu_win':
+        result = run_transformer_int4_loadlowbit_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache)
     else:
         invalidInputError(False, "Unknown test_api " + test_api + ", please check your config.yaml.")
 
@@ -287,7 +302,7 @@ def run_transformer_int4(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -346,7 +361,7 @@ def run_pytorch_autocast_bf16(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -411,7 +426,7 @@ def run_optimize_model(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -468,13 +483,15 @@ def run_transformer_int4_gpu(repo_id,
         else:
             model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                               trust_remote_code=True, use_cache=True,
-                                              torch_dtype=torch_dtype).eval()
+                                              cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, cpu_embedding=cpu_embedding)
+        model = model.to('xpu')
     elif origin_repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
                                                      use_cache=True, cpu_embedding=cpu_embedding,
                                                      torch_dtype=torch_dtype).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
     elif origin_repo_id in PHI3VISION_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      _attn_implementation="eager",
@@ -482,6 +499,15 @@ def run_transformer_int4_gpu(repo_id,
                                                      trust_remote_code=True, use_cache=True, 
                                                      cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    elif origin_repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True,
+                                          cpu_embedding=cpu_embedding, torch_dtype=torch_dtype).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         if "4bit" in repo_id:
             model = AutoModelForCausalLM.load_low_bit(model_path, optimize_model=True,
@@ -503,14 +529,13 @@ def run_transformer_int4_gpu(repo_id,
                                                             cpu_embedding=cpu_embedding,
                                                             torch_dtype=torch_dtype).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    model = model.to('xpu')
+        model = model.to('xpu')
 
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
 
-    if not lookahead:
+    if not lookahead and os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None) != "1":
         model = BenchmarkWrapper(model)
 
     result = {}
@@ -520,7 +545,7 @@ def run_transformer_int4_gpu(repo_id,
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
             if task == 'continuation':
-                input_str = get_continuation_input_str(in_len)
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -532,6 +557,15 @@ def run_transformer_int4_gpu(repo_id,
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
+            if not lookahead and os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None) == "1":
+                from ipex_llm.transformers.lookup import PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD
+                if actual_in_len < PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD:
+                    warnings.warn(
+                        "All-in-one benchmark currently does not support IPEX_LLM_PERFORMANCE_MODE "
+                        f"with actual input token length < {PERFORMANCE_MODE_LOOKUP_INPUT_THRESHOLD}. "
+                        f"Skip benchmarking in-out pair {in_out} for model {repo_id}."
+                    )
+                    continue
             thread = threading.Thread(target=run_model_in_thread, args=(model, in_out, tokenizer, result, warm_up, num_beams, input_ids, out_len, actual_in_len, num_trials, load_time, lookahead))
             thread.start()
             thread.join()
@@ -546,7 +580,7 @@ def run_transformer_int4_gpu(repo_id,
                 peak_mem = result[in_out][-1][6]
                 streaming = 'N/A'
                 use_fp16_torch_dtype = 'N/A'
-                with open(csv_name, mode='a', newline='') as file:
+                with open(csv_name, mode='a', newline='', encoding='utf-8') as file:
                     csv_writer = csv.writer(file)
                     file.seek(0, os.SEEK_END)
                     global line_counter
@@ -571,24 +605,32 @@ def transformers_int4_npu_win(repo_id,
                                  num_trials,
                                  num_beams,
                                  low_bit,
-                                 batch_size):
+                                 batch_size,
+                                 optimize_model,
+                                 transpose_value_cache):
     from ipex_llm.transformers.npu_model import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)
+    in_out_len = in_out_pairs[0].split("-")
+    max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
-        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype='auto').eval()
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
+                                          optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                          torch_dtype=torch.float16, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True).eval()
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
+                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                                     use_cache=True, attn_implementation="eager").eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                                     use_cache=True).eval()
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
+                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                                     use_cache=True, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     load_time = end - st
@@ -602,7 +644,7 @@ def transformers_int4_npu_win(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -610,6 +652,7 @@ def transformers_int4_npu_win(repo_id,
             true_str = tokenizer.batch_decode(input_ids)[0]
             input_list = [true_str] * batch_size
             input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+            input_ids = input_ids[:, :in_len]
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
@@ -628,6 +671,78 @@ def transformers_int4_npu_win(repo_id,
     gc.collect()
     return result
 
+def run_transformer_int4_loadlowbit_npu_win(repo_id,
+                                 local_model_hub,
+                                 in_out_pairs,
+                                 warm_up,
+                                 num_trials,
+                                 num_beams,
+                                 low_bit,
+                                 batch_size,
+                                 optimize_model,
+                                 transpose_value_cache):
+    from ipex_llm.transformers.npu_model import AutoModel, AutoModelForCausalLM
+    from transformers import AutoTokenizer, LlamaTokenizer
+
+    model_path = get_model_path(repo_id, local_model_hub)
+    in_out_len = in_out_pairs[0].split("-")
+    max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
+    # Load model in 4 bit,
+    # which convert the relevant layers in the model into INT4 format
+    st = time.perf_counter()
+    if repo_id in CHATGLM_IDS:
+        model = AutoModel.load_low_bit(model_path+'-npu-'+low_bit, trust_remote_code=True,
+                                        optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                        torch_dtype=torch.float16, attn_implementation="eager").eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path+'-npu-'+low_bit, trust_remote_code=True)
+    elif repo_id in LLAMA_IDS:
+        model = AutoModelForCausalLM.load_low_bit(model_path+'-npu-'+low_bit, trust_remote_code=True, torch_dtype=torch.float16,
+                                                    optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                                    use_cache=True, attn_implementation="eager").eval()
+        tokenizer = LlamaTokenizer.from_pretrained(model_path+'-npu-'+low_bit, trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.load_low_bit(model_path+'-npu-'+low_bit, trust_remote_code=True, torch_dtype=torch.float16,
+                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                                     use_cache=True, attn_implementation="eager").eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path+'-npu-'+low_bit, trust_remote_code=True)
+    end = time.perf_counter()
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            input_str = get_continuation_input_str(in_len, tokenizer)
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_list = [true_str] * batch_size
+            input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+            input_ids = input_ids[:, :in_len]
+            actual_in_len = input_ids.shape[1]
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                            min_new_tokens=out_len, num_beams=num_beams)
+                end = time.perf_counter()
+                print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                print(output[0])
+                actual_out_len = output_ids.shape[1] - actual_in_len
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                           actual_in_len, actual_out_len, load_time])
+    del model
+    gc.collect()
+    return result
 
 def run_optimize_model_gpu(repo_id,
                            local_model_hub,
@@ -673,7 +788,7 @@ def run_optimize_model_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -738,7 +853,7 @@ def run_ipex_fp16_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -809,7 +924,7 @@ def run_bigdl_fp16_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -895,7 +1010,7 @@ def run_deepspeed_transformer_int4_cpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -969,6 +1084,13 @@ def run_transformer_int4_gpu_win(repo_id,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
@@ -988,7 +1110,7 @@ def run_transformer_int4_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str(in_len)
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1085,6 +1207,14 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                                                      torch_dtype=torch.float16).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
+    elif repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                          modules_to_not_convert=["vpm", "resampler"],
+                                          trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
+                                          torch_dtype=torch.float16).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+        model = model.llm
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
@@ -1105,7 +1235,7 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str(in_len)
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1215,7 +1345,7 @@ def run_transformer_int4_loadlowbit_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str(in_len)
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1325,7 +1455,7 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str(in_len)
+                input_str = get_continuation_input_str(in_len, tokenizer)
                 # As different tokenizer has different encodings,
                 # slice the input_ids to ensure the prompt length is required length.
                 input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1408,7 +1538,7 @@ def run_transformer_autocast_bf16( repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1473,7 +1603,7 @@ def run_bigdl_ipex_bf16(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1537,7 +1667,7 @@ def run_bigdl_ipex_int4(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1601,7 +1731,7 @@ def run_bigdl_ipex_int8(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1705,7 +1835,7 @@ def run_deepspeed_optimize_model_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1776,7 +1906,7 @@ def run_speculative_cpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1848,7 +1978,7 @@ def run_speculative_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1929,7 +2059,7 @@ def run_pipeline_parallel_gpu(repo_id,
             in_out_len = in_out.split("-")
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
-            input_str = get_continuation_input_str(in_len)
+            input_str = get_continuation_input_str(in_len, tokenizer)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -1968,13 +2098,19 @@ if __name__ == '__main__':
     streaming = False
     use_fp16_torch_dtype = False
     task = 'continuation'
+    optimize_model = False # only for transformers_int4_npu_win
     if 'streaming' in conf:
         streaming = conf['streaming']
     if 'use_fp16_torch_dtype' in conf:
         use_fp16_torch_dtype = conf['use_fp16_torch_dtype']
     if 'task' in conf:
         task = conf['task']
+    if 'optimize_model' in conf:
+        optimize_model = conf['optimize_model']
     lookahead = False
+    transpose_value_cache = True
+    if 'transpose_value_cache' in conf:
+        transpose_value_cache = conf['transpose_value_cache']
     
     import pandas as pd
     for api in conf.test_api:
@@ -2000,7 +2136,7 @@ if __name__ == '__main__':
                 if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
                     lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task)
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, optimize_model, transpose_value_cache)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
@@ -2008,16 +2144,16 @@ if __name__ == '__main__':
             if torch.distributed.get_rank() == 0:
                 df.index += max(line_counter - 1, 0)
                 if line_counter == 0:
-                    df.to_csv(csv_name, mode='a')
+                    df.to_csv(csv_name, mode='a', encoding='utf-8')
                 else:
-                    df.to_csv(csv_name, mode='a', header=None)
+                    df.to_csv(csv_name, mode='a', header=None, encoding='utf-8')
                 line_counter += len(df.index)
         else:
             df.index += max(line_counter - 1, 0)
             if api not in ["transformer_int4_gpu", "transformer_int4_fp16_gpu"]:
                 if line_counter == 0:
-                    df.to_csv(csv_name, mode='a')
+                    df.to_csv(csv_name, mode='a', encoding='utf-8')
                 else:
-                    df.to_csv(csv_name, mode='a', header=None)
+                    df.to_csv(csv_name, mode='a', header=None, encoding='utf-8')
             line_counter += len(df.index)
         results = []

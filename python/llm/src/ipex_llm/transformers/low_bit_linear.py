@@ -73,6 +73,7 @@ MOFQ4 = ggml_tensor_qtype["mixed_fp4"]
 MOFQ8 = ggml_tensor_qtype["mixed_fp8"]
 FP8E5 = ggml_tensor_qtype["fp8_e5m2"]
 FP6 = ggml_tensor_qtype["fp6"]
+FP16 = ggml_tensor_qtype["fp16"]
 IQ2_XXS = ggml_tensor_qtype["gguf_iq2_xxs"]
 IQ2_XS = ggml_tensor_qtype["gguf_iq2_xs"]
 Q2_K = ggml_tensor_qtype["q2_k"]
@@ -228,6 +229,13 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         dst_tensor = dst_tensor.reshape(tensor.shape[0], tensor.shape[-1] // QK)
         scale = torch.empty(n // k, dtype=torch.float32,
                             device=device)
+    elif qtype == NF4:
+        # Deepspeed zero3 requires unified dtype,
+        # thus here uses bfloat16 consistent to other layers
+        # dst_size above is computed based on uint8, and for bfloat16,
+        # buffer size should be half
+        dst_tensor = torch.empty(dst_size // 2, dtype=torch.bfloat16,
+                                 device=device)
     else:
         dst_tensor = torch.empty(dst_size, dtype=torch.uint8,
                                  device=device)
@@ -259,12 +267,15 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
 
 
 def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int):
-
-    invalidInputError(tensor.dtype == torch.uint8,
-                      "Input tensor must be uint8")
+    if qtype == NF4:
+        invalidInputError(tensor.dtype == torch.bfloat16,
+                          "NF4 Input tensor must be bfloat16")
+    else:
+        invalidInputError(tensor.dtype == torch.uint8,
+                          "Input tensor except NF4 must be uint8")
 
     invalidInputError(tensor.device == torch.device('cpu'),
-                      "Input tensor must be uint8")
+                      "Input tensor must be on cpu")
 
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
@@ -369,7 +380,6 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
 
 # Rename to FP4Params to trigger initializing
 # the params layer with all parameters on the CPU
-# https://github.com/huggingface/accelerate/blob/main/src/accelerate/utils/modeling.py#L333
 class FP4Params(torch.nn.Parameter):
     def __new__(cls,
                 data=None,
@@ -581,7 +591,13 @@ class MatMulLowBit(torch.autograd.Function):
     def forward(ctx, A, weight, input_seq_size):
         ctx.is_empty = False
         import xe_linear
-        result = xe_linear.forward_new(A, weight.data, weight.qtype, input_seq_size)
+        if weight.qtype == NF4:
+            result = xe_linear.forward_new(A,
+                                           weight.data.view(torch.uint8),
+                                           weight.qtype,
+                                           input_seq_size)
+        else:
+            result = xe_linear.forward_new(A, weight.data, weight.qtype, input_seq_size)
         if any(ctx.needs_input_grad[:2]):
             ctx.tensors = (A, weight)
         else:
@@ -601,7 +617,12 @@ class MatMulLowBit(torch.autograd.Function):
         if req_gradA:
             if torch.xpu.is_autocast_xpu_enabled():
                 grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
-            dequant_weight = xe_linear.dequant(A, weight.data, weight.qtype)
+            if weight.qtype == NF4:
+                dequant_weight = xe_linear.dequant(A,
+                                                   weight.data.view(torch.uint8),
+                                                   weight.qtype)
+            else:
+                dequant_weight = xe_linear.dequant(A, weight.data, weight.qtype)
             grad_A = torch.matmul(grad_output, dequant_weight.reshape(weight._shape))
 
         return grad_A, grad_weight, None
@@ -736,9 +757,16 @@ class LowBitLinear(nn.Linear):
                 if x_2d.requires_grad:
                     result = MatMulLowBit.apply(x_2d, self.weight, input_seq_size)
                 else:
-                    result = xe_linear.forward_new(x_2d, self.weight.data,
-                                                   self.weight.qtype,
-                                                   input_seq_size)
+                    if self.weight.qtype == NF4:
+                        result = xe_linear.forward_new(x_2d,
+                                                       self.weight.data.view(torch.uint8),
+                                                       self.weight.qtype,
+                                                       input_seq_size)
+                    else:
+                        result = xe_linear.forward_new(x_2d,
+                                                       self.weight.data,
+                                                       self.weight.qtype,
+                                                       input_seq_size)
             elif self.enable_xetla:
                 x_2d = x_2d.half()
                 result = xe_linear.mm_xetla(x_2d, self.weight.data, self.qtype)
@@ -774,7 +802,7 @@ class LowBitLinear(nn.Linear):
             result = result.view(new_shape)
             if self.mp_group is not None:
                 if get_use_vllm():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
+                    result = self.mp_group.all_reduce(result)
                 elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
@@ -861,7 +889,7 @@ class FP16Linear(nn.Linear):
                 result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
             if self.mp_group is not None:
                 if get_use_vllm():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
+                    result = self.mp_group.all_reduce(result)
                 elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
@@ -898,7 +926,7 @@ class FP16Linear(nn.Linear):
             result = result.view(new_shape)
             if self.mp_group is not None:
                 if get_use_vllm():
-                    torch.distributed.all_reduce(result, group=self.mp_group)
+                    result = self.mp_group.all_reduce(result)
                 elif is_deepspeed_available():
                     from deepspeed import comm as dist
                     dist.inference_all_reduce(result, group=self.mp_group)
@@ -981,3 +1009,38 @@ class BF16Linear(nn.Linear):
             result = result.reshape(*original_shape[:-1], result.shape[-1])
 
         return result.to(x.dtype)
+
+
+class vLLMLowBitLinear(LowBitLinear):
+    def __init__(self, input_features, output_features, qtype, bias=True,
+                 conver_to_half=True, mp_group=None, enable_xetla=False,
+                 optimize_lm_head=False, act_order=False,
+                 enable_scale_search=False):
+        super().__init__(input_features, output_features, qtype, bias, conver_to_half, mp_group,
+                         enable_xetla, optimize_lm_head, act_order, enable_scale_search)
+
+    def forward(self, x: torch.Tensor):
+        result = super().forward(x)
+        return result, None
+
+
+class vLLMFP16Linear(FP16Linear):
+    def __init__(self, input_features, output_features, bias=True, mp_group=None, weight_type=1,
+                 enable_xetla=False, optimize_lm_head=False):
+        super().__init__(input_features, output_features, bias, mp_group, weight_type,
+                         enable_xetla, optimize_lm_head)
+
+    def forward(self, x: torch.Tensor):
+        result = super().forward(x)
+        return result, None
+
+
+class vLLMBF16Linear(BF16Linear):
+    def __init__(self, input_features, output_features, bias=True, mp_group=None,
+                 compute_dtype=None, enable_xetla=False, optimize_lm_head=False):
+        super().__init__(input_features, output_features, bias, mp_group, compute_dtype,
+                         enable_xetla, optimize_lm_head)
+
+    def forward(self, x: torch.Tensor):
+        result = super().forward(x)
+        return result, None

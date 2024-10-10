@@ -1,0 +1,18 @@
+{
+    "llama2-7b-chat-4k": 4096,
+    "longchat-v1.5-7b-32k": 4096,
+    "xgen-7b-8k": 4096,
+    "internlm-7b-8k": 4096,
+    "chatglm2-6b": 4096,
+    "chatglm2-6b-32k": 4096,
+    "chatglm3-6b-32k": 4096,
+    "chatglm4-9b": 4096,
+    "vicuna-v1.5-7b-16k": 4096,
+    "mistral-7B-instruct-v0.2": 4096,
+    "mistral-7B-instruct-v0.1": 4096,
+    "mixtral-8x7B-instruct-v0.1": 4096,
+    "llama-2-7B-32k-instruct": 4096,
+    "lwm-text-chat-1m": 4096,
+    "lwm-text-1m": 4096,
+    "qwen2-7b-instruct": 4096
+}

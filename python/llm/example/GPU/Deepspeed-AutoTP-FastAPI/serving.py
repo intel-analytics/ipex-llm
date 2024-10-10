@@ -116,11 +116,13 @@ def load_model(model_path, low_bit):
     # Use IPEX-LLM `optimize_model` to convert the model into optimized low bit format
     # Convert the rest of the model into float16 to reduce allreduce traffic
     model = optimize_model(model.module.to(f"cpu"), low_bit=low_bit).to(torch.float16)
-
+    
     # Next, use XPU as accelerator to speed up inference
     current_accel = XPU_Accelerator()
     set_accelerator(current_accel)
 
+    model=model.eval()
+    
     # Move model back to xpu
     model = model.to(f"xpu:{local_rank}")
     model = BenchmarkWrapper(model)

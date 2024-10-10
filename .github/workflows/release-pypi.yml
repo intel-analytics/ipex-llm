@@ -15,7 +15,7 @@ on:
         required: false
         type: string
       release-version:
-        description: 'ipex-llm version (e.g. 2.1.0b1)'
+        description: 'ipex-llm version (e.g. 2.2.0b1)'
         required: false
         type: string
       schedule-event:
@@ -60,7 +60,7 @@ jobs:
       run: |
         if [[ "${{ inputs.schedule-event }}" == "true" ]]; then
           export TIMESTAMP=`date '+%Y%m%d'`
-          export PYPI_VERSION=2.1.0
+          export PYPI_VERSION=2.2.0
           export RELEASE_VERSION=${PYPI_VERSION}b${TIMESTAMP}
         else
           export RELEASE_VERSION=${{ inputs.release-version }}

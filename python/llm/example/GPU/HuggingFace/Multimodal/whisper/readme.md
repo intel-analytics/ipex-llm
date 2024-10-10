@@ -16,6 +16,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
+pip install transformers==4.36.2
 pip install datasets soundfile librosa # required by audio processing
 ```
 
@@ -28,6 +29,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
+pip install transformers==4.36.2
 pip install datasets soundfile librosa # required by audio processing
 ```
 

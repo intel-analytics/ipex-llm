@@ -21,18 +21,10 @@ import argparse
 from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-# Refer to https://huggingface.co/01-ai/Yi-6B-Chat#31-use-the-chat-model
-YI_PROMPT_FORMAT = """
-<|im_start|>system
-You are a helpful assistant. If you don't understand what the user means, ask the user to provide more information.<|im_end|>
-<|im_start|>user
-{prompt}<|im_end|>
-<|im_start|>assistant
-"""
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Yi model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="01-ai/Yi-6B",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="01-ai/Yi-6B-Chat",
                         help='The huggingface repo id for the Yi model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
@@ -60,7 +52,7 @@ if __name__ == '__main__':
 
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = YI_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = args.prompt
         input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
         # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(input_ids,

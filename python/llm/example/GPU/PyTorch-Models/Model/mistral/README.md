@@ -4,7 +4,6 @@ In this directory, you will find examples on how you could use IPEX-LLM `optimiz
 ## Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-**Important: According to [Mistral Troubleshooting](https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting), please make sure you have installed `transformers==4.34.0` to run the example.**
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a Mistral model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
@@ -16,9 +15,6 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
-# Refer to https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting, please make sure you are using a stable version of Transformers, 4.34.0 or newer.
-pip install transformers==4.34.0
 ```
 
 #### 1.2 Installation on Windows
@@ -29,9 +25,6 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-
-# Refer to https://huggingface.co/mistralai/Mistral-7B-v0.1#troubleshooting, please make sure you are using a stable version of Transformers, 4.34.0 or newer.
-pip install transformers==4.34.0
 ```
 
 ### 2. Configures OneAPI environment variables for Linux

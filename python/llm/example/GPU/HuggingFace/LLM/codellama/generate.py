@@ -47,7 +47,7 @@ if __name__ == '__main__':
                                                  optimize_model=False,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    model = model.to('xpu')
+    model = model.half().to('xpu')
 
     # Load tokenizer
     tokenizer = CodeLlamaTokenizer.from_pretrained(model_path,

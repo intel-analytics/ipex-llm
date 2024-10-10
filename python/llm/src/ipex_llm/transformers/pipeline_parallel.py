@@ -800,7 +800,7 @@ class PPModelWorker:
                     _stream_tasks.append(self.streamer[request_id].put((remain, printable_text)))
         await asyncio.gather(*_stream_tasks)
 
-    async def process_step(self, tokenizer, result_dict):
+    async def process_step(self, tokenizer, result_dict, processor=None):
         cur_batch = None
         torch.xpu.synchronize(self.device)
         if self.rank == 0:

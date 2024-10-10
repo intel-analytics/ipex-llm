@@ -460,12 +460,16 @@ def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_l
 
 def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=False):
     if version.parse(trans_version) >= version.parse("4.36.0"):
-        from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
-        if isinstance(past_key_values, (DynamicFp8Cache, DynamicNormalCache)):
+        from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache,\
+            DynamicCompressCache
+        if isinstance(past_key_values, (DynamicFp8Cache, DynamicNormalCache,
+                                        DynamicCompressCache)):
             if hasattr(past_key_values, "_seen_tokens"):
                 past_key_values._seen_tokens -= new_cache_size
             else:
                 past_key_values.seen_tokens -= new_cache_size
+            if isinstance(past_key_values, DynamicCompressCache):
+                past_key_values.real_kv_len -= new_cache_size
 
             for i, k in enumerate(past_key_values.key_cache):
                 past_key_values.key_cache[i] = k[:, :, :-new_cache_size, :]
@@ -489,12 +493,19 @@ def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=Fa
                 for k, v in past_key_values
             ]
         elif self.config.model_type == "chatglm":
-            # for chatglm, cache shape is [sl, bs, nh, hn]
-            past_key_values = [
-                (k[:-(new_cache_size), :, :, :],
-                    v[:-(new_cache_size), :, :, :])
-                for k, v in past_key_values
-            ]
+            if self.config.num_layers == 40 and hasattr(self.config, 'rope_ratio'):
+                past_key_values = [
+                    (k[:, :, :-(new_cache_size), :],
+                        v[:, :, :-(new_cache_size), :])
+                    for k, v in past_key_values
+                ]
+            else:
+                # for chatglm, cache shape is [sl, bs, nh, hn]
+                past_key_values = [
+                    (k[:-(new_cache_size), :, :, :],
+                        v[:-(new_cache_size), :, :, :])
+                    for k, v in past_key_values
+                ]
         elif self.config.model_type in ["baichuan", "gptj"]:
             past_key_values = [
                 (k[:, :, :-(new_cache_size), :],

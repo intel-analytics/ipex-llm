@@ -87,7 +87,7 @@ root@arda-arc12:/# sycl-ls
 > export USE_XETLA=OFF
 > 
 > # Enable immediate command lists mode for the Level Zero plugin. Improves performance on Intel Arc™ A-Series Graphics and Intel Data Center GPU Max Series; however, it depends on the Linux Kernel, and some Linux kernels may not necessarily provide acceleration.
-> # Recommended for use on Intel Arc™ A-Series Graphics and Intel Data Center GPU Max Series, but it depends on the Linux kernel, Non-i915 kernel drivers may cause performance regressions.
+> # Recommended for use on Intel Arc™ A-Series Graphics and Intel Data Center GPU Max Series, but it depends on the Linux kernel, Upstream i915 kernel drivers may cause performance regressions.
 > export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 > 
 > # Controls persistent device compiled code cache. Set to '1' to turn on and '0' to turn off.

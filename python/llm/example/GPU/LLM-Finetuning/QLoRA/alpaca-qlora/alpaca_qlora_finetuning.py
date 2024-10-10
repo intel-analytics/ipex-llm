@@ -144,6 +144,14 @@ def train(
 
     prompter = Prompter(prompt_template_name)
 
+    if deepspeed is not None and "zero3" in deepspeed:
+        from ipex_llm.transformers.utils \
+            import _constant_buffered_norm2
+        from ipex_llm.llm_patching import replace_attr
+        import deepspeed as ds
+        replace_attr(ds.runtime.zero.stage3.DeepSpeedZeroOptimizer_Stage3,
+                     "_constant_buffered_norm2", _constant_buffered_norm2)
+
     device_map = "auto"
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     ddp = world_size != 1
@@ -161,7 +169,7 @@ def train(
             optimize_model=False,
             torch_dtype=torch.bfloat16,
             modules_to_not_convert=["lm_head"],
-            trust_remote_code=True,
+            trust_remote_code=True
         )
     else:
         # According to the QLoRA paper, using "nf4" could yield better model quality than "int4"
@@ -186,9 +194,10 @@ def train(
         #     # device_map=device_map,
         #     modules_to_not_convert=["lm_head"],
         # )
-    print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
-    model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
-    print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
+    if deepspeed is not None and not "zero3" in deepspeed:
+        print(f"Model loaded on rank {os.environ.get('LOCAL_RANK')}")
+        model = model.to(f'xpu:{os.environ.get("LOCAL_RANK", 0)}')
+        print(f"Model moved to rank {os.environ.get('LOCAL_RANK')}")
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     print(f"Tokenizer loaded on rank {os.environ.get('LOCAL_RANK')}")

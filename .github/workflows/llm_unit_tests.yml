@@ -215,9 +215,37 @@ jobs:
       - name: Run LLM cli test (Linux)
         if: runner.os == 'Linux' 
         uses: ./.github/actions/llm/cli-test-linux
+
+      - name: Setup Python Path
+        if: runner.os == 'Windows' 
+        shell: bash
+        run: |
+          # Get Python interpreter path
+          python_path=$(python -c 'import sys; print(sys.executable)')
+          python_dir=$(dirname "$python_path")
+          scripts_dir="$python_dir/Scripts"
+          
+          # Set environment variables
+          echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
+          echo "SCRIPTS_DIR=$scripts_dir" >> $GITHUB_ENV
+
       - name: Run LLM cli test (Windows)
         if: runner.os == 'Windows' 
-        uses: ./.github/actions/llm/cli-test-windows
+        shell: powershell
+        run: |
+          # Retrieve environment variables
+          $pythonDir = $env:PYTHON_DIR
+          $scriptsDir = $env:SCRIPTS_DIR
+          
+          # Update PATH
+          $env:PATH = "$pythonDir;$scriptsDir;$env:PATH"
+          
+          # Run tests
+          llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x llama -m $env:LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
+          llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x gptneox -m $env:GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
+          llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x bloom -m $env:BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
+          # llm-cli.ps1 -t $env:THREAD_NUM -x starcoder -m $env:STARCODER_INT4_CKPT_PATH -p 'def check_odd('
+          
       - name: Run LLM inference test
         shell: bash
         run: |
@@ -233,7 +261,9 @@ jobs:
       - name: Run LLM llamaindex test
         shell: bash
         run: |
-          pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+          pip install "llama-index-readers-file<0.2.0"
+          pip install "llama-index-vector-stores-postgres<0.2.0"
+          pip install "llama-index-embeddings-huggingface<0.3.0"
           pip install transformers==4.36.2
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests.sh
@@ -443,7 +473,9 @@ jobs:
       - name: Run LLM llamaindex GPU test
         shell: bash
         run: |
-          pip install llama-index-readers-file llama-index-vector-stores-postgres llama-index-embeddings-huggingface
+          pip install "llama-index-readers-file<0.2.0"
+          pip install "llama-index-vector-stores-postgres<0.2.0"
+          pip install "llama-index-embeddings-huggingface<0.3.0"
           # Specific oneapi position on arc ut test machines
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
             pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/

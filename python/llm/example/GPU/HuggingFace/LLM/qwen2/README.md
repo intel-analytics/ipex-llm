@@ -135,7 +135,7 @@ AI, or Artificial Intelligence, refers to the simulation of human intelligence i
 
 ##### [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct)
 ```log
-Inference time: 0.33887791633605957 s
+Inference time: xxxx s
 -------------------- Prompt --------------------
 AI是什么？
 -------------------- Output --------------------
@@ -143,7 +143,7 @@ AI是人工智能的简称，是一种计算机科学和技术领域，旨在使
 ```
 
 ```log
-Inference time: 0.340407133102417 s
+Inference time: xxxx s
 -------------------- Prompt --------------------
 What is AI?
 -------------------- Output --------------------

@@ -1,0 +1,16 @@
+repo_id:
+  - 'Qwen/Qwen-VL-Chat'
+local_model_hub: '/mnt/disk1/models'
+warm_up: 1
+num_trials: 3
+num_beams: 1 # default to greedy search
+low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
+batch_size: 2 # default to 1
+in_out_pairs:
+  - '32-32'
+  - '1024-128'
+  - '2048-256'
+test_api:
+  - "transformer_int4_fp16_gpu"  # on Intel GPU
+cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
+task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'

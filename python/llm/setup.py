@@ -46,14 +46,14 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 IPEX_LLM_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(IPEX_LLM_PYTHON_HOME,
                './llm/version.txt'), 'r').read().strip()
-CORE_XE_VERSION = VERSION.replace("2.1.0", "2.5.0")
+CORE_XE_VERSION = VERSION.replace("2.2.0", "2.6.0")
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 
 cpu_torch_version = ["torch==2.1.2+cpu;platform_system=='Linux'", "torch==2.1.2;platform_system=='Windows'"]
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
-               'transformers == 4.36.2', 'sentencepiece', 'tokenizers == 0.15.2',
+               'transformers == 4.37.0', 'sentencepiece', 'tokenizers == 0.15.2',
                'accelerate == 0.23.0', 'tabulate'] + cpu_torch_version
 
 SERVING_DEP = ['fschat[model_worker, webui] == 0.2.36', 'protobuf']
@@ -277,6 +277,9 @@ def setup_package():
     oneapi_2024_0_requires = ["dpcpp-cpp-rt==2024.0.2;platform_system=='Windows'",
                               "mkl-dpcpp==2024.0.0;platform_system=='Windows'",
                               "onednn==2024.0.0;platform_system=='Windows'"]
+    oneapi_2024_2_requires = ["dpcpp-cpp-rt==2024.2.1;platform_system=='Windows'",
+                              "mkl-dpcpp==2024.2.1;platform_system=='Windows'",
+                              "onednn==2024.2.1;platform_system=='Windows'"]
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_21_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
@@ -292,14 +295,29 @@ def setup_package():
     # default to ipex 2.1 for linux and windows
     xpu_requires = copy.deepcopy(xpu_21_requires)
 
+    xpu_lnl_requires = copy.deepcopy(all_requires)
+    for exclude_require in cpu_torch_version:
+        xpu_lnl_requires.remove(exclude_require)
+    xpu_lnl_requires += ["torch==2.3.1+cxx11.abi",
+                         "torchvision==0.18.1+cxx11.abi",
+                         "intel-extension-for-pytorch==2.3.110+xpu",
+                         "bigdl-core-xe-23==" + CORE_XE_VERSION,
+                         "bigdl-core-xe-batch-23==" + CORE_XE_VERSION,
+                         "bigdl-core-xe-addons-23==" + CORE_XE_VERSION]
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
-                    "onednn-devel==2024.0.0;platform_system=='Windows'"]
-    cpp_requires += oneapi_2024_0_requires
+                    "onednn-devel==2024.2.1;platform_system=='Windows'"]
+    cpp_requires += oneapi_2024_2_requires
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
 
+    npu_requires = copy.deepcopy(all_requires)
+    cpu_transformers_version = ['transformers == 4.37.0', 'tokenizers == 0.15.2']
+    for exclude_require in cpu_transformers_version:
+        npu_requires.remove(exclude_require)
+    npu_requires += ["transformers==4.40.0",
+                     "bigdl-core-npu==" + CORE_XE_VERSION + ";platform_system=='Windows'"]
 
     metadata = dict(
         name='ipex_llm',
@@ -323,7 +341,9 @@ def setup_package():
         },
         extras_require={"all": all_requires,
                         "xpu": xpu_requires,  # default to ipex 2.1 for linux and windows
+                        "npu": npu_requires,
                         "xpu-2-1": xpu_21_requires,
+                        "xpu-lnl": xpu_lnl_requires,
                         "serving": serving_requires,
                         "cpp": cpp_requires,
                         "llama-index": llama_index_requires}, # for internal usage when upstreaming for llama-index

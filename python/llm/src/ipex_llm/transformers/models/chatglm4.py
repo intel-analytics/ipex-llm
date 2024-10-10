@@ -17,16 +17,20 @@
 # https://huggingface.co/THUDM/chatglm2-6b-32k/blob/main/configuration_chatglm.py
 #
 
+import os
 import torch
 from typing import Optional, Tuple, Union
 from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past_key_value
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, \
-    use_sdp_causal, should_use_compresskv, is_enough_kv_cache_room_4_36
+    use_sdp_causal, should_use_compresskv, is_enough_kv_cache_room_4_36, \
+    get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.chatglm2 import repeat_kv
-from ipex_llm.transformers.kv import DynamicCompressCache
+from ipex_llm.transformers.kv import DynamicCompressCache, DynamicCompressFp8Cache
 from transformers.modeling_outputs import BaseModelOutputWithPast
 import math
+
+KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
 def chatglm4_model_forward(
@@ -50,12 +54,15 @@ def chatglm4_model_forward(
 
     if use_cache:
         inputs = input_ids if input_ids is not None else inputs_embeds
-        use_compress_kv = should_use_compresskv(inputs, inputs.shape[-1])
+        use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
         use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.dense_h_to_4h,
                                                 inputs)
-        if use_compress_kv and not use_quantize_kv and not isinstance(past_key_values,
-                                                                      DynamicCompressCache):
-            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+        if use_compress_kv and not isinstance(past_key_values,
+                                              DynamicCompressCache):
+            if use_quantize_kv:
+                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+            else:
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
 
     if inputs_embeds is None:
         batch_size, seq_length = input_ids.shape
@@ -79,7 +86,10 @@ def chatglm4_model_forward(
         if past_key_values is None:
             position_ids = torch.arange(seq_length, dtype=torch.int64, device=inputs_embeds.device)
         else:
-            kv_length = past_key_values[0][0].size(2)
+            if isinstance(past_key_values, DynamicCompressCache):
+                kv_length = past_key_values.get_seq_length()
+            else:
+                kv_length = past_key_values[0][0].size(2)
             position_ids = torch.arange(kv_length, kv_length + seq_length,
                                         dtype=torch.int64, device=inputs_embeds.device)
         position_ids = position_ids.repeat(batch_size, 1)
@@ -197,7 +207,19 @@ def chatglm4_attention_forward(
     # IPEX-LLM OPT: kv cache and quantize kv
     use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states)
 
-    if use_quantize_kv or (not use_compresskv):
+    # [CompressKV]
+    if use_compresskv:
+        from transformers.configuration_utils import PretrainedConfig
+        self.config = self.config if hasattr(self, "config") else PretrainedConfig()
+        enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
+                                                      self.layer_number - 1,
+                                                      q_len)
+        key_states, value_states = past_key_value.update(
+            key_states, value_states, self.layer_number - 1,
+            query_states, attention_mask, n_head // n_kv_head,
+            self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH
+        )
+    else:
         key_states, value_states = update_past_key_value(
             past_key_value, key_states, value_states,
             kv_seq_len, use_quantize_kv, hidden_states.device
@@ -210,20 +232,13 @@ def chatglm4_attention_forward(
                 past_key_value = (key_states, value_states)
         else:
             past_key_value = None
-    else:
-        from transformers.configuration_utils import PretrainedConfig
-        self.config = self.config if hasattr(self, "config") else PretrainedConfig()
-        enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_number - 1)
-        key_states, value_states = past_key_value.update(
-            key_states, value_states, self.layer_number - 1,
-            query_states, attention_mask, n_head // n_kv_head,
-            self.config, enough_kv_room, 256
-        )
 
     # IPEX-LLM OPT: sdp
     attn_weights = None
     if use_sdp(q_len, kv_seq_len, head_dim, query_states):
         import xe_addons
+        if use_compresskv:
+            attention_mask = get_compresskv_attn_mask(key_states, attention_mask)
         if use_quantize_kv:
             attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, attention_mask)
         else:
