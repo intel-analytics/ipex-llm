@@ -46,7 +46,7 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
 
 The easiest ways to install `ipex-llm` is the following commands.
 
-- For **Intel Core™ Ultra Series 2 with Intel Arc™ Graphics**:
+- For **Intel Core™ Ultra Series 2 (a.k.a. Lunar Lake) with Intel Arc™ Graphics**:
 
    Choose either US or CN website for `extra-index-url`:
 
@@ -94,7 +94,7 @@ The easiest ways to install `ipex-llm` is the following commands.
 
 If you encounter network issues when installing IPEX, you can also install IPEX-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `ipex-llm`.
 
-- For **Intel Core™ Ultra Series 2 with Intel Arc™ Graphics**:
+- For **Intel Core™ Ultra Series 2 (a.k.a. Lunar Lake) with Intel Arc™ Graphics**:
 
    Download the wheels on Windows system:
 

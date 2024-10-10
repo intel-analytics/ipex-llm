@@ -47,7 +47,7 @@ conda activate llm
 
 With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
 
-- For **Intel Core™ Ultra Series 2 with Intel Arc™ Graphics**:
+- For **Intel Core™ Ultra Series 2 (a.k.a. Lunar Lake) with Intel Arc™ Graphics**:
 
    Choose either US or CN website for `extra-index-url`:
 
