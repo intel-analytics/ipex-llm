@@ -175,6 +175,10 @@ def qwen2_vl_model_forward(
     )
 
 
+def qwen2_vision_get_dtype(self) -> torch.dtype:
+    return self.patch_embed.proj.weight.dtype
+
+
 def qwen2_vision_attention_forward(
     self,
     hidden_states: torch.Tensor,
