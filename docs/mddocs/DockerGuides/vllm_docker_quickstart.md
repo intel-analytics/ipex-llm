@@ -4,7 +4,7 @@ This guide demonstrates how to run `vLLM` serving with `IPEX-LLM` on Intel GPUs 
 
 ## Install docker
 
-Follow the instructions in this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/docker_windows_gpu.html#linux) to install Docker on Linux.
+Follow the instructions in this [guide](./docker_windows_gpu.md#linux) to install Docker on Linux.
 
 ## Pull the latest image
 
@@ -91,7 +91,7 @@ Prompt: 'The future of AI is', Generated text: ' vast and complex, with many dif
 3. `payload-1024.lua`: Used for testing request per second using 1k-128 request
 4. `start-vllm-service.sh`: Used for template for starting vLLM service
 
-Before performing benchmark or starting the service, you can refer to this [section](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/install_linux_gpu.html#runtime-configurations) to setup our recommended runtime configurations.
+Before performing benchmark or starting the service, you can refer to this [section](../Quickstart/install_linux_gpu.md#runtime-configurations) to setup our recommended runtime configurations.
 
 ### Serving
 >
