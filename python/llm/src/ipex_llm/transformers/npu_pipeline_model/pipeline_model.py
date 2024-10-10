@@ -65,10 +65,21 @@ def generate(
         if value is not None:
             new_generate_kwargs[var] = value
 
+    if isinstance(inputs[0], torch.Tensor):
+        numpy_input = inputs[0].numpy()
+    else:
+        numpy_input = inputs[0]
+    input_length = numpy.size(numpy_input)
+
+    new_tokens = new_generate_kwargs['max_new_tokens']
+    invalidInputError(input_length + new_tokens <= self.kv_len + 1,
+                      "Input plus output tokens should not exceed max_output_len.")
+
     # start generate_serve by Thread
-    thread = threading.Thread(target=generate_serve, args=(self.kv_len, self.num_head, self.head_dim,
-                                                         self.num_layers,
-                                                         new_generate_kwargs['max_new_tokens']))
+    thread = threading.Thread(target=generate_serve,
+                              args=(self.kv_len, self.num_head,
+                                    self.head_dim, self.num_layers,
+                                    new_tokens))
     thread.start()
 
     in_pipe_path = "\\\\.\\pipe\\llminputpipe"
@@ -91,12 +102,6 @@ def generate(
             time.sleep(1)
         else:
             break
-
-    if isinstance(inputs[0], torch.Tensor):
-        numpy_input = inputs[0].numpy()
-    else:
-        numpy_input = inputs[0]
-    input_length = numpy.size(numpy_input)
 
     bdata = b''
     for i in range(0, input_length):
