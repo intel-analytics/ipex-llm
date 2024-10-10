@@ -67,7 +67,8 @@ def generate(
 
     # start generate_serve by Thread
     proc = threading.Thread(target=generate_serve, args=(self.kv_len, self.num_head, self.head_dim,
-                                                self.num_layers, new_generate_kwargs['max_new_tokens']))
+                                                         self.num_layers,
+                                                         new_generate_kwargs['max_new_tokens']))
     proc.start()
 
     in_pipe_path = "\\\\.\\pipe\\llminputpipe"
@@ -99,7 +100,11 @@ def generate(
         d = int(numpy_input[i])
         bdata = bdata + d.to_bytes(4, sys.byteorder)
 
-    eos = 0xffffffff if "eos_token_id" not in new_generate_kwargs else new_generate_kwargs["eos_token_id"]
+    if "eos_token_id" not in new_generate_kwargs:
+        eos = 0xffffffff
+    else:
+        eos = new_generate_kwargs["eos_token_id"]
+
     bdata = bdata + eos.to_bytes(4, sys.byteorder)
 
     input_pipe.write(bytearray(bdata))
@@ -142,7 +147,7 @@ class _BaseAutoModelClass:
 
         Three new arguments are added to extend Hugging Face's from_pretrained method as follows:
         :param ov_model: boolean value, whether load blob files from specified directory.
-                         If it's False, will convert HF model to specified blob format, 
+                         If it's False, will convert HF model to specified blob format,
                          but which is not supported now. Default to True.
         :param max_output_len: Maximum context length for whole generation, default to 1024.
         :param model_name: Name prefix of the model weight bin file.
@@ -155,7 +160,7 @@ class _BaseAutoModelClass:
                           "Original HF model is not supported now.")
         invalidInputError(os.path.exists(pretrained_model_name_or_path),
                           "This directory does not exist, please double check it.")
-        
+
         config_json = os.path.join(pretrained_model_name_or_path, "config.json")
         invalidInputError(os.path.exists(config_json),
                           "config.json is not found in current directory, please double check it.")
@@ -178,7 +183,7 @@ class _BaseAutoModelClass:
                               f"{path} is not found in current directory, please double check it.")
 
         try:
-            InitLLMPipeline(model.kv_len, model.num_head, model.head_dim, model.num_layers, 
+            InitLLMPipeline(model.kv_len, model.num_head, model.head_dim, model.num_layers,
                             model.vocab_size, model_weight_dir, model_name,
                             first_blob_name, last_blob_name, rest_blob_name)
         except:

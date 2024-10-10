@@ -20,6 +20,7 @@ import ctypes
 import pathlib
 from ipex_llm.utils.common import invalidInputError
 
+
 def get_shared_lib_info(lib_base_name: str):
     # Determine the file extension based on the platform
     if sys.platform.startswith("linux") or sys.platform == "darwin":
@@ -56,7 +57,8 @@ def InitLLMPipeline(kv_len: int, num_head: int, head_dim: int, num_layers: int, 
                          model_weight_dir.encode('utf-8'), model_name.encode('utf-8'),
                          first_blob_name.encode('utf-8'), last_blob_name.encode('utf-8'),
                          rest_blob_name.encode('utf-8'))
-    
+
+
 def generate_serve(kv_len: int, num_head: int, head_dim: int, num_layers: int,
                    param_n_output: int):
     _lib.generate_serve(kv_len, num_head, head_dim, num_layers, param_n_output)
