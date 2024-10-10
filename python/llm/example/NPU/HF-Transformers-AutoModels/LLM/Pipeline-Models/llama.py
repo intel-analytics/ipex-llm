@@ -18,7 +18,7 @@
 import torch
 import time
 import argparse
-from ipex_llm.transformers.npu.npu_pipeline_model import AutoModelForCausalLM
+from ipex_llm.transformers.npu_pipeline_model import AutoModelForCausalLM
 from transformers import AutoTokenizer
 from transformers.utils import logging
 

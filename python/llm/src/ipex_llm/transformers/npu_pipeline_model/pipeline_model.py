@@ -66,10 +66,10 @@ def generate(
             new_generate_kwargs[var] = value
 
     # start generate_serve by Thread
-    proc = threading.Thread(target=generate_serve, args=(self.kv_len, self.num_head, self.head_dim,
+    thread = threading.Thread(target=generate_serve, args=(self.kv_len, self.num_head, self.head_dim,
                                                          self.num_layers,
                                                          new_generate_kwargs['max_new_tokens']))
-    proc.start()
+    thread.start()
 
     in_pipe_path = "\\\\.\\pipe\\llminputpipe"
     out_pipe_path = "\\\\.\\pipe\\llmoutputpipe"
@@ -92,7 +92,10 @@ def generate(
         else:
             break
 
-    numpy_input = inputs[0].numpy()
+    if isinstance(inputs[0], torch.Tensor):
+        numpy_input = inputs[0].numpy()
+    else:
+        numpy_input = inputs[0]
     input_length = numpy.size(numpy_input)
 
     bdata = b''
@@ -127,6 +130,7 @@ def generate(
     if streamer is not None:
         streamer.end()
 
+    thread.join()
     return output
 
 
@@ -183,9 +187,9 @@ class _BaseAutoModelClass:
                               f"{path} is not found in current directory, please double check it.")
 
         try:
-            InitLLMPipeline(model.kv_len, model.num_head, model.head_dim, model.num_layers,
-                            model.vocab_size, model_weight_dir, model_name,
-                            first_blob_name, last_blob_name, rest_blob_name)
+            res = InitLLMPipeline(model.kv_len, model.num_head, model.head_dim, model.num_layers,
+                                  model.vocab_size, model_weight_dir, model_name,
+                                  first_blob_name, last_blob_name, rest_blob_name)
         except:
             invalidInputError(False,
                               "False to InitLLMPipeline.")
