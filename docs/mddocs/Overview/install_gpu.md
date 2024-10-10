@@ -44,47 +44,95 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
 > [!IMPORTANT]
 > ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.11 is recommended for best practices.
 
-The easiest ways to install `ipex-llm` is the following commands, choosing either US or CN website for `extra-index-url`:
+The easiest ways to install `ipex-llm` is the following commands.
 
-- For **US**:
+- For **Intel Core™ Ultra Series 2 (a.k.a. Lunar Lake) with Intel Arc™ Graphics**:
 
-   ```cmd
-   conda create -n llm python=3.11 libuv
-   conda activate llm
+   Choose either US or CN website for `extra-index-url`:
 
-   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-   ```
+   - For **US**:
 
-- For **CN**:
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
 
-   ```cmd
-   conda create -n llm python=3.11 libuv
-   conda activate llm
+      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/us/
+      ```
 
-   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-   ```
+   - For **CN**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+      ```
+
+- For **other Intel iGPU and dGPU**:
+
+   Choose either US or CN website for `extra-index-url`:
+
+   - For **US**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+      ```
+
+   - For **CN**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      ```
 
 #### Install IPEX-LLM From Wheel
 
 If you encounter network issues when installing IPEX, you can also install IPEX-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `ipex-llm`.
 
-Download the wheels on Windows system:
+- For **Intel Core™ Ultra Series 2 (a.k.a. Lunar Lake) with Intel Arc™ Graphics**:
 
-```
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.1.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp311-cp311-win_amd64.whl
-```
+   Download the wheels on Windows system:
 
-You may install dependencies directly from the wheel archives and then install `ipex-llm` using following commands:
+   ```
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/lnl/torch-2.3.1%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/lnl/torchvision-0.18.1%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/lnl/intel_extension_for_pytorch-2.3.110%2Bxpu-cp311-cp311-win_amd64.whl
+   ```
 
-```
-pip install torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
-pip install torchvision-0.16.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
-pip install intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-win_amd64.whl
+   You may install dependencies directly from the wheel archives and then install `ipex-llm` using following commands:
 
-pip install --pre --upgrade ipex-llm[xpu]
-```
+   ```
+   pip install torch-2.3.1+cxx11.abi-cp311-cp311-win_amd64.whl
+   pip install torchvision-0.18.1+cxx11.abi-cp311-cp311-win_amd64.whl
+   pip install intel_extension_for_pytorch-2.3.110+xpu-cp311-cp311-win_amd64.whl
+
+   pip install --pre --upgrade ipex-llm[xpu_lnl]
+   ```
+
+- For **other Intel iGPU and dGPU**:
+
+   Download the wheels on Windows system:
+
+   ```
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.1.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp311-cp311-win_amd64.whl
+   ```
+
+   You may install dependencies directly from the wheel archives and then install `ipex-llm` using following commands:
+
+   ```
+   pip install torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
+   pip install torchvision-0.16.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
+   pip install intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-win_amd64.whl
+
+   pip install --pre --upgrade ipex-llm[xpu]
+   ```
 
 > [!NOTE]
 > All the wheel packages mentioned here are for Python 3.11. If you would like to use Python 3.9 or 3.10, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp11`` with ``cp39`` or ``cp310``, respectively.

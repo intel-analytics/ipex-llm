@@ -45,19 +45,51 @@ conda activate llm
   
 ## Install `ipex-llm`
 
-With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
+With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
 
-- For **US**:
+- For **Intel Core™ Ultra Series 2 (a.k.a. Lunar Lake) with Intel Arc™ Graphics**:
 
-  ```bash
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-  ```
+   Choose either US or CN website for `extra-index-url`:
 
-- For **CN**:
+   - For **US**:
 
-  ```bash
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-  ```
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/us/
+      ```
+
+   - For **CN**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+      ```
+
+- For **other Intel iGPU and dGPU**:
+
+   Choose either US or CN website for `extra-index-url`:
+
+   - For **US**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+      ```
+
+   - For **CN**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      ```
 
 > [!NOTE]
 > If you encounter network issues while installing IPEX, refer to [this guide](../Overview/install_gpu.md#install-ipex-llm-from-wheel) for troubleshooting advice.
