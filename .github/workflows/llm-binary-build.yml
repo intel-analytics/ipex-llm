@@ -456,7 +456,7 @@ jobs:
           name: windows-npu-level0
 
   windows-build-npu-level0:
-    runs-on: [self-hosted, Windows, llama.cpp]
+    runs-on: [self-hosted, Windows, npu-level0]
     needs: check-windows-npu-level0-artifact
     if: needs.check-windows-npu-level0-artifact.outputs.if-exists == 'false'
     steps:
