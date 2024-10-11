@@ -120,14 +120,14 @@ Arguments info:
 #### Sample Output
 ##### [Qwen/Qwen2-VL-7B-Instruct](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct)
 ```log
-Inference time: xxxx s
 -------------------- Input Image --------------------
-https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg
+http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 -------------------- Prompt --------------------
 Describe this image.
 -------------------- Output --------------------
-The image depicts depicts a woman and a dog sitting in shallow water on a beach. The
+The image shows a young girl holdinging a white teddy bear in a pink dress in front of a stone wall.
 ```
-The sample input image is (which is fetched from [Qwen2-VL quickstart](https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct#quickstart)):
 
-<a href='https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg'><img width=400px src='https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg' ></a>
+The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
+
+<a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=400px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>

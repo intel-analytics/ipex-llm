@@ -46,11 +46,14 @@ if __name__ == '__main__':
     from ipex_llm import optimize_model
     model = Qwen2VLForConditionalGeneration.from_pretrained(model_path,
                                                  trust_remote_code=True,
-                                                 torch_dtype = 'auto',
+                                                 torch_dtype='auto',
                                                  low_cpu_mem_usage=True,
-                                                 use_cache=True)
-    model = optimize_model(model, low_bit='sym_int4')
-    model = model.float().to("xpu")
+                                                 use_cache=True,)
+    model = optimize_model(model, low_bit='sym_int4', modules_to_not_convert=["visual"])
+    # Use .float() for better output, and use .half() for better speed
+    model = model.half().to("xpu")
+
+    # The following code for generation is adapted from https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct#quickstart
 
     # The default range for the number of visual tokens per image in the model is 4-16384. You can set min_pixels and max_pixels according to your needs, such as a token count range of 256-1280, to balance speed and memory usage.
     min_pixels = 256*28*28
@@ -60,7 +63,6 @@ if __name__ == '__main__':
     prompt = args.prompt
     image_path = args.image_url_or_path
 
-    # The following code for generation is adapted from https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct#quickstart
     messages = [
         {
             "role": "user",
