@@ -17,10 +17,11 @@
 import torch
 import time
 import argparse
-
-from transformers import AutoTokenizer
-from ipex_llm import optimize_model
 import numpy as np
+
+from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+from qwen_vl_utils import process_vision_info
+from ipex_llm import optimize_model
 
 
 if __name__ == '__main__':
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     parser.add_argument('--prompt', type=str, default="Describe this image.",
                         help='Prompt to infer') 
     parser.add_argument('--image-url-or-path', type=str,
-                        default='https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen-VL/assets/demo.jpeg' ,
+                        default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg' ,
                         help='The URL or path to the image to infer')
     
     parser.add_argument('--n-predict', type=int, default=32,
@@ -40,10 +41,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-
-    from transformers import Qwen2VLForConditionalGeneration, AutoTokenizer, AutoProcessor
-    from qwen_vl_utils import process_vision_info
-    from ipex_llm import optimize_model
     model = Qwen2VLForConditionalGeneration.from_pretrained(model_path,
                                                  trust_remote_code=True,
                                                  torch_dtype='auto',

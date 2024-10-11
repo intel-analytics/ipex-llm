@@ -16,6 +16,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers==4.45.0 # install transformers which supports Qwen2-VL
+pip install accelerate==0.33.0
 pip install qwen_vl_utils
 ```
 
@@ -29,6 +30,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers==4.45.0 # install transformers which supports Qwen2-VL
+pip install accelerate==0.33.0
 pip install qwen_vl_utils
 ```
 
