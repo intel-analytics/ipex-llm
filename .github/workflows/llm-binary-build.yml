@@ -487,7 +487,7 @@ jobs:
       - name: Move release binary
         shell: powershell
         run: |
-          dir
+          cd bigdl-core-npu-level0
           if (Test-Path ./release) { rm -r -fo release }
           mkdir release
           mv build/Release/pipeline.dll release/pipeline.dll
