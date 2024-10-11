@@ -85,7 +85,8 @@ windows_binarys = [
     "quantize-llama_vnni.exe",
     "quantize-gptneox_vnni.exe",
     "quantize-bloom_vnni.exe",
-    "quantize-starcoder_vnni.exe"
+    "quantize-starcoder_vnni.exe",
+    "pipeline.dll"
 ]
 linux_binarys = [
     "libllama_avx.so",

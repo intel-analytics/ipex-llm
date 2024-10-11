@@ -443,6 +443,61 @@ jobs:
           path: |
             release
 
+  check-windows-npu-level0-artifact:
+    if: ${{contains(inputs.platform, 'Windows')}}
+    runs-on: [Shire]
+    outputs:
+      if-exists: ${{steps.check_artifact.outputs.exists}}
+    steps:
+      - name: Check if built
+        id: check_artifact
+        uses: xSAVIKx/artifact-exists-action@v0
+        with:
+          name: windows-npu-level0
+
+  windows-build-npu-level0:
+    runs-on: [self-hosted, Windows, AVX-VNNI-Build]
+    needs: check-windows-npu-level0-artifact
+    if: needs.check-windows-npu-level0-artifact.outputs.if-exists == 'false'
+    steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          ref: ${{ inputs.llmcpp-ref }}
+          token: ${{ env.github_access_token }}
+          submodules: "recursive"
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+      - name: Add cmake to PATH
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Build binary
+        shell: powershell
+        run: |
+          cd bigdl-core-npu-level0
+          cmake .
+          cmake --build . --config Release -j
+          dir
+      - name: Move release binary
+        shell: powershell
+        run: |
+          dir
+          if (Test-Path ./release) { rm -r -fo release }
+          mkdir release
+          mv build/Release/pipeline.dll release/pipeline.dll
+      - name: Archive build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-npu-level0
+          path: |
+            release
+
+
   # to make llm-binary-build optionally skippable
   dummy-step:
     if: ${{ inputs.platform == 'Dummy' }}
