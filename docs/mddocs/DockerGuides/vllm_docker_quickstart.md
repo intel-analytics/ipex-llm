@@ -566,8 +566,6 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
 
 ```
 
-#### Cpu Offloading[todo]
-
 ### Validated Models List
 
 | models (fp8)     | gpus  |
