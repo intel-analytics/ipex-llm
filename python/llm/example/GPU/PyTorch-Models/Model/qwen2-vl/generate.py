@@ -46,7 +46,9 @@ if __name__ == '__main__':
                                                  torch_dtype='auto',
                                                  low_cpu_mem_usage=True,
                                                  use_cache=True,)
+
     model = optimize_model(model, low_bit='sym_int4', modules_to_not_convert=["visual"])
+
     # Use .float() for better output, and use .half() for better speed
     model = model.half().to("xpu")
 
