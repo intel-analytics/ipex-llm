@@ -276,11 +276,9 @@ def setup_package():
 
 
     oneapi_2024_0_requires = ["dpcpp-cpp-rt==2024.0.2;platform_system=='Windows'",
-                              "mkl-dpcpp==2024.0.0;platform_system=='Windows'",
-                              "onednn==2024.0.0;platform_system=='Windows'"]
+                              "mkl-dpcpp==2024.0.0;platform_system=='Windows'"]
     oneapi_2024_2_requires = ["dpcpp-cpp-rt==2024.2.1;platform_system=='Windows'",
-                              "mkl-dpcpp==2024.2.1;platform_system=='Windows'",
-                              "onednn==2024.2.1;platform_system=='Windows'"]
+                              "mkl-dpcpp==2024.2.1;platform_system=='Windows'"]
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_21_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
@@ -304,7 +302,8 @@ def setup_package():
                          "intel-extension-for-pytorch==2.3.110+xpu",
                          "bigdl-core-xe-23==" + CORE_XE_VERSION,
                          "bigdl-core-xe-batch-23==" + CORE_XE_VERSION,
-                         "bigdl-core-xe-addons-23==" + CORE_XE_VERSION]
+                         "bigdl-core-xe-addons-23==" + CORE_XE_VERSION,
+                         "onednn-devel==2024.1.1;platform_system=='Windows'"]
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
                     "onednn-devel==2024.2.1;platform_system=='Windows'"]
@@ -345,6 +344,7 @@ def setup_package():
                         "npu": npu_requires,
                         "xpu-2-1": xpu_21_requires,
                         "xpu-lnl": xpu_lnl_requires,
+                        "xpu-arl": xpu_lnl_requires,
                         "serving": serving_requires,
                         "cpp": cpp_requires,
                         "llama-index": llama_index_requires}, # for internal usage when upstreaming for llama-index
