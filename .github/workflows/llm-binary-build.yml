@@ -496,7 +496,7 @@ jobs:
         with:
           name: windows-npu-level0
           path: |
-            release
+            bigdl-core-npu-level0/release
 
 
   # to make llm-binary-build optionally skippable
