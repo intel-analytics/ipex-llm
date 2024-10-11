@@ -59,6 +59,9 @@ def generate(
     streamer: Optional["BaseStreamer"] = None,
     **kwargs,
 ):
+    # if do_print=True, output timing message
+    do_print = kwargs.pop("do_print", False)
+    time_start_all, time_t1, idx = time.perf_counter(), None, 0
     new_generate_kwargs = {}
     for var in ['max_new_tokens', 'attention_mask', 'eos_token_id']:
         value = kwargs.pop(var, None)
@@ -79,7 +82,7 @@ def generate(
     thread = threading.Thread(target=generate_serve,
                               args=(self.kv_len, self.num_head,
                                     self.head_dim, self.num_layers,
-                                    new_tokens))
+                                    new_tokens - 1))
     thread.start()
 
     in_pipe_path = "\\\\.\\pipe\\llminputpipe"
@@ -115,6 +118,8 @@ def generate(
 
     bdata = bdata + eos.to_bytes(4, sys.byteorder)
 
+    time_start = time.perf_counter()
+
     input_pipe.write(bytearray(bdata))
     input_pipe.flush()
 
@@ -125,6 +130,9 @@ def generate(
         if len(data) == 0:
             break
         token = int.from_bytes(data, sys.byteorder)
+        idx += 1
+        if time_t1 == None:
+            time_t1 = time.perf_counter()
         output_tokens.append(torch.tensor([token]))
         if streamer is not None:
             streamer.put(torch.tensor([token]))
@@ -132,10 +140,21 @@ def generate(
             break
 
     output = torch.stack(output_tokens, dim=1)
+    output = torch.cat((inputs, output), dim=1)
     if streamer is not None:
         streamer.end()
 
     thread.join()
+    time_end = time.perf_counter()
+
+    if do_print:
+        print(f" Start the thread and connect the pipe time: {(time_start - time_start_all):.2f} s")
+        print(f" Number of input tokens: {input_length}")
+        print(f" Generated tokens: {idx}")
+        print(f" First token generation time: {(time_t1 - time_start):.2f} s")
+        print(f" Generation average latency: {(time_end - time_t1)*1000 /(idx - 1):.2f} ms, ({(idx - 1)/(time_end - time_t1):.2f} token/s)")
+        print(f" Generation time: {(time_end - time_start):.2f} s\n")
+
     return output
 
 
