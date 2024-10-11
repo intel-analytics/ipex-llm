@@ -131,7 +131,7 @@ def generate(
             break
         token = int.from_bytes(data, sys.byteorder)
         idx += 1
-        if time_t1 == None:
+        if time_t1 is None:
             time_t1 = time.perf_counter()
         output_tokens.append(torch.tensor([token]))
         if streamer is not None:
@@ -152,7 +152,8 @@ def generate(
         print(f" Number of input tokens: {input_length}")
         print(f" Generated tokens: {idx}")
         print(f" First token generation time: {(time_t1 - time_start):.2f} s")
-        print(f" Generation average latency: {(time_end - time_t1)*1000 /(idx - 1):.2f} ms, ({(idx - 1)/(time_end - time_t1):.2f} token/s)")
+        print(f" Generation average latency: {(time_end - time_t1)*1000 /(idx - 1):.2f} ms, "
+              f"({(idx - 1)/(time_end - time_t1):.2f} token/s)")
         print(f" Generation time: {(time_end - time_start):.2f} s\n")
 
     return output
