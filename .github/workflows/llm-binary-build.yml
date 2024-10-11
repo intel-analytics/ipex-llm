@@ -480,9 +480,10 @@ jobs:
         shell: powershell
         run: |
           cd bigdl-core-npu-level0
+          mkdir build
+          cd build
           cmake .
           cmake --build . --config Release -j
-          dir
       - name: Move release binary
         shell: powershell
         run: |
