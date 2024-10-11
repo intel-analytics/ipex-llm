@@ -482,7 +482,7 @@ jobs:
           cd bigdl-core-npu-level0
           mkdir build
           cd build
-          cmake .
+          cmake ..
           cmake --build . --config Release -j
       - name: Move release binary
         shell: powershell
