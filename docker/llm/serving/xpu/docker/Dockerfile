@@ -38,7 +38,6 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
     pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
-    pip install transformers==4.36.2 && \
     pip install transformers_stream_generator einops tiktoken && \
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
@@ -83,6 +82,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     VLLM_TARGET_DEVICE=xpu python setup.py install && \
     pip install mpi4py fastapi uvicorn openai && \
     pip install gradio==4.43.0 && \
+    pip install transformers==4.44.2 && \
     # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
     pip install ray && \
     patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
