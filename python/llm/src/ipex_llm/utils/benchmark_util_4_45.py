@@ -15,7 +15,7 @@
 #
 
 # This file is adapted from
-# https://github.com/huggingface/transformers/blob/v4.43.1/src/transformers/generation/utils.py
+# https://github.com/huggingface/transformers/blob/v4.45.0/src/transformers/generation/utils.py
 
 # coding=utf-8
 # Copyright 2020 The Google AI Language Team Authors, Facebook AI Research authors and The HuggingFace Inc. team.
