@@ -47,6 +47,9 @@ IPEX_LLM_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 VERSION = open(os.path.join(IPEX_LLM_PYTHON_HOME,
                './llm/version.txt'), 'r').read().strip()
 CORE_XE_VERSION = VERSION.replace("2.2.0", "2.6.0")
+# temp change for test
+VERSION = "2.2.0b20241011.dev0"
+CORE_XE_VERSION = "2.6.0b20241011"
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
