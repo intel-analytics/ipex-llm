@@ -19,6 +19,7 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --port 8000 \
   --model $model \
   --trust-remote-code \
+  --block-size 8 \
   --gpu-memory-utilization 0.9 \
   --device xpu \
   --dtype float16 \
