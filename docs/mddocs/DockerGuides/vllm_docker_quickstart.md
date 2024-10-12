@@ -103,6 +103,7 @@ Before performing benchmark or starting the service, you can refer to this [sect
 |`--max-model-len`| Model context length. If unspecified, will be automatically derived from the model config.|
 |`--max-num-batched-token`| Maximum number of batched tokens per iteration.|
 |`--max-num-seq`| Maximum number of sequences per iteration. Default: 256|
+|`--block-size`| vLLM block size. Set to 8 to achieve a performance boost.|
 
 #### Single card serving
 
