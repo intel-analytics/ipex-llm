@@ -175,7 +175,7 @@ def optimize_llm(
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 2 if model.config.intermediate_size == 18944 else 7
+            inter_pp = 14 if model.config.intermediate_size == 18944 else 7
 
         from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
         from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner
