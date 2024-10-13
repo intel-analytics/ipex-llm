@@ -24,6 +24,7 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --device xpu \
   --dtype float16 \
   --enforce-eager \
+  --block-size 8 \
   --load-in-low-bit fp8 \
   --max-model-len 2048 \
   --max-num-batched-tokens 4000 \
