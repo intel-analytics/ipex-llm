@@ -204,6 +204,8 @@ def llama_attention_forward(
     kv_seq_len = key_states.size(2)
     if attention_mask is not None:  # no matter the length, we just slice it
         causal_mask = attention_mask[:, :, :, :kv_seq_len]
+    else:
+        causal_mask = None
 
     attn_weights = None
     if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
