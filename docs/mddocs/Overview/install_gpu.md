@@ -56,7 +56,7 @@ The easiest ways to install `ipex-llm` is the following commands.
       conda create -n llm python=3.11 libuv
       conda activate llm
 
-      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/us/
+      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/us/
       ```
 
    - For **CN**:
@@ -65,7 +65,7 @@ The easiest ways to install `ipex-llm` is the following commands.
       conda create -n llm python=3.11 libuv
       conda activate llm
 
-      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
       ```
 
 - For **other Intel iGPU and dGPU**:
