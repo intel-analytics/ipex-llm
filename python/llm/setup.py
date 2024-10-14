@@ -309,6 +309,10 @@ def setup_package():
                     "onednn-devel==2024.2.1;platform_system=='Windows'"]
     cpp_requires += oneapi_2024_2_requires
 
+    cpp_arl_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
+                        "onednn-devel==2024.1.1;platform_system=='Windows'"]
+    cpp_arl_requires += oneapi_2024_2_requires
+
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
 
@@ -347,6 +351,7 @@ def setup_package():
                         "xpu-arl": xpu_lnl_requires,
                         "serving": serving_requires,
                         "cpp": cpp_requires,
+                        "cpp-arl": cpp_arl_requires,
                         "llama-index": llama_index_requires}, # for internal usage when upstreaming for llama-index
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
