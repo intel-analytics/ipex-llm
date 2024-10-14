@@ -615,7 +615,7 @@ class LLMBaseNNFactory(NNFactory):
                            f"with weights size: {len(weights)} and "
                            f" graph linear size: {len(self.linear_ops)}"
                            f" graph scale size: {self.num_scale_ops}"))
-        self.setWeights(offset, op_id, *weights, verify_size=True)
+        self.setWeights(offset, op_id, *weights)#, verify_size=True)
 
     @staticmethod
     def run_decoders(inputs, decoders):
