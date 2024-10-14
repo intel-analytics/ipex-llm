@@ -102,7 +102,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
         # for Qwen2-7B-Insturct, divide lm_head into 14 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
                 not cpu_lm_head:
-            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=14,
+            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=28,
                                        bias=model.lm_head.bias)
             del model.lm_head
             model.lm_head = new_lm_head
