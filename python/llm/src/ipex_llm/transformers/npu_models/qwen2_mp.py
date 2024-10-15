@@ -266,7 +266,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         self.compile()
         print(f"{mode} end compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
         qwen_size = "7b" if self.hidden_size == 3584 else "1.5b"
-        xml_path = f"scaleafter-reshape-split/qwen-{qwen_size}-npu-sa-dq-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
+        xml_path = f"scaleafter-reshape-split-noscale/qwen-{qwen_size}-npu-sa-dq-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
 
         if not os.path.exists(xml_path) and mode=="decode":
             self.save(xml_path)

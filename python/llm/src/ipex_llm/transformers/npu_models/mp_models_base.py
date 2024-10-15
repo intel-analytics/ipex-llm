@@ -553,7 +553,7 @@ class LLMBaseNNFactory(NNFactory):
                         n_splits: int,
                         act_dtype: npt.DTypeLike = np.float16,
                         wt_dtype: npt.DTypeLike = np.float16):
-        op = super().split(input_node, 0, n_splits, output_channels, input_channels, act_dtype, wt_dtype)
+        op = super().split(input_node, 0, n_splits, output_channels, input_channels, False, act_dtype, wt_dtype)
         self.linear_ops.append(op)
         return op
 
