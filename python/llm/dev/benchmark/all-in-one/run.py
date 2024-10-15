@@ -754,7 +754,7 @@ def run_optimize_model_gpu(repo_id,
                            num_beams,
                            low_bit,
                            batch_size):
-    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
+    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer,MllamaForConditionalGeneration
     from ipex_llm import optimize_model
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
@@ -773,7 +773,7 @@ def run_optimize_model_gpu(repo_id,
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     elif repo_id in LLAMA3_VISION:
-        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
+        model = MllamaForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True,
                                                      low_cpu_mem_usage=True).eval()
         model = optimize_model(model, low_bit=low_bit, modules_to_not_convert=["multi_modal_projector"])
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
