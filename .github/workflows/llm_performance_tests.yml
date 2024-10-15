@@ -233,6 +233,74 @@ jobs:
           python run.py
           mv *.csv test_batch1
 
+      - name: Test on xpu(transformers==4.43.1)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          # upgrade for default transformers version
+          python -m pip install transformers==4.43.1
+          python -m pip install trl
+          # batch_size 1
+          cp python/llm/test/benchmark/arc-perf-transformers-443.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/test3_batch4/test4_batch1/g' run.py
+          python run.py
+          mv *.csv test_batch1
+          # batch_size 2
+          cd ../../../../../ 
+          cp python/llm/test/benchmark/arc-perf-transformers-443-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name 
+          sed -i 's/batch1/batch2/g' run.py
+          python run.py
+          mv *.csv test_batch2
+          # batch_size 4
+          cd ../../../../../ 
+          cp python/llm/test/benchmark/arc-perf-transformers-443-batch4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name 
+          sed -i 's/batch2/batch4/g' run.py
+          python run.py
+          mv *.csv test_batch4
+      
+      - name: Test on xpu(transformers==4.45.0)
+        shell: bash
+        run: |
+          source /opt/intel/oneapi/setvars.sh
+          export USE_XETLA=OFF
+          export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+          # upgrade for default transformers version
+          python -m pip install transformers==4.45.0
+          python -m pip install trl
+          python -m pip install accelerate==0.33.0
+          # batch_size 1
+          cp python/llm/test/benchmark/arc-perf-transformers-445.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name
+          sed -i 's/test4_batch4/test5_batch1/g' run.py
+          python run.py
+          mv *.csv test_batch1
+          # batch_size 2
+          cd ../../../../../ 
+          cp python/llm/test/benchmark/arc-perf-transformers-445-batch2.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name 
+          sed -i 's/batch1/batch2/g' run.py
+          python run.py
+          mv *.csv test_batch2
+          # batch_size 4
+          cd ../../../../../ 
+          cp python/llm/test/benchmark/arc-perf-transformers-445-batch4.yaml python/llm/dev/benchmark/all-in-one/config.yaml
+          cd python/llm/dev/benchmark/all-in-one
+          # change csv name 
+          sed -i 's/batch2/batch4/g' run.py
+          python run.py
+          mv *.csv test_batch4
+          python -m pip install accelerate==0.23.0
+
       - name: Concat csv and generate html
         shell: bash
         run: |
