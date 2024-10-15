@@ -771,6 +771,7 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl -y
+          pip install accelerate==0.23.0
           call conda deactivate
 
       - name: Concat csv and generate html (32-32 int4+fp16)
@@ -923,6 +924,7 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl -y
+          pip install accelerate==0.23.0
           call conda deactivate
 
       - name: Concat csv and generate html (1024-128 int4+fp16)
@@ -1048,6 +1050,35 @@ jobs:
           pip uninstall trl -y
           call conda deactivate
 
+      - name: Prepare igpu perf test for transformers 4.45 (2048-256 int4+fp16)
+        shell: bash
+        run: |
+          sed -i 's/{today}_test4/{today}_test5/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16_445.yaml
+
+      - name: Test on igpu for transformers 4.45 (2048-256 int4+fp16)
+        shell: cmd
+        run: |
+          call conda activate igpu-perf
+          pip install transformers==4.45.0
+          pip install accelerate==0.33.0
+          pip install trl
+
+          set SYCL_CACHE_PERSISTENT=1
+          set BIGDL_LLM_XMX_DISABLED=1
+
+          cd python\llm\dev\benchmark\all-in-one
+          move ..\..\..\test\benchmark\igpu-perf\2048-256_int4_fp16_445.yaml config.yaml
+          set PYTHONIOENCODING=utf-8
+          python run.py >> %CSV_SAVE_PATH%\2048-256_int4_fp16\log\%LOG_FILE% 2>&1
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+          python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test5
+          if %ERRORLEVEL% neq 0 (exit /b 1)
+
+          pip uninstall trl -y
+          pip install accelerate==0.23.0
+          call conda deactivate
+
       - name: Concat csv and generate html (2048-256 int4+fp16)
         shell: cmd
         run: |
@@ -1070,7 +1101,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/2048-256/3072-384/g' python/llm/dev/benchmark/all-in-one/run.py
-          sed -i 's/{today}_test4/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
+          sed -i 's/{today}_test5/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
       
       - name: Test on igpu (3072-384 int4+fp16)
@@ -1197,6 +1228,7 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl -y
+          pip install accelerate==0.23.0
           call conda deactivate
 
       - name: Concat csv and generate html (3072-384 int4+fp16)
@@ -1323,6 +1355,7 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl -y
+          pip install accelerate==0.23.0
           call conda deactivate
 
       - name: Concat csv and generate html (4096-512 int4+fp16)
@@ -1474,6 +1507,7 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl -y
+          pip install accelerate==0.23.0
           call conda deactivate
 
       - name: Concat csv and generate html (load_low_bit 1024-128 int4+fp16)
@@ -1624,6 +1658,7 @@ jobs:
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
           pip uninstall trl -y
+          pip install accelerate==0.23.0
           call conda deactivate
 
       - name: Concat csv and generate html (1024-128)
