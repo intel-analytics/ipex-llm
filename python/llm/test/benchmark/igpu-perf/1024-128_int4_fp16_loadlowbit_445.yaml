@@ -1,7 +1,6 @@
 repo_id:
-  # - 'google/gemma-2-2b-it'
-  # - 'google/gemma-2-9b-it'
-  - 'meta-llama/Llama-3.1-8B-Instruct'
+  - 'meta-llama/Llama-3.2-1B-Instruct'
+  - 'meta-llama/Llama-3.2-3B-Instruct'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3
@@ -9,7 +8,7 @@ num_beams: 1 # default to greedy search
 low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: 1 # default to 1
 in_out_pairs:
-  - '2048-256'
+  - '1024-128'
 test_api:
-  - "transformer_int4_fp16_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
+  - "transformer_int4_fp16_loadlowbit_gpu_win" # on Intel GPU for Windows (catch GPU peak memory)
 cpu_embedding: True # whether put embedding to CPU (only avaiable now for gpu win related test_api)
