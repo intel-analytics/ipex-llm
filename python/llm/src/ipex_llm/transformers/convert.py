@@ -1580,8 +1580,12 @@ def _optimize_post(model, lightweight_bmm=False):
         model.batch_chat = MethodType(internvl_batch_chat, model)
         if model.vision_model.__class__.__name__ == "InternVisionModel":
             from ipex_llm.transformers.models.internvl import _get_pos_embed
-            vision_embedding = model.vision_model.embeddings
+            from ipex_llm.transformers.models.internvl import intern_attention_forward
+            vision_model = model.vision_model
+            vision_embedding = vision_model.embeddings
             vision_embedding._get_pos_embed = MethodType(_get_pos_embed, vision_embedding)
+            vision_module = importlib.import_module(vision_model.__class__.__module__)
+            convert_forward(vision_model, vision_module.InternAttention, intern_attention_forward)
         _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
