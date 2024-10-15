@@ -754,7 +754,7 @@ def run_optimize_model_gpu(repo_id,
                            num_beams,
                            low_bit,
                            batch_size):
-    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer,MllamaForConditionalGeneration
+    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer, GPTJForCausalLM, LlamaTokenizer, MllamaForConditionalGeneration
     from ipex_llm import optimize_model
     model_path = get_model_path(repo_id, local_model_hub)
     # Load model in 4 bit,
