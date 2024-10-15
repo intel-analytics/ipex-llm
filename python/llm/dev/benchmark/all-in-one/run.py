@@ -41,7 +41,7 @@ LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
              'lmsys/vicuna-13b-v1.3','lmsys/vicuna-33b-v1.3','project-baize/merged-baize-30b']
 
-LLAMA3_VISION = ['meta-llama/Llama-3.2-11B-Vision-Instruct']
+LLAMA3_VISION_IDS = ['meta-llama/Llama-3.2-11B-Vision-Instruct']
 
 CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 
@@ -772,7 +772,7 @@ def run_optimize_model_gpu(repo_id,
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-    elif repo_id in LLAMA3_VISION:
+    elif repo_id in LLAMA3_VISION_IDS:
         model = MllamaForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True,
                                                      low_cpu_mem_usage=True).eval()
         model = optimize_model(model, low_bit=low_bit, modules_to_not_convert=["multi_modal_projector"])
