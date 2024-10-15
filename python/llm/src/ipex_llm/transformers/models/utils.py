@@ -338,9 +338,17 @@ def use_sdp_causal(q_len, kv_len, head_dim, query_states, training):
     return (
         q_len == kv_len     # first token
         and head_dim in [-1, 64, 80, 96, 128]           # for now
-        and query_states.device.type == "xpu"   # GPU
+        and query_states.device.type == "xpu"           # GPU
         and query_states.dtype in [torch.float, torch.half]     # fp32/fp16
         and not query_states.requires_grad and not training     # not training
+    )
+
+
+def use_sdp_non_causal(head_dim, device, dtype):
+    return (
+        head_dim in [40, 64, 80]
+        and device.type == "xpu"                # GPU
+        and dtype in [torch.float, torch.half]  # fp32/fp16
     )
 
 
