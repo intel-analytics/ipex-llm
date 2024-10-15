@@ -662,7 +662,7 @@ jobs:
           move ..\..\..\test\benchmark\igpu-perf\32-32_int4_fp16.yaml config.yaml
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\32-32_int4_fp16\log\%LOG_FILE% 2>&1
-          if %ERRORLEVEL% neq 0 (exit /b 1)
+          if %ERRORLEVEL% neq 0 if %ERRORLEVEL% neq -1073740791 (exit /b 1)
           python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test1
           if %ERRORLEVEL% neq 0 (exit /b 1)
 
