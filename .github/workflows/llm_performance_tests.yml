@@ -265,6 +265,7 @@ jobs:
           sed -i 's/batch2/batch4/g' run.py
           python run.py
           mv *.csv test_batch4
+          python -m pip uninstall -y trl
       
       - name: Test on xpu(transformers==4.45.0)
         shell: bash
