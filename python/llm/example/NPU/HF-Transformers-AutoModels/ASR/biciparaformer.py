@@ -52,6 +52,7 @@ if __name__ == "__main__":
         model="iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
         attn_implementation="eager",
         load_in_low_bit="sym_int8",
+        low_cpu_mem_usage=True,
         funasr_model=True,
         optimize_model=True,
         max_output_len=args.max_output_len,
