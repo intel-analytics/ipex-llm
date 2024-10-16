@@ -36,7 +36,6 @@ import torch
 
 from ipex_llm.transformers.models.common import merge_qkv_base, attention_softmax
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.kv import DynamicNormalCache
 from ipex_llm.utils.common.log4Error import invalidInputError
 
