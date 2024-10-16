@@ -34,6 +34,7 @@
 import math
 import torch
 
+from ipex_llm.transformers.models.common import merge_qkv_base, attention_softmax
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
 from ipex_llm.transformers.kv import DynamicNormalCache
 from ipex_llm.utils.common.log4Error import invalidInputError
@@ -55,26 +56,7 @@ def should_use_fuse_rope(self, hidden_states, position_ids):
 
 
 def merge_qkv(module: torch.nn.Module):
-    if module.__class__.__name__ == "PhiAttention":
-        new_weight = torch.cat([
-            module.q_proj.weight.data,
-            module.k_proj.weight.data,
-            module.v_proj.weight.data,
-        ], dim=0)
-        new_bias = torch.cat([
-            module.q_proj.bias.data,
-            module.k_proj.bias.data,
-            module.v_proj.bias.data,
-        ], dim=-1)
-
-        qkv_proj = torch.nn.Linear(0, 0, bias=True)
-        qkv_proj.weight = torch.nn.Parameter(new_weight, requires_grad=False)
-        qkv_proj.bias = torch.nn.Parameter(new_bias, requires_grad=False)
-        qkv_proj.in_features = new_weight.size(1)
-        qkv_proj.out_features = new_weight.size(0)
-        module.qkv_proj = qkv_proj
-
-        del module.q_proj, module.k_proj, module.v_proj
+    merge_qkv_base(module, "PhiAttention")
 
 
 def attention_forward(
@@ -143,8 +125,7 @@ def attention_forward(
         attn_weights = attn_weights + attention_mask
 
     # upcast attention to fp32
-    attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                               dtype=torch.float32).to(value_states.dtype)
+    attn_weights = attention_softmax(attn_weights, self.training)
     attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
                                                training=self.training)
 
