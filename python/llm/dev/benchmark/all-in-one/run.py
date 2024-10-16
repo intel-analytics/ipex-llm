@@ -41,6 +41,8 @@ LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
              'lmsys/vicuna-13b-v1.3','lmsys/vicuna-33b-v1.3','project-baize/merged-baize-30b']
 
+LLAMA3_VISION_IDS = ['meta-llama/Llama-3.2-11B-Vision-Instruct']
+
 CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 
 LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
@@ -769,6 +771,13 @@ def run_optimize_model_gpu(repo_id,
                                                      use_cache=True, low_cpu_mem_usage=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    elif repo_id in LLAMA3_VISION_IDS:
+        from transformers import MllamaForConditionalGeneration
+        model = MllamaForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True,
+                                                     low_cpu_mem_usage=True).eval()
+        model = optimize_model(model, low_bit=low_bit, modules_to_not_convert=["multi_modal_projector"])
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
