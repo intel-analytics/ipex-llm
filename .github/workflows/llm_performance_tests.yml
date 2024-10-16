@@ -300,7 +300,7 @@ jobs:
           python run.py
           mv *.csv test_batch4
           python -m pip install accelerate==0.23.0
-          python -m pip uninstall trl
+          python -m pip uninstall -y trl
 
       - name: Concat csv and generate html
         shell: bash
