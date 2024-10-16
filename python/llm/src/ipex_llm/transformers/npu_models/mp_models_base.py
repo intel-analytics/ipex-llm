@@ -327,7 +327,6 @@ class LLMBaseNNFactory(NNFactory):
         
         return attn_res
 
-
     def sanm_feed_forward(self, x, hidden_units, idim, w1_bias, w2_bias):
         mm = self.linear(x, 2048, 512, bias=False, wt_dtype=self.dtype)
         mm = mm + w1_bias
@@ -335,7 +334,6 @@ class LLMBaseNNFactory(NNFactory):
         output = self.linear(mm_act, 512, 2048, bias=False, wt_dtype=self.dtype)
         output = output + w2_bias
         return output
-    
 
     def multihead_attn_sanm_decoder(self, inputs, mask, fsmn_weight):
         b, t, d = inputs.size()
@@ -350,15 +348,13 @@ class LLMBaseNNFactory(NNFactory):
                                     bias=None,
                                     strides=1,
                                     padding=5,
-                                    groups=1,
+                                    groups=512,
                                     n_spatial_dims=1)
         fsmn_x = self.transpose(fsmn_x, [0, 2, 1])
         x = self.eltwise_add(inputs, fsmn_x)
-        # x = self.dropout(x)
         if mask is not None:
             x = self.eltwise_mul(x, mask)
         return x, cache
-
 
     def sanm_cross_attn(self, x, memory, mask, q_bias, kv_bias, out_bias, n_feat, n_head):
         b = x.size(0)
@@ -385,10 +381,8 @@ class LLMBaseNNFactory(NNFactory):
         scores = self.matmul(q_h, k_h, False, True)
 
         n_batch = v_h.size(0)
-
         # Assume mask is None
         p_attn = self.softmax(scores, -1)
-        # ToDo: Add dropout
 
         v_h = self.transpose(v_h, [0, 1, 3, 2])
         x_attn = self.matmul(p_attn, v_h, False, True)
@@ -399,7 +393,6 @@ class LLMBaseNNFactory(NNFactory):
         attn_out = attn_out + out_bias
         return attn_out
 
-
     def feed_forward_sanm_decoder(self, x, w_1_bias, norm_weights, norm_bias):
         w_1 = self.linear(x, 2048, 512, bias=False, wt_dtype=self.dtype)
         w_1 = w_1 + w_1_bias
@@ -407,7 +400,6 @@ class LLMBaseNNFactory(NNFactory):
         w_1_norm = self.paraformer_layer_norm(w_1_act, norm_weights, norm_bias)
         w_2 = self.linear(w_1_norm, 512, 2048, bias=False, wt_dtype=self.dtype)
         return w_2
-
 
     def mlp(self, hidden_states):
         mm1 = self.linear(

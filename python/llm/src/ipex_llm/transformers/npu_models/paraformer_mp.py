@@ -462,7 +462,6 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         feed_norm_biases=None,
         fsmn_weights=None,
         num_layers: int,
-        #rms_norm_eps,
         mode: str = "prefill",
         dtype: np.dtype = np.int8,
         max_seq_len: int = 1024,
@@ -479,86 +478,30 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         self.mode = mode
         self.dtype = dtype
         self.num_layers = num_layers
-        #self.rms_norm_eps = rms_norm_eps
 
         self.batch_size = 1
         self.time = 218
         self.size = 512
 
-        #input = self.create_input_op((1, 66, 512))
-        input = self.create_input_op((1, 17, 512))
-        tgt_mask = self.create_input_op((1, 17, 1))
+        input = self.create_input_op((1, 66, 512))
+        tgt_mask = self.create_input_op((1, 66, 1))
         memory = self.create_input_op((1, 218, 512))
         memory_mask = self.create_input_op((1, 1, 218))
-        
-        if layer_norm_0_weights is None:
-            layer_norm_0_weights = []
-            layer_norm_0_biases = []
-            layer_norm_1_weights = []
-            layer_norm_1_biases = []
-            layer_norm_2_weights = []
-            layer_norm_2_biases = []
-            q_biases = []
-            kv_biases = []
-            out_biases = []
-            w1_biases = []
-            feed_norm_weights = []
-            feed_norm_biases = []
-            fsmn_weights = []
 
-            for i in range(self.num_layers):
-                layer_norm_0_weights.append(self.create_input_op((1, self.size,))
-                )
-                layer_norm_0_biases.append(
-                    self.create_input_op((1, self.size,))
-                )
-                layer_norm_1_weights.append(
-                    self.create_input_op((self.size,))
-                )
-                layer_norm_1_biases.append(
-                    self.create_input_op((self.size,))
-                )
-                layer_norm_2_weights.append(
-                    self.create_input_op((self.size,))
-                )
-                layer_norm_2_biases.append(
-                    self.create_input_op((self.size,))
-                )
-                q_biases.append(
-                    self.create_input_op((512,))
-                )
-                kv_biases.append(
-                    self.create_input_op((1024,))
-                )
-                out_biases.append(
-                    self.create_input_op((512,))
-                )
-                w1_biases.append(
-                    self.create_input_op((2048,))
-                )
-                feed_norm_weights.append(
-                    self.create_input_op((2048,))
-                )
-                feed_norm_biases.appened(
-                    self.create_input_op((2048,))
-                )
-                fsmn_weights.append(
-                    self.create_input_op((512, 512, 11))
-                )
-        else:
-            layer_norm_0_weights = [self.constant(w) for w in layer_norm_0_weights]
-            layer_norm_0_biases = [self.constant(w) for w in layer_norm_0_biases]
-            layer_norm_1_weights = [self.constant(w) for w in layer_norm_1_weights]
-            layer_norm_1_biases = [self.constant(w) for w in layer_norm_1_biases]
-            layer_norm_2_weights = [self.constant(w) for w in layer_norm_2_weights]
-            layer_norm_2_biases = [self.constant(w) for w in layer_norm_2_biases]
-            q_biases = [self.constant(w) for w in q_biases]
-            kv_biases = [self.constant(w) for w in kv_biases]
-            out_biases = [self.constant(w) for w in out_biases]
-            w1_biases = [self.constant(w) for w in w1_biases]
-            feed_norm_weights = [self.constant(w) for w in feed_norm_weights]
-            feed_norm_biases = [self.constant(w) for w in feed_norm_biases]
-            fsmn_weights = [self.constant(w) for w in fsmn_weights]
+        layer_norm_0_weights = [self.constant(w) for w in layer_norm_0_weights]
+        layer_norm_0_biases = [self.constant(w) for w in layer_norm_0_biases]
+        layer_norm_1_weights = [self.constant(w) for w in layer_norm_1_weights]
+        layer_norm_1_biases = [self.constant(w) for w in layer_norm_1_biases]
+        layer_norm_2_weights = [self.constant(w) for w in layer_norm_2_weights]
+        layer_norm_2_biases = [self.constant(w) for w in layer_norm_2_biases]
+        q_biases = [self.constant(w) for w in q_biases]
+        kv_biases = [self.constant(w) for w in kv_biases]
+        out_biases = [self.constant(w) for w in out_biases]
+        w1_biases = [self.constant(w) for w in w1_biases]
+        feed_norm_weights = [self.constant(w) for w in feed_norm_weights]
+        feed_norm_biases = [self.constant(w) for w in feed_norm_biases]
+        fsmn_weights = [self.constant(w) for w in fsmn_weights]
+
         
         x = input
         for i in range(self.num_layers):
@@ -597,7 +540,6 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
                       tgt_mask,
                       memory,
                       memory_mask=None,
-                      #cache=None,
                       norm1_weight=None,
                       norm1_bias=None,
                       norm2_weight=None,
@@ -615,9 +557,8 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         in_feat = 512
         n_feat = 512
         n_head = 4
-        hidden_units = 2048
         idim = 512
-
+        hidden_units = 2048
         stoch_layer_coeff = 1.0
 
         residual = x
@@ -626,13 +567,12 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         x = self.paraformer_layer_norm(x, norm1_weight, norm1_bias)
         x = self.feed_forward_sanm_decoder(x, w1_bias, feed_norm_weight, feed_norm_bias)
 
-        # # norm2
+        # norm2
         x = self.paraformer_layer_norm(x, norm2_weight, norm2_bias)
-
         x, _ = self.multihead_attn_sanm_decoder(x, tgt_mask, fsmn_weight)
         x = self.eltwise_add(residual, x)
-
         residual = x
+
         # norm3
         x = self.paraformer_layer_norm(x, norm3_weight, norm3_bias)
         x_src_attn = self.sanm_cross_attn(x, memory, memory_mask, q_bias, kv_bias, out_bias, n_feat, n_head)
@@ -640,7 +580,7 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         x = self.eltwise_add(residual, x_src_attn)
         x = self.convert_to_fp16(x)
         
-        return x, tgt_mask, memory, memory_mask #, cache
+        return x, tgt_mask, memory, memory_mask
 
 
 class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
@@ -663,18 +603,13 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         fsmn_weights,
         layer_indexes,
         intra_stages,
-        #num_heads: int,
-        #head_dim: int,
-        #num_key_value_heads: int,
-        #rms_norm_eps,
-        #intermediate_size,
         max_seq_len: int = 1024,
         transpose_value: bool = False,
-        do_print: bool = False,
+        do_print: bool = True,
     ):
         super().__init__()
 
-        self.do_print = do_print
+        self.do_print = True
 
         op_parameters = []
         for w in parameters:
@@ -687,7 +622,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         self.max_seq_len = max_seq_len
         self.transpose_value = transpose_value
 
-        if isinstance(parameters[0], tuple):
+        if isinstance(parameters[0], tuple):  # weight, scale from QuantizedLinear
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
@@ -707,8 +642,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
             decoder = LowBitMultiDecoderlayer(
-                #[1, 66, 512],
-                [1, 17, 512],
+                [1, 66, 512],
                 layer_norm_0_weights=layer_norm_0_weights[start:end],
                 layer_norm_0_biases=layer_norm_0_biases[start:end],
                 layer_norm_1_weights=layer_norm_1_weights[start:end],
@@ -827,7 +761,7 @@ def run_decode(
         layer_norm_0_weights.append(curr_layer.norm1.weight.to(torch.float16))
         layer_norm_0_biases.append(curr_layer.norm1.bias.to(torch.float16))
         # norm_1
-        layer_norm_1_weights.append(curr_layer.norm2.bias.to(torch.float16))
+        layer_norm_1_weights.append(curr_layer.norm2.weight.to(torch.float16))
         layer_norm_1_biases.append(curr_layer.norm2.bias.to(torch.float16))
         # norm_2
         layer_norm_2_weights.append(curr_layer.norm3.weight.to(torch.float16))
@@ -844,10 +778,7 @@ def run_decode(
         feed_norm_weights.append(feed_layer.norm.weight.to(torch.float16))
         feed_norm_biases.append(feed_layer.norm.bias.to(torch.float16))
         # conv weights
-
-        conv = torch.nn.Conv1d(
-            512, 512, 11, stride=1, padding=0, groups=1, bias=False).half()
-        fsmn_weights.append(conv.weight)
+        fsmn_weights.append(attn_layer.fsmn_block.weight.view(512, 1, 1, 11).to(torch.float16))
 
     multi_decoder = FusedLlamaLowBitMultiDecoderlayer(
         parameters=layer_weights,
@@ -876,7 +807,7 @@ def run_decode(
     cache = None
 
     control = torch.empty((), dtype=torch.int)
-    x = torch.empty((1, 17, 512), dtype=torch.float16)
+    x = torch.empty((1, 66, 512), dtype=torch.float16)
 
     with torch.inference_mode():
         while True:

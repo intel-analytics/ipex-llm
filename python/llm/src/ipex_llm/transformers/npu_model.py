@@ -160,8 +160,8 @@ class _BaseAutoModelClass:
                 encoders = model.model.encoder.encoders
                 decoders = model.model.decoder.decoders
                 with torch.no_grad():
-                    cls.load_convert(qtype, encoders, "cpu", modules_to_not_convert, *args, **kwargs)
-                    create_npu_kernels(encoders)
+                    # cls.load_convert(qtype, encoders, "cpu", modules_to_not_convert, *args, **kwargs)
+                    # create_npu_kernels(encoders)
                     cls.load_convert(qtype, decoders, "cpu", modules_to_not_convert, *args, **kwargs)
                     create_npu_kernels(decoders)
                 logger.info(f"Finish to convert model")
