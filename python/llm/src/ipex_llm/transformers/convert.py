@@ -1023,6 +1023,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "llama":
         from ipex_llm.transformers.models.llama import merge_qkv
         model.apply(merge_qkv)
+    if model.config.model_type == "mllama":
+        from ipex_llm.transformers.models.mllama import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "minicpm":
         from ipex_llm.transformers.models.minicpm import merge_qkv
         model.apply(merge_qkv)
@@ -1284,12 +1287,19 @@ def _optimize_post(model, lightweight_bmm=False):
         # llama 3.2 vision
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.common import rms_norm_forward
-        from ipex_llm.transformers.models.common import mlp_silu_forward
         from ipex_llm.transformers.models.mllama import mllama_vision_attention_forward
         convert_forward(model, module.MllamaVisionAttention, mllama_vision_attention_forward)
+
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.llama32 import llama_attention_forward
+        from ipex_llm.transformers.models.mllama import mllama_text_model_forward
+        from ipex_llm.transformers.models.mllama import mllama_cross_attention_forward
         convert_forward(model, module.MllamaTextRMSNorm, rms_norm_forward)
         convert_forward(model, module.MllamaTextMLP, mlp_silu_forward)
+        convert_forward(model, module.MllamaTextModel, mllama_text_model_forward)
+        convert_forward(model, module.MllamaTextSelfAttention, llama_attention_forward)
+        convert_forward(model, module.MllamaTextCrossAttention, mllama_cross_attention_forward)
     elif model.config.model_type == "llama":
         from transformers.models.llama.modeling_llama import LlamaRMSNorm
         from transformers.models.llama.modeling_llama import LlamaMLP
