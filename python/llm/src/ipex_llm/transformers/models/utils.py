@@ -207,23 +207,6 @@ def apply_ipex_rotate_every_two(q, k, cos, sin):
         torch.ops.torch_ipex.apply_rotary_embedding(k, sin, cos, k)
 
 
-def apply_rotary_pos_emb_no_cache_xpu(q, k, position_ids, model_family, rope_theta=10000.0):
-    if q.device.type != "xpu":
-        invalidInputError(False,
-                          f"only xpu is supported in this function")
-    import xe_addons
-    q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
-    k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
-    if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral"]:
-        xe_addons.apply_rotary_embedding_half_q_and_k(q, k, position_ids,
-                                                      q_embed, k_embed, rope_theta)
-        return q_embed, k_embed
-    else:
-        invalidInputError(False,
-                          f"{model_family} is not supported.")
-
-
 def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_ids=None):
     if q.device.type != "xpu":
         invalidInputError(False,
