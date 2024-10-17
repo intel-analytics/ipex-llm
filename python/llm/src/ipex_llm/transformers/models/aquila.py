@@ -36,21 +36,13 @@
 # limitations under the License.
 
 import math
-from typing import List, Optional, Tuple, Union
-
 import torch
-import torch.utils.checkpoint
-from torch import nn
 
-from ipex_llm.transformers.models.utils import extend_kv_cache, init_kv_cache, \
-    append_kv_cache, is_enough_kv_cache_room_4_31
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
+from typing import Optional, Tuple
+from ipex_llm.transformers.models.common import attention_softmax
+from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, should_use_fuse_rope
+from ipex_llm.transformers.models.utils import update_past_key_value
 from ipex_llm.utils.common import log4Error
-
-import os
-
-KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
 def aquila_attention_forward(
@@ -75,58 +67,27 @@ def aquila_attention_forward(
         .transpose(1, 2)
 
     kv_seq_len = key_states.shape[-2]
-    enough_kv_room = True
     if past_key_value is not None:
-        enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=kv_seq_len)
         kv_seq_len += past_key_value[0].shape[-2]
-    if query_states.device.type == "xpu" and not (self.training and query_states.requires_grad):
-        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                     key_states,
-                                                                     position_ids,
-                                                                     "aquila")
+
+    if should_use_fuse_rope(hidden_states, position_ids, self.training):
+        import xe_addons
+        xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                       query_states, key_states)
     else:
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                         cos, sin, position_ids, "aquila")
-    # [bsz, nh, t, hd]
 
-    if past_key_value is not None:
-        # reuse k, v, self_attention
-        cache_k = past_key_value[0]
-        cache_v = past_key_value[1]
-        if not enough_kv_room:
-            # allocate new
-            new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                       self.num_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=hidden_states.device)
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            cache_k = new_cache_k
-            cache_v = new_cache_v
-
-        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
-
-    elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key_states.dtype,
-                                                         device=hidden_states.device)
-        new_key_states[:] = key_states
-        new_value_states[:] = value_states
-        key_states = new_key_states
-        value_states = new_value_states
+    key_states, value_states = update_past_key_value(
+        past_key_value, key_states, value_states,
+        kv_seq_len, False, hidden_states.device
+    )
 
     past_key_value = (key_states, value_states) if use_cache else None
 
-    attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
+    attn_weights = torch.matmul(query_states,
+                                key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
     attn_weights = torch.clamp(attn_weights, min=-1024., max=1024.)
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
@@ -148,8 +109,7 @@ def aquila_attention_forward(
         )
 
     # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32)\
-        .to(query_states.dtype)
+    attn_weights = attention_softmax(attn_weights, self.training)
     attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):

@@ -46,16 +46,14 @@ from ipex_llm.transformers.models.utils import init_fp8_kv_cache, append_fp8_kv_
     get_compresskv_attn_mask
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
     apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_causal
 from ipex_llm.transformers.models.utils import mlp_fusion_check, fp16_fusion_check
 from ipex_llm.transformers.models.utils import use_decoding_fast_path, get_q_proj_or_qkv_proj
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from transformers.models.llama.modeling_llama import LlamaModel, LlamaAttention
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, FP8E5, IQ2_XXS, FP4
-from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers.models.common import merge_qkv_base, fuse_mlp_base
+from ipex_llm.transformers.models.common import merge_qkv_base
 
 try:
     from transformers.cache_utils import Cache, DynamicCache

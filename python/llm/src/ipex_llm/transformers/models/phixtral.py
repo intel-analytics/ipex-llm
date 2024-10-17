@@ -37,38 +37,8 @@
 # limitations under the License.
 
 """ PyTorch Phixtral model."""
-import math
-from typing import Optional, Tuple
-
 import torch
-from torch import nn
 import torch.nn.functional as F
-from ipex_llm.ggml.quantize import ggml_tensor_qtype
-from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb,\
-    apply_rotary_pos_emb_no_cache_xpu, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.models.mistral import should_use_fuse_rope
-from ipex_llm.transformers.models.utils import use_flash_attention
-from ipex_llm.transformers.models.utils import mlp_fusion_check
-
-import os
-
-KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
-
-
-def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
-    """
-    This is the equivalent of torch.repeat_interleave(x, dim=1, repeats=n_rep).
-    The hidden states go from (batch, num_key_value_heads, seqlen, head_dim)
-    to (batch, num_attention_heads, seqlen, head_dim)
-    """
-    batch, num_key_value_heads, slen, head_dim = hidden_states.shape
-    if n_rep == 1:
-        return hidden_states
-    hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads,
-                                                           n_rep, slen, head_dim)
-    return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
 
 def phixtral_moeblock_forward(self, hidden_states: torch.Tensor):
