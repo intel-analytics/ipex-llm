@@ -1,5 +1,7 @@
 # 使用 IPEX-LLM 在 Intel GPU 上运行 llama.cpp
-
+<p>
+  < <a href='./llama_cpp_quickstart.md'>English</a> | <b>中文</b> >
+</p>
 [ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) 是一个使用纯C++实现的、支持多种硬件平台的高效大语言模型推理库。现在，借助 [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) 的 C++ 接口作为其加速后端，你可以在 Intel **GPU**  *(如配有集成显卡，以及 Arc，Flex 和 Max 等独立显卡的本地 PC)* 上，轻松部署并运行 `llama.cpp` 。
 
 以下是在 Intel Arc GPU 上运行 LLaMA2-7B 的 DEMO 演示。
