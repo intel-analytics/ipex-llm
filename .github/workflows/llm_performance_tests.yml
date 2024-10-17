@@ -246,7 +246,7 @@ jobs:
           cp python/llm/test/benchmark/arc-perf-transformers-443.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
           # change csv name
-          sed -i 's/test3_batch4/test4_batch1/g' run.py
+          sed -i 's/test3_batch1/test4_batch1/g' run.py
           python run.py
           mv *.csv test_batch1
           # batch_size 2
