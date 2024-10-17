@@ -14,6 +14,7 @@
 # limitations under the License.
 
 
+import os
 import torch
 from torch import nn
 import numpy as np
@@ -71,6 +72,10 @@ class LMHeadLinear(NNFactory):
 
         print("start compiling lm_head")
         self.compile()
+        qwen_size = "7b" if self.inC == 3584 else "1.5b"
+        xml_path = f"qwen/qwen-{qwen_size}-npu-lmhead-{self.split_num}.xml"
+        if not os.path.exists(xml_path):
+            self.save(xml_path)
         print("end compiling lm_head")
 
     def run(

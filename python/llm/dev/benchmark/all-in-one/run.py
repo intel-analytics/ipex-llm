@@ -644,6 +644,7 @@ def transformers_int4_npu_win(repo_id,
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
             input_str = get_continuation_input_str(in_len, tokenizer)
+            print(input_str)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
