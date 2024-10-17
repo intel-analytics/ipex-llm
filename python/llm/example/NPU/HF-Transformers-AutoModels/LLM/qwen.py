@@ -96,6 +96,7 @@ if __name__ == "__main__":
     text = tokenizer.apply_chat_template(messages,
                                          tokenize=False,
                                          add_generation_prompt=True)
+    # text = args.prompt
     with torch.inference_mode():
         print("finish to load")
         for i in range(3):
@@ -103,7 +104,8 @@ if __name__ == "__main__":
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(
-                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict
+                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict,
+                # min_new_tokens=args.n_predict
             )
             end = time.time()
             print(f"Inference time: {end-st} s")
@@ -113,6 +115,7 @@ if __name__ == "__main__":
             output_str = tokenizer.decode(output[0], skip_special_tokens=False)
             print("-" * 20, "Output", "-" * 20)
             print(output_str)
+            print(f"output length: {output.shape[1] - len(_input_ids[0])}")
 
     print("-" * 80)
     print("done")
