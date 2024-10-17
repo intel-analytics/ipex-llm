@@ -35,7 +35,6 @@ import torch
 from typing import Optional, Tuple
 import torch.nn.functional as F
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 from ipex_llm.transformers.models.llama import repeat_kv
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import update_past_key_value
@@ -77,10 +76,9 @@ def decilm_attention_forward_4_35_2(
         kv_seq_len += past_key_value[0].shape[-2]
 
     if should_use_fuse_rope(hidden_states, position_ids, self.training):
-        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                     key_states,
-                                                                     position_ids,
-                                                                     "llama")
+        import xe_addons
+        xe_addons.rotary_half_inplaced(self.maybe_rotary.inv_freq, position_ids,
+                                       query_states, key_states)
     else:
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,

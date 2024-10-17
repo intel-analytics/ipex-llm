@@ -25,7 +25,7 @@
 # https://github.com/huggingface/transformers/blob/v4.34.1/LICENSE
 
 # ===========================================================================
-# 
+#
 # The patching on this file refers to https://huggingface.co/tiiuae/falcon-7b/discussions/17
 
 
@@ -295,17 +295,15 @@ class Attention(nn.Module):
         # query_layer, key_layer = self.maybe_rotary(query_layer, key_layer)
         past_kv_length = 0 if layer_past is None else layer_past[0].shape[1]
 
-        use_fuse_rope = query_layer.device.type == "xpu"
-        use_fuse_rope = use_fuse_rope and not (self.training and query_layer.requires_grad)
-        if use_fuse_rope:
-            # resize qk to 4D to match apply_rotary_pos_emb_no_cache_xpu's requirements.
+        from ipex_llm.transformers.models.utils import should_use_fuse_rope
+        if should_use_fuse_rope(hidden_states, position_ids, self.training) and \
+                isinstance(self.maybe_rotary, RotaryEmbedding):
+            # resize qk to 4D to match rotary_half_inplaced's requirements.
             query_layer = query_layer.reshape(batch_size, self.num_heads, q_length, self.head_dim)
             key_layer = key_layer.reshape(batch_size, self.num_kv, q_length, self.head_dim)
-            from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
-            query_layer, key_layer = apply_rotary_pos_emb_no_cache_xpu(query_layer,
-                                                                       key_layer,
-                                                                       position_ids,
-                                                                       "gpt_neox")
+            import xe_addons
+            xe_addons.rotary_half_inplaced(self.maybe_rotary.inv_freq, position_ids,
+                                           query_layer, key_layer)
             query_layer = query_layer.reshape(batch_size * self.num_heads, q_length, self.head_dim)
             key_layer = key_layer.reshape(batch_size * self.num_kv, q_length, self.head_dim)
         else:
