@@ -443,7 +443,7 @@ Use GPTQ as a way to reduce memory footprint. Firstly download the model after g
       ...
     ```
 
-    2. Use `bash start-vllm-service.sh` to start awq model online serving. Serving start successfully log:
+    2. Use `bash start-vllm-service.sh` to start gptq model online serving. Serving start successfully log:
 
     ```bash
     2024-10-18 09:26:30,604 - INFO - Converting the current model to asym_int4 format......
