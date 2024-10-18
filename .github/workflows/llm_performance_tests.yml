@@ -855,7 +855,7 @@ jobs:
         shell: bash
         run: |
           # temporarily remove gemma2 for Windows dGPU tests
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
             sed -i "s/- 'google\/gemma-2-2b-it'/# - 'google\/gemma-2-2b-it'/" python/llm/test/benchmark/igpu-perf/32-32_int4_fp16_443.yaml
             sed -i "s/- 'google\/gemma-2-9b-it'/# - 'google\/gemma-2-9b-it'/" python/llm/test/benchmark/igpu-perf/32-32_int4_fp16_443.yaml
           fi
@@ -1043,7 +1043,7 @@ jobs:
         shell: bash
         run: |
           # temporarily remove gemma2 for Windows dGPU tests
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
             sed -i "s/- 'google\/gemma-2-2b-it'/# - 'google\/gemma-2-2b-it'/" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_443.yaml
             sed -i "s/- 'google\/gemma-2-9b-it'/# - 'google\/gemma-2-9b-it'/" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_443.yaml
           fi
@@ -1230,7 +1230,7 @@ jobs:
         shell: bash
         run: |
           # temporarily remove gemma2 for Windows dGPU tests
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
             sed -i "s/- 'google\/gemma-2-2b-it'/# - 'google\/gemma-2-2b-it'/" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16_443.yaml
             sed -i "s/- 'google\/gemma-2-9b-it'/# - 'google\/gemma-2-9b-it'/" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16_443.yaml
           fi
@@ -1430,7 +1430,7 @@ jobs:
         shell: bash
         run: |
           # temporarily remove gemma2 for Windows dGPU tests
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
             sed -i "s/- 'google\/gemma-2-2b-it'/# - 'google\/gemma-2-2b-it'/" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16_443.yaml
           fi
 
@@ -1611,7 +1611,7 @@ jobs:
         shell: bash
         run: |
           # temporarily remove gemma2 for Windows dGPU tests
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
             sed -i "s/- 'google\/gemma-2-2b-it'/# - 'google\/gemma-2-2b-it'/" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16_443.yaml
           fi
           sed -i 's/{today}_test2/{today}_test3/g' python/llm/dev/benchmark/all-in-one/run.py
