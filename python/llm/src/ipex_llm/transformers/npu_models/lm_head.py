@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import torch
 from torch import nn
 import numpy as np
@@ -171,7 +170,7 @@ class SlicedLMHead(nn.Module):
         else:
             fused_lm_head_weights = [(self.lm_heads[i].weight.data.numpy(),
                                       self.lm_heads[i].scale.data.numpy())
-                                      for i in range(self.split_num)]
+                                     for i in range(self.split_num)]
 
         self.fused_lm_head.set_weights(self.lm_heads[0].op_id,
                                        fused_lm_head_weights)
