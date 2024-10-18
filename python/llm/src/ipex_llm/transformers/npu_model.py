@@ -157,11 +157,11 @@ class _BaseAutoModelClass:
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
             from ipex_llm.transformers.npu_models.convert_mp import optimize_funasr
             if funasr_model:
-                encoders = model.model.encoder.encoders
+                encoders = model.model.encoder.encoders[0:31]
                 decoders = model.model.decoder.decoders
                 with torch.no_grad():
-                    # cls.load_convert(qtype, encoders, "cpu", modules_to_not_convert, *args, **kwargs)
-                    # create_npu_kernels(encoders)
+                    cls.load_convert(qtype, encoders, "cpu", modules_to_not_convert, *args, **kwargs)
+                    create_npu_kernels(encoders)
                     cls.load_convert(qtype, decoders, "cpu", modules_to_not_convert, *args, **kwargs)
                     create_npu_kernels(decoders)
                 logger.info(f"Finish to convert model")

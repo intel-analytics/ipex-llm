@@ -319,7 +319,7 @@ def run_prefill(
 ):
 
     layer_start = 0
-    layer_end = 48
+    layer_end = 30
 
     deocderlayers = []
     layer_weights = []
@@ -338,7 +338,7 @@ def run_prefill(
             (attn_layer.linear_q_k_v.weight, attn_layer.linear_q_k_v.scale),
             (attn_layer.linear_out.weight, attn_layer.linear_out.scale),
             (feed_layer.w_1.weight, feed_layer.w_1.scale),
-            #(feed_layer.w_2.weight, feed_layer.w_2.scale),
+            (feed_layer.w_2.weight, feed_layer.w_2.scale),
         ]
 
         layer_norm_0_weight = curr_layer.norm1.weight.to(torch.float16)
@@ -976,6 +976,10 @@ def gen_funasr_fused_encoder_forward(prefill_runner):
         # Prefill runner
         encoder_outs = prefill_runner.forward(xs_pad, masks[0])
         xs_pad, new_masks = encoder_outs[0], encoder_outs[1]
+
+        encoders_suffix = self.encoders[31:49]
+        encoder_outs = encoders_suffix(xs_pad, masks[0])
+        xs_pad, new_masks, mm = encoder_outs[0], encoder_outs[1], encoder_outs[2]
 
         xs_pad = xs_pad.to(torch.float32)
 
