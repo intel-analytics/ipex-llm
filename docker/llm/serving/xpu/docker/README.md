@@ -69,7 +69,7 @@ You can modify this script to using fastchat with either `ipex_llm_worker` or `v
 
 #### vLLM serving engine
 
-To run vLLM engine using `IPEX-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md).
+To run vLLM engine using `IPEX-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/DockerGuides/vllm_docker_quickstart.md).
 
 We have included multiple example files in `/llm/`:
 1. `vllm_offline_inference.py`: Used for vLLM offline inference example
@@ -79,7 +79,7 @@ We have included multiple example files in `/llm/`:
 
 ##### Online benchmark throurgh api_server
 
-We can benchmark the api_server to get an estimation about TPS (transactions per second).  To do so, you need to start the service first according to the instructions in this [section](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md#service).
+We can benchmark the api_server to get an estimation about TPS (transactions per second).  To do so, you need to start the service first according to the instructions in this [section](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/DockerGuides/vllm_docker_quickstart.md#Serving).
 
 ###### Online benchmark through benchmark_util
 
