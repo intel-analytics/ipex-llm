@@ -1336,7 +1336,7 @@ jobs:
 
           call conda deactivate
 
-      # Remove Qwen-VL-Chat on dGPU
+      # Remove Qwen-VL-Chat on dGPU for 3072-384 tests
       - name: Prepare igpu perf test for transformers 4.36 (3072-384 int4+fp16)
         if: ${{ matrix.platform == 'perf-igpu' }}
         shell: bash
