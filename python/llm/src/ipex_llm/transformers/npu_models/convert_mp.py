@@ -94,9 +94,9 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision):
                 not cpu_lm_head:
             # Do not split lm_head and use sym_int8 instead when mixed_precison is True
             is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
-            split_num = 28 if is_split else 1
+            split_num = 14 if is_split else 1
             new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
-                                       bias=model.lm_head.bias, use_split=True)
+                                       bias=model.lm_head.bias, use_split=False)
             del model.lm_head
             model.lm_head = new_lm_head
 
