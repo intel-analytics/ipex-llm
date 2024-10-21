@@ -15,6 +15,7 @@
 #
 
 
+from bigdl.llm.utils import is_valid_path
 from bigdl.llm.utils.common import invalidInputError
 import argparse
 import os
@@ -91,7 +92,7 @@ def llm_convert(model,
                           "specify `--model-family llama --dtype int4` in the command line.")
         os.makedirs(outfile, exist_ok=True)
         invalidInputError(os.path.isdir(outfile),
-                          "The output_path {} is not a directory".format(outfile))
+                          "The output_path {} is not a directory.".format(outfile))
         _, _used_args = _special_kwarg_check(kwargs=kwargs,
                                              check_args=["tokenizer_path"])
 
@@ -140,5 +141,7 @@ def main():
     parser.add_argument('-k', '--tokenizer-path', type=str, default=None,
                         help="tokenizer_path, a path of tokenizer.model")
     args = parser.parse_args()
+    invalidInputError(is_valid_path(args.outfile),
+                      "The output_path {} is not a valid path.".format(args.outfile))
     params = vars(args)
     llm_convert(**params)
