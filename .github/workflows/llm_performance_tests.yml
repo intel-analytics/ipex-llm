@@ -1543,11 +1543,9 @@ jobs:
 
       # 4096-512 int4+fp16
       - name: Prepare igpu perf test (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: bash
         run: |
-          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
-            sed -i "s/- 'meta-llama\/Llama-2-13b-chat-hf'/# - 'meta-llama\/Llama-2-13b-chat-hf'/" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
-          fi
           sed -i 's/3072-384/4096-512/g' python/llm/dev/benchmark/all-in-one/run.py
           if [ ${{ matrix.platform }} == "perf-igpu" ]; then
             sed -i 's/{today}_test5/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
@@ -1558,6 +1556,7 @@ jobs:
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
       
       - name: Test on igpu (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -1585,12 +1584,14 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.38 (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16_438.yaml
 
       - name: Test on igpu for transformers 4.38 (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -1616,6 +1617,7 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.43 (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: bash
         run: |
           # temporarily remove gemma2 for Windows dGPU tests
@@ -1626,6 +1628,7 @@ jobs:
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16_443.yaml
 
       - name: Test on igpu for transformers 4.43 (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -1653,12 +1656,14 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.45 (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: bash
         run: |
           sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16_445.yaml
 
       - name: Test on igpu for transformers 4.45 (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -1688,6 +1693,7 @@ jobs:
           call conda deactivate
 
       - name: Concat csv and generate html (4096-512 int4+fp16)
+        if: ${{ matrix.platform == 'perf-igpu' }}
         shell: cmd
         run: |
           call conda activate html-gen
