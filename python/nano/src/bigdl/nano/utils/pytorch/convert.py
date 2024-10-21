@@ -20,6 +20,7 @@ from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11
 from bigdl.nano.utils.pytorch import get_forward_args, get_conditional_args,\
     get_input_example, complement_input_sample
+from typing import Sequence, Dict
 
 
 def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True, **kwargs):
@@ -42,6 +43,25 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     forward_args = get_forward_args(model)
     tensor_args = get_conditional_args(model)
     input_sample = get_input_example(model, input_sample, forward_args)
+
+    # Pytorch onnx team has a function _decide_input_format() to process the input sample.
+    # When encountering the situation that the last item in the input sample is a dict type,
+    # the function will treat it as a dictionary containing optional forward arguments and
+    # resolve it. If we simply leave the input of dict type at the last, it won't be put in
+    # the input list by default. Hence, a small trick is written to make sure that the function
+    # put the last dict (if have) in the input list.
+    if isinstance(input_sample, Sequence) and isinstance(input_sample[-1], Dict):
+        keys = list(input_sample[-1].keys())
+        # make sure the last element is not a dict containing optional arguments in forward args.
+        if len(keys) == 0 or keys[0] not in forward_args:
+            arg_idx = len(input_sample) - 1
+            # change the last element to be a dict with (key=last dict's arg name,value=last dict)
+            input_sample = input_sample[:-1] + ({forward_args[arg_idx]: input_sample[-1]},)
+    elif isinstance(input_sample, Dict):
+        keys = list(input_sample.keys())
+        if len(keys) == 0 or keys[0] not in forward_args:
+            input_sample = ({forward_args[0]: input_sample},)
+
     input_sample = complement_input_sample(model, input_sample)
 
     invalidInputError(input_sample is not None,

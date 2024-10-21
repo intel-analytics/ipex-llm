@@ -15,7 +15,7 @@
 #
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List, Union  # for typehint
+from typing import List, Union, Dict, Tuple  # for typehint
 from .dataloader import PytorchOpenVINODataLoader
 from .metric import PytorchOpenVINOMetric
 from ..core.model import OpenVINOModel
@@ -122,6 +122,17 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()
+        tmp = []
+        for elem in inputs:
+            if isinstance(elem, Dict):
+                for _, value in elem.items():
+                    tmp.append(value)
+            elif isinstance(elem, List) or isinstance(elem, Tuple):
+                tmp += elem
+            else:
+                tmp.append(elem)
+        inputs = tmp
+
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
