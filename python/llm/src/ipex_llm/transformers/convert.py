@@ -1000,6 +1000,9 @@ def _optimize_pre(model, qtype=None):
     if model.config.model_type == "qwen2_audio":
         from ipex_llm.transformers.models.qwen2 import merge_qkv
         model.language_model.apply(merge_qkv)
+    if model.config.model_type == "qwen2_vl":
+        from ipex_llm.transformers.models.qwen2_vl import merge_qkv
+        model.apply(merge_qkv)
     if model.config.model_type == "stablelm":
         # For stablelm-zephyr-3b and stablelm-2-zephyr-1_6b
         from ipex_llm.transformers.models.stablelm import merge_qkv
@@ -1014,11 +1017,18 @@ def _optimize_pre(model, qtype=None):
         model.apply(pre_process_attn_and_mlp)
     if model.config.model_type == "internvl_chat":
         _optimize_pre(model.language_model, qtype=qtype)
+    if model.config.model_type == "gemma":
+        from ipex_llm.transformers.models.gemma import merge_qkv, pre_compute_inv_freq
+        model.apply(merge_qkv)
+        model.apply(pre_compute_inv_freq)
     if model.config.model_type == "gemma2":
         from ipex_llm.transformers.models.gemma2 import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "llama":
         from ipex_llm.transformers.models.llama import merge_qkv
+        model.apply(merge_qkv)
+    if model.config.model_type == "mllama":
+        from ipex_llm.transformers.models.mllama import merge_qkv
         model.apply(merge_qkv)
     if model.config.model_type == "minicpm":
         from ipex_llm.transformers.models.minicpm import merge_qkv
@@ -1057,7 +1067,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         logger.info(f"Converting the current model to "
                     f"{list(ggml_tensor_qtype.keys())[index]} "
                     f"format......")
-    else:
+    elif qtype in gguf_mixed_qtype.values():
         index = list(gguf_mixed_qtype.values()).index(qtype)
         logger.info(f"Converting the current model to "
                     f"{list(gguf_mixed_qtype.keys())[index]} "
@@ -1086,34 +1096,35 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
     enable_scale_search = use_scale_search(model_config, qtype)
 
     # mixed quantization needs model_config to choose custom quantization strategy
-    model, has_been_replaced = _replace_with_low_bit_linear(
-        model, qtype, modules_to_not_convert,
-        convert_shape_only, cpu_embedding,
-        imatrix_data=imatrix_data,
-        embedding_qtype=embedding_qtype,
-        model_config=model_config,
-        torch_dtype=torch_dtype,
-        enable_xetla=enable_xetla,
-        mixed_precision=mixed_precision,
-        act_order=act_order,
-        enable_scale_search=enable_scale_search,
-    )
-    if not has_been_replaced:
-        warnings.warn(
-            "No linear modules were found in "
-            "your model. This can happen for some architectures such as gpt2 that uses Conv1D "
-            "instead of Linear layers. Please double check your model architecture, or submit "
-            "an issue on github if you think this is a bug."
+    if qtype is not None:
+        model, has_been_replaced = _replace_with_low_bit_linear(
+            model, qtype, modules_to_not_convert,
+            convert_shape_only, cpu_embedding,
+            imatrix_data=imatrix_data,
+            embedding_qtype=embedding_qtype,
+            model_config=model_config,
+            torch_dtype=torch_dtype,
+            enable_xetla=enable_xetla,
+            mixed_precision=mixed_precision,
+            act_order=act_order,
+            enable_scale_search=enable_scale_search,
         )
-    elif device == "cpu":
-        if not (getattr(model, "quantization_method", None) == "gptq"):
-            if torch_dtype == "auto":
-                convert_bigdl_other_module(model, torch.float32)
-            else:
-                convert_bigdl_other_module(model, torch_dtype)
-    elif device == "meta":
-        # Do nothing here for weights are empty.
-        pass
+        if not has_been_replaced:
+            warnings.warn(
+                "No linear modules were found in "
+                "your model. This can happen for some architectures such as gpt2 that uses Conv1D "
+                "instead of Linear layers. Please double check your model architecture, or submit "
+                "an issue on github if you think this is a bug."
+            )
+        elif device == "cpu":
+            if not (getattr(model, "quantization_method", None) == "gptq"):
+                if torch_dtype == "auto":
+                    convert_bigdl_other_module(model, torch.float32)
+                else:
+                    convert_bigdl_other_module(model, torch_dtype)
+        elif device == "meta":
+            # Do nothing here for weights are empty.
+            pass
 
     if optimize_model:
         model = _optimize_post(model, lightweight_bmm)
@@ -1219,6 +1230,15 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
 
 def _optimize_post(model, lightweight_bmm=False):
     try:
+        from diffusers import StableDiffusionPipeline
+        if isinstance(model, StableDiffusionPipeline):
+            from ipex_llm.transformers.models.sd15 import AttnProcessor2_0
+            model.unet.set_attn_processor(AttnProcessor2_0())
+            return model
+    except ModuleNotFoundError:
+        pass
+
+    try:
         from sentence_transformers.SentenceTransformer import SentenceTransformer
         if isinstance(model, SentenceTransformer):
             if str(model._modules['0']).strip().split(' ')[-1] == 'BertModel':
@@ -1254,7 +1274,37 @@ def _optimize_post(model, lightweight_bmm=False):
     from ipex_llm.transformers.models.llama import llama_rms_norm_forward
     from ipex_llm.transformers.models.llama import llama_mlp_forward
 
-    if model.config.model_type == "llama":
+    if model.config.model_type == "llama" and model.config.rope_scaling is not None:
+        # llama 3.2 & llama 3.1
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.llama32 import llama_model_forward
+        from ipex_llm.transformers.models.llama32 import llama_attention_forward
+        convert_forward(model, module.LlamaRMSNorm, rms_norm_forward)
+        convert_forward(model, module.LlamaMLP, mlp_silu_forward)
+        convert_forward(model, module.LlamaModel, llama_model_forward)
+        convert_forward(model, module.LlamaAttention, llama_attention_forward)
+        convert_forward(model, module.LlamaSdpaAttention, llama_attention_forward)
+    elif model.config.model_type == "mllama":
+        # llama 3.2 vision
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.mllama import mllama_vision_attention_forward
+        convert_forward(model, module.MllamaVisionAttention, mllama_vision_attention_forward)
+
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.llama32 import llama_attention_forward
+        from ipex_llm.transformers.models.mllama import mllama_text_model_forward
+        from ipex_llm.transformers.models.mllama import mllama_cross_attention_forward
+        convert_forward(model, module.MllamaTextRMSNorm, rms_norm_forward)
+        convert_forward(model, module.MllamaTextMLP, mlp_silu_forward)
+        convert_forward(model, module.MllamaTextModel, mllama_text_model_forward)
+        convert_forward(model, module.MllamaTextSelfAttention, llama_attention_forward)
+        convert_forward(model, module.MllamaTextCrossAttention, mllama_cross_attention_forward)
+    elif model.config.model_type == "llama":
         from transformers.models.llama.modeling_llama import LlamaRMSNorm
         from transformers.models.llama.modeling_llama import LlamaMLP
         from transformers.models.llama.modeling_llama import LlamaAttention
@@ -1544,8 +1594,12 @@ def _optimize_post(model, lightweight_bmm=False):
         model.batch_chat = MethodType(internvl_batch_chat, model)
         if model.vision_model.__class__.__name__ == "InternVisionModel":
             from ipex_llm.transformers.models.internvl import _get_pos_embed
-            vision_embedding = model.vision_model.embeddings
+            from ipex_llm.transformers.models.internvl import intern_attention_forward
+            vision_model = model.vision_model
+            vision_embedding = vision_model.embeddings
             vision_embedding._get_pos_embed = MethodType(_get_pos_embed, vision_embedding)
+            vision_module = importlib.import_module(vision_model.__class__.__module__)
+            convert_forward(vision_model, vision_module.InternAttention, intern_attention_forward)
         _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
@@ -1651,6 +1705,21 @@ def _optimize_post(model, lightweight_bmm=False):
                         qwen2_attention_forward)
     elif model.config.model_type == "qwen2_audio":
         _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
+    elif model.config.model_type == "qwen2_vl":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.qwen2 import qwen2_mlp_forward
+        from ipex_llm.transformers.models.qwen2_vl import qwen2_vision_get_dtype
+        from ipex_llm.transformers.models.qwen2_vl import qwen2_vision_attention_forward
+        from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_model_forward
+        from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_attention_forward
+        convert_forward(model, module.Qwen2RMSNorm, rms_norm_forward)
+        convert_forward(model, module.Qwen2MLP, qwen2_mlp_forward)
+        model.visual.get_dtype = MethodType(qwen2_vision_get_dtype, model.visual)
+        convert_forward(model, module.VisionAttention, qwen2_vision_attention_forward)
+        convert_forward(model, module.Qwen2VLModel, qwen2_vl_model_forward)
+        convert_forward(model, module.Qwen2VLAttention, qwen2_vl_attention_forward)
     elif model.config.model_type == "cohere":
         # for CohereForAI/c4ai-command-r-v01
         invalidInputError(version.parse(trans_version) >= version.parse("4.40.0"),
@@ -1781,32 +1850,16 @@ def _optimize_post(model, lightweight_bmm=False):
                                 module.MistralMLP,
                                 llama_mlp_forward)
     elif model.config.model_type == "gemma":
-        invalidInputError(version.parse(trans_version) >= version.parse("4.38.0"),
-                          "Please upgrade transformers to 4.38.0 or higher version "
-                          "to run Mixtral models.")
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        if version.parse(trans_version) >= version.parse("4.39.0"):
-            from ipex_llm.transformers.models.gemma import gemma_attention_forward_4_39
-            convert_forward(model,
-                            module.GemmaAttention,
-                            gemma_attention_forward_4_39
-                            )
-        else:
-            from ipex_llm.transformers.models.gemma import gemma_attention_forward
-            convert_forward(model,
-                            module.GemmaAttention,
-                            gemma_attention_forward,
-                            )
+        from ipex_llm.transformers.models.gemma import gemma_model_forward
+        from ipex_llm.transformers.models.gemma import gemma_attention_forward
         from ipex_llm.transformers.models.gemma import gemma_rms_norm_forward
-        from ipex_llm.transformers.models.gemma import gemma_mlp_forward
-        convert_forward(model,
-                        module.GemmaRMSNorm,
-                        gemma_rms_norm_forward)
-        convert_forward(model,
-                        module.GemmaMLP,
-                        gemma_mlp_forward)
-
+        from ipex_llm.transformers.models.common import mlp_gelu_forward
+        convert_forward(model, module.GemmaModel, gemma_model_forward)
+        convert_forward(model, module.GemmaAttention, gemma_attention_forward)
+        convert_forward(model, module.GemmaRMSNorm, gemma_rms_norm_forward)
+        convert_forward(model, module.GemmaMLP, mlp_gelu_forward)
     elif model.config.model_type == "gemma2":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

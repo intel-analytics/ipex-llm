@@ -29,7 +29,7 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def optimize_llm_pre(model: torch.nn.Module, qtype):
+def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision):
     if model.config.model_type == "baichuan":
         # process NormHead module in Baichuan2 7B
         if hasattr(model, 'lm_head') and model.lm_head is not None:
@@ -102,8 +102,11 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
         # for Qwen2-7B-Insturct, divide lm_head into 14 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
                 not cpu_lm_head:
-            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=28,
-                                       bias=model.lm_head.bias)
+            # Do not split lm_head and use sym_int8 instead when mixed_precison is True
+            is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
+            split_num = 28 if is_split else 1
+            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
+                                       bias=model.lm_head.bias, use_split=True)
             del model.lm_head
             model.lm_head = new_lm_head
 

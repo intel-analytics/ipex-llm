@@ -26,6 +26,7 @@ from typing import Optional, Tuple
 import torch
 
 from ipex_llm.utils.common import invalidInputError
+from ipex_llm.transformers.models.common import attention_softmax
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
     mlp_fusion_check, fp16_fusion_check
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
@@ -239,8 +240,7 @@ def yuan_attention_forward(
         if attention_mask is not None:
             attn_weights = attn_weights + attention_mask
         # upcast attention to fp32
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                   dtype=torch.float32).to(value_states.dtype)
+        attn_weights = attention_softmax(attn_weights, self.training)
         attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2)

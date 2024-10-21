@@ -85,8 +85,9 @@ We can benchmark the api_server to get an estimation about TPS (transactions per
 
 After starting vllm service, Sending reqs through `vllm_online_benchmark.py`
 ```bash
-python vllm_online_benchmark.py $model_name $max_seqs
+python vllm_online_benchmark.py $model_name $max_seqs $input_length $output_length
 ```
+If `input_length` and `output_length` are not provided, the script will use the default values of 1024 and 512, respectively.
 
 And it will output like this:
 ```bash

@@ -38,7 +38,6 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
     pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
-    pip install transformers==4.36.2 && \
     pip install transformers_stream_generator einops tiktoken && \
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
@@ -55,8 +54,8 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     cd /tmp/ && \
     pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # Internal oneccl
-    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.3-release/oneccl_wks_installer_2024.0.0.3.sh && \
-    bash oneccl_wks_installer_2024.0.0.3.sh && \
+    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.4.1-release/oneccl_wks_installer_2024.0.0.4.1.sh && \
+    bash oneccl_wks_installer_2024.0.0.4.1.sh && \
     git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
     cd torch-ccl && \
     patch -p1 < /tmp/oneccl-binding.patch && \
@@ -83,6 +82,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     VLLM_TARGET_DEVICE=xpu python setup.py install && \
     pip install mpi4py fastapi uvicorn openai && \
     pip install gradio==4.43.0 && \
+    pip install transformers==4.44.2 && \
     # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
     pip install ray && \
     patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
