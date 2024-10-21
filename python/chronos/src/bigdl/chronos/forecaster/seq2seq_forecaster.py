@@ -150,6 +150,7 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         self.lr = lr
         self.metrics = metrics
         self.seed = seed
+        self.has_bn = False
 
         # nano setting
         current_num_threads = torch.get_num_threads()
