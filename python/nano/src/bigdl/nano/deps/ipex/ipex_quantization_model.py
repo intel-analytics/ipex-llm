@@ -111,7 +111,9 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
                              inplace=inplace)
 
         # calibration model
-        for x in calib_data:
+        for idx, x in enumerate(calib_data):
+            if idx >= calib_data._nano_calib_sample_size:
+                break
             # data transform of calib_data
             if isinstance(x, (tuple, list)) and len(x) > 1:
                 x = x[0]
