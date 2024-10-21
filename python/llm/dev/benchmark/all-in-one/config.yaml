@@ -14,7 +14,8 @@ in_out_pairs:
   - '960-64'
   - '1024-128'
 test_api:
-  - "transformer_int4_fp16_gpu"             # on Intel GPU, transformer-like API, (qtype=int4), (dtype=fp16)
+  - "transformers_openvino"
+  # - "transformer_int4_fp16_gpu"             # on Intel GPU, transformer-like API, (qtype=int4), (dtype=fp16)
   # - "transformer_int4_fp16_gpu_win"       # on Intel GPU for Windows, transformer-like API, (qtype=int4), (dtype=fp16)
   # - "transformer_int4_gpu"                # on Intel GPU, transformer-like API, (qtype=int4), (dtype=fp32)
   # - "transformer_int4_gpu_win"            # on Intel GPU for Windows, transformer-like API, (qtype=int4), (dtype=fp32)
