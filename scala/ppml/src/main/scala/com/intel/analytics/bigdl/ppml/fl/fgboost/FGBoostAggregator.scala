@@ -30,7 +30,7 @@ import org.apache.logging.log4j.LogManager
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.fl.FLConfig
+import com.intel.analytics.bigdl.ppml.fl.{FLConfig, WhitelistedObjectInputStream}
 import org.json4s.FileInput
 
 import java.io.{File, FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
@@ -65,10 +65,13 @@ class FGBoostAggregator(config: FLConfig,
   def getResultStorage(): Storage[TensorMap] =
     aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
 
+
   def loadModel(modelPath: String): Unit = {
     if (new File(modelPath).exists()) {
       val is = new ObjectInputStream(new FileInputStream(modelPath))
-      serverTreeLeaf = is.readObject().asInstanceOf[ArrayBuffer[Map[Int, Float]]]
+      val wis = new WhitelistedObjectInputStream(
+        is, new java.util.HashSet[String](List("scala.collection.mutable.ArrayBuffer").asJava))
+      serverTreeLeaf = wis.readObject().asInstanceOf[ArrayBuffer[Map[Int, Float]]]
     } else {
       logger.warn(s"$modelPath does not exist, will create new model")
     }
