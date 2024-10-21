@@ -1323,6 +1323,9 @@ jobs:
       - name: Prepare igpu perf test (3072-384 int4+fp16)
         shell: bash
         run: |
+          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
+            sed -i "s/- 'meta-llama\/Llama-2-13b-chat-hf'/# - 'meta-llama\/Llama-2-13b-chat-hf'/" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
+          fi
           sed -i 's/2048-256/3072-384/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test5/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
@@ -1542,6 +1545,9 @@ jobs:
       - name: Prepare igpu perf test (4096-512 int4+fp16)
         shell: bash
         run: |
+          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
+            sed -i "s/- 'meta-llama\/Llama-2-13b-chat-hf'/# - 'meta-llama\/Llama-2-13b-chat-hf'/" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
+          fi
           sed -i 's/3072-384/4096-512/g' python/llm/dev/benchmark/all-in-one/run.py
           if [ ${{ matrix.platform }} == "perf-igpu" ]; then
             sed -i 's/{today}_test5/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
