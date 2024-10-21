@@ -758,23 +758,33 @@ def run_transformers_openvino(repo_id,
                                  batch_size,
                                  optimize_model):
     from optimum.intel import OVModelForCausalLM
-    from transformers import AutoConfig, AutoTokenizer, LlamaTokenizer
+    from transformers import AutoTokenizer, LlamaTokenizer, PretrainedConfig
 
     model_path = get_model_path(repo_id, local_model_hub)
     in_out_len = in_out_pairs[0].split("-")
     max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
     ov_config = {"PERFORMANCE_HINT": "LATENCY",
                  "NUM_STREAMS": "1", "CACHE_DIR": ""}
+    config_dict = dict(pretrained_model_name_or_path=model_path, 
+                    #    torch_dtype="auto",
+                       trust_remote_code=True,
+                       use_cache=True, low_cpu_mem_usage=True)
+    config = PretrainedConfig(**config_dict)
+
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in LLAMA_IDS:
+    if repo_id in CHATGLM_IDS:
         model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
-                                                     ov_config=ov_config,config=AutoConfig.from_pretrained(model_path),).eval()
+                                                     ov_config=ov_config, config=config,).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    elif repo_id in LLAMA_IDS:
+        model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
+                                                     ov_config=ov_config, config=config,).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
-                                                     ov_config=ov_config, config=AutoConfig.from_pretrained(model_path),).eval()
+                                                     ov_config=ov_config, config=config,).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     load_time = end - st
