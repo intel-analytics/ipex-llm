@@ -88,6 +88,56 @@ class Net(nn.Module):
         return y
 
 
+class Net_1(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.relu1 = nn.ReLU()
+        self.dout = nn.Dropout(0.2)
+
+    def forward(self, input_):
+        a1 = self.fc1(input_)
+        h1 = self.relu1(a1)
+        dout = self.dout(h1)
+        return dout
+
+
+class Net_2(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc2 = nn.Linear(50, 100)
+        self.prelu = nn.PReLU(1)
+        self.out = nn.Linear(100, 1)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, input_):
+        a2 = self.fc2(input_)
+        h2 = self.prelu(a2)
+        a3 = self.out(h2)
+        y = self.out_act(a3)
+        return y
+
+
+class MultiModelCallback(MainCallback):
+    def on_iter_forward(self, runner):
+        """
+        If `on_train_forward` and `on_val_forward` are not overridden,
+        this will be called during forward when training and validating.
+        Any behavior inconsistent with the default forward behavior should be overridden here.
+        """
+        # unpack features into features and targets
+        *features, target = runner.batch
+        # Forward features
+        dout = runner.model[0](*features)
+        runner.output = runner.model[1](dout)
+
+        # Ensure `targetL` and `outputL` are always in a list format.
+        targetL = [target] if not isinstance(target, (list, tuple)) else target
+        outputL = [runner.output] if not isinstance(runner.output, (list, tuple)) else runner.output
+        # Compute loss
+        runner.loss = runner.criterion(*outputL, *targetL)
+
+
 class ComplicatedOutputNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -541,6 +591,34 @@ class TestPyTorchEstimatorBasic(TestCase):
                                    output_cols=['scalar', 'dict'])
         result.collect()
         assert "scalar" and "dict" in result.columns
+
+    def test_multi_model_train_eval(self):
+
+        sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.range(0, 100)
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: [Net_1(), Net_2()])
+        estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
+                      feature_cols=["feature"],
+                      label_cols=["label"],
+                      callbacks=[MultiModelCallback()])
+        estimator.evaluate(df, batch_size=4,
+                           feature_cols=["feature"],
+                           label_cols=["label"],
+                           callbacks=[MultiModelCallback()])
+        estimator.shutdown()
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()

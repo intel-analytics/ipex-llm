@@ -41,6 +41,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader, IterableDataset
+from torch.distributed.algorithms.join import Join
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch import utils
@@ -123,7 +124,7 @@ class TorchRunner(BaseRunner):
         self.timers = utils.TimerCollection()
         self.epochs = 0
         self.global_step = 0
-        self.models = None
+        self._models = None
         self.optimizers = None
         self.metrics = metrics
         self.criterion = None
@@ -163,12 +164,12 @@ class TorchRunner(BaseRunner):
 
         self.logger.debug("Creating model")
         if self.model_creator:
-            self.models = self.model_creator(self.config)
+            self._models = self.model_creator(self.config)
 
-            if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
-                self.models = [self.models]
-            invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
-                                 ("All models must be PyTorch models: {}.".format(self.models)))
+            if isinstance(self._models, nn.Sequential) or not isinstance(self._models, Iterable):
+                self._models = [self._models]
+            invalidInputError(all(isinstance(model, nn.Module) for model in self._models),
+                                 ("All models must be PyTorch models: {}.".format(self._models)))
 
             if self.optimizer_creator:
                 self.logger.debug("Creating optimizer.")
@@ -184,11 +185,11 @@ class TorchRunner(BaseRunner):
         from torch.nn.parallel import DistributedDataParallel
         self.training_models = [
             DistributedDataParallel(model)
-            for model in self.models
+            for model in self._models
         ]
-        self.setup_operator(self.training_models)
+        self.setup_operator()
 
-    def setup_operator(self, training_models):
+    def setup_operator(self):
         """Create the training operator."""
         if self.backend == "horovod":
             self.dist_backend = HorovodDistBackend()
@@ -282,7 +283,7 @@ class TorchRunner(BaseRunner):
             data_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
 
-        if not self.models:
+        if not self._models:
             invalidInputError(False,
                               "You must provide a model for train and evaluate.")
 
@@ -363,11 +364,12 @@ class TorchRunner(BaseRunner):
 
         # TODO: Discuss the situation when there are multiple components,
         #       It is best for the user to write this part of the logic in a hook func.
-        self.model.train()
+        [model.train() for model in self.training_models]
         # self.training_models may not be DDP if horovod.
         from torch.nn.parallel import DistributedDataParallel as DDP
-        if isinstance(self.model, DDP):
-            with self.model.join():
+        # In train mode, self.model points to training_models[0]
+        if isinstance(self.training_models[0], DDP):
+            with Join(self.training_models):
                 self._train_loop(iterator, metric_meters, callbacks)
         else:
             self._train_loop(iterator, metric_meters, callbacks)
@@ -431,7 +433,7 @@ class TorchRunner(BaseRunner):
 
         # Compute gradients in a backward pass.
         with self.timers.record("bwd"):
-            self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
+            self.call_hook(callbacks=callbacks, fn_name="on_train_backward")
 
         loss_item = self.loss.item()
         self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(batch)}
@@ -453,7 +455,7 @@ class TorchRunner(BaseRunner):
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
-        if not self.models:
+        if not self._models:
             invalidInputError(False,
                               "You must provide a model for train and evaluate.")
 
@@ -509,7 +511,7 @@ class TorchRunner(BaseRunner):
         """
         # switch to evaluate mode
         self._mode = 'val'
-        self.model.eval()
+        [model.eval() for model in self._models()]
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
         total_samples = 0
@@ -591,7 +593,7 @@ class TorchRunner(BaseRunner):
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
 
-        if not self.models:
+        if not self._models:
             invalidInputError(False,
                               "You must provide a model for predict.")
 
@@ -627,7 +629,7 @@ class TorchRunner(BaseRunner):
     def _predict(self, pred_iterator, callbacks=None):
         # switch to evaluate mode
         self._mode = 'predict'
-        self.model.eval()
+        [model.eval() for model in self._models()]
         result = []
         with torch.no_grad():
             for batch_idx, batch in enumerate(pred_iterator):
@@ -668,7 +670,7 @@ class TorchRunner(BaseRunner):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,
-            "models": [model.state_dict() for model in self.models]
+            "models": [model.state_dict() for model in self._models]
         }
         if self.optimizers:
             state.update({
@@ -688,14 +690,14 @@ class TorchRunner(BaseRunner):
         """Sets the state of the model."""
         import collections
         if isinstance(state, collections.OrderedDict):
-            for model, state_dict in zip(self.models, [state]):
+            for model, state_dict in zip(self._models, [state]):
                 model.load_state_dict(state_dict)
         else:
             if "models" in state:
-                for model, state_dict in zip(self.models, state["models"]):
+                for model, state_dict in zip(self._models, state["models"]):
                     model.load_state_dict(state_dict)
             else:
-                for model, state_dict in zip(self.models, state):
+                for model, state_dict in zip(self._models, state):
                     model.load_state_dict(state_dict)
         if self.optimizers and "optimizers" in state:
             for optimizer, state_dict in zip(self.optimizers, state["optimizers"]):
@@ -712,7 +714,7 @@ class TorchRunner(BaseRunner):
             if save_weights_only:
                 checkpoint = {
                     "epoch": self.epochs,
-                    "models": [model.state_dict() for model in self.models],
+                    "models": [model.state_dict() for model in self._models],
                 }
             else:
                 checkpoint = self.get_state_dict()
@@ -740,7 +742,7 @@ class TorchRunner(BaseRunner):
         del self.train_loader
         del self.criterion
         del self.optimizers
-        del self.models
+        del self._models
 
     def call_hook(self, callbacks, fn_name: str) -> None:
         """Call all hooks.
@@ -779,10 +781,10 @@ class TorchRunner(BaseRunner):
 
     @property
     def given_models(self):
-        if len(self.models) > 1:
-            return self.models
+        if len(self._models) > 1:
+            return self._models
         else:
-            return self.models[0]
+            return self._models[0]
 
     @property
     def given_optimizers(self):
@@ -801,8 +803,21 @@ class TorchRunner(BaseRunner):
             if self.training_models:
                 return self.training_models[0]
         else:
-            if self.models:
-                return self.models[0]
+            if self._models:
+                return self._models[0]
+
+    @property
+    def models(self):
+        """
+        First or only model(s) created by the ``model_creator``.
+        Discuss whether to return ddp model depending on the mode.
+        """
+        if self._mode == 'train':
+            if self.training_models:
+                return self.training_models
+        else:
+            if self._models:
+                return self._models
 
     @property
     def optimizer(self):
