@@ -108,7 +108,10 @@ public class GrpcClientBase extends AbstractGrpcBase {
 
     public void shutdown() {
         try {
-            channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+	    channel.shutdownNow();
+            if (!channel.awaitTermination(5, TimeUnit.SECONDS)) {
+	      logger.warn("Timed out forcefully shutting down connection: " + channel);
+	    }
         } catch (InterruptedException e) {
             logger.error("Shutdown Client Error" + e.getMessage());
         }
