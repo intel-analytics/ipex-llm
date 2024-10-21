@@ -40,6 +40,7 @@ from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank,\
     get_partition_id
 from bigdl.orca.learn.log_monitor import LogMonitor
+from torch.utils.data import DataLoader
 
 
 logger = logging.getLogger(__name__)
@@ -154,6 +155,7 @@ class PytorchPysparkWorker(TorchRunner):
         self.load_state_dict(self.state_dict.value)
         validation_stats = super().validate(data_creator, batch_size, num_steps, profile,
                                             wrap_dataloader, callbacks)
+        print(data_creator)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return [validation_stats]
@@ -162,8 +164,8 @@ class PytorchPysparkWorker(TorchRunner):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
-
-        partition = data_creator(config, batch_size)
+        partition = data_creator if isinstance(data_creator, DataLoader) \
+            else data_creator(config, batch_size)
         self.load_state_dict(self.state_dict.value)
         result = super().predict(partition=partition, batch_size=batch_size,
                                  profile=profile, callbacks=callbacks)
