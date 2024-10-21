@@ -44,24 +44,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 from torch.nn import CrossEntropyLoss
 from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP, Qwen2Attention
 from ipex_llm.utils.common.log4Error import invalidInputError
-
-
-def split_linear(module, module_name, n_splits=2):
-    in_features = module.in_features
-    invalidInputError(in_features % n_splits == 0,
-                      f"in_features of the linear layer {module_name} must be divisible by n_splits, " \
-                      f"but got in_features: {in_features}, n_splits: {n_splits}")
-    weight_split = torch.tensor_split(module.weight, n_splits, dim=1)
-    linear_list = torch.nn.ModuleList()
-    bias = module.bias
-    for idx, weight in enumerate(weight_split):
-        new_linear = torch.nn.Linear(weight.size(1),
-                                     weight.size(0),
-                                     bias=False if bias is None else True)
-        new_linear.bias = bias
-        new_linear.weight = torch.nn.Parameter(weight.contiguous(), requires_grad=False)
-        linear_list.add_module(f"{module_name}_dq_{idx}", new_linear)
-    return linear_list
+from ipex_llm.transformers.npu_models.common import split_linear
 
 
 def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down_proj=2):
@@ -133,6 +116,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         intermediate_size,
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
+        is_groupwise_quant: bool = False
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
@@ -140,7 +124,8 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
                          profile=profile,
                          device=device,
                          n_splits_linear=n_splits_linear,
-                         n_splits_down_proj=n_splits_down_proj)
+                         n_splits_down_proj=n_splits_down_proj,
+                         is_groupwise_quant=is_groupwise_quant)
         self.max_seq_len = max_seq_len
         self.intermediate_size = intermediate_size
         self.dtype = dtype
@@ -263,12 +248,14 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
         print(f"{mode} start compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
+        t1 = time.perf_counter()
         self.compile()
-        print(f"{mode} end compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
+        t2 = time.perf_counter()
+        print(f"{mode} end compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}, time: {t2 - t1}s")
         qwen_size = "7b" if self.hidden_size == 3584 else "1.5b"
         xml_path = f"scaleafter-reshape-split-noscale/qwen-{qwen_size}-npu-sa-dq-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
 
-        if not os.path.exists(xml_path) and mode=="decode":
+        if not os.path.exists(xml_path):
             self.save(xml_path)
 
 
@@ -340,6 +327,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         do_print: bool = False,
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
+        is_groupwise_quant: bool = False,
     ):
         super().__init__()
 
@@ -403,7 +391,8 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
                 transpose_value=self.transpose_value,
                 dtype=np_dtype,
                 n_splits_linear=n_splits_linear,
-                n_splits_down_proj=n_splits_down_proj
+                n_splits_down_proj=n_splits_down_proj,
+                is_groupwise_quant=is_groupwise_quant
             )
             self.backend_decoders.append(decoder)
 
@@ -488,6 +477,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         transpose_value: bool = False,
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
+        is_groupwise_quant: bool = False,
     ):
         super().__init__()
         self.op_parameters = parameters
@@ -517,7 +507,8 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
             transpose_value=self.transpose_value,
             dtype=np_dtype,
             n_splits_linear=n_splits_linear,
-            n_splits_down_proj=n_splits_down_proj
+            n_splits_down_proj=n_splits_down_proj,
+            is_groupwise_quant=is_groupwise_quant
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
@@ -594,6 +585,7 @@ def run_decode(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
+    is_groupwise_quant = getattr(model.config, "is_groupwise_quant", False)
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
@@ -626,16 +618,6 @@ def run_decode(
                     l_weights.append(l.weight)
                     scales.append(l.scale)
                 weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
-        # for q, k in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list):
-        #     weights.append((q.weight, q.scale))
-        #     weights.append((k.weight, k.scale))
-        # scales = []
-        # for v in attn_layer.v_proj_dq_list:
-        #     weights.append(v.weight)
-        #     scales.append(v.scale)
-        # weights.append(np.stack(scales, axis=0))
-
         
         if n_splits_linear == 1:
             for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
@@ -669,9 +651,6 @@ def run_decode(
         layer_weights.extend(weights)
         input_layer_norm_weights.append(layer_norm_0)
         post_attn_layernorm_weights.append(layer_norm_1)
-        # q_biases.append(attn_layer.q_proj.bias.to(torch.float16))
-        # k_biases.append(attn_layer.k_proj.bias.to(torch.float16))
-        # v_biases.append(attn_layer.v_proj.bias.to(torch.float16))
         q_biases.append(attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16))
         k_biases.append(attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16))
         v_biases.append(attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16))
@@ -696,7 +675,8 @@ def run_decode(
         transpose_value=transpose_value_cache,
         do_print=False,
         n_splits_linear=n_splits_linear,
-        n_splits_down_proj=n_splits_down_proj
+        n_splits_down_proj=n_splits_down_proj,
+        is_groupwise_quant=is_groupwise_quant
     )
 
     dist.barrier()
@@ -867,6 +847,7 @@ def run_prefill(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
+    is_groupwise_quant = getattr(model.config, "is_groupwise_quant", False)
     deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
@@ -885,9 +866,6 @@ def run_prefill(
             weights.append((q.weight, q.scale))
             weights.append((k.weight, k.scale))
             weights.append((v.weight, v.scale))
-        #     weights.append(v.weight)
-        #     scales.append(v.scale)
-        # weights.append(np.stack(scales, axis=0))
         
         for l in attn_layer.o_proj_dq_list:
             weights.append((l.weight, l.scale))
@@ -896,49 +874,6 @@ def run_prefill(
             weights.append((u.weight, u.scale))
         for l in mlp_layer.down_proj_dq_list:
             weights.append((l.weight, l.scale))
-
-        # if n_splits_linear == 1:
-        #     for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
-        #         weights.append((q.weight, q.scale))
-        #         weights.append((k.weight, k.scale))
-        #         weights.append((v.weight, v.scale))
-
-        #     for l in attn_layer.o_proj_dq_list:
-        #         weights.append((l.weight, l.scale))
-        # else:
-        #     for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-        #                     attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list]:
-        #         l_weights = []
-        #         scales = []
-        #         for l in layer_list:
-        #             l_weights.append(l.weight)
-        #             scales.append(l.scale)
-        #         weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
-        # if n_splits_linear == 1:
-        #     for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
-        #         weights.append((g.weight, g.scale))
-        #         weights.append((u.weight, u.scale))
-        # else:
-        #     for layer_list in [mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
-        #         l_weights = []
-        #         scales = []
-        #         for l in layer_list:
-        #             l_weights.append(l.weight)
-        #             scales.append(l.scale)
-        #         weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
-        # if n_splits_down_proj == 1:
-        #     for l in mlp_layer.down_proj_dq_list:
-        #         weights.append((l.weight, l.scale))
-        # else:
-        #     l_weights = []
-        #     scales = []
-        #     for l in mlp_layer.down_proj_dq_list:
-        #         l_weights.append(l.weight)
-        #         scales.append(l.scale)
-        #     weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -963,7 +898,8 @@ def run_prefill(
             max_seq_len=max_output_len,
             transpose_value=transpose_value_cache,
             n_splits_linear=n_splits_linear,
-            n_splits_down_proj=n_splits_down_proj
+            n_splits_down_proj=n_splits_down_proj,
+            is_groupwise_quant=is_groupwise_quant
         )
 
         layer_weights.extend(weights)

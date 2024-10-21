@@ -57,7 +57,8 @@ class LMHeadLinear(NNFactory):
 
         if use_split:
             input = self.parameter((1, self.batch, self.inC))
-            res = self.dq_split_linear(input, self.split_num, self.outC, self.inC, wt_dtype=dtype)
+            res = self.dq_split_linear(input, self.split_num, self.outC, self.inC, wt_dtype=dtype,
+                                       scale_factor=False)
         else:
             input = self.parameter((self.batch, self.inC))
             split_size = self.inC // split_num // 2 * 2
@@ -78,6 +79,7 @@ class LMHeadLinear(NNFactory):
         self.compile()
         qwen_size = "7b" if self.inC == 3584 else "1.5b"
         xml_path = f"qwen/qwen-{qwen_size}-npu-lmhead-{self.split_num}.xml"
+        print(f"use_split: {use_split}, num: {self.split_num}")
         if not os.path.exists(xml_path):
             self.save(xml_path)
         print("end compiling lm_head")

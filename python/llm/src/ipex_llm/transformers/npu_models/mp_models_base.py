@@ -103,7 +103,7 @@ def run_model(
 class LLMBaseNNFactory(NNFactory):
 
     def __init__(self, max_seq_len, transpose_value, dtype, profile=False, device="NPU",
-                 n_splits_linear=1, n_splits_down_proj=1):
+                 n_splits_linear=1, n_splits_down_proj=1, is_groupwise_quant=False):
         super().__init__(profile, device)
         self.cache_parameter_ops = []
         self.input_ops = []
@@ -116,6 +116,7 @@ class LLMBaseNNFactory(NNFactory):
         self.dtype = dtype
         self.n_splits_linear=n_splits_linear
         self.n_splits_down_proj=n_splits_down_proj
+        self.is_groupwise_quant = is_groupwise_quant
 
     def reduce_linear(self, to_concat):
         concat = self.sequence_concat(to_concat, axis=0)
@@ -183,6 +184,7 @@ class LLMBaseNNFactory(NNFactory):
                             groupsize,
                             bias=False,
                             wt_dtype=self.dtype,
+                            scale_factor=not self.is_groupwise_quant
                         )
                     )
                     key_states_to_concat.append(
@@ -192,6 +194,7 @@ class LLMBaseNNFactory(NNFactory):
                             groupsize,
                             bias=False,
                             wt_dtype=self.dtype,
+                            scale_factor=not self.is_groupwise_quant
                         )
                     )
                     value_states_to_concat.append(
@@ -201,22 +204,25 @@ class LLMBaseNNFactory(NNFactory):
                             groupsize,
                             bias=False,
                             wt_dtype=self.dtype,
+                            scale_factor=not self.is_groupwise_quant
                         )
                     )
                 query_states = sum(query_states_to_concat)
                 key_states = sum(key_states_to_concat)
                 value_states = sum(value_states_to_concat)
             else:
-                print(hidden_size, hidden_states.shape)
                 query_states = self.dq_split_linear(hidden_states, num_heads * head_dim,
                                                     hidden_size, self.n_splits_linear,
-                                                    wt_dtype=self.dtype)
+                                                    wt_dtype=self.dtype,
+                                                    scale_factor=not self.is_groupwise_quant)
                 key_states = self.dq_split_linear(hidden_states, num_key_value_heads * head_dim,
-                                                hidden_size, self.n_splits_linear,
-                                                wt_dtype=self.dtype)
+                                                  hidden_size, self.n_splits_linear,
+                                                  wt_dtype=self.dtype,
+                                                  scale_factor=not self.is_groupwise_quant)
                 value_states = self.dq_split_linear(hidden_states, num_key_value_heads * head_dim,
                                                     hidden_size, self.n_splits_linear,
-                                                    wt_dtype=self.dtype)
+                                                    wt_dtype=self.dtype,
+                                                    scale_factor=not self.is_groupwise_quant)
             
         if q_bias is not None:
             query_states = query_states + q_bias
@@ -284,17 +290,10 @@ class LLMBaseNNFactory(NNFactory):
         attn_weight = self.softmax(attn_weight, -1)
         attn_weight = self.convert_to_fp16(attn_weight)
         attn_output = self.matmul(attn_weight, value_states, False, self.transpose_value)
-        # query_states = self.convert_to_fp32(query_states)
-        # attention_mask = self.convert_to_fp32(attention_mask)
-        # value_states = self.convert_to_fp32(value_states)
-        # key_states = self.convert_to_fp32(key_states)
-        # attn_output = self.scaled_dot_product_attention(query_states, key_states, value_states, attention_mask, False)
-        # attn_output = self.convert_to_fp16(attn_output)
 
         attn_output = self.transpose(attn_output, [0, 2, 1, 3])
         attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
 
-        # print(f"attn_output: {attn_output.shape}")
         if self.n_splits_linear == 1:
             attn_output = self.linear(
                 attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
@@ -308,19 +307,20 @@ class LLMBaseNNFactory(NNFactory):
                                                 end=[1, seq_len, (i + 1) * groupsize])
                     attn_output_to_concat.append(
                         self.linear(
-                            sub_attn_output, hidden_size, groupsize, bias=False, wt_dtype=self.dtype
+                            sub_attn_output, hidden_size, groupsize, bias=False, wt_dtype=self.dtype,
+                            scale_factor=not self.is_groupwise_quant
                         )
                     )
                 attn_output = sum(attn_output_to_concat)
             else:
                 attn_output = self.dq_split_linear(attn_output, hidden_size, hidden_size,
-                                                self.n_splits_linear, wt_dtype=self.dtype)
+                                                   self.n_splits_linear, wt_dtype=self.dtype,
+                                                   scale_factor=not self.is_groupwise_quant)
                 
         return attn_output, new_key_states, new_value_states
 
     def mlp(self, hidden_states, seq_len=-1, mode="prefill"):
         print(f"mp_models_base mlp")
-        use_concat_reduce = (mode == "decode" and False)
         if self.n_splits_linear == 1:
             mm1 = self.linear(
                 hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
@@ -337,24 +337,28 @@ class LLMBaseNNFactory(NNFactory):
                 mm2_to_concat = []
                 for i in range(self.n_splits_linear):
                     sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
-                                                end=[1, seq_len, (i + 1) * gate_up_groupsize])
+                                                   end=[1, seq_len, (i + 1) * gate_up_groupsize])
                     mm1_to_concat.append(
                         self.linear(
-                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype,
+                            scale_factor=not self.is_groupwise_quant
                         )
                     )
                     mm2_to_concat.append(
                         self.linear(
-                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype
+                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype,
+                            scale_factor=not self.is_groupwise_quant
                         )
                     )
                 mm1 = sum(mm1_to_concat)
                 mm2 = sum(mm2_to_concat)
             else:
                 mm1 = self.dq_split_linear(hidden_states, self.intermediate_size, self.hidden_size,
-                                        self.n_splits_linear, wt_dtype=self.dtype)
+                                           self.n_splits_linear, wt_dtype=self.dtype,
+                                           scale_factor=not self.is_groupwise_quant)
                 mm2 = self.dq_split_linear(hidden_states, self.intermediate_size, self.hidden_size,
-                                        self.n_splits_linear, wt_dtype=self.dtype)
+                                           self.n_splits_linear, wt_dtype=self.dtype,
+                                           scale_factor=not self.is_groupwise_quant)
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
 
         if self.n_splits_down_proj == 1:
@@ -371,13 +375,15 @@ class LLMBaseNNFactory(NNFactory):
                                          end=[1, seq_len, (i + 1) * down_groupsize])
                     hidden_states_to_concat.append(
                         self.linear(
-                            sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype
+                            sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype,
+                            scale_factor=not self.is_groupwise_quant
                         )
                     )
                 hidden_states = sum(hidden_states_to_concat)
             else:
                 hidden_states = self.dq_split_linear(mm1, self.hidden_size, self.intermediate_size,
-                                                    self.n_splits_down_proj, wt_dtype=self.dtype)
+                                                     self.n_splits_down_proj, wt_dtype=self.dtype,
+                                                     scale_factor=not self.is_groupwise_quant)
         return hidden_states
 
     def layer_norm(self, hidden_states, layernorm_weight):
@@ -531,7 +537,6 @@ class LLMBaseNNFactory(NNFactory):
             input_chunks.append(op)
         if scale_after:
             concat = self.sequence_concat(input_chunks, axis=0)
-            # concat = self.mul_scale(concat, scale_node, qk_size)
             concat = self.mul_scale(concat, output_channels, qk_size, n_splits)
             self.num_scale_ops += 1
             reshape_reduce = self.reshape(concat, [1, n_splits, -1, output_channels])
@@ -552,8 +557,10 @@ class LLMBaseNNFactory(NNFactory):
                         input_channels: int,
                         n_splits: int,
                         act_dtype: npt.DTypeLike = np.float16,
-                        wt_dtype: npt.DTypeLike = np.float16):
-        op = super().dq_split_linear(input_node, n_splits, output_channels, input_channels, False, act_dtype, wt_dtype)
+                        wt_dtype: npt.DTypeLike = np.float16,
+                        scale_factor: bool = False):
+        op = super().dq_split_linear(input_node, n_splits, output_channels, input_channels,
+                                     False, act_dtype, wt_dtype, scale_factor)
         self.linear_ops.append(op)
         return op
 

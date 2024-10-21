@@ -19,6 +19,7 @@ import importlib
 import numpy as np
 from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
 from ipex_llm.transformers.npu_models.lm_head import LMHeadLinear, SlicedLMHead
+from ipex_llm.utils.common.log4Error import invalidInputError
 
 
 def convert_forward(m, target_m, new_forward):
@@ -29,7 +30,8 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision):
+def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
+                     quantization_group_size=0):
     if model.config.model_type == "baichuan":
         # process NormHead module in Baichuan2 7B
         if hasattr(model, 'lm_head') and model.lm_head is not None:
@@ -86,14 +88,22 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision):
         model = model.llm
 
     if model.config.model_type == "qwen2":
-        from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_down_proj
         from ipex_llm.transformers.npu_models.qwen2_mp import split_linears
-        # model.apply(split_mlp_down_proj)
-        n_splits_linear = max(1, int(os.environ.get("IPEX_LLM_N_SPLITS_LINEAR", "1")))
-        n_splits_down_proj = max(1, int(os.environ.get("IPEX_LLM_N_SPLITS_DOWN_PROJ", "1")))
 
-        if n_splits_down_proj == 1 and model.config.intermediate_size == 18944:
-            n_splits_down_proj = 2
+        if quantization_group_size == 0:
+            n_splits_linear = 1
+            n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
+        else:
+            invalidInputError(
+                model.config.hidden_size % quantization_group_size == 0 and
+                model.config.intermediate_size % quantization_group_size == 0,
+                "The model hidden_size and intermediate_size should be divisible by "
+                f"quantization_group_size, but got hidden_size: {model.config.hidden_size}, "
+                f"intermediate_size: {model.config.intermediate_size}, and "
+                f"quantization_group_size: {quantization_group_size}"
+            )
+            n_splits_linear = model.config.hidden_size // quantization_group_size
+            n_splits_down_proj = model.config.intermediate_size // quantization_group_size
 
         model.apply(lambda m: split_linears(m, n_splits_hidden_size=n_splits_linear,
                                             n_splits_down_proj=n_splits_down_proj))
@@ -104,9 +114,17 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision):
                 not cpu_lm_head:
             # Do not split lm_head and use sym_int8 instead when mixed_precison is True
             is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
-            split_num = 28 if is_split else 1
+            use_split = False
+            if is_split:
+                if quantization_group_size == 0:
+                    split_num = 14
+                else:
+                    split_num = 28
+                    use_split = True
+            else:
+                split_num = 1
             new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
-                                       bias=model.lm_head.bias, use_split=True)
+                                       bias=model.lm_head.bias, use_split=use_split)
             del model.lm_head
             model.lm_head = new_lm_head
 
@@ -142,6 +160,7 @@ def optimize_llm(
     inter_pp=None,
     intra_pp=None,
     transpose_value_cache=True,
+    is_groupwise_quant=False
 ):
     if model.config.model_type == "llama":
         if intra_pp is None:
@@ -178,7 +197,13 @@ def optimize_llm(
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 5 if model.config.intermediate_size == 18944 else 7
+            if model.config.intermediate_size == 18944:
+                if is_groupwise_quant:
+                    inter_pp = 5
+                else:
+                    inter_pp = 2
+            else:
+                inter_pp = 1
 
         from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
         from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner
