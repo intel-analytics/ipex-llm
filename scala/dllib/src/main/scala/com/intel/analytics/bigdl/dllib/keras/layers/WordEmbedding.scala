@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import java.io._
 import java.util.concurrent.atomic.AtomicInteger
-
 import com.intel.analytics.bigdl.dllib.nn.{Identity => BIdentity}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.serialization.Bigdl._
@@ -27,6 +26,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.{DataConverter, TensorConverter}
+import org.apache.commons.io.serialization.ValidatingObjectInputStream
 // import com.intel.analytics.zoo.common.CheckedObjectInputStream
 import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
 import com.intel.analytics.bigdl.dllib.keras.layers.WordEmbedding.EmbeddingMatrixHolder
@@ -357,7 +357,8 @@ object WordEmbedding {
             numOfBytes += read
           }
         }
-        val ois = new CheckedObjectInputStream(classOf[Tensor[T]], new ByteArrayInputStream(w))
+        val ois = new ValidatingObjectInputStream(new ByteArrayInputStream(w))
+        ois.accept(classOf[Tensor[T]])
         try {
           ois.readObject().asInstanceOf[Tensor[T]]
         } finally {
