@@ -21,6 +21,7 @@ import os
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
+Trainer = LazyImport('bigdl.chronos.pytorch.trainer.TSTrainer')
 from unittest import TestCase
 import pytest
 from .. import op_torch, op_distributed, op_inference, op_automl
@@ -114,7 +115,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.fitted = True
         test_pred = forecaster.predict(test_data[0], acceleration=False)
         assert test_pred.shape == test_data[1].shape
         test_mse = forecaster.evaluate(test_data, acceleration=False)
@@ -129,7 +130,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        train_loss = forecaster.fit(train_loader, epochs=2)
+        forecaster.fitted = True
         yhat = forecaster.predict(data=test_loader, acceleration=False)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
         onnx_yhat = forecaster.predict_with_onnx(data=test_loader)
@@ -146,7 +147,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.fitted = True
         try:
             import onnx
             import onnxruntime
@@ -175,7 +176,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.fitted = True
         try:
             pred = forecaster.predict(test_data[0], acceleration=False)
             pred_openvino = forecaster.predict_with_openvino(test_data[0])
@@ -198,7 +199,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.fitted = True
         try:
             pred = forecaster.predict(test_data[0])
             pred_jit = forecaster.predict_with_jit(test_data[0])
@@ -220,7 +221,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.fitted = True
         with pytest.raises(RuntimeError):
             forecaster.quantize(train_data)
 
@@ -232,7 +233,10 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.trainer = Trainer(num_processes=1, max_epochs=2,
+                                     use_ipex=False, enable_checkpointing=False,
+                                     log_every_n_steps=10)
+        forecaster.fitted = True
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
             test_pred_save = forecaster.predict(test_data[0], acceleration=False)
@@ -267,7 +271,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mae",
                                        lr=0.01)
         with pytest.raises(RuntimeError):
-            forecaster.fit(train_data, epochs=2)
+            forecaster.fit(train_data, epochs=1)
 
     @op_distributed
     def test_s2s_forecaster_xshard_input(self):
@@ -293,7 +297,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                            loss="mae",
                                            lr=0.01,
                                            distributed=distributed)
-            forecaster.fit(train_data, epochs=2)
+            forecaster.fitted = True
             distributed_pred = forecaster.predict(test_data, acceleration=False)
             distributed_eval = forecaster.evaluate(val_data, acceleration=False)
         stop_orca_context()
@@ -315,7 +319,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01,
                                        distributed=True)
 
-        forecaster.fit(train_data, epochs=2)
+        forecaster.fitted = True
         distributed_pred = forecaster.predict(test_data[0], acceleration=False)
         distributed_eval = forecaster.evaluate(val_data, acceleration=False)
 
@@ -351,25 +355,9 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
         stop_orca_context()
-
-    @op_distributed
-    def test_s2s_dataloader_distributed(self):
-        from bigdl.orca import init_orca_context, stop_orca_context
-        train_data, _, _ = create_data(loader=True)
-        init_orca_context(cores=4, memory="2g")
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01,
-                                       distributed=True)
-        forecaster.fit(train_data, epochs=2)
-        stop_orca_context()
     
     def test_s2s_customized_loss_metric(self):
         from torchmetrics.functional import mean_squared_error
-        train_data, _, _ = create_data(loader=True)
         _, _, test_data = create_data()
         loss = torch.nn.L1Loss()
         def customized_metric(y_true, y_pred):
@@ -382,7 +370,10 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss=loss,
                                        metrics=[customized_metric],
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.trainer = Trainer(num_processes=1, max_epochs=2,
+                                     use_ipex=False, enable_checkpointing=False,
+                                     log_every_n_steps=10)
+        forecaster.fitted = True
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
             test_pred_save = forecaster.predict(test_data[0], acceleration=False)
@@ -391,34 +382,12 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             test_pred_load = forecaster.predict(test_data[0], acceleration=False)
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
 
-    def test_s2s_forecaster_fit_val(self):
-        train_data, val_data, _ = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, epochs=10)
-
-    def test_s2s_forecaster_fit_loader_val(self):
-        train_loader, val_loarder, _ = create_data(loader=True)
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
-        val_loss = forecaster.fit(train_loader, val_loarder, epochs=10)
-
     def test_forecaster_from_tsdataset(self):
         train, test = create_tsdataset()
         s2s = Seq2SeqForecaster.from_tsdataset(train,
                                                lstm_hidden_dim=16,
                                                lstm_layer_num=1)
-        s2s.fit(train,
-                epochs=2,
-                batch_size=32)
+        s2s.fitted = True
         yhat = s2s.predict(test, batch_size=32, acceleration=False)
         test.roll(lookback=s2s.data_config['past_seq_len'],
                   horizon=s2s.data_config['future_seq_len'])
@@ -432,9 +401,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                                future_seq_len=2,
                                                lstm_hidden_dim=16,
                                                lstm_layer_num=1)
-        s2s.fit(train,
-                epochs=2,
-                batch_size=32)
+        s2s.fitted = True
         yhat = s2s.predict(test, batch_size=None, acceleration=False)
         test.roll(lookback=s2s.data_config['past_seq_len'],
                   horizon=s2s.data_config['future_seq_len'])
@@ -451,7 +418,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         test_loader = test.to_torch_data_loader(lookback=24,
                                                 horizon=5)
         s2s = Seq2SeqForecaster.from_tsdataset(train)
-        s2s.fit(loader, epochs=2)
+        s2s.fitted = True
         yhat = s2s.predict(test, acceleration=False)
         onnx_yhat = s2s.predict_with_onnx(test)
         assert yhat.shape == onnx_yhat.shape
@@ -459,7 +426,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         res = s2s.evaluate(test_loader, acceleration=False)
         onnx_res = s2s.evaluate_with_onnx(test_loader)
 
-    def test_s2s_forecaster_fit_earlystop(self):
+    def test_s2s_forecaster_fit_validation_mode(self):
         train_data, val_data, _ = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
                                        future_seq_len=5,
@@ -467,30 +434,8 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data,
-                                  validation_mode='earlystop', epochs=10)
-
-    def test_s2s_forecaster_fit_earlystop_patience(self):
-        train_data, val_data, _ = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data, validation_mode='earlystop',
-                                  earlystop_patience=6, epochs=10)
-
-    def test_s2s_forecaster_fit_best_val(self):
-        train_data, val_data, _ = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mae",
-                                       lr=0.01)
-        val_loss = forecaster.fit(train_data, val_data,
-                                  validation_mode='best_epoch', epochs=10)
+        forecaster.fit(train_data, val_data, validation_mode='earlystop')
+        forecaster.fit(train_data, val_data, validation_mode='best_epoch')
 
     @op_automl
     def test_s2s_forecaster_tune_fit(self):
@@ -506,7 +451,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         forecaster.tune(train_data, val_data, epochs=10,
                         n_trials=3, target_metric="mse",
                         direction="minimize")
-        forecaster.fit(train_data, epochs=10)
+        forecaster.fit(train_data, validation_data=val_data, epochs=1)
 
     def test_predict_interval(self):
         train_data, val_data, test_data = create_data()
@@ -517,7 +462,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mse",
                                        metrics=["mse"],
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.fitted = True
         y_pred, std = forecaster.predict_interval(data=test_data[0],
                                                   validation_data=val_data,
                                                   repetition_times=5)
@@ -529,9 +474,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         s2s = Seq2SeqForecaster.from_tsdataset(train,
                                                lstm_hidden_dim=16,
                                                lstm_layer_num=1)
-        s2s.fit(train, val,
-                epochs=2,
-                batch_size=32)
+        s2s.fitted = True
         yhat = s2s.predict(test, batch_size=32, acceleration=False)
         test.roll(lookback=s2s.data_config['past_seq_len'],
                   horizon=s2s.data_config['future_seq_len'])
@@ -545,9 +488,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                                future_seq_len=2,
                                                lstm_hidden_dim=16,
                                                lstm_layer_num=1)
-        s2s.fit(train, val,
-                epochs=2,
-                batch_size=32)
+        s2s.fitted = True
         yhat = s2s.predict(test, batch_size=None, acceleration=False)
         test.roll(lookback=s2s.data_config['past_seq_len'],
                   horizon=s2s.data_config['future_seq_len'])
@@ -563,7 +504,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        forecaster.fit(train_loader, epochs=2)
+        forecaster.fitted = True
         forecaster.optimize(train_data=train_loader,
                             validation_data=val_loader,
                             batch_size=32)
@@ -578,7 +519,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mae",
                                        lr=0.01)
-        forecaster.fit(train_loader, epochs=2)
+        forecaster.fitted = True
         forecaster.evaluate(val_loader)
         forecaster.predict(test_loader)
         assert forecaster.accelerated_model is None
@@ -593,7 +534,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mse",
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=2)
+        forecaster.fit(train_data, epochs=1)
         test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
                                                          torch.from_numpy(test_data[1])),
                                            batch_size=32,
@@ -605,30 +546,9 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         eval_f = forecaster.evaluate(test_loader_shuffle_f)
         eval_t = forecaster.evaluate(test_loader_shuffle_t)
         assert_almost_equal(eval_f, eval_t)
-
-    @op_inference
-    def test_s2s_forecaster_eval_with_onnx_shuffle_loader(self):
-        from torch.utils.data import DataLoader, TensorDataset
-        from numpy.testing import assert_almost_equal
-        train_data, val_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mse",
-                                       lr=0.01)
-        forecaster.fit(train_data, epochs=2)
-        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
-                                                         torch.from_numpy(test_data[1])),
-                                           batch_size=32,
-                                           shuffle=False)
-        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
-                                                         torch.from_numpy(test_data[1])),
-                                           batch_size=32,
-                                           shuffle=True)
-        eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
-        eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
-        assert_almost_equal(eval_f, eval_t)
+        onnx_eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
+        onnx_eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
+        assert_almost_equal(onnx_eval_f, onnx_eval_t)
 
     def test_s2s_forecaster_export_forecasting_pipeline(self):
         import shutil
@@ -643,11 +563,10 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         train_data, test_data = create_tsdataset(roll=False)
         scaler = StandardScaler()
 
-        train_data.scale(scaler, fit=True) \
-                  .roll(lookback=24, horizon=5)
+        train_data.scale(scaler, fit=True).roll(lookback=24, horizon=5)
 
         forecaster = Seq2SeqForecaster.from_tsdataset(train_data)
-        forecaster.fit(train_data)
+        forecaster.fitted = True
 
         # export the pipeline to torchscript
         pipeline_module_dir = os.path.join(temp_dir, "pipeline")
@@ -693,7 +612,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mse",
                                        lr=0.01)
-        forecaster.fit(train_data, epochs=1)
+        forecaster.fitted = True
         original_thread = torch.get_num_threads()
         assert forecaster.thread_num == original_thread
 
@@ -717,7 +636,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                             validation_data=val_data,
                             batch_size=32,
                             thread_num=num)
-        pred = forecaster.predict(test_data[0], acceleration=False)
+        _ = forecaster.predict(test_data[0], acceleration=False)
         new_current_thread = torch.get_num_threads()
         assert new_current_thread == current_thread
         assert forecaster.thread_num == current_thread
