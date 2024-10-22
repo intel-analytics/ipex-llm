@@ -17,8 +17,9 @@ Step 3, you also need to download and install [Intel® oneAPI Base Toolkit](http
 - Intel Data Center GPU Max Series
 - Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series
 
-## Example - EAGLE Speculative Sampling with IPEX-LLM on MT-bench
+## Example - EAGLE-2 Speculative Sampling with IPEX-LLM on MT-bench
 In this example, we run inference for a Llama2 model to showcase the speed of EAGLE with IPEX-LLM on MT-bench data on Intel GPUs.
+We use EAGLE-2 which have better performance than EAGLE-1
 
 ### 1. Install
 #### 1.1 Installation on Linux
@@ -28,8 +29,10 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-pip install eagle-llm
+git clone https://github.com/SafeAILab/EAGLE.git
+cd EAGLE
 pip install -r requirements.txt
+pip install -e .
 ```
 
 #### 1.2 Installation on Windows
@@ -42,10 +45,10 @@ pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+git clone https://github.com/SafeAILab/EAGLE.git
+cd EAGLE
 pip install -r requirements.txt
-pip install transformers==4.36.2
-pip install gradio==3.50.2
-pip install eagle-llm
+pip install -e .
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -89,7 +92,7 @@ export ENABLE_SDP_FUSION=1
 ### 4. Running Example
 You can test the speed of EAGLE speculative sampling with ipex-llm on MT-bench using the following command.
 ```bash
-python -m evaluation.gen_ea_answer_llama2chat\
+python -m evaluation.gen_ea_answer_llama2chat_e2_ipex_optimize\
                  --ea-model-path [path of EAGLE weight]\
                  --base-model-path [path of the original model]\
                  --enable-ipex-llm\

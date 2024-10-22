@@ -16,7 +16,9 @@
 import os
 import torch
 import importlib
+import numpy as np
 from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
+from ipex_llm.transformers.npu_models.lm_head import LMHeadLinear, SlicedLMHead
 
 
 def convert_forward(m, target_m, new_forward):
@@ -27,7 +29,7 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
-def optimize_llm_pre(model: torch.nn.Module, qtype):
+def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision):
     if model.config.model_type == "baichuan":
         # process NormHead module in Baichuan2 7B
         if hasattr(model, 'lm_head') and model.lm_head is not None:
@@ -85,8 +87,18 @@ def optimize_llm_pre(model: torch.nn.Module, qtype):
 
     if model.config.model_type == "qwen2":
         from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_down_proj
-        from ipex_llm.transformers.npu_models.qwen2_mp import split_mlp_forward
         model.apply(split_mlp_down_proj)
+
+        # for Qwen2-7B-Insturct, divide lm_head into 14 parts
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
+                not cpu_lm_head:
+            # Do not split lm_head and use sym_int8 instead when mixed_precison is True
+            is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
+            split_num = 14 if is_split else 1
+            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
+                                       bias=model.lm_head.bias)
+            del model.lm_head
+            model.lm_head = new_lm_head
 
     # lm_head to cpu optimization
     if cpu_lm_head:
@@ -182,6 +194,11 @@ def optimize_llm(
         from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
         from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
+
+        # for Qwen2-7B-Insturct, divide lm_head into 14 parts
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
+                isinstance(model.lm_head, SlicedLMHead):
+            model.lm_head.get_fused_lm_head()
     elif model.config.model_type == "minicpm":
         # for minicpm-1b
         if intra_pp is None:

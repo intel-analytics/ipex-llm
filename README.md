@@ -3,7 +3,11 @@
  
 ---
 
-# 💫 Intel® LLM library for PyTorch*
+#  💫 Intel® LLM Library for PyTorch* 
+<p>
+  <b>< English</b> | <a href='./README.zh-CN.md'>中文</a> >
+</p>
+
 **`IPEX-LLM`** is a PyTorch library for running **LLM** on Intel CPU and GPU *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)* with very low latency[^1]. 
 > [!NOTE]
 > - *It is built on top of the excellent work of **`llama.cpp`**, **`transformers`**, **`bitsandbytes`**, **`vLLM`**, **`qlora`**, **`AutoGPTQ`**, **`AutoAWQ`**, etc.*
@@ -181,10 +185,10 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [VSCode on GPU](docs/mddocs/DockerGuides/docker_run_pytorch_inference_in_vscode.md): running and developing `ipex-llm` applications in Python using VSCode on Intel GPU
 
 ### Use
-- [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): running **llama.cpp** (*using C++ interface of `ipex-llm` as an accelerated backend for `llama.cpp`*) on Intel GPU
-- [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md): running **ollama** (*using C++ interface of `ipex-llm` as an accelerated backend for `ollama`*) on Intel GPU
-- [Llama 3 with `llama.cpp` and `ollama`](docs/mddocs/Quickstart/llama3_llamacpp_ollama_quickstart.md): running **Llama 3** on Intel GPU using `llama.cpp` and `ollama` with `ipex-llm`
-- [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md): running `ipex-llm` in **vLLM** on both Intel [GPU](python/llm/example/GPU/vLLM-Serving) and [CPU](python/llm/example/CPU/vLLM-Serving)
+- [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): running **llama.cpp** (*using C++ interface of `ipex-llm`*) on Intel GPU
+- [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md): running **ollama** (*using C++ interface of `ipex-llm`*) on Intel GPU
+- [PyTorch/HuggingFace](docs/mddocs/Quickstart/install_windows_gpu.md): running **PyTorch**, **HuggingFace**, **LangChain**, **LlamaIndex**, etc. (*using Python interface of `ipex-llm`*) on Intel GPU for [Windows](docs/mddocs/Quickstart/install_windows_gpu.md) and [Linux](docs/mddocs/Quickstart/install_linux_gpu.md)
+- [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md): running `ipex-llm` in **vLLM** on both Intel [GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) and [CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md)
 - [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md): running `ipex-llm` in **FastChat** serving on on both Intel GPU and CPU
 - [Serving on multiple Intel GPUs](docs/mddocs/Quickstart/deepspeed_autotp_fastapi_quickstart.md): running `ipex-llm` **serving on multiple Intel GPUs** by leveraging DeepSpeed AutoTP and FastAPI
 - [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md): running `ipex-llm` in `oobabooga` **WebUI**
@@ -254,6 +258,8 @@ Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaM
 | LLaMA 2    | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](python/llm/example/GPU/HuggingFace/LLM/llama2)  |
 | LLaMA 3    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3) | [link](python/llm/example/GPU/HuggingFace/LLM/llama3)  |
 | LLaMA 3.1    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3.1) | [link](python/llm/example/GPU/HuggingFace/LLM/llama3.1)  |
+| LLaMA 3.2    |  | [link](python/llm/example/GPU/HuggingFace/LLM/llama3.2)  |
+| LLaMA 3.2-Vision    |  | [link](python/llm/example/GPU/PyTorch-Models/Model/llama3.2-vision/)  |
 | ChatGLM    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm)   |    | 
 | ChatGLM2   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | [link](python/llm/example/GPU/HuggingFace/LLM/chatglm2)   |
 | ChatGLM3   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm3)  | [link](python/llm/example/GPU/HuggingFace/LLM/chatglm3)   |
@@ -272,10 +278,13 @@ Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaM
 | Baichuan   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | [link](python/llm/example/GPU/HuggingFace/LLM/baichuan)   |
 | Baichuan2  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](python/llm/example/GPU/HuggingFace/LLM/baichuan2)  |
 | InternLM   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](python/llm/example/GPU/HuggingFace/LLM/internlm)   |
+| InternVL2   |   | [link](python/llm/example/GPU/HuggingFace/Multimodal/internvl2)   |
 | Qwen       | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](python/llm/example/GPU/HuggingFace/LLM/qwen)       |
 | Qwen1.5 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen1.5) | [link](python/llm/example/GPU/HuggingFace/LLM/qwen1.5) |
 | Qwen2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen2) | [link](python/llm/example/GPU/HuggingFace/LLM/qwen2) |
+| Qwen2.5 |  | [link](python/llm/example/GPU/HuggingFace/LLM/qwen2.5) |
 | Qwen-VL    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl)    |
+| Qwen2-VL    || [link](python/llm/example/GPU/PyTorch-Models/Model/qwen2-vl)    |
 | Qwen2-Audio    |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/qwen2-audio)    |
 | Aquila     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](python/llm/example/GPU/HuggingFace/LLM/aquila)     |
 | Aquila2     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila2)    | [link](python/llm/example/GPU/HuggingFace/LLM/aquila2)     |
@@ -316,6 +325,7 @@ Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaM
 | Command-R/cohere | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/cohere) | [link](python/llm/example/GPU/HuggingFace/LLM/cohere) |
 | CodeGeeX2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegeex2) | [link](python/llm/example/GPU/HuggingFace/LLM/codegeex2) |
 | MiniCPM | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm) | [link](python/llm/example/GPU/HuggingFace/LLM/minicpm) |
+| MiniCPM3 |  | [link](python/llm/example/GPU/HuggingFace/LLM/minicpm3) |
 | MiniCPM-V |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V) |
 | MiniCPM-V-2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm-v-2) | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V-2) |
 | MiniCPM-Llama3-V-2_5 |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-Llama3-V-2_5) |

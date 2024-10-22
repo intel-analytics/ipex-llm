@@ -42,15 +42,14 @@ Activate the `ipex-vllm` conda environment and install vLLM by execcuting the co
 ```bash
 conda activate ipex-vllm
 source /opt/intel/oneapi/setvars.sh
-git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git
+pip install oneccl-bind-pt==2.1.300+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+git clone -b 0.5.4 https://github.com/analytics-zoo/vllm.git
 cd vllm
 pip install -r requirements-xpu.txt
-pip install --no-deps xformers
-VLLM_BUILD_XPU_OPS=1 pip install --no-build-isolation -v -e .
-pip install outlines==0.0.34 --no-deps
-pip install interegular cloudpickle diskcache joblib lark nest-asyncio numba scipy
-# For Qwen model support
-pip install transformers_stream_generator einops tiktoken
+VLLM_TARGET_DEVICE=xpu python setup.py install
+pip install mpi4py fastapi uvicorn openai
+pip install gradio==4.43.0
+pip install ray
 ```
 
 **Now you are all set to use vLLM with IPEX-LLM**

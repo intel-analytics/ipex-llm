@@ -65,6 +65,8 @@ def main():
                     if test_case not in actual_test_cases and test_case not in exclude_test_cases:
                         print(test_case)
                 raise ValueError("The above tests failed. Please check the errors in the log.")
+            else:
+                print("Results integrity check completed")
 
 if __name__ == "__main__":
     sys.exit(main())

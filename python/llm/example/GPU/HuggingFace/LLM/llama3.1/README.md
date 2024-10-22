@@ -1,5 +1,5 @@
 # Llama3.1
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3.1 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Meta-Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) as a reference Llama3.1 models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3.1 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Meta-Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) as a reference Llama3.1 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.

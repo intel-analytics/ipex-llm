@@ -20,6 +20,8 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 > [!NOTE]
 > Starting from `ipex-llm[cpp]==2.2.0b20240912`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.0.0` to `2024.2.1` .
+> 
+> For this update, it's necessary to create a new conda environment to install the latest version on Windows. If you directly upgrade to `ipex-llm[cpp]>=2.2.0b20240912` in the previous cpp conda environment, you may encounter the error `Can't find sycl7.dll`.
 
 ## Table of Contents
 - [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites)
@@ -358,3 +360,6 @@ If you have both integrated and dedicated graphics displayed in your llama.cpp's
 
 #### 14. `Native API failed` error
 On latest version of `ipex-llm`, you might come across `native API failed` error with certain models without the `-c` parameter. Simply adding `-c xx` would resolve this problem.
+
+#### 15. `signal: bus error (core dumped)` error
+If you meet this error, please check your Linux kernel version first. You may encounter this issue on higher kernel versions (like kernel 6.15). You can also refer to [this issue](https://github.com/intel-analytics/ipex-llm/issues/10955) to see if it helps.

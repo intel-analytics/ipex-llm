@@ -112,8 +112,13 @@ class IPEXImporter:
                 distribution('bigdl-core-xe-21')
                 return True
             except PackageNotFoundError:
-                # bigdl-core-xe not found
-                return False
+                # bigdl-core-xe & bigdl-core-xe-21 not found
+                # Check if bigdl-core-xe-23 is installed
+                try:
+                    distribution('bigdl-core-xe-23')
+                    return True
+                except PackageNotFoundError:
+                    return False
         return False
 
     def import_ipex(self):
