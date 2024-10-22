@@ -116,7 +116,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         intermediate_size,
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
-        is_groupwise_quant: bool = False
+        group_size: int = 0
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
@@ -125,7 +125,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
                          device=device,
                          n_splits_linear=n_splits_linear,
                          n_splits_down_proj=n_splits_down_proj,
-                         is_groupwise_quant=is_groupwise_quant)
+                         group_size=group_size)
         self.max_seq_len = max_seq_len
         self.intermediate_size = intermediate_size
         self.dtype = dtype
@@ -327,7 +327,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         do_print: bool = False,
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
-        is_groupwise_quant: bool = False,
+        group_size: int = 0,
     ):
         super().__init__()
 
@@ -392,7 +392,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
                 dtype=np_dtype,
                 n_splits_linear=n_splits_linear,
                 n_splits_down_proj=n_splits_down_proj,
-                is_groupwise_quant=is_groupwise_quant
+                group_size=group_size
             )
             self.backend_decoders.append(decoder)
 
@@ -477,7 +477,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         transpose_value: bool = False,
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
-        is_groupwise_quant: bool = False,
+        group_size: int = 0,
     ):
         super().__init__()
         self.op_parameters = parameters
@@ -508,7 +508,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
             dtype=np_dtype,
             n_splits_linear=n_splits_linear,
             n_splits_down_proj=n_splits_down_proj,
-            is_groupwise_quant=is_groupwise_quant
+            group_size=group_size
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
@@ -585,7 +585,7 @@ def run_decode(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
-    is_groupwise_quant = getattr(model.config, "is_groupwise_quant", False)
+    group_size = getattr(model.config, "group_size", 0)
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
@@ -676,7 +676,7 @@ def run_decode(
         do_print=False,
         n_splits_linear=n_splits_linear,
         n_splits_down_proj=n_splits_down_proj,
-        is_groupwise_quant=is_groupwise_quant
+        group_size=group_size
     )
 
     dist.barrier()
@@ -847,7 +847,7 @@ def run_prefill(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
-    is_groupwise_quant = getattr(model.config, "is_groupwise_quant", False)
+    group_size = getattr(model.config, "group_size", 0)
     deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
@@ -899,7 +899,7 @@ def run_prefill(
             transpose_value=transpose_value_cache,
             n_splits_linear=n_splits_linear,
             n_splits_down_proj=n_splits_down_proj,
-            is_groupwise_quant=is_groupwise_quant
+            group_size=group_size
         )
 
         layer_weights.extend(weights)

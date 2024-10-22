@@ -77,11 +77,6 @@ class LMHeadLinear(NNFactory):
 
         print("start compiling lm_head")
         self.compile()
-        qwen_size = "7b" if self.inC == 3584 else "1.5b"
-        xml_path = f"qwen/qwen-{qwen_size}-npu-lmhead-{self.split_num}.xml"
-        print(f"use_split: {use_split}, num: {self.split_num}")
-        if not os.path.exists(xml_path):
-            self.save(xml_path)
         print("end compiling lm_head")
 
     def set_weights(self, op_id, weights):

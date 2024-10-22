@@ -113,18 +113,16 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
                 not cpu_lm_head:
             # Do not split lm_head and use sym_int8 instead when mixed_precison is True
-            is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
-            use_split = False
-            if is_split:
-                if quantization_group_size == 0:
-                    split_num = 14
-                else:
-                    split_num = 28
-                    use_split = True
+            if quantization_group_size != 0:
+                split_num = model.config.hidden_size // quantization_group_size
+                new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
+                                           bias=model.lm_head.bias, use_split=True)
             else:
-                split_num = 1
-            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
-                                       bias=model.lm_head.bias, use_split=use_split)
+                # Do not split lm_head and use sym_int8 instead when mixed_precison is True
+                is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
+                split_num = 14 if is_split else 1
+                new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
+                                           bias=model.lm_head.bias, use_split=False)
             del model.lm_head
             model.lm_head = new_lm_head
 
@@ -160,7 +158,7 @@ def optimize_llm(
     inter_pp=None,
     intra_pp=None,
     transpose_value_cache=True,
-    is_groupwise_quant=False
+    group_size=0
 ):
     if model.config.model_type == "llama":
         if intra_pp is None:
@@ -198,7 +196,7 @@ def optimize_llm(
             intra_pp = 2
         if inter_pp is None:
             if model.config.intermediate_size == 18944:
-                if is_groupwise_quant:
+                if group_size != 0:
                     inter_pp = 5
                 else:
                     inter_pp = 2

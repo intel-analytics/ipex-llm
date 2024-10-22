@@ -103,7 +103,7 @@ def run_model(
 class LLMBaseNNFactory(NNFactory):
 
     def __init__(self, max_seq_len, transpose_value, dtype, profile=False, device="NPU",
-                 n_splits_linear=1, n_splits_down_proj=1, is_groupwise_quant=False):
+                 n_splits_linear=1, n_splits_down_proj=1, group_size=False):
         super().__init__(profile, device)
         self.cache_parameter_ops = []
         self.input_ops = []
@@ -116,7 +116,7 @@ class LLMBaseNNFactory(NNFactory):
         self.dtype = dtype
         self.n_splits_linear=n_splits_linear
         self.n_splits_down_proj=n_splits_down_proj
-        self.is_groupwise_quant = is_groupwise_quant
+        self.group_size = group_size
 
     def reduce_linear(self, to_concat):
         concat = self.sequence_concat(to_concat, axis=0)
@@ -142,7 +142,6 @@ class LLMBaseNNFactory(NNFactory):
         hidden_size = num_heads * head_dim
         num_key_value_groups = num_heads // num_key_value_heads
         groupsize = hidden_size // self.n_splits_linear
-        # print(f"hidden states: {hidden_states.shape}")
         if self.n_splits_linear == 1:
             query_states = self.linear(
                 hidden_states,
@@ -184,7 +183,7 @@ class LLMBaseNNFactory(NNFactory):
                             groupsize,
                             bias=False,
                             wt_dtype=self.dtype,
-                            scale_factor=not self.is_groupwise_quant
+                            scale_factor=(self.group_size == 0)
                         )
                     )
                     key_states_to_concat.append(
@@ -194,7 +193,7 @@ class LLMBaseNNFactory(NNFactory):
                             groupsize,
                             bias=False,
                             wt_dtype=self.dtype,
-                            scale_factor=not self.is_groupwise_quant
+                            scale_factor=(self.group_size == 0)
                         )
                     )
                     value_states_to_concat.append(
@@ -204,7 +203,7 @@ class LLMBaseNNFactory(NNFactory):
                             groupsize,
                             bias=False,
                             wt_dtype=self.dtype,
-                            scale_factor=not self.is_groupwise_quant
+                            scale_factor=(self.group_size == 0)
                         )
                     )
                 query_states = sum(query_states_to_concat)
@@ -214,15 +213,15 @@ class LLMBaseNNFactory(NNFactory):
                 query_states = self.dq_split_linear(hidden_states, num_heads * head_dim,
                                                     hidden_size, self.n_splits_linear,
                                                     wt_dtype=self.dtype,
-                                                    scale_factor=not self.is_groupwise_quant)
+                                                    scale_factor=(self.group_size == 0))
                 key_states = self.dq_split_linear(hidden_states, num_key_value_heads * head_dim,
                                                   hidden_size, self.n_splits_linear,
                                                   wt_dtype=self.dtype,
-                                                  scale_factor=not self.is_groupwise_quant)
+                                                  scale_factor=(self.group_size == 0))
                 value_states = self.dq_split_linear(hidden_states, num_key_value_heads * head_dim,
                                                     hidden_size, self.n_splits_linear,
                                                     wt_dtype=self.dtype,
-                                                    scale_factor=not self.is_groupwise_quant)
+                                                    scale_factor=(self.group_size == 0))
             
         if q_bias is not None:
             query_states = query_states + q_bias
@@ -308,19 +307,18 @@ class LLMBaseNNFactory(NNFactory):
                     attn_output_to_concat.append(
                         self.linear(
                             sub_attn_output, hidden_size, groupsize, bias=False, wt_dtype=self.dtype,
-                            scale_factor=not self.is_groupwise_quant
+                            scale_factor=(self.group_size == 0)
                         )
                     )
                 attn_output = sum(attn_output_to_concat)
             else:
                 attn_output = self.dq_split_linear(attn_output, hidden_size, hidden_size,
                                                    self.n_splits_linear, wt_dtype=self.dtype,
-                                                   scale_factor=not self.is_groupwise_quant)
+                                                   scale_factor=(self.group_size == 0))
                 
         return attn_output, new_key_states, new_value_states
 
     def mlp(self, hidden_states, seq_len=-1, mode="prefill"):
-        print(f"mp_models_base mlp")
         if self.n_splits_linear == 1:
             mm1 = self.linear(
                 hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
@@ -341,13 +339,13 @@ class LLMBaseNNFactory(NNFactory):
                     mm1_to_concat.append(
                         self.linear(
                             sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype,
-                            scale_factor=not self.is_groupwise_quant
+                            scale_factor=(self.group_size == 0)
                         )
                     )
                     mm2_to_concat.append(
                         self.linear(
                             sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype,
-                            scale_factor=not self.is_groupwise_quant
+                            scale_factor=(self.group_size == 0)
                         )
                     )
                 mm1 = sum(mm1_to_concat)
@@ -355,10 +353,10 @@ class LLMBaseNNFactory(NNFactory):
             else:
                 mm1 = self.dq_split_linear(hidden_states, self.intermediate_size, self.hidden_size,
                                            self.n_splits_linear, wt_dtype=self.dtype,
-                                           scale_factor=not self.is_groupwise_quant)
+                                           scale_factor=(self.group_size == 0))
                 mm2 = self.dq_split_linear(hidden_states, self.intermediate_size, self.hidden_size,
                                            self.n_splits_linear, wt_dtype=self.dtype,
-                                           scale_factor=not self.is_groupwise_quant)
+                                           scale_factor=(self.group_size == 0))
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
 
         if self.n_splits_down_proj == 1:
@@ -376,14 +374,14 @@ class LLMBaseNNFactory(NNFactory):
                     hidden_states_to_concat.append(
                         self.linear(
                             sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype,
-                            scale_factor=not self.is_groupwise_quant
+                            scale_factor=(self.group_size == 0)
                         )
                     )
                 hidden_states = sum(hidden_states_to_concat)
             else:
                 hidden_states = self.dq_split_linear(mm1, self.hidden_size, self.intermediate_size,
                                                      self.n_splits_down_proj, wt_dtype=self.dtype,
-                                                     scale_factor=not self.is_groupwise_quant)
+                                                     scale_factor=(self.group_size == 0))
         return hidden_states
 
     def layer_norm(self, hidden_states, layernorm_weight):
@@ -615,14 +613,12 @@ class LLMBaseNNFactory(NNFactory):
 
     def set_weights_async(self, op_id, weights):
         offset = len(self.input_ops) + len(self.cache_parameter_ops)
-        print(f"graph linear size: {len(self.linear_ops)}"
-              f" graph scale size: {self.num_scale_ops}")
         invalidInputError(len(weights) == (len(self.linear_ops) + self.num_scale_ops),
                           (f"weights size does not match graph, "
                            f"with weights size: {len(weights)} and "
                            f" graph linear size: {len(self.linear_ops)}"
                            f" graph scale size: {self.num_scale_ops}"))
-        self.setWeights(offset, op_id, *weights)#, verify_size=True)
+        self.setWeights(offset, op_id, *weights)
 
     @staticmethod
     def run_decoders(inputs, decoders, models_ptr=None):

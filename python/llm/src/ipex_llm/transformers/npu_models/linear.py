@@ -130,7 +130,7 @@ class QuantizedLinear(torch.nn.Module):
         weight: torch.Tensor,
         scale: torch.Tensor,
         bias: Optional[torch.Tensor] = None,
-        is_groupwise_quant: bool = False,
+        group_size: int = False,
     ):
         """Initialize the QuantizedLinear class.
 
@@ -155,7 +155,7 @@ class QuantizedLinear(torch.nn.Module):
                 )
             )
         self.outC, self.inC = self.weight.shape
-        if is_groupwise_quant:
+        if group_size != 0:
             self.scale = Parameter(scale, requires_grad=False)
         else:
             if self.weight.dtype == torch.uint8:

@@ -32,7 +32,7 @@ def module_optimization(func) -> torch.nn.Module:
     """
 
     def wrapper(model: torch.nn.Module, qtype, device, modules_to_not_convert,
-                is_groupwise_quant=False, *args, **kwargs):
+                group_size=0, *args, **kwargs):
         """Recursively apply the optimization function.
 
         Args:
@@ -44,21 +44,21 @@ def module_optimization(func) -> torch.nn.Module:
         for name, layer in model.named_children():
             if name not in modules_to_not_convert:
                 new_layer = func(layer, qtype, device, modules_to_not_convert,
-                                 is_groupwise_quant=is_groupwise_quant, *args, **kwargs)
+                                 group_size=group_size, *args, **kwargs)
                 if new_layer:
                     model.add_module(name, new_layer)
                     wrapper(new_layer, qtype, device, modules_to_not_convert,
-                            is_groupwise_quant=is_groupwise_quant, *args, **kwargs)
+                            group_size=group_size, *args, **kwargs)
                 else:
                     wrapper(layer, qtype, device, modules_to_not_convert,
-                            is_groupwise_quant=is_groupwise_quant, *args, **kwargs)
+                            group_size=group_size, *args, **kwargs)
 
     return wrapper
 
 
 @module_optimization
 def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
-                                 is_groupwise_quant):
+                                 group_size):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
@@ -72,7 +72,7 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device)
         return QuantizedLinear(qweights, scale, layer.bias,
-                               is_groupwise_quant=is_groupwise_quant)
+                               group_size=group_size)
 
 
 def convert_forward(m, target_m, new_forward):

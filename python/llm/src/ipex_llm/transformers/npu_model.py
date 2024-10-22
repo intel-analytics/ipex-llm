@@ -135,7 +135,6 @@ class _BaseAutoModelClass:
                 f"but got {quantization_group_size}"
             )
         )
-        is_groupwise_quant = quantization_group_size != 0
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -172,11 +171,11 @@ class _BaseAutoModelClass:
 
             with torch.no_grad():
                 model.config.update({"mixed_precision": mixed_precision})
-                model.config.update({"is_groupwise_quant": is_groupwise_quant})
+                model.config.update({"group_size": quantization_group_size})
                 optimize_llm_pre(model, qtype, mixed_precision,
                                  quantization_group_size=quantization_group_size)
                 cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
-                                 is_groupwise_quant, *args, **kwargs)
+                                 quantization_group_size, *args, **kwargs)
                 create_npu_kernels(llm)
             model = model.eval()
             logger.info(f"Finish to convert model")
@@ -190,7 +189,7 @@ class _BaseAutoModelClass:
                 inter_pp=inter_pp,
                 intra_pp=intra_pp,
                 transpose_value_cache=transpose_value_cache,
-                is_groupwise_quant=is_groupwise_quant
+                group_size=quantization_group_size
             )
             model.save_low_bit = types.MethodType(save_low_bit, model)
         else:
@@ -212,12 +211,12 @@ class _BaseAutoModelClass:
 
     @classmethod
     def load_convert(cls, q_k, optimize_model, device, modules_to_not_convert,
-                     is_groupwise_quant=False, *arg, **kwarg):
+                     group_size=0, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear
 
         replace_with_QuantizedLinear(optimize_model, q_k, device=device,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     is_groupwise_quant=is_groupwise_quant)
+                                     group_size=group_size)
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
