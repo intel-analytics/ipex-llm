@@ -247,17 +247,9 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
-        print(f"{mode} start compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
-        t1 = time.perf_counter()
+        print(f"{mode} start compiling")
         self.compile()
-        t2 = time.perf_counter()
-        print(f"{mode} end compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}, time: {t2 - t1}s")
-        qwen_size = "7b" if self.hidden_size == 3584 else "1.5b"
-        xml_path = f"scaleafter-reshape-split-noscale/qwen-{qwen_size}-npu-sa-dq-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
-
-        if not os.path.exists(xml_path):
-            self.save(xml_path)
-
+        print(f"{mode} end compiling")
 
     def build_decoder(
         self,
@@ -339,7 +331,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
                 op_parameters.append((w[0].numpy(), w[1].numpy()))
             elif w.dtype in [torch.int8, torch.uint8]:    # QuantizedLinear weight
                 op_parameters.append(w.numpy())
-            elif isinstance(w, np.ndarray): # scale
+            elif isinstance(w, np.ndarray):     # scale
                 op_parameters.append(w)
             else:
                 op_parameters.append(w.to(torch.float16).numpy())
@@ -399,7 +391,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         offset = 0
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
-            curr_linear_ops = len(self.backend_decoders[i].linear_ops) + self.backend_decoders[i].num_scale_ops
+            curr_linear_ops = len(self.backend_decoders[i].linear_ops)
             curr_parameters = self.op_parameters[offset:offset + curr_linear_ops]
             self.backend_decoders[i].set_weights(self.op_id, curr_parameters)
             offset = offset + curr_linear_ops
@@ -602,7 +594,8 @@ def run_decode(
 
         weights = []
         if n_splits_linear == 1:
-            for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
+            for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                               attn_layer.v_proj_dq_list):
                 weights.append((q.weight, q.scale))
                 weights.append((k.weight, k.scale))
                 weights.append((v.weight, v.scale))
@@ -611,14 +604,14 @@ def run_decode(
                 weights.append((l.weight, l.scale))
         else:
             for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                            attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list]:
+                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list]:
                 l_weights = []
                 scales = []
                 for l in layer_list:
                     l_weights.append(l.weight)
                     scales.append(l.scale)
                 weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-        
+
         if n_splits_linear == 1:
             for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
                 weights.append((g.weight, g.scale))
@@ -862,11 +855,12 @@ def run_prefill(
 
         weights = []
 
-        for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list, attn_layer.v_proj_dq_list):
+        for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                           attn_layer.v_proj_dq_list):
             weights.append((q.weight, q.scale))
             weights.append((k.weight, k.scale))
             weights.append((v.weight, v.scale))
-        
+
         for l in attn_layer.o_proj_dq_list:
             weights.append((l.weight, l.scale))
         for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):

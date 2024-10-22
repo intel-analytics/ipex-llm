@@ -638,8 +638,7 @@ def transformers_int4_npu_win(repo_id,
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
 
-    print(model)
-    model = BenchmarkWrapper(model, do_print=True)
+    model = BenchmarkWrapper(model)
 
     result = {}
     with torch.inference_mode():
@@ -648,7 +647,6 @@ def transformers_int4_npu_win(repo_id,
             in_len = int(in_out_len[0])
             out_len = int(in_out_len[1])
             input_str = get_continuation_input_str(in_len, tokenizer)
-            print(input_str)
             # As different tokenizer has different encodings,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
@@ -665,7 +663,7 @@ def transformers_int4_npu_win(repo_id,
                                             min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
-                output = tokenizer.batch_decode(output_ids[:, actual_in_len:])
+                output = tokenizer.batch_decode(output_ids)
                 print(output[0])
                 actual_out_len = output_ids.shape[1] - actual_in_len
                 if i >= warm_up:

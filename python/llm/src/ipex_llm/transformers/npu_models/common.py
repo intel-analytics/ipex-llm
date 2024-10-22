@@ -46,8 +46,8 @@ def reshape_lm_head_input(x):
 def split_linear(module, module_name, n_splits=2):
     in_features = module.in_features
     invalidInputError(in_features % n_splits == 0,
-                      f"in_features of the linear layer {module_name} must be divisible by n_splits, " \
-                      f"but got in_features: {in_features}, n_splits: {n_splits}")
+                      f"in_features of the linear layer {module_name} must be divisible by"
+                      f" n_splits, but got in_features: {in_features}, n_splits: {n_splits}")
     weight_split = torch.tensor_split(module.weight, n_splits, dim=1)
     linear_list = torch.nn.ModuleList()
     bias = module.bias

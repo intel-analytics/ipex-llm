@@ -65,7 +65,7 @@ def run_model(
         elif w.dtype in [torch.int8, torch.uint8]:    # QuantizedLinear weight
             op_args.append(w.numpy())
             op_args_flatten.append(op_args[-1])
-        elif isinstance(w, np.ndarray): # scale
+        elif isinstance(w, np.ndarray):     # scale
             op_args.append(w)
             op_args_flatten.append(op_args[-1])
         else:
@@ -114,8 +114,8 @@ class LLMBaseNNFactory(NNFactory):
         self.max_seq_len = max_seq_len
         self.transpose_value = transpose_value
         self.dtype = dtype
-        self.n_splits_linear=n_splits_linear
-        self.n_splits_down_proj=n_splits_down_proj
+        self.n_splits_linear = n_splits_linear
+        self.n_splits_down_proj = n_splits_down_proj
         self.group_size = group_size
 
     def reduce_linear(self, to_concat):
@@ -150,7 +150,7 @@ class LLMBaseNNFactory(NNFactory):
                 bias=False,
                 wt_dtype=self.dtype,
             )
-            
+
             key_states = self.linear(
                 hidden_states,
                 num_key_value_heads * head_dim,
@@ -222,7 +222,7 @@ class LLMBaseNNFactory(NNFactory):
                                                     hidden_size, self.n_splits_linear,
                                                     wt_dtype=self.dtype,
                                                     scale_factor=(self.group_size == 0))
-            
+
         if q_bias is not None:
             query_states = query_states + q_bias
         if k_bias is not None:
@@ -302,12 +302,12 @@ class LLMBaseNNFactory(NNFactory):
                 attn_output_to_concat = []
                 for i in range(self.n_splits_linear):
                     sub_attn_output = self.slice(attn_output,
-                                                begin=[0, 0, i * groupsize],
-                                                end=[1, seq_len, (i + 1) * groupsize])
+                                                 begin=[0, 0, i * groupsize],
+                                                 end=[1, seq_len, (i + 1) * groupsize])
                     attn_output_to_concat.append(
                         self.linear(
-                            sub_attn_output, hidden_size, groupsize, bias=False, wt_dtype=self.dtype,
-                            scale_factor=(self.group_size == 0)
+                            sub_attn_output, hidden_size, groupsize, bias=False,
+                            wt_dtype=self.dtype, scale_factor=(self.group_size == 0)
                         )
                     )
                 attn_output = sum(attn_output_to_concat)
@@ -315,16 +315,18 @@ class LLMBaseNNFactory(NNFactory):
                 attn_output = self.dq_split_linear(attn_output, hidden_size, hidden_size,
                                                    self.n_splits_linear, wt_dtype=self.dtype,
                                                    scale_factor=(self.group_size == 0))
-                
+
         return attn_output, new_key_states, new_value_states
 
     def mlp(self, hidden_states, seq_len=-1, mode="prefill"):
         if self.n_splits_linear == 1:
             mm1 = self.linear(
-                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+                hidden_states, self.intermediate_size, self.hidden_size, bias=False,
+                wt_dtype=self.dtype
             )
             mm2 = self.linear(
-                hidden_states, self.intermediate_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+                hidden_states, self.intermediate_size, self.hidden_size, bias=False,
+                wt_dtype=self.dtype
             )  # type: ignore[attr-defined]
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
         else:
@@ -334,18 +336,19 @@ class LLMBaseNNFactory(NNFactory):
                 mm1_to_concat = []
                 mm2_to_concat = []
                 for i in range(self.n_splits_linear):
-                    sub_hidden_states = self.slice(hidden_states, begin=[0, 0, i * gate_up_groupsize],
+                    sub_hidden_states = self.slice(hidden_states,
+                                                   begin=[0, 0, i * gate_up_groupsize],
                                                    end=[1, seq_len, (i + 1) * gate_up_groupsize])
                     mm1_to_concat.append(
                         self.linear(
-                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype,
-                            scale_factor=(self.group_size == 0)
+                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False,
+                            wt_dtype=self.dtype, scale_factor=(self.group_size == 0)
                         )
                     )
                     mm2_to_concat.append(
                         self.linear(
-                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False, wt_dtype=self.dtype,
-                            scale_factor=(self.group_size == 0)
+                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False,
+                            wt_dtype=self.dtype, scale_factor=(self.group_size == 0)
                         )
                     )
                 mm1 = sum(mm1_to_concat)
@@ -373,8 +376,8 @@ class LLMBaseNNFactory(NNFactory):
                                          end=[1, seq_len, (i + 1) * down_groupsize])
                     hidden_states_to_concat.append(
                         self.linear(
-                            sub_mm1, self.hidden_size, down_groupsize, bias=False, wt_dtype=self.dtype,
-                            scale_factor=(self.group_size == 0)
+                            sub_mm1, self.hidden_size, down_groupsize, bias=False,
+                            wt_dtype=self.dtype, scale_factor=(self.group_size == 0)
                         )
                     )
                 hidden_states = sum(hidden_states_to_concat)
@@ -490,65 +493,7 @@ class LLMBaseNNFactory(NNFactory):
         op = super().linear(*args, **kwargs)
         self.linear_ops.append(op)
         return op
-        
-    def dq_linear(self,
-                  input_node: ctypes._Pointer,
-                  output_channels: int,
-                  input_channels: int,
-                  n_splits: int,
-                  scale_after: bool = True,
-                  bias: Optional[bool] = False,
-                  act_dtype: npt.DTypeLike = np.float16,
-                  wt_dtype: npt.DTypeLike = np.float16):
-        qk_size = input_channels // n_splits
-        input_chunks = []
 
-        use_splited_input = False
-        if isinstance(input_node, list):
-            use_splited_input = True
-        else:
-            seq_len = input_node.shape[0]
-
-        for i in range(n_splits):
-            if use_splited_input:
-                input_slice = input_node[i]
-            else:
-                input_slice = self.slice(input_node, begin=[0, i * qk_size], end=[seq_len, (i + 1) * qk_size])
-            if scale_after:
-                op = self.dq_sub_linear(
-                    input_node=input_slice,
-                    output_channels=output_channels,
-                    input_channels=qk_size,
-                    bias=bias,
-                    act_dtype=act_dtype,
-                    wt_dtype=wt_dtype
-                )
-            else:
-                op = self.linear(
-                    input_node=input_slice,
-                    output_channels=output_channels,
-                    input_channels=qk_size,
-                    bias=bias,
-                    act_dtype=act_dtype,
-                    wt_dtype=wt_dtype
-                )
-            input_chunks.append(op)
-        if scale_after:
-            concat = self.sequence_concat(input_chunks, axis=0)
-            concat = self.mul_scale(concat, output_channels, qk_size, n_splits)
-            self.num_scale_ops += 1
-            reshape_reduce = self.reshape(concat, [1, n_splits, -1, output_channels])
-            reshape_reduce = self.reduce_sum(reshape_reduce, reduction_axes=1, keep_dims=True)
-            return self.reshape(reshape_reduce, [1, -1, output_channels])
-        else:
-            result = sum(input_chunks)
-            return result
-
-    def dq_sub_linear(self, *args, **kwargs):
-        op = super().dq_sub_linear(*args, **kwargs)
-        self.linear_ops.append(op)
-        return op
-    
     def dq_split_linear(self,
                         input_node: ctypes._Pointer,
                         output_channels: int,
