@@ -42,7 +42,7 @@ IPEX-LLM 现在已支持在 Linux 和 Windows 系统上运行 `llama.cpp`。
 #### Linux
 对于 Linux 系统，我们推荐使用 Ubuntu 20.04 或更高版本 (优先推荐 Ubuntu 22.04)。
 
-请仔细参阅网页[在配有 Intel GPU 的 Linux 系统下安装 IPEX-LLM](./install_linux_gpu.md), 首先按照 [Intel GPU 驱动程序安装](./install_linux_gpu.md#install-gpu-driver)步骤安装 Intel GPU 驱动程序，然后参考 [oneAPI 安装](./install_linux_gpu.md#install-oneapi)步骤安装 Intel® oneAPI Base Toolkit 2024.0，以确保后续 IPEX-LLM 能顺利安装。
+请仔细参阅网页[在配有 Intel GPU 的 Linux 系统下安装 IPEX-LLM](./install_linux_gpu.md), 首先按照 [Intel GPU 驱动程序安装](./install_linux_gpu.md#install-gpu-driver)步骤安装 Intel GPU 驱动程序，然后参考 [oneAPI 安装](./install_linux_gpu.md#install-oneapi)步骤安装 Intel® oneAPI Base Toolkit 2024.0。
 
 #### Windows (可选)
 
@@ -163,7 +163,7 @@ cd llama-cpp
 
   > **Note**:
   >
-  > 可以使用 `./main -h` 查看每个参数的详细含义。
+  > 可以使用 `./llama-cli -h` 查看每个参数的详细含义。
 
 - **Windows 用户**:
 
@@ -175,7 +175,7 @@ cd llama-cpp
 
   > **Note**:
   >
-  > 可以使用 `main -h` 查看每个参数的详细含义。
+  > 可以使用 `llama-cli -h` 查看每个参数的详细含义。
 
 #### 示例输出
 ```
@@ -315,7 +315,7 @@ Log end
 ### 故障排除
 
 #### 1. 无法运行初始化脚本
-如果你无法运行 `init-llama-cpp.bat`, 请确保在你的 conda 环境中已经安装了 `ipex-llm[cpp]`。如果你已安装, 请检查是否已激活正确的 conda 环境。此外，如果你使用的是 Windows，请确保是在提示终端中以管理员权限运行该脚本.
+如果你无法运行 `init-llama-cpp.bat`, 请确保在你的 conda 环境中已经安装了 `ipex-llm[cpp]`。如果你已安装, 请检查是否已激活正确的 conda 环境。此外，如果你使用的是 Windows，请确保是在提示终端中以管理员权限运行该脚本。
 
 #### 2. `DeviceList is empty. -30 (PI_ERROR_INVALID_VALUE)` 错误
 在 Linux 中, 当找不到以 `[ext_oneapi_level_zero]` 开头的设备时，会出现此错误。请确保你已经安装 level-zero，并在运行命令之前执行了 `/opt/intel/oneapi/setvars.sh`。
@@ -354,7 +354,7 @@ Log end
 2. Linux：是否已经在运行 llama.cpp 命令前执行了 `source /opt/intel/oneapi/setvars.sh`。执行此 source 命令只在当前会话有效。
 
 #### 11. 遇到输出乱码请先检查驱动
-如果你遇到输出乱码，请检查 CPU 驱动版本是否 >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html)。如果不是，请参照[这里](./install_linux_gpu.md#install-gpu-driver) 的说明更新你的 GPU 驱动。
+如果你遇到输出乱码，请检查 GPU 驱动版本是否 >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html)。如果不是，请参照[这里](./install_linux_gpu.md#install-gpu-driver) 的说明更新你的 GPU 驱动。
 
 #### 12. 为什么我的程序找不到 sycl 设备
 如果你遇到 `GGML_ASSERT: C:/Users/Administrator/actions-runner/cpp-release/_work/llm.cpp/llm.cpp/llama-cpp-bigdl/ggml-sycl.cpp:18283: main_gpu_id<g_all_sycl_device_count` 错误或者类似错误，并且发现使用 `ls-sycl-device` 时没有任何输出，这是因为 llama.cpp 无法找到 sycl 设备。在某些笔记本电脑上，安装 ARC 驱动程序可能会导致被 Microsoft 强制安装 `OpenCL, OpenGL, and Vulkan Compatibility Pack`，这会无意中阻止系统定位 sycl 设备。这个问题可以通过在微软应用商店中手动卸载这个软件包来解决。
