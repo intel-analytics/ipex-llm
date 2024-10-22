@@ -259,6 +259,10 @@ def optimize_funasr(
     intra_pp=None,
     transpose_value_cache=True,
 ):
+    if intra_pp is None:
+        intra_pp = 1
+    if inter_pp is None:
+        inter_pp = 1
     from ipex_llm.transformers.npu_models.paraformer_mp import gen_funasr_fused_encoder_forward, gen_funasr_fused_decoder_forward
     from ipex_llm.transformers.npu_models.paraformer_mp import PrefillRunner, DecodeRunner
     prefill_runner = PrefillRunner(
@@ -277,10 +281,10 @@ def optimize_funasr(
         intra_pp=intra_pp,
         transpose_value_cache=transpose_value_cache,
     )
-    decode_forward = gen_funasr_fused_decoder_forward(
+    decoder_forward = gen_funasr_fused_decoder_forward(
         decode_runner=decode_runner
     )
     from funasr.models.sanm.encoder import SANMEncoder
     from funasr.models.paraformer.decoder import ParaformerSANMDecoder
     convert_forward(model.model, SANMEncoder, encoder_forward)
-    convert_forward(model.model, ParaformerSANMDecoder, decode_forward)
+    convert_forward(model.model, ParaformerSANMDecoder, decoder_forward)

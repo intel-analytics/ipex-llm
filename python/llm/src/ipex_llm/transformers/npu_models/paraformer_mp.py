@@ -501,7 +501,6 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         feed_norm_weights = [self.constant(w) for w in feed_norm_weights]
         feed_norm_biases = [self.constant(w) for w in feed_norm_biases]
         fsmn_weights = [self.constant(w) for w in fsmn_weights]
-
         
         x = input
         for i in range(self.num_layers):
@@ -687,7 +686,8 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
 
         x, tgt_mask, memory, memory_mask = LowBitMultiDecoderlayer.run_decoders(
             inputs,
-            decoders=self.backend_decoders)
+            decoders=self.backend_decoders,
+            funasr=True)
 
         if self.do_print:
             print("outputs:", x)
@@ -980,10 +980,7 @@ def gen_funasr_fused_encoder_forward(prefill_runner):
         encoders_suffix = self.encoders[31:49]
         encoder_outs = encoders_suffix(xs_pad, masks[0])
         xs_pad, new_masks, mm = encoder_outs[0], encoder_outs[1], encoder_outs[2]
-
         xs_pad = xs_pad.to(torch.float32)
-
-        #encoder_out = xs_pad
 
         if self.normalize_before:
            xs_pad = self.after_norm(xs_pad)

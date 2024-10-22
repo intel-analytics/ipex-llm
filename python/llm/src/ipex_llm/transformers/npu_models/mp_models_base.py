@@ -579,7 +579,7 @@ class LLMBaseNNFactory(NNFactory):
         self.setWeights(offset, op_id, *weights)
 
     @staticmethod
-    def run_decoders(inputs, decoders):
+    def run_decoders(inputs, decoders, funasr=True):
         x_np = [elem.to(torch.float16).numpy() for elem in inputs]
 
         num_decoders = len(decoders)
@@ -596,17 +596,20 @@ class LLMBaseNNFactory(NNFactory):
             )
             backend_lib.run_decoders(models_ptr, inputs_ptr, num_decoders, num_inputs)
 
-        #hidden_states = decoders[-1].torch_out[0]
-        #new_key_states = []
-        #new_value_states = []
-        # for i in range(num_decoders):
-        #     for j in range(1, len(decoders[i].torch_out)):
-        #         if j % 2 == 1:
-        #             new_key_states.append(decoders[i].torch_out[j])
-        #         else:
-        #             new_value_states.append(decoders[i].torch_out[j])
-        x = decoders[-1].torch_out[0]
-        tgt_mask = decoders[-1].torch_out[1]
-        memory = decoders[-1].torch_out[2]
-        memory_mask = decoders[-1].torch_out[3]
-        return x, tgt_mask, memory, memory_mask
+        if funasr is True:
+            x = decoders[-1].torch_out[0]
+            tgt_mask = decoders[-1].torch_out[1]
+            memory = decoders[-1].torch_out[2]
+            memory_mask = decoders[-1].torch_out[3]
+            return x, tgt_mask, memory, memory_mask
+        else:
+            hidden_states = decoders[-1].torch_out[0]
+            new_key_states = []
+            new_value_states = []
+            for i in range(num_decoders):
+                for j in range(1, len(decoders[i].torch_out)):
+                    if j % 2 == 1:
+                        new_key_states.append(decoders[i].torch_out[j])
+                    else:
+                        new_value_states.append(decoders[i].torch_out[j])
+            return hidden_states, new_key_states, new_value_states

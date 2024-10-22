@@ -127,21 +127,26 @@ class _BaseAutoModelClass:
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
-        if funasr_model:
-            try:
-                # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
-                kwargs.pop("device_map", None)
+
+        try:
+            # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
+            kwargs.pop("device_map", None)
+            if funasr_model:
                 model = cls.HF_Model(*args, **kwargs)
-            except NotImplementedError:
-                logger.info(
-                    "Failed to load models with `low_cpu_mem_usage` specified, "
-                    "will fall to traditional load method with higher memory consumption."
-                )
-                _kwargs["low_cpu_mem_usage"] = False
+            else:
+                model = cls.HF_Model.from_pretrained(*args, **kwargs)
+        except NotImplementedError:
+            logger.info(
+                "Failed to load models with `low_cpu_mem_usage` specified, "
+                "will fall to traditional load method with higher memory consumption."
+            )
+            _kwargs["low_cpu_mem_usage"] = False
+            if funasr_model:
+                model = cls.HF_Model(*_args, **_kwargs)
+            else:
                 model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
-                model.config.update({"bigdl_lcmu_enabled": False})
-        else:
-            model = cls.HF_Model(*args, **kwargs)
+            model.config.update({"bigdl_lcmu_enabled": False})
+
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
         from intel_npu_acceleration_library.compiler import create_npu_kernels
