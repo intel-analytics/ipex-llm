@@ -108,7 +108,6 @@ class LLMBaseNNFactory(NNFactory):
         self.cache_parameter_ops = []
         self.input_ops = []
         self.linear_ops = []
-        self.num_scale_ops = 0
         self.kv_cache_c_handle = None
         self.kv_cache_torch = []
         self.max_seq_len = max_seq_len
@@ -117,10 +116,6 @@ class LLMBaseNNFactory(NNFactory):
         self.n_splits_linear = n_splits_linear
         self.n_splits_down_proj = n_splits_down_proj
         self.group_size = group_size
-
-    def reduce_linear(self, to_concat):
-        concat = self.sequence_concat(to_concat, axis=0)
-        return self.reduce_sum(concat, reduction_axes=0, keep_dims=True)
 
     def attention(self,
                   *,
@@ -341,13 +336,15 @@ class LLMBaseNNFactory(NNFactory):
                                                    end=[1, seq_len, (i + 1) * gate_up_groupsize])
                     mm1_to_concat.append(
                         self.linear(
-                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False,
+                            sub_hidden_states, self.intermediate_size, gate_up_groupsize,
+                            bias=False,
                             wt_dtype=self.dtype, scale_factor=(self.group_size == 0)
                         )
                     )
                     mm2_to_concat.append(
                         self.linear(
-                            sub_hidden_states, self.intermediate_size, gate_up_groupsize, bias=False,
+                            sub_hidden_states, self.intermediate_size, gate_up_groupsize,
+                            bias=False,
                             wt_dtype=self.dtype, scale_factor=(self.group_size == 0)
                         )
                     )
@@ -558,11 +555,10 @@ class LLMBaseNNFactory(NNFactory):
 
     def set_weights_async(self, op_id, weights):
         offset = len(self.input_ops) + len(self.cache_parameter_ops)
-        invalidInputError(len(weights) == (len(self.linear_ops) + self.num_scale_ops),
+        invalidInputError(len(weights) == len(self.linear_ops),
                           (f"weights size does not match graph, "
                            f"with weights size: {len(weights)} and "
-                           f" graph linear size: {len(self.linear_ops)}"
-                           f" graph scale size: {self.num_scale_ops}"))
+                           f" graph linear size: {len(self.linear_ops)}"))
         self.setWeights(offset, op_id, *weights)
 
     @staticmethod
