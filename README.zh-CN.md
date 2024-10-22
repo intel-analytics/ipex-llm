@@ -185,9 +185,9 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 - [VSCode on GPU](docs/mddocs/DockerGuides/docker_run_pytorch_inference_in_vscode.md): 在 Intel GPU 上使用 VSCode 开发并运行基于 Python 的 `ipex-llm` 应用
 
 ### 使用
-- [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): 在 Intel GPU 上运行 **llama.cpp** (*使用 `ipex-llm` 的 C++ 接口作为 `llama.cpp` 的加速后端*) 
-- [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md): 在 Intel GPU 上运行 **ollama** (*使用 `ipex-llm` 的 C++ 接口作为 `ollama` 的加速后端*) 
-- [Llama 3 with `llama.cpp` and `ollama`](docs/mddocs/Quickstart/llama3_llamacpp_ollama_quickstart.md): 使用 `ipex-llm` 在 Intel GPU 上运行 **Llama 3**（通过 `llama.cpp` 和 `ollama` ） 
+- [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): 在 Intel GPU 上运行 **llama.cpp** (*使用 `ipex-llm` 的 C++ 接口*) 
+- [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md): 在 Intel GPU 上运行 **ollama** (*使用 `ipex-llm` 的 C++ 接口*) 
+- [PyTorch/HuggingFace](docs/mddocs/Quickstart/install_windows_gpu.md): 使用 [Windows](docs/mddocs/Quickstart/install_windows_gpu.md) 和 [Linux](docs/mddocs/Quickstart/install_linux_gpu.md) 在 Intel GPU 上运行 **PyTorch**、**HuggingFace**、**LangChain**、**LlamaIndex** 等 (*使用 `ipex-llm` 的 Python 接口*) 
 - [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md): 在 Intel [GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 和 [CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md) 上使用 `ipex-llm` 运行 **vLLM** 
 - [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md): 在 Intel GPU 和 CPU 上使用 `ipex-llm` 运行 **FastChat** 服务
 - [Serving on multiple Intel GPUs](docs/mddocs/Quickstart/deepspeed_autotp_fastapi_quickstart.md): 利用 DeepSpeed AutoTP 和 FastAPI 在 **多个 Intel GPU** 上运行 `ipex-llm` 推理服务
