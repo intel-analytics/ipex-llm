@@ -162,7 +162,7 @@ Before running, you should download or copy community GGUF model to your current
 
   > **Note**:
   >
-  > For more details about meaning of each parameter, you can use `./main -h`.
+  > For more details about meaning of each parameter, you can use `./llama-cli -h`.
 
 - For **Windows users**:
 
@@ -174,7 +174,7 @@ Before running, you should download or copy community GGUF model to your current
 
   > **Note**:
   >
-  > For more details about meaning of each parameter, you can use `main -h`.
+  > For more details about meaning of each parameter, you can use `./llama-cli -h`.
 
 #### Sample Output
 ```
