@@ -27,11 +27,11 @@
 > 如果要将 `ipex-llm[cpp]` 升级到 `2.2.0b20240912` 或更高版本，在Windows环境下，你需要新建一个干净的 conda 环境来安装新版本。如果直接在旧的 conda 环境中卸载旧版本并升级，可能会遇到 `找不到 sycl7.dll` 的错误。
 
 ## 目录
-- [系统环境准备](./llama_cpp_quickstart.md#0-prerequisites)
-- [安装 IPEX-LLM](./llama_cpp_quickstart.md#1-install-ipex-llm-for-llamacpp)
-- [llama.cpp 运行设置](./llama_cpp_quickstart.md#2-setup-for-running-llamacpp)
-- [示例: 使用 IPEX-LLM 运行社区 GGUF 模型](./llama_cpp_quickstart.md#3-example-running-community-gguf-models-with-ipex-llm)
-- [故障排除](./llama_cpp_quickstart.md#troubleshooting)
+- [系统环境准备](./llama_cpp_quickstart.zh-CN.md#0-prerequisites)
+- [安装 IPEX-LLM](./llama_cpp_quickstart.zh-CN.md#1-install-ipex-llm-for-llamacpp)
+- [llama.cpp 运行设置](./llama_cpp_quickstart.zh-CN.md#2-setup-for-running-llamacpp)
+- [示例: 使用 IPEX-LLM 运行社区 GGUF 模型](./llama_cpp_quickstart.zh-CN.md#3-example-running-community-gguf-models-with-ipex-llm)
+- [故障排除](./llama_cpp_quickstart.zh-CN.md#troubleshooting)
 
 ## 快速入门
 本快速入门指南将引导你完成安装和使用 `ipex-llm` 运行 `llama.cpp`。
