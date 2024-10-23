@@ -106,12 +106,14 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
 
         # Self Attention
         if mode == "decode":
-            attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1), dtype=np.int64)
+            attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1),
+                                                  dtype=np.int64)
         else:
-            attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len), dtype=np.int64)
+            attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len),
+                                                  dtype=np.int64)
 
         position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
-        
+
         if input_layernorm_weights is None:
             input_layernorm_weights = []
             post_attn_layernorm_weights = []
