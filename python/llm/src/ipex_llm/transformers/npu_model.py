@@ -150,7 +150,6 @@ class _BaseAutoModelClass:
                 model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
 
-
         logger.info(f"Converting model, it may takes up to several minutes ...")
         from intel_npu_acceleration_library.compiler import create_npu_kernels
 
@@ -168,9 +167,11 @@ class _BaseAutoModelClass:
                 encoders = model.model.encoder.encoders[0:31]
                 decoders = model.model.decoder.decoders
                 with torch.no_grad():
-                    cls.load_convert(qtype, encoders, "cpu", modules_to_not_convert, *args, **kwargs)
+                    cls.load_convert(qtype, encoders,
+                                     "cpu", modules_to_not_convert, *args, **kwargs)
                     create_npu_kernels(encoders)
-                    cls.load_convert(qtype, decoders, "cpu", modules_to_not_convert, *args, **kwargs)
+                    cls.load_convert(qtype, decoders,
+                                     "cpu", modules_to_not_convert, *args, **kwargs)
                     create_npu_kernels(decoders)
                 logger.info(f"Finish to convert model")
                 model.model.share_memory()
@@ -531,6 +532,7 @@ class AutoModelForMultipleChoice(_BaseAutoModelClass):
 
 class AutoModelForTokenClassification(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForTokenClassification
+
 
 class AutoASR(_BaseAutoModelClass):
     import funasr

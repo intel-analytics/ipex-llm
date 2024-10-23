@@ -39,7 +39,6 @@ from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
 
 
-
 class LowBitMultiEncoderlayer(LLMBaseNNFactory):
     def __init__(
         self,
@@ -151,9 +150,9 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
             out_biases = [self.constant(w) for w in out_biases]
             w1_biases = [self.constant(w) for w in w1_biases]
             w2_biases = [self.constant(w) for w in w2_biases]
-        
+
         for i in range(self.num_layers):
-            x, mask = self.build_encoder( 
+            x, mask = self.build_encoder(
                 x=x,
                 mask=mask,
                 layer_norm_0_weight=layer_norm_0_weights[i],
@@ -166,15 +165,13 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
                 w1_bias=w1_biases[i],
                 w2_bias=w2_biases[i],
             )
-            #curr_caches.append((cache))
-        
+
         # define outputs
         x = self.convert_to_fp32(x)
         mask = self.convert_to_fp32(mask)
 
         print("start compiling")
         self.compile()
-    
 
     def build_encoder(self,
                       x,
@@ -188,9 +185,9 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
                       out_bias,
                       w1_bias,
                       w2_bias,
-        ):
+                      ):
+        
         # EncoderLayerSANM forward
- 
         in_feat = 512
         n_feat = 512
         n_head = 4
@@ -215,6 +212,7 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
         x = stoch_layer_coeff * x
 
         return x, mask
+
 
 class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
     """LLAMA MLP operation NPU backend."""
@@ -253,7 +251,6 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             LowBitMultiEncoderlayer,
             num_layers=1,
             rms_norm_eps=rms_norm_eps,
-            #max_seq_len=max_seq_len,
             layer_norm_0_weights=None,
             layer_norm_0_biases=None,
             layer_norm_1_weights=None,
@@ -277,7 +274,6 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         self.out_bias = out_bias
         self.w1_bias = w1_bias
         self.w2_bias = w2_bias
-        
 
     def forward(
         self,
@@ -313,6 +309,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         )
 
         return outputs
+
 
 def run_prefill(
     model, max_output_len, max_prompt_len, transpose_value_cache, input_queue, result_queue
@@ -414,7 +411,7 @@ class PrefillRunner:
                 transpose_value_cache,
                 self.prefill_input_queue,
                 self.prefill_result_queue,
-            ), 
+            ),
         )
         self.p.daemon = True
         self.p.start()
@@ -501,10 +498,10 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         feed_norm_weights = [self.constant(w) for w in feed_norm_weights]
         feed_norm_biases = [self.constant(w) for w in feed_norm_biases]
         fsmn_weights = [self.constant(w) for w in fsmn_weights]
-        
+
         x = input
         for i in range(self.num_layers):
-            x, tgt_mask, memory, memory_mask = self.build_decoder( 
+            x, tgt_mask, memory, memory_mask = self.build_decoder(
                 x=x,
                 tgt_mask=tgt_mask,
                 memory=memory,
@@ -523,7 +520,7 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
                 feed_norm_bias=feed_norm_biases[i],
                 fsmn_weight=fsmn_weights[i],
             )
-        
+
         # define outputs
         x = self.convert_to_fp16(x)
         tgt_mask = self.convert_to_fp16(tgt_mask)
@@ -532,7 +529,6 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
 
         print("start compiling")
         self.compile()
-    
 
     def build_decoder(self,
                       x,
@@ -552,7 +548,8 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
                       w1_bias=None,
                       feed_norm_weight=None,
                       feed_norm_bias=None,
-        ):
+                      ):
+
         in_feat = 512
         n_feat = 512
         n_head = 4
@@ -561,7 +558,7 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         stoch_layer_coeff = 1.0
 
         residual = x
-        
+
         # norm1
         x = self.paraformer_layer_norm(x, norm1_weight, norm1_bias)
         x = self.feed_forward_sanm_decoder(x, w1_bias, feed_norm_weight, feed_norm_bias)
@@ -574,11 +571,12 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
 
         # norm3
         x = self.paraformer_layer_norm(x, norm3_weight, norm3_bias)
-        x_src_attn = self.sanm_cross_attn(x, memory, memory_mask, q_bias, kv_bias, out_bias, n_feat, n_head)
+        x_src_attn = self.sanm_cross_attn(x, memory, memory_mask,
+                                          q_bias, kv_bias, out_bias, n_feat, n_head)
 
         x = self.eltwise_add(residual, x_src_attn)
         x = self.convert_to_fp16(x)
-        
+
         return x, tgt_mask, memory, memory_mask
 
 
@@ -723,7 +721,6 @@ def run_decode(
     logger.info(f"rank: {my_rank}, size: {my_size}")
 
     deocderlayers = []
-    
     layer_weights = []
     layer_norm_0_weights = []
     layer_norm_0_biases = []
@@ -738,10 +735,9 @@ def run_decode(
     w1_biases = []
     feed_norm_weights = []
     feed_norm_biases = []
-    
+
     layer_indexs = range(layer_start, layer_end)
-    
-    
+
     for layer_idx in layer_indexs:
         curr_layer = model.model.decoder.decoders[layer_idx]
         attn_layer = curr_layer.self_attn
@@ -819,7 +815,7 @@ def run_decode(
             else:
                 dist.recv(x, src=rank - 1)
                 t1 = time.perf_counter()
-                
+
                 layer_outputs = multi_decoder(
                     x=x,
                     tgt_mask=tgt_mask,
@@ -883,7 +879,7 @@ class DecodeRunner:
                 ),
             )
             p.daemon = True
-            p.start() 
+            p.start()
             self.input_queues.append(input_q)
             self.output_queues.append(output_q)
             self.decoder_processes.append(p)
@@ -912,12 +908,12 @@ class DecodeRunner:
             dist.broadcast(control, src=0)
             for i in range(len(self.decoder_processes)):
                 self.input_queues[i].put((tgt_mask, memory, memory_mask))
-        
+
         dist.broadcast(self.forward_signal, src=0, async_op=True)
         x = x.to(torch.float16)
         dist.send(x, dst=1)
         dist.recv(x, src=self.world_size - 1)
-        
+
         t1 = time.perf_counter()
         return x, tgt_mask, memory, memory_mask, cache
 
@@ -944,10 +940,8 @@ def gen_funasr_fused_encoder_forward(prefill_runner):
         self,
         xs_pad: torch.Tensor,
         ilens: torch.Tensor,
-        prev_states: torch.Tensor = None,
-        ctc = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
-        
+
         masks = (~make_pad_mask(ilens)[:, None, :]).to(xs_pad.device)
         xs_pad = xs_pad * self.output_size() ** 0.5
         if self.embed is None:
@@ -984,7 +978,6 @@ def gen_funasr_fused_encoder_forward(prefill_runner):
 
         if self.normalize_before:
            xs_pad = self.after_norm(xs_pad)
-
         olens = masks.squeeze(1).sum(1)
 
         return xs_pad, olens, None
@@ -1005,7 +998,7 @@ def gen_funasr_fused_decoder_forward(decode_runner):
         return_hidden: bool = False,
         return_both: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        
+
         tgt = ys_in_pad
         tgt_mask = myutils.sequence_mask(ys_in_lens, device=tgt.device)[:, :, None]
 
@@ -1017,10 +1010,16 @@ def gen_funasr_fused_decoder_forward(decode_runner):
                 memory_mask = torch.cat((memory_mask, memory_mask[:, -2:-1, :]), dim=1)
 
         x = tgt
-        x, tgt_mask, memory, memory_mask, _ = decode_runner.forward(x, tgt_mask, memory, memory_mask)
+        x, tgt_mask, memory, memory_mask, _ = decode_runner.forward(x,
+                                                                    tgt_mask,
+                                                                    memory,
+                                                                    memory_mask)
         x = x.to(torch.float32)
 
-        x, tgt_mask, memory, memory_mask, _ = self.decoders3(x, tgt_mask, memory, memory_mask)
+        x, tgt_mask, memory, memory_mask, _ = self.decoders3(x,
+                                                             tgt_mask,
+                                                             memory,
+                                                             memory_mask)
         if self.normalize_before:
             hidden = self.after_norm(x)
 

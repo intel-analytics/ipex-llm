@@ -21,11 +21,6 @@ from intel_npu_acceleration_library.backend.runtime import set_contiguous, recor
 from intel_npu_acceleration_library.backend.runtime import adapt_output_tensor, _model_cache
 from collections import deque
 from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
-from intel_npu_acceleration_library.backend.tensor import Tensor
-from intel_npu_acceleration_library.backend.convolution import Convolution
-import intel_npu_acceleration_library
-from intel_npu_acceleration_library.compiler import compile as compile_npu
-#from intel_npu_acceleration_library.compiler import CompilerConfig
 from ipex_llm.utils.common import invalidInputError
 from transformers.utils import logging
 from filelock import FileLock
@@ -76,7 +71,7 @@ def run_model(
     models = _model_cache.get(key, None)
 
     input_shapes = [elem.shape for elem in x_np]
-    
+
     if models is None:
         _model_cache[key] = deque([backend_cls(*input_shapes) for i in range(2)])
     elif len(models) < 1:
@@ -89,7 +84,7 @@ def run_model(
 
     with record_function(f"npu_factory_mul_{key}"):
         ret = model.run(x_np, verify_size=True, *op_args, **op_kwargs)
-    
+
     if isinstance(ret, list):
         results = [adapt_output_tensor(r, r.shape, input_dtype) for r in ret]
     else:
@@ -236,24 +231,25 @@ class LLMBaseNNFactory(NNFactory):
             keep_dims=True,
         )
         eps = self.constant(1e-12)
-        hidden_states = self.eltwise_div(hidden_states - mean_res, self.sqrt(self.eltwise_add(variance, eps)))
+        hidden_states = self.eltwise_div(hidden_states - mean_res,
+                                         self.sqrt(self.eltwise_add(variance, eps)))
         layernorm_weight = self.convert_to_fp32(layernorm_weight)
         hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
         layernorm_bias = self.convert_to_fp32(layernorm_bias)
         hidden_states = self.eltwise_add(layernorm_bias, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
         return hidden_states
-    
+
     def self_attn_sanm(self,
-                        x,
-                        mask,
-                        in_feat,
-                        n_feat,
-                        n_head,
-                        fsmn_weight,
-                        qkv_bias,
-                        out_bias
-                        ):
+                       x,
+                       mask,
+                       in_feat,
+                       n_feat,
+                       n_head,
+                       fsmn_weight,
+                       qkv_bias,
+                       out_bias
+                       ):
         d_k = n_feat // n_head
         h = n_head
         b, t, d = x.size()
@@ -261,54 +257,42 @@ class LLMBaseNNFactory(NNFactory):
         q_k_v = self.linear(x,
                             1536,
                             512,
-                            bias=False, 
+                            bias=False,
                             wt_dtype=self.dtype)
-        
         q_k_v = self.eltwise_add(q_k_v, qkv_bias)
 
         q = self.slice(q_k_v, [0, 0, 0], [1, 218, 512])
         k = self.slice(q_k_v, [0, 0, 512], [1, 218, 2 * 512])
         v = self.slice(q_k_v, [0, 0, 2 * 512], [1, 218, 3 * 512])
 
-        v_tmp = v
-        q_tmp = q
-
         q_h = self.reshape(q, [b, t, h, d_k])
         k_h = self.reshape(k, [b, t, h, d_k])
         v_h = self.reshape(v, [b, t, h, d_k])
-
         q_h = self.transpose(q_h, [0, 2, 1, 3])
         k_h = self.transpose(k_h, [0, 2, 1, 3])
         v_h = self.transpose(v_h, [0, 2, 1, 3]) # (batch, head, time2, d_k)
 
         b_v, t_v, d_v = v.size()
-        
         if mask is not None:
             mask = self.reshape(mask, [b_v, -1, 1])
             v = self.eltwise_mul(v, mask)
-
-        
         v_x = self.transpose(v, [0, 2, 1])
 
         fsmn_out = self.convolution(input_node=v_x,
                                     weights_node=fsmn_weight,
                                     bias=None,
                                     strides=1,
-                                    padding=5,#(left_padding, right_padding),
+                                    padding=5, #(left_padding, right_padding),
                                     groups=512,
                                     n_spatial_dims=1)
     
-
         fsmn_out = self.transpose(fsmn_out, [0, 2, 1])
-
         fsmn_out = self.eltwise_add(v, fsmn_out)
         if mask is not None:
             fsmn_out = self.eltwise_mul(fsmn_out, mask)
 
         q_h = q_h * d_k ** (-0.5)
-        
         scores = self.matmul(q_h, k_h, False, True)
-
         n_batch = v_h.size(0)
         p_attn = self.softmax(scores, -1)
 
@@ -322,9 +306,7 @@ class LLMBaseNNFactory(NNFactory):
                                bias=False,
                                wt_dtype=self.dtype)
         attn_out = attn_out + out_bias
-
         attn_res = self.eltwise_add(attn_out, fsmn_out)
-        
         return attn_res
 
     def sanm_feed_forward(self, x, hidden_units, idim, w1_bias, w2_bias):
@@ -379,7 +361,6 @@ class LLMBaseNNFactory(NNFactory):
 
         q_h = q_h * d_k ** (-0.5)
         scores = self.matmul(q_h, k_h, False, True)
-
         n_batch = v_h.size(0)
         # Assume mask is None
         p_attn = self.softmax(scores, -1)
@@ -388,7 +369,6 @@ class LLMBaseNNFactory(NNFactory):
         x_attn = self.matmul(p_attn, v_h, False, True)
         x_attn = self.transpose(x_attn, [0, 2, 1, 3])
         x_attn = self.reshape(x_attn, [n_batch, -1, h * d_k])
-
         attn_out = self.linear(x_attn, 512, 512, bias=False, wt_dtype=self.dtype)
         attn_out = attn_out + out_bias
         return attn_out
