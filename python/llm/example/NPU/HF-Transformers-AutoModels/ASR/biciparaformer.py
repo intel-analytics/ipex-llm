@@ -26,7 +26,7 @@ logger = logging.get_logger(__name__)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Predict Tokens using `chat()` API for npu model"
+        description="Transcribe speech to text using `generate()` API for npu model"
     )
     parser.add_argument(
         "--repo-id-or-model-path",
