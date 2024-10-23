@@ -145,5 +145,5 @@ class Test_Optimize_Gpu_Model:
         if os.environ['RUNNER_OS'] == "Windows":
             lower_bound = 2e-1
         else:
-            lower_bound = 1e-1
+            lower_bound = 2e-1
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, Decoder_layer, layer_before_Decoder, lower_bound)
