@@ -886,7 +886,8 @@ class FP16Linear(nn.Linear):
                     self.weight = torch.nn.Parameter(self.weight.transpose(0, 1).contiguous(),
                                                      requires_grad=False)
                     self.weight_type = 2
-                result = torch.ops.torch_ipex.matmul_bias_out(x.contiguous(), self.weight, self.bias)
+                result = torch.ops.torch_ipex.matmul_bias_out(x.contiguous(),
+                                                              self.weight, self.bias)
             if self.mp_group is not None:
                 if get_use_vllm():
                     result = self.mp_group.all_reduce(result)
