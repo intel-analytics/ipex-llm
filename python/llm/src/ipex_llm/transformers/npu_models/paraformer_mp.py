@@ -489,7 +489,9 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         input = self.create_input_op((self.x_bsz, self.x_time, self.x_size))
         tgt_mask = self.create_input_op((self.x_mask_bsz, self.x_mask_time, self.x_mask_size))
         memory = self.create_input_op((self.mem_bsz, self.mem_time, self.mem_size))
-        memory_mask = self.create_input_op((self.mem_mask_bsz, self.mem_mask_time, self.mem_mask_size))
+        memory_mask = self.create_input_op((self.mem_mask_bsz,
+                                            self.mem_mask_time,
+                                            self.mem_mask_size))
 
         layer_norm_0_weights = [self.constant(w) for w in layer_norm_0_weights]
         layer_norm_0_biases = [self.constant(w) for w in layer_norm_0_biases]
@@ -609,10 +611,10 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         max_seq_len: int = 1024,
         transpose_value: bool = False,
         do_print: bool = True,
-        x_shape = None,
-        x_mask_shape = None,
-        memory_shape = None,
-        memory_mask_shape = None,
+        x_shape=None,
+        x_mask_shape=None,
+        memory_shape=None,
+        memory_mask_shape=None,
     ):
         super().__init__()
 
