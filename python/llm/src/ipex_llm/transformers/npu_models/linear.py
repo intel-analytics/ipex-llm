@@ -130,7 +130,7 @@ class QuantizedLinear(torch.nn.Module):
         weight: torch.Tensor,
         scale: torch.Tensor,
         bias: Optional[torch.Tensor] = None,
-        group_size: int = False,
+        group_size: int = 0,
     ):
         """Initialize the QuantizedLinear class.
 
