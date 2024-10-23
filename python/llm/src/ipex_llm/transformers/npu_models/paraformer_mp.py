@@ -191,7 +191,7 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
                       w1_bias,
                       w2_bias,
                       ):
-        
+
         # EncoderLayerSANM forward
         in_feat = 512
         n_feat = 512
@@ -269,7 +269,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             transpose_value=self.transpose_value,
             dtype=np_dtype,
         )
-        
+
         self.layer_norm_0_weight = layer_norm_0_weight
         self.layer_norm_0_bias = layer_norm_0_bias
         self.layer_norm_1_weight = layer_norm_1_weight
@@ -954,13 +954,13 @@ def gen_funasr_fused_encoder_forward(prefill_runner):
             or isinstance(self.embed, Conv2dSubsampling8)
         ):
             short_status, limit_size = check_short_utt(self.embed, xs_pad.size(1))
-            if short_status:
-                raise TooShortUttError(
+            invalidInputError(
+                not short_status,
+                (
                     f"has {xs_pad.size(1)} frames and is too short for subsampling "
-                    + f"(it needs more than {limit_size} frames), return empty results",
-                    xs_pad.size(1),
-                    limit_size,
-                )
+                    f"(it needs more than {limit_size} frames), return empty results"
+                ),
+            )
             xs_pad, masks = self.embed(xs_pad, masks)
         else:
             xs_pad = self.embed(xs_pad)
@@ -978,7 +978,7 @@ def gen_funasr_fused_encoder_forward(prefill_runner):
         xs_pad = xs_pad.to(torch.float32)
 
         if self.normalize_before:
-           xs_pad = self.after_norm(xs_pad)
+            xs_pad = self.after_norm(xs_pad)
         olens = masks.squeeze(1).sum(1)
 
         return xs_pad, olens, None
