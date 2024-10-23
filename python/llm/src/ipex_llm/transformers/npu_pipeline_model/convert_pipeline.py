@@ -29,9 +29,7 @@ from transformers import GenerationConfig, \
 import threading
 from ipex_llm.utils.common import invalidInputError
 import tempfile
-import uuid
 import numpy as np
-
 
 
 def generate(
@@ -154,7 +152,8 @@ def update_names_of_IR_and_export_blob(model, model_name, dir):
     blob_path = os.path.join(dir, model_name + ".blob")
 
     core = Core()
-    core.set_property("NPU", {"NPU_COMPILATION_MODE_PARAMS": "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"})
+    core.set_property("NPU", {"NPU_COMPILATION_MODE_PARAMS":
+                              "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"})
     core.set_property("NPU", {"PERFORMANCE_HINT": "LATENCY"})
     model = core.read_model(xml_path)
     inputs = model.inputs
@@ -174,7 +173,7 @@ def update_names_of_IR_and_export_blob(model, model_name, dir):
         model_stream = compiledModel.export_model()
         with open(blob_path, 'wb') as f:
             f.write(model_stream)
-    
+
     os.remove(xml_path)
     os.remove(new_ir_path)
 
@@ -199,7 +198,7 @@ def convert_llm(model: torch.nn.Module,
             vocab_size = model.config.vocab_size
             model_norm = model.model.norm
             lm_head = model.lm_head
-            weights = [(lm_head.weight, lm_head.scale),]
+            weights = [(lm_head.weight, lm_head.scale)]
             if isinstance(weights[0], tuple):
                 np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
             else:  # FP16 Linear
@@ -235,7 +234,8 @@ def convert_llm(model: torch.nn.Module,
                 padding_idx=model.config.pad_token_id,
                 dtype=np.float16,
             )
-            first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding", temp_dir)
+            first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
+                                                                 temp_dir)
             bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
             embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
 
@@ -262,7 +262,7 @@ def convert_llm(model: torch.nn.Module,
                 layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
                 if isinstance(weights[0], tuple):
-                    np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8    
+                    np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
                 else:  # FP16 Linear
                     np_dtype = np.float16
 
@@ -273,7 +273,7 @@ def convert_llm(model: torch.nn.Module,
                         post_attn_layernorm_weights=None,
                         cached_cos=cached_cos,
                         cached_sin=cached_sin,
-                        num_heads=num_heads, 
+                        num_heads=num_heads,
                         num_key_value_heads=num_key_value_heads,
                         num_layers=1,
                         max_seq_len=kv_len,
@@ -283,7 +283,8 @@ def convert_llm(model: torch.nn.Module,
                         transpose_value=transpose_value_cache,
                         dtype=np_dtype,
                     )
-                    rest_blob_path = update_names_of_IR_and_export_blob(single_decoder, "decoder_layer",
+                    rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
+                                                                        "decoder_layer",
                                                                         temp_dir)
 
                 input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
@@ -310,7 +311,7 @@ def convert_llm(model: torch.nn.Module,
                                       first_blob_path, last_blob_path, rest_blob_path)
             except:
                 invalidInputError(False,
-                                 "False to InitLLMPipeline.")
+                                  "False to InitLLMPipeline.")
     else:
         invalidInputError(False,
                           "Now we only support Llama2 for pipeline running.")

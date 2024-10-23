@@ -112,4 +112,3 @@ class LlamaEmbedding(NNFactory):
 
         print("start compiling")
         self.compile()
-

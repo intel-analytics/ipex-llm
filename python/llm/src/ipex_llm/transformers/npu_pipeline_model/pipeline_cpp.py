@@ -61,4 +61,5 @@ def InitLLMPipeline(kv_len: int, num_head: int, head_dim: int, num_layers: int, 
 
 def generate_serve(kv_len: int, num_head: int, head_dim: int, num_layers: int,
                    transpose_value_cache: bool, param_n_output: int):
-    _lib.generate_serve(kv_len, num_head, head_dim, num_layers, transpose_value_cache, param_n_output)
+    _lib.generate_serve(kv_len, num_head, head_dim, num_layers,
+                        transpose_value_cache, param_n_output)
