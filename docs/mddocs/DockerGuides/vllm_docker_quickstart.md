@@ -734,6 +734,61 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
 
 ```
 
+#### OpenAI API Backend
+
+vLLM Serving can be deployed as a server that implements the OpenAI API protocol. This allows vLLM to be used as backend for web applications such as [open-webui](https://github.com/open-webui/open-webui/) using OpenAI API.
+
+1. Start vLLM Serving with `api-key`, just setting any string to `api-key` in `start-vllm-service.sh`, and run it.
+
+```bash
+#!/bin/bash
+model="/llm/models/Meta-Llama-3.1-8B-Instruct"
+served_model_name="llama-3.1-8b"
+...
+python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
+  --served-model-name $served_model_name \
+  --port 8000 \
+  --model $model \
+  ...
+  --api-key <your-api-key> \
+  --tensor-parallel-size 2
+```
+
+2. Send http request with `api-key` header to verify the model has deployed successfully.
+
+```bash
+curl http://localhost:8000/v1/completions \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <your-api-key>" \
+    -d '{
+    "model": "llama-3.1-8b",
+    "prompt": "San Francisco is a",
+    "max_tokens": 128
+    }'
+```
+
+3. Start open-webui serving with following scripts. Note that the `OPENAI_API_KEY` must be consistent with the backend value. The `<host-ip>` in `OPENAI_API_BASE_URL` is the ipv4 address of the host that starts docker. For relevant details, please refer to official document [link](https://docs.openwebui.com/#installation-for-openai-api-usage-only) of open-webui.
+
+```bash
+#!/bin/bash
+export DOCKER_IMAGE=ghcr.io/open-webui/open-webui:main
+export CONTAINER_NAME=<your-docker-container-name>
+
+docker rm -f $CONTAINER_NAME
+
+docker run -itd \
+           -p 3000:8080 \
+           -e OPENAI_API_KEY=<your-api-key> \
+           -e OPENAI_API_BASE_URL=http://<host-ip>:8000/v1 \
+           -v open-webui:/app/backend/data \
+           --name $CONTAINER_NAME \
+           --restart always $DOCKER_IMAGE  
+```
+
+  Then you should start the docker on host that make sure you can visit vLLM backend serving.
+
+4. After installation, you can access Open WebUI at <http://localhost:3000>. Enjoy! 😄
+
 ### Validated Models List
 
 | models (fp8)     | gpus  |
