@@ -130,6 +130,7 @@ class QuantizedLinear(torch.nn.Module):
         weight: torch.Tensor,
         scale: torch.Tensor,
         bias: Optional[torch.Tensor] = None,
+        group_size: int = False,
     ):
         """Initialize the QuantizedLinear class.
 
@@ -154,10 +155,13 @@ class QuantizedLinear(torch.nn.Module):
                 )
             )
         self.outC, self.inC = self.weight.shape
-        if self.weight.dtype == torch.uint8:
-            # In case is Int4 we need to double the input channels because weights are compressed
-            self.inC *= 2
-        self.scale = Parameter(scale * math.sqrt(self.inC), requires_grad=False)
+        if group_size != 0:
+            self.scale = Parameter(scale, requires_grad=False)
+        else:
+            if self.weight.dtype == torch.uint8:
+                # Int4 we need to double the input channels because weights are compressed
+                self.inC *= 2
+            self.scale = Parameter(scale * math.sqrt(self.inC), requires_grad=False)
         self.bias = bias
         self.op_id = str(uuid.uuid4())
 

@@ -81,6 +81,8 @@ class _BaseAutoModelClass:
         :param mixed_precision: boolean value, Whether to use mixed precision quantization.
             Default to be False. If set to ``True``, we will use ``'sym_int8'`` for lm_head when
             ``load_in_low_bit`` is '``sym_int4``' for certain models.
+        :param quantization_group_size: int, quantization group size, The recommended
+            quantization_group_size are 0, 32, 64 or 128
         :return: a model instance
         """
         if kwargs.get("device_map", None) not in [None, "cpu", "auto"]:
@@ -126,6 +128,15 @@ class _BaseAutoModelClass:
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
         mixed_precision = kwargs.pop('mixed_precision', False)
+        quantization_group_size = kwargs.pop("quantization_group_size", 0)
+
+        invalidInputError(
+            quantization_group_size in [0, 32, 64, 128],
+            (
+                "The recommended quantization_group_size are 0, 32, 64 or 128,"
+                f"but got {quantization_group_size}"
+            )
+        )
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
@@ -162,8 +173,11 @@ class _BaseAutoModelClass:
 
             with torch.no_grad():
                 model.config.update({"mixed_precision": mixed_precision})
-                optimize_llm_pre(model, qtype, mixed_precision)
-                cls.load_convert(qtype, model, "cpu", modules_to_not_convert, *args, **kwargs)
+                model.config.update({"group_size": quantization_group_size})
+                optimize_llm_pre(model, qtype, mixed_precision,
+                                 quantization_group_size=quantization_group_size)
+                cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
+                                 quantization_group_size, *args, **kwargs)
                 create_npu_kernels(llm)
             model = model.eval()
             logger.info(f"Finish to convert model")
@@ -177,6 +191,7 @@ class _BaseAutoModelClass:
                 inter_pp=inter_pp,
                 intra_pp=intra_pp,
                 transpose_value_cache=transpose_value_cache,
+                group_size=quantization_group_size
             )
             model.save_low_bit = types.MethodType(save_low_bit, model)
         else:
@@ -197,11 +212,13 @@ class _BaseAutoModelClass:
         return model
 
     @classmethod
-    def load_convert(cls, q_k, optimize_model, device, modules_to_not_convert, *arg, **kwarg):
+    def load_convert(cls, q_k, optimize_model, device, modules_to_not_convert,
+                     group_size=0, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear
 
         replace_with_QuantizedLinear(optimize_model, q_k, device=device,
-                                     modules_to_not_convert=modules_to_not_convert)
+                                     modules_to_not_convert=modules_to_not_convert,
+                                     group_size=group_size)
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
@@ -214,6 +231,7 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
         ignore_argument(kwargs, "mixed_precision")
+        ignore_argument(kwargs, "quantization_group_size")
         optimize_model = kwargs.pop("optimize_model", False)
         max_output_len = kwargs.pop("max_output_len", 1024)
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
@@ -264,6 +282,7 @@ class _BaseAutoModelClass:
         qtype = config_dict.pop("bigdl_transformers_low_bit", False)
         bigdl_lcmu_enabled = config_dict.pop("bigdl_lcmu_enabled", True)
         mixed_precision = config_dict.pop("mixed_precision", False)
+        quantization_group_size = config_dict.pop("group_size", 0)
 
         invalidInputError(
             qtype,
@@ -376,9 +395,10 @@ class _BaseAutoModelClass:
                 llm = model
 
             with torch.no_grad():
-                optimize_llm_pre(model, qtype, mixed_precision)
+                optimize_llm_pre(model, qtype, mixed_precision,
+                                 quantization_group_size=quantization_group_size)
                 cls.load_convert(qtype, model, quant_device, modules_to_not_convert,
-                                 *model_args, **kwargs)
+                                 quantization_group_size, *model_args, **kwargs)
                 create_npu_kernels(llm)
 
         else:
@@ -458,6 +478,7 @@ class _BaseAutoModelClass:
                 inter_pp=inter_pp,
                 intra_pp=intra_pp,
                 transpose_value_cache=transpose_value_cache,
+                group_size=quantization_group_size
             )
 
         return model
