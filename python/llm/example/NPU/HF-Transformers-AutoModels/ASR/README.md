@@ -1,18 +1,25 @@
 # Run Large Multimodal Model on Intel NPU
 In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on ASR Models on [Intel NPUs](../../../README.md). See the table blow for verified models.
 
+## Verified Models
 
-## 0. Requirements
+| Model      | Model Link                                                    |
+|------------|----------------------------------------------------------------|
+| speech_paraformer-large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) |
+
+## Requirements
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
 Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
 Right click and select **Update Driver** -> **Browse my computer for drivers**. And then manually select the unzipped driver folder to install.
 
-## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a paraformer model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
+## Run Optimized Models
+In the example [biciparaformer.py](./biciparaformer.py), we show how to run the paraformer model to transcribe speech to text, with IPEX-LLM low-bit optimizations on Intel NPUs.
+
 ### 1. Install
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
+
 ```bash
 conda create -n llm python=3.10 libuv
 conda activate llm
@@ -45,4 +52,16 @@ set BIGDL_USE_NPU=1
 
 ```
 python ./biciparaformer.py
+```
+
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the asr repo id for the model (i.e. `iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch`) to be downloaded, or the path to the asr checkpoint folder.
+- `--load_in_low_bit`: argument defining the `load_in_low_bit` format used. It is default to be `sym_int8`, `sym_int4` can also be used.
+
+#### Sample Output
+##### [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch)
+
+```log
+rtf_avg: 0.090: 100%|███████████████████████████████████| 1/1 [00:01<00:00,  1.18s/it]
+[{'key': 'asr_example', 'text': '正 是 因 为 存 在 绝 对 正 义 所 以 我 们 接 受 现 实 的 相 对 正 义 但 是 不 要 因 为 现 实 的 相 对 正 义 我 们 就 认 为 这 个 世 界 没 有 正 义 因 为 如 果 当 你 认 为 这 个 世 界 没 有 正 义'}]
 ```

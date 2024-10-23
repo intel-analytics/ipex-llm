@@ -33,15 +33,8 @@ if __name__ == "__main__":
         type=str,
         default="iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
     )
-    parser.add_argument('--image-url-or-path', type=str,
-                        default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg',
-                        help='The URL or path to the image to infer')
-    parser.add_argument('--prompt', type=str, default="What is in the image?",
-                        help='Prompt to infer')
-    parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
-    parser.add_argument("--max-output-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=512)
-    parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
+    parser.add_argument('--load_in_low_bit', type=str, default="sym_int8",
+                        help='Load in low bit to use')
     parser.add_argument("--intra-pp", type=int, default=2)
     parser.add_argument("--inter-pp", type=int, default=2)
 
@@ -49,20 +42,17 @@ if __name__ == "__main__":
     model_path = args.repo_id_or_model_path
 
     model = AutoASR.from_pretrained(
-        model="iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+        model=model_path,
         attn_implementation="eager",
-        load_in_low_bit="sym_int8",
+        load_in_low_bit=args.load_in_low_bit,
         low_cpu_mem_usage=True,
         funasr_model=True,
         optimize_model=True,
-        max_output_len=args.max_output_len,
-        max_prompt_len=args.max_prompt_len,
         intra_pp=args.intra_pp,
         inter_pp=args.inter_pp,
-        transpose_value_cache=not args.disable_transpose_value_cache,
     )
 
-    res = model.generate(input=f"{model.model_path}/example/asr_example.wav", 
-                batch_size_s=300, 
-                hotword='魔搭')
+    res = model.generate(input=f"{model.model_path}/example/asr_example.wav",
+                         batch_size_s=300,
+                         hotword='魔搭')
     print(res)
