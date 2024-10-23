@@ -15,6 +15,8 @@
 #
 #
 
+from typing import List
+
 
 def patch_flash_attn_import(filename: str) -> List[str]:
     """Work around for https://huggingface.co/microsoft/phi-1_5/discussions/72."""
