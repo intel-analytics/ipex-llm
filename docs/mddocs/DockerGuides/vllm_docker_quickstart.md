@@ -24,6 +24,7 @@ docker pull intelanalytics/ipex-llm-serving-xpu:latest
 export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
 export CONTAINER_NAME=ipex-llm-serving-xpu-container
 sudo docker run -itd \
+        --privileged \
         --net=host \
         --device=/dev/dri \
         -v /path/to/models:/llm/models \
@@ -266,77 +267,246 @@ Lastly, using curl command to send a request to service, below shows an example 
 
 #### AWQ
 
-Use AWQ as a way to reduce memory footprint.
+Use AWQ as a way to reduce memory footprint. Firstly download the model after awq quantification, taking `Llama-2-7B-Chat-AWQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ>
 
-1. First download the model after awq quantification, taking `Llama-2-7B-Chat-AWQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-7B-Chat-AWQ>
+1. Offline inference usage with `/llm/vllm_offline_inference.py`
 
-2. Change the `/llm/vllm_offline_inference.py` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`, note that `load_in_low_bit` should be set to `asym_int4` instead of `int4`:
+    1. Change the `/llm/vllm_offline_inference.py` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`, note that `load_in_low_bit` should be set to `asym_int4` instead of `int4`:
 
-```python
-llm = LLM(model="/llm/models/Llama-2-7B-chat-AWQ/",
-          quantization="AWQ",
-          load_in_low_bit="asym_int4",
-          device="xpu",
-          dtype="float16",
-          enforce_eager=True,
-          tensor_parallel_size=1)
-```
+    ```python
+    llm = LLM(model="/llm/models/Llama-2-7B-chat-AWQ/",
+              quantization="AWQ",
+              load_in_low_bit="asym_int4",
+              device="xpu",
+              dtype="float16",
+              enforce_eager=True,
+              tensor_parallel_size=1)
+    ```
 
-then run the following command
+    then run the following command
 
-```bash
-python vllm_offline_inference.py
-```
+    ```bash
+    python vllm_offline_inference.py
+    ```
 
-3. Expected result shows as below:
+    2. Expected result shows as below:
 
-```bash
-2024-09-29 10:06:34,272 - INFO - Converting the current model to asym_int4 format......
-2024-09-29 10:06:34,272 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
-2024-09-29 10:06:40,080 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
-2024-09-29 10:06:41,258 - INFO - Loading model weights took 3.7381 GB
-WARNING 09-29 10:06:47 utils.py:564] Pin memory is not supported on XPU.
-INFO 09-29 10:06:47 gpu_executor.py:108] # GPU blocks: 1095, # CPU blocks: 512
-Processed prompts: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:22<00:00,  5.67s/it, est. speed input: 1.19 toks/s, output: 2.82 toks/s]
-Prompt: 'Hello, my name is', Generated text: ' [Your Name], and I am a resident of [Your City/Town'
-Prompt: 'The president of the United States is', Generated text: ' the head of the executive branch and is one of the most powerful political figures in'
-Prompt: 'The capital of France is', Generated text: ' Paris. It is the most populous urban agglomeration in the European'
-Prompt: 'The future of AI is', Generated text: ' vast and exciting, with many potential applications across various industries. Here are'
-r
-```
+    ```bash
+    2024-09-29 10:06:34,272 - INFO - Converting the current model to asym_int4 format......
+    2024-09-29 10:06:34,272 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+    2024-09-29 10:06:40,080 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+    2024-09-29 10:06:41,258 - INFO - Loading model weights took 3.7381 GB
+    WARNING 09-29 10:06:47 utils.py:564] Pin memory is not supported on XPU.
+    INFO 09-29 10:06:47 gpu_executor.py:108] # GPU blocks: 1095, # CPU blocks: 512
+    Processed prompts: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:22<00:00,  5.67s/it, est. speed input: 1.19 toks/s, output: 2.82 toks/s]
+    Prompt: 'Hello, my name is', Generated text: ' [Your Name], and I am a resident of [Your City/Town'
+    Prompt: 'The president of the United States is', Generated text: ' the head of the executive branch and is one of the most powerful political figures in'
+    Prompt: 'The capital of France is', Generated text: ' Paris. It is the most populous urban agglomeration in the European'
+    Prompt: 'The future of AI is', Generated text: ' vast and exciting, with many potential applications across various industries. Here are'
+    r
+    ```
+
+2. Online serving usage with `/llm/start-vllm-service.sh`
+    1. Change the `/llm/start-vllm-service.sh`, set `model` parameter to awq model path and `served_model_name`. Add `quantization` and `load_in_low_bit`, note that `load_in_low_bit` should be set to `asym_int4` instead of `int4`:
+
+    ```bash
+    #!/bin/bash
+    model="/llm/models/Llama-2-7B-Chat-AWQ/"
+    served_model_name="llama2-7b-awq"
+    ...
+    python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
+      --served-model-name $served_model_name \
+      --model $model \
+      ...
+      --quantization awq \
+      --load-in-low-bit asym_int4 \
+      ...
+    ```
+
+    2. Use `bash start-vllm-service.sh` to start awq model online serving. Serving start successfully log:
+
+    ```bash
+    2024-10-18 01:50:24,124 - INFO - Converting the current model to asym_int4 format......
+    2024-10-18 01:50:24,124 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+    2024-10-18 01:50:29,812 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+    2024-10-18 01:50:30,880 - INFO - Loading model weights took 3.7381 GB
+    WARNING 10-18 01:50:39 utils.py:564] Pin memory is not supported on XPU.
+    INFO 10-18 01:50:39 gpu_executor.py:108] # GPU blocks: 2254, # CPU blocks: 1024
+    WARNING 10-18 01:50:39 serving_embedding.py:171] embedding_mode is False. Embedding API will not work.
+    INFO 10-18 01:50:39 launcher.py:14] Available routes are:
+    INFO 10-18 01:50:39 launcher.py:22] Route: /openapi.json, Methods: HEAD, GET
+    INFO 10-18 01:50:39 launcher.py:22] Route: /docs, Methods: HEAD, GET
+    INFO 10-18 01:50:39 launcher.py:22] Route: /docs/oauth2-redirect, Methods: HEAD, GET
+    INFO 10-18 01:50:39 launcher.py:22] Route: /redoc, Methods: HEAD, GET
+    INFO 10-18 01:50:39 launcher.py:22] Route: /health, Methods: GET
+    INFO 10-18 01:50:39 launcher.py:22] Route: /tokenize, Methods: POST
+    INFO 10-18 01:50:39 launcher.py:22] Route: /detokenize, Methods: POST
+    INFO 10-18 01:50:39 launcher.py:22] Route: /v1/models, Methods: GET
+    INFO 10-18 01:50:39 launcher.py:22] Route: /version, Methods: GET
+    INFO 10-18 01:50:39 launcher.py:22] Route: /v1/chat/completions, Methods: POST
+    INFO 10-18 01:50:39 launcher.py:22] Route: /v1/completions, Methods: POST
+    INFO 10-18 01:50:39 launcher.py:22] Route: /v1/embeddings, Methods: POST
+    INFO:     Started server process [995]
+    INFO:     Waiting for application startup.
+    INFO:     Application startup complete.
+    INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+    ```
+
+    3. In docker send request to verfiy the serving status.
+
+    ```bash
+    curl http://localhost:8000/v1/completions \
+        -H "Content-Type: application/json" \
+        -d '{"model": "llama2-7b-awq",
+              "prompt": "San Francisco is a",
+              "max_tokens": 128
+            }'
+    ```
+
+    and should get following output:
+
+    ```json
+    {
+      "id": "cmpl-992e4c8463d24d0ab2e59e706123ef0d",
+      "object": "text_completion",
+      "created": 1729187735,
+      "model": "llama2-7b-awq",
+      "choices": [
+        {
+          "index": 0,
+          "text": " food lover's paradise with a diverse array of culinary options to suit any taste and budget. Here are some of the top attractions when it comes to food and drink in San Francisco:\n\n1. Fisherman's Wharf: This bustling waterfront district is known for its fresh seafood, street performers, and souvenir shops. Be sure to try some of the local specialties like Dungeness crab, abalone, or sourdough bread.\n\n2. Chinatown: San Francisco's Chinatown is one of the largest and oldest",
+          "logprobs": null,
+          "finish_reason": "length",
+          "stop_reason": null
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 5,
+        "total_tokens": 133,
+        "completion_tokens": 128
+      }
+    }
+    ```
 
 #### GPTQ
 
-Use GPTQ as a way to reduce memory footprint.
+Use GPTQ as a way to reduce memory footprint. Firstly download the model after gptq quantification, taking `Llama-2-13B-Chat-GPTQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-13B-chat-GPTQ>
 
-1. First download the model after gptq quantification, taking `Llama-2-13B-Chat-GPTQ` as an example, download it on <https://huggingface.co/TheBloke/Llama-2-13B-chat-GPTQ>
+1. Offline inference usage with `/llm/vllm_offline_inference.py`
+    1. Change the `/llm/vllm_offline_inference` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`, note that `load_in_low_bit` should be set to `asym_int4` instead of `int4`:
 
-2. Change the `/llm/vllm_offline_inference` LLM class code block's parameters `model`, `quantization` and `load_in_low_bit`, note that `load_in_low_bit` should be set to `asym_int4` instead of `int4`:
+    ```python
+    llm = LLM(model="/llm/models/Llama-2-7B-Chat-GPTQ/",
+              quantization="GPTQ",
+              load_in_low_bit="asym_int4",
+              device="xpu",
+              dtype="float16",
+              enforce_eager=True,
+              tensor_parallel_size=1)
+    ```
 
-```python
-llm = LLM(model="/llm/models/Llama-2-7B-Chat-GPTQ/",
-          quantization="GPTQ",
-          load_in_low_bit="asym_int4",
-          device="xpu",
-          dtype="float16",
-          enforce_eager=True,
-          tensor_parallel_size=1)
-```
+    then run the following command
 
-3. Expected result shows as below:
+    ```bash
+    python vllm_offline_inference.py
+    ```
 
-```bash
-2024-10-08 10:55:18,296 - INFO - Converting the current model to asym_int4 format......
-2024-10-08 10:55:18,296 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
-2024-10-08 10:55:23,478 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
-2024-10-08 10:55:24,581 - INFO - Loading model weights took 3.7381 GB
-WARNING 10-08 10:55:31 utils.py:564] Pin memory is not supported on XPU.
-INFO 10-08 10:55:31 gpu_executor.py:108] # GPU blocks: 1095, # CPU blocks: 512
-Processed prompts:   0%|                                                          | 0/4 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts: 100%|██████████████████████████████████████████████████| 4/4 [00:22<00:00,  5.73s/it, est. speed input: 1.18 toks/s, output: 2.79 toks/s]Prompt: 'Hello, my name is', Generated text: ' [Your Name] and I am a [Your Profession] with [Your'
-Prompt: 'The president of the United States is', Generated text: ' the head of the executive branch of the federal government and is one of the most'
-Prompt: 'The capital of France is', Generated text: ' Paris, which is located in the northern part of the country.\nwhere is'
-Prompt: 'The future of AI is', Generated text: ' vast and exciting, with many possibilities for growth and innovation. Here are'
-```
+    2. Expected result shows as below:
+
+    ```bash
+    2024-10-08 10:55:18,296 - INFO - Converting the current model to asym_int4 format......
+    2024-10-08 10:55:18,296 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+    2024-10-08 10:55:23,478 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+    2024-10-08 10:55:24,581 - INFO - Loading model weights took 3.7381 GB
+    WARNING 10-08 10:55:31 utils.py:564] Pin memory is not supported on XPU.
+    INFO 10-08 10:55:31 gpu_executor.py:108] # GPU blocks: 1095, # CPU blocks: 512
+    Processed prompts:   0%|                                                          | 0/4 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts: 100%|██████████████████████████████████████████████████| 4/4 [00:22<00:00,  5.73s/it, est. speed input: 1.18 toks/s, output: 2.79 toks/s]Prompt: 'Hello, my name is', Generated text: ' [Your Name] and I am a [Your Profession] with [Your'
+    Prompt: 'The president of the United States is', Generated text: ' the head of the executive branch of the federal government and is one of the most'
+    Prompt: 'The capital of France is', Generated text: ' Paris, which is located in the northern part of the country.\nwhere is'
+    Prompt: 'The future of AI is', Generated text: ' vast and exciting, with many possibilities for growth and innovation. Here are'
+    ```
+
+2. Online serving usage with `/llm/start-vllm-service.sh`
+    1. Change the `/llm/start-vllm-service.sh`, set `model` parameter to gptq model path and `served_model_name`. Add `quantization` and `load_in_low_bit`, note that `load_in_low_bit` should be set to `asym_int4` instead of `int4`:
+
+    ```bash
+    #!/bin/bash
+    model="/llm/models/Llama-2-7B-Chat-GPTQ/"
+    served_model_name="llama2-7b-gptq"
+    ...
+    python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
+      --served-model-name $served_model_name \
+      --model $model \
+      ...
+      --quantization gptq \
+      --load-in-low-bit asym_int4 \
+      ...
+    ```
+
+    2. Use `bash start-vllm-service.sh` to start gptq model online serving. Serving start successfully log:
+
+    ```bash
+    2024-10-18 09:26:30,604 - INFO - Converting the current model to asym_int4 format......
+    2024-10-18 09:26:30,605 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+    2024-10-18 09:26:35,970 - INFO - Only HuggingFace Transformers models are currently supported for further optimizations
+    2024-10-18 09:26:37,007 - INFO - Loading model weights took 3.7381 GB
+    WARNING 10-18 09:26:44 utils.py:564] Pin memory is not supported on XPU.
+    INFO 10-18 09:26:44 gpu_executor.py:108] # GPU blocks: 2254, # CPU blocks: 1024
+    WARNING 10-18 09:26:44 serving_embedding.py:171] embedding_mode is False. Embedding API will not work.
+    INFO 10-18 09:26:44 launcher.py:14] Available routes are:
+    INFO 10-18 09:26:44 launcher.py:22] Route: /openapi.json, Methods: GET, HEAD
+    INFO 10-18 09:26:44 launcher.py:22] Route: /docs, Methods: GET, HEAD
+    INFO 10-18 09:26:44 launcher.py:22] Route: /docs/oauth2-redirect, Methods: GET, HEAD
+    INFO 10-18 09:26:44 launcher.py:22] Route: /redoc, Methods: GET, HEAD
+    INFO 10-18 09:26:44 launcher.py:22] Route: /health, Methods: GET
+    INFO 10-18 09:26:44 launcher.py:22] Route: /tokenize, Methods: POST
+    INFO 10-18 09:26:44 launcher.py:22] Route: /detokenize, Methods: POST
+    INFO 10-18 09:26:44 launcher.py:22] Route: /v1/models, Methods: GET
+    INFO 10-18 09:26:44 launcher.py:22] Route: /version, Methods: GET
+    INFO 10-18 09:26:44 launcher.py:22] Route: /v1/chat/completions, Methods: POST
+    INFO 10-18 09:26:44 launcher.py:22] Route: /v1/completions, Methods: POST
+    INFO 10-18 09:26:44 launcher.py:22] Route: /v1/embeddings, Methods: POST
+    INFO:     Started server process [1294]
+    INFO:     Waiting for application startup.
+    INFO:     Application startup complete.
+    INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+    ```
+
+    3. In docker send request to verfiy the serving status.
+
+    ```bash
+    curl http://localhost:8000/v1/completions \
+        -H "Content-Type: application/json" \
+        -d '{"model": "llama2-7b-gptq",
+              "prompt": "San Francisco is a",
+              "max_tokens": 128
+            }'
+    ```
+
+    and should get following output:
+
+    ```json
+    {
+      "id": "cmpl-e20bdfe80656404baea930e0288396a9",
+      "object": "text_completion",
+      "created": 1729214854,
+      "model": "llama2-7b-gptq",
+      "choices": [
+        {
+          "index": 0,
+          "text": " food lover's paradise with a diverse array of culinary options to suit any taste and budget. Here are some of the top attractions when it comes to food and drink in San Francisco:\n\n1. Fisherman's Wharf: This bustling waterfront district is known for its fresh seafood, street performers, and souvenir shops. Be sure to try some of the local specialties like Dungeness crab, abalone, or sourdough bread.\n\n2. Chinatown: San Francisco's Chinatown is one of the largest and oldest",
+          "logprobs": null,
+          "finish_reason": "length",
+          "stop_reason": null
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 5,
+        "total_tokens": 133,
+        "completion_tokens": 128
+      }
+    }
+    ```
 
 ### Advanced Features
 
@@ -345,9 +515,6 @@ Prompt: 'The future of AI is', Generated text: ' vast and exciting, with many po
 vLLM serving with IPEX-LLM supports multi-modal models, such as [MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6), which can accept image and text input at the same time and respond.
 
 1. Start MiniCPM service: change the `model` and `served_model_name` value in `/llm/start-vllm-service.sh`
-
-```bash
-```
 
 2. Send request with image url and prompt text. (For successfully download image from url, you may need set `http_proxy` and `https_proxy` in docker before the vllm service started)
 
@@ -566,6 +733,61 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --lora-modules sql-lora-1=$SQL_LOARA_1 sql-lora-2=$SQL_LOARA_2
 
 ```
+
+#### OpenAI API Backend
+
+vLLM Serving can be deployed as a server that implements the OpenAI API protocol. This allows vLLM to be used as backend for web applications such as [open-webui](https://github.com/open-webui/open-webui/) using OpenAI API.
+
+1. Start vLLM Serving with `api-key`, just setting any string to `api-key` in `start-vllm-service.sh`, and run it.
+
+```bash
+#!/bin/bash
+model="/llm/models/Meta-Llama-3.1-8B-Instruct"
+served_model_name="llama-3.1-8b"
+...
+python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
+  --served-model-name $served_model_name \
+  --port 8000 \
+  --model $model \
+  ...
+  --api-key <your-api-key> \
+  --tensor-parallel-size 2
+```
+
+2. Send http request with `api-key` header to verify the model has deployed successfully.
+
+```bash
+curl http://localhost:8000/v1/completions \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer <your-api-key>" \
+    -d '{
+    "model": "llama-3.1-8b",
+    "prompt": "San Francisco is a",
+    "max_tokens": 128
+    }'
+```
+
+3. Start open-webui serving with following scripts. Note that the `OPENAI_API_KEY` must be consistent with the backend value. The `<host-ip>` in `OPENAI_API_BASE_URL` is the ipv4 address of the host that starts docker. For relevant details, please refer to official document [link](https://docs.openwebui.com/#installation-for-openai-api-usage-only) of open-webui.
+
+```bash
+#!/bin/bash
+export DOCKER_IMAGE=ghcr.io/open-webui/open-webui:main
+export CONTAINER_NAME=<your-docker-container-name>
+
+docker rm -f $CONTAINER_NAME
+
+docker run -itd \
+           -p 3000:8080 \
+           -e OPENAI_API_KEY=<your-api-key> \
+           -e OPENAI_API_BASE_URL=http://<host-ip>:8000/v1 \
+           -v open-webui:/app/backend/data \
+           --name $CONTAINER_NAME \
+           --restart always $DOCKER_IMAGE  
+```
+
+  Then you should start the docker on host that make sure you can visit vLLM backend serving.
+
+4. After installation, you can access Open WebUI at <http://localhost:3000>. Enjoy! 😄
 
 ### Validated Models List
 

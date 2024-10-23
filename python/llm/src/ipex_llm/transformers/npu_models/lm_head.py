@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import torch
 from torch import nn
 import numpy as np
+from filelock import FileLock
 from intel_npu_acceleration_library.backend import NNFactory
 from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
 
@@ -34,6 +34,7 @@ class LMHeadLinear(NNFactory):
         profile: bool = False,
         device: str = "NPU",
         dtype: np.dtype = np.int8,
+        use_split: bool = False,
     ):
         """Initialize the LMHeadLinear class.
 
@@ -51,25 +52,39 @@ class LMHeadLinear(NNFactory):
         self.inC, self.outC = inC, outC
         self.batch = batch
 
-        input = self.parameter((self.batch, self.inC))
-
         self.split_num = split_num
-        split_size = self.inC // split_num // 2 * 2
 
-        for i in range(self.split_num):
-            start_idx = i * split_size
-            end_idx = (i + 1) * split_size if i < self.split_num - 1 else self.inC
-            input_slice = self.slice(input, begin=[0, start_idx],
-                                     end=[self.batch, end_idx])
-            linear_slice = self.linear(input_slice, outC, split_size, bias=False, wt_dtype=dtype)
-            if i == 0:
-                res = linear_slice
-            else:
-                res += linear_slice
+        if use_split:
+            input = self.parameter((1, self.batch, self.inC))
+            res = self.dq_split_linear(input, self.split_num, self.outC, self.inC, wt_dtype=dtype,
+                                       scale_factor=False)
+        else:
+            input = self.parameter((self.batch, self.inC))
+            split_size = self.inC // split_num // 2 * 2
+
+            for i in range(self.split_num):
+                start_idx = i * split_size
+                end_idx = (i + 1) * split_size if i < self.split_num - 1 else self.inC
+                input_slice = self.slice(input, begin=[0, start_idx],
+                                         end=[self.batch, end_idx])
+                linear_slice = self.linear(input_slice, outC, split_size, bias=False,
+                                           wt_dtype=dtype)
+                if i == 0:
+                    res = linear_slice
+                else:
+                    res += linear_slice
 
         print("start compiling lm_head")
         self.compile()
         print("end compiling lm_head")
+
+    def set_weights(self, op_id, weights):
+        self.set_weights_async(op_id, weights)
+        with FileLock(f"lmhead_run.lock"):
+            backend_lib.run(self._mm)
+
+    def set_weights_async(self, op_id, weights):
+        self.setWeights(1, op_id, *weights)
 
     def run(
         self, X: np.ndarray
@@ -93,7 +108,7 @@ class LMHeadLinear(NNFactory):
 
 
 class SlicedLMHead(nn.Module):
-    def __init__(self, weight, bias, split_num):
+    def __init__(self, weight, bias, split_num, use_split=False):
         super().__init__()
         self.split_num = split_num
         self.outC, self.inC = weight.shape
@@ -110,6 +125,7 @@ class SlicedLMHead(nn.Module):
             new_linear.out_features = new_weight.size(0)
             self.lm_heads.append(new_linear)
         self.bias = bias
+        self.use_split = use_split
 
     def forward(self, hidden_states):
         if hidden_states.size(0) * hidden_states.size(1) == 1:
@@ -143,9 +159,19 @@ class SlicedLMHead(nn.Module):
     def get_fused_lm_head(self):
         np_dtype = np.uint8 if self.get_weight_dtype() == torch.uint8 else np.int8
         self.fused_lm_head = LMHeadLinear(self.inC, self.outC, 1, self.split_num,
-                                          False, "NPU", dtype=np_dtype)
-        fused_lm_head_weights = [(self.lm_heads[i].weight.data.numpy(),
-                                  self.lm_heads[i].scale.data.numpy())
-                                 for i in range(self.split_num)]
-        self.fused_lm_head.setWeights(1, self.lm_heads[0].op_id,
-                                      *fused_lm_head_weights)
+                                          False, "NPU", dtype=np_dtype, use_split=self.use_split)
+        if self.use_split:
+            weights = []
+            scales = []
+            for i in range(self.split_num):
+                weights.append(self.lm_heads[i].weight)
+                scales.append(self.lm_heads[i].scale)
+            fused_lm_head_weights = (torch.stack(weights, axis=0).numpy(),
+                                     torch.stack(scales, axis=0).numpy())
+        else:
+            fused_lm_head_weights = [(self.lm_heads[i].weight.data.numpy(),
+                                      self.lm_heads[i].scale.data.numpy())
+                                     for i in range(self.split_num)]
+
+        self.fused_lm_head.set_weights(self.lm_heads[0].op_id,
+                                       fused_lm_head_weights)

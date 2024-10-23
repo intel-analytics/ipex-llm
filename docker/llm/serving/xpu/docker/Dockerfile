@@ -54,8 +54,8 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     cd /tmp/ && \
     pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # Internal oneccl
-    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.4.1-release/oneccl_wks_installer_2024.0.0.4.1.sh && \
-    bash oneccl_wks_installer_2024.0.0.4.1.sh && \
+    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.5-release/oneccl_wks_installer_2024.0.0.5.sh && \
+    bash oneccl_wks_installer_2024.0.0.5.sh && \
     git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
     cd torch-ccl && \
     patch -p1 < /tmp/oneccl-binding.patch && \

@@ -16,6 +16,7 @@
 
 import torch
 from typing import List
+from ipex_llm.utils.common.log4Error import invalidInputError
 
 
 def merge_linear(linears: List[torch.nn.Linear]) -> torch.nn.Linear:
@@ -40,3 +41,21 @@ def reshape_lm_head_input(x):
         shape[1] = 1
         x = x[:, -1, :].view(shape)
     return x
+
+
+def split_linear(module, module_name, n_splits=2):
+    in_features = module.in_features
+    invalidInputError(in_features % n_splits == 0,
+                      f"in_features of the linear layer {module_name} must be divisible by"
+                      f" n_splits, but got in_features: {in_features}, n_splits: {n_splits}")
+    weight_split = torch.tensor_split(module.weight, n_splits, dim=1)
+    linear_list = torch.nn.ModuleList()
+    bias = module.bias
+    for idx, weight in enumerate(weight_split):
+        new_linear = torch.nn.Linear(weight.size(1),
+                                     weight.size(0),
+                                     bias=False if bias is None else True)
+        new_linear.bias = bias
+        new_linear.weight = torch.nn.Parameter(weight.contiguous(), requires_grad=False)
+        linear_list.add_module(f"{module_name}_dq_{idx}", new_linear)
+    return linear_list

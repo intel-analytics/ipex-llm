@@ -83,7 +83,6 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [Llama2-7B](./llama.py)
 - [Llama3-8B](./llama.py)
 - [Qwen2-1.5B](./qwen.py)
-- [Qwen2-7B](./qwen.py)
 - [Qwen2.5-7B](./qwen.py)
 - [MiniCPM-1B](./minicpm.py)
 - [MiniCPM-2B](./minicpm.py)
@@ -91,13 +90,13 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 
 ### Recommended NPU Driver Version for MTL Users
 #### 32.0.100.2540
-Supported models: Llama2-7B, Llama3-8B, Qwen2-1.5B, Qwen2-7B, MiniCPM-1B, MiniCPM-2B, Baichuan2-7B
+Supported models: Llama2-7B, Llama3-8B, Qwen2-1.5B, MiniCPM-1B, MiniCPM-2B, Baichuan2-7B
 
 ### Recommended NPU Driver Version for LNL Users
 #### 32.0.100.2625
 Supported models: Llama2-7B, MiniCPM-1B, Baichuan2-7B
 #### 32.0.101.2715
-Supported models: Llama3-8B, MiniCPM-2B, Qwen2-7B, Qwen2-1.5B, Qwen2.5-7B
+Supported models: Llama3-8B, MiniCPM-2B, Qwen2-1.5B, Qwen2.5-7B
 
 ### Run
 ```cmd
@@ -109,9 +108,6 @@ python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
 
 :: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py
-
-:: to run Qwen2-7B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct
 
 :: to run Qwen2.5-7B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct
@@ -152,9 +148,6 @@ python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --d
 :: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py --disable-transpose-value-cache
 
-:: to run Qwen2-7B-Instruct LNL driver version: 32.0.101.2715)
-python qwen.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --disable-transpose-value-cache
-
 :: to run Qwen2.5-7B-Instruct LNL driver version: 32.0.101.2715)
 python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --disable-transpose-value-cache
 
@@ -168,11 +161,8 @@ python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-
 python baichuan2.py --disable-transpose-value-cache
 ```
 
-For [Qwen2-7B](./qwen.py) and [Qwen2.5-7B](./qwen.py), you could also try to enable mixed precision optimization when encountering output problems:
+For [Qwen2.5-7B](./qwen.py), you could also try to enable mixed precision optimization when encountering output problems:
 
-```cmd
-python qwen.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --mixed-precision
-``` 
 ```cmd
 python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --mixed-precision
 ``` 
