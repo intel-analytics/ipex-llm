@@ -49,7 +49,7 @@ if __name__ == "__main__":
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
-    parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
+    parser.add_argument("--n-predict", type=int, default=200, help="Max tokens to predict")
     parser.add_argument("--max-output-len", type=int, default=1024)
 
     args = parser.parse_args()

@@ -199,9 +199,8 @@ class _BaseAutoModelClass:
                 from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm, generate
                 convert_llm(llm,
                             kv_len=max_output_len,
-                            tranpose_value_cache=transpose_value_cache)
+                            transpose_value_cache=transpose_value_cache)
                 # patch generate function
-                import types
                 model.generate = types.MethodType(generate, model)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm

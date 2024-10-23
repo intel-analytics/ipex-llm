@@ -20,22 +20,14 @@ import os
 import torch
 from ipex_llm.utils.common import invalidInputError
 import time
-import numpy
-import warnings
-import torch
 import sys
-import transformers
 from typing import List
-from unittest.mock import patch
-from transformers.dynamic_module_utils import get_imports
 from .pipeline_cpp import InitLLMPipeline, generate_serve
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, List, Optional
 from transformers import GenerationConfig, \
     LogitsProcessorList, StoppingCriteriaList
 import threading
 from ipex_llm.utils.common import invalidInputError
-import os
-from transformers import PretrainedConfig
 import tempfile
 import uuid
 import numpy as np
@@ -77,6 +69,7 @@ def generate(
     thread = threading.Thread(target=generate_serve,
                               args=(self.kv_len, self.num_head,
                                     self.head_dim, self.num_layers,
+                                    self.transpose_value_cache,
                                     new_tokens - 1))
     thread.start()
 
@@ -180,7 +173,7 @@ def update_names_of_IR_and_export_blob(xml_path, new_ir_path=None, blob_path=Non
 
 def convert_llm(model: torch.nn.Module,
                 kv_len: int,
-                tranpose_value_cache: bool):
+                transpose_value_cache: bool):
     if model.config.model_type == "llama":
         from .llama import LowBitLlamaLMHead, LlamaEmbedding
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -320,11 +313,11 @@ def convert_llm(model: torch.nn.Module,
                         num_heads=num_heads, 
                         num_key_value_heads=num_key_value_heads,
                         num_layers=1,
-                        max_seq_len=1023,
+                        max_seq_len=kv_len,
                         rms_norm_eps=rms_norm_eps,
                         intermediate_size=intermediate_size,
                         mode="decode",
-                        transpose_value=True,
+                        transpose_value=transpose_value_cache,
                         dtype=np_dtype,
                     )
                     # save IR for current Decoder Layer 0
@@ -354,15 +347,20 @@ def convert_llm(model: torch.nn.Module,
                 for idx, weight in enumerate(weight_numpy):
                     bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{7+idx}.bin")
                     weight.tofile(bin_file)
+            
+            model.kv_len = kv_len
+            model.num_head = num_heads
+            model.head_dim = head_dim
+            model.num_layers = layer_num
+            model.transpose_value_cache = transpose_value_cache
 
             try:
                 res = InitLLMPipeline(kv_len, num_heads, head_dim, layer_num,
-                                      model.vocab_size, weight_dir,
+                                      model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path, rest_blob_path)
             except:
                 invalidInputError(False,
-                                "False to InitLLMPipeline.")
-                exit(0)
+                                 "False to InitLLMPipeline.")
     else:
         invalidInputError(False,
                           "Now we only support Llama2 for pipeline running.")
