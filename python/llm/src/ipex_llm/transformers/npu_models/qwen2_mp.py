@@ -413,7 +413,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         inputs = (
             hidden_states.to(torch.float16),
             attention_mask,
-            position_ids,
+            position_ids.to(torch.float16),
         )
 
         for i in range(self.intra_stages):
@@ -530,7 +530,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         seq_len = hidden_states.shape[1]
 
         backend_cls = self.backend_cls_prefill
-        inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
+        inputs = (hidden_states.to(torch.float16), attention_mask, position_ids.to(torch.float16))
         inputs += (self.layer_norm_0, self.layer_norm_1)
         inputs += (self.q_bias, self.k_bias, self.v_bias)
         hidden_states, past_key, past_value = run_model(
