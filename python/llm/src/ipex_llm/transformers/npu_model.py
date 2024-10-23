@@ -198,7 +198,8 @@ class _BaseAutoModelClass:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
             with torch.no_grad():
-                cls.load_convert(qtype, model, "cpu", modules_to_not_convert, *args, **kwargs)
+                cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
+                                 quantization_group_size, *args, **kwargs)
                 if hasattr(model, "llm"):
                     create_npu_kernels(model.llm)
                 else:
