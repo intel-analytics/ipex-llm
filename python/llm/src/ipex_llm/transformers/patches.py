@@ -16,6 +16,7 @@
 #
 
 from typing import List
+from transformers.dynamic_module_utils import get_imports
 
 
 def patch_flash_attn_import(filename: str) -> List[str]:

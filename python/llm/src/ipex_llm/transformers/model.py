@@ -44,7 +44,6 @@ import transformers
 from typing import List
 from unittest.mock import patch
 from transformers.configuration_utils import PretrainedConfig
-from transformers.dynamic_module_utils import get_imports
 
 from ipex_llm.ggml.quantize import ggml_tensor_qtype, gguf_mixed_qtype
 from ipex_llm.utils.common import invalidInputError
