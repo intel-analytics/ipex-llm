@@ -449,6 +449,9 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
     def __init__(
         self,
         hidden_shape: Sequence[int],
+        mask_shape: Sequence[int],
+        memory_shape: Sequence[int],
+        memory_mask_shape: Sequence[int],
         *shapes,
         layer_norm_0_weights=None,
         layer_norm_0_biases=None,
@@ -481,14 +484,15 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
         self.dtype = dtype
         self.num_layers = num_layers
 
-        self.batch_size = 1
-        self.time = 218
-        self.size = 512
+        self.x_bsz, self.x_time, self.x_size = hidden_shape
+        self.x_mask_bsz, self.x_mask_time, self.x_mask_size = mask_shape
+        self.mem_bsz, self.mem_time, self.mem_size = memory_shape
+        self.mem_mask_bsz, self.mem_mask_time, self.mem_mask_size = memory_mask_shape
 
-        input = self.create_input_op((1, 66, 512))
-        tgt_mask = self.create_input_op((1, 66, 1))
-        memory = self.create_input_op((1, 218, 512))
-        memory_mask = self.create_input_op((1, 1, 218))
+        input = self.create_input_op((self.x_bsz, self.x_time, self.x_size))
+        tgt_mask = self.create_input_op((self.x_mask_bsz, self.x_mask_time, self.x_mask_size))
+        memory = self.create_input_op((self.mem_bsz, self.mem_time, self.mem_size))
+        memory_mask = self.create_input_op((self.mem_mask_bsz, self.mem_mask_time, self.mem_mask_size))
 
         layer_norm_0_weights = [self.constant(w) for w in layer_norm_0_weights]
         layer_norm_0_biases = [self.constant(w) for w in layer_norm_0_biases]
@@ -608,6 +612,10 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         max_seq_len: int = 1024,
         transpose_value: bool = False,
         do_print: bool = True,
+        x_shape = None,
+        x_mask_shape = None,
+        memory_shape = None,
+        memory_mask_shape = None,
     ):
         super().__init__()
 
@@ -644,7 +652,10 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
             decoder = LowBitMultiDecoderlayer(
-                [1, 66, 512],
+                x_shape,
+                x_mask_shape,
+                memory_shape,
+                memory_mask_shape,
                 layer_norm_0_weights=layer_norm_0_weights[start:end],
                 layer_norm_0_biases=layer_norm_0_biases[start:end],
                 layer_norm_1_weights=layer_norm_1_weights[start:end],
@@ -781,34 +792,8 @@ def run_decode(
         # conv weights
         fsmn_weights.append(attn_layer.fsmn_block.weight.view(512, 1, 1, 11).to(torch.float16))
 
-    multi_decoder = FusedLlamaLowBitMultiDecoderlayer(
-        parameters=layer_weights,
-        layer_norm_0_weights=layer_norm_0_weights,
-        layer_norm_0_biases=layer_norm_0_biases,
-        layer_norm_1_weights=layer_norm_1_weights,
-        layer_norm_1_biases=layer_norm_1_biases,
-        layer_norm_2_weights=layer_norm_2_weights,
-        layer_norm_2_biases=layer_norm_2_biases,
-        q_biases=q_biases,
-        kv_biases=kv_biases,
-        out_biases=out_biases,
-        w1_biases=w1_biases,
-        feed_norm_weights=feed_norm_weights,
-        feed_norm_biases=feed_norm_biases,
-        fsmn_weights=fsmn_weights,
-        layer_indexes=layer_indexs,
-        intra_stages=intra_stages,
-        max_seq_len=max_seq_len,
-        transpose_value=transpose_value_cache,
-        do_print=True,
-    )
-
     dist.barrier()
-
-    cache = None
-
     control = torch.empty((), dtype=torch.int)
-    x = torch.empty((1, 66, 512), dtype=torch.float16)
 
     with torch.inference_mode():
         while True:
@@ -816,10 +801,36 @@ def run_decode(
             if control.item() == -2:
                 break
             elif control.item() == -1:
-                tgt_mask, memory, memory_mask = input_queue.get()
+                x, tgt_mask, memory, memory_mask = input_queue.get()
             else:
                 dist.recv(x, src=rank - 1)
                 t1 = time.perf_counter()
+
+                multi_decoder = FusedLlamaLowBitMultiDecoderlayer(
+                    parameters=layer_weights,
+                    layer_norm_0_weights=layer_norm_0_weights,
+                    layer_norm_0_biases=layer_norm_0_biases,
+                    layer_norm_1_weights=layer_norm_1_weights,
+                    layer_norm_1_biases=layer_norm_1_biases,
+                    layer_norm_2_weights=layer_norm_2_weights,
+                    layer_norm_2_biases=layer_norm_2_biases,
+                    q_biases=q_biases,
+                    kv_biases=kv_biases,
+                    out_biases=out_biases,
+                    w1_biases=w1_biases,
+                    feed_norm_weights=feed_norm_weights,
+                    feed_norm_biases=feed_norm_biases,
+                    fsmn_weights=fsmn_weights,
+                    layer_indexes=layer_indexs,
+                    intra_stages=intra_stages,
+                    max_seq_len=max_seq_len,
+                    transpose_value=transpose_value_cache,
+                    do_print=True,
+                    x_shape=list(x.shape),
+                    x_mask_shape=list(tgt_mask.shape),
+                    memory_shape=list(memory.shape),
+                    memory_mask_shape=list(memory_mask.shape),
+                )
 
                 layer_outputs = multi_decoder(
                     x=x,
@@ -907,15 +918,15 @@ class DecodeRunner:
         **kwargs,
     ):
         t0 = time.perf_counter()
+        x = x.to(torch.float16)
 
         if self.prev_cache is None:
             control = torch.tensor(-1, dtype=torch.int)
             dist.broadcast(control, src=0)
             for i in range(len(self.decoder_processes)):
-                self.input_queues[i].put((tgt_mask, memory, memory_mask))
+                self.input_queues[i].put((x, tgt_mask, memory, memory_mask))
 
         dist.broadcast(self.forward_signal, src=0, async_op=True)
-        x = x.to(torch.float16)
         dist.send(x, dst=1)
         dist.recv(x, src=self.world_size - 1)
 
