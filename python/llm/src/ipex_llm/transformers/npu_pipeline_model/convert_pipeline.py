@@ -59,7 +59,7 @@ def generate(
         numpy_input = inputs[0].numpy()
     else:
         numpy_input = inputs[0]
-    input_length = numpy.size(numpy_input)
+    input_length = np.size(numpy_input)
 
     new_tokens = new_generate_kwargs['max_new_tokens']
     invalidInputError(input_length + new_tokens <= self.kv_len + 1,

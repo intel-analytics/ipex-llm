@@ -193,6 +193,7 @@ class _BaseAutoModelClass:
                     inter_pp=inter_pp,
                     intra_pp=intra_pp,
                     transpose_value_cache=transpose_value_cache,
+                    group_size=quantization_group_size
                 )
                 model.save_low_bit = types.MethodType(save_low_bit, model)
             else:
