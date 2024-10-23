@@ -217,7 +217,6 @@ class _BaseAutoModelClass:
                      group_size=0, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear
 
-        print(f'[DEBUG]group_size is {group_size}')
         replace_with_QuantizedLinear(optimize_model, q_k, device=device,
                                      modules_to_not_convert=modules_to_not_convert,
                                      group_size=group_size)
