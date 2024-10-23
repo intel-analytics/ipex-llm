@@ -197,12 +197,10 @@ class _BaseAutoModelClass:
                 )
                 model.save_low_bit = types.MethodType(save_low_bit, model)
             else:
-                from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm, generate
+                from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm
                 convert_llm(llm,
                             kv_len=max_output_len,
                             transpose_value_cache=transpose_value_cache)
-                # patch generate function
-                model.generate = types.MethodType(generate, model)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)

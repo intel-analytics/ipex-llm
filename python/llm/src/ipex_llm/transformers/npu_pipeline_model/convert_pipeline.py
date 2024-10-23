@@ -147,7 +147,12 @@ def generate(
     return output
 
 
-def update_names_of_IR_and_export_blob(xml_path, new_ir_path=None, blob_path=None):
+def update_names_of_IR_and_export_blob(model, model_name, dir):
+    xml_path = os.path.join(dir, model_name + ".xml")
+    model.save(xml_path)
+    new_ir_path = os.path.join(dir, model_name + "_new.xml")
+    blob_path = os.path.join(dir, model_name + ".blob")
+
     core = Core()
     core.set_property("NPU", {"NPU_COMPILATION_MODE_PARAMS": "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"})
     core.set_property("NPU", {"PERFORMANCE_HINT": "LATENCY"})
@@ -169,6 +174,11 @@ def update_names_of_IR_and_export_blob(xml_path, new_ir_path=None, blob_path=Non
         model_stream = compiledModel.export_model()
         with open(blob_path, 'wb') as f:
             f.write(model_stream)
+    
+    os.remove(xml_path)
+    os.remove(new_ir_path)
+
+    return blob_path
 
 
 def convert_llm(model: torch.nn.Module,
@@ -190,16 +200,8 @@ def convert_llm(model: torch.nn.Module,
             model_norm = model.model.norm
             lm_head = model.lm_head
             weights = [(lm_head.weight, lm_head.scale),]
-            parameters = weights
-            op_parameters = []
-            for w in parameters:
-                if isinstance(w, tuple):  # from QuantizedLinear
-                    op_parameters.append((w[0].numpy(), w[1].numpy()))
-                else:
-                    op_parameters.append(w.to(torch.float16).numpy())
-            op_id = str(uuid.uuid4())
-            if isinstance(parameters[0], tuple):
-                np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+            if isinstance(weights[0], tuple):
+                np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
             else:  # FP16 Linear
                 np_dtype = np.float16
 
@@ -207,7 +209,7 @@ def convert_llm(model: torch.nn.Module,
                 [1, 1, num_heads * head_dim],
                 num_heads=num_heads,
                 num_key_value_heads=num_key_value_heads,
-                max_seq_len=1023,
+                max_seq_len=kv_len,
                 rms_norm_eps=rms_norm_eps,
                 mode="decode",
                 transpose_value=False,
@@ -215,16 +217,7 @@ def convert_llm(model: torch.nn.Module,
                 model_norm_weight=model_norm.weight.to(torch.float16),
                 vocab_size=vocab_size,
             )
-
-            # save IR for model norm and lm head
-            xml_path = os.path.join(temp_dir, "lm_head.xml")
-            new_lm_head.save(xml_path)
-            new_ir_path = os.path.join(temp_dir, "lm_head_new.xml")
-            last_blob_path = os.path.join(temp_dir, "lm_head.blob")
-            # update names for IR and export to a blob
-            update_names_of_IR_and_export_blob(xml_path, new_ir_path, last_blob_path)
-            os.remove(xml_path)
-            os.remove(new_ir_path)
+            last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
 
             # save weights bins files
             weight_numpy = [
@@ -242,31 +235,13 @@ def convert_llm(model: torch.nn.Module,
                 padding_idx=model.config.pad_token_id,
                 dtype=np.float16,
             )
-
-            # generate embedding blob
-            xml_path = os.path.join(temp_dir, "embedding.xml")
-            new_embedding.save(xml_path)
-            new_ir_path = os.path.join(temp_dir, "embedding_new.xml")
-            first_blob_path = os.path.join(temp_dir, "embedding.blob")
-            # update names for IR and export to a blob
-            update_names_of_IR_and_export_blob(xml_path, new_ir_path, first_blob_path)
-            os.remove(xml_path)
-            os.remove(new_ir_path)
-
-            # save weights bins files
-            weight_numpy = [
-                embedding_layer.weight.to(torch.float16).detach().numpy()
-            ]
-            for idx, weight in enumerate(weight_numpy):
-                bin_file = os.path.join(weight_dir, f"model_embedding_input_{0+idx}.bin")
-                weight.tofile(bin_file)
+            first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding", temp_dir)
+            bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
+            embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
 
             # generate decoder layer blob
             from ipex_llm.transformers.npu_models.llama_mp import LowBitLlamaMultiDecoderlayer
             for layer_idx in range(0, layer_num):
-                layer_weights = []
-                input_layer_norm_weights = []
-                post_attn_layernorm_weights = []
                 curr_layer = model.model.layers[layer_idx]
                 attn_layer = curr_layer.self_attn
                 mlp_layer = curr_layer.mlp
@@ -286,20 +261,8 @@ def convert_llm(model: torch.nn.Module,
                 layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
                 layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
-                layer_weights.extend(weights)
-                input_layer_norm_weights.append(layer_norm_0)
-                post_attn_layernorm_weights.append(layer_norm_1)
-
-                parameters = layer_weights
-                op_parameters = []
-                for w in parameters:
-                    if isinstance(w, tuple):  # from QuantizedLinear
-                        op_parameters.append((w[0].numpy(), w[1].numpy()))
-                    else:
-                        op_parameters.append(w.to(torch.float16).numpy())
-                op_id = str(uuid.uuid4())
-                if isinstance(parameters[0], tuple):
-                    np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8    
+                if isinstance(weights[0], tuple):
+                    np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8    
                 else:  # FP16 Linear
                     np_dtype = np.float16
 
@@ -320,34 +283,21 @@ def convert_llm(model: torch.nn.Module,
                         transpose_value=transpose_value_cache,
                         dtype=np_dtype,
                     )
-                    # save IR for current Decoder Layer 0
-                    xml_path = os.path.join(temp_dir, "decoder_layer.xml")
-                    single_decoder.save(xml_path)
-                    new_ir_path = os.path.join(temp_dir, "decoder_layer-new.xml")
-                    rest_blob_path = os.path.join(temp_dir, "decoder_layer.blob")
-                    # update names for IR and export to a blob
-                    update_names_of_IR_and_export_blob(xml_path, new_ir_path, rest_blob_path)
+                    rest_blob_path = update_names_of_IR_and_export_blob(single_decoder, "decoder_layer",
+                                                                        temp_dir)
 
-                # save weights bins files
-                weight_numpy = [
-                    attn_layer.q_proj.weight.data.numpy(), attn_layer.q_proj.scale.data.numpy(),
-                    attn_layer.k_proj.weight.data.numpy(), attn_layer.k_proj.scale.data.numpy(),
-                    attn_layer.v_proj.weight.data.numpy(), attn_layer.v_proj.scale.data.numpy(),
-                    attn_layer.o_proj.weight.data.numpy(), attn_layer.o_proj.scale.data.numpy(),
-                    mlp_layer.gate_proj.weight.data.numpy(), mlp_layer.gate_proj.scale.data.numpy(),
-                    mlp_layer.up_proj.weight.data.numpy(), mlp_layer.up_proj.scale.data.numpy(),
-                    mlp_layer.down_proj.weight.data.numpy(), mlp_layer.down_proj.scale.data.numpy(),
-                ]
-
-                input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")  # input layernorm
-                post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")  # post layernorm
+                input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
+                post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
                 layer_norm_0.data.numpy().tofile(input_lm_bin_file)
                 layer_norm_1.data.numpy().tofile(post_lm_bin_file)
 
-                for idx, weight in enumerate(weight_numpy):
-                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{7+idx}.bin")
-                    weight.tofile(bin_file)
-            
+                for idx, (weight, scale) in enumerate(weights):
+                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{7+idx*2}.bin")
+                    weight.numpy().tofile(bin_file)
+                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{7+idx*2+1}.bin")
+                    scale.numpy().tofile(bin_file)
+
+            # patch attrs for generate
             model.kv_len = kv_len
             model.num_head = num_heads
             model.head_dim = head_dim
