@@ -120,6 +120,7 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
         optimize_model = kwargs.pop("optimize_model", False)
+        pipeline = kwargs.pop("pipeline", True)
         max_output_len = kwargs.pop("max_output_len", 1024)
         max_output_len = max_output_len - 1
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
@@ -184,16 +185,24 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_transformers_low_bit": qtype})
             model.share_memory()
 
-            optimize_llm(
-                llm,
-                max_output_len=max_output_len,
-                max_prompt_len=max_prompt_len,
-                inter_pp=inter_pp,
-                intra_pp=intra_pp,
-                transpose_value_cache=transpose_value_cache,
-                group_size=quantization_group_size
-            )
-            model.save_low_bit = types.MethodType(save_low_bit, model)
+            if not pipeline:
+                optimize_llm(
+                    llm,
+                    max_output_len=max_output_len,
+                    max_prompt_len=max_prompt_len,
+                    inter_pp=inter_pp,
+                    intra_pp=intra_pp,
+                    transpose_value_cache=transpose_value_cache,
+                )
+                model.save_low_bit = types.MethodType(save_low_bit, model)
+            else:
+                from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm, generate
+                convert_llm(llm,
+                            kv_len=max_output_len,
+                            tranpose_value_cache=transpose_value_cache)
+                # patch generate function
+                import types
+                model.generate = types.MethodType(generate, model)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
