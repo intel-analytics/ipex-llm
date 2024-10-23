@@ -270,7 +270,7 @@ class LLMBaseNNFactory(NNFactory):
         v_h = self.reshape(v, [b, t, h, d_k])
         q_h = self.transpose(q_h, [0, 2, 1, 3])
         k_h = self.transpose(k_h, [0, 2, 1, 3])
-        v_h = self.transpose(v_h, [0, 2, 1, 3]) # (batch, head, time2, d_k)
+        v_h = self.transpose(v_h, [0, 2, 1, 3])
 
         b_v, t_v, d_v = v.size()
         if mask is not None:
@@ -282,10 +282,10 @@ class LLMBaseNNFactory(NNFactory):
                                     weights_node=fsmn_weight,
                                     bias=None,
                                     strides=1,
-                                    padding=5, #(left_padding, right_padding),
+                                    padding=5,
                                     groups=512,
                                     n_spatial_dims=1)
-    
+
         fsmn_out = self.transpose(fsmn_out, [0, 2, 1])
         fsmn_out = self.eltwise_add(v, fsmn_out)
         if mask is not None:
@@ -326,12 +326,12 @@ class LLMBaseNNFactory(NNFactory):
         b, d, t = x.size()
         cache = x
         fsmn_x = self.convolution(input_node=x,
-                                    weights_node=fsmn_weight,
-                                    bias=None,
-                                    strides=1,
-                                    padding=5,
-                                    groups=512,
-                                    n_spatial_dims=1)
+                                  weights_node=fsmn_weight,
+                                  bias=None,
+                                  strides=1,
+                                  padding=5,
+                                  groups=512,
+                                  n_spatial_dims=1)
         fsmn_x = self.transpose(fsmn_x, [0, 2, 1])
         x = self.eltwise_add(inputs, fsmn_x)
         if mask is not None:

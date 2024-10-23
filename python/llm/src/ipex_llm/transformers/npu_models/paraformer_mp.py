@@ -19,24 +19,29 @@ import torch
 import time
 
 from typing import Optional, Sequence, List, Union, Any, Tuple
-import numpy as np
-
-from transformers.cache_utils import Cache
-from ipex_llm.utils.common import invalidInputError
 from typing import Optional, List, Generator
 import uuid
 from functools import partial
+from colorama import Fore, Back, Style
+
+import numpy as np
 import torch.nn.functional as F
 import torch.nn.parallel
 import torch.distributed as dist
-
+from transformers.cache_utils import Cache
+from ipex_llm.utils.common import invalidInputError
 from transformers.utils import logging
 
-logger = logging.get_logger(__name__)
-from colorama import Fore, Back, Style
 import torch.multiprocessing as mp
 from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
+
+from funasr.models.scama import utils as myutils
+from funasr.models.transformer.utils.nets_utils import make_pad_mask
+from funasr.models.transformer.utils.subsampling import Conv2dSubsampling, Conv2dSubsampling2, \
+    Conv2dSubsampling6, Conv2dSubsampling8, TooShortUttError, check_short_utt
+
+logger = logging.get_logger(__name__)
 
 
 class LowBitMultiEncoderlayer(LLMBaseNNFactory):
@@ -930,10 +935,6 @@ class DecodeRunner:
         self.shutdown()
 
 
-from funasr.models.transformer.utils.nets_utils import make_pad_mask
-from funasr.models.transformer.utils.subsampling import Conv2dSubsampling, Conv2dSubsampling2, Conv2dSubsampling6, Conv2dSubsampling8
-from funasr.models.transformer.utils.subsampling import TooShortUttError, check_short_utt
-
 def gen_funasr_fused_encoder_forward(prefill_runner):
 
     def funasr_fused_encoder_forward(
@@ -984,7 +985,6 @@ def gen_funasr_fused_encoder_forward(prefill_runner):
 
     return funasr_fused_encoder_forward
 
-from funasr.models.scama import utils as myutils
 
 def gen_funasr_fused_decoder_forward(decode_runner):
 
