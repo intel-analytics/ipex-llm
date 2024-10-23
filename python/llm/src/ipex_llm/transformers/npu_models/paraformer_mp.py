@@ -77,10 +77,7 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
         self.dtype = dtype
         self.num_layers = num_layers
         self.rms_norm_eps = rms_norm_eps
-
-        self.batch_size = 1
-        self.time = 218
-        self.size = 512
+        self.batch_size, self.time, self.size = hidden_shape
 
         input_x = self.create_input_op((self.batch_size, self.time, self.size))
         mask = self.create_input_op((self.batch_size, self.time))
