@@ -54,7 +54,8 @@ def run_model(
 
     # Reshape input
     input_dtype = x[0].dtype
-    x_np = [set_contiguous(elem).to(torch.float16).numpy() for elem in x]
+    x_np = [set_contiguous(elem).numpy() if elem.dtype == torch.int64 else
+            set_contiguous(elem).to(torch.float16).numpy() for elem in x]
     op_args = []
     op_args_flatten = []
     for w in weights:
@@ -279,6 +280,7 @@ class LLMBaseNNFactory(NNFactory):
         attn_weight = self.matmul(query_states, key_states, False, True) / (
             math.sqrt(head_dim)
         )
+        attention_mask = self.convert_to_fp16(attention_mask)
         attn_weight = self.eltwise_add(attn_weight, attention_mask)
         attn_weight = self.convert_to_fp32(attn_weight)
         attn_weight = self.softmax(attn_weight, -1)
@@ -476,13 +478,13 @@ class LLMBaseNNFactory(NNFactory):
         self.cache_parameter_ops.append(op)
         return op
 
-    def create_input_op(self, shape):
+    def create_input_op(self, shape, dtype=np.float16):
         invalidInputError(len(self.cache_parameter_ops) == 0,
                           "create_input_op should be called before any create_cache_op")
         invalidInputError(len(self.linear_ops) == 0,
                           "create_input_op should be called before any linear op")
 
-        op = super().parameter(shape)
+        op = super().parameter(shape, dtype)
         self.input_ops.append(op)
         return op
 
@@ -563,7 +565,8 @@ class LLMBaseNNFactory(NNFactory):
 
     @staticmethod
     def run_decoders(inputs, decoders, models_ptr=None):
-        x_np = [elem.to(torch.float16).numpy() for elem in inputs]
+        x_np = [elem.numpy() if elem.dtype == torch.int64 else
+                elem.to(torch.float16).numpy() for elem in inputs]
 
         num_decoders = len(decoders)
         num_inputs = len(x_np)
