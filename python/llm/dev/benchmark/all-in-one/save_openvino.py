@@ -37,7 +37,7 @@ def save_model_to_openvino(repo_id,
     model_path = get_model_path(repo_id, local_model_hub)
 
     ir_model_path = Path(repo_id.split(
-        "/")[1] + '-ov') if output is None else Path(output)
+        "/")[1] + '-ov-' + str(group_size)) if output is None else Path(output)
 
     if not ir_model_path.exists():
         os.mkdir(ir_model_path)
