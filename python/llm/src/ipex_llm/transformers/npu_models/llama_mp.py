@@ -187,18 +187,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             new_key_states = self.convert_to_fp16(curr_key_values[i][0])
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
-        # print("start compiling")
-        # self.compile()
-        # print("end compiling")
-        print(f"{mode} start compiling - {num_layers}-{n_splits_linear}-{n_splits_down_proj}")
-        t1 = time.perf_counter()
+        print("start compiling")
         self.compile()
-        t2 = time.perf_counter()
-        print(f"{mode} end compiling - {num_layers}-{n_splits_linear}-{n_splits_down_proj}, time: {t2 - t1}s")
-        xml_path = f"gw/llama2-7b-npu-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
-
-        if not os.path.exists(xml_path):
-            self.save(xml_path)
 
     def build_decoder(
         self,

@@ -131,8 +131,6 @@ class _BaseAutoModelClass:
         mixed_precision = kwargs.pop('mixed_precision', False)
         quantization_group_size = kwargs.pop("quantization_group_size", 0)
 
-        print(f"-------------quantization_group_size {quantization_group_size}")
-
         invalidInputError(
             quantization_group_size in [0, 32, 64, 128],
             (
