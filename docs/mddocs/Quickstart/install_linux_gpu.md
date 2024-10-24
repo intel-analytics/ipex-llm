@@ -66,6 +66,11 @@ sudo sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash\"/GRUB_CMDLINE_LINUX_DE
 > [!TIP]
 > In addition to using the `sed` command, you could also modify the `/etc/default/grub` file directly to make sure `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.force_probe=7d55"`
 
+And then update grub:
+```bash
+sudo update-grub
+```
+
 Reboot the machine then to make the configuration take effect:
 
 ```bash
