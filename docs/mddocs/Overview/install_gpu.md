@@ -199,8 +199,12 @@ IPEX-LLM GPU support on Linux has been verified on:
 * Intel Arc™ A-Series Graphics
 * Intel Data Center GPU Flex Series
 * Intel Data Center GPU Max Series
+* Intel iGPU
 
 > [!IMPORTANT]
+> For Prerequisites installation on Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake), please refer to [this guide](../Quickstart/install_linux_gpu.md#for-intel-core-ultra-processors-with-intel-arc-graphics-aka-meteor-lake)
+
+> [!Note]
 > IPEX-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.
 > 
 > **Warning**
@@ -222,29 +226,6 @@ IPEX-LLM GPU support on Linux has been verified on:
       > For client GPUs, such as the Intel® Arc™ A-series, please refer to [Client GPU Installation Guide](https://dgpu-docs.intel.com/driver/client/overview.html). For data center GPUs, including Intel® Data Center GPU Max Series and Intel® Data Center GPU Flex Series, please refer to our [Installation for Data Center GPU](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
       >
       > See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
-
-      > **Note**:
-      >
-      > For Intel Core™ Ultra integrated GPU, please make sure level_zero version >= 1.3.28717. The level_zero version can be checked with ``sycl-ls``, and verison will be tagged be ``[ext_oneapi_level_zero:gpu]``.         
-      > ```
-      > [opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device OpenCL 1.2  [2023.16.12.0.12_195853.xmain-hotfix]
-      > [opencl:cpu:1] Intel(R) OpenCL, Intel(R) Core(TM) Ultra 5 125H OpenCL 3.0 (Build 0) [2023.16.12.0.12_195853.xmain-hotfix]
-      > [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) Graphics OpenCL 3.0 NEO  [24.09.28717.12]
-      > [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) Graphics 1.3 [1.3.28717]
-      > ```
-      >
-      > If you have level_zero version < 1.3.28717, you could update as follows:
-      >
-      > ```bash
-      > wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.16238.4/intel-igc-core_1.0.16238.4_amd64.deb
-      > wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.16238.4/intel-igc-opencl_1.0.16238.4_amd64.deb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-level-zero-gpu-dbgsym_1.3.28717.12_amd64.ddeb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-level-zero-gpu_1.3.28717.12_amd64.deb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-opencl-icd-dbgsym_24.09.28717.12_amd64.ddeb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-opencl-icd_24.09.28717.12_amd64.deb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/libigdgmm12_22.3.17_amd64.deb
-      > sudo dpkg -i *.deb
-      > ```
 
    - Step 2: Download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) with version 2024.0. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 
