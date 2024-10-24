@@ -46,7 +46,7 @@ _lib = ctypes.cdll.LoadLibrary(_lib_path)
 _lib.InitLLMPipeline.argtypes = [ctypes.c_int] * 5 + [ctypes.c_char_p] * 5
 _lib.InitLLMPipeline.restype = ctypes.c_int
 
-_lib.generate_serve.argtypes = [ctypes.c_int] * 5
+_lib.generate_serve.argtypes = [ctypes.c_int] * 4 + [ctypes.c_bool] + [ctypes.c_int]
 _lib.generate_serve.restype = ctypes.c_int
 
 
@@ -60,5 +60,6 @@ def InitLLMPipeline(kv_len: int, num_head: int, head_dim: int, num_layers: int, 
 
 
 def generate_serve(kv_len: int, num_head: int, head_dim: int, num_layers: int,
-                   param_n_output: int):
-    _lib.generate_serve(kv_len, num_head, head_dim, num_layers, param_n_output)
+                   transpose_value_cache: bool, param_n_output: int):
+    _lib.generate_serve(kv_len, num_head, head_dim, num_layers,
+                        transpose_value_cache, param_n_output)

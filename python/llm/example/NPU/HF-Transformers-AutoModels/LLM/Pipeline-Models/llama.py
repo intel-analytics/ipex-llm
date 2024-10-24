@@ -18,7 +18,7 @@
 import torch
 import time
 import argparse
-from ipex_llm.transformers.npu_pipeline_model import AutoModelForCausalLM
+from ipex_llm.transformers.npu_model import AutoModelForCausalLM
 from transformers import AutoTokenizer
 from transformers.utils import logging
 
@@ -44,8 +44,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default=r"C:\\Llama2-converted-weights\\",
-        help="The folder path of converted model blobs",
+        default="meta-llama/Llama-2-7b-chat-hf",
+        help="The huggingface repo id for the Llama2 model to be downloaded"
+        ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -56,9 +57,9 @@ if __name__ == "__main__":
     model_path = args.repo_id_or_model_path
 
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 ov_model=True,
-                                                 max_output_len=args.max_output_len,
-                                                 model_name="Model70")
+                                                 optimize_model=True,
+                                                 pipeline=True,
+                                                 max_output_len=args.max_output_len)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
@@ -68,22 +69,23 @@ if __name__ == "__main__":
     print("-" * 80)
     print("done")
     with torch.inference_mode():
-        print("finish to load")
-        prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
-        _input_ids = tokenizer.encode(prompt, return_tensors="pt")
-        print("input length:", len(_input_ids[0]))
-        st = time.time()
-        output = model.generate(
-            _input_ids, max_new_tokens=args.n_predict,
-        )
-        end = time.time()
-        print(f"Inference time: {end-st} s")
-        input_str = tokenizer.decode(_input_ids[0], skip_special_tokens=False)
-        print("-" * 20, "Input", "-" * 20)
-        print(input_str)
-        output_str = tokenizer.decode(output[0], skip_special_tokens=False)
-        print("-" * 20, "Output", "-" * 20)
-        print(output_str)
+        for i in range(5):
+            print("finish to load")
+            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+            _input_ids = tokenizer.encode(prompt, return_tensors="pt")
+            print("input length:", len(_input_ids[0]))
+            st = time.time()
+            output = model.generate(
+                _input_ids, max_new_tokens=args.n_predict, do_print=True
+            )
+            end = time.time()
+            print(f"Inference time: {end-st} s")
+            input_str = tokenizer.decode(_input_ids[0], skip_special_tokens=False)
+            print("-" * 20, "Input", "-" * 20)
+            print(input_str)
+            output_str = tokenizer.decode(output[0], skip_special_tokens=False)
+            print("-" * 20, "Output", "-" * 20)
+            print(output_str)
 
     print("-" * 80)
     print("done")
