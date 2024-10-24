@@ -44,8 +44,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default=r"D:\llm-models\Llama-2-7b-chat-hf",
-        help="The folder path of converted model blobs",
+        default="meta-llama/Llama-2-7b-chat-hf",
+        help="The huggingface repo id for the Llama2 model to be downloaded"
+        ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
