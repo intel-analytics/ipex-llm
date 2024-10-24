@@ -80,6 +80,7 @@ def run_model(
     models = _model_cache.get(key, None)
 
     input_shapes = [elem.shape for elem in x_np]
+
     if models is None:
         _model_cache[key] = deque([backend_cls(*input_shapes) for i in range(replica)])
     elif len(models) < 1:
@@ -314,6 +315,165 @@ class LLMBaseNNFactory(NNFactory):
                                                    scale_factor=(self.group_size == 0))
 
         return attn_output, new_key_states, new_value_states
+
+    def paraformer_layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):
+        hidden_states = self.convert_to_fp32(hidden_states)
+        mean_res = self.reduce_mean(hidden_states, -1, keep_dims=True,)
+        variance = self.reduce_mean(
+            self.power(hidden_states - mean_res, self.constant(np.array([[2]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
+        eps = self.constant(1e-12)
+        hidden_states = self.eltwise_div(hidden_states - mean_res,
+                                         self.sqrt(self.eltwise_add(variance, eps)))
+        layernorm_weight = self.convert_to_fp32(layernorm_weight)
+        hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
+        layernorm_bias = self.convert_to_fp32(layernorm_bias)
+        hidden_states = self.eltwise_add(layernorm_bias, hidden_states)
+        hidden_states = self.convert_to_fp16(hidden_states)
+        return hidden_states
+
+    def self_attn_sanm(self,
+                       x,
+                       mask,
+                       in_feat,
+                       n_feat,
+                       n_head,
+                       fsmn_weight,
+                       qkv_bias,
+                       out_bias
+                       ):
+        d_k = n_feat // n_head
+        h = n_head
+        b, t, d = x.size()
+
+        q_k_v = self.linear(x,
+                            1536,
+                            512,
+                            bias=False,
+                            wt_dtype=self.dtype)
+        q_k_v = self.eltwise_add(q_k_v, qkv_bias)
+
+        q = self.slice(q_k_v, [0, 0, 0], [1, 218, 512])
+        k = self.slice(q_k_v, [0, 0, 512], [1, 218, 2 * 512])
+        v = self.slice(q_k_v, [0, 0, 2 * 512], [1, 218, 3 * 512])
+
+        q_h = self.reshape(q, [b, t, h, d_k])
+        k_h = self.reshape(k, [b, t, h, d_k])
+        v_h = self.reshape(v, [b, t, h, d_k])
+        q_h = self.transpose(q_h, [0, 2, 1, 3])
+        k_h = self.transpose(k_h, [0, 2, 1, 3])
+        v_h = self.transpose(v_h, [0, 2, 1, 3])
+
+        b_v, t_v, d_v = v.size()
+        if mask is not None:
+            mask = self.reshape(mask, [b_v, -1, 1])
+            v = self.eltwise_mul(v, mask)
+        v_x = self.transpose(v, [0, 2, 1])
+
+        fsmn_out = self.convolution(input_node=v_x,
+                                    weights_node=fsmn_weight,
+                                    bias=None,
+                                    strides=1,
+                                    padding=5,
+                                    groups=512,
+                                    n_spatial_dims=1)
+
+        fsmn_out = self.transpose(fsmn_out, [0, 2, 1])
+        fsmn_out = self.eltwise_add(v, fsmn_out)
+        if mask is not None:
+            fsmn_out = self.eltwise_mul(fsmn_out, mask)
+
+        q_h = q_h * d_k ** (-0.5)
+        scores = self.matmul(q_h, k_h, False, True)
+        n_batch = v_h.size(0)
+        p_attn = self.softmax(scores, -1)
+
+        x_attn = self.matmul(p_attn, v_h, False, False)
+        x_attn = self.transpose(x_attn, [0, 2, 1, 3])
+        x_attn = self.reshape(x_attn, [n_batch, -1, h * d_k])
+
+        attn_out = self.linear(x_attn,
+                               512,
+                               512,
+                               bias=False,
+                               wt_dtype=self.dtype)
+        attn_out = attn_out + out_bias
+        attn_res = self.eltwise_add(attn_out, fsmn_out)
+        return attn_res
+
+    def sanm_feed_forward(self, x, hidden_units, idim, w1_bias, w2_bias):
+        mm = self.linear(x, 2048, 512, bias=False, wt_dtype=self.dtype)
+        mm = mm + w1_bias
+        mm_act = self.relu(mm)
+        output = self.linear(mm_act, 512, 2048, bias=False, wt_dtype=self.dtype)
+        output = output + w2_bias
+        return output
+
+    def multihead_attn_sanm_decoder(self, inputs, mask, fsmn_weight):
+        b, t, d = inputs.size()
+        if mask is not None:
+            mask = self.reshape(mask, [b, -1, 1])
+            inputs = self.eltwise_mul(inputs, mask)
+        x = self.transpose(inputs, [0, 2, 1])
+        b, d, t = x.size()
+        cache = x
+        fsmn_x = self.convolution(input_node=x,
+                                  weights_node=fsmn_weight,
+                                  bias=None,
+                                  strides=1,
+                                  padding=5,
+                                  groups=512,
+                                  n_spatial_dims=1)
+        fsmn_x = self.transpose(fsmn_x, [0, 2, 1])
+        x = self.eltwise_add(inputs, fsmn_x)
+        if mask is not None:
+            x = self.eltwise_mul(x, mask)
+        return x, cache
+
+    def sanm_cross_attn(self, x, memory, mask, q_bias, kv_bias, out_bias, n_feat, n_head):
+        b = x.size(0)
+        d_k = n_feat // n_head
+        h = n_head
+
+        q = self.linear(x, 512, 512, bias=False, wt_dtype=self.dtype)
+        q = q + q_bias
+        q_h = self.reshape(q, (b, -1, h, d_k))
+        q_h = self.transpose(q_h, [0, 2, 1, 3])
+
+        k_v = self.linear(memory, 1024, 512, bias=False, wt_dtype=self.dtype)
+        k_v = k_v + kv_bias
+
+        res = k_v.chunk(2, -1)
+        k = res[0]
+        v = res[1]
+        k_h = self.reshape(k, [b, -1, h, d_k])
+        v_h = self.reshape(v, [b, -1, h, d_k])
+        k_h = self.transpose(k_h, [0, 2, 1, 3])
+        v_h = self.transpose(v_h, [0, 2, 1, 3])
+
+        q_h = q_h * d_k ** (-0.5)
+        scores = self.matmul(q_h, k_h, False, True)
+        n_batch = v_h.size(0)
+        # Assume mask is None
+        p_attn = self.softmax(scores, -1)
+
+        v_h = self.transpose(v_h, [0, 1, 3, 2])
+        x_attn = self.matmul(p_attn, v_h, False, True)
+        x_attn = self.transpose(x_attn, [0, 2, 1, 3])
+        x_attn = self.reshape(x_attn, [n_batch, -1, h * d_k])
+        attn_out = self.linear(x_attn, 512, 512, bias=False, wt_dtype=self.dtype)
+        attn_out = attn_out + out_bias
+        return attn_out
+
+    def feed_forward_sanm_decoder(self, x, w_1_bias, norm_weights, norm_bias):
+        w_1 = self.linear(x, 2048, 512, bias=False, wt_dtype=self.dtype)
+        w_1 = w_1 + w_1_bias
+        w_1_act = self.relu(w_1)
+        w_1_norm = self.paraformer_layer_norm(w_1_act, norm_weights, norm_bias)
+        w_2 = self.linear(w_1_norm, 512, 2048, bias=False, wt_dtype=self.dtype)
+        return w_2
 
     def mlp(self, hidden_states, seq_len=-1, mode="prefill"):
         if self.n_splits_linear == 1:
