@@ -1,12 +1,14 @@
 # Install IPEX-LLM on Linux with Intel GPU
 
-This guide demonstrates how to install IPEX-LLM on Linux with Intel GPUs. It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU.
+This guide demonstrates how to install IPEX-LLM on Linux with Intel GPUs. It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU and Intel iGPU.
 
 IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](../Overview/install_gpu.md#linux) page for more details.
 
 
 ## Table of Contents
 - [Install Prerequisites](./install_linux_gpu.md#install-prerequisites)
+  - [For Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake)](#for-intel-core-ultra-processors-with-intel-arc-graphics-aka-meteor-lake)
+  - [For other Intel iGPU and dGPU](#for-other-intel-igpu-and-dgpu)
 - [Install ipex-llm](./install_linux_gpu.md#install-ipex-llm)
 - [Verify Installation](./install_linux_gpu.md#verify-installation)
 - [Runtime Configurations](./install_linux_gpu.md#runtime-configurations)
@@ -15,9 +17,144 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
 ## Install Prerequisites
 
-### Install GPU Driver
+### For Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake)
 
-#### For Linux kernel 6.2
+> [!NOTE]
+> For IPEX-LLM on Linux with Meteor Lake integrated GPU, we have currently verified on Ubuntu 22.04 with kernel `6.5.0-35-generic`.
+
+#### 1. Check current kernel version
+
+You could check your current kernel version through:
+
+```bash
+uname -r
+```
+If the version displayed is not `6.5.0-35-generic`, downgrade or upgrade the kernel to the recommended version.
+
+#### 2. (Optional) Downgrade / Upgrade to kernel 6.5.0-35
+
+If your current kernel version is not `6.5.0-35-generic`, you could downgrade or upgrade it by:
+
+```bash
+export VERSION="6.5.0-35"
+sudo apt-get install -y linux-headers-$VERSION-generic
+sudo apt-get install -y linux-image-$VERSION-generic
+sudo apt-get install -y linux-modules-extra-$VERSION-generic
+
+sudo sed -i "s/GRUB_DEFAULT=.*/GRUB_DEFAULT=\"1> $(echo $(($(awk -F\' '/menuentry / {print $2}' /boot/grub/grub.cfg \
+| grep -no $VERSION | sed 's/:/\n/g' | head -n 1)-2)))\"/" /etc/default/grub
+
+sudo update-grub
+```
+
+And the reboot your machine:
+
+```bash
+sudo reboot
+```
+
+After rebooting, you can use `uname -r` again to see that your kernel version has changed to `6.5.0-35-generic`.
+
+#### 3. Enable driver support through `force_probe` flag
+
+Next, you need to enable driver support on kernel `6.5.0-35-generic` through `force_probe` parameter：
+
+```bash
+sudo sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash\"/GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash i915.force_probe=7d55\"/g" /etc/default/grub
+```
+
+> [!TIP]
+> In addition to using the `sed` command, you could also modify the `/etc/default/grub` file directly to make sure `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.force_probe=7d55"`
+
+Reboot the machine then to make the configuration take effect:
+
+```bash
+sudo reboot
+```
+
+#### 4. Install compute packages
+
+Compute packages are also required to be installed for Intel GPU on Ubuntu 22.04 through the following commands:
+
+```bash
+wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | \
+  sudo gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg
+
+echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu jammy client" | \
+  sudo tee /etc/apt/sources.list.d/intel-gpu-jammy.list
+
+sudo apt update
+
+apt-get install -y libze1 intel-level-zero-gpu intel-opencl-icd clinfo
+```
+
+
+#### 5. Configure permmision and verify driver setup
+
+To complete the driver setup, you need to make sure your user is in the render group:
+
+```bash
+sudo gpasswd -a ${USER} render
+newgrp render
+```
+
+You could then verify whether the driver is functioning properly with:
+
+```bash
+clinfo | grep "Device Name"
+```
+
+whose output should contain `Intel(R) Arc(TM) Graphics`.
+
+> [TIP]
+> You could refer to the [official driver guide for client GPUS](https://dgpu-docs.intel.com/driver/client/overview.html#installing-client-gpus-on-ubuntu-desktop-22-04-lts) for more information.
+
+#### 6. Install OneAPI
+
+The final step for prerequisites installation on Meteor Lake iGPU is to install OneAPI 2024.0:
+
+```bash
+wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+
+sudo apt update
+
+sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
+  intel-oneapi-common-oneapi-vars=2024.0.0-49406 \
+  intel-oneapi-diagnostics-utility=2024.0.0-49093 \
+  intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
+  intel-oneapi-dpcpp-ct=2024.0.0-49381 \
+  intel-oneapi-mkl=2024.0.0-49656 \
+  intel-oneapi-mkl-devel=2024.0.0-49656 \
+  intel-oneapi-mpi=2021.11.0-49493 \
+  intel-oneapi-mpi-devel=2021.11.0-49493 \
+  intel-oneapi-dal=2024.0.1-25 \
+  intel-oneapi-dal-devel=2024.0.1-25 \
+  intel-oneapi-ippcp=2021.9.1-5 \
+  intel-oneapi-ippcp-devel=2021.9.1-5 \
+  intel-oneapi-ipp=2021.10.1-13 \
+  intel-oneapi-ipp-devel=2021.10.1-13 \
+  intel-oneapi-tlt=2024.0.0-352 \
+  intel-oneapi-ccl=2021.11.2-5 \
+  intel-oneapi-ccl-devel=2021.11.2-5 \
+  intel-oneapi-dnnl-devel=2024.0.0-49521 \
+  intel-oneapi-dnnl=2024.0.0-49521 \
+  intel-oneapi-tcm-1.0=1.0.0-435
+```
+
+>[!IMPORTANT]
+> Please make sure you restart the machine after all the prerequistes step finish:
+>
+> ```bash
+> sudo reboot
+> ```
+
+### For other Intel iGPU and dGPU
+
+#### 1. Install GPU Driver
+
+##### For Linux kernel 6.2
 
 * Choose one option below depending on your CPU type:
 
@@ -80,7 +217,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     hwinfo --display
     ```
 
-#### For Linux kernel 6.5
+##### For Linux kernel 6.5
 
 * Choose one option below depending on your CPU type:
 
@@ -140,7 +277,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
     hwinfo --display
     ```
 
-#### (Optional) Update Level Zero on Intel Core™ Ultra iGPU
+<!-- #### (Optional) Update Level Zero on Intel Core™ Ultra iGPU
 For Intel Core™ Ultra integrated GPU, please make sure level_zero version >= 1.3.28717. The level_zero version can be checked with `sycl-ls`, and verison will be tagged behind `[ext_oneapi_level_zero:gpu]`.
 
 Here are the sample output of `sycl-ls`:
@@ -161,9 +298,9 @@ wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/i
 wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-opencl-icd_24.09.28717.12_amd64.deb
 wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/libigdgmm12_22.3.17_amd64.deb
 sudo dpkg -i *.deb
-```
+``` -->
 
-### Install oneAPI 
+#### 2. Install oneAPI 
   ```bash
   wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
 
@@ -258,8 +395,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
   For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
 
   ```bash
-  # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+  # Configure oneAPI environment variables.
   source /opt/intel/oneapi/setvars.sh
 
   # Recommended Environment Variables for optimal performance
@@ -274,8 +410,7 @@ To use GPU acceleration on Linux, several environment variables are required or 
   For Intel Data Center GPU Max Series, we recommend:
 
   ```bash
-  # Configure oneAPI environment variables. Required step for APT or offline installed oneAPI.
-  # Skip this step for PIP-installed oneAPI since the environment has already been configured in LD_LIBRARY_PATH.
+  # Configure oneAPI environment variables.
   source /opt/intel/oneapi/setvars.sh
 
   # Recommended Environment Variables for optimal performance
@@ -287,6 +422,16 @@ To use GPU acceleration on Linux, several environment variables are required or 
   ```
 
   Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`
+
+  - For **Intel iGPU**:
+
+    ```bash
+    # Configure oneAPI environment variables. 
+    source /opt/intel/oneapi/setvars.sh
+
+    export SYCL_CACHE_PERSISTENT=1
+    export BIGDL_LLM_XMX_DISABLED=1
+    ```
 
 > [!NOTE]
 > Please refer to [this guide](../Overview/install_gpu.md#runtime-configuration-1) for more details regarding runtime configuration.
