@@ -120,7 +120,7 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
         optimize_model = kwargs.pop("optimize_model", False)
-        pipeline = kwargs.pop("pipeline", True)
+        pipeline = kwargs.pop("pipeline", False)
         max_output_len = kwargs.pop("max_output_len", 1024)
         max_output_len = max_output_len - 1
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
