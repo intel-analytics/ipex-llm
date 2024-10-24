@@ -87,8 +87,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             model.llm.config.model_type = "llama"
         model = model.llm
 
-    if model.config.model_type == "qwen2":
-        from ipex_llm.transformers.npu_models.qwen2_mp import split_linears
+    if model.config.model_type in ["qwen2", "llama"]:
+        from ipex_llm.transformers.npu_models.common import split_linears
 
         if quantization_group_size == 0:
             n_splits_linear = 1
@@ -108,15 +108,19 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         model.apply(lambda m: split_linears(m, n_splits_hidden_size=n_splits_linear,
                                             n_splits_down_proj=n_splits_down_proj))
 
+        if quantization_group_size != 0:
+            split_num = model.config.hidden_size // quantization_group_size
+            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
+                                       bias=model.lm_head.bias, use_split=True)
+            del model.lm_head
+            model.lm_head = new_lm_head
+
+    if model.config.model_type == "qwen2":
         # for Qwen2-7B-Insturct, divide lm_head into 14 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
                 not cpu_lm_head:
             # Do not split lm_head and use sym_int8 instead when mixed_precison is True
-            if quantization_group_size != 0:
-                split_num = model.config.hidden_size // quantization_group_size
-                new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
-                                           bias=model.lm_head.bias, use_split=True)
-            else:
+            if quantization_group_size == 0:
                 # Do not split lm_head and use sym_int8 instead when mixed_precison is True
                 is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
                 split_num = 14 if is_split else 1
@@ -163,7 +167,7 @@ def optimize_llm(
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 2
+            inter_pp = 2 if group_size == 0 else 8
 
         from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
         from ipex_llm.transformers.npu_models.llama_mp import DecodeRunner, PrefillRunner
@@ -226,11 +230,6 @@ def optimize_llm(
         from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
         from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
         convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
-
-        # for Qwen2-7B-Insturct, divide lm_head into 14 parts
-        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
-                isinstance(model.lm_head, SlicedLMHead):
-            model.lm_head.get_fused_lm_head()
     elif model.config.model_type == "minicpm":
         # for minicpm-1b
         if intra_pp is None:
@@ -299,3 +298,6 @@ def optimize_llm(
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model, module.BaichuanModel, baichuan_model_forward)
+
+    if isinstance(model.lm_head, SlicedLMHead):
+        model.lm_head.get_fused_lm_head()
