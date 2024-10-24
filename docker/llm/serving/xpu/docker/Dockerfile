@@ -1,5 +1,4 @@
-FROM intel/oneapi-basekit:2024.1.1-devel-ubuntu22.04
-
+FROM intel/oneapi-basekit:2024.0.1-devel-ubuntu22.04
 ARG http_proxy
 ARG https_proxy
 
@@ -10,6 +9,7 @@ ENV PYTHONUNBUFFERED=1
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
+ADD ./oneccl-binding.patch     /tmp/oneccl-binding.patch
 
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " | tee /etc/apt/sources.list.d/oneAPI.list && \
@@ -51,13 +51,11 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     rm -rf ./ipex-llm && \
     # Install torch-ccl
     cd /tmp/ && \
-    pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install torch==2.1.0a0+cxx11.abi torchvision==0.16.0a0+cxx11.abi torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # Internal oneccl
-    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.5.1-release/oneccl_wks_installer_2024.0.0.5.1.sh && \
-    bash oneccl_wks_installer_2024.0.0.5.1.sh && \
-    git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
-    cd torch-ccl && \
-    USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install && \
+    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.5-release/oneccl_wks_installer_2024.0.0.5.sh && \
+    cd /tmp && bash oneccl_wks_installer_2024.0.0.5.sh  && \
+    pip install https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/oneccl_bind_pt-2.1.300%2Bxpu-cp311-cp311-linux_x86_64.whl && \
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
     # apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
