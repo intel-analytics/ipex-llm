@@ -87,8 +87,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             model.llm.config.model_type = "llama"
         model = model.llm
 
-    if model.config.model_type == "qwen2":
-        from ipex_llm.transformers.npu_models.qwen2_mp import split_linears
+    if model.config.model_type in ["qwen2", "llama"]:
+        from ipex_llm.transformers.npu_models.common import split_linears
 
         if quantization_group_size == 0:
             n_splits_linear = 1
@@ -107,7 +107,9 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
 
         model.apply(lambda m: split_linears(m, n_splits_hidden_size=n_splits_linear,
                                             n_splits_down_proj=n_splits_down_proj))
-
+        print(model)
+    
+    if model.config.model_type == "qwen2":
         # for Qwen2-7B-Insturct, divide lm_head into 14 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
                 not cpu_lm_head:
@@ -163,7 +165,7 @@ def optimize_llm(
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 2
+            inter_pp = 2 if group_size == 0 else 5
 
         from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
         from ipex_llm.transformers.npu_models.llama_mp import DecodeRunner, PrefillRunner

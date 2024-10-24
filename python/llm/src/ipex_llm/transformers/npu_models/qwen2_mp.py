@@ -42,27 +42,8 @@ from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
 from ipex_llm.transformers.npu_models.common import reshape_lm_head_input
 from transformers.modeling_outputs import CausalLMOutputWithPast
 from torch.nn import CrossEntropyLoss
-from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP, Qwen2Attention
+from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP
 from ipex_llm.utils.common.log4Error import invalidInputError
-from ipex_llm.transformers.npu_models.common import split_linear
-
-
-def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down_proj=2):
-    attn_module_names = ["q_proj", "k_proj", "v_proj", "o_proj"]
-    mlp_module_names = ["down_proj", "up_proj", "gate_proj"]
-    if isinstance(module, Qwen2Attention):
-        for name in attn_module_names:
-            setattr(module, f"{name}_dq_list", split_linear(getattr(module, name), name,
-                                                            n_splits=n_splits_hidden_size))
-            delattr(module, name)
-    elif isinstance(module, Qwen2MLP):
-        for name in mlp_module_names:
-            n_splits_mlp = n_splits_hidden_size
-            if name == 'down_proj':
-                n_splits_mlp = n_splits_down_proj
-            setattr(module, f"{name}_dq_list", split_linear(getattr(module, name), name,
-                                                            n_splits=n_splits_mlp))
-            delattr(module, name)
 
 
 def split_mlp_down_proj(module: torch.nn.Module):
@@ -594,30 +575,22 @@ def run_decode(
 
         weights = []
         if n_splits_linear == 1:
-            for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list):
+            for q, k, v, o, g, u in zip(attn_layer.q_proj_dq_list,
+                                     attn_layer.k_proj_dq_list,
+                                     attn_layer.v_proj_dq_list,
+                                     attn_layer.o_proj_dq_list,
+                                     mlp_layer.gate_proj_dq_list,
+                                     mlp_layer.up_proj_dq_list):
                 weights.append((q.weight, q.scale))
                 weights.append((k.weight, k.scale))
                 weights.append((v.weight, v.scale))
-
-            for l in attn_layer.o_proj_dq_list:
-                weights.append((l.weight, l.scale))
-        else:
-            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list]:
-                l_weights = []
-                scales = []
-                for l in layer_list:
-                    l_weights.append(l.weight)
-                    scales.append(l.scale)
-                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
-        if n_splits_linear == 1:
-            for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
+                weights.append((o.weight, o.scale))
                 weights.append((g.weight, g.scale))
                 weights.append((u.weight, u.scale))
         else:
-            for layer_list in [mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
+            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
                 l_weights = []
                 scales = []
                 for l in layer_list:
