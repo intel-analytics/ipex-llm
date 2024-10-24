@@ -53,7 +53,7 @@ And the reboot your machine:
 sudo reboot
 ```
 
-After rebooting, you can use `uname -r` again to see that your kernel version has changed to `6.5.0-35-generic`.
+After rebooting, you can use `uname -r` again to see that your kernel version has been changed to `6.5.0-35-generic`.
 
 #### 3. Enable driver support through `force_probe` flag
 
@@ -106,7 +106,7 @@ clinfo | grep "Device Name"
 
 whose output should contain `Intel(R) Arc(TM) Graphics`.
 
-> [TIP]
+> [!TIP]
 > You could refer to the [official driver guide for client GPUS](https://dgpu-docs.intel.com/driver/client/overview.html#installing-client-gpus-on-ubuntu-desktop-22-04-lts) for more information.
 
 #### 6. Install OneAPI
@@ -144,7 +144,7 @@ sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
 ```
 
 >[!IMPORTANT]
-> Please make sure you restart the machine after all the prerequistes step finish:
+> Please make sure to reboot the machine after all the prerequiste steps are complete:
 >
 > ```bash
 > sudo reboot
