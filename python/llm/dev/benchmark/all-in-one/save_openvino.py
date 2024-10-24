@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+# this code is to support converting of model for openvino
+# for performance tests using openvino
+
 from transformers import AutoTokenizer
 from optimum.intel import OVWeightQuantizationConfig
 from optimum.intel.openvino import OVModelForCausalLM
