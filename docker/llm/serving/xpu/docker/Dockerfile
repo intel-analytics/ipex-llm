@@ -10,7 +10,7 @@ ENV PYTHONUNBUFFERED=1
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
-ADD ./oneccl-binding.patch     /tmp/oneccl-binding.patch
+ADD ./libccl.so.1.0            /tmp/libccl.so.1.0
 
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " | tee /etc/apt/sources.list.d/oneAPI.list && \
@@ -56,9 +56,9 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Internal oneccl
     wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.5-release/oneccl_wks_installer_2024.0.0.5.sh && \
     bash oneccl_wks_installer_2024.0.0.5.sh && \
+    cp /tmp/libccl.so.1.0 /opt/intel/1ccl-wks/lib && \
     git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
     cd torch-ccl && \
-    patch -p1 < /tmp/oneccl-binding.patch && \
     USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install && \
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
