@@ -13,6 +13,7 @@ export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export TORCH_LLM_ALLREDUCE=0
  
 source /opt/intel/1ccl-wks/setvars.sh
+source /opt/intel/oneapi/setvars.sh --force
 
 python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --served-model-name $served_model_name \
