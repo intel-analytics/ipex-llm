@@ -1,4 +1,7 @@
 # Run llama.cpp with IPEX-LLM on Intel GPU 
+<p>
+  <b>< English</b> | <a href='./llama_cpp_quickstart.zh-CN.md'>中文</a> >
+</p>
 
 [ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) prvoides fast LLM inference in pure C++ across a variety of hardware; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `llama.cpp` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
@@ -159,7 +162,7 @@ Before running, you should download or copy community GGUF model to your current
 
   > **Note**:
   >
-  > For more details about meaning of each parameter, you can use `./main -h`.
+  > For more details about meaning of each parameter, you can use `./llama-cli -h`.
 
 - For **Windows users**:
 
@@ -171,7 +174,7 @@ Before running, you should download or copy community GGUF model to your current
 
   > **Note**:
   >
-  > For more details about meaning of each parameter, you can use `main -h`.
+  > For more details about meaning of each parameter, you can use `./llama-cli -h`.
 
 #### Sample Output
 ```
