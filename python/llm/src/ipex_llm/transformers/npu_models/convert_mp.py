@@ -299,3 +299,32 @@ def optimize_llm(
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model, module.BaichuanModel, baichuan_model_forward)
+    elif model.config.model_type == "whisper" and model.config.num_hidden_layers == 4:
+        # for whisper-tiny
+        if intra_pp is None:
+            intra_pp = 1
+        if inter_pp is None:
+            inter_pp = 1
+
+        from ipex_llm.transformers.npu_models.whisper_mp import gen_whisper_encoder_forward, gen_whisper_decoder_forward
+        from ipex_llm.transformers.npu_models.whisper_mp import PrefillRunner, DecodeRunner
+        prefill_runner = PrefillRunner(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_value_cache,
+        )
+
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+
+        whisper_encoder_forward = gen_whisper_encoder_forward(prefill_runner=prefill_runner)
+        whisper_decoder_forward = gen_whisper_decoder_forward(decode_runner=decode_runner)
+        from transformers.models.whisper.modeling_whisper import WhisperEncoder, WhisperDecoder
+        convert_forward(model, WhisperEncoder, whisper_encoder_forward)
+        convert_forward(model, WhisperDecoder, whisper_decoder_forward)
