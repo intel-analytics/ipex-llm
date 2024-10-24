@@ -37,9 +37,7 @@ If your current kernel version is not `6.5.0-35-generic`, you could downgrade or
 
 ```bash
 export VERSION="6.5.0-35"
-sudo apt-get install -y linux-headers-$VERSION-generic
-sudo apt-get install -y linux-image-$VERSION-generic
-sudo apt-get install -y linux-modules-extra-$VERSION-generic
+sudo apt-get install -y linux-headers-$VERSION-generic linux-image-$VERSION-generic linux-modules-extra-$VERSION-generic
 
 sudo sed -i "s/GRUB_DEFAULT=.*/GRUB_DEFAULT=\"1> $(echo $(($(awk -F\' '/menuentry / {print $2}' /boot/grub/grub.cfg \
 | grep -no $VERSION | sed 's/:/\n/g' | head -n 1)-2)))\"/" /etc/default/grub
@@ -60,13 +58,23 @@ After rebooting, you can use `uname -r` again to see that your kernel version ha
 Next, you need to enable driver support on kernel `6.5.0-35-generic` through `force_probe` parameter：
 
 ```bash
-sudo sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash\"/GRUB_CMDLINE_LINUX_DEFAULT=\"quiet splash i915.force_probe=7d55\"/g" /etc/default/grub
+export FORCE_PROBE_VALUE=$(sudo dmesg  | grep i915 | grep -o 'i915\.force_probe=[a-zA-Z0-9]\{4\}')
+
+sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"\(.*\)\"/\"\1 $FORCE_PROBE_VALUE\"/" /etc/default/grub
 ```
 
 > [!TIP]
-> In addition to using the `sed` command, you could also modify the `/etc/default/grub` file directly to make sure `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.force_probe=7d55"`
+> In addition to using the above command, you could also maunally check your `force_probe` flag value through
+>
+> ```bash
+> sudo dmesg  | grep i915
+> ```
+>
+> And you may get output like `Your graphics device 7d55 is not properly supported by i915 in this kernel version. To force driver probe anyway, use i915.force_probe=7d55`, in which `7d55` is the PCI ID depends on your GPU model.
+>
+> Then, modify the `/etc/default/grub` file directly to add `i915.force_probe=xxxx` to the value of `GRUB_CMDLINE_LINUX_DEFAULT`. For example, before modification, you have`GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"` inside `/etc/default/grub`. You then need to change it to `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.force_probe=7d55"`.
 
-And then update grub:
+Then update grub through:
 ```bash
 sudo update-grub
 ```
