@@ -15,6 +15,7 @@
 #
 
 import torch
+from ipex_llm.transformers.models.utils import use_sdp_non_causal
 
 
 def gpt2_attention_attn(
@@ -31,6 +32,7 @@ def gpt2_attention_attn(
         and not self.scale_attn_by_inverse_layer_idx
         and head_mask is None
         and query.size(-2) == key.size(-2)
+        and use_sdp_non_causal(query.size(-1), query.device, query.dtype)
     ):
         if not self.is_cross_attention:
             seq_len = query.size(-2)
