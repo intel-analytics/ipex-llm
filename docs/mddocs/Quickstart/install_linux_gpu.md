@@ -58,9 +58,9 @@ sudo reboot
 
 After rebooting, you can use `uname -r` again to see that your kernel version has been changed to `6.5.0-35-generic`.
 
-##### 3. Enable driver support through `force_probe` flag
+##### 3. Enable GPU driver support through `force_probe` flag
 
-Next, you need to enable driver support on kernel `6.5.0-35-generic` through `force_probe` parameter：
+Next, you need to enable GPU driver support on kernel `6.5.0-35-generic` through `force_probe` parameter：
 
 ```bash
 export FORCE_PROBE_VALUE=$(sudo dmesg  | grep i915 | grep -o 'i915\.force_probe=[a-zA-Z0-9]\{4\}')
@@ -107,16 +107,16 @@ apt-get install -y libze1 intel-level-zero-gpu intel-opencl-icd clinfo
 ```
 
 
-##### 5. Configure permmision and verify driver setup
+##### 5. Configure permmision and verify GPU driver setup
 
-To complete the driver setup, you need to make sure your user is in the render group:
+To complete the GPU driver setup, you need to make sure your user is in the render group:
 
 ```bash
 sudo gpasswd -a ${USER} render
 newgrp render
 ```
 
-You could then verify whether the driver is functioning properly with:
+You could then verify whether the GPU driver is functioning properly with:
 
 ```bash
 clinfo | grep "Device Name"
@@ -313,7 +313,7 @@ sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
 
 >[!IMPORTANT]
-> Please make sure to reboot the machine after driver and oneAPI installation are complete:
+> Please make sure to reboot the machine after the installation of GPU driver and oneAPI is complete:
 >
 > ```bash
 > sudo reboot
