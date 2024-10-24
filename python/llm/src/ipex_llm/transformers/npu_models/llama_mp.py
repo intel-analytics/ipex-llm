@@ -190,11 +190,11 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         # print("start compiling")
         # self.compile()
         # print("end compiling")
-        print(f"{mode} start compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}")
+        print(f"{mode} start compiling - {num_layers}-{n_splits_linear}-{n_splits_down_proj}")
         t1 = time.perf_counter()
         self.compile()
         t2 = time.perf_counter()
-        print(f"{mode} end compiling - {num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}, time: {t2 - t1}s")
+        print(f"{mode} end compiling - {num_layers}-{n_splits_linear}-{n_splits_down_proj}, time: {t2 - t1}s")
         xml_path = f"gw/llama2-7b-npu-{mode}-{num_layers}-{transpose_value}-{n_splits_linear}-{n_splits_down_proj}.xml"
 
         if not os.path.exists(xml_path):
@@ -525,11 +525,11 @@ def run_decode(
         weights = []
         if n_splits_linear == 1:
             for q, k, v, o, g, u in zip(attn_layer.q_proj_dq_list,
-                                     attn_layer.k_proj_dq_list,
-                                     attn_layer.v_proj_dq_list,
-                                     attn_layer.o_proj_dq_list,
-                                     mlp_layer.gate_proj_dq_list,
-                                     mlp_layer.up_proj_dq_list):
+                                        attn_layer.k_proj_dq_list,
+                                        attn_layer.v_proj_dq_list,
+                                        attn_layer.o_proj_dq_list,
+                                        mlp_layer.gate_proj_dq_list,
+                                        mlp_layer.up_proj_dq_list):
                 weights.append((q.weight, q.scale))
                 weights.append((k.weight, k.scale))
                 weights.append((v.weight, v.scale))

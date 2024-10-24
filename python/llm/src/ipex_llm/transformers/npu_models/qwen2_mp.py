@@ -576,11 +576,11 @@ def run_decode(
         weights = []
         if n_splits_linear == 1:
             for q, k, v, o, g, u in zip(attn_layer.q_proj_dq_list,
-                                     attn_layer.k_proj_dq_list,
-                                     attn_layer.v_proj_dq_list,
-                                     attn_layer.o_proj_dq_list,
-                                     mlp_layer.gate_proj_dq_list,
-                                     mlp_layer.up_proj_dq_list):
+                                        attn_layer.k_proj_dq_list,
+                                        attn_layer.v_proj_dq_list,
+                                        attn_layer.o_proj_dq_list,
+                                        mlp_layer.gate_proj_dq_list,
+                                        mlp_layer.up_proj_dq_list):
                 weights.append((q.weight, q.scale))
                 weights.append((k.weight, k.scale))
                 weights.append((v.weight, v.scale))
