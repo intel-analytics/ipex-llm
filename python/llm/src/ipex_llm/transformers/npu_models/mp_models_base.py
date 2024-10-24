@@ -82,7 +82,7 @@ def run_model(
     input_shapes = [elem.shape for elem in x_np]
 
     if models is None:
-        _model_cache[key] = deque([backend_cls(*input_shapes) for i in range(2)])
+        _model_cache[key] = deque([backend_cls(*input_shapes) for i in range(replica)])
     elif len(models) < 1:
         _model_cache[key].append(backend_cls(*input_shapes))
     else:
@@ -92,7 +92,7 @@ def run_model(
     model = _model_cache[key][0]
 
     with record_function(f"npu_factory_mul_{key}"):
-        ret = model.run(x_np, verify_size=True, *op_args, **op_kwargs)
+        ret = model.run(x_np, *op_args, **op_kwargs)
 
     if isinstance(ret, list):
         results = [adapt_output_tensor(r, r.shape, input_dtype) for r in ret]
@@ -724,7 +724,7 @@ class LLMBaseNNFactory(NNFactory):
         self.setWeights(offset, op_id, *weights)
 
     @staticmethod
-    def run_decoders(inputs, decoders, models_ptr=None, funasr=True):
+    def run_decoders(inputs, decoders, models_ptr=None, funasr=False):
         x_np = [elem.numpy() if elem.dtype == torch.int64 else
                 elem.to(torch.float16).numpy() for elem in inputs]
 
