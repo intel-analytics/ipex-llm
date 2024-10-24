@@ -49,7 +49,7 @@ def gpt2_attention_attn(
         attn_output = xe_addons.sdp_non_causal(query, key.contiguous(),
                                                value.contiguous(), attention_mask)
         return attn_output, attn_weights
-    #ipex-llm changes end
+    # ipex-llm changes end
 
     attn_weights = torch.matmul(query, key.transpose(-1, -2))
 
@@ -65,9 +65,10 @@ def gpt2_attention_attn(
     if not self.is_cross_attention:
         # if only "normal" attention layer implements causal mask
         query_length, key_length = query.size(-2), key.size(-2)
-        causal_mask = self.bias[:, :, key_length - query_length : key_length, :key_length]
+        causal_mask = self.bias[:, :, key_length - query_length:key_length, :key_length]
         mask_value = torch.finfo(attn_weights.dtype).min
-        mask_value = torch.full([], mask_value, dtype=attn_weights.dtype, device=attn_weights.device)
+        mask_value = torch.full([], mask_value, dtype=attn_weights.dtype,
+                                device=attn_weights.device)
         attn_weights = torch.where(causal_mask, attn_weights.to(attn_weights.dtype), mask_value)
 
     if attention_mask is not None:
