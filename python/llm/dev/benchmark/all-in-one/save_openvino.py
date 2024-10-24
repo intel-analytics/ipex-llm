@@ -22,6 +22,7 @@ import os
 import omegaconf
 from pathlib import Path
 import argparse
+import warnings
 
 from run import LLAMA_IDS, CHATGLM_IDS, LLAVA_IDS, PHI3VISION_IDS, QWENVL_IDS, get_model_path
 
@@ -30,14 +31,20 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 def save_model_to_openvino(repo_id,
                            local_model_hub,
                            low_bit,
-                           output,
                            group_size,
-                           modelscope,
                            ):
     model_path = get_model_path(repo_id, local_model_hub)
 
-    ir_model_path = Path(repo_id.split(
-        "/")[1] + '-ov-' + str(group_size)) if output is None else Path(output)
+    ir_repo_id = (repo_id.split(
+        "/")[1] + '-ov-' + low_bit + '-' +str(group_size))
+
+    if local_model_hub:
+        repo_model_name = repo_id.split(
+        "/")[1] + '-ov-' + low_bit + '-' +str(group_size)
+        ir_model_path = local_model_hub + os.path.sep + repo_model_name
+        ir_model_path = Path(ir_model_path)
+    else:
+        ir_model_path = Path(ir_repo_id)
 
     if not ir_model_path.exists():
         os.mkdir(ir_model_path)
@@ -47,11 +54,6 @@ def save_model_to_openvino(repo_id,
         "group_size": group_size,
         "ratio": 1.0,
     }
-    if modelscope:
-        from modelscope import snapshot_download
-
-        print("====Downloading model from ModelScope=====")
-        model_path = snapshot_download(repo_id, cache_dir='./')
 
     print("====Exporting IR=====")
     if low_bit == "sym_int4":
@@ -66,14 +68,6 @@ def save_model_to_openvino(repo_id,
                                                       trust_remote_code=True,
                                                       compile=False, quantization_config=OVWeightQuantizationConfig(
                                                       bits=4, **compression_configs)).eval()
-    elif args.precision == "int8":
-        ov_model = OVModelForCausalLM.from_pretrained(model_path, export=True,
-                                                      trust_remote_code=True,
-                                                      compile=False, load_in_8bit=True).eval()
-    else:
-        ov_model = OVModelForCausalLM.from_pretrained(model_path, export=True,
-                                                      trust_remote_code=True,
-                                                      compile=False, load_in_8bit=False).eval()
 
     print("====Saving IR=====")
     ov_model.save_pretrained(ir_model_path)
@@ -91,53 +85,16 @@ def save_model_to_openvino(repo_id,
     del model_path
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-h',
-                        '--help',
-                        action='help',
-                        help='Show this help message and exit.')
-    parser.add_argument('-m',
-                        '--model_id',
-                        default='Qwen/Qwen1.5-0.5B-Chat',
-                        required=False,
-                        type=str,
-                        help='orignal model path')
-    parser.add_argument('-p',
-                        '--precision',
-                        required=False,
-                        default="int4",
-                        type=str,
-                        choices=["fp16", "int8", "int4"],
-                        help='fp16, int8 or int4')
-    parser.add_argument('-o',
-                        '--output',
-                        required=False,
-                        type=str,
-                        help='path to save the ir model')
-    parser.add_argument('-g',
-                        '--group_size',
-                        required=False,
-                        default=64,
-                        type=int,
-                        help='group size decided to use'
-    )
-    parser.add_argument('-ms',
-                        '--modelscope',
-                        action='store_true',
-                        help='download model from Model Scope')
-    args = parser.parse_args()
-
-    output = args.output
-    group_size = args.group_size
-    modelscope = args.modelscope
+    supported_precision = ["sym_int4", "asym_int4"]
 
     from omegaconf import OmegaConf
     conf = OmegaConf.load(f'{current_dir}/config.yaml')
 
-    for model in conf.repo_id:
-        save_model_to_openvino(repo_id=model,
-                              local_model_hub=conf['local_model_hub'],
-                              low_bit=conf['low_bit'],
-                              output=output,
-                              group_size=group_size,
-                              modelscope=modelscope)
+    if conf['low_bit'] in supported_precision:
+        for model in conf.repo_id:
+            save_model_to_openvino(repo_id=model,
+                                local_model_hub=conf['local_model_hub'],
+                                low_bit=conf['low_bit'],
+                                group_size=conf['group_size'],)
+    else:
+        warnings.warn("The precision selected is not supported in our all-in-one benchmark.")

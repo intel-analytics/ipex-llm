@@ -60,6 +60,7 @@ test_api:
   # - "speculative_cpu"                     # on Intel CPU, inference with self-speculative decoding
   # - "deepspeed_transformer_int4_cpu"      # on Intel CPU, deepspeed autotp inference
   # - "transformers_int4_npu_win"           # on Intel NPU for Windows,  transformer-like API, (qtype=int4)
+  #  - "transformers_openvino"              # on Intel GPU, openvino API
 cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only available now for gpu win related test_api)
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
@@ -71,6 +72,19 @@ task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
 If you choose the `transformer_int4_loadlowbit_gpu_win` or `transformer_int4_fp16_loadlowbit_gpu_win` test API, you will need to save the model in low bit first.
 
 Run `python save.py` will save all models declared in `repo_id` list into low bit models under `local_model_hub` folder.
+
+## (Optional) Save model for openvino
+If you choose the `transformers_openvino` test API, you will need to save the model for openvino first.
+
+Follow commands below to set up the environment:
+```
+conda create -n test-ov python=3.10
+pip install -r openvino-requirements.txt
+pip install --pre --upgrade ipex-llm
+pip install accelerate
+```
+
+Run `python save_openvino.py` will save all models declared in `repo_id` list into low bit models under `local_model_hub` folder.
 
 ## Run
 

@@ -138,7 +138,7 @@ def preprocess_prompt(tokenizer, in_len, task):
         input_ids = tokenizer.encode(input_str, return_tensors="pt")    
     return input_ids
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation', optimize_model=False, transpose_value_cache=True):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation', optimize_model=False, transpose_value_cache=True, group_size=64):
     # TODO: make a parameter
     result= {}
     if test_api == 'transformer_int4':
@@ -194,7 +194,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'transformers_int4_loadlowbit_npu_win':
         result = run_transformer_int4_loadlowbit_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache)
     elif test_api == 'transformers_openvino':
-        result = run_transformers_openvino(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model)
+        result = run_transformers_openvino(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, low_bit, batch_size, group_size)
     else:
         invalidInputError(False, "Unknown test_api " + test_api + ", please check your config.yaml.")
 
@@ -753,20 +753,19 @@ def run_transformers_openvino(repo_id,
                                  in_out_pairs,
                                  warm_up,
                                  num_trials,
-                                 num_beams,
                                  low_bit,
                                  batch_size,
-                                 optimize_model):
+                                 group_size):
     from optimum.intel import OVModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer, PretrainedConfig
 
-    model_path = get_model_path(repo_id, local_model_hub)
+    ir_repo_id = (repo_id + '-ov-' + low_bit + '-' +str(group_size))
+    model_path = get_model_path(ir_repo_id, local_model_hub)
     in_out_len = in_out_pairs[0].split("-")
     max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
     ov_config = {"PERFORMANCE_HINT": "LATENCY",
                  "NUM_STREAMS": "1", "CACHE_DIR": ""}
     config_dict = dict(pretrained_model_name_or_path=model_path, 
-                    #    torch_dtype="auto",
                        trust_remote_code=True,
                        use_cache=True, low_cpu_mem_usage=True)
     config = PretrainedConfig(**config_dict)
@@ -2224,7 +2223,7 @@ if __name__ == '__main__':
                 if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
                     lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, optimize_model, transpose_value_cache)
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, optimize_model, transpose_value_cache, conf['group_size'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
