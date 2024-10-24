@@ -55,7 +55,6 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Internal oneccl
     wget --no-proxy http://10.239.146.111:8080/oneccl_wks_installer_2024.0.0.5.1.sh && \
     bash oneccl_wks_installer_2024.0.0.5.1.sh && \
-    cp /tmp/libccl.so.1.0 /opt/intel/1ccl-wks/lib && \
     git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
     cd torch-ccl && \
     USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install && \
