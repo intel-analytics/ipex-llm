@@ -1549,6 +1549,11 @@ def _optimize_post(model, lightweight_bmm=False):
                                  module.BaichuanModel,
                                  "get_alibi_mask",
                                  baichuan_13b_get_alibi_mask)
+    elif model.config.model_type == "gpt2":
+        from ipex_llm.transformers.models.gpt2 import gpt2_attention_attn
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        module.GPT2Attention._attn = gpt2_attention_attn
     elif model.config.model_type == "gpt_neox":
         from ipex_llm.transformers.models.gptneox import gptneox_attention_forward
         convert_forward(model,
