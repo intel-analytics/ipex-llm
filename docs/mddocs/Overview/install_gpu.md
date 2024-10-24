@@ -202,7 +202,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 * Intel iGPU
 
 > [!IMPORTANT]
-> For Prerequisites installation on Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake), please refer to [this guide](../Quickstart/install_linux_gpu.md#for-intel-core-ultra-processors-with-intel-arc-graphics-aka-meteor-lake).
+> For driver installation on Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake), please refer to [this guide](../Quickstart/install_linux_gpu.md#install-prerequisites).
 
 > [!Note]
 > IPEX-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.

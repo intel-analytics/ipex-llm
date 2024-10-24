@@ -7,8 +7,11 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
 ## Table of Contents
 - [Install Prerequisites](./install_linux_gpu.md#install-prerequisites)
-  - [For Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake)](#for-intel-core-ultra-processors-with-intel-arc-graphics-aka-meteor-lake)
-  - [For other Intel iGPU and dGPU](#for-other-intel-igpu-and-dgpu)
+  - [Install GPU Driver](#install-gpu-driver)
+    - [For Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake)](#for-intel-core-ultra-processors-with-intel-arc-graphics-aka-meteor-lake)
+    - [For other Intel iGPU and dGPU](#for-other-intel-igpu-and-dgpu)
+  - [Install oneAPI](#install-oneapi)
+  - [Setup Python Environment](#setup-python-environment)
 - [Install ipex-llm](./install_linux_gpu.md#install-ipex-llm)
 - [Verify Installation](./install_linux_gpu.md#verify-installation)
 - [Runtime Configurations](./install_linux_gpu.md#runtime-configurations)
@@ -17,12 +20,14 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
 ## Install Prerequisites
 
-### For Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake)
+### Install GPU Driver
+
+#### For Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake)
 
 > [!NOTE]
 > For IPEX-LLM on Linux with Meteor Lake integrated GPU, we have currently verified on Ubuntu 22.04 with kernel `6.5.0-35-generic`.
 
-#### 1. Check current kernel version
+##### 1. Check current kernel version
 
 You could check your current kernel version through:
 
@@ -31,7 +36,7 @@ uname -r
 ```
 If the version displayed is not `6.5.0-35-generic`, downgrade or upgrade the kernel to the recommended version.
 
-#### 2. (Optional) Downgrade / Upgrade to kernel 6.5.0-35
+##### 2. (Optional) Downgrade / Upgrade to kernel 6.5.0-35
 
 If your current kernel version is not `6.5.0-35-generic`, you could downgrade or upgrade it by:
 
@@ -53,7 +58,7 @@ sudo reboot
 
 After rebooting, you can use `uname -r` again to see that your kernel version has been changed to `6.5.0-35-generic`.
 
-#### 3. Enable driver support through `force_probe` flag
+##### 3. Enable driver support through `force_probe` flag
 
 Next, you need to enable driver support on kernel `6.5.0-35-generic` through `force_probe` parameter：
 
@@ -85,7 +90,7 @@ Reboot the machine then to make the configuration take effect:
 sudo reboot
 ```
 
-#### 4. Install compute packages
+##### 4. Install compute packages
 
 Compute packages are also required to be installed for Intel GPU on Ubuntu 22.04 through the following commands:
 
@@ -102,7 +107,7 @@ apt-get install -y libze1 intel-level-zero-gpu intel-opencl-icd clinfo
 ```
 
 
-#### 5. Configure permmision and verify driver setup
+##### 5. Configure permmision and verify driver setup
 
 To complete the driver setup, you need to make sure your user is in the render group:
 
@@ -122,50 +127,8 @@ whose output should contain `Intel(R) Arc(TM) Graphics`.
 > [!TIP]
 > You could refer to the [official driver guide for client GPUS](https://dgpu-docs.intel.com/driver/client/overview.html#installing-client-gpus-on-ubuntu-desktop-22-04-lts) for more information.
 
-#### 6. Install OneAPI
 
-The final step for prerequisites installation on Meteor Lake iGPU is to install OneAPI 2024.0:
-
-```bash
-wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-
-echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-
-sudo apt update
-
-sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
-  intel-oneapi-common-oneapi-vars=2024.0.0-49406 \
-  intel-oneapi-diagnostics-utility=2024.0.0-49093 \
-  intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
-  intel-oneapi-dpcpp-ct=2024.0.0-49381 \
-  intel-oneapi-mkl=2024.0.0-49656 \
-  intel-oneapi-mkl-devel=2024.0.0-49656 \
-  intel-oneapi-mpi=2021.11.0-49493 \
-  intel-oneapi-mpi-devel=2021.11.0-49493 \
-  intel-oneapi-dal=2024.0.1-25 \
-  intel-oneapi-dal-devel=2024.0.1-25 \
-  intel-oneapi-ippcp=2021.9.1-5 \
-  intel-oneapi-ippcp-devel=2021.9.1-5 \
-  intel-oneapi-ipp=2021.10.1-13 \
-  intel-oneapi-ipp-devel=2021.10.1-13 \
-  intel-oneapi-tlt=2024.0.0-352 \
-  intel-oneapi-ccl=2021.11.2-5 \
-  intel-oneapi-ccl-devel=2021.11.2-5 \
-  intel-oneapi-dnnl-devel=2024.0.0-49521 \
-  intel-oneapi-dnnl=2024.0.0-49521 \
-  intel-oneapi-tcm-1.0=1.0.0-435
-```
-
->[!IMPORTANT]
-> Please make sure to reboot the machine after all the prerequiste steps are complete:
->
-> ```bash
-> sudo reboot
-> ```
-
-### For other Intel iGPU and dGPU
-
-#### 1. Install GPU Driver
+#### For other Intel iGPU and dGPU
 
 ##### For Linux kernel 6.2
 
@@ -313,39 +276,48 @@ wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/l
 sudo dpkg -i *.deb
 ``` -->
 
-#### 2. Install oneAPI 
-  ```bash
-  wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+### Install oneAPI
+IPEX-LLM requires installation of oneAPI 2024.0 for Intel GPU on Linux
 
-  echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-  
-  sudo apt update
+```bash
+wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
 
-  sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
-    intel-oneapi-common-oneapi-vars=2024.0.0-49406 \
-    intel-oneapi-diagnostics-utility=2024.0.0-49093 \
-    intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
-    intel-oneapi-dpcpp-ct=2024.0.0-49381 \
-    intel-oneapi-mkl=2024.0.0-49656 \
-    intel-oneapi-mkl-devel=2024.0.0-49656 \
-    intel-oneapi-mpi=2021.11.0-49493 \
-    intel-oneapi-mpi-devel=2021.11.0-49493 \
-    intel-oneapi-dal=2024.0.1-25 \
-    intel-oneapi-dal-devel=2024.0.1-25 \
-    intel-oneapi-ippcp=2021.9.1-5 \
-    intel-oneapi-ippcp-devel=2021.9.1-5 \
-    intel-oneapi-ipp=2021.10.1-13 \
-    intel-oneapi-ipp-devel=2021.10.1-13 \
-    intel-oneapi-tlt=2024.0.0-352 \
-    intel-oneapi-ccl=2021.11.2-5 \
-    intel-oneapi-ccl-devel=2021.11.2-5 \
-    intel-oneapi-dnnl-devel=2024.0.0-49521 \
-    intel-oneapi-dnnl=2024.0.0-49521 \
-    intel-oneapi-tcm-1.0=1.0.0-435
-  ```
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
+echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
 
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
+sudo apt update
+
+sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
+  intel-oneapi-common-oneapi-vars=2024.0.0-49406 \
+  intel-oneapi-diagnostics-utility=2024.0.0-49093 \
+  intel-oneapi-compiler-dpcpp-cpp=2024.0.2-49895 \
+  intel-oneapi-dpcpp-ct=2024.0.0-49381 \
+  intel-oneapi-mkl=2024.0.0-49656 \
+  intel-oneapi-mkl-devel=2024.0.0-49656 \
+  intel-oneapi-mpi=2021.11.0-49493 \
+  intel-oneapi-mpi-devel=2021.11.0-49493 \
+  intel-oneapi-dal=2024.0.1-25 \
+  intel-oneapi-dal-devel=2024.0.1-25 \
+  intel-oneapi-ippcp=2021.9.1-5 \
+  intel-oneapi-ippcp-devel=2021.9.1-5 \
+  intel-oneapi-ipp=2021.10.1-13 \
+  intel-oneapi-ipp-devel=2021.10.1-13 \
+  intel-oneapi-tlt=2024.0.0-352 \
+  intel-oneapi-ccl=2021.11.2-5 \
+  intel-oneapi-ccl-devel=2021.11.2-5 \
+  intel-oneapi-dnnl-devel=2024.0.0-49521 \
+  intel-oneapi-dnnl=2024.0.0-49521 \
+  intel-oneapi-tcm-1.0=1.0.0-435
+```
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/oneapi.png" alt="image-20240221102252565" width=100%; />
+
+<img src="https://llm-assets.readthedocs.io/en/latest/_images/basekit.png" alt="image-20240221102252565" width=100%; />
+
+>[!IMPORTANT]
+> Please make sure to reboot the machine after driver and oneAPI installation are complete:
+>
+> ```bash
+> sudo reboot
+> ```
 
 ### Setup Python Environment
  
