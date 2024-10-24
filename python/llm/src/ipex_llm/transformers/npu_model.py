@@ -119,7 +119,6 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "quantization_config")
         ignore_argument(kwargs, "speculative")
         ignore_argument(kwargs, "pipeline_parallel_stages")
-        funasr_model = kwargs.pop("funasr_model", False)
         optimize_model = kwargs.pop("optimize_model", False)
         max_output_len = kwargs.pop("max_output_len", 1024)
         max_output_len = max_output_len - 1
@@ -145,20 +144,20 @@ class _BaseAutoModelClass:
         try:
             # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
             kwargs.pop("device_map", None)
-            if funasr_model:
-                model = cls.HF_Model(*args, **kwargs)
-            else:
+            if hasattr(cls.HF_Model, "from_pretrained"):
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
+            else:
+                model = cls.HF_Model(*args, **kwargs)
         except NotImplementedError:
             logger.info(
                 "Failed to load models with `low_cpu_mem_usage` specified, "
                 "will fall to traditional load method with higher memory consumption."
             )
             _kwargs["low_cpu_mem_usage"] = False
-            if funasr_model:
-                model = cls.HF_Model(*_args, **_kwargs)
+            if hasattr(cls.HF_Model, "from_pretrained"):
+                model = cls.HF_Model.from_pretrained(*args, **kwargs)
             else:
-                model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
+                model = cls.HF_Model(*args, **kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
@@ -174,7 +173,8 @@ class _BaseAutoModelClass:
             )
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
             from ipex_llm.transformers.npu_models.convert_mp import optimize_funasr
-            if funasr_model:
+            if hasattr(model, "model"):
+                # speech paraformer large
                 encoders = model.model.encoder.encoders[0:31]
                 decoders = model.model.decoder.decoders
                 with torch.no_grad():
@@ -556,6 +556,6 @@ class AutoModelForTokenClassification(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForTokenClassification
 
 
-class AutoASR(_BaseAutoModelClass):
+class FunAsrAutoModel(_BaseAutoModelClass):
     import funasr
     HF_Model = funasr.AutoModel

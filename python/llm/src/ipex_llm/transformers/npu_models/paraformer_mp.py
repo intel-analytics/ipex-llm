@@ -17,7 +17,7 @@
 import os
 import torch
 import time
-
+import ctypes
 from typing import Optional, Sequence, List, Union, Any, Tuple
 from typing import Optional, List, Generator
 import uuid
@@ -35,6 +35,7 @@ from transformers.utils import logging
 import torch.multiprocessing as mp
 from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
+from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
 
 from funasr.models.scama import utils as myutils
 from funasr.models.transformer.utils.nets_utils import make_pad_mask
@@ -587,6 +588,26 @@ class LowBitMultiDecoderlayer(LLMBaseNNFactory):
 
         return x, tgt_mask, memory, memory_mask
 
+    def run_multi_decoders(inputs, decoders, models_ptr=None):
+        x_np = [elem.to(torch.float16).numpy() for elem in inputs]
+
+        num_decoders = len(decoders)
+        num_inputs = len(x_np)
+
+        if models_ptr is None:
+            array_type = ctypes.POINTER(ctypes.c_char) * num_decoders
+            models_ptr = array_type(
+                *[decoders[i]._mm for i in range(num_decoders)]
+            )
+
+        inputs_ptr = (ctypes.c_void_p * num_inputs)(
+            *[x.ctypes.data_as(ctypes.c_void_p) for x in x_np]
+        )
+        backend_lib.run_decoders(models_ptr, inputs_ptr, num_decoders, num_inputs)
+
+        x, tgt_mask, memory, memory_mask = decoders[-1].torch_out
+        return x, tgt_mask, memory, memory_mask
+
 
 class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
 
@@ -697,10 +718,9 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             memory_mask,
         )
 
-        x, tgt_mask, memory, memory_mask = LowBitMultiDecoderlayer.run_decoders(
+        x, tgt_mask, memory, memory_mask = LowBitMultiDecoderlayer.run_multi_decoders(
             inputs,
-            decoders=self.backend_decoders,
-            funasr=True)
+            decoders=self.backend_decoders)
 
         if self.do_print:
             print("outputs:", x)

@@ -19,7 +19,7 @@ import torch
 import time
 import argparse
 
-from ipex_llm.transformers.npu_model import AutoASR
+from ipex_llm.transformers.npu_model import FunAsrAutoModel as AutoModel
 from transformers.utils import logging
 
 logger = logging.get_logger(__name__)
@@ -41,12 +41,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    model = AutoASR.from_pretrained(
+    model = AutoModel.from_pretrained(
         model=model_path,
         attn_implementation="eager",
         load_in_low_bit=args.load_in_low_bit,
         low_cpu_mem_usage=True,
-        funasr_model=True,
         optimize_model=True,
         intra_pp=args.intra_pp,
         inter_pp=args.inter_pp,
