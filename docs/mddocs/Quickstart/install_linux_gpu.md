@@ -64,15 +64,15 @@ sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"\(.*\)\"/\"\1 $FORCE_PROBE_VALUE\"/" 
 ```
 
 > [!TIP]
-> In addition to using the above command, you could also maunally check your `force_probe` flag value through
+> In addition to using the above command, you could also maunally check your `force_probe` flag value through:
 >
 > ```bash
 > sudo dmesg  | grep i915
 > ```
 >
-> And you may get output like `Your graphics device 7d55 is not properly supported by i915 in this kernel version. To force driver probe anyway, use i915.force_probe=7d55`, in which `7d55` is the PCI ID depends on your GPU model.
+> You may get output like `Your graphics device 7d55 is not properly supported by i915 in this kernel version. To force driver probe anyway, use i915.force_probe=7d55`, in which `7d55` is the PCI ID depends on your GPU model.
 >
-> Then, modify the `/etc/default/grub` file directly to add `i915.force_probe=xxxx` to the value of `GRUB_CMDLINE_LINUX_DEFAULT`. For example, before modification, you have`GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"` inside `/etc/default/grub`. You then need to change it to `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.force_probe=7d55"`.
+> Then, modify the `/etc/default/grub` file directly. Make sure you add `i915.force_probe=xxxx` to the value of `GRUB_CMDLINE_LINUX_DEFAULT`. For example, before modification, you have`GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"` inside `/etc/default/grub`. You then need to change it to `GRUB_CMDLINE_LINUX_DEFAULT="quiet splash i915.force_probe=7d55"`.
 
 Then update grub through:
 ```bash
