@@ -1306,6 +1306,7 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.MllamaTextSelfAttention, llama_attention_forward)
         convert_forward(model, module.MllamaTextSelfSdpaAttention, llama_attention_forward)
         convert_forward(model, module.MllamaTextCrossAttention, mllama_cross_attention_forward)
+        convert_forward(model, module.MllamaTextCrossSdpaAttention, mllama_cross_attention_forward)
     elif model.config.model_type == "llama":
         from transformers.models.llama.modeling_llama import LlamaRMSNorm
         from transformers.models.llama.modeling_llama import LlamaMLP
