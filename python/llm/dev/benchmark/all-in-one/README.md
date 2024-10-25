@@ -2,7 +2,9 @@
 
 All in one benchmark test allows users to test all the benchmarks and record them in a result CSV. Users can provide models and related information in `config.yaml`.
 
-Before running, make sure to have [ipex-llm](../../../../../README.md) installed.
+Before running, make sure you have [ipex-llm](../../../../../README.md) installed.
+
+If you would like to use all-in-one benchmark for testing OpenVINO, please directly refer to [this section](#optional-save-model-for-openvino) for environment setup.
 
 > The prompts for benchmarking are from datasets [abisee/cnn_dailymail](https://huggingface.co/datasets/abisee/cnn_dailymail), [Open-Orca/OpenOrca](https://huggingface.co/datasets/Open-Orca/OpenOrca), [THUDM/LongBench](https://huggingface.co/datasets/THUDM/LongBench), etc.
 
@@ -82,7 +84,7 @@ Follow commands below to set up the environment for testing OpenVINO on Intel GP
 conda create -n test-ov python=3.11
 pip install -r requirements.txt
 pip install --pre --upgrade ipex-llm # only for IPEX-LLM BenchmarkWrapper
-pip install accelerate
+pip install accelerate omegaconf pandas
 ```
 
 Then, running `python save_openvino.py` will save all models declared in `repo_id` list into OpenVINO models with `low_bit` precision under `local_model_hub` folder.
