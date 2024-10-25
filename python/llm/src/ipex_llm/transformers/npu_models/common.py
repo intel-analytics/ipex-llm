@@ -59,3 +59,23 @@ def split_linear(module, module_name, n_splits=2):
         new_linear.weight = torch.nn.Parameter(weight.contiguous(), requires_grad=False)
         linear_list.add_module(f"{module_name}_dq_{idx}", new_linear)
     return linear_list
+
+
+def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down_proj=2):
+    from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP, Qwen2Attention
+    from transformers.models.llama.modeling_llama import LlamaMLP, LlamaAttention
+    attn_module_names = ["q_proj", "k_proj", "v_proj", "o_proj"]
+    mlp_module_names = ["down_proj", "up_proj", "gate_proj"]
+    if isinstance(module, (Qwen2Attention, LlamaAttention)):
+        for name in attn_module_names:
+            setattr(module, f"{name}_dq_list", split_linear(getattr(module, name), name,
+                                                            n_splits=n_splits_hidden_size))
+            delattr(module, name)
+    elif isinstance(module, (Qwen2MLP, LlamaMLP)):
+        for name in mlp_module_names:
+            n_splits_mlp = n_splits_hidden_size
+            if name == 'down_proj':
+                n_splits_mlp = n_splits_down_proj
+            setattr(module, f"{name}_dq_list", split_linear(getattr(module, name), name,
+                                                            n_splits=n_splits_mlp))
+            delattr(module, name)

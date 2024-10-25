@@ -59,7 +59,8 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
                                                  pipeline=True,
-                                                 max_output_len=args.max_output_len)
+                                                 max_output_len=args.max_output_len,
+                                                 attn_implementation="eager")
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
@@ -69,8 +70,8 @@ if __name__ == "__main__":
     print("-" * 80)
     print("done")
     with torch.inference_mode():
+        print("finish to load")
         for i in range(5):
-            print("finish to load")
             prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
             _input_ids = tokenizer.encode(prompt, return_tensors="pt")
             print("input length:", len(_input_ids[0]))

@@ -246,15 +246,21 @@ def convert_llm(model: torch.nn.Module,
                 attn_layer = curr_layer.self_attn
                 mlp_layer = curr_layer.mlp
 
-                weights = [
-                    (attn_layer.q_proj.weight, attn_layer.q_proj.scale),
-                    (attn_layer.k_proj.weight, attn_layer.k_proj.scale),
-                    (attn_layer.v_proj.weight, attn_layer.v_proj.scale),
-                    (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-                    (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-                    (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-                    (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-                ]
+                weights = []
+                for q, k, v, o, g, u, d in zip(attn_layer.q_proj_dq_list,
+                                               attn_layer.k_proj_dq_list,
+                                               attn_layer.v_proj_dq_list,
+                                               attn_layer.o_proj_dq_list,
+                                               mlp_layer.gate_proj_dq_list,
+                                               mlp_layer.up_proj_dq_list,
+                                               mlp_layer.down_proj_dq_list):
+                    weights.append((q.weight, q.scale))
+                    weights.append((k.weight, k.scale))
+                    weights.append((v.weight, v.scale))
+                    weights.append((o.weight, o.scale))
+                    weights.append((g.weight, g.scale))
+                    weights.append((u.weight, u.scale))
+                    weights.append((d.weight, d.scale))
 
                 cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
                 cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)

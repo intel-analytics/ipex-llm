@@ -11,7 +11,7 @@
 **`ipex-llm`** 是一个将大语言模型高效地运行于 Intel CPU 和 GPU（如搭载集成显卡的个人电脑，配有 Arc 独立显卡的台式机等）上的大模型 XPU 加速库[^1]。 
 > [!NOTE]
 > - *它构建在 **`llama.cpp`**, **`transformers`**, **`bitsandbytes`**, **`vLLM`**, **`qlora`**, **`AutoGPTQ`**, **`AutoAWQ`** 等优秀工作之上。*
-> - *它可以与 [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md), [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [HuggingFace transformers](python/llm/example/GPU/HuggingFace), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models)等无缝衔接。* 
+> - *它可以与 [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md), [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [HuggingFace transformers](python/llm/example/GPU/HuggingFace), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models)等无缝衔接。* 
 > - ***50+** 模型已经在 `ipex-llm` 上得到优化和验证（包括 LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM, Baichuan, Qwen, RWKV, 等等)；更多信息请参阅[这里](#模型验证).。*
 
 ## 最近更新 🔥 
@@ -31,7 +31,7 @@
 - [2024/04] 你现在可以在 Intel GPU 上使用 `ipex-llm` 运行 **Open WebUI** ，详情参考[快速入门指南](docs/mddocs/Quickstart/open_webui_with_ollama_quickstart.md)。
 - [2024/04] 你现在可以在 Intel GPU 上使用 `ipex-llm` 以及 `llama.cpp` 和 `ollama` 运行 **Llama 3** ，详情参考[快速入门指南](docs/mddocs/Quickstart/llama3_llamacpp_ollama_quickstart.md)。
 - [2024/04] `ipex-llm` 现在在Intel [GPU](python/llm/example/GPU/HuggingFace/LLM/llama3) 和 [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3) 上都支持 **Llama 3** 了。
-- [2024/04] `ipex-llm` 现在提供 C++ 推理, 在 Intel GPU 上它可以用作运行 [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md) 和 [ollama](docs/mddocs/Quickstart/ollama_quickstart.md) 的加速后端。
+- [2024/04] `ipex-llm` 现在提供 C++ 推理, 在 Intel GPU 上它可以用作运行 [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md) 和 [ollama](docs/mddocs/Quickstart/ollama_quickstart.md) 的加速后端。
 - [2024/03] `bigdl-llm` 现已更名为 `ipex-llm` (请参阅[此处](docs/mddocs/Quickstart/bigdl_llm_migration.md)的迁移指南)，你可以在[这里](https://github.com/intel-analytics/bigdl-2.x)找到原始BigDL项目。
 - [2024/02] `ipex-llm` 现在支持直接从 [ModelScope](python/llm/example/GPU/ModelScope-Models) ([魔搭](python/llm/example/CPU/ModelScope-Models)) loading 模型。
 - [2024/02] `ipex-llm` 增加 **INT2** 的支持 (基于 llama.cpp [IQ2](python/llm/example/GPU/HuggingFace/Advanced-Quantizations/GGUF-IQ2) 机制), 这使得在具有 16GB VRAM 的 Intel GPU 上运行大型 LLM（例如 Mixtral-8x7B）成为可能。
@@ -107,7 +107,7 @@
   </tr>
   <tr>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/llama_cpp_quickstart.md">llama.cpp (Phi-3-mini Q4_0)</a>
+      <a href="docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md">llama.cpp (Phi-3-mini Q4_0)</a>
     </td>
     <td align="center" width="25%">
       <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama (Mistral-7B Q4_K) </a>
@@ -185,7 +185,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 - [VSCode on GPU](docs/mddocs/DockerGuides/docker_run_pytorch_inference_in_vscode.md): 在 Intel GPU 上使用 VSCode 开发并运行基于 Python 的 `ipex-llm` 应用
 
 ### 使用
-- [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): 在 Intel GPU 上运行 **llama.cpp** (*使用 `ipex-llm` 的 C++ 接口*) 
+- [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md): 在 Intel GPU 上运行 **llama.cpp** (*使用 `ipex-llm` 的 C++ 接口*) 
 - [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md): 在 Intel GPU 上运行 **ollama** (*使用 `ipex-llm` 的 C++ 接口*) 
 - [PyTorch/HuggingFace](docs/mddocs/Quickstart/install_windows_gpu.md): 使用 [Windows](docs/mddocs/Quickstart/install_windows_gpu.md) 和 [Linux](docs/mddocs/Quickstart/install_linux_gpu.md) 在 Intel GPU 上运行 **PyTorch**、**HuggingFace**、**LangChain**、**LlamaIndex** 等 (*使用 `ipex-llm` 的 Python 接口*) 
 - [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md): 在 Intel [GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 和 [CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md) 上使用 `ipex-llm` 运行 **vLLM** 

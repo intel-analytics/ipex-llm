@@ -455,7 +455,7 @@ class _BaseAutoModelClass:
             optimize_llm(model)
             with torch.no_grad():
                 cls.load_convert(qtype, model, quant_device, modules_to_not_convert,
-                                 *model_args, **kwargs)
+                                 quantization_group_size, *model_args, **kwargs)
                 create_npu_kernels(model)
 
         if is_sharded:
