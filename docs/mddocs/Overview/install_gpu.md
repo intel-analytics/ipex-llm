@@ -46,7 +46,7 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
 
 The easiest ways to install `ipex-llm` is the following commands.
 
-- For **Intel Core™ Ultra Series 2 with Intel Arc™ Graphics (a.k.a. Lunar Lake)**:
+- For **Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake)**:
 
    Choose either US or CN website for `extra-index-url`:
 
@@ -94,7 +94,7 @@ The easiest ways to install `ipex-llm` is the following commands.
 
 If you encounter network issues when installing IPEX, you can also install IPEX-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `ipex-llm`.
 
-- For **Intel Core™ Ultra Series 2 with Intel Arc™ Graphics (a.k.a. Lunar Lake)**:
+- For **Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake)**:
 
    Download the wheels on Windows system:
 
@@ -202,7 +202,7 @@ IPEX-LLM GPU support on Linux has been verified on:
 * Intel iGPU
 
 > [!IMPORTANT]
-> For prerequisite installation on Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake), please refer to [this guide](../Quickstart/install_linux_gpu.md#install-prerequisites).
+> For prerequisite installation on Intel Core™ Ultra Processers (Series 1) with processor number 1xxH/U/HL/UL (code name Meteor Lake), please refer to [this guide](../Quickstart/install_linux_gpu.md#install-prerequisites).
 
 > [!Note]
 > IPEX-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.

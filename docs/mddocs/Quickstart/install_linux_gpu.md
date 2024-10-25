@@ -8,7 +8,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 ## Table of Contents
 - [Install Prerequisites](./install_linux_gpu.md#install-prerequisites)
   - [Install GPU Driver](#install-gpu-driver)
-    - [For Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake)](#for-intel-core-ultra-processors-with-intel-arc-graphics-aka-meteor-lake)
+    - [For Intel Core™ Ultra Processers (Series 1) with processor number 1xxH/U/HL/UL (code name Meteor Lake)](#for-intel-core-ultra-processers-series-1-with-processor-number-1xxhuhlul-code-name-meteor-lake)
     - [For other Intel iGPU and dGPU](#for-other-intel-igpu-and-dgpu)
   - [Install oneAPI](#install-oneapi)
   - [Setup Python Environment](#setup-python-environment)
@@ -22,7 +22,7 @@ IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and sup
 
 ### Install GPU Driver
 
-#### For Intel Core™ Ultra Processors with Intel Arc™ Graphics (a.k.a. Meteor Lake)
+#### For Intel Core™ Ultra Processers (Series 1) with processor number 1xxH/U/HL/UL (code name Meteor Lake)
 
 > [!NOTE]
 > For IPEX-LLM on Linux with Meteor Lake integrated GPU, we have currently verified on Ubuntu 22.04 with kernel `6.5.0-35-generic`.
