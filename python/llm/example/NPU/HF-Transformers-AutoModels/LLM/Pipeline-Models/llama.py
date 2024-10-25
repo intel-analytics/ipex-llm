@@ -62,6 +62,7 @@ if __name__ == "__main__":
                                                  pipeline=True,
                                                  max_output_len=args.max_output_len,
                                                  quantization_group_size=args.quantization_group_size,
+                                                 torch_dtype=torch.float16,
                                                  attn_implementation="eager")
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)

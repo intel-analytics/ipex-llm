@@ -8,8 +8,9 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 | Phi-3-Vision | [microsoft/Phi-3-vision-128k-instruct](https://huggingface.co/microsoft/Phi-3-vision-128k-instruct) |
 | MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) |
 | MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) |
+| Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) |
 
-## 0. Requirements
+## Requirements
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
 Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
 Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
@@ -30,6 +31,10 @@ pip install torchvision
 
 # [optional] for MiniCPM-V-2_6
 pip install timm torch==2.1.2 torchvision==0.16.2
+
+# [optional] for Speech_Paraformer-Large
+pip install -U funasr
+pip install modelscope torch==2.1.2 torchaudio==2.1.2
 ```
 
 ### 2. Runtime Configurations
@@ -64,6 +69,7 @@ Arguments info:
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--load_in_low_bit`: argument defining the `load_in_low_bit` format used. It is default to be `sym_int8`, `sym_int4` can also be used.
 
+
 #### Sample Output
 ##### [microsoft/Phi-3-vision-128k-instruct](https://huggingface.co/microsoft/Phi-3-vision-128k-instruct)
 
@@ -84,11 +90,12 @@ The sample input image is (which is fetched from [COCO dataset](https://cocodata
 <a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=400px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>
 
 ## 4. Run Optimized Models (Experimental)
-The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU, including
+The examples below show how to run the **_optimized HuggingFace & FunASR model implementations_** on Intel NPU, including
 - [MiniCPM-Llama3-V-2_5](./minicpm-llama3-v2.5.py)
 - [MiniCPM-V-2_6](./minicpm_v_2_6.py)
+- [Speech_Paraformer-Large](./speech_paraformer-large.py)
 
-### Run
+### 4.1 Run MiniCPM-Llama3-V-2_5 & MiniCPM-V-2_6
 ```bash
 # to run MiniCPM-Llama3-V-2_5
 python minicpm-llama3-v2.5.py
@@ -117,4 +124,27 @@ http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 What is in this image?
 -------------------- Output --------------------
 The image features a young child holding and showing off a white teddy bear wearing a pink dress. The background includes some red flowers and a stone wall, suggesting an outdoor setting.
+```
+
+### 4.2 Run Speech_Paraformer-Large
+```bash
+# to run Speech_Paraformer-Large
+python speech_paraformer-large.py
+```
+
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the asr repo id for the model (i.e. `iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch`) to be downloaded, or the path to the asr checkpoint folder.
+- `--load_in_low_bit`: argument defining the `load_in_low_bit` format used. It is default to be `sym_int8`, `sym_int4` can also be used.
+
+#### Sample Output
+##### [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch)
+
+```log
+# speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch/example/asr_example.wav
+rtf_avg: 0.090: 100%|███████████████████████████████████| 1/1 [00:01<00:00,  1.18s/it]
+[{'key': 'asr_example', 'text': '正 是 因 为 存 在 绝 对 正 义 所 以 我 们 接 受 现 实 的 相 对 正 义 但 是 不 要 因 为 现 实 的 相 对 正 义 我 们 就 认 为 这 个 世 界 没 有 正 义 因 为 如 果 当 你 认 为 这 个 世 界 没 有 正 义'}]
+
+# https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ASR/test_audio/asr_example_zh.wav
+rtf_avg: 0.232: 100%|███████████████████████████████████| 1/1 [00:01<00:00,  1.29s/it]
+[{'key': 'asr_example_zh', 'text': '欢 迎 大 家 来 体 验 达 摩 院 推 出 的 语 音 识 别 模 型'}]
 ```
