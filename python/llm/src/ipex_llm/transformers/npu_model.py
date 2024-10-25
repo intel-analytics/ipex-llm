@@ -185,8 +185,6 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_transformers_low_bit": qtype})
             model.share_memory()
 
-            print(llm)
-
             if not pipeline:
                 optimize_llm(
                     llm,
