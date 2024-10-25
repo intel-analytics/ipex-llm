@@ -247,7 +247,7 @@ def convert_llm(model: torch.nn.Module,
                 mlp_layer = curr_layer.mlp
 
                 weights = []
-                for q, k, v, o, g, u, f in zip(attn_layer.q_proj_dq_list,
+                for q, k, v, o, g, u, d in zip(attn_layer.q_proj_dq_list,
                                                attn_layer.k_proj_dq_list,
                                                attn_layer.v_proj_dq_list,
                                                attn_layer.o_proj_dq_list,
@@ -260,7 +260,7 @@ def convert_llm(model: torch.nn.Module,
                     weights.append((o.weight, o.scale))
                     weights.append((g.weight, g.scale))
                     weights.append((u.weight, u.scale))
-                    weights.append((f.weight, f.scale))
+                    weights.append((d.weight, d.scale))
 
                 cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
                 cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
