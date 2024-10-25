@@ -2,7 +2,7 @@
 
 All in one benchmark test allows users to test all the benchmarks and record them in a result CSV. Users can provide models and related information in `config.yaml`.
 
-Before running, make sure you have [ipex-llm](../../../../../README.md) installed.
+Before running, make sure to have [ipex-llm](../../../../../README.md) installed.
 
 > The prompts for benchmarking are from datasets [abisee/cnn_dailymail](https://huggingface.co/datasets/abisee/cnn_dailymail), [Open-Orca/OpenOrca](https://huggingface.co/datasets/Open-Orca/OpenOrca), [THUDM/LongBench](https://huggingface.co/datasets/THUDM/LongBench), etc.
 
@@ -64,6 +64,7 @@ cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only available now for gpu win related test_api)
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
+
 ```
 
 ## (Optional) Save model in low bit
@@ -75,7 +76,7 @@ Running `python save.py` will save all models declared in `repo_id` list into lo
 
 run `python run.py`, this will output results to `results.csv`.
 
-For IPEX-LLM SPR performance, run `bash run-spr.sh`.
+For SPR performance, run `bash run-spr.sh`.
 
 > **Note**
 >
@@ -85,6 +86,6 @@ For IPEX-LLM SPR performance, run `bash run-spr.sh`.
 >
 > Please install torch nightly version to avoid `Illegal instruction (core dumped)` issue, you can follow the following command to install: `pip install --pre --upgrade torch --index-url https://download.pytorch.org/whl/nightly/cpu`
 
-For IPEX-LLM ARC performance, run `bash run-arc.sh`.
+For ARC performance, run `bash run-arc.sh`.
 
-For IPEX-LLM MAX GPU performance, run `bash run-max-gpu.sh`.
+For MAX GPU performance, run `bash run-max-gpu.sh`.
