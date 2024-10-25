@@ -141,17 +141,24 @@ class _BaseAutoModelClass:
 
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
+
         try:
             # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
             kwargs.pop("device_map", None)
-            model = cls.HF_Model.from_pretrained(*args, **kwargs)
+            if hasattr(cls.HF_Model, "from_pretrained"):
+                model = cls.HF_Model.from_pretrained(*args, **kwargs)
+            else:
+                model = cls.HF_Model(*args, **kwargs)
         except NotImplementedError:
             logger.info(
                 "Failed to load models with `low_cpu_mem_usage` specified, "
                 "will fall to traditional load method with higher memory consumption."
             )
             _kwargs["low_cpu_mem_usage"] = False
-            model = cls.HF_Model.from_pretrained(*_args, **_kwargs)
+            if hasattr(cls.HF_Model, "from_pretrained"):
+                model = cls.HF_Model.from_pretrained(*args, **kwargs)
+            else:
+                model = cls.HF_Model(*args, **kwargs)
             model.config.update({"bigdl_lcmu_enabled": False})
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
@@ -165,42 +172,20 @@ class _BaseAutoModelClass:
                     " than max_output_len ({max_output_len})"
                 ),
             )
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
-
-            if hasattr(model, "llm"):
-                llm = model.llm
-            else:
-                llm = model
-
-            with torch.no_grad():
-                model.config.update({"mixed_precision": mixed_precision})
-                model.config.update({"group_size": quantization_group_size})
-                optimize_llm_pre(model, qtype, mixed_precision,
-                                 quantization_group_size=quantization_group_size)
-                cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
-                                 quantization_group_size, *args, **kwargs)
-                create_npu_kernels(llm)
-            model = model.eval()
-            logger.info(f"Finish to convert model")
-            model.config.update({"bigdl_transformers_low_bit": qtype})
-            model.share_memory()
-
-            if not pipeline:
-                optimize_llm(
-                    llm,
-                    max_output_len=max_output_len,
-                    max_prompt_len=max_prompt_len,
-                    inter_pp=inter_pp,
-                    intra_pp=intra_pp,
-                    transpose_value_cache=transpose_value_cache,
-                    group_size=quantization_group_size
-                )
-                model.save_low_bit = types.MethodType(save_low_bit, model)
-            else:
-                from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm
-                convert_llm(llm,
-                            kv_len=max_output_len,
-                            transpose_value_cache=transpose_value_cache)
+            optimize_kwargs = {
+                "model": model,
+                "qtype": qtype,
+                "mixed_precision": mixed_precision,
+                "quantization_group_size": quantization_group_size,
+                "modules_to_not_convert": modules_to_not_convert,
+                "pipeline": pipeline,
+                "max_output_len": max_output_len,
+                "max_prompt_len": max_prompt_len,
+                "inter_pp": inter_pp,
+                "intra_pp": intra_pp,
+                "transpose_value_cache": transpose_value_cache,
+            }
+            model = cls.optimize_npu_model(*args, **optimize_kwargs)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
@@ -216,6 +201,62 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_transformers_low_bit": qtype})
             # add save_low_bit to pretrained model dynamically
             model.save_low_bit = types.MethodType(save_low_bit, model)
+
+        return model
+
+    @classmethod
+    def optimize_npu_model(cls, *args, **kwargs):
+
+        from ipex_llm.transformers.npu_models.convert_mp import optimize_llm_pre, optimize_llm
+        from intel_npu_acceleration_library.compiler import create_npu_kernels
+
+        model = kwargs.pop("model")
+        qtype = kwargs.pop("qtype", "sym_int4")
+        mixed_precision = kwargs.pop("mixed_precision", False)
+        quantization_group_size = kwargs.pop("quantization_group_size", 0)
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        pipeline = kwargs.pop("pipeline", False)
+        max_output_len = kwargs.pop("max_output_len", 1024)
+        max_prompt_len = kwargs.pop("max_prompt_len", 512)
+        inter_pp = kwargs.pop("inter_pp", None)
+        intra_pp = kwargs.pop("intra_pp", None)
+        transpose_value_cache = kwargs.pop("transpose_value_cache", True)
+
+        if hasattr(model, "llm"):
+            llm = model.llm
+        else:
+            llm = model
+
+        with torch.no_grad():
+            model.config.update({"mixed_precision": mixed_precision})
+            model.config.update({"group_size": quantization_group_size})
+            optimize_llm_pre(model, qtype, mixed_precision,
+                             quantization_group_size=quantization_group_size)
+            cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
+                             quantization_group_size, *args, **kwargs)
+            create_npu_kernels(llm)
+        model = model.eval()
+        logger.info(f"Finish to convert model")
+        model.config.update({"bigdl_transformers_low_bit": qtype})
+        model.share_memory()
+
+        if not pipeline:
+            optimize_llm(
+                llm,
+                max_output_len=max_output_len,
+                max_prompt_len=max_prompt_len,
+                inter_pp=inter_pp,
+                intra_pp=intra_pp,
+                transpose_value_cache=transpose_value_cache,
+                group_size=quantization_group_size
+            )
+            model.save_low_bit = types.MethodType(save_low_bit, model)
+        else:
+            from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
+                import convert_llm
+            convert_llm(llm,
+                        kv_len=max_output_len,
+                        transpose_value_cache=transpose_value_cache)
 
         return model
 
@@ -530,3 +571,52 @@ class AutoModelForMultipleChoice(_BaseAutoModelClass):
 
 class AutoModelForTokenClassification(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForTokenClassification
+
+
+class FunAsrAutoModel(_BaseAutoModelClass):
+    import funasr
+    HF_Model = funasr.AutoModel
+
+    def __init__(self, *args, **kwargs):
+        self.model = self.from_pretrained(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self.model, name)
+
+    @classmethod
+    def optimize_npu_model(cls, *args, **kwargs):
+        from ipex_llm.transformers.npu_models.convert_mp import optimize_funasr
+        from intel_npu_acceleration_library.compiler import create_npu_kernels
+
+        model = kwargs.pop("model")
+        qtype = kwargs.pop("qtype", "sym_int8")
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        max_output_len = kwargs.pop("max_output_len", 1024)
+        max_prompt_len = kwargs.pop("max_prompt_len", 512)
+        inter_pp = kwargs.pop("inter_pp", None)
+        intra_pp = kwargs.pop("intra_pp", None)
+        transpose_value_cache = kwargs.pop("transpose_value_cache", True)
+
+        encoders = model.model.encoder.encoders[0:31]
+        decoders = model.model.decoder.decoders
+        with torch.no_grad():
+            cls.load_convert(qtype, encoders,
+                             "cpu", modules_to_not_convert, *args, **kwargs)
+            create_npu_kernels(encoders)
+            cls.load_convert(qtype, decoders,
+                             "cpu", modules_to_not_convert, *args, **kwargs)
+            create_npu_kernels(decoders)
+        logger.info(f"Finish to convert model")
+        model.model.share_memory()
+
+        optimize_funasr(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+        model.save_low_bit = types.MethodType(save_low_bit, model)
+
+        return model

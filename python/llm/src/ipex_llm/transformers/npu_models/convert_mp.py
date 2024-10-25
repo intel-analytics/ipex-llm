@@ -301,3 +301,43 @@ def optimize_llm(
 
     if isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
+
+
+def optimize_funasr(
+    model: torch.nn.Module,
+    max_output_len=1024,
+    max_prompt_len=1024,
+    inter_pp=None,
+    intra_pp=None,
+    transpose_value_cache=True,
+):
+    if intra_pp is None:
+        intra_pp = 2
+    if inter_pp is None:
+        inter_pp = 2
+    from ipex_llm.transformers.npu_models.paraformer_mp import gen_funasr_fused_encoder_forward, \
+        gen_funasr_fused_decoder_forward
+    from ipex_llm.transformers.npu_models.paraformer_mp import PrefillRunner, DecodeRunner
+    prefill_runner = PrefillRunner(
+        model,
+        max_output_len=max_output_len,
+        max_prompt_len=max_prompt_len,
+        transpose_value_cache=transpose_value_cache,
+    )
+    encoder_forward = gen_funasr_fused_encoder_forward(
+        prefill_runner=prefill_runner
+    )
+    decode_runner = DecodeRunner(
+        model,
+        max_seq_len=max_output_len,
+        inter_pp=inter_pp,
+        intra_pp=intra_pp,
+        transpose_value_cache=transpose_value_cache,
+    )
+    decoder_forward = gen_funasr_fused_decoder_forward(
+        decode_runner=decode_runner
+    )
+    from funasr.models.sanm.encoder import SANMEncoder
+    from funasr.models.paraformer.decoder import ParaformerSANMDecoder
+    convert_forward(model.model, SANMEncoder, encoder_forward)
+    convert_forward(model.model, ParaformerSANMDecoder, decoder_forward)
