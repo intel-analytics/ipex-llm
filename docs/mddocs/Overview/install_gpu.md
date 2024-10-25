@@ -169,13 +169,7 @@ Please also set the following environment variable if you would like to run LLMs
 
 #### 1. Error loading `intel_extension_for_pytorch`
 
-If you met error when importing `intel_extension_for_pytorch`, please ensure that you have completed the following steps:
-
-* Ensure that you have installed Visual Studio with "Desktop development with C++" workload.
-
-* Make sure that the correct version of oneAPI, specifically 2024.0, is installed.
-
-* Ensure that `libuv` is installed in your conda environment. This can be done during the creation of the environment with the command:
+If you met error when importing `intel_extension_for_pytorch`, please ensure that `libuv` is installed in your conda environment. This can be done during the creation of the environment with the command:
   ```cmd
   conda create -n llm python=3.11 libuv
   ```
@@ -183,12 +177,6 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   ```cmd
   conda install libuv
   ```
-
-<!-- * For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Miniforge Prompt through
-  ```cmd
-  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-  ```
-  Please note that you need to set these environment variables again once you have a new Miniforge Prompt window. -->
 
 ## Linux
 

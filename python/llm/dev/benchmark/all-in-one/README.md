@@ -2,7 +2,9 @@
 
 All in one benchmark test allows users to test all the benchmarks and record them in a result CSV. Users can provide models and related information in `config.yaml`.
 
-Before running, make sure to have [ipex-llm](../../../../../README.md) installed.
+Before running, make sure you have [ipex-llm](../../../../../README.md) installed.
+
+If you would like to use all-in-one benchmark for testing OpenVINO, please directly refer to [this section](#optional-save-model-for-openvino) for environment setup.
 
 > The prompts for benchmarking are from datasets [abisee/cnn_dailymail](https://huggingface.co/datasets/abisee/cnn_dailymail), [Open-Orca/OpenOrca](https://huggingface.co/datasets/Open-Orca/OpenOrca), [THUDM/LongBench](https://huggingface.co/datasets/THUDM/LongBench), etc.
 
@@ -60,23 +62,38 @@ test_api:
   # - "speculative_cpu"                     # on Intel CPU, inference with self-speculative decoding
   # - "deepspeed_transformer_int4_cpu"      # on Intel CPU, deepspeed autotp inference
   # - "transformers_int4_npu_win"           # on Intel NPU for Windows,  transformer-like API, (qtype=int4)
+  # - "transformers_openvino"               # on Intel GPU, use OpenVINO. Please make sure you have used the save_openvino.py to save the converted OpenVINO model
 cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only available now for gpu win related test_api)
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
-
+group_size: 64 # group_size when converting OpenVINO model (only available or "transformers_openvino" test_api)
 ```
 
 ## (Optional) Save model in low bit
 If you choose the `transformer_int4_loadlowbit_gpu_win` or `transformer_int4_fp16_loadlowbit_gpu_win` test API, you will need to save the model in low bit first.
 
-Run `python save.py` will save all models declared in `repo_id` list into low bit models under `local_model_hub` folder.
+Running `python save.py` will save all models declared in `repo_id` list into low bit models under `local_model_hub` folder.
+
+## (Optional) Save model for OpenVINO
+If you choose the `transformers_openvino` test API, you will need to convert the model with OpenVINO first.
+
+Follow commands below to set up the environment for testing OpenVINO on Intel GPU, in which `requirements.txt` should be downloaded from [here](Download the requirements txt from https://github.com/openvino-dev-samples/Qwen2.openvino/blob/main/requirements.txt):
+
+```bash
+conda create -n test-ov python=3.11
+pip install -r requirements.txt
+pip install --pre --upgrade ipex-llm # only for IPEX-LLM BenchmarkWrapper
+pip install accelerate omegaconf pandas
+```
+
+Then, running `python save_openvino.py` will save all models declared in `repo_id` list into OpenVINO models with `low_bit` precision under `local_model_hub` folder.
 
 ## Run
 
 run `python run.py`, this will output results to `results.csv`.
 
-For SPR performance, run `bash run-spr.sh`.
+For IPEX-LLM SPR performance, run `bash run-spr.sh`.
 
 > **Note**
 >
@@ -86,6 +103,6 @@ For SPR performance, run `bash run-spr.sh`.
 >
 > Please install torch nightly version to avoid `Illegal instruction (core dumped)` issue, you can follow the following command to install: `pip install --pre --upgrade torch --index-url https://download.pytorch.org/whl/nightly/cpu`
 
-For ARC performance, run `bash run-arc.sh`.
+For IPEX-LLM ARC performance, run `bash run-arc.sh`.
 
-For MAX GPU performance, run `bash run-max-gpu.sh`.
+For IPEX-LLM MAX GPU performance, run `bash run-max-gpu.sh`.
