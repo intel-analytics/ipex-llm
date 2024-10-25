@@ -90,11 +90,12 @@ The sample input image is (which is fetched from [COCO dataset](https://cocodata
 <a href="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"><img width=400px src="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg" ></a>
 
 ## 4. Run Optimized Models (Experimental)
-The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU, including
+The examples below show how to run the **_optimized HuggingFace & FunASR model implementations_** on Intel NPU, including
 - [MiniCPM-Llama3-V-2_5](./minicpm-llama3-v2.5.py)
 - [MiniCPM-V-2_6](./minicpm_v_2_6.py)
+- [Speech_Paraformer-Large](./speech_paraformer-large.py)
 
-### Run
+### 4.1 Run MiniCPM-Llama3-V-2_5 & MiniCPM-V-2_6
 ```bash
 # to run MiniCPM-Llama3-V-2_5
 python minicpm-llama3-v2.5.py
@@ -125,14 +126,10 @@ What is in this image?
 The image features a young child holding and showing off a white teddy bear wearing a pink dress. The background includes some red flowers and a stone wall, suggesting an outdoor setting.
 ```
 
-## 4. Run FunASR Models (Experimental)
-The example below show how to run the **_optimized FunASR model implementations_** on Intel NPU, including
-- [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch)
-
-### Run
+### 4.2 Run Speech_Paraformer-Large
 ```bash
 # to run Speech_Paraformer-Large
-python biciparaformer.py
+python speech_paraformer-large.py
 ```
 
 Arguments info:
