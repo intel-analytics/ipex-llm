@@ -270,13 +270,7 @@ def perform_request(session, url, payload, headers):
                         json_data = json.loads(data)
                         if 'choices' in json_data and len(json_data['choices']) > 0:
                             choice = json_data['choices'][0]
-                            if 'finish_reason' in choice and (choice['finish_reason'] == 'length' or choice['finish_reason'] == 'stop'):
-                                if 'first_token_time' in choice and isinstance(choice['first_token_time'], float):
-                                    first_token_inference_time = choice['first_token_time']
-                                if 'rest_token_time' in choice and isinstance(choice['rest_token_time'], float):
-                                    next_token_inference_time = choice['rest_token_time']
-                            else:
-                                # 记录第一个token的时间
+                            if 'text' in choice:
                                 if first_token_time is None:
                                     first_token_time = token_time
                                 else:
