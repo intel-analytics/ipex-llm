@@ -194,7 +194,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'transformers_int4_loadlowbit_npu_win':
         result = run_transformer_int4_loadlowbit_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache)
     elif test_api == 'transformers_openvino':
-        result = run_transformers_openvino(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, low_bit, batch_size, group_size)
+        result = run_transformers_openvino(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, group_size)
     else:
         invalidInputError(False, "Unknown test_api " + test_api + ", please check your config.yaml.")
 
@@ -749,37 +749,38 @@ def run_transformer_int4_loadlowbit_npu_win(repo_id,
     return result
 
 def run_transformers_openvino(repo_id,
-                                 local_model_hub,
-                                 in_out_pairs,
-                                 warm_up,
-                                 num_trials,
-                                 low_bit,
-                                 batch_size,
-                                 group_size):
+                              local_model_hub,
+                              in_out_pairs,
+                              warm_up,
+                              num_trials,
+                              num_beams,
+                              low_bit,
+                              batch_size,
+                              group_size):
     from optimum.intel import OVModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer, PretrainedConfig
 
     ir_repo_id = (repo_id + '-ov-' + low_bit + '-' +str(group_size))
     model_path = get_model_path(ir_repo_id, local_model_hub)
-    in_out_len = in_out_pairs[0].split("-")
-    max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
+    # in_out_len = in_out_pairs[0].split("-")
+    # max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
     ov_config = {"PERFORMANCE_HINT": "LATENCY",
                  "NUM_STREAMS": "1", "CACHE_DIR": ""}
     config_dict = dict(pretrained_model_name_or_path=model_path, 
                        trust_remote_code=True,
                        use_cache=True, low_cpu_mem_usage=True)
+
     config = PretrainedConfig(**config_dict)
 
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
+    # Load model converted by OpenVINO
     st = time.perf_counter()
     if repo_id in LLAMA_IDS:
         model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
-                                                     ov_config=ov_config, config=config,).eval()
+                                                   ov_config=ov_config, config=config).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
-                                                     ov_config=ov_config, config=config,).eval()
+                                                     ov_config=ov_config, config=config).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     load_time = end - st
@@ -807,7 +808,7 @@ def run_transformers_openvino(repo_id,
             for i in range(num_trials + warm_up):
                 st = time.perf_counter()
                 output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
-                                            min_new_tokens=out_len)
+                                            min_new_tokens=out_len, num_beams=num_beams)
                 end = time.perf_counter()
                 print("model generate cost: " + str(end - st))
                 output = tokenizer.batch_decode(output_ids)

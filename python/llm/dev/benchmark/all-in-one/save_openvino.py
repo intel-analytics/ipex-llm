@@ -17,15 +17,13 @@
 # Some parts of this file is adapted from
 # https://github.com/openvino-dev-samples/Qwen2.openvino/blob/main/convert.py
 
+import os
+from pathlib import Path
+import warnings
+
 from transformers import AutoTokenizer, LlamaTokenizer
 from optimum.intel import OVWeightQuantizationConfig
 from optimum.intel.openvino import OVModelForCausalLM
-
-import os
-import omegaconf
-from pathlib import Path
-import argparse
-import warnings
 
 from run import LLAMA_IDS, get_model_path
 
@@ -58,7 +56,7 @@ def save_model_to_openvino(repo_id,
         "ratio": 1.0,
     }
 
-    print("====Exporting IR=====")
+    print(">> Exporting IR")
     if low_bit == "sym_int4":
         compression_configs['sym'] = True
         ov_model = OVModelForCausalLM.from_pretrained(model_path, export=True, 
@@ -72,24 +70,22 @@ def save_model_to_openvino(repo_id,
                                                       compile=False, quantization_config=OVWeightQuantizationConfig(
                                                       bits=4, **compression_configs)).eval()
 
-    print("====Saving IR=====")
+    print(">> Saving IR")
     ov_model.save_pretrained(ir_model_path)
 
-    print("====Exporting tokenizer=====")
+    print(">> Exporting tokenizer")
     if repo_id in LLAMA_IDS:
-        tokenizer = LlamaTokenizer.from_pretrained(
-            model_path,
-            trust_remote_code=True)
+        tokenizer = LlamaTokenizer.from_pretrained(model_path,
+                                                   trust_remote_code=True)
     else:
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_path,
-            trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path,
+                                                  trust_remote_code=True)
     tokenizer.save_pretrained(ir_model_path)
 
-    print("====Exporting IR tokenizer=====")
+    print(">> Exporting IR tokenizer")
     from optimum.exporters.openvino.convert import export_tokenizer
     export_tokenizer(tokenizer, ir_model_path)
-    print("====Finished=====")
+    print(f">> Finished saving OpenVINO IR for {repo_id} in {low_bit} with group size {group_size}")
     del ov_model
     del model_path
 
@@ -102,8 +98,10 @@ if __name__ == '__main__':
     if conf['low_bit'] in supported_precision:
         for model in conf.repo_id:
             save_model_to_openvino(repo_id=model,
-                                local_model_hub=conf['local_model_hub'],
-                                low_bit=conf['low_bit'],
-                                group_size=conf['group_size'],)
+                                   local_model_hub=conf['local_model_hub'],
+                                   low_bit=conf['low_bit'],
+                                   group_size=conf['group_size'],)
     else:
-        warnings.warn("The precision selected is not supported in our all-in-one benchmark.")
+        warnings.warn(f"low_bit {conf['low_bit'],} is not supported "
+                      "in all-in-one benchmark for OpenVINO tests. Only "
+                      'sym_int4 and asym_int4 is currently supported for "transformers_openvino" test api.')

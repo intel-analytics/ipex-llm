@@ -17,7 +17,6 @@
 # this code is to support converting of model in load bit
 # for performance tests using load_low_bit
 
-import omegaconf
 import time
 import os
 import sys
