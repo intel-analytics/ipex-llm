@@ -77,9 +77,11 @@ Run `python save.py` will save all models declared in `repo_id` list into low bi
 If you choose the `transformers_openvino` test API, you will need to save the model for openvino first.
 
 Follow commands below to set up the environment:
+
+Download the requirements txt from https://github.com/openvino-dev-samples/Qwen2.openvino/blob/main/requirements.txt
 ```
 conda create -n test-ov python=3.10
-pip install -r openvino-requirements.txt
+pip install -r requirements.txt
 pip install --pre --upgrade ipex-llm
 pip install accelerate
 ```

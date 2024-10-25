@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-# this code is to support converting of model for openvino
-# for performance tests using openvino
+# Some parts of this file is adapted from
+# https://github.com/openvino-dev-samples/Qwen2.openvino/blob/main/convert.py
 
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, LlamaTokenizer
 from optimum.intel import OVWeightQuantizationConfig
 from optimum.intel.openvino import OVModelForCausalLM
 
@@ -27,7 +27,7 @@ from pathlib import Path
 import argparse
 import warnings
 
-from run import LLAMA_IDS, CHATGLM_IDS, LLAVA_IDS, PHI3VISION_IDS, QWENVL_IDS, get_model_path
+from run import LLAMA_IDS, get_model_path
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -76,8 +76,14 @@ def save_model_to_openvino(repo_id,
     ov_model.save_pretrained(ir_model_path)
 
     print("====Exporting tokenizer=====")
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_path)
+    if repo_id in LLAMA_IDS:
+        tokenizer = LlamaTokenizer.from_pretrained(
+            model_path,
+            trust_remote_code=True)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_path,
+            trust_remote_code=True)
     tokenizer.save_pretrained(ir_model_path)
 
     print("====Exporting IR tokenizer=====")

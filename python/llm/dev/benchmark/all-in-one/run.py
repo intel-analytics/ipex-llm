@@ -773,11 +773,7 @@ def run_transformers_openvino(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in CHATGLM_IDS:
-        model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
-                                                     ov_config=ov_config, config=config,).eval()
-        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    elif repo_id in LLAMA_IDS:
+    if repo_id in LLAMA_IDS:
         model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
                                                      ov_config=ov_config, config=config,).eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -2186,6 +2182,7 @@ if __name__ == '__main__':
     use_fp16_torch_dtype = False
     task = 'continuation'
     optimize_model = False # only for transformers_int4_npu_win
+    group_size = 64
     if 'streaming' in conf:
         streaming = conf['streaming']
     if 'use_fp16_torch_dtype' in conf:
@@ -2194,6 +2191,8 @@ if __name__ == '__main__':
         task = conf['task']
     if 'optimize_model' in conf:
         optimize_model = conf['optimize_model']
+    if 'group_size' in conf:
+        group_size = conf['group_size']
     lookahead = False
     transpose_value_cache = True
     if 'transpose_value_cache' in conf:
@@ -2223,7 +2222,7 @@ if __name__ == '__main__':
                 if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
                     lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, optimize_model, transpose_value_cache, conf['group_size'])
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, optimize_model, transpose_value_cache, group_size)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
