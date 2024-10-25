@@ -182,7 +182,14 @@ def update_names_of_IR_and_export_blob(model, model_name, dir):
 
 def convert_llm(model: torch.nn.Module,
                 kv_len: int,
-                transpose_value_cache: bool):
+                transpose_value_cache: bool,
+                group_size: int):
+    if group_size == 0:
+        n_splits_linear = 1
+        n_splits_down_proj = 1
+    else:
+        n_splits_linear = model.config.hidden_size // group_size
+        n_splits_down_proj = model.config.intermediate_size // group_size
     if model.config.model_type == "llama":
         from .llama import LowBitLlamaLMHead, LlamaEmbedding
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -198,7 +205,17 @@ def convert_llm(model: torch.nn.Module,
             vocab_size = model.config.vocab_size
             model_norm = model.model.norm
             lm_head = model.lm_head
-            weights = [(lm_head.weight, lm_head.scale)]
+            if n_splits_linear == 1:
+                weights = [(lm_head.weight, lm_head.scale)]
+            else:
+                lm_heads = lm_head.lm_heads
+                lm_head_weights = []
+                scales = []
+                for i in range(n_splits_linear):
+                    lm_head_weights.append(lm_heads[i].weight)
+                    scales.append(lm_heads[i].scale)
+                weights = [(torch.stack(lm_head_weights, axis=0).numpy(),
+                           torch.stack(scales, axis=0).numpy())]
             if isinstance(weights[0], tuple):
                 np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
             else:  # FP16 Linear
@@ -215,13 +232,17 @@ def convert_llm(model: torch.nn.Module,
                 dtype=np_dtype,
                 model_norm_weight=model_norm.weight.to(torch.float16),
                 vocab_size=vocab_size,
+                n_splits=n_splits_linear
             )
             last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
 
             # save weights bins files
-            weight_numpy = [
-                lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
-            ]
+            if n_splits_linear == 1:
+                weight_numpy = [
+                    lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
+                ]
+            else:
+                weight_numpy = weights
 
             for idx, weight in enumerate(weight_numpy):
                 bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
@@ -247,20 +268,40 @@ def convert_llm(model: torch.nn.Module,
                 mlp_layer = curr_layer.mlp
 
                 weights = []
-                for q, k, v, o, g, u, d in zip(attn_layer.q_proj_dq_list,
-                                               attn_layer.k_proj_dq_list,
-                                               attn_layer.v_proj_dq_list,
-                                               attn_layer.o_proj_dq_list,
-                                               mlp_layer.gate_proj_dq_list,
-                                               mlp_layer.up_proj_dq_list,
-                                               mlp_layer.down_proj_dq_list):
-                    weights.append((q.weight, q.scale))
-                    weights.append((k.weight, k.scale))
-                    weights.append((v.weight, v.scale))
-                    weights.append((o.weight, o.scale))
-                    weights.append((g.weight, g.scale))
-                    weights.append((u.weight, u.scale))
-                    weights.append((d.weight, d.scale))
+                if n_splits_linear == 1:
+                    for q, k, v, o, g, u in zip(attn_layer.q_proj_dq_list,
+                                                attn_layer.k_proj_dq_list,
+                                                attn_layer.v_proj_dq_list,
+                                                attn_layer.o_proj_dq_list,
+                                                mlp_layer.gate_proj_dq_list,
+                                                mlp_layer.up_proj_dq_list):
+                        weights.append((q.weight, q.scale))
+                        weights.append((k.weight, k.scale))
+                        weights.append((v.weight, v.scale))
+                        weights.append((o.weight, o.scale))
+                        weights.append((g.weight, g.scale))
+                        weights.append((u.weight, u.scale))
+                else:
+                    for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
+                        l_weights = []
+                        scales = []
+                        for l in layer_list:
+                            l_weights.append(l.weight)
+                            scales.append(l.scale)
+                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+
+                if n_splits_down_proj == 1:
+                    for l in mlp_layer.down_proj_dq_list:
+                        weights.append((l.weight, l.scale))
+                else:
+                    l_weights = []
+                    scales = []
+                    for l in mlp_layer.down_proj_dq_list:
+                        l_weights.append(l.weight)
+                        scales.append(l.scale)
+                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
                 cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
                 cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -288,6 +329,9 @@ def convert_llm(model: torch.nn.Module,
                         mode="decode",
                         transpose_value=transpose_value_cache,
                         dtype=np_dtype,
+                        n_splits_linear=n_splits_linear,
+                        n_splits_down_proj=n_splits_down_proj,
+                        group_size=group_size
                     )
                     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                                         "decoder_layer",

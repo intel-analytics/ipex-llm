@@ -185,6 +185,8 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_transformers_low_bit": qtype})
             model.share_memory()
 
+            print(llm)
+
             if not pipeline:
                 optimize_llm(
                     llm,
@@ -200,7 +202,8 @@ class _BaseAutoModelClass:
                 from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm
                 convert_llm(llm,
                             kv_len=max_output_len,
-                            transpose_value_cache=transpose_value_cache)
+                            transpose_value_cache=transpose_value_cache,
+                            group_size=quantization_group_size)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)

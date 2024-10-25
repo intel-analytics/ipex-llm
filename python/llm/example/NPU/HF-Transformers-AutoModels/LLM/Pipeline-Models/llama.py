@@ -52,6 +52,7 @@ if __name__ == "__main__":
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-output-len", type=int, default=1024)
+    parser.add_argument("--quantization_group_size", type=int, default=0)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -60,9 +61,12 @@ if __name__ == "__main__":
                                                  optimize_model=True,
                                                  pipeline=True,
                                                  max_output_len=args.max_output_len,
+                                                 quantization_group_size=args.quantization_group_size,
                                                  attn_implementation="eager")
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
+    print(model)
 
     DEFAULT_SYSTEM_PROMPT = """\
     """
