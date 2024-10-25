@@ -1,4 +1,5 @@
 FROM intel/oneapi-basekit:2024.0.1-devel-ubuntu22.04
+
 ARG http_proxy
 ARG https_proxy
 
@@ -53,7 +54,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install torch==2.1.0a0+cxx11.abi torchvision==0.16.0a0+cxx11.abi torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     # Internal oneccl
     wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.5.1-release/oneccl_wks_installer_2024.0.0.5.1.sh && \
-    cd /tmp && bash oneccl_wks_installer_2024.0.0.5.sh  && \
+    bash oneccl_wks_installer_2024.0.0.5.1.sh && \
     pip install https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/oneccl_bind_pt-2.1.300%2Bxpu-cp311-cp311-linux_x86_64.whl && \
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
