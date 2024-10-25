@@ -762,8 +762,7 @@ def run_transformers_openvino(repo_id,
 
     ir_repo_id = (repo_id + '-ov-' + low_bit + '-' +str(group_size))
     model_path = get_model_path(ir_repo_id, local_model_hub)
-    # in_out_len = in_out_pairs[0].split("-")
-    # max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
+
     ov_config = {"PERFORMANCE_HINT": "LATENCY",
                  "NUM_STREAMS": "1", "CACHE_DIR": ""}
     config_dict = dict(pretrained_model_name_or_path=model_path, 
