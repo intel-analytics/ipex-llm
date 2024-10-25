@@ -185,7 +185,7 @@ class _BaseAutoModelClass:
                 "intra_pp": intra_pp,
                 "transpose_value_cache": transpose_value_cache,
             }
-            model = cls.optimize_mp(*args, **optimize_kwargs)
+            model = cls.optimize_npu_model(*args, **optimize_kwargs)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
@@ -205,7 +205,7 @@ class _BaseAutoModelClass:
         return model
 
     @classmethod
-    def optimize_mp(cls, *args, **kwargs):
+    def optimize_npu_model(cls, *args, **kwargs):
 
         from ipex_llm.transformers.npu_models.convert_mp import optimize_llm_pre, optimize_llm
         from intel_npu_acceleration_library.compiler import create_npu_kernels
@@ -584,7 +584,7 @@ class FunAsrAutoModel(_BaseAutoModelClass):
         return getattr(self.model, name)
 
     @classmethod
-    def optimize_mp(cls, *args, **kwargs):
+    def optimize_npu_model(cls, *args, **kwargs):
         from ipex_llm.transformers.npu_models.convert_mp import optimize_funasr
         from intel_npu_acceleration_library.compiler import create_npu_kernels
 
