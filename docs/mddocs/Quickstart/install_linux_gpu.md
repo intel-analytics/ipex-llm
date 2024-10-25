@@ -408,15 +408,15 @@ To use GPU acceleration on Linux, several environment variables are required or 
 
   Please note that `libtcmalloc.so` can be installed by `conda install -c conda-forge -y gperftools=2.10`
 
-  - For **Intel iGPU**:
+- For **Intel iGPU**:
 
-    ```bash
-    # Configure oneAPI environment variables. 
-    source /opt/intel/oneapi/setvars.sh
+  ```bash
+  # Configure oneAPI environment variables. 
+  source /opt/intel/oneapi/setvars.sh
 
-    export SYCL_CACHE_PERSISTENT=1
-    export BIGDL_LLM_XMX_DISABLED=1
-    ```
+  export SYCL_CACHE_PERSISTENT=1
+  export BIGDL_LLM_XMX_DISABLED=1
+  ```
 
 > [!NOTE]
 > Please refer to [this guide](../Overview/install_gpu.md#runtime-configuration-1) for more details regarding runtime configuration.
