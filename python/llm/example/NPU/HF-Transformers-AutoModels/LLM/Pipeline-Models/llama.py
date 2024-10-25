@@ -60,6 +60,7 @@ if __name__ == "__main__":
                                                  optimize_model=True,
                                                  pipeline=True,
                                                  max_output_len=args.max_output_len,
+                                                 torch_dtype=torch.float16,
                                                  attn_implementation="eager")
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
