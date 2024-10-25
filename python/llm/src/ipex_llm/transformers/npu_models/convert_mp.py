@@ -159,164 +159,16 @@ def optimize_llm(
     transpose_value_cache=True,
     group_size=0
 ):
-    if hasattr(model, "config"):
-        if model.config.model_type == "llama":
-            if intra_pp is None:
-                intra_pp = 2
-            if inter_pp is None:
-                inter_pp = 2
-
-            from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
-            from ipex_llm.transformers.npu_models.llama_mp import DecodeRunner, PrefillRunner
-            from transformers.models.llama.modeling_llama import LlamaModel
-
-            decode_runner = DecodeRunner(
-                model,
-                max_seq_len=max_output_len,
-                inter_pp=inter_pp,
-                intra_pp=intra_pp,
-                transpose_value_cache=transpose_value_cache,
-            )
-            prefill_runner = PrefillRunner(
-                model,
-                max_output_len=max_output_len,
-                max_prompt_len=max_prompt_len,
-                transpose_value_cache=transpose_value_cache,
-            )
-            llama_model_forward = gen_llama_fused_model_forward(
-                prefill_runner=prefill_runner, decode_runner=decode_runner
-            )
-            convert_forward(model, LlamaModel, llama_model_forward)
-            from transformers.models.llama.modeling_llama import LlamaForCausalLM
-            from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
-            convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
-        elif model.config.model_type == "qwen2" and model.config.num_hidden_layers == 28:
-            # for qwen2-1.5B and qwen2-7B
-            if intra_pp is None:
-                intra_pp = 2
-            if inter_pp is None:
-                if model.config.intermediate_size == 18944:
-                    if group_size != 0:
-                        inter_pp = 5
-                    else:
-                        inter_pp = 2
-                else:
-                    inter_pp = 1
-
-            from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
-            from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner
-            from transformers.models.qwen2.modeling_qwen2 import Qwen2Model
-
-            decode_runner = DecodeRunner(
-                model,
-                max_seq_len=max_output_len,
-                inter_pp=inter_pp,
-                intra_pp=intra_pp,
-                transpose_value_cache=transpose_value_cache,
-            )
-            prefill_runner = PrefillRunner(
-                model,
-                max_output_len=max_output_len,
-                max_prompt_len=max_prompt_len,
-                transpose_value_cache=transpose_value_cache,
-            )
-            qwen2_model_forward = gen_qwen2_fused_model_forward(
-                prefill_runner=prefill_runner, decode_runner=decode_runner
-            )
-            convert_forward(model, Qwen2Model, qwen2_model_forward)
-            from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
-            from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
-            convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
-
-            # for Qwen2-7B-Insturct, divide lm_head into 14 parts
-            if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
-                    isinstance(model.lm_head, SlicedLMHead):
-                model.lm_head.get_fused_lm_head()
-        elif model.config.model_type == "minicpm":
-            # for minicpm-1b
-            if intra_pp is None:
-                intra_pp = 2
-            if inter_pp is None:
-                inter_pp = 2
-
-            from ipex_llm.transformers.npu_models.minicpm_mp import gen_minicpm_fused_model_forward
-            from ipex_llm.transformers.npu_models.minicpm_mp import DecodeRunner, PrefillRunner
-
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-
-            if model.config.num_hidden_layers == 52:
-                # for minicpm-1b
-                transpose_cache = transpose_value_cache
-            elif model.config.num_hidden_layers == 40:
-                # for minicpm-2b
-                transpose_cache = False
-
-            decode_runner = DecodeRunner(
-                model,
-                max_seq_len=max_output_len,
-                inter_pp=inter_pp,
-                intra_pp=intra_pp,
-                transpose_value_cache=transpose_cache,
-            )
-            prefill_runner = PrefillRunner(
-                model,
-                max_output_len=max_output_len,
-                max_prompt_len=max_prompt_len,
-                transpose_value_cache=transpose_cache,
-            )
-            minicpm_model_forward = gen_minicpm_fused_model_forward(
-                prefill_runner=prefill_runner, decode_runner=decode_runner
-            )
-            convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
-            if model.config.num_hidden_layers == 40:
-                # for minicpm-2b
-                from ipex_llm.transformers.npu_models.minicpm_mp import minicpm_casullm_forward
-                convert_forward(model, module.MiniCPMForCausalLM, minicpm_casullm_forward)
-        elif model.config.model_type == "baichuan" and model.config.num_hidden_layers == 32:
-            # for Baichuan2-7B
-            if intra_pp is None:
-                intra_pp = 2
-            if inter_pp is None:
-                inter_pp = 2
-            from ipex_llm.transformers.npu_models.baichuan_mp import gen_baichuan_fused_model_forward
-            from ipex_llm.transformers.npu_models.baichuan_mp import DecodeRunner, PrefillRunner
-            decode_runner = DecodeRunner(
-                model,
-                max_seq_len=max_output_len,
-                inter_pp=inter_pp,
-                intra_pp=intra_pp,
-                transpose_value_cache=transpose_value_cache,
-            )
-            prefill_runner = PrefillRunner(
-                model,
-                max_output_len=max_output_len,
-                max_prompt_len=max_prompt_len,
-                transpose_value_cache=transpose_value_cache,
-            )
-            baichuan_model_forward = gen_baichuan_fused_model_forward(
-                prefill_runner=prefill_runner, decode_runner=decode_runner
-            )
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            convert_forward(model, module.BaichuanModel, baichuan_model_forward)
-    elif hasattr(model, "model"):
+    if model.config.model_type == "llama":
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
             inter_pp = 2
-        from ipex_llm.transformers.npu_models.paraformer_mp import gen_funasr_fused_encoder_forward, \
-            gen_funasr_fused_decoder_forward
-        from ipex_llm.transformers.npu_models.paraformer_mp import PrefillRunner, DecodeRunner
-        prefill_runner = PrefillRunner(
-            model,
-            max_output_len=max_output_len,
-            max_prompt_len=max_prompt_len,
-            transpose_value_cache=transpose_value_cache,
-        )
-        encoder_forward = gen_funasr_fused_encoder_forward(
-            prefill_runner=prefill_runner
-        )
+
+        from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
+        from ipex_llm.transformers.npu_models.llama_mp import DecodeRunner, PrefillRunner
+        from transformers.models.llama.modeling_llama import LlamaModel
+
         decode_runner = DecodeRunner(
             model,
             max_seq_len=max_output_len,
@@ -324,13 +176,129 @@ def optimize_llm(
             intra_pp=intra_pp,
             transpose_value_cache=transpose_value_cache,
         )
-        decoder_forward = gen_funasr_fused_decoder_forward(
-            decode_runner=decode_runner
+        prefill_runner = PrefillRunner(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_value_cache,
         )
-        from funasr.models.sanm.encoder import SANMEncoder
-        from funasr.models.paraformer.decoder import ParaformerSANMDecoder
-        convert_forward(model.model, SANMEncoder, encoder_forward)
-        convert_forward(model.model, ParaformerSANMDecoder, decoder_forward)
+        llama_model_forward = gen_llama_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
+        convert_forward(model, LlamaModel, llama_model_forward)
+        from transformers.models.llama.modeling_llama import LlamaForCausalLM
+        from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
+        convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
+    elif model.config.model_type == "qwen2" and model.config.num_hidden_layers == 28:
+        # for qwen2-1.5B and qwen2-7B
+        if intra_pp is None:
+            intra_pp = 2
+        if inter_pp is None:
+            if model.config.intermediate_size == 18944:
+                if group_size != 0:
+                    inter_pp = 5
+                else:
+                    inter_pp = 2
+            else:
+                inter_pp = 1
+
+        from ipex_llm.transformers.npu_models.qwen2_mp import gen_qwen2_fused_model_forward
+        from ipex_llm.transformers.npu_models.qwen2_mp import DecodeRunner, PrefillRunner
+        from transformers.models.qwen2.modeling_qwen2 import Qwen2Model
+
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+        prefill_runner = PrefillRunner(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_value_cache,
+        )
+        qwen2_model_forward = gen_qwen2_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
+        convert_forward(model, Qwen2Model, qwen2_model_forward)
+        from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM
+        from ipex_llm.transformers.npu_models.qwen2_mp import qwen2_casullm_forward
+        convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
+
+        # for Qwen2-7B-Insturct, divide lm_head into 14 parts
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
+                isinstance(model.lm_head, SlicedLMHead):
+            model.lm_head.get_fused_lm_head()
+    elif model.config.model_type == "minicpm":
+        # for minicpm-1b
+        if intra_pp is None:
+            intra_pp = 2
+        if inter_pp is None:
+            inter_pp = 2
+
+        from ipex_llm.transformers.npu_models.minicpm_mp import gen_minicpm_fused_model_forward
+        from ipex_llm.transformers.npu_models.minicpm_mp import DecodeRunner, PrefillRunner
+
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+
+        if model.config.num_hidden_layers == 52:
+            # for minicpm-1b
+            transpose_cache = transpose_value_cache
+        elif model.config.num_hidden_layers == 40:
+            # for minicpm-2b
+            transpose_cache = False
+
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_cache,
+        )
+        prefill_runner = PrefillRunner(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_cache,
+        )
+        minicpm_model_forward = gen_minicpm_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
+        convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
+        if model.config.num_hidden_layers == 40:
+            # for minicpm-2b
+            from ipex_llm.transformers.npu_models.minicpm_mp import minicpm_casullm_forward
+            convert_forward(model, module.MiniCPMForCausalLM, minicpm_casullm_forward)
+    elif model.config.model_type == "baichuan" and model.config.num_hidden_layers == 32:
+        # for Baichuan2-7B
+        if intra_pp is None:
+            intra_pp = 2
+        if inter_pp is None:
+            inter_pp = 2
+        from ipex_llm.transformers.npu_models.baichuan_mp import gen_baichuan_fused_model_forward
+        from ipex_llm.transformers.npu_models.baichuan_mp import DecodeRunner, PrefillRunner
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+        prefill_runner = PrefillRunner(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_value_cache,
+        )
+        baichuan_model_forward = gen_baichuan_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        convert_forward(model, module.BaichuanModel, baichuan_model_forward)
 
 
 def optimize_funasr(
