@@ -2,7 +2,7 @@
 
 All in one benchmark test allows users to test all the benchmarks and record them in a result CSV. Users can provide models and related information in `config.yaml`.
 
-Before running, make sure ypu have [ipex-llm](../../../../../README.md) installed.
+Before running, make sure you have [ipex-llm](../../../../../README.md) installed.
 
 If you would like to use all-in-one benchmark for testing OpenVINO, please directly refer to [this section](#optional-save-model-for-openvino) for environment setup.
 
