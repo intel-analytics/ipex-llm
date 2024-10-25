@@ -67,8 +67,6 @@ if __name__ == "__main__":
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-    print(model)
-
     DEFAULT_SYSTEM_PROMPT = """\
     """
 

@@ -242,7 +242,7 @@ def convert_llm(model: torch.nn.Module,
                     lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
                 ]
             else:
-                weight_numpy = weights
+                weight_numpy = weights[0]
 
             for idx, weight in enumerate(weight_numpy):
                 bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
