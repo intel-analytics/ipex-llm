@@ -172,9 +172,20 @@ class _BaseAutoModelClass:
                     " than max_output_len ({max_output_len})"
                 ),
             )
-            model = cls.optimize_mp(model, qtype, mixed_precision, quantization_group_size,
-                                    modules_to_not_convert, pipeline, max_output_len,
-                                    max_prompt_len, inter_pp, intra_pp, transpose_value_cache)
+            optimize_kwargs = {
+                "model": model,
+                "qtype": qtype,
+                "mixed_precision": mixed_precision,
+                "quantization_group_size": quantization_group_size,
+                "modules_to_not_convert": modules_to_not_convert,
+                "pipeline": pipeline,
+                "max_output_len": max_output_len,
+                "max_prompt_len": max_prompt_len,
+                "inter_pp": inter_pp,
+                "intra_pp": intra_pp,
+                "transpose_value_cache": transpose_value_cache,
+            }
+            model = cls.optimize_mp(*args, **optimize_kwargs)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
@@ -194,12 +205,23 @@ class _BaseAutoModelClass:
         return model
 
     @classmethod
-    def optimize_mp(cls, model, qtype, mixed_precision, quantization_group_size,
-                    modules_to_not_convert, pipeline, max_output_len, max_prompt_len,
-                    inter_pp, intra_pp, transpose_value_cache, *args, **kwargs):
+    def optimize_mp(cls, *args, **kwargs):
 
         from ipex_llm.transformers.npu_models.convert_mp import optimize_llm_pre, optimize_llm
         from intel_npu_acceleration_library.compiler import create_npu_kernels
+
+        model = kwargs.pop("model")
+        qtype = kwargs.pop("qtype", "sym_int4")
+        mixed_precision = kwargs.pop("mixed_precision", False)
+        quantization_group_size = kwargs.pop("quantization_group_size", 0)
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        pipeline = kwargs.pop("pipeline", False)
+        max_output_len = kwargs.pop("max_output_len", 1024)
+        max_prompt_len = kwargs.pop("max_prompt_len", 512)
+        inter_pp = kwargs.pop("inter_pp", None)
+        intra_pp = kwargs.pop("intra_pp", None)
+        transpose_value_cache = kwargs.pop("transpose_value_cache", True)
+
         if hasattr(model, "llm"):
             llm = model.llm
         else:
@@ -562,12 +584,19 @@ class FunAsrAutoModel(_BaseAutoModelClass):
         return getattr(self.model, name)
 
     @classmethod
-    def optimize_mp(cls, model, qtype, mixed_precision, quantization_group_size,
-                    modules_to_not_convert, pipeline, max_output_len, max_prompt_len,
-                    inter_pp, intra_pp, transpose_value_cache, *args, **kwargs):
+    def optimize_mp(cls, *args, **kwargs):
         from ipex_llm.transformers.npu_models.convert_mp import optimize_funasr
         from intel_npu_acceleration_library.compiler import create_npu_kernels
-        # speech paraformer large
+
+        model = kwargs.pop("model")
+        qtype = kwargs.pop("qtype", "sym_int8")
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        max_output_len = kwargs.pop("max_output_len", 1024)
+        max_prompt_len = kwargs.pop("max_prompt_len", 512)
+        inter_pp = kwargs.pop("inter_pp", None)
+        intra_pp = kwargs.pop("intra_pp", None)
+        transpose_value_cache = kwargs.pop("transpose_value_cache", True)
+
         encoders = model.model.encoder.encoders[0:31]
         decoders = model.model.decoder.decoders
         with torch.no_grad():
