@@ -1,4 +1,4 @@
-# Run ASR Multimodal Model on Intel NPU
+# Run Large Multimodal Model on Intel NPU
 In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on Large Multimodal Models on [Intel NPUs](../../../README.md). See the table blow for verified models.
 
 ## Verified Models
@@ -21,7 +21,6 @@ In the example [generate.py](./generate.py), we show a basic use case for a phi-
 ### 1. Install
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
-
 ```bash
 conda create -n llm python=3.10 libuv
 conda activate llm
