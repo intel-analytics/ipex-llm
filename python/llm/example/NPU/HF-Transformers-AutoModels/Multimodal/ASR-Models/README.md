@@ -1,5 +1,5 @@
-# Run Large Multimodal Model on Intel NPU
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on ASR Models on [Intel NPUs](../../../README.md). See the table blow for verified models.
+# Run ASR Multimodal Model on Intel NPU
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 or INT8 optimizations on ASR Paraformer Models on [Intel NPUs](../../../README.md). See the table blow for verified models.
 
 ## Verified Models
 

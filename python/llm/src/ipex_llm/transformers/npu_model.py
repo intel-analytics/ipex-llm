@@ -172,67 +172,9 @@ class _BaseAutoModelClass:
                     " than max_output_len ({max_output_len})"
                 ),
             )
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm, optimize_llm_pre
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_funasr
-            if hasattr(model, "model"):
-                # speech paraformer large
-                encoders = model.model.encoder.encoders[0:31]
-                decoders = model.model.decoder.decoders
-                with torch.no_grad():
-                    cls.load_convert(qtype, encoders,
-                                     "cpu", modules_to_not_convert, *args, **kwargs)
-                    create_npu_kernels(encoders)
-                    cls.load_convert(qtype, decoders,
-                                     "cpu", modules_to_not_convert, *args, **kwargs)
-                    create_npu_kernels(decoders)
-                logger.info(f"Finish to convert model")
-                model.model.share_memory()
-
-                optimize_funasr(
-                    model,
-                    max_output_len=max_output_len,
-                    max_prompt_len=max_prompt_len,
-                    inter_pp=inter_pp,
-                    intra_pp=intra_pp,
-                    transpose_value_cache=transpose_value_cache,
-                )
-                model.save_low_bit = types.MethodType(save_low_bit, model)
-            else:
-                if hasattr(model, "llm"):
-                    llm = model.llm
-                else:
-                    llm = model
-
-                with torch.no_grad():
-                    model.config.update({"mixed_precision": mixed_precision})
-                    model.config.update({"group_size": quantization_group_size})
-                    optimize_llm_pre(model, qtype, mixed_precision,
-                                     quantization_group_size=quantization_group_size)
-                    cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
-                                     quantization_group_size, *args, **kwargs)
-                    create_npu_kernels(llm)
-                model = model.eval()
-                logger.info(f"Finish to convert model")
-                model.config.update({"bigdl_transformers_low_bit": qtype})
-                model.share_memory()
-
-                if not pipeline:
-                    optimize_llm(
-                        llm,
-                        max_output_len=max_output_len,
-                        max_prompt_len=max_prompt_len,
-                        inter_pp=inter_pp,
-                        intra_pp=intra_pp,
-                        transpose_value_cache=transpose_value_cache,
-                        group_size=quantization_group_size
-                    )
-                    model.save_low_bit = types.MethodType(save_low_bit, model)
-                else:
-                    from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
-                        import convert_llm
-                    convert_llm(llm,
-                                kv_len=max_output_len,
-                                transpose_value_cache=transpose_value_cache)
+            model = cls.optimize_mp(model, qtype, mixed_precision, quantization_group_size,
+                                    modules_to_not_convert, pipeline, max_output_len,
+                                    max_prompt_len, inter_pp, intra_pp, transpose_value_cache)
         else:
             from ipex_llm.transformers.npu_models.convert import optimize_llm
             optimize_llm(model)
@@ -248,6 +190,51 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_transformers_low_bit": qtype})
             # add save_low_bit to pretrained model dynamically
             model.save_low_bit = types.MethodType(save_low_bit, model)
+
+        return model
+
+    @classmethod
+    def optimize_mp(cls, model, qtype, mixed_precision, quantization_group_size,
+                    modules_to_not_convert, pipeline, max_output_len, max_prompt_len,
+                    inter_pp, intra_pp, transpose_value_cache, *args, **kwargs):
+
+        from ipex_llm.transformers.npu_models.convert_mp import optimize_llm_pre, optimize_llm
+        from intel_npu_acceleration_library.compiler import create_npu_kernels
+        if hasattr(model, "llm"):
+            llm = model.llm
+        else:
+            llm = model
+
+        with torch.no_grad():
+            model.config.update({"mixed_precision": mixed_precision})
+            model.config.update({"group_size": quantization_group_size})
+            optimize_llm_pre(model, qtype, mixed_precision,
+                             quantization_group_size=quantization_group_size)
+            cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
+                             quantization_group_size, *args, **kwargs)
+            create_npu_kernels(llm)
+        model = model.eval()
+        logger.info(f"Finish to convert model")
+        model.config.update({"bigdl_transformers_low_bit": qtype})
+        model.share_memory()
+
+        if not pipeline:
+            optimize_llm(
+                llm,
+                max_output_len=max_output_len,
+                max_prompt_len=max_prompt_len,
+                inter_pp=inter_pp,
+                intra_pp=intra_pp,
+                transpose_value_cache=transpose_value_cache,
+                group_size=quantization_group_size
+            )
+            model.save_low_bit = types.MethodType(save_low_bit, model)
+        else:
+            from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
+                import convert_llm
+            convert_llm(llm,
+                        kv_len=max_output_len,
+                        transpose_value_cache=transpose_value_cache)
 
         return model
 
@@ -567,3 +554,40 @@ class AutoModelForTokenClassification(_BaseAutoModelClass):
 class FunAsrAutoModel(_BaseAutoModelClass):
     import funasr
     HF_Model = funasr.AutoModel
+
+    def __init__(self, *args, **kwargs):
+        self.model = self.from_pretrained(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self.model, name)
+
+    @classmethod
+    def optimize_mp(cls, model, qtype, mixed_precision, quantization_group_size,
+                    modules_to_not_convert, pipeline, max_output_len, max_prompt_len,
+                    inter_pp, intra_pp, transpose_value_cache, *args, **kwargs):
+        from ipex_llm.transformers.npu_models.convert_mp import optimize_funasr
+        from intel_npu_acceleration_library.compiler import create_npu_kernels
+        # speech paraformer large
+        encoders = model.model.encoder.encoders[0:31]
+        decoders = model.model.decoder.decoders
+        with torch.no_grad():
+            cls.load_convert(qtype, encoders,
+                             "cpu", modules_to_not_convert, *args, **kwargs)
+            create_npu_kernels(encoders)
+            cls.load_convert(qtype, decoders,
+                             "cpu", modules_to_not_convert, *args, **kwargs)
+            create_npu_kernels(decoders)
+        logger.info(f"Finish to convert model")
+        model.model.share_memory()
+
+        optimize_funasr(
+            model,
+            max_output_len=max_output_len,
+            max_prompt_len=max_prompt_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+        model.save_low_bit = types.MethodType(save_low_bit, model)
+
+        return model

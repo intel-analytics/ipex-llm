@@ -41,7 +41,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    model = AutoModel.from_pretrained(
+    model = AutoModel(
         model=model_path,
         attn_implementation="eager",
         load_in_low_bit=args.load_in_low_bit,
