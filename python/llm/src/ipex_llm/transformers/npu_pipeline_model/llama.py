@@ -65,7 +65,6 @@ class LowBitLlamaLMHead(LLMBaseNNFactory):
         # model norm and lm head
         model_norm_weight = self.constant(model_norm_weight)
         hidden_states = self.layer_norm(hidden_states, model_norm_weight)
-        print(hidden_states.shape)
         if n_splits == 1:
             hidden_states = self.linear(
                 hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
