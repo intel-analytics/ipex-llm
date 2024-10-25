@@ -81,7 +81,7 @@ Follow commands below to set up the environment for testing OpenVINO on Intel GP
 ```bash
 conda create -n test-ov python=3.11
 pip install -r requirements.txt
-pip install --pre --upgrade ipex-llm
+pip install --pre --upgrade ipex-llm # only for IPEX-LLM BenchmarkWrapper
 pip install accelerate
 ```
 

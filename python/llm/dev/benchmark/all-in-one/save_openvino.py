@@ -102,6 +102,6 @@ if __name__ == '__main__':
                                    low_bit=conf['low_bit'],
                                    group_size=conf['group_size'],)
     else:
-        warnings.warn(f"low_bit {conf['low_bit'],} is not supported "
+        warnings.warn(f"low_bit {conf['low_bit']} is not supported "
                       "in all-in-one benchmark for OpenVINO tests. Only "
                       'sym_int4 and asym_int4 is currently supported for "transformers_openvino" test api.')
