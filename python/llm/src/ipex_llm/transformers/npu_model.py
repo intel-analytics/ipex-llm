@@ -259,6 +259,7 @@ class _BaseAutoModelClass:
                 import convert_llm
             convert_llm(llm,
                         kv_len=max_output_len,
+                        max_prompt_len=max_prompt_len,
                         transpose_value_cache=transpose_value_cache)
 
         return model
