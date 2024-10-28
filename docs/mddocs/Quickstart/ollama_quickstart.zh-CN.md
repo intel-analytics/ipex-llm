@@ -1,4 +1,7 @@
 # 在 Intel GPU 上使用 IPEX-LLM 运行 Ollama 
+<p>
+  < <a href='./ollama_quickstart.md'>English</a> | <b>中文</b> >
+</p>
 
 [ollama/ollama](https://github.com/ollama/ollama) 是一个轻量级、可扩展的框架，用于在本地机器上构建和运行大型语言模型。现在，借助 [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) 的 C++ 接口作为其加速后端，你可以在 Intel **GPU** *(如配有集成显卡，以及 Arc，Flex 和 Max 等独立显卡的本地 PC)* 上，轻松部署并运行 `ollama`。
 
