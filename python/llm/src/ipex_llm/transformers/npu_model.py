@@ -133,7 +133,7 @@ class _BaseAutoModelClass:
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
         mixed_precision = kwargs.pop('mixed_precision', False)
         quantization_group_size = kwargs.pop("quantization_group_size", 0)
-        mock_device = kwargs.pop('device', None) # For mock on CPU
+        mock_device = kwargs.pop('device', None)  # For mock on CPU
 
         invalidInputError(
             quantization_group_size in [0, 32, 64, 128],
@@ -169,7 +169,8 @@ class _BaseAutoModelClass:
         if mock_device == "cpu":
             with torch.no_grad():
                 # Only mock quantization_group_size=0 for now
-                cls.load_convert_cpu(qtype, model, "cpu", modules_to_not_convert, 0, *args, **kwargs)
+                cls.load_convert_cpu(qtype, model, "cpu", modules_to_not_convert, 0,
+                                     *args, **kwargs)
             model = model.eval()
             logger.info(f"Finish to convert model")
         else:
@@ -202,7 +203,7 @@ class _BaseAutoModelClass:
                 optimize_llm(model)
                 with torch.no_grad():
                     cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
-                                    quantization_group_size, *args, **kwargs)
+                                     quantization_group_size, *args, **kwargs)
                     if hasattr(model, "llm"):
                         create_npu_kernels(model.llm)
                     else:
@@ -281,7 +282,7 @@ class _BaseAutoModelClass:
         replace_with_QuantizedLinear(optimize_model, q_k, device=device,
                                      modules_to_not_convert=modules_to_not_convert,
                                      group_size=group_size)
-        
+
     @classmethod
     def load_convert_cpu(cls, q_k, optimize_model, device, modules_to_not_convert, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_DequantizedLinear

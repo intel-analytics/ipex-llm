@@ -73,10 +73,10 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
                                              iqtype, device=device)
         return QuantizedLinear(qweights, scale, layer.bias,
                                group_size=group_size)
-    
+
 
 @module_optimization
-def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert, 
+def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
                                    group_size):
     from ipex_llm.transformers.npu_models.linear import DequantizedLinear
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
