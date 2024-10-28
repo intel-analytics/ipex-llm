@@ -236,8 +236,6 @@ def convert_llm(model: torch.nn.Module,
         from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
         convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
 
-        print("finish prefill runner & replace forward")
-
         from .llama import LowBitLlamaLMHead, LlamaEmbedding
         with tempfile.TemporaryDirectory() as temp_dir:
             # generate lm_head blob
@@ -285,13 +283,12 @@ def convert_llm(model: torch.nn.Module,
             new_embedding = LlamaEmbedding(
                 vocab_size=model.config.vocab_size,
                 embedding_dim=model.config.hidden_size,
+                embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
                 padding_idx=model.config.pad_token_id,
                 dtype=np.float16,
             )
             first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
                                                                  temp_dir)
-            bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
-            embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
 
             # generate decoder layer blob
             from ipex_llm.transformers.npu_models.llama_mp import LowBitLlamaMultiDecoderlayer
