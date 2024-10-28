@@ -64,7 +64,7 @@ def generate(
                       "Input plus output tokens should not exceed max_output_len.")
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        ## run prefill with PrefillRunner
+        # run prefill with PrefillRunner
         output = self(input_ids=inputs,
                       attention_mask=torch.ones(1, inputs.shape[1]).int())
         logits = output.logits
@@ -109,7 +109,7 @@ def generate(
 
         # start generate_serve by Thread
         thread = threading.Thread(target=generate_serve,
-                                args=(self.kv_len, self.num_head,
+                                  args=(self.kv_len, self.num_head,
                                         self.head_dim, self.num_layers,
                                         self.transpose_value_cache,
                                         new_tokens - 1))
