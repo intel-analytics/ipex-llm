@@ -113,7 +113,7 @@ class _BaseAutoModelClass:
     HF_MODEL = None
 
     @classmethod
-    @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
+    @patch("transformers.modeling_utils.is_torch_sdpa_available", patch_sdpa_available)
     @patch("transformers.utils.is_torch_sdpa_available", patch_sdpa_available, create=True)
     def from_pretrained(cls,
                         *args,
