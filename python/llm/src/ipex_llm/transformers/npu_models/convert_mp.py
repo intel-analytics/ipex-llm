@@ -154,6 +154,44 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         model.lm_head = new_linear
 
 
+def convert_llama(
+        model: torch.nn.Module,
+        max_output_len=1024,
+        max_prompt_len=1024,
+        decoder=False,
+        inter_pp=None,
+        intra_pp=None,
+        transpose_value_cache=True,
+):
+    from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
+    from ipex_llm.transformers.npu_models.llama_mp import DecodeRunner, PrefillRunner
+    from transformers.models.llama.modeling_llama import LlamaModel
+
+    if decoder:
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+    else:
+        decode_runner = None
+    prefill_runner = PrefillRunner(
+        model,
+        max_output_len=max_output_len,
+        max_prompt_len=max_prompt_len,
+        transpose_value_cache=transpose_value_cache,
+    )
+    llama_model_forward = gen_llama_fused_model_forward(
+        prefill_runner=prefill_runner, decode_runner=decode_runner
+    )
+    convert_forward(model, LlamaModel, llama_model_forward)
+    from transformers.models.llama.modeling_llama import LlamaForCausalLM
+    from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
+    convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
+
+
 def optimize_llm(
     model: torch.nn.Module,
     max_output_len=1024,
@@ -168,31 +206,13 @@ def optimize_llm(
             intra_pp = 2
         if inter_pp is None:
             inter_pp = 2 if group_size == 0 else 8
-
-        from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
-        from ipex_llm.transformers.npu_models.llama_mp import DecodeRunner, PrefillRunner
-        from transformers.models.llama.modeling_llama import LlamaModel
-
-        decode_runner = DecodeRunner(
-            model,
-            max_seq_len=max_output_len,
-            inter_pp=inter_pp,
-            intra_pp=intra_pp,
-            transpose_value_cache=transpose_value_cache,
-        )
-        prefill_runner = PrefillRunner(
-            model,
-            max_output_len=max_output_len,
-            max_prompt_len=max_prompt_len,
-            transpose_value_cache=transpose_value_cache,
-        )
-        llama_model_forward = gen_llama_fused_model_forward(
-            prefill_runner=prefill_runner, decode_runner=decode_runner
-        )
-        convert_forward(model, LlamaModel, llama_model_forward)
-        from transformers.models.llama.modeling_llama import LlamaForCausalLM
-        from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
-        convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
+        convert_llama(model,
+                      max_output_len=max_output_len,
+                      max_prompt_len=max_prompt_len,
+                      inter_pp=inter_pp,
+                      intra_pp=intra_pp,
+                      decoder=True,
+                      transpose_value_cache=transpose_value_cache)
     elif model.config.model_type == "qwen2" and model.config.num_hidden_layers == 28:
         # for qwen2-1.5B and qwen2-7B
         if intra_pp is None:

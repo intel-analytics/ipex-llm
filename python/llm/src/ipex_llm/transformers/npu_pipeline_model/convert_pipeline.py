@@ -178,7 +178,6 @@ def generate(
         print(f" Generation average latency: {(time_end - time_start) * 1000 /(idx - 1):.2f} ms, "
               f"({(idx - 1)/(time_end - time_start):.2f} token/s)")
         print(f" Generation time: {(time_end - time_start_all - (time_start - time_t1)):.2f} s\n")
-
     return output
 
 
@@ -222,26 +221,12 @@ def convert_llm(model: torch.nn.Module,
                 max_prompt_len: int,
                 transpose_value_cache: bool):
     if model.config.model_type == "llama":
-        # first token
-        from ipex_llm.transformers.npu_models.convert_mp import convert_forward
-        from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
-        from ipex_llm.transformers.npu_models.llama_mp import PrefillRunner
-        from transformers.models.llama.modeling_llama import LlamaModel
-
-        prefill_runner = PrefillRunner(
-            model,
-            max_output_len=kv_len,
-            max_prompt_len=max_prompt_len,
-            transpose_value_cache=transpose_value_cache,
-        )
-        llama_model_forward = gen_llama_fused_model_forward(
-            prefill_runner=prefill_runner, decode_runner=None
-        )
-        convert_forward(model, LlamaModel, llama_model_forward)
-        from transformers.models.llama.modeling_llama import LlamaForCausalLM
-        from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
-        convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
-
+        from ipex_llm.transformers.npu_models.convert_mp import convert_llama
+        convert_llama(model,
+                      max_output_len=kv_len,
+                      max_prompt_len=max_prompt_len,
+                      decoder=False,
+                      transpose_value_cache=transpose_value_cache)
         from .llama import LowBitLlamaLMHead, LlamaEmbedding
         with tempfile.TemporaryDirectory() as temp_dir:
             # generate lm_head blob
