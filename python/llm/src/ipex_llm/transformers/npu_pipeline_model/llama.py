@@ -80,6 +80,7 @@ class LlamaEmbedding(NNFactory):
         self,
         vocab_size,
         embedding_dim,
+        embedding_weight,
         padding_idx,
         dtype,  # fp16
         device: str = "NPU",
@@ -91,7 +92,7 @@ class LlamaEmbedding(NNFactory):
         self.dtype = dtype
 
         # define input
-        weight = self.parameter((vocab_size, embedding_dim))
+        weight = self.constant(embedding_weight)
         input = self.parameter((1, 1), dtype=np.int32)
 
         if padding_idx == -1:
