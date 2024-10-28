@@ -238,9 +238,139 @@ def convert_llm(model: torch.nn.Module,
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
+    elif model.config.model_type == "baichuan":
+        from .llama import LowBitLlamaLMHead, LlamaEmbedding
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # generate lm_head blob
+            weight_dir = os.path.join(temp_dir, "model_weights")
+            os.mkdir(weight_dir)
+            num_heads = model.model.layers[0].self_attn.num_heads
+            head_dim = model.model.layers[0].self_attn.head_dim
+            intermediate_size = model.config.intermediate_size
+            layer_num = len(model.model.layers)
+            rms_norm_eps = model.config.rms_norm_eps
+            vocab_size = model.config.vocab_size
+            model_norm = model.model.norm
+            lm_head = model.lm_head
+            weights = [(lm_head.weight, lm_head.scale)]
+            if isinstance(weights[0], tuple):
+                np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
+            else:  # FP16 Linear
+                np_dtype = np.float16
+
+            new_lm_head = LowBitLlamaLMHead(
+                [1, 1, num_heads * head_dim],
+                num_heads=num_heads,
+                max_seq_len=kv_len,
+                rms_norm_eps=rms_norm_eps,
+                mode="decode",
+                transpose_value=False,
+                dtype=np_dtype,
+                model_norm_weight=model_norm.weight.to(torch.float16),
+                vocab_size=vocab_size,
+            )
+            last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
+
+            # save weights bins files
+            weight_numpy = [
+                lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
+            ]
+
+            for idx, weight in enumerate(weight_numpy):
+                bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
+                weight.tofile(bin_file)
+
+            embedding_layer = model.model.embed_tokens
+            new_embedding = LlamaEmbedding(
+                vocab_size=model.config.vocab_size,
+                embedding_dim=model.config.hidden_size,
+                embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
+                padding_idx=model.config.pad_token_id,
+                dtype=np.float16,
+            )
+            first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
+                                                                    temp_dir)
+            
+            # test embedding result
+            input = torch.LongTensor([[8]])
+            with torch.no_grad():
+                output = embedding_layer(input)
+                test = new_embedding(input)
+                assert np.allclose(output, test)
+
+            # generate decoder layer blob
+            from ipex_llm.transformers.npu_models.baichuan_mp import LowBitBaichuanMultiDecoderlayer
+            for layer_idx in range(0, layer_num):
+                curr_layer = model.model.layers[layer_idx]
+                attn_layer = curr_layer.self_attn
+                mlp_layer = curr_layer.mlp
+
+                weights = [
+                    (attn_layer.W_pack.weight, attn_layer.W_pack.scale),
+                    (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
+                    (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
+                    (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
+                    (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
+                ]
+
+                cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
+                cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+                layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
+                layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
+
+                if isinstance(weights[0], tuple):
+                    np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
+                else:  # FP16 Linear
+                    np_dtype = np.float16
+
+                if layer_idx == 0:
+                    single_decoder = LowBitBaichuanMultiDecoderlayer(
+                        [1, 1, num_heads * head_dim],
+                        input_layernorm_weights=None,
+                        post_attn_layernorm_weights=None,
+                        cached_cos=cached_cos,
+                        cached_sin=cached_sin,
+                        num_heads=num_heads,
+                        num_layers=1,
+                        max_seq_len=kv_len,
+                        rms_norm_eps=rms_norm_eps,
+                        intermediate_size=intermediate_size,
+                        mode="decode",
+                        transpose_value=transpose_value_cache,
+                        dtype=np_dtype,
+                    )
+                    rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
+                                                                        "decoder_layer",
+                                                                        temp_dir)
+
+                input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
+                post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
+                layer_norm_0.data.numpy().tofile(input_lm_bin_file)
+                layer_norm_1.data.numpy().tofile(post_lm_bin_file)
+
+                for idx, (weight, scale) in enumerate(weights):
+                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{7+idx*2}.bin")
+                    weight.numpy().tofile(bin_file)
+                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{7+idx*2+1}.bin")
+                    scale.numpy().tofile(bin_file)
+
+            # patch attrs for generate
+            model.kv_len = kv_len
+            model.num_head = num_heads
+            model.head_dim = head_dim
+            model.num_layers = layer_num
+            model.transpose_value_cache = transpose_value_cache
+
+        try:
+            res = InitLLMPipeline(kv_len, num_heads, head_dim, layer_num,
+                                    model.vocab_size, weight_dir, "model",
+                                    first_blob_path, last_blob_path, rest_blob_path)
+        except:
+            invalidInputError(False,
+                                "False to InitLLMPipeline.")
     else:
         invalidInputError(False,
-                          "Now we only support Llama2 for pipeline running.")
+                          "Now we only support Llama2 / Llama3 / Baichuan2 for pipeline running.")
 
     if isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()

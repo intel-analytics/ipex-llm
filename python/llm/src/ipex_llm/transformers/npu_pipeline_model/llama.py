@@ -29,7 +29,6 @@ class LowBitLlamaLMHead(LLMBaseNNFactory):
         self,
         hidden_shape: Sequence[int],
         num_heads: int,
-        num_key_value_heads: int,
         rms_norm_eps: float,
         model_norm_weight,
         vocab_size: int,
@@ -55,10 +54,7 @@ class LowBitLlamaLMHead(LLMBaseNNFactory):
         self.vocab_size = vocab_size
 
         self.num_heads = num_heads
-        self.num_key_value_heads = num_key_value_heads
-
         self.head_dim = self.hidden_size // self.num_heads
-        self.num_key_value_groups = self.num_heads // self.num_key_value_heads
 
         # define input, the order self.parameter matters
         input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
@@ -108,15 +104,16 @@ class LlamaEmbedding(NNFactory):
         if padding_idx == -1:
             padding_idx += vocab_size
 
+        axis_node = self.constant(np.array([0], dtype=np.int64))
         if padding_idx is not None:
-            masked_embeddings = np.ones(weight.shape, dtype='int64')
-            masked_embeddings[padding_idx, :] = 0  # mask
+            masked_embeddings = np.ones(weight.shape, dtype=np.float16)
+            masked_embeddings[padding_idx, :] = 0.0  # mask
 
             node_mask = self.constant(masked_embeddings)
-            node_masked_w = self.matmul(weight, node_mask, False, True)
-
-        axis_node = self.constant(np.array([0], dtype=np.int64))
-        res = self.gather(node_masked_w if padding_idx else weight, input, axis_node, 0)
+            node_masked_w = self.eltwise_mul(weight, node_mask)
+            res = self.gather(node_masked_w, input, axis_node, 0)
+        else:
+            res = self.gather(weight, input, axis_node, 0)
 
         # define outputs
         res = self.convert_to_fp16(res)
