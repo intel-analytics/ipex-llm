@@ -65,7 +65,7 @@ Next, you need to enable GPU driver support on kernel `6.5.0-35-generic` through
 ```bash
 export FORCE_PROBE_VALUE=$(sudo dmesg  | grep i915 | grep -o 'i915\.force_probe=[a-zA-Z0-9]\{4\}')
 
-sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"\(.*\)\"/\"\1 $FORCE_PROBE_VALUE\"/" /etc/default/grub
+sudo sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/ s/\"\(.*\)\"/\"\1 $FORCE_PROBE_VALUE\"/" /etc/default/grub
 ```
 
 > [!TIP]
@@ -103,7 +103,7 @@ echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] htt
 
 sudo apt update
 
-apt-get install -y libze1 intel-level-zero-gpu intel-opencl-icd clinfo
+sudo apt-get install -y libze1 intel-level-zero-gpu intel-opencl-icd clinfo
 ```
 
 
@@ -122,7 +122,7 @@ You could then verify whether the GPU driver is functioning properly with:
 clinfo | grep "Device Name"
 ```
 
-whose output should contain `Intel(R) Arc(TM) Graphics`.
+whose output should contain `Intel(R) Arc(TM) Graphics` or `Intel(R) Graphics` based on your GPU model.
 
 > [!TIP]
 > You could refer to the [official driver guide for client GPUS](https://dgpu-docs.intel.com/driver/client/overview.html#installing-client-gpus-on-ubuntu-desktop-22-04-lts) for more information.
