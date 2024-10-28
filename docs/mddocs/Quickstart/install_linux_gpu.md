@@ -122,7 +122,7 @@ You could then verify whether the GPU driver is functioning properly with:
 clinfo | grep "Device Name"
 ```
 
-whose output should contain `Intel(R) Arc(TM) Graphics` or `Intel(R) Graphics`.
+whose output should contain `Intel(R) Arc(TM) Graphics` or `Intel(R) Graphics` based on your GPU model.
 
 > [!TIP]
 > You could refer to the [official driver guide for client GPUS](https://dgpu-docs.intel.com/driver/client/overview.html#installing-client-gpus-on-ubuntu-desktop-22-04-lts) for more information.
