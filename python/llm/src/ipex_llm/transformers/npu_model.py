@@ -133,6 +133,7 @@ class _BaseAutoModelClass:
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
         mixed_precision = kwargs.pop('mixed_precision', False)
         quantization_group_size = kwargs.pop("quantization_group_size", 0)
+        mock_device = kwargs.pop('device', None) # For mock on CPU
 
         invalidInputError(
             quantization_group_size in [0, 32, 64, 128],
@@ -141,7 +142,6 @@ class _BaseAutoModelClass:
                 f"but got {quantization_group_size}"
             )
         )
-
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
 
@@ -165,45 +165,53 @@ class _BaseAutoModelClass:
             model.config.update({"bigdl_lcmu_enabled": False})
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
-        from intel_npu_acceleration_library.compiler import create_npu_kernels
 
-        if optimize_model:
-            invalidInputError(
-                max_prompt_len < max_context_len,
-                (
-                    f"max_prompt_len ({max_prompt_len}) should be less"
-                    " than max_context_len ({max_context_len})"
-                ),
-            )
-            optimize_kwargs = {
-                "model": model,
-                "qtype": qtype,
-                "mixed_precision": mixed_precision,
-                "quantization_group_size": quantization_group_size,
-                "modules_to_not_convert": modules_to_not_convert,
-                "pipeline": pipeline,
-                "max_context_len": max_context_len,
-                "max_prompt_len": max_prompt_len,
-                "inter_pp": inter_pp,
-                "intra_pp": intra_pp,
-                "transpose_value_cache": transpose_value_cache
-            }
-            model = cls.optimize_npu_model(*args, **optimize_kwargs)
-        else:
-            from ipex_llm.transformers.npu_models.convert import optimize_llm
-            optimize_llm(model)
+        if mock_device == "cpu":
             with torch.no_grad():
-                cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
-                                 quantization_group_size, *args, **kwargs)
-                if hasattr(model, "llm"):
-                    create_npu_kernels(model.llm)
-                else:
-                    create_npu_kernels(model)
+                # Only mock quantization_group_size=0 for now
+                cls.load_convert_cpu(qtype, model, "cpu", modules_to_not_convert, 0, *args, **kwargs)
             model = model.eval()
             logger.info(f"Finish to convert model")
-            model.config.update({"bigdl_transformers_low_bit": qtype})
-            # add save_low_bit to pretrained model dynamically
-            model.save_low_bit = types.MethodType(save_low_bit, model)
+        else:
+            from intel_npu_acceleration_library.compiler import create_npu_kernels
+
+            if optimize_model:
+                invalidInputError(
+                    max_prompt_len < max_context_len,
+                    (
+                        f"max_prompt_len ({max_prompt_len}) should be less"
+                        " than max_context_len ({max_context_len})"
+                    ),
+                )
+                optimize_kwargs = {
+                    "model": model,
+                    "qtype": qtype,
+                    "mixed_precision": mixed_precision,
+                    "quantization_group_size": quantization_group_size,
+                    "modules_to_not_convert": modules_to_not_convert,
+                    "pipeline": pipeline,
+                    "max_context_len": max_context_len,
+                    "max_prompt_len": max_prompt_len,
+                    "inter_pp": inter_pp,
+                    "intra_pp": intra_pp,
+                    "transpose_value_cache": transpose_value_cache
+                }
+                model = cls.optimize_npu_model(*args, **optimize_kwargs)
+            else:
+                from ipex_llm.transformers.npu_models.convert import optimize_llm
+                optimize_llm(model)
+                with torch.no_grad():
+                    cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
+                                    quantization_group_size, *args, **kwargs)
+                    if hasattr(model, "llm"):
+                        create_npu_kernels(model.llm)
+                    else:
+                        create_npu_kernels(model)
+                model = model.eval()
+                logger.info(f"Finish to convert model")
+                model.config.update({"bigdl_transformers_low_bit": qtype})
+                # add save_low_bit to pretrained model dynamically
+                model.save_low_bit = types.MethodType(save_low_bit, model)
 
         return model
 
@@ -273,6 +281,13 @@ class _BaseAutoModelClass:
         replace_with_QuantizedLinear(optimize_model, q_k, device=device,
                                      modules_to_not_convert=modules_to_not_convert,
                                      group_size=group_size)
+        
+    @classmethod
+    def load_convert_cpu(cls, q_k, optimize_model, device, modules_to_not_convert, *arg, **kwarg):
+        from ipex_llm.transformers.npu_models.convert import replace_with_DequantizedLinear
+
+        replace_with_DequantizedLinear(optimize_model, q_k, device=device,
+                                       modules_to_not_convert=modules_to_not_convert)
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
