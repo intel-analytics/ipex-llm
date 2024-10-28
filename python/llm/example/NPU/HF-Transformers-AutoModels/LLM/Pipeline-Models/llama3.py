@@ -57,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
-    parser.add_argument("--max-output-len", type=int, default=1024)
+    parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
 
@@ -68,9 +68,8 @@ if __name__ == "__main__":
                                                  torch_dtype=torch.float16,
                                                  optimize_model=True,
                                                  pipeline=True,
-                                                 max_output_len=args.max_output_len,
+                                                 max_context_len=args.max_context_len,
                                                  max_prompt_len=args.max_prompt_len,
-                                                 torch_dtype=torch.float16,
                                                  attn_implementation="eager",
                                                  transpose_value_cache=not args.disable_transpose_value_cache)
 

@@ -51,7 +51,7 @@ if __name__ == "__main__":
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
-    parser.add_argument("--max-output-len", type=int, default=1024)
+    parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
                                                  pipeline=True,
-                                                 max_output_len=args.max_output_len,
+                                                 max_context_len=args.max_context_len,
                                                  max_prompt_len=args.max_prompt_len,
                                                  torch_dtype=torch.float16,
                                                  attn_implementation="eager",
@@ -77,8 +77,8 @@ if __name__ == "__main__":
     with torch.inference_mode():
         print("finish to load")
         for i in range(5):
-            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
-            _input_ids = tokenizer.encode(prompt, return_tensors="pt")
+            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT) * 300
+            _input_ids = tokenizer.encode(prompt, return_tensors="pt")[:, :960]
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(

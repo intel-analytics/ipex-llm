@@ -194,7 +194,7 @@ def convert_llama(
 
 def optimize_llm(
     model: torch.nn.Module,
-    max_output_len=1024,
+    max_context_len=1024,
     max_prompt_len=1024,
     inter_pp=None,
     intra_pp=None,
@@ -207,7 +207,7 @@ def optimize_llm(
         if inter_pp is None:
             inter_pp = 2 if group_size == 0 else 8
         convert_llama(model,
-                      max_output_len=max_output_len,
+                      max_output_len=max_context_len,
                       max_prompt_len=max_prompt_len,
                       inter_pp=inter_pp,
                       intra_pp=intra_pp,
@@ -232,14 +232,14 @@ def optimize_llm(
 
         decode_runner = DecodeRunner(
             model,
-            max_seq_len=max_output_len,
+            max_seq_len=max_context_len,
             inter_pp=inter_pp,
             intra_pp=intra_pp,
             transpose_value_cache=transpose_value_cache,
         )
         prefill_runner = PrefillRunner(
             model,
-            max_output_len=max_output_len,
+            max_output_len=max_context_len,
             max_prompt_len=max_prompt_len,
             transpose_value_cache=transpose_value_cache,
         )
@@ -272,14 +272,14 @@ def optimize_llm(
 
         decode_runner = DecodeRunner(
             model,
-            max_seq_len=max_output_len,
+            max_seq_len=max_context_len,
             inter_pp=inter_pp,
             intra_pp=intra_pp,
             transpose_value_cache=transpose_cache,
         )
         prefill_runner = PrefillRunner(
             model,
-            max_output_len=max_output_len,
+            max_output_len=max_context_len,
             max_prompt_len=max_prompt_len,
             transpose_value_cache=transpose_cache,
         )
@@ -301,14 +301,14 @@ def optimize_llm(
         from ipex_llm.transformers.npu_models.baichuan_mp import DecodeRunner, PrefillRunner
         decode_runner = DecodeRunner(
             model,
-            max_seq_len=max_output_len,
+            max_seq_len=max_context_len,
             inter_pp=inter_pp,
             intra_pp=intra_pp,
             transpose_value_cache=transpose_value_cache,
         )
         prefill_runner = PrefillRunner(
             model,
-            max_output_len=max_output_len,
+            max_output_len=max_context_len,
             max_prompt_len=max_prompt_len,
             transpose_value_cache=transpose_value_cache,
         )
@@ -325,7 +325,7 @@ def optimize_llm(
 
 def optimize_funasr(
     model: torch.nn.Module,
-    max_output_len=1024,
+    max_context_len=1024,
     max_prompt_len=1024,
     inter_pp=None,
     intra_pp=None,
@@ -340,7 +340,7 @@ def optimize_funasr(
     from ipex_llm.transformers.npu_models.paraformer_mp import PrefillRunner, DecodeRunner
     prefill_runner = PrefillRunner(
         model,
-        max_output_len=max_output_len,
+        max_output_len=max_context_len,
         max_prompt_len=max_prompt_len,
         transpose_value_cache=transpose_value_cache,
     )
@@ -349,7 +349,7 @@ def optimize_funasr(
     )
     decode_runner = DecodeRunner(
         model,
-        max_seq_len=max_output_len,
+        max_seq_len=max_context_len,
         inter_pp=inter_pp,
         intra_pp=intra_pp,
         transpose_value_cache=transpose_value_cache,
