@@ -61,7 +61,10 @@ def generate(
 
     new_tokens = new_generate_kwargs['max_new_tokens']
     invalidInputError(input_length + new_tokens <= self.kv_len + 1,
-                      "Input plus output tokens should not exceed max_output_len.")
+                      "Input plus output tokens should not exceed max_context_len.")
+    # TODO: may optimize this part later
+    invalidInputError(new_tokens < 1024,
+                      f"Generated tokens ({new_tokens}) exceed named pipeline limitation.")
 
     output_tokens = []
 
