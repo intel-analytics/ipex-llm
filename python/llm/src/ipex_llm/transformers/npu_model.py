@@ -124,8 +124,8 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "pipeline_parallel_stages")
         optimize_model = kwargs.pop("optimize_model", False)
         pipeline = kwargs.pop("pipeline", False)
-        max_output_len = kwargs.pop("max_output_len", 1024)
-        max_output_len = max_output_len - 1
+        max_context_len = kwargs.pop("max_context_len", 1024)
+        max_context_len = max_context_len - 1
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
@@ -169,10 +169,10 @@ class _BaseAutoModelClass:
 
         if optimize_model:
             invalidInputError(
-                max_prompt_len < max_output_len,
+                max_prompt_len < max_context_len,
                 (
                     f"max_prompt_len ({max_prompt_len}) should be less"
-                    " than max_output_len ({max_output_len})"
+                    " than max_context_len ({max_context_len})"
                 ),
             )
             optimize_kwargs = {
@@ -182,7 +182,7 @@ class _BaseAutoModelClass:
                 "quantization_group_size": quantization_group_size,
                 "modules_to_not_convert": modules_to_not_convert,
                 "pipeline": pipeline,
-                "max_output_len": max_output_len,
+                "max_context_len": max_context_len,
                 "max_prompt_len": max_prompt_len,
                 "inter_pp": inter_pp,
                 "intra_pp": intra_pp,
@@ -219,7 +219,7 @@ class _BaseAutoModelClass:
         quantization_group_size = kwargs.pop("quantization_group_size", 0)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
         pipeline = kwargs.pop("pipeline", False)
-        max_output_len = kwargs.pop("max_output_len", 1024)
+        max_context_len = kwargs.pop("max_context_len", 1024)
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
@@ -246,7 +246,7 @@ class _BaseAutoModelClass:
         if not pipeline:
             optimize_llm(
                 llm,
-                max_output_len=max_output_len,
+                max_context_len=max_context_len,
                 max_prompt_len=max_prompt_len,
                 inter_pp=inter_pp,
                 intra_pp=intra_pp,
@@ -258,7 +258,8 @@ class _BaseAutoModelClass:
             from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
                 import convert_llm
             convert_llm(llm,
-                        kv_len=max_output_len,
+                        kv_len=max_context_len,
+                        max_prompt_len=max_prompt_len,
                         transpose_value_cache=transpose_value_cache,
                         group_size=quantization_group_size)
 
@@ -599,7 +600,7 @@ class FunAsrAutoModel(_BaseAutoModelClass):
         model = kwargs.pop("model")
         qtype = kwargs.pop("qtype", "sym_int8")
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
-        max_output_len = kwargs.pop("max_output_len", 1024)
+        max_context_len = kwargs.pop("max_context_len", 1024)
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
@@ -619,7 +620,7 @@ class FunAsrAutoModel(_BaseAutoModelClass):
 
         optimize_funasr(
             model,
-            max_output_len=max_output_len,
+            max_context_len=max_context_len,
             max_prompt_len=max_prompt_len,
             inter_pp=inter_pp,
             intra_pp=intra_pp,
