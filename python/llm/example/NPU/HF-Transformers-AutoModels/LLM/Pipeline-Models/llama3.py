@@ -59,6 +59,7 @@ if __name__ == "__main__":
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument("--quantization_group_size", type=int, default=0)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
 
     args = parser.parse_args()
@@ -70,6 +71,7 @@ if __name__ == "__main__":
                                                  pipeline=True,
                                                  max_context_len=args.max_context_len,
                                                  max_prompt_len=args.max_prompt_len,
+                                                 quantization_group_size=args.quantization_group_size,
                                                  attn_implementation="eager",
                                                  transpose_value_cache=not args.disable_transpose_value_cache)
 
