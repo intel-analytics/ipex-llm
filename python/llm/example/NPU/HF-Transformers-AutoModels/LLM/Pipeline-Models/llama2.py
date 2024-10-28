@@ -77,8 +77,8 @@ if __name__ == "__main__":
     with torch.inference_mode():
         print("finish to load")
         for i in range(5):
-            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT) * 300
-            _input_ids = tokenizer.encode(prompt, return_tensors="pt")[:, :960]
+            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+            _input_ids = tokenizer.encode(prompt, return_tensors="pt")
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(
