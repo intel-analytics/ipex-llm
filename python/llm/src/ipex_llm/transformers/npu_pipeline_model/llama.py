@@ -71,10 +71,9 @@ class LowBitLlamaLMHead(LLMBaseNNFactory):
             )
         else:
             hidden_states = self.dq_split_linear(
-                hidden_states, self.vocab_size, self.hidden_size, n_splits, 
+                hidden_states, self.vocab_size, self.hidden_size, n_splits,
                 wt_dtype=dtype, scale_factor=False
             )
-
 
         # define outputs
         hidden_states = self.convert_to_fp32(hidden_states)
