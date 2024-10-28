@@ -44,7 +44,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default=r"D:\llm-models\Llama-2-7b-chat-hf",
+        default="meta-llama/Llama-2-7b-chat-hf",
         help="The huggingface repo id for the Llama2 model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
@@ -52,7 +52,7 @@ if __name__ == "__main__":
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-output-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=512)
+    parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
 
     args = parser.parse_args()
