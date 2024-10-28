@@ -90,6 +90,7 @@ COPY ./vllm_offline_inference.py       /llm/
 COPY ./payload-1024.lua                /llm/
 COPY ./start-vllm-service.sh           /llm/
 COPY ./benchmark_vllm_throughput.py   /llm/
+COPY ./benchmark_vllm_latency.py       /llm/
 COPY ./start-fastchat-service.sh       /llm/
 COPY ./start-pp_serving-service.sh       /llm/
 COPY ./start-lightweight_serving-service.sh       /llm/
