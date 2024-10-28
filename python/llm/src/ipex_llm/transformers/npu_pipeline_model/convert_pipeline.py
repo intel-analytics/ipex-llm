@@ -214,8 +214,8 @@ def convert_llm(model: torch.nn.Module,
                 for i in range(n_splits_linear):
                     lm_head_weights.append(lm_heads[i].weight)
                     scales.append(lm_heads[i].scale)
-                weights = [(torch.stack(lm_head_weights, axis=0).numpy(),
-                           torch.stack(scales, axis=0).numpy())]
+                weights = [(torch.stack(lm_head_weights, axis=0),
+                           torch.stack(scales, axis=0))]
             if isinstance(weights[0], tuple):
                 np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
             else:  # FP16 Linear
@@ -242,7 +242,7 @@ def convert_llm(model: torch.nn.Module,
                     lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
                 ]
             else:
-                weight_numpy = weights[0]
+                weight_numpy = [v.numpy() for v in weights[0]]
 
             for idx, weight in enumerate(weight_numpy):
                 bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
