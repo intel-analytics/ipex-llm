@@ -186,7 +186,7 @@ class _BaseAutoModelClass:
                 "max_prompt_len": max_prompt_len,
                 "inter_pp": inter_pp,
                 "intra_pp": intra_pp,
-                "transpose_value_cache": transpose_value_cache,
+                "transpose_value_cache": transpose_value_cache
             }
             model = cls.optimize_npu_model(*args, **optimize_kwargs)
         else:
@@ -260,7 +260,8 @@ class _BaseAutoModelClass:
             convert_llm(llm,
                         kv_len=max_context_len,
                         max_prompt_len=max_prompt_len,
-                        transpose_value_cache=transpose_value_cache)
+                        transpose_value_cache=transpose_value_cache,
+                        group_size=quantization_group_size)
 
         return model
 
