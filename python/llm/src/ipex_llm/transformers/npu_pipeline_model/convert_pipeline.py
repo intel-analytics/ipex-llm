@@ -147,7 +147,8 @@ def generate(
 
         bdata = str.encode(str(temp_dir))
         invalidInputError(len(bdata) <= 2000,
-                          f"Input directory is too long ({len(bdata)}), which may cause read error.")
+                          f"Leng of input directory is too long ({len(bdata)}), "
+                          "which may cause read error.")
         input_pipe.write(bdata)
         input_pipe.flush()
 
