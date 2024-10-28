@@ -542,7 +542,7 @@ class _BaseAutoModelClass:
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
-    @patch("transformers.utils.is_torch_sdpa_available", patch_sdpa_available, create=True)
+    @patch("transformers.modeling_utils.is_torch_sdpa_available", patch_sdpa_available, create=True)
     def load_low_bit(cls,
                      pretrained_model_name_or_path,
                      *model_args,
