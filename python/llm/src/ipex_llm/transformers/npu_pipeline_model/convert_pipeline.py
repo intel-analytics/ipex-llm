@@ -63,6 +63,8 @@ def generate(
     invalidInputError(input_length + new_tokens <= self.kv_len + 1,
                       "Input plus output tokens should not exceed max_output_len.")
 
+    output_tokens = []
+
     with tempfile.TemporaryDirectory() as temp_dir:
         # run prefill with PrefillRunner
         output = self(input_ids=inputs,
@@ -99,6 +101,11 @@ def generate(
             key.to(torch.float16).numpy().tofile(os.path.join(temp_dir, f"key_cache_{layer}.bin"))
             val.to(torch.float16).numpy().tofile(os.path.join(temp_dir, f"value_cache_{layer}.bin"))
 
+        token = input_id.to(torch.int32).item()
+        output_tokens.append(torch.tensor([token]))
+        if streamer is not None:
+            streamer.put(torch.tensor([token]))
+
         if "eos_token_id" not in new_generate_kwargs:
             eos = 0xffffffff
         else:
@@ -112,7 +119,7 @@ def generate(
                                   args=(self.kv_len, self.num_head,
                                         self.head_dim, self.num_layers,
                                         self.transpose_value_cache,
-                                        new_tokens - 1))
+                                        new_tokens - 2))
         thread.start()
 
         in_pipe_path = "\\\\.\\pipe\\llminputpipe"
@@ -143,7 +150,6 @@ def generate(
         input_pipe.flush()
 
         buffersize = 4
-        output_tokens = []
         while True:
             data = output_pipe.read(buffersize)
             if len(data) == 0:
