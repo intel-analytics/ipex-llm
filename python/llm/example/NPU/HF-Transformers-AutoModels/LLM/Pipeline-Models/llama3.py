@@ -58,6 +58,8 @@ if __name__ == "__main__":
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-output-len", type=int, default=1024)
+    parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -67,7 +69,10 @@ if __name__ == "__main__":
                                                  optimize_model=True,
                                                  pipeline=True,
                                                  max_output_len=args.max_output_len,
-                                                 attn_implementation="eager")
+                                                 max_prompt_len=args.max_prompt_len,
+                                                 torch_dtype=torch.float16,
+                                                 attn_implementation="eager",
+                                                 transpose_value_cache=not args.disable_transpose_value_cache)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
