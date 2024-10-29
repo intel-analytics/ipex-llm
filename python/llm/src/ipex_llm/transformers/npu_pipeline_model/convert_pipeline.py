@@ -205,7 +205,8 @@ def convert_llm(model: torch.nn.Module,
             os.mkdir(weight_dir)
             layer_num = len(model.model.layers)
             from .llama import convert_llama_layer, convert_lm_head_and_embedding
-            first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir)
+            first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
+                                                                            temp_dir, weight_dir)
 
             for layer_idx in range(0, layer_num):
                 convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,

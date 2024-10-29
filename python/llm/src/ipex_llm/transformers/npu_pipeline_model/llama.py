@@ -218,8 +218,8 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
             weights.append((u.weight, u.scale))
     else:
         for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                        attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                        mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
+                           attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
             l_weights = []
             scales = []
             for l in layer_list:
