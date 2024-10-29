@@ -64,7 +64,7 @@ IPEX-LLM 现在已支持在 Linux 和 Windows 系统上运行 `Ollama`。
   ```
 
 > [!NOTE]
-> 如果你已经安装了更高版本的 `ipex-llm[cpp]`，并希望同时升级 ollama 可执行文件，请先删除目录下旧文件，然后使用 `init-llama`（Linux）或 `init-llama.bat`（Windows）重新初始化。
+> 如果你已经安装了更高版本的 `ipex-llm[cpp]`，并希望同时升级 ollama 可执行文件，请先删除目录下旧文件，然后使用 `init-ollama`（Linux）或 `init-ollama.bat`（Windows）重新初始化。
 
 **现在，你可以按照 ollama 的官方用法来执行 ollama 的命令了。**
 
