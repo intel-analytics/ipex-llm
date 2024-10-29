@@ -252,7 +252,7 @@ def convert_llm(model: torch.nn.Module,
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
                                    temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
             with Pool() as pool:
-                result = pool.starmap(convert_llama_layer, param_list)
+                result = pool.starmap(convert_baichuan_layer, param_list)
 
             # Prefill Runner
             from ipex_llm.transformers.npu_models.convert_mp import convert_baichuan
