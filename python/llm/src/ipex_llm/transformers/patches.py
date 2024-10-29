@@ -18,6 +18,7 @@
 from typing import List
 from transformers.dynamic_module_utils import get_imports
 from transformers.utils import is_torch_sdpa_available
+from ipex_llm.utils.ipex_importer import IPEXImporter
 
 
 def patch_flash_attn_import(filename: str) -> List[str]:
@@ -29,8 +30,7 @@ def patch_flash_attn_import(filename: str) -> List[str]:
 
 
 def patch_sdpa_available() -> bool:
-    import torch
-    if "cxx" in torch.__version__:
+    if IPEXImporter.is_xpu_version_installed():
         return False
     else:
         return is_torch_sdpa_available()
