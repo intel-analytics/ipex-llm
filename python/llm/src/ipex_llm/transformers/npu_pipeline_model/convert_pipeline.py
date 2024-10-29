@@ -122,6 +122,7 @@ def generate(
         thread = threading.Thread(target=generate_serve,
                                   args=(self.kv_len, self.num_head,
                                         self.head_dim, self.num_layers,
+                                        self.vocab_size,
                                         self.transpose_value_cache,
                                         new_tokens - 2))
         thread.start()
@@ -231,7 +232,7 @@ def convert_llm(model: torch.nn.Module,
             model.transpose_value_cache = transpose_value_cache
 
             try:
-                res = InitLLMPipeline(kv_len, model.num_head, model.head_dim, layer_num,
+                res = InitLLMPipeline("llama", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
                                       os.path.join(temp_dir, "decoder_layer"))
