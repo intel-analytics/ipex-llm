@@ -169,7 +169,7 @@ class _BaseAutoModelClass:
         if mock_device == "cpu":
             with torch.no_grad():
                 # Only mock quantization_group_size=0 for now
-                cls.load_convert_cpu(qtype, model, "cpu", modules_to_not_convert, 0,
+                cls.load_convert_cpu(qtype, model, "cpu", modules_to_not_convert, 0
                                      *args, **kwargs)
             model = model.eval()
             logger.info(f"Finish to convert model")
@@ -284,11 +284,13 @@ class _BaseAutoModelClass:
                                      group_size=group_size)
 
     @classmethod
-    def load_convert_cpu(cls, q_k, optimize_model, device, modules_to_not_convert, *arg, **kwarg):
+    def load_convert_cpu(cls, q_k, optimize_model, device, modules_to_not_convert,
+                         group_size=0, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_DequantizedLinear
 
         replace_with_DequantizedLinear(optimize_model, q_k, device=device,
-                                       modules_to_not_convert=modules_to_not_convert)
+                                       modules_to_not_convert=modules_to_not_convert,
+                                       group_size=group_size)
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
