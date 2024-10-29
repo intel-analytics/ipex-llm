@@ -106,8 +106,8 @@ def convert_baichuan_layer(model, layer_idx, n_splits_linear, n_splits_down_proj
 
     single_decoder = LowBitBaichuanMultiDecoderlayer(
         [1, 1, num_heads * head_dim],
-        input_layernorm_weights=None,
-        post_attn_layernorm_weights=None,
+        input_layernorm_weights=[layer_norm_0],
+        post_attn_layernorm_weights=[layer_norm_1],
         cached_cos=cached_cos,
         cached_sin=cached_sin,
         num_heads=num_heads,
