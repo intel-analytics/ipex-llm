@@ -30,6 +30,7 @@ from ipex_llm.utils.common import invalidInputError
 import tempfile
 import numpy as np
 from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
+from multiprocessing import Pool
 
 
 def generate(
@@ -208,9 +209,12 @@ def convert_llm(model: torch.nn.Module,
             first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
                                                                             temp_dir, weight_dir)
 
+            param_list = []
             for layer_idx in range(0, layer_num):
-                convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                    temp_dir, weight_dir, transpose_value_cache, kv_len, group_size)
+                param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
+                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+            with Pool() as pool:
+                result = pool.starmap(convert_llama_layer, param_list)
 
             # Prefill Runner
             from ipex_llm.transformers.npu_models.convert_mp import convert_llama
