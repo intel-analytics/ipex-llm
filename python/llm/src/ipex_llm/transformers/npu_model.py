@@ -169,7 +169,7 @@ class _BaseAutoModelClass:
         if mock_device == "cpu":
             with torch.no_grad():
                 # Only mock quantization_group_size=0 for now
-                cls.load_convert_cpu(qtype, model, "cpu", modules_to_not_convert, 0
+                cls.load_convert_cpu(qtype, model, "cpu", modules_to_not_convert, 0,
                                      *args, **kwargs)
             model = model.eval()
             logger.info(f"Finish to convert model")
