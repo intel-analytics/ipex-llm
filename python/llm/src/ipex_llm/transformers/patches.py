@@ -17,6 +17,7 @@
 
 from typing import List
 from transformers.dynamic_module_utils import get_imports
+from transformers.utils import is_torch_sdpa_available
 
 
 def patch_flash_attn_import(filename: str) -> List[str]:
@@ -28,4 +29,8 @@ def patch_flash_attn_import(filename: str) -> List[str]:
 
 
 def patch_sdpa_available() -> bool:
-    return False
+    import torch
+    if "cxx" in torch.__version__:
+        return False
+    else:
+        return is_torch_sdpa_available()
