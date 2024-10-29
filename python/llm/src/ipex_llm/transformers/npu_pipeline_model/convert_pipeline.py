@@ -164,11 +164,11 @@ def generate(
                 break
             token = int.from_bytes(data, sys.byteorder)
             idx += 1
+            if token == eos:
+                break
             output_tokens.append(torch.tensor([token]))
             if streamer is not None:
                 streamer.put(torch.tensor([token]))
-            if token == eos:
-                break
 
         output = torch.stack(output_tokens, dim=1)
         output = torch.cat((inputs, output), dim=1)
@@ -251,17 +251,17 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
             with Pool() as pool:
                 result = pool.starmap(convert_baichuan_layer, param_list)
 
             # Prefill Runner
             from ipex_llm.transformers.npu_models.convert_mp import convert_baichuan
             convert_baichuan(model,
-                             max_output_len=kv_len,
-                             max_prompt_len=max_prompt_len,
-                             decoder=False,
-                             transpose_value_cache=transpose_value_cache)
+                                max_output_len=kv_len,
+                                max_prompt_len=max_prompt_len,
+                                decoder=False,
+                                transpose_value_cache=transpose_value_cache)
 
             # patch attrs for generate
             model.kv_len = kv_len
@@ -269,15 +269,16 @@ def convert_llm(model: torch.nn.Module,
             model.head_dim = model.model.layers[0].self_attn.head_dim
             model.num_layers = layer_num
             model.transpose_value_cache = transpose_value_cache
+            model.vocab_size = model.config.vocab_size
 
-        try:
-            res = InitLLMPipeline(kv_len, model.num_head, model.head_dim, layer_num,
-                                  model.vocab_size, weight_dir, "model",
-                                  first_blob_path, last_blob_path,
-                                  os.path.join(temp_dir, "decoder_layer"))
-        except:
-            invalidInputError(False,
-                                "False to InitLLMPipeline.")
+            try:
+                res = InitLLMPipeline("baichuan", kv_len, model.num_head, model.head_dim, layer_num,
+                                    model.vocab_size, weight_dir, "model",
+                                    first_blob_path, last_blob_path,
+                                    os.path.join(temp_dir, "decoder_layer"))
+            except:
+                invalidInputError(False,
+                                    "False to InitLLMPipeline.")
     else:
         invalidInputError(False,
                           "Now we only support Llama2 / Llama3 / Baichuan2 for pipeline running.")
