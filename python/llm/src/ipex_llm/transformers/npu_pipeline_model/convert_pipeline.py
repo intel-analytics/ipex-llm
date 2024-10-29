@@ -200,7 +200,6 @@ def convert_llm(model: torch.nn.Module,
         n_splits_linear = model.config.hidden_size // group_size
         n_splits_down_proj = model.config.intermediate_size // group_size
     if model.config.model_type == "llama":
-        t0 = time.perf_counter()
         with tempfile.TemporaryDirectory() as temp_dir:
             weight_dir = os.path.join(temp_dir, "model_weights")
             os.mkdir(weight_dir)
@@ -239,8 +238,6 @@ def convert_llm(model: torch.nn.Module,
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
-            t1 = time.perf_counter()
-            print(f"Convert llama2 cost {t1-t0} s.")
     else:
         invalidInputError(False,
                           "Now we only support Llama2 for pipeline running.")
