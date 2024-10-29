@@ -8,6 +8,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 |------------|----------------------------------------------------------------|
 | Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
 | Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
+| Baichuan2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) |
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
@@ -43,6 +44,9 @@ python llama2.py
 
 :: to run Meta-Llama-3-8B-Instruct
 python llama3.py
+
+:: to run Baichuan2-7B-Chat
+python baichuan2.py
 ```
 
 Arguments info:
