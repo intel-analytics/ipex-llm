@@ -75,6 +75,19 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
                                group_size=group_size)
 
 
+@module_optimization
+def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
+                                   group_size):
+    from ipex_llm.transformers.npu_models.linear import DequantizedLinear
+    from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
+    from ipex_llm.ggml.quantize import ggml_tensor_qtype
+    iqtype = ggml_tensor_qtype[qtype]
+    if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
+        qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
+                                             iqtype, device=device)
+        return DequantizedLinear(qweights, scale, layer.bias)
+
+
 def convert_forward(m, target_m, new_forward):
     if m.__class__ == target_m:
         bound_method = new_forward.__get__(m, m.__class__)
