@@ -17,7 +17,6 @@
 
 from typing import List
 from transformers.dynamic_module_utils import get_imports
-from transformers.utils import is_torch_sdpa_available
 from ipex_llm.utils.ipex_importer import IPEXImporter
 
 
