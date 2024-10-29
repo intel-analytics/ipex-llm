@@ -247,7 +247,7 @@ def convert_llm(model: torch.nn.Module,
             from .baichuan import convert_baichuan_layer, convert_lm_head_and_embedding
             first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
                                                                             temp_dir, weight_dir)
-            
+
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
@@ -258,10 +258,10 @@ def convert_llm(model: torch.nn.Module,
             # Prefill Runner
             from ipex_llm.transformers.npu_models.convert_mp import convert_baichuan
             convert_baichuan(model,
-                                max_output_len=kv_len,
-                                max_prompt_len=max_prompt_len,
-                                decoder=False,
-                                transpose_value_cache=transpose_value_cache)
+                             max_output_len=kv_len,
+                             max_prompt_len=max_prompt_len,
+                             decoder=False,
+                             transpose_value_cache=transpose_value_cache)
 
             # patch attrs for generate
             model.kv_len = kv_len
@@ -273,12 +273,12 @@ def convert_llm(model: torch.nn.Module,
 
             try:
                 res = InitLLMPipeline("baichuan", kv_len, model.num_head, model.head_dim, layer_num,
-                                    model.vocab_size, weight_dir, "model",
-                                    first_blob_path, last_blob_path,
-                                    os.path.join(temp_dir, "decoder_layer"))
+                                      model.vocab_size, weight_dir, "model",
+                                      first_blob_path, last_blob_path,
+                                      os.path.join(temp_dir, "decoder_layer"))
             except:
                 invalidInputError(False,
-                                    "False to InitLLMPipeline.")
+                                  "False to InitLLMPipeline.")
     else:
         invalidInputError(False,
                           "Now we only support Llama2 / Llama3 / Baichuan2 for pipeline running.")

@@ -50,13 +50,13 @@ _lib.generate_serve.argtypes = [ctypes.c_int] * 5 + [ctypes.c_bool] + [ctypes.c_
 _lib.generate_serve.restype = ctypes.c_int
 
 
-def InitLLMPipeline(model_type: str, kv_len: int, num_head: int, head_dim: int, num_layers: int, vocab_size: int,
-                    model_weight_dir: str, model_name: str,
+def InitLLMPipeline(model_type: str, kv_len: int, num_head: int, head_dim: int, num_layers: int,
+                    vocab_size: int, model_weight_dir: str, model_name: str,
                     first_blob_name: str, last_blob_name: str, rest_blob_name: str):
-    return _lib.InitLLMPipeline(model_type.encode('utf-8'), kv_len, num_head, head_dim, num_layers, vocab_size,
-                                model_weight_dir.encode('utf-8'), model_name.encode('utf-8'),
-                                first_blob_name.encode('utf-8'), last_blob_name.encode('utf-8'),
-                                rest_blob_name.encode('utf-8'))
+    return _lib.InitLLMPipeline(model_type.encode('utf-8'), kv_len, num_head, head_dim, num_layers,
+                                vocab_size, model_weight_dir.encode('utf-8'),
+                                model_name.encode('utf-8'), first_blob_name.encode('utf-8'),
+                                last_blob_name.encode('utf-8'), rest_blob_name.encode('utf-8'))
 
 
 def generate_serve(kv_len: int, num_head: int, head_dim: int, num_layers: int,

@@ -144,7 +144,7 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
         else:
             input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
             post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
-        
+
         past_keys = []
         past_values = []
         if mode == "decode":
