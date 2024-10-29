@@ -192,6 +192,41 @@ def convert_llama(
     convert_forward(model, LlamaForCausalLM, llama2_casullm_forward)
 
 
+def convert_baichuan(
+        model: torch.nn.Module,
+        max_output_len=1024,
+        max_prompt_len=1024,
+        decoder=False,
+        inter_pp=None,
+        intra_pp=None,
+        transpose_value_cache=True,
+):
+    from ipex_llm.transformers.npu_models.baichuan_mp import gen_baichuan_fused_model_forward
+    from ipex_llm.transformers.npu_models.baichuan_mp import DecodeRunner, PrefillRunner
+    if decoder:
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+    else:
+        decode_runner = None
+    prefill_runner = PrefillRunner(
+        model,
+        max_output_len=max_output_len,
+        max_prompt_len=max_prompt_len,
+        transpose_value_cache=transpose_value_cache,
+    )
+    baichuan_model_forward = gen_baichuan_fused_model_forward(
+        prefill_runner=prefill_runner, decode_runner=decode_runner
+    )
+    modeling_module_name = model.__class__.__module__
+    module = importlib.import_module(modeling_module_name)
+    convert_forward(model, module.BaichuanModel, baichuan_model_forward)
+
+
 def optimize_llm(
     model: torch.nn.Module,
     max_context_len=1024,
@@ -297,28 +332,13 @@ def optimize_llm(
             intra_pp = 2
         if inter_pp is None:
             inter_pp = 2
-        from ipex_llm.transformers.npu_models.baichuan_mp import gen_baichuan_fused_model_forward
-        from ipex_llm.transformers.npu_models.baichuan_mp import DecodeRunner, PrefillRunner
-        decode_runner = DecodeRunner(
-            model,
-            max_seq_len=max_context_len,
-            inter_pp=inter_pp,
-            intra_pp=intra_pp,
-            transpose_value_cache=transpose_value_cache,
-        )
-        prefill_runner = PrefillRunner(
-            model,
-            max_output_len=max_context_len,
-            max_prompt_len=max_prompt_len,
-            transpose_value_cache=transpose_value_cache,
-        )
-        baichuan_model_forward = gen_baichuan_fused_model_forward(
-            prefill_runner=prefill_runner, decode_runner=decode_runner
-        )
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        convert_forward(model, module.BaichuanModel, baichuan_model_forward)
-
+        convert_baichuan(model,
+                         max_output_len=max_context_len,
+                         max_prompt_len=max_prompt_len,
+                         inter_pp=inter_pp,
+                         intra_pp=intra_pp,
+                         decoder=True,
+                         transpose_value_cache=transpose_value_cache)
     if isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
 

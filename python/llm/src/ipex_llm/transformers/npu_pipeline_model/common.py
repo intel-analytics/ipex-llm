@@ -17,6 +17,10 @@
 
 from openvino.runtime import Core, serialize
 import os
+from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
+from typing import Sequence
+from intel_npu_acceleration_library.backend.factory import NNFactory
+import numpy as np
 
 
 def update_names_of_IR_and_export_blob(model, model_name, dir):
@@ -52,3 +56,101 @@ def update_names_of_IR_and_export_blob(model, model_name, dir):
     os.remove(new_ir_path)
 
     return blob_path
+
+
+class LowBitLLMLMHead(LLMBaseNNFactory):
+    def __init__(
+        self,
+        hidden_shape: Sequence[int],
+        num_heads: int,
+        rms_norm_eps: float,
+        model_norm_weight,
+        vocab_size: int,
+        mode: str = "decode",
+        dtype: np.dtype = np.int8,
+        max_seq_len: int = 1024,
+        transpose_value: bool = False,
+        profile: bool = False,
+        device: str = "NPU",
+        n_splits: int = 1,
+    ):
+        super().__init__(max_seq_len=max_seq_len,
+                         transpose_value=transpose_value,
+                         dtype=dtype,
+                         profile=profile,
+                         device=device)
+        self.max_seq_len = max_seq_len
+        self.dtype = dtype
+        self.batch_size, self.seq_len, self.hidden_size = hidden_shape
+        self.mode = mode
+        self.rms_norm_eps = rms_norm_eps
+        self.transpose_value = transpose_value
+        self.vocab_size = vocab_size
+
+        self.num_heads = num_heads
+        self.head_dim = self.hidden_size // self.num_heads
+
+        # define input, the order self.parameter matters
+        input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
+
+        hidden_states = input
+
+        # model norm and lm head
+        model_norm_weight = self.constant(model_norm_weight)
+        hidden_states = self.layer_norm(hidden_states, model_norm_weight)
+        if n_splits == 1:
+            hidden_states = self.linear(
+                hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+            )
+        else:
+            hidden_states = self.dq_split_linear(
+                hidden_states, self.vocab_size, self.hidden_size, n_splits,
+                wt_dtype=dtype, scale_factor=False
+            )
+
+        # define outputs
+        hidden_states = self.convert_to_fp32(hidden_states)
+
+        print("start compiling")
+        self.compile()
+
+
+class LLMEmbedding(NNFactory):
+    def __init__(
+        self,
+        vocab_size,
+        embedding_dim,
+        embedding_weight,
+        padding_idx,
+        dtype,  # fp16
+        device: str = "NPU",
+    ):
+        super().__init__(False, device)
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.padding_idx = padding_idx
+        self.dtype = dtype
+
+        # define input
+        weight = self.constant(embedding_weight)
+        input = self.parameter((1, 1), dtype=np.int32)
+
+        if padding_idx == -1:
+            padding_idx += vocab_size
+
+        axis_node = self.constant(np.array([0], dtype=np.int64))
+        if padding_idx is not None:
+            masked_embeddings = np.ones(weight.shape, dtype=np.float16)
+            masked_embeddings[padding_idx, :] = 0.0  # mask
+
+            node_mask = self.constant(masked_embeddings)
+            node_masked_w = self.eltwise_mul(weight, node_mask)
+            res = self.gather(node_masked_w, input, axis_node, 0)
+        else:
+            res = self.gather(weight, input, axis_node, 0)
+
+        # define outputs
+        res = self.convert_to_fp16(res)
+
+        print("start compiling")
+        self.compile()
