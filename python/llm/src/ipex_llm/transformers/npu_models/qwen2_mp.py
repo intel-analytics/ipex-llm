@@ -229,14 +229,11 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
         print(f"{mode} start compiling")
-        t1 = time.perf_counter()
         if group_size != 0 and (mode == "prefill" or num_layers == 2):
             self.compile(npu_dpu_groups=6)
         else:
             self.compile()
-        t2 = time.perf_counter()
-        # print(f"{mode} end compiling")
-        print(f"{mode} end compiling - {num_layers}-{n_splits_linear}-{n_splits_down_proj}, time: {t2 - t1}s")
+        print(f"{mode} end compiling")
 
     def build_decoder(
         self,
