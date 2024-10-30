@@ -862,7 +862,6 @@ def run_prefill(
                 scales.append(l.scale)
             weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
-
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
 

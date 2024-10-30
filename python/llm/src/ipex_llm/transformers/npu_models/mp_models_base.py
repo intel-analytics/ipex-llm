@@ -171,10 +171,10 @@ class LLMBaseNNFactory(NNFactory):
                                                 scale_factor=(self.group_size == 0),
                                                 is_prefill=(mode == "prefill"))
             key_states = self.dq_split_linear(hidden_states, num_key_value_heads * head_dim,
-                                                hidden_size, self.n_splits_linear,
-                                                wt_dtype=self.dtype,
-                                                scale_factor=(self.group_size == 0),
-                                                is_prefill=(mode == "prefill"))
+                                              hidden_size, self.n_splits_linear,
+                                              wt_dtype=self.dtype,
+                                              scale_factor=(self.group_size == 0),
+                                              is_prefill=(mode == "prefill"))
             value_states = self.dq_split_linear(hidden_states, num_key_value_heads * head_dim,
                                                 hidden_size, self.n_splits_linear,
                                                 wt_dtype=self.dtype,
@@ -258,9 +258,9 @@ class LLMBaseNNFactory(NNFactory):
             )
         else:
             attn_output = self.dq_split_linear(attn_output, hidden_size, hidden_size,
-                                                self.n_splits_linear, wt_dtype=self.dtype,
-                                                scale_factor=(self.group_size == 0),
-                                                is_prefill=(mode == "prefill"))
+                                               self.n_splits_linear, wt_dtype=self.dtype,
+                                               scale_factor=(self.group_size == 0),
+                                               is_prefill=(mode == "prefill"))
 
         return attn_output, new_key_states, new_value_states
 
@@ -437,13 +437,13 @@ class LLMBaseNNFactory(NNFactory):
         else:
             invalidInputError(seq_len > 0, "seq_len should be provided if use split linear")
             mm1 = self.dq_split_linear(hidden_states, self.intermediate_size, self.hidden_size,
-                                        self.n_splits_linear, wt_dtype=self.dtype,
-                                        scale_factor=(self.group_size == 0),
-                                        is_prefill=(mode == "prefill"))
+                                       self.n_splits_linear, wt_dtype=self.dtype,
+                                       scale_factor=(self.group_size == 0),
+                                       is_prefill=(mode == "prefill"))
             mm2 = self.dq_split_linear(hidden_states, self.intermediate_size, self.hidden_size,
-                                        self.n_splits_linear, wt_dtype=self.dtype,
-                                        scale_factor=(self.group_size == 0),
-                                        is_prefill=(mode == "prefill"))
+                                       self.n_splits_linear, wt_dtype=self.dtype,
+                                       scale_factor=(self.group_size == 0),
+                                       is_prefill=(mode == "prefill"))
             mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
 
         if self.n_splits_down_proj == 1:
@@ -453,9 +453,9 @@ class LLMBaseNNFactory(NNFactory):
         else:
             invalidInputError(seq_len > 0, "seq_len should be provided if use split linear")
             hidden_states = self.dq_split_linear(mm1, self.hidden_size, self.intermediate_size,
-                                                    self.n_splits_down_proj, wt_dtype=self.dtype,
-                                                    scale_factor=(self.group_size == 0),
-                                                    is_prefill=(mode == "prefill"))
+                                                 self.n_splits_down_proj, wt_dtype=self.dtype,
+                                                 scale_factor=(self.group_size == 0),
+                                                 is_prefill=(mode == "prefill"))
         return hidden_states
 
     def layer_norm(self, hidden_states, layernorm_weight):
@@ -575,7 +575,8 @@ class LLMBaseNNFactory(NNFactory):
                         scale_factor: bool = False,
                         is_prefill: bool = False):
         op = super().dq_split_linear(input_node, n_splits, output_channels, input_channels,
-                                     False, act_dtype, wt_dtype, scale_factor, is_prefill=is_prefill)
+                                     False, act_dtype, wt_dtype, scale_factor,
+                                     is_prefill=is_prefill)
         self.linear_ops.append(op)
         return op
 
