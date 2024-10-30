@@ -79,8 +79,8 @@ def mlp_gelu_forward(self, x: torch.Tensor):
     return fuse_mlp_base(self, GELU, x)
 
 
-def attention_softmax(attn_weights: torch.Tensor, training: bool):
-    if attn_weights.is_contiguous() and attn_weights.device.type == "xpu" and not training:
+def attention_softmax(attn_weights: torch.Tensor):
+    if attn_weights.is_contiguous() and attn_weights.device.type == "xpu":
         import xe_addons
         xe_addons.attn_softmax_inplaced(attn_weights)
     else:

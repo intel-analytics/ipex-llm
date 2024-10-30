@@ -114,7 +114,7 @@ def attention_forward(
         attn_weights = attn_weights + attention_mask
 
     # upcast attention to fp32
-    attn_weights = attention_softmax(attn_weights, self.training).to(hidden_states.dtype)
+    attn_weights = attention_softmax(attn_weights).to(hidden_states.dtype)
     attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
                                                training=self.training)
 

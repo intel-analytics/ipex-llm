@@ -220,7 +220,7 @@ def gemma_attention_forward(
         attn_weights = attn_weights + causal_mask
 
     # upcast attention to fp32
-    attn_weights = attention_softmax(attn_weights, self.training)
+    attn_weights = attention_softmax(attn_weights)
     attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout,
                                          training=self.training)
     attn_output = torch.matmul(attn_weights, value_states)
