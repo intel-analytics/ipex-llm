@@ -196,7 +196,7 @@ def convert_llm(model: torch.nn.Module,
                 group_size: int):
     if group_size == 0:
         n_splits_linear = 1
-        n_splits_down_proj = 1
+        n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
     else:
         n_splits_linear = model.config.hidden_size // group_size
         n_splits_down_proj = model.config.intermediate_size // group_size
@@ -318,9 +318,49 @@ def convert_llm(model: torch.nn.Module,
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
+    elif model.config.model_type == "qwen2":  # TODO: qwen 2.5
+        with tempfile.TemporaryDirectory() as temp_dir:
+            weight_dir = os.path.join(temp_dir, "model_weights")
+            os.mkdir(weight_dir)
+            layer_num = len(model.model.layers)
+            from .qwen import convert_qwen_layer, convert_lm_head_and_embedding
+            first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
+                                                                            temp_dir, weight_dir)
+
+            param_list = []
+            for layer_idx in range(0, layer_num):
+                param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
+                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+            with Pool() as pool:
+                result = pool.starmap(convert_qwen_layer, param_list)
+
+            # Prefill Runner
+            from ipex_llm.transformers.npu_models.convert_mp import convert_qwen
+            convert_qwen(model,
+                         max_output_len=kv_len,
+                         max_prompt_len=max_prompt_len,
+                         decoder=False,
+                         transpose_value_cache=transpose_value_cache)
+
+            # patch attrs for generate
+            model.kv_len = kv_len
+            model.num_head = model.model.layers[0].self_attn.num_key_value_heads
+            model.head_dim = model.model.layers[0].self_attn.head_dim
+            model.num_layers = layer_num
+            model.transpose_value_cache = transpose_value_cache
+            model.vocab_size = model.config.vocab_size
+
+            try:
+                res = InitLLMPipeline("qwen", kv_len, model.num_head, model.head_dim, layer_num,
+                                      model.vocab_size, weight_dir, "model",
+                                      first_blob_path, last_blob_path,
+                                      os.path.join(temp_dir, "decoder_layer"))
+            except:
+                invalidInputError(False,
+                                  "False to InitLLMPipeline.")
     else:
         invalidInputError(False,
-                          "Now we only support Llama2 / Llama3 / Baichuan2 for pipeline running.")
+                          "Now we only support Llama2 / Llama3 / Baichuan2 / Qwen2 for pipeline running.")
 
     if isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
