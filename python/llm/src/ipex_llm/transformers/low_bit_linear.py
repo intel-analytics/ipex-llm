@@ -794,8 +794,12 @@ class LowBitLinear(nn.Linear):
                                                    self.weight.qtype, input_seq_size)
                     result = result.to(x.dtype)
                 else:
-                    result = xe_linear.forward_new(x_2d, self.weight.data,
-                                                   self.weight.qtype, input_seq_size)
+                    if self.weight.qtype == NF4:
+                        result = xe_linear.forward_new(x_2d, self.weight.data.view(torch.uint8),
+                                                                    self.weight.qtype, input_seq_size)
+                    else:
+                        result = xe_linear.forward_new(x_2d, self.weight.data,
+                                                                    self.weight.qtype, input_seq_size)
 
                 if do_empty_cache:
                     torch.xpu.empty_cache()
