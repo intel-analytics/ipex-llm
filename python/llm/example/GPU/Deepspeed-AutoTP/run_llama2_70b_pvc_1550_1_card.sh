@@ -24,7 +24,7 @@ export CCL_ZE_IPC_EXCHANGE=sockets
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so:${LD_PRELOAD}
 basekit_root=/opt/intel/oneapi
 source $basekit_root/setvars.sh --force
-# source $basekit_root/ccl/latest/env/vars.sh --force  
+# source $basekit_root/ccl/latest/env/vars.sh --force   deprecate oneccl_bind_pt and use internal oneccl for better performance
 source /opt/intel/1ccl-wks/setvars.sh
 
 export OMP_NUM_THREADS=$((56/$NUM_GPUS))
