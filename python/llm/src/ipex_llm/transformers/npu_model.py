@@ -166,6 +166,8 @@ class _BaseAutoModelClass:
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
 
+        model.config.update({"optimize_model": optimize_model})
+
         if mock_device == "cpu":
             with torch.no_grad():
                 # Only mock quantization_group_size=0 for now
@@ -262,7 +264,6 @@ class _BaseAutoModelClass:
                 transpose_value_cache=transpose_value_cache,
                 group_size=quantization_group_size
             )
-            model.save_low_bit = types.MethodType(save_low_bit, model)
         else:
             from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
                 import convert_llm
@@ -271,7 +272,7 @@ class _BaseAutoModelClass:
                         max_prompt_len=max_prompt_len,
                         transpose_value_cache=transpose_value_cache,
                         group_size=quantization_group_size)
-
+        model.save_low_bit = types.MethodType(save_low_bit, model)
         return model
 
     @classmethod
@@ -304,8 +305,10 @@ class _BaseAutoModelClass:
         ignore_argument(kwargs, "pipeline_parallel_stages")
         ignore_argument(kwargs, "mixed_precision")
         ignore_argument(kwargs, "quantization_group_size")
-        optimize_model = kwargs.pop("optimize_model", False)
-        max_output_len = kwargs.pop("max_output_len", 1024)
+        ignore_argument(kwargs, "optimize_model")
+        pipeline = kwargs.pop("pipeline", False)
+        max_context_len = kwargs.pop("max_context_len", 1024)
+        max_context_len = max_context_len - 1
         max_prompt_len = kwargs.pop("max_prompt_len", 512)
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
@@ -355,6 +358,7 @@ class _BaseAutoModelClass:
         bigdl_lcmu_enabled = config_dict.pop("bigdl_lcmu_enabled", True)
         mixed_precision = config_dict.pop("mixed_precision", False)
         quantization_group_size = config_dict.pop("group_size", 0)
+        optimize_model = config_dict.pop("optimize_model", False)
 
         invalidInputError(
             qtype,
@@ -450,13 +454,12 @@ class _BaseAutoModelClass:
         quant_device = "meta" if bigdl_lcmu_enabled else "cpu"
         logger.info(f"Converting model, it may takes up to several minutes ...")
         from intel_npu_acceleration_library.compiler import create_npu_kernels
-
         if optimize_model:
             invalidInputError(
-                max_prompt_len < max_output_len,
+                max_prompt_len < max_context_len,
                 (
                     f"max_prompt_len ({max_prompt_len}) should be less"
-                    " than max_output_len ({max_output_len})"
+                    " than max_context_len ({max_context_len})"
                 ),
             )
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm_pre
@@ -468,7 +471,8 @@ class _BaseAutoModelClass:
 
             with torch.no_grad():
                 optimize_llm_pre(model, qtype, mixed_precision,
-                                 quantization_group_size=quantization_group_size)
+                                 quantization_group_size=quantization_group_size,
+                                 load=bigdl_lcmu_enabled)
                 cls.load_convert(qtype, model, quant_device, modules_to_not_convert,
                                  quantization_group_size, *model_args, **kwargs)
                 create_npu_kernels(llm)
@@ -541,17 +545,25 @@ class _BaseAutoModelClass:
         for param in model.parameters():
             param.requires_grad_(False)
 
-        if optimize_model:
+        if optimize_model and not pipeline:
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
             optimize_llm(
                 llm,
-                max_output_len=max_output_len,
+                max_output_len=max_context_len,
                 max_prompt_len=max_prompt_len,
                 inter_pp=inter_pp,
                 intra_pp=intra_pp,
                 transpose_value_cache=transpose_value_cache,
                 group_size=quantization_group_size
             )
+        elif optimize_model and pipeline:
+            from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
+                import convert_llm
+            convert_llm(llm,
+                        kv_len=max_context_len,
+                        max_prompt_len=max_prompt_len,
+                        transpose_value_cache=transpose_value_cache,
+                        group_size=quantization_group_size)
 
         return model
 

@@ -15,6 +15,7 @@
 #
 
 
+import os
 import torch
 import time
 import argparse
@@ -48,27 +49,48 @@ if __name__ == "__main__":
         help="The huggingface repo id for the Baichuan2 model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
+    parser.add_argument("--lowbit-path", type=str,
+        default="",
+        help="The path to the lowbit model folder, leave blank if you do not want to save. \
+            If path not exists, lowbit model will be saved there. \
+            Else, lowbit model will be loaded.",
+    )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-context-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument("--max-prompt-len", type=int, default=512)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 optimize_model=True,
-                                                 pipeline=True,
-                                                 max_context_len=args.max_context_len,
-                                                 max_prompt_len=args.max_prompt_len,
-                                                 torch_dtype=torch.float16,
-                                                 attn_implementation="eager",
-                                                 transpose_value_cache=not args.disable_transpose_value_cache,
-                                                 trust_remote_code=True)
+    if not args.lowbit_path or not os.path.exists(args.lowbit_path):
+        model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                     optimize_model=True,
+                                                     pipeline=True,
+                                                     max_context_len=args.max_context_len,
+                                                     max_prompt_len=args.max_prompt_len,
+                                                     torch_dtype=torch.float16,
+                                                     attn_implementation="eager",
+                                                     transpose_value_cache=not args.disable_transpose_value_cache,
+                                                     trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.load_low_bit(
+            args.lowbit_path,
+            attn_implementation="eager",
+            torch_dtype=torch.float16,
+            max_context_len=args.max_context_len,
+            max_prompt_len=args.max_prompt_len,
+            pipeline=True,
+            transpose_value_cache=not args.disable_transpose_value_cache,
+            trust_remote_code=True
+        )
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
+    if args.lowbit_path and not os.path.exists(args.lowbit_path):
+        model.save_low_bit(args.lowbit_path)
 
     DEFAULT_SYSTEM_PROMPT = """\
     """

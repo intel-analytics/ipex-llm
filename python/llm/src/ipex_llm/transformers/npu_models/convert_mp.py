@@ -31,7 +31,7 @@ def convert_forward(m, target_m, new_forward):
 
 
 def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
-                     quantization_group_size=0):
+                     quantization_group_size=0, load=False):
     if model.config.model_type == "baichuan":
         # process NormHead module in Baichuan2 7B
         if hasattr(model, 'lm_head') and model.lm_head is not None:
@@ -104,9 +104,9 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             )
             n_splits_linear = model.config.hidden_size // quantization_group_size
             n_splits_down_proj = model.config.intermediate_size // quantization_group_size
-
         model.apply(lambda m: split_linears(m, n_splits_hidden_size=n_splits_linear,
-                                            n_splits_down_proj=n_splits_down_proj))
+                                            n_splits_down_proj=n_splits_down_proj,
+                                            load=load))
 
         if quantization_group_size != 0:
             split_num = model.config.hidden_size // quantization_group_size

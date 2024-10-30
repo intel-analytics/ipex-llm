@@ -43,7 +43,7 @@ def reshape_lm_head_input(x):
     return x
 
 
-def split_linear(module, module_name, n_splits=2):
+def split_linear(module, module_name, n_splits=2, load=False):
     in_features = module.in_features
     invalidInputError(in_features % n_splits == 0,
                       f"in_features of the linear layer {module_name} must be divisible by"
@@ -51,17 +51,27 @@ def split_linear(module, module_name, n_splits=2):
     weight_split = torch.tensor_split(module.weight, n_splits, dim=1)
     linear_list = torch.nn.ModuleList()
     bias = module.bias
-    for idx, weight in enumerate(weight_split):
-        new_linear = torch.nn.Linear(weight.size(1),
-                                     weight.size(0),
-                                     bias=False if bias is None else True)
-        new_linear.bias = bias
-        new_linear.weight = torch.nn.Parameter(weight.contiguous(), requires_grad=False)
-        linear_list.add_module(f"{module_name}_dq_{idx}", new_linear)
+    from transformers.utils.generic import ContextManagers
+    init_contexts = []
+    if load:
+        from transformers.modeling_utils import no_init_weights
+        from accelerate.big_modeling import init_empty_weights
+        init_contexts.append(no_init_weights(_enable=load))
+        init_contexts.append(init_empty_weights())
+
+    with ContextManagers(init_contexts):
+        for idx, weight in enumerate(weight_split):
+            new_linear = torch.nn.Linear(weight.size(1),
+                                         weight.size(0),
+                                         bias=False if bias is None else True)
+            new_linear.bias = bias
+            new_linear.weight = torch.nn.Parameter(weight.contiguous(), requires_grad=False)
+            linear_list.add_module(f"{module_name}_dq_{idx}", new_linear)
     return linear_list
 
 
-def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down_proj=2):
+def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down_proj=2,
+                  load=False):
     from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP, Qwen2Attention
     from transformers.models.llama.modeling_llama import LlamaMLP, LlamaAttention
     attn_module_names = ["q_proj", "k_proj", "v_proj", "o_proj"]
@@ -69,7 +79,8 @@ def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down
     if isinstance(module, (Qwen2Attention, LlamaAttention)):
         for name in attn_module_names:
             setattr(module, f"{name}_dq_list", split_linear(getattr(module, name), name,
-                                                            n_splits=n_splits_hidden_size))
+                                                            n_splits=n_splits_hidden_size,
+                                                            load=load))
             delattr(module, name)
     elif isinstance(module, (Qwen2MLP, LlamaMLP)):
         for name in mlp_module_names:
@@ -77,5 +88,6 @@ def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down
             if name == 'down_proj':
                 n_splits_mlp = n_splits_down_proj
             setattr(module, f"{name}_dq_list", split_linear(getattr(module, name), name,
-                                                            n_splits=n_splits_mlp))
+                                                            n_splits=n_splits_mlp,
+                                                            load=load))
             delattr(module, name)
