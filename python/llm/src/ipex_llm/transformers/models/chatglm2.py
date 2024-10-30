@@ -359,3 +359,299 @@ def chatglm2_attention_forward(
     output = self.dense(attn_output)
 
     return output, past_key_value
+
+
+@torch.jit.script
+def apply_rotary_pos_emb_original(x: torch.Tensor, rope_cache: torch.Tensor) -> torch.Tensor:
+    # x: [sq, b, np, hn]
+    sq, b, np, hn = x.size(0), x.size(1), x.size(2), x.size(3)
+    rot_dim = rope_cache.shape[-2] * 2
+    x, x_pass = x[..., :rot_dim], x[..., rot_dim:]
+    # truncate to support variable sizes
+    rope_cache = rope_cache[:sq]
+    xshaped = x.reshape(sq, -1, np, rot_dim // 2, 2)
+    rope_cache = rope_cache.view(sq, -1, 1, xshaped.size(3), 2)
+    x_out2 = torch.stack(
+        [
+            xshaped[..., 0] * rope_cache[..., 0] - xshaped[..., 1] * rope_cache[..., 1],
+            xshaped[..., 1] * rope_cache[..., 0] + xshaped[..., 0] * rope_cache[..., 1],
+        ],
+        -1,
+    )
+    x_out2 = x_out2.flatten(3)
+    return torch.cat((x_out2, x_pass), dim=-1)
+
+
+def codegeex_model_forward(
+    self,
+    input_ids,
+    position_ids: Optional[torch.Tensor]=None,
+    attention_mask: Optional[torch.BoolTensor]=None,
+    full_attention_mask: Optional[torch.BoolTensor]=None,
+    past_key_values: Optional[Tuple[Tuple[torch.Tensor, torch.Tensor], ...]]=None,
+    inputs_embeds: Optional[torch.Tensor]=None,
+    use_cache: Optional[bool]=None,
+    output_hidden_states: Optional[bool]=None,
+    return_dict: Optional[bool]=None,
+):
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None
+        else self.config.output_hidden_states
+    )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    if inputs_embeds is None:
+        batch_size, seq_length = input_ids.shape
+        inputs_embeds = self.embedding(input_ids)
+    else:
+        inputs_embeds = inputs_embeds.transpose(0, 1).contiguous()
+        seq_length, batch_size, _ = inputs_embeds.shape
+        input_ids = torch.empty((batch_size, seq_length),
+                                dtype=inputs_embeds.dtype, device=inputs_embeds.device)
+
+    if use_cache:
+        use_compress_kv = should_use_compresskv(input_ids, input_ids.shape[1])
+        use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.dense_h_to_4h,
+                                                input_ids)
+        if use_compress_kv and not isinstance(past_key_values,
+                                              DynamicCompressCache):
+            if use_quantize_kv:
+                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+            else:
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+
+    if full_attention_mask is None:
+        if (attention_mask is not None and not attention_mask.all()) or (
+                past_key_values and seq_length != 1):
+            full_attention_mask = self.get_masks(input_ids,
+                                                 past_key_values,
+                                                 padding_mask=attention_mask)
+
+    # ipex-llm changes begin
+    # 1. replace `rotary_pos_emb` with `inv_freq` and `position_ids`
+    # 2. generate `causal_mask` and replace `full_attention_mask` with it
+    if position_ids is None:
+        if past_key_values is None:
+            position_ids = torch.arange(seq_length, dtype=torch.int64, device=inputs_embeds.device)
+        else:
+            if isinstance(past_key_values, DynamicCompressCache):
+                kv_length = past_key_values.get_seq_length()
+            else:
+                kv_length = past_key_values[0][0].size(0)
+            position_ids = torch.arange(kv_length, kv_length + seq_length,
+                                        dtype=torch.int64, device=inputs_embeds.device)
+        position_ids = position_ids.repeat(batch_size, 1)
+        # print("position_ids in model forward:")
+        # print(position_ids)
+        # print(position_ids.dtype)
+        # print(self.seq_length)
+    use_fuse_rope = input_ids.device.type == "xpu"
+    use_fuse_rope = use_fuse_rope and not self.training
+
+    # Rotary positional embeddings
+    rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
+    if position_ids is not None:
+        rotary_pos_emb = rotary_pos_emb[position_ids]
+    else:
+        rotary_pos_emb = rotary_pos_emb[None, :seq_length]
+    if use_fuse_rope:
+        # Repeat cos sin here, call only once for each token.
+        # Chatglm2's rotary embedding is similar to gptj's, is rotate_every_two.
+        # If put this to attension forward, it will generate too many times.
+        cos, sin = rotary_pos_emb.split(rotary_pos_emb.shape[-1] // 2, dim=-1)
+        cos = cos.squeeze(-1)
+        sin = sin.squeeze(-1)
+        cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
+        sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
+        rotary_pos_emb = (cos, sin)
+    else:
+        rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()
+
+    # `full_attention_mask` is not None only when
+    #  `past_key_values` is not None and `seq_length` > 1
+    if full_attention_mask is not None:
+        causal_mask = torch.zeros([batch_size, 1, seq_length, full_attention_mask.size(-1)],
+                                  dtype=inputs_embeds.dtype, device=inputs_embeds.device)
+        mask_value = torch.finfo(inputs_embeds.dtype).min
+        causal_mask.masked_fill_(full_attention_mask, mask_value)
+    elif self.training or (inputs_embeds.device.type != "xpu" and past_key_values is None):
+        full_attention_mask = self.get_masks(input_ids,
+                                             past_key_values,
+                                             padding_mask=attention_mask)
+        causal_mask = torch.zeros([batch_size, 1, seq_length, full_attention_mask.size(-1)],
+                                  dtype=inputs_embeds.dtype, device=inputs_embeds.device)
+        mask_value = torch.finfo(inputs_embeds.dtype).min
+        causal_mask.masked_fill_(full_attention_mask, mask_value)
+    else:
+        causal_mask = None
+
+    # Run encoder.
+    hidden_states, presents, all_hidden_states, all_self_attentions = self.encoder(
+        inputs_embeds, causal_mask,
+        rotary_pos_emb=rotary_pos_emb,
+        kv_caches=past_key_values, use_cache=use_cache, output_hidden_states=output_hidden_states
+    )
+    # ipex-llm changes end
+
+    if not return_dict:
+        return tuple(v for v in [hidden_states, presents, all_hidden_states, all_self_attentions]
+                     if v is not None)
+
+    return BaseModelOutputWithPast(
+        last_hidden_state=hidden_states,
+        past_key_values=presents,
+        hidden_states=all_hidden_states,
+        attentions=all_self_attentions,
+    )
+
+def codegeex_attention_forward(
+    self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
+):
+    q_len, bsz, _ = hidden_states.size()
+    n_head = self.num_attention_heads_per_partition
+    n_kv_head = self.num_multi_query_groups_per_partition if self.multi_query_attention else n_head
+    head_dim = self.hidden_size_per_attention_head
+    mixed_x_layer = self.query_key_value(hidden_states) 
+
+    if self.multi_query_attention: 
+        # print("multi_query_attention true")
+        (query_layer, key_layer, value_layer) = mixed_x_layer.split( 
+            [ 
+                self.num_attention_heads_per_partition * self.hidden_size_per_attention_head, 
+                self.num_multi_query_groups_per_partition * self.hidden_size_per_attention_head, 
+                self.num_multi_query_groups_per_partition * self.hidden_size_per_attention_head, 
+            ], 
+            dim=-1, 
+        ) 
+        query_layer = query_layer.view( 
+            query_layer.size()[:-1] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+        ) 
+        key_layer = key_layer.view( 
+            key_layer.size()[:-1] + (self.num_multi_query_groups_per_partition, self.hidden_size_per_attention_head) 
+        ) 
+        value_layer = value_layer.view( 
+            value_layer.size()[:-1] 
+            + (self.num_multi_query_groups_per_partition, self.hidden_size_per_attention_head) 
+        ) 
+    else: 
+        if self.interleaved_qkv: 
+            new_tensor_shape = mixed_x_layer.size()[:-1] + \
+                                (self.num_attention_heads_per_partition, 
+                                3 * self.hidden_size_per_attention_head) 
+            mixed_x_layer = mixed_x_layer.view(*new_tensor_shape) 
+
+        # [sq, b, np, 3 * hn] --> 3 [sq, b, np, hn] 
+        (query_layer, key_layer, value_layer) = split_tensor_along_last_dim(mixed_x_layer, 3) 
+
+        if not self.interleaved_qkv: 
+            query_layer = query_layer.view( 
+                query_layer.size()[:-1] + ( 
+                    self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+            ).contiguous() 
+            key_layer = key_layer.view( 
+                key_layer.size()[:-1] + ( 
+                    self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+            ).contiguous() 
+            value_layer = value_layer.view( 
+                value_layer.size()[:-1] + ( 
+                    self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+            ).contiguous() 
+
+    # apply relative positional encoding (rotary embedding) 
+    if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
+        # print("ipex_rope")
+        cos, sin = rotary_pos_emb
+        rot_dim = cos.shape[-1]
+        query_layer = query_layer.transpose(0, 1)
+        key_layer = key_layer.transpose(0, 1)
+        query_layer_cur = query_layer[..., :rot_dim]
+        key_layer_cur = key_layer[..., :rot_dim]
+        # ipex_llm's apply_rotary_embedding can change the origin storage,
+        # so query_layer will get the result directly.
+        torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
+        torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
+        query_layer = query_layer.transpose(0, 1)
+        key_layer = key_layer.transpose(0, 1)
+    else:
+        query_layer = apply_rotary_pos_emb_original(query_layer, rotary_pos_emb2)
+        key_layer = apply_rotary_pos_emb_original(key_layer, rotary_pos_emb2)
+
+
+
+    # print("query_layer" + str(query_layer))
+    # print("key_layer" + str(key_layer))
+    # import sys
+    # sys.exit(1)
+    
+
+    # adjust key and value for inference 
+    if use_cache: 
+        if kv_cache is not None: 
+            cache_k, cache_v = kv_cache 
+            key_layer = torch.cat((cache_k, key_layer), dim=0) 
+            value_layer = torch.cat((cache_v, value_layer), dim=0) 
+        kv_cache = (key_layer, value_layer) 
+    else: 
+        kv_cache = None 
+
+    if self.multi_query_attention: 
+        key_layer = key_layer.unsqueeze(-2) 
+        key_layer = key_layer.expand( 
+            -1, -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1 
+        ) 
+        key_layer = key_layer.contiguous().view( 
+            key_layer.size()[:2] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+        ) 
+        value_layer = value_layer.unsqueeze(-2) 
+        value_layer = value_layer.expand( 
+            -1, -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1 
+        ) 
+        value_layer = value_layer.contiguous().view( 
+            value_layer.size()[:2] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+        ) 
+    # print(str(query_layer.shape) + str(key_layer.shape) + str(value_layer.shape))
+    # context_layer = self.core_attention(query_layer, key_layer, value_layer, attention_mask)
+    # print(str(context_layer.shape))
+    # =================
+    # Output. [sq, b, h]
+    # =================
+    # print("query_layer：" + str(query_layer))
+    # print(str(query_layer.shape))
+    # print("key_layer" + str(key_layer))
+    # print(str(key_layer.shape))
+    # print("value_layer" + str(value_layer))
+    # print(str(value_layer.shape))
+    
+    query_layer, key_layer, value_layer = [k.permute(1, 2, 0, 3) for k in [query_layer, key_layer, value_layer]]
+    kv_seq_len = key_layer.shape[2]
+    if use_sdp_causal(q_len, kv_seq_len, head_dim, query_layer, self.training):
+        # print("sdp_causal")
+        import xe_addons
+        # if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
+        #     context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, None)
+        # else:
+        #     context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
+        key_layer = key_layer.contiguous()
+        value_layer = value_layer.contiguous()
+        context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
+    else:
+        if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
+                                                                                is_causal=True)
+        else:
+            if attention_mask is not None:
+                attention_mask = ~attention_mask
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
+                                                                                attention_mask)
+
+    # print("context_layer" + str(context_layer.shape))
+    # print(context_layer)
+    context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len, bsz, n_head * head_dim)
+    # print(context_layer)
+    # import sys
+    # sys.exit(1)
+
+    output = self.dense(context_layer)
+
+    return output, kv_cache
