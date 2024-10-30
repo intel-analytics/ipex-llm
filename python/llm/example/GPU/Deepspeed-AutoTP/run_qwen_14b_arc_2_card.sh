@@ -25,7 +25,8 @@ export CCL_ZE_IPC_EXCHANGE=sockets
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so:${LD_PRELOAD}
 basekit_root=/opt/intel/oneapi
 source $basekit_root/setvars.sh --force
-source $basekit_root/ccl/latest/env/vars.sh --force
+# source $basekit_root/ccl/latest/env/vars.sh --force  
+source /opt/intel/1ccl-wks/setvars.sh
 
 NUM_GPUS=2 # number of used GPU
 export USE_XETLA=OFF
