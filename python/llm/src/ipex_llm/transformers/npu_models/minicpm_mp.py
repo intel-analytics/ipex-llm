@@ -448,7 +448,9 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         seq_len = hidden_states.shape[1]
 
         backend_cls = self.backend_cls_prefill
-        inputs = (hidden_states.to(torch.float16), attention_mask.to(torch.int64), position_ids.to(torch.int64))
+        inputs = (hidden_states.to(torch.float16),
+                  attention_mask.to(torch.int64),
+                  position_ids.to(torch.int64))
         inputs += (self.layer_norm_0, self.layer_norm_1)
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
