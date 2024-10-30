@@ -18,7 +18,51 @@
 import torch
 import numpy as np
 import os
-from .common import update_names_of_IR_and_export_blob, LLMEmbedding, LowBitLLMLMHead
+from .common import update_names_of_IR_and_export_blob, LowBitLLMLMHead
+from intel_npu_acceleration_library.backend.factory import NNFactory
+
+
+class MiniCPMEmbedding(NNFactory):
+    def __init__(
+        self,
+        vocab_size,
+        embedding_dim,
+        embedding_weight,
+        padding_idx,
+        dtype,  # fp16
+        scale_emb,
+        device: str = "NPU",
+    ):
+        super().__init__(False, device)
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.padding_idx = padding_idx
+        self.dtype = dtype
+
+        # define input
+        weight = self.constant(embedding_weight)
+        input = self.parameter((1, 1), dtype=np.int32)
+
+        if padding_idx == -1:
+            padding_idx += vocab_size
+
+        axis_node = self.constant(np.array([0], dtype=np.int64))
+        if padding_idx is not None:
+            masked_embeddings = np.ones(weight.shape, dtype=np.float16)
+            masked_embeddings[padding_idx, :] = 0.0  # mask
+
+            node_mask = self.constant(masked_embeddings)
+            node_masked_w = self.eltwise_mul(weight, node_mask)
+            res = self.gather(node_masked_w, input, axis_node, 0)
+        else:
+            res = self.gather(weight, input, axis_node, 0)
+        res = res * scale_emb
+
+        # define outputs
+        res = self.convert_to_fp16(res)
+
+        print("start compiling")
+        self.compile()
 
 
 def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
@@ -72,12 +116,13 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
         weight.tofile(bin_file)
 
     embedding_layer = model.model.embed_tokens
-    new_embedding = LLMEmbedding(
+    new_embedding = MiniCPMEmbedding(
         vocab_size=model.config.vocab_size,
         embedding_dim=model.config.hidden_size,
         embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
         padding_idx=model.config.pad_token_id,
         dtype=np.float16,
+        scale_emb=model.config.scale_emb,
     )
     first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
                                                          temp_dir)
