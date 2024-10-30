@@ -77,7 +77,7 @@ if __name__ == '__main__':
                                                  torch_dtype=torch.float16,
                                                  trust_remote_code=True,
                                                  use_cache=True)
-    
+
     model = deepspeed.init_inference(
         model,
         mp_size=world_size,
