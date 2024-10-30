@@ -85,7 +85,7 @@ def mllama_vision_attention_forward(
 
         # upcast attention to fp32
         from ipex_llm.transformers.models.common import attention_softmax
-        attn_weights = attention_softmax(attn_weights, False)
+        attn_weights = attention_softmax(attn_weights)
 
         attn_output = torch.matmul(attn_weights, value)
 
@@ -311,7 +311,7 @@ def mllama_cross_attention_forward(
             attn_weights = attn_weights + causal_mask
 
         # upcast attention to fp32
-        attn_weights = attention_softmax(attn_weights, self.training)
+        attn_weights = attention_softmax(attn_weights)
         attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()

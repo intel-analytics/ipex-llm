@@ -114,7 +114,7 @@ class AttnProcessor2_0:
             attn_weights = torch.matmul(query * scale, key.transpose(-1, -2))
             if attention_mask is not None:
                 attn_weights = attn_weights + attention_mask
-            attn_weights = attention_softmax(attn_weights, False)
+            attn_weights = attention_softmax(attn_weights)
             hidden_states = torch.matmul(attn_weights, value)
         # IPEX-LLM changes end
 

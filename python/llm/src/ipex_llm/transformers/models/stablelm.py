@@ -175,7 +175,7 @@ def stablelm_attention_forward(
             attn_weights = attn_weights + attention_mask
 
         # upcast attention to fp32
-        attn_weights = attention_softmax(attn_weights, self.training)
+        attn_weights = attention_softmax(attn_weights)
         attn_weights = self.attention_dropout(attn_weights)
         attn_output = torch.matmul(attn_weights, value_states)
 
