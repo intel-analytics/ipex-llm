@@ -14,9 +14,8 @@
 # limitations under the License.
 #
 
-## Validated BKC for Qwen1.5-14B-Chat on 2 ARC with
-## Ubuntu 22.04.4, kernel 6.5.0-27-generic, level-zero 1.14.0, NEO(compute runtime) 24.09.28717.12
-
+export ZE_AFFINITY_MASK="0,1" # specify the used GPU
+NUM_GPUS=2 # number of used GPU
 export MASTER_ADDR=127.0.0.1
 export FI_PROVIDER=tcp
 export CCL_ATL_TRANSPORT=ofi
@@ -25,15 +24,11 @@ export CCL_ZE_IPC_EXCHANGE=sockets
 export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so:${LD_PRELOAD}
 basekit_root=/opt/intel/oneapi
 source $basekit_root/setvars.sh --force
-# source $basekit_root/ccl/latest/env/vars.sh --force  
-source /opt/intel/1ccl-wks/setvars.sh
+source $basekit_root/ccl/latest/env/vars.sh --force
 
-NUM_GPUS=2 # number of used GPU
-export USE_XETLA=OFF
-if grep -q "Core" /proc/cpuinfo; then
-    export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
-fi
-export TORCH_LLM_ALLREDUCE=0 # Different from PVC
+export OMP_NUM_THREADS=$((56/$NUM_GPUS))
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
+export TORCH_LLM_ALLREDUCE=1
 export BIGDL_IMPORT_IPEX=0
 mpirun -np $NUM_GPUS --prepend-rank \
-    python deepspeed_autotp.py --repo-id-or-model-path '/mnt/disk1/models/Llama-2-13b-chat-hf/' --low-bit 'sym_int4'
+    python deepspeed_autotp.py --repo-id-or-model-path 'meta-llama/Llama-2-70b-chat-hf' --low-bit 'sym_int4'
