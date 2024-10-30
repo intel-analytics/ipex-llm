@@ -23,7 +23,7 @@ pip install bitsandbytes scipy
 source /opt/intel/oneapi/setvars.sh # necessary to run before installing deepspeed
 pip install git+https://github.com/microsoft/DeepSpeed.git@78c518e
 pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@ec33277
-# install mpirun
+# (optional) install mpirun to run multi-card finetuning
 sudo apt install openmpi-bin
 ```
 
