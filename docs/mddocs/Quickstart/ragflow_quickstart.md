@@ -72,7 +72,7 @@ Now we need to pull a model for RAG using Ollama. Here we use [Qwen/Qwen2-7B](ht
 You can either clone the repository or download the source zip from [github](https://github.com/infiniflow/ragflow/archive/refs/heads/main.zip):
 
 ```bash
-$ git clone https://github.com/infiniflow/ragflow.git
+git clone https://github.com/infiniflow/ragflow.git
 ```
 
 #### 3.2 Environment Settings
@@ -80,7 +80,7 @@ $ git clone https://github.com/infiniflow/ragflow.git
 Ensure `vm.max_map_count` is set to at least 262144. To check the current value of `vm.max_map_count`, use:
 
 ```bash
-$ sysctl vm.max_map_count
+sysctl vm.max_map_count
 ```
 
 ##### Changing `vm.max_map_count`
@@ -88,7 +88,7 @@ $ sysctl vm.max_map_count
 To set the value temporarily, use:
 
 ```bash
-$ sudo sysctl -w vm.max_map_count=262144
+sudo sysctl -w vm.max_map_count=262144
 ```
 
 To make the change permanent and ensure it persists after a reboot, add or update the following line in `/etc/sysctl.conf`:
@@ -105,10 +105,10 @@ Build the pre-built Docker images and start up the server:
 > Running the following commands automatically downloads the *dev* version RAGFlow Docker image. To download and run a specified Docker version, update `RAGFLOW_VERSION` in **docker/.env** to the intended version, for example `RAGFLOW_VERSION=v0.7.0`, before running the following commands.
 
 ```bash
-$ export no_proxy=localhost,127.0.0.1
-$ cd ragflow/docker
-$ chmod +x ./entrypoint.sh
-$ docker compose up -d
+export no_proxy=localhost,127.0.0.1
+cd ragflow/docker
+chmod +x ./entrypoint.sh
+docker compose up -d
 ```
 
 > [!NOTE]
@@ -117,7 +117,7 @@ $ docker compose up -d
 Check the server status after having the server up and running:
 
 ```bash
-$ docker logs -f ragflow-server
+docker logs -f ragflow-server
 ```
 
 Upon successful deployment, you will see logs in the terminal similar to the following:
