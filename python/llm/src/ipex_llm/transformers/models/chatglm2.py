@@ -489,6 +489,7 @@ def codegeex_model_forward(
         attentions=all_self_attentions,
     )
 
+
 def codegeex_attention_forward(
     self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
 ):
@@ -510,7 +511,7 @@ def codegeex_attention_forward(
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[2]
 
-    # apply relative positional encoding (rotary embedding) 
+    # apply relative positional encoding (rotary embedding)
     if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
         cos, sin = rotary_pos_emb
         rot_dim = cos.shape[-1]
@@ -553,12 +554,16 @@ def codegeex_attention_forward(
         key_layer = repeat_kv(key_layer, n_head // n_kv_head)
         value_layer = repeat_kv(value_layer, n_head // n_kv_head)
         if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
                                                                              is_causal=True)
         else:
             if attention_mask is not None:
                 attention_mask = ~attention_mask
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
+            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
+                                                                             key_layer,
+                                                                             value_layer,
                                                                              attention_mask)
 
     context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len, bsz, n_head * head_dim)
