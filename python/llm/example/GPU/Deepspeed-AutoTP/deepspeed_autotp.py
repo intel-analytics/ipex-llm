@@ -136,7 +136,7 @@ if __name__ == '__main__':
             actual_output_len = output.shape[1] - input_ids.shape[1]
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
             avg_time = (end - st) / actual_output_len * 1000
-            print(f'Inference time of generating {actual_output_len} tokens: {end-st} s,first token cost {model.first_cost} s, rest tokens average cost {model.rest_cost_mean} s')
+            print(f'Inference time of generating {actual_output_len} tokens: {end-st} s, first token cost {model.first_cost} s, rest tokens average cost {model.rest_cost_mean} s')
             print('-'*20, 'Prompt', '-'*20)
             print(prompt)
             print('-'*20, 'Output', '-'*20)
