@@ -171,9 +171,9 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
             weight_numpy = [model.lm_head_0.weight.data.numpy(),
                             model.lm_head_0.scale.data.numpy(),
                             model.lm_head_1.weight.data.numpy(),
-                            model.lm_head_1.scale.data.numpy(),]
+                            model.lm_head_1.scale.data.numpy(), ]
         else:
-            weight_numpy = [model.lm_head.weight.data.numpy(), model.lm_head.scale.data.numpy(),]
+            weight_numpy = [model.lm_head.weight.data.numpy(), model.lm_head.scale.data.numpy(), ]
     else:
         # TODO
         pass
