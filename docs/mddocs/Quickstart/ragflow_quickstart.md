@@ -21,6 +21,7 @@
 - [Pull Model](./ragflow_quickstart.md#2-pull-model)
 - [Start `RAGFlow` Service](./ragflow_quickstart.md#3-start-ragflow-service)
 - [Using `RAGFlow`](./ragflow_quickstart.md#4-using-ragflow)
+- [Troubleshooting](./ragflow_quickstart.md#5-troubleshooting)
 
 ## Quickstart
 
@@ -237,3 +238,18 @@ Input your questions into the **Message Resume Assistant** textbox at the bottom
 #### Exit
 
 To shut down the RAGFlow server, use **Ctrl+C** in the terminal where the Ragflow server is runing, then close your browser tab.
+
+### 5. Troubleshooting
+
+#### Stuck when parsing files `Node <Urllib3HttpNode(http://es01:9200)> has failed for xx times in a row, putting on 30 second timeout`
+
+This is because there's no enough space on the disk and the es container stop working. Please left enough space on the disk and make sure the disk usage is below 90%.
+
+#### `Max retries exceeded with url: /encodings/cl100k_base.tiktoken` while starting the service
+
+This is caused by proxy error.
+
+1. Attach to the container by `docker exec -it ragflow-server /bin/bash`
+2. Add proxy settings at the beginning of the `/ragflow/entrypoint.sh`.
+3. Stop the service by `docker compose stop`.
+4. Start the service by `docker compose start`.
