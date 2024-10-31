@@ -249,7 +249,7 @@ This is because there's no enough space on the disk and the Docker container sto
 
 This may caused by network problem. To resolve this, you could try to:
 
-1. Attach to the container by `docker exec -it ragflow-server /bin/bash`
+1. Attach to the Docker container by `docker exec -it ragflow-server /bin/bash`
 2. Set environment variables like `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` at the beginning of the `/ragflow/entrypoint.sh`.
 3. Stop the service by `docker compose stop`.
-4. Start the service by `docker compose start`.
+4. Restart the service by `docker compose start`.
