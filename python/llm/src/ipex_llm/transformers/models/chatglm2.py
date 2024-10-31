@@ -546,8 +546,6 @@ def codegeex_attention_forward(
         context_layer = xe_addons.sdp(query_layer, key_layer, value_layer, attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_layer, self.training):
         import xe_addons
-        key_layer = key_layer.contiguous()
-        value_layer = value_layer.contiguous()
         context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
     else:
         # repeat k/v heads if n_kv_heads < n_heads
