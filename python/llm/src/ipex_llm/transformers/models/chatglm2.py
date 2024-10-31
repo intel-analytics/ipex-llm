@@ -566,7 +566,9 @@ def codegeex_attention_forward(
                                                                              value_layer,
                                                                              attention_mask)
 
-    context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len, bsz, n_head * head_dim)
+    context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len,
+                                                                        bsz,
+                                                                        n_head * head_dim)
     output = self.dense(context_layer)
 
     return output, past_key_value
