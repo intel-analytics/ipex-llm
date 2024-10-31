@@ -249,7 +249,7 @@ class LLMBaseNNFactory(NNFactory):
             key_states = self.convert_to_fp32(key_states)
             query_states = self.convert_to_fp32(query_states)
             attn_output = self.scaled_dot_product_attention(
-                query_states, key_states,value_states, None, True)
+                query_states, key_states, value_states, None, True)
             attn_output = self.convert_to_fp16(attn_output)
         else:
             attn_weight = self.matmul(query_states, key_states, False, True) / (
