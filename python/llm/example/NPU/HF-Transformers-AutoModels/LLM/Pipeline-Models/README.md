@@ -8,6 +8,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 |------------|----------------------------------------------------------------|
 | Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
 | Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
+| Qwen2.5 | [Qwen/Qwen2.5-7b-Instruct](https://huggingface.co/Qwen/Qwen2.5-7b-Instruct) |
 | Baichuan2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16) |
 
@@ -30,7 +31,7 @@ pip install --pre --upgrade ipex-llm[npu]
 
 ## 2. Runtime Configurations
 
-**Following envrionment variables are required**:
+**Following environment variables are required**:
 
 ```cmd
 set BIGDL_USE_NPU=1
@@ -45,6 +46,9 @@ python llama2.py
 
 :: to run Meta-Llama-3-8B-Instruct
 python llama3.py
+
+:: to run Qwen2.5-7b-Instruct
+python qwen.py
 
 :: to run Baichuan2-7B-Chat
 python baichuan2.py
