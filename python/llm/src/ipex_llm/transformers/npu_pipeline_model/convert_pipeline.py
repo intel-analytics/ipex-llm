@@ -318,7 +318,7 @@ def convert_llm(model: torch.nn.Module,
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
-    elif model.config.model_type == "qwen2":  # TODO: qwen 2.5
+    elif model.config.model_type == "qwen2":
         with tempfile.TemporaryDirectory() as temp_dir:
             weight_dir = os.path.join(temp_dir, "model_weights")
             os.mkdir(weight_dir)
