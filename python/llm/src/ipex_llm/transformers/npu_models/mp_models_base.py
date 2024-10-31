@@ -138,7 +138,6 @@ class LLMBaseNNFactory(NNFactory):
                   v_bias=None):
         hidden_size = num_heads * head_dim
         num_key_value_groups = num_heads // num_key_value_heads
-        groupsize = hidden_size // self.n_splits_linear
         if self.n_splits_linear == 1:
             query_states = self.linear(
                 hidden_states,
@@ -200,9 +199,12 @@ class LLMBaseNNFactory(NNFactory):
 
         query_states = self.transpose(query_states, [0, 2, 1, 3])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
+        use_ov_sdp = (mode == "prefill") and (self.group_size != 0)
+        # use_ov_sdp = (mode == "prefill")
+        print(f"-------------------- use_ov_sdp: {use_ov_sdp}, groupsize: {self.group_size}")
         if self.transpose_value:
             new_value_states = self.transpose(value_states, [0, 2, 3, 1])
-            if mode == "prefill":
+            if use_ov_sdp:
                 value_states = self.transpose(value_states, [0, 2, 1, 3])
             else:
                 value_states = new_value_states
@@ -241,8 +243,8 @@ class LLMBaseNNFactory(NNFactory):
                                       num_key_value_heads=num_key_value_heads,
                                       kv_seq_len=kv_seq_len,
                                       head_dim=head_dim,
-                                      transpose=self.transpose_value)
-        if mode == "prefill":
+                                      transpose=(self.transpose_value and (not use_ov_sdp)))
+        if use_ov_sdp:
             value_states = self.convert_to_fp32(value_states)
             key_states = self.convert_to_fp32(key_states)
             query_states = self.convert_to_fp32(query_states)
