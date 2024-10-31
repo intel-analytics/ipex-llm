@@ -110,13 +110,20 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         # define input, the order self.parameter matters
         input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
 
+        # open llama2 other models need to test
+        use_prefill_sdp = self.intermediate_size == 11008
+
         # Self Attention
         if mode == "decode":
             attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1),
                                                   dtype=np.int64)
         else:
-            attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len),
-                                                  dtype=np.int64)
+            if use_prefill_sdp:
+                attention_mask = None
+            else:
+                attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len,
+                                                       self.seq_len),
+                                                       dtype=np.int64)
 
         position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
 
@@ -177,6 +184,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
                 past_key=past_keys[i],
                 past_value=past_values[i],
+                use_prefill_sdp=use_prefill_sdp,
             )
             curr_key_values.append((new_key_states, new_value_states))
 
@@ -202,6 +210,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         post_attention_layernorm_weight,
         past_key=None,
         past_value=None,
+        use_prefill_sdp=False,
     ):
 
         residual = hidden_states
@@ -220,6 +229,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             num_key_value_heads=self.num_key_value_heads,
             head_dim=self.head_dim,
             seq_len=self.seq_len,
+            use_prefill_sdp=use_prefill_sdp,
         )
         hidden_states = self.eltwise_add(residual, attn_output)
         residual = hidden_states
@@ -427,6 +437,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
+        self.use_prefill_sdp = intermediate_size == 11008
 
     def forward(
         self,
@@ -451,9 +462,13 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         seq_len = hidden_states.shape[1]
 
         backend_cls = self.backend_cls_prefill
-        inputs = (hidden_states.to(torch.float16),
-                  attention_mask.to(torch.int64),
-                  position_ids.to(torch.int64))
+        if self.use_prefill_sdp:
+            inputs = (hidden_states.to(torch.float16),
+                      position_ids.to(torch.int64))
+        else:
+            inputs = (hidden_states.to(torch.float16),
+                      attention_mask.to(torch.int64),
+                      position_ids.to(torch.int64))
         inputs += (self.layer_norm_0, self.layer_norm_1)
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2

@@ -135,7 +135,8 @@ class LLMBaseNNFactory(NNFactory):
                   seq_len,
                   q_bias=None,
                   k_bias=None,
-                  v_bias=None):
+                  v_bias=None,
+                  use_prefill_sdp=False):
         hidden_size = num_heads * head_dim
         num_key_value_groups = num_heads // num_key_value_heads
         if self.n_splits_linear == 1:
@@ -199,8 +200,7 @@ class LLMBaseNNFactory(NNFactory):
 
         query_states = self.transpose(query_states, [0, 2, 1, 3])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
-        use_ov_sdp = (mode == "prefill") and (self.group_size != 0)
-        # use_ov_sdp = (mode == "prefill")
+        use_ov_sdp = (mode == "prefill") and use_prefill_sdp
         print(f"-------------------- use_ov_sdp: {use_ov_sdp}, groupsize: {self.group_size}")
         if self.transpose_value:
             new_value_states = self.transpose(value_states, [0, 2, 3, 1])
@@ -248,9 +248,8 @@ class LLMBaseNNFactory(NNFactory):
             value_states = self.convert_to_fp32(value_states)
             key_states = self.convert_to_fp32(key_states)
             query_states = self.convert_to_fp32(query_states)
-            attention_mask = self.convert_to_fp32(attention_mask)
             attn_output = self.scaled_dot_product_attention(
-                query_states, key_states,value_states, attention_mask, False)
+                query_states, key_states,value_states, None, True)
             attn_output = self.convert_to_fp16(attn_output)
         else:
             attn_weight = self.matmul(query_states, key_states, False, True) / (
