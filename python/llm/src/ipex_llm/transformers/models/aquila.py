@@ -109,7 +109,7 @@ def aquila_attention_forward(
         )
 
     # upcast attention to fp32
-    attn_weights = attention_softmax(attn_weights, self.training)
+    attn_weights = attention_softmax(attn_weights)
     attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):

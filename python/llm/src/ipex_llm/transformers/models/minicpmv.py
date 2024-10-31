@@ -56,7 +56,7 @@ def siglip_attention_forward(
     if attention_mask is not None:
         attn_weights = attn_weights + attention_mask
 
-    attn_weights = attention_softmax(attn_weights, self.training)
+    attn_weights = attention_softmax(attn_weights)
 
     attn_weights = torch.nn.functional.dropout(attn_weights, p=self.dropout, training=self.training)
     attn_output = torch.matmul(attn_weights, value_states)
@@ -161,7 +161,7 @@ def vision_transformer_attention_forward(self, x: torch.Tensor) -> torch.Tensor:
     query_states, key_states, value_states = qkv.chunk(3, dim=1)
 
     attn_weights = torch.matmul(query_states * self.scale, key_states.transpose(2, 3))
-    attn_weights = attention_softmax(attn_weights, self.training)
+    attn_weights = attention_softmax(attn_weights)
     attn_weights = self.attn_drop(attn_weights)
     attn_output = torch.matmul(attn_weights, value_states)
 

@@ -227,6 +227,46 @@ def convert_baichuan(
     convert_forward(model, module.BaichuanModel, baichuan_model_forward)
 
 
+def convert_minicpm(
+    model: torch.nn.Module,
+    max_output_len=1024,
+    max_prompt_len=1024,
+    decoder=False,
+    inter_pp=None,
+    intra_pp=None,
+    transpose_value_cache=True,
+):
+    from ipex_llm.transformers.npu_models.minicpm_mp import gen_minicpm_fused_model_forward
+    from ipex_llm.transformers.npu_models.minicpm_mp import DecodeRunner, PrefillRunner
+    modeling_module_name = model.__class__.__module__
+    module = importlib.import_module(modeling_module_name)
+
+    if decoder:
+        decode_runner = DecodeRunner(
+            model,
+            max_seq_len=max_output_len,
+            inter_pp=inter_pp,
+            intra_pp=intra_pp,
+            transpose_value_cache=transpose_value_cache,
+        )
+    else:
+        decode_runner = None
+    prefill_runner = PrefillRunner(
+        model,
+        max_output_len=max_output_len,
+        max_prompt_len=max_prompt_len,
+        transpose_value_cache=transpose_value_cache,
+    )
+    minicpm_model_forward = gen_minicpm_fused_model_forward(
+        prefill_runner=prefill_runner, decode_runner=decode_runner
+    )
+    convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
+    if model.config.num_hidden_layers == 40:
+        # for minicpm-2b
+        from ipex_llm.transformers.npu_models.minicpm_mp import minicpm_casullm_forward
+        convert_forward(model, module.MiniCPMForCausalLM, minicpm_casullm_forward)
+
+
 def optimize_llm(
     model: torch.nn.Module,
     max_context_len=1024,
@@ -291,41 +331,13 @@ def optimize_llm(
             intra_pp = 2
         if inter_pp is None:
             inter_pp = 2
-
-        from ipex_llm.transformers.npu_models.minicpm_mp import gen_minicpm_fused_model_forward
-        from ipex_llm.transformers.npu_models.minicpm_mp import DecodeRunner, PrefillRunner
-
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-
-        if model.config.num_hidden_layers == 52:
-            # for minicpm-1b
-            transpose_cache = transpose_value_cache
-        elif model.config.num_hidden_layers == 40:
-            # for minicpm-2b
-            transpose_cache = False
-
-        decode_runner = DecodeRunner(
-            model,
-            max_seq_len=max_context_len,
-            inter_pp=inter_pp,
-            intra_pp=intra_pp,
-            transpose_value_cache=transpose_cache,
-        )
-        prefill_runner = PrefillRunner(
-            model,
-            max_output_len=max_context_len,
-            max_prompt_len=max_prompt_len,
-            transpose_value_cache=transpose_cache,
-        )
-        minicpm_model_forward = gen_minicpm_fused_model_forward(
-            prefill_runner=prefill_runner, decode_runner=decode_runner
-        )
-        convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
-        if model.config.num_hidden_layers == 40:
-            # for minicpm-2b
-            from ipex_llm.transformers.npu_models.minicpm_mp import minicpm_casullm_forward
-            convert_forward(model, module.MiniCPMForCausalLM, minicpm_casullm_forward)
+        convert_minicpm(model,
+                        max_output_len=max_context_len,
+                        max_prompt_len=max_prompt_len,
+                        inter_pp=inter_pp,
+                        intra_pp=intra_pp,
+                        decoder=True,
+                        transpose_value_cache=transpose_value_cache)
     elif model.config.model_type == "baichuan" and model.config.num_hidden_layers == 32:
         # for Baichuan2-7B
         if intra_pp is None:
@@ -339,7 +351,7 @@ def optimize_llm(
                          intra_pp=intra_pp,
                          decoder=True,
                          transpose_value_cache=transpose_value_cache)
-    if isinstance(model.lm_head, SlicedLMHead):
+    if hasattr(model, 'lm_head') and isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
 
 

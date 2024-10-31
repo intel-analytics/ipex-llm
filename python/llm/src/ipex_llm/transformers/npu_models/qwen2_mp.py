@@ -229,7 +229,10 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
         print(f"{mode} start compiling")
-        self.compile()
+        if group_size != 0 and (mode == "prefill" or num_layers == 2):
+            self.compile(npu_dpu_groups=6)
+        else:
+            self.compile()
         print(f"{mode} end compiling")
 
     def build_decoder(
@@ -827,20 +830,40 @@ def run_prefill(
         mlp_layer = curr_layer.mlp
 
         weights = []
+        if n_splits_linear == 1:
+            for q, k, v, o, g, u in zip(attn_layer.q_proj_dq_list,
+                                        attn_layer.k_proj_dq_list,
+                                        attn_layer.v_proj_dq_list,
+                                        attn_layer.o_proj_dq_list,
+                                        mlp_layer.gate_proj_dq_list,
+                                        mlp_layer.up_proj_dq_list):
+                weights.append((q.weight, q.scale))
+                weights.append((k.weight, k.scale))
+                weights.append((v.weight, v.scale))
+                weights.append((o.weight, o.scale))
+                weights.append((g.weight, g.scale))
+                weights.append((u.weight, u.scale))
+        else:
+            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
+                l_weights = []
+                scales = []
+                for l in layer_list:
+                    l_weights.append(l.weight)
+                    scales.append(l.scale)
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
-        for q, k, v in zip(attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                           attn_layer.v_proj_dq_list):
-            weights.append((q.weight, q.scale))
-            weights.append((k.weight, k.scale))
-            weights.append((v.weight, v.scale))
-
-        for l in attn_layer.o_proj_dq_list:
-            weights.append((l.weight, l.scale))
-        for g, u in zip(mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list):
-            weights.append((g.weight, g.scale))
-            weights.append((u.weight, u.scale))
-        for l in mlp_layer.down_proj_dq_list:
-            weights.append((l.weight, l.scale))
+        if n_splits_down_proj == 1:
+            for l in mlp_layer.down_proj_dq_list:
+                weights.append((l.weight, l.scale))
+        else:
+            l_weights = []
+            scales = []
+            for l in mlp_layer.down_proj_dq_list:
+                l_weights.append(l.weight)
+                scales.append(l.scale)
+            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)

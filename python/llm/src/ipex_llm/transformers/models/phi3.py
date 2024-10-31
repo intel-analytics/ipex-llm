@@ -185,7 +185,7 @@ def attention_forward(
         attn_weights.div_(math.sqrt(self.head_dim))
         if attention_mask is not None:
             attn_weights.add_(attention_mask)
-        attn_weights = attention_softmax(attn_weights, self.training)
+        attn_weights = attention_softmax(attn_weights)
 
         attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
                                                    training=self.training)
