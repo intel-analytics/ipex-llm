@@ -19,7 +19,8 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install transformers==4.36.0 datasets
 pip install trl peft==0.10.0
-pip install bitsandbytes
+# Note, if you don't want to reinstall BNBs dependencies, append the `--no-deps` flag!
+pip install --no-deps --force-reinstall 'https://github.com/bitsandbytes-foundation/bitsandbytes/releases/download/continuous-release_multi-backend-refactor/bitsandbytes-0.44.1.dev0-py3-none-manylinux_2_24_x86_64.whl'
 ```
 
 ### 2. Configures OneAPI environment variables
