@@ -399,6 +399,8 @@ def codegeex_model_forward(
         else self.config.output_hidden_states
     )
     use_cache = use_cache if use_cache is not None else self.config.use_cache
+    # print("use_cache:" + str(use_cache))
+    # print("codegeex_model_forward past_key_values:" + str(use_cache))
     return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
     if inputs_embeds is None:
@@ -465,6 +467,7 @@ def codegeex_model_forward(
         cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
         sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
         rotary_pos_emb = (cos, sin)
+        # rotary_pos_emb = (cos, sin, rotary_pos_emb.transpose(0, 1).contiguous())
     else:
         rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()
 
@@ -505,77 +508,101 @@ def codegeex_model_forward(
         attentions=all_self_attentions,
     )
 
+
 def codegeex_attention_forward(
     self, hidden_states, attention_mask, rotary_pos_emb, kv_cache=None, use_cache=True
 ):
     q_len, bsz, _ = hidden_states.size()
+    # print(q_len)
     n_head = self.num_attention_heads_per_partition
     n_kv_head = self.num_multi_query_groups_per_partition if self.multi_query_attention else n_head
     head_dim = self.hidden_size_per_attention_head
-    mixed_x_layer = self.query_key_value(hidden_states) 
 
-    if self.multi_query_attention: 
-        # print("multi_query_attention true")
-        (query_layer, key_layer, value_layer) = mixed_x_layer.split( 
-            [ 
-                self.num_attention_heads_per_partition * self.hidden_size_per_attention_head, 
-                self.num_multi_query_groups_per_partition * self.hidden_size_per_attention_head, 
-                self.num_multi_query_groups_per_partition * self.hidden_size_per_attention_head, 
-            ], 
-            dim=-1, 
-        ) 
-        query_layer = query_layer.view( 
-            query_layer.size()[:-1] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
-        ) 
-        key_layer = key_layer.view( 
-            key_layer.size()[:-1] + (self.num_multi_query_groups_per_partition, self.hidden_size_per_attention_head) 
-        ) 
-        value_layer = value_layer.view( 
-            value_layer.size()[:-1] 
-            + (self.num_multi_query_groups_per_partition, self.hidden_size_per_attention_head) 
-        ) 
-    else: 
-        if self.interleaved_qkv: 
-            new_tensor_shape = mixed_x_layer.size()[:-1] + \
-                                (self.num_attention_heads_per_partition, 
-                                3 * self.hidden_size_per_attention_head) 
-            mixed_x_layer = mixed_x_layer.view(*new_tensor_shape) 
+    past_key_value = None if kv_cache is None else (kv_cache[0].permute(1, 2, 0, 3),
+                                                    kv_cache[1].permute(1, 2, 0, 3))
+    qkv = self.query_key_value(hidden_states)
+    qkv = qkv.view(q_len, bsz, n_head + 2 * n_kv_head, head_dim)
+    # [seq_len, bsz, n_head, head_dim] -> [bsz, n_head, seq_len, head_dim]
+    qkv = qkv.permute(1, 2, 0, 3)
+    query_layer, key_layer, value_layer = qkv.split([n_head,
+                                                        n_kv_head,
+                                                        n_kv_head], dim=1)
+    kv_seq_len = key_layer.shape[2]
+    # print("============================")
+    # print(kv_seq_len)
+    # print(past_key_value is None)
+    # print("============================")
+    if past_key_value is not None:
+        # print(past_key_value[0].shape[2])
+        kv_seq_len += past_key_value[0].shape[2]
 
-        # [sq, b, np, 3 * hn] --> 3 [sq, b, np, hn] 
-        (query_layer, key_layer, value_layer) = split_tensor_along_last_dim(mixed_x_layer, 3) 
+    
+    # mixed_x_layer = self.query_key_value(hidden_states) 
 
-        if not self.interleaved_qkv: 
-            query_layer = query_layer.view( 
-                query_layer.size()[:-1] + ( 
-                    self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
-            ).contiguous() 
-            key_layer = key_layer.view( 
-                key_layer.size()[:-1] + ( 
-                    self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
-            ).contiguous() 
-            value_layer = value_layer.view( 
-                value_layer.size()[:-1] + ( 
-                    self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
-            ).contiguous() 
+    # if self.multi_query_attention: 
+    #     # print("multi_query_attention true")
+    #     (query_layer, key_layer, value_layer) = mixed_x_layer.split( 
+    #         [ 
+    #             self.num_attention_heads_per_partition * self.hidden_size_per_attention_head, 
+    #             self.num_multi_query_groups_per_partition * self.hidden_size_per_attention_head, 
+    #             self.num_multi_query_groups_per_partition * self.hidden_size_per_attention_head, 
+    #         ], 
+    #         dim=-1, 
+    #     ) 
+    #     query_layer = query_layer.view( 
+    #         query_layer.size()[:-1] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+    #     ) 
+    #     key_layer = key_layer.view( 
+    #         key_layer.size()[:-1] + (self.num_multi_query_groups_per_partition, self.hidden_size_per_attention_head) 
+    #     ) 
+    #     value_layer = value_layer.view( 
+    #         value_layer.size()[:-1] 
+    #         + (self.num_multi_query_groups_per_partition, self.hidden_size_per_attention_head) 
+    #     ) 
+    # else: 
+    #     if self.interleaved_qkv: 
+    #         new_tensor_shape = mixed_x_layer.size()[:-1] + \
+    #                             (self.num_attention_heads_per_partition, 
+    #                             3 * self.hidden_size_per_attention_head) 
+    #         mixed_x_layer = mixed_x_layer.view(*new_tensor_shape) 
+
+    #     # [sq, b, np, 3 * hn] --> 3 [sq, b, np, hn] 
+    #     (query_layer, key_layer, value_layer) = split_tensor_along_last_dim(mixed_x_layer, 3) 
+
+    #     if not self.interleaved_qkv: 
+    #         query_layer = query_layer.view( 
+    #             query_layer.size()[:-1] + ( 
+    #                 self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+    #         ).contiguous() 
+    #         key_layer = key_layer.view( 
+    #             key_layer.size()[:-1] + ( 
+    #                 self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+    #         ).contiguous() 
+    #         value_layer = value_layer.view( 
+    #             value_layer.size()[:-1] + ( 
+    #                 self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+    #         ).contiguous() 
 
     # apply relative positional encoding (rotary embedding) 
     if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
         # print("ipex_rope")
         cos, sin = rotary_pos_emb
         rot_dim = cos.shape[-1]
-        query_layer = query_layer.transpose(0, 1)
-        key_layer = key_layer.transpose(0, 1)
+        query_layer = query_layer.transpose(1, 2)
+        key_layer = key_layer.transpose(1, 2)
+        # print(query_layer.shape)
+        # print(key_layer.shape)
         query_layer_cur = query_layer[..., :rot_dim]
         key_layer_cur = key_layer[..., :rot_dim]
         # ipex_llm's apply_rotary_embedding can change the origin storage,
         # so query_layer will get the result directly.
         torch.ops.torch_ipex.apply_rotary_embedding(query_layer_cur, sin, cos, query_layer_cur)
         torch.ops.torch_ipex.apply_rotary_embedding(key_layer_cur, sin, cos, key_layer_cur)
-        query_layer = query_layer.transpose(0, 1)
-        key_layer = key_layer.transpose(0, 1)
+        query_layer = query_layer.transpose(1, 2)
+        key_layer = key_layer.transpose(1, 2)
     else:
-        query_layer = apply_rotary_pos_emb_original(query_layer, rotary_pos_emb2)
-        key_layer = apply_rotary_pos_emb_original(key_layer, rotary_pos_emb2)
+        query_layer = apply_rotary_pos_emb_original(query_layer, rotary_pos_emb[2])
+        key_layer = apply_rotary_pos_emb_original(key_layer, rotary_pos_emb[2])
 
 
 
@@ -585,37 +612,70 @@ def codegeex_attention_forward(
     # sys.exit(1)
     
 
-    # adjust key and value for inference 
-    if use_cache: 
-        if kv_cache is not None: 
-            cache_k, cache_v = kv_cache 
-            key_layer = torch.cat((cache_k, key_layer), dim=0) 
-            value_layer = torch.cat((cache_v, value_layer), dim=0) 
-        kv_cache = (key_layer, value_layer) 
-    else: 
-        kv_cache = None 
+    # # adjust key and value for inference 
+    # if use_cache: 
+    #     if kv_cache is not None: 
+    #         cache_k, cache_v = kv_cache 
+    #         key_layer = torch.cat((cache_k, key_layer), dim=0) 
+    #         value_layer = torch.cat((cache_v, value_layer), dim=0) 
+    #     kv_cache = (key_layer, value_layer) 
+    # else: 
+    #     kv_cache = None 
+    # if q_len == 1:
+    #     print("kv_seq_len: " + str(kv_seq_len))
+    #     print("before update past k v query_layer：" + str(query_layer))
+    #     print(str(query_layer.shape))
+    #     print("before update past k v key_layer" + str(key_layer))
+    #     print(str(key_layer.shape))
+    #     print("before update past k v value_layer" + str(value_layer))
+    #     print(str(value_layer.shape))
+    key_layer, value_layer = update_past_key_value(
+        past_key_value, key_layer, value_layer,
+        kv_seq_len, False, hidden_states.device
+    )
+    # if q_len == 1:
+    #     print("after update past k v query_layer：" + str(query_layer))
+    #     print(str(query_layer.shape))
+    #     print("after update past k v key_layer" + str(key_layer))
+    #     print(str(key_layer.shape))
+    #     print("after update past k v value_layer" + str(value_layer))
+    #     print(str(value_layer.shape))
+    #     import sys
+    #     sys.exit(1)
+    # past_key_value: [bsz, n_kv_head, seq_len, head_dim] -> [seq_len, bsz, n_kv_head, head_dim]
+    past_key_value = (key_layer.permute(2, 0, 1, 3),
+                        value_layer.permute(2, 0, 1, 3)) if use_cache else None
+    # value_layer = value_layer.expand( 
+    #     -1, -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1 
+    # ) 
+    # value_layer = value_layer.contiguous().view( 
+    #     value_layer.size()[:2] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+    # ) 
 
-    if self.multi_query_attention: 
-        key_layer = key_layer.unsqueeze(-2) 
-        key_layer = key_layer.expand( 
-            -1, -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1 
-        ) 
-        key_layer = key_layer.contiguous().view( 
-            key_layer.size()[:2] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
-        ) 
-        value_layer = value_layer.unsqueeze(-2) 
-        value_layer = value_layer.expand( 
-            -1, -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1 
-        ) 
-        value_layer = value_layer.contiguous().view( 
-            value_layer.size()[:2] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
-        ) 
+    # if self.multi_query_attention: 
+    #     key_layer = key_layer.unsqueeze(-2) 
+    #     key_layer = key_layer.expand( 
+    #         -1, -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1 
+    #     ) 
+    #     key_layer = key_layer.contiguous().view( 
+    #         key_layer.size()[:2] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+    #     ) 
+    #     value_layer = value_layer.unsqueeze(-2) 
+    #     value_layer = value_layer.expand( 
+    #         -1, -1, -1, self.num_attention_heads_per_partition // self.num_multi_query_groups_per_partition, -1 
+    #     ) 
+    #     value_layer = value_layer.contiguous().view( 
+    #         value_layer.size()[:2] + (self.num_attention_heads_per_partition, self.hidden_size_per_attention_head) 
+    #     ) 
     # print(str(query_layer.shape) + str(key_layer.shape) + str(value_layer.shape))
     # context_layer = self.core_attention(query_layer, key_layer, value_layer, attention_mask)
     # print(str(context_layer.shape))
     # =================
     # Output. [sq, b, h]
     # =================
+    # if q_len==1:
+    key_layer = repeat_kv(key_layer, 16)
+    value_layer = repeat_kv(value_layer, 16)
     # print("query_layer：" + str(query_layer))
     # print(str(query_layer.shape))
     # print("key_layer" + str(key_layer))
@@ -623,15 +683,20 @@ def codegeex_attention_forward(
     # print("value_layer" + str(value_layer))
     # print(str(value_layer.shape))
     
-    query_layer, key_layer, value_layer = [k.permute(1, 2, 0, 3) for k in [query_layer, key_layer, value_layer]]
-    kv_seq_len = key_layer.shape[2]
-    if use_sdp_causal(q_len, kv_seq_len, head_dim, query_layer, self.training):
+    # query_layer, key_layer, value_layer = [k.permute(1, 2, 0, 3) for k in [query_layer, key_layer, value_layer]]
+    # # kv_seq_len = key_layer.shape[2]
+    # key_layer = 
+    if use_sdp(q_len, kv_seq_len, head_dim, query_layer):
+        import xe_addons
+        context_layer = xe_addons.sdp(query_layer, key_layer, value_layer, attention_mask)
+    elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_layer, self.training):
         # print("sdp_causal")
         import xe_addons
         # if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
         #     context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, None)
         # else:
         #     context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
+        
         key_layer = key_layer.contiguous()
         value_layer = value_layer.contiguous()
         context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
@@ -640,18 +705,20 @@ def codegeex_attention_forward(
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
                                                                                 is_causal=True)
         else:
+            
             if attention_mask is not None:
                 attention_mask = ~attention_mask
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
                                                                                 attention_mask)
-
+    # if q_len==1:
     # print("context_layer" + str(context_layer.shape))
-    # print(context_layer)
-    context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len, bsz, n_head * head_dim)
     # print(context_layer)
     # import sys
     # sys.exit(1)
+    context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len, bsz, n_head * head_dim)
+    # print(context_layer)
+   
 
     output = self.dense(context_layer)
 
-    return output, kv_cache
+    return output, past_key_value
