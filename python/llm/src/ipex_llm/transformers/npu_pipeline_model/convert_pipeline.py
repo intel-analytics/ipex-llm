@@ -359,8 +359,8 @@ def convert_llm(model: torch.nn.Module,
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
     else:
-        invalidInputError(False,
-                          "Now we only support Llama2 / Llama3 / Baichuan2 / Qwen2 / Minicpm for pipeline running.")
+        invalidInputError(False, "Now we only support Llama2 / Llama3 / Baichuan2 / "
+                                 "Qwen2 / Minicpm for pipeline running.")
 
     if isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
