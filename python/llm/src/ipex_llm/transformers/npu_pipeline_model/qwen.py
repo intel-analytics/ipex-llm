@@ -27,7 +27,10 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     rms_norm_eps = model.config.rms_norm_eps
     vocab_size = model.config.vocab_size
     model_norm = model.model.norm
-    lm_heads = model.lm_head.lm_heads  # Qwen2 is always SlicedLMHead
+    if model.config.intermediate_size == 18944:
+        lm_heads = model.lm_head.lm_heads  # Qwen2-7B is always SlicedLMHead
+    else:
+        lm_heads = [model.lm_head]
     if n_splits_linear == 1:
         weights = [(lm_heads[0].weight, lm_heads[0].scale)]
     else:

@@ -8,6 +8,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 |------------|----------------------------------------------------------------|
 | Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
 | Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
+| Qwen2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
 | Qwen2.5 | [Qwen/Qwen2.5-7b-Instruct](https://huggingface.co/Qwen/Qwen2.5-7b-Instruct) |
 | Baichuan2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16) |
@@ -49,6 +50,9 @@ python llama3.py
 
 :: to run Qwen2.5-7b-Instruct
 python qwen.py
+
+:: to run Qwen2-1.5b-Instruct
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct" --load_in_low_bit "sym_int8"
 
 :: to run Baichuan2-7B-Chat
 python baichuan2.py
