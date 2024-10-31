@@ -121,7 +121,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             if use_prefill_sdp:
                 attention_mask = None
             else:
-                attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len),
+                attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len,
+                                                       self.seq_len),
                                                       dtype=np.int64)
 
         position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
