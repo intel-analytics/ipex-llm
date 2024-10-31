@@ -410,17 +410,6 @@ def codegeex_model_forward(
         input_ids = torch.empty((batch_size, seq_length),
                                 dtype=inputs_embeds.dtype, device=inputs_embeds.device)
 
-    if use_cache:
-        use_compress_kv = should_use_compresskv(input_ids, input_ids.shape[1])
-        use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.dense_h_to_4h,
-                                                input_ids)
-        if use_compress_kv and not isinstance(past_key_values,
-                                              DynamicCompressCache):
-            if use_quantize_kv:
-                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
-            else:
-                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-
     if full_attention_mask is None:
         if (attention_mask is not None and not attention_mask.all()) or (
                 past_key_values and seq_length != 1):
@@ -442,8 +431,7 @@ def codegeex_model_forward(
             position_ids = torch.arange(kv_length, kv_length + seq_length,
                                         dtype=torch.int64, device=inputs_embeds.device)
         position_ids = position_ids.repeat(batch_size, 1)
-    use_fuse_rope = input_ids.device.type == "xpu"
-    use_fuse_rope = use_fuse_rope and not self.training
+    use_fuse_rope = input_ids.device.type == "xpu" and not self.training
 
     # Rotary positional embeddings
     rotary_pos_emb = self.rotary_pos_emb(self.seq_length)
@@ -461,7 +449,6 @@ def codegeex_model_forward(
         cos = torch.repeat_interleave(cos[:, :, None, :], 2, 3)
         sin = torch.repeat_interleave(sin[:, :, None, :], 2, 3)
         rotary_pos_emb = (cos, sin)
-        # rotary_pos_emb = (cos, sin, rotary_pos_emb.transpose(0, 1).contiguous())
     else:
         rotary_pos_emb = rotary_pos_emb.transpose(0, 1).contiguous()
 
@@ -510,16 +497,8 @@ def codegeex_attention_forward(
     n_kv_head = self.num_multi_query_groups_per_partition if self.multi_query_attention else n_head
     head_dim = self.hidden_size_per_attention_head
 
-    # [CompressKV]
-    use_compresskv = isinstance(kv_cache, DynamicCompressCache)
-
-    # kv_cache: [seq_len, bsz, n_kv_head, head_dim] ->
-    # past_key_value: [bsz, n_kv_head, seq_len, head_dim]
-    if use_compresskv:
-        past_key_value = kv_cache
-    else:
-        past_key_value = None if kv_cache is None else (kv_cache[0].permute(1, 2, 0, 3),
-                                                        kv_cache[1].permute(1, 2, 0, 3))
+    past_key_value = None if kv_cache is None else (kv_cache[0].permute(1, 2, 0, 3),
+                                                    kv_cache[1].permute(1, 2, 0, 3))
     qkv = self.query_key_value(hidden_states)
     qkv = qkv.view(q_len, bsz, n_head + 2 * n_kv_head, head_dim)
     # [seq_len, bsz, n_head, head_dim] -> [bsz, n_head, seq_len, head_dim]
@@ -529,11 +508,7 @@ def codegeex_attention_forward(
                                                      n_kv_head], dim=1)
     kv_seq_len = key_layer.shape[2]
     if past_key_value is not None:
-        if use_compresskv:
-            kv_seq_len += past_key_value.get_usable_length(kv_seq_len,
-                                                           self.layer_number - 1)
-        else:
-            kv_seq_len += past_key_value[0].shape[2]
+        kv_seq_len += past_key_value[0].shape[2]
 
     # apply relative positional encoding (rotary embedding) 
     if len(rotary_pos_emb) == 2 and isinstance(rotary_pos_emb, tuple):
@@ -550,85 +525,43 @@ def codegeex_attention_forward(
         query_layer = query_layer.transpose(1, 2)
         key_layer = key_layer.transpose(1, 2)
     else:
-        query_layer = apply_rotary_pos_emb_original(query_layer, rotary_pos_emb[2])
-        key_layer = apply_rotary_pos_emb_original(key_layer, rotary_pos_emb[2])
+        query_layer = apply_rotary_pos_emb_original(query_layer, rotary_pos_emb)
+        key_layer = apply_rotary_pos_emb_original(key_layer, rotary_pos_emb)
 
-    # IPEX-LLM OPT: kv cache and quantize kv
-    use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_layer)
-
-    # [CompressKV]
-    if use_compresskv:
-        from transformers.configuration_utils import PretrainedConfig
-        self.config = self.config if hasattr(self, "config") else PretrainedConfig()
-        enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
-                                                      self.layer_number - 1,
-                                                      q_len)
-        key_layer, value_layer = past_key_value.update(
-            key_layer, value_layer, self.layer_number - 1,
-            query_layer, attention_mask, n_head // n_kv_head,
-            self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH
-        )
-    else:
-        key_layer, value_layer = update_past_key_value(
-            past_key_value, key_layer, value_layer,
-            kv_seq_len, use_quantize_kv, hidden_states.device
-        )
-        # past_key_value: [bsz, n_kv_head, seq_len, head_dim] -> [seq_len, bsz, n_kv_head, head_dim]
-        past_key_value = (key_layer.permute(2, 0, 1, 3),
-                            value_layer.permute(2, 0, 1, 3)) if use_cache else None
+    key_layer, value_layer = update_past_key_value(
+        past_key_value, key_layer, value_layer,
+        kv_seq_len, False, hidden_states.device
+    )
+    # past_key_value: [bsz, n_kv_head, seq_len, head_dim] -> [seq_len, bsz, n_kv_head, head_dim]
+    past_key_value = (key_layer.permute(2, 0, 1, 3),
+                      value_layer.permute(2, 0, 1, 3)) if use_cache else None
 
     # =================
     # Output. [sq, b, h]
     # =================
-    # if q_len==1:
     context_layer = None
     if use_sdp(q_len, kv_seq_len, head_dim, query_layer):
         import xe_addons
-        if use_compresskv and attention_mask is not None:
-            attention_mask = None
-        if use_quantize_kv:
-            context_layer = xe_addons.sdp_fp8(query_layer, key_layer, value_layer, attention_mask)
-        else:
-            context_layer = xe_addons.sdp(query_layer, key_layer, value_layer, attention_mask)
+        context_layer = xe_addons.sdp(query_layer, key_layer, value_layer, attention_mask)
     elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_layer, self.training):
-        # print("sdp_causal")
         import xe_addons
-        # if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
-        #     context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, None)
-        # else:
-        #     context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
-        if use_quantize_kv:
-            context_layer = xe_addons.sdp_fp8_causal(query_layer, key_layer, value_layer,
-                                                   attention_mask)
-        else:
-            key_layer = key_layer.contiguous()
-            value_layer = value_layer.contiguous()
-            context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
+        key_layer = key_layer.contiguous()
+        value_layer = value_layer.contiguous()
+        context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
     else:
-        if use_quantize_kv:
-            key_layer, value_layer = restore_fp8_kv_cache(key_layer, value_layer,
-                                                            query_layer.dtype)
         # repeat k/v heads if n_kv_heads < n_heads
         key_layer = repeat_kv(key_layer, n_head // n_kv_head)
         value_layer = repeat_kv(value_layer, n_head // n_kv_head)
         if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
-                                                                                is_causal=True)
+                                                                             is_causal=True)
         else:
-            
             if attention_mask is not None:
                 attention_mask = ~attention_mask
             context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer, key_layer, value_layer,
-                                                                                attention_mask)
-    # if q_len==1:
-    # print("context_layer" + str(context_layer.shape))
-    # print(context_layer)
-    # import sys
-    # sys.exit(1)
-    context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len, bsz, n_head * head_dim)
-    # print(context_layer)
-   
+                                                                             attention_mask)
 
+    context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len, bsz, n_head * head_dim)
     output = self.dense(context_layer)
 
     return output, past_key_value
