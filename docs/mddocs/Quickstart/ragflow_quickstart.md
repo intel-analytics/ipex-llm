@@ -247,7 +247,7 @@ This is because there's no enough space on the disk and the Docker container sto
 
 #### `Max retries exceeded with url: /encodings/cl100k_base.tiktoken` while starting the RAGFlow service through Docker
 
-This is caused by network problem.
+This may caused by network problem. To resolve this, you could try to:
 
 1. Attach to the container by `docker exec -it ragflow-server /bin/bash`
 2. Set environment variables like `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` at the beginning of the `/ragflow/entrypoint.sh`.
