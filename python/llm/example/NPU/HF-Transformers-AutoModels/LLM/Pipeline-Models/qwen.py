@@ -32,8 +32,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default="Qwen/Qwen2.5-7B-Instruct",  # Or Qwen2-7B-Instruct
-        help="The huggingface repo id for the Baichuan2 model to be downloaded"
+        default="Qwen/Qwen2.5-7B-Instruct",  # Or Qwen2-7B-Instruct, Qwen2-1.5B-Instruct
+        help="The huggingface repo id for the Qwen model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument("--lowbit-path", type=str,
@@ -47,6 +47,8 @@ if __name__ == "__main__":
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument('--load_in_low_bit', type=str, default="sym_int4",
+                        help='Load in low bit to use')
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
 
     args = parser.parse_args()
@@ -56,6 +58,7 @@ if __name__ == "__main__":
         model = AutoModelForCausalLM.from_pretrained(model_path,
                                                      optimize_model=True,
                                                      pipeline=True,
+                                                     load_in_low_bit=args.load_in_low_bit,
                                                      max_context_len=args.max_context_len,
                                                      max_prompt_len=args.max_prompt_len,
                                                      torch_dtype=torch.float16,
