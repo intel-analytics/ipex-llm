@@ -80,7 +80,7 @@ def llama_model_forward(
     inputs = input_ids if input_ids is not None else inputs_embeds
     use_cache = True if inputs.device.type == "xpu" else use_cache
     use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs,
-        self.config.num_attention_heads//self.config.num_key_value_heads)
+        self.config.num_attention_heads // self.config.num_key_value_heads)
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
