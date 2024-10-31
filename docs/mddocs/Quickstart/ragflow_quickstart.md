@@ -243,13 +243,13 @@ To shut down the RAGFlow server, use **Ctrl+C** in the terminal where the Ragflo
 
 #### Stuck when parsing files `Node <Urllib3HttpNode(http://es01:9200)> has failed for xx times in a row, putting on 30 second timeout`
 
-This is because there's no enough space on the disk and the es container stop working. Please left enough space on the disk and make sure the disk usage is below 90%.
+This is because there's no enough space on the disk and the Docker container stop working. Please left enough space on the disk and make sure the disk usage is below 90%.
 
-#### `Max retries exceeded with url: /encodings/cl100k_base.tiktoken` while starting the service
+#### `Max retries exceeded with url: /encodings/cl100k_base.tiktoken` while starting the RAGFlow service through Docker
 
-This is caused by proxy error.
+This is caused by network problem.
 
 1. Attach to the container by `docker exec -it ragflow-server /bin/bash`
-2. Add proxy settings at the beginning of the `/ragflow/entrypoint.sh`.
+2. Set environment variables like `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` at the beginning of the `/ragflow/entrypoint.sh`.
 3. Stop the service by `docker compose stop`.
 4. Start the service by `docker compose start`.
