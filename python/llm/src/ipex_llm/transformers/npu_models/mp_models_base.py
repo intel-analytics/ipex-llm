@@ -201,7 +201,11 @@ class LLMBaseNNFactory(NNFactory):
         query_states = self.transpose(query_states, [0, 2, 1, 3])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
         if self.transpose_value:
-            value_states = self.transpose(value_states, [0, 2, 3, 1])
+            new_value_states = self.transpose(value_states, [0, 2, 3, 1])
+            if mode == "prefill":
+                value_states = self.transpose(value_states, [0, 2, 1, 3])
+            else:
+                value_states = new_value_states
         else:
             value_states = self.transpose(value_states, [0, 2, 1, 3])
 
@@ -216,7 +220,6 @@ class LLMBaseNNFactory(NNFactory):
             head_dim=head_dim,
         )
         new_key_states = key_states
-        new_value_states = value_states
 
         if mode == "decode":
             key_states = self.concat(past_key, key_states, axis=-2)
@@ -239,15 +242,24 @@ class LLMBaseNNFactory(NNFactory):
                                       kv_seq_len=kv_seq_len,
                                       head_dim=head_dim,
                                       transpose=self.transpose_value)
-        attn_weight = self.matmul(query_states, key_states, False, True) / (
-            math.sqrt(head_dim)
-        )
-        attention_mask = self.convert_to_fp16(attention_mask)
-        attn_weight = self.eltwise_add(attn_weight, attention_mask)
-        attn_weight = self.convert_to_fp32(attn_weight)
-        attn_weight = self.softmax(attn_weight, -1)
-        attn_weight = self.convert_to_fp16(attn_weight)
-        attn_output = self.matmul(attn_weight, value_states, False, self.transpose_value)
+        if mode == "prefill":
+            value_states = self.convert_to_fp32(value_states)
+            key_states = self.convert_to_fp32(key_states)
+            query_states = self.convert_to_fp32(query_states)
+            attention_mask = self.convert_to_fp32(attention_mask)
+            attn_output = self.scaled_dot_product_attention(
+                query_states, key_states,value_states, attention_mask, False)
+            attn_output = self.convert_to_fp16(attn_output)
+        else:
+            attn_weight = self.matmul(query_states, key_states, False, True) / (
+                math.sqrt(head_dim)
+            )
+            attention_mask = self.convert_to_fp16(attention_mask)
+            attn_weight = self.eltwise_add(attn_weight, attention_mask)
+            attn_weight = self.convert_to_fp32(attn_weight)
+            attn_weight = self.softmax(attn_weight, -1)
+            attn_weight = self.convert_to_fp16(attn_weight)
+            attn_output = self.matmul(attn_weight, value_states, False, self.transpose_value)
 
         attn_output = self.transpose(attn_output, [0, 2, 1, 3])
         attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
