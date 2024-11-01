@@ -868,7 +868,7 @@ class PrefillRunner:
             seq_len <= self.max_prompt_len,
             (
                 f"seq_len: {seq_len} should be less than or equal"
-                " to max_prompt_len {self.max_prompt_len}"
+                f" to max_prompt_len {self.max_prompt_len}"
             ),
         )
         pad_len = self.max_prompt_len - seq_len
