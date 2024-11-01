@@ -121,12 +121,13 @@ Arguments info:
 
 ```log
 Inference time: xxxx s
+-------------------- Input Image --------------------
+http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 -------------------- Prompt --------------------
 Describe image in detail
 -------------------- Output --------------------
-The image features a cute bunny rabbit dressed in a suit and tie, standing on a dirt road. The rabbit appears to be a
-
-stuffed toy or a character from
+<s> USER: <image>
+Describe image in detail ASSISTANT: The image features a young girl holding a white teddy bear in her hands. She is smiling and appears to be enjoying the moment. The girl is
 ```
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
