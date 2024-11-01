@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default="openbmb/MiniCPM-1B-sft-bf16",
+        default="openbmb/MiniCPM-1B-sft-bf16", # or "openbmb/MiniCPM-2B-sft-bf16"
         help="The huggingface repo id for the MiniCPM model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )

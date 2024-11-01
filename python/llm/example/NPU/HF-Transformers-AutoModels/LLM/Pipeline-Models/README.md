@@ -11,7 +11,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 | Qwen2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
 | Qwen2.5 | [Qwen/Qwen2.5-7b-Instruct](https://huggingface.co/Qwen/Qwen2.5-7b-Instruct) |
 | Baichuan2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) |
-| MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16) |
+| MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
@@ -59,6 +59,9 @@ python baichuan2.py
 
 :: to run MiniCPM-1B-sft-bf16
 python minicpm.py
+
+:: to run MiniCPM-2B-sft-bf16
+python minicpm.py --repo-id-or-model-path "openbmb/MiniCPM-2B-sft-bf16"
 ```
 
 Arguments info:
