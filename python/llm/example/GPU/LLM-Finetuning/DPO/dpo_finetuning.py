@@ -34,12 +34,12 @@
 import os
 import torch
 
+from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
+from ipex_llm.transformers import AutoModelForCausalLM
 import transformers
 from transformers import AutoTokenizer, TrainingArguments, BitsAndBytesConfig
 from datasets import load_dataset
 from peft import LoraConfig
-from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
-from ipex_llm.transformers import AutoModelForCausalLM
 from trl import DPOTrainer
 import argparse
 
