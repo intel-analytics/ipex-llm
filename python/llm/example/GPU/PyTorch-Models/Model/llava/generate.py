@@ -31,7 +31,7 @@ if __name__ == '__main__':
                         help='The huggingface repo id for the LLaVA model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--image-url-or-path', type=str,
-                        default='https://hf-mirror.com/datasets/huggingface/documentation-images/resolve/0052a70beed5bf71b92610a43a52df6d286cd5f3/diffusers/rabbit.jpg',                        
+                        default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg',                        
                         help='The URL or path to the image to infer')
     parser.add_argument('--prompt', type=str, default="Describe image in detail",
                         help='Prompt to infer')
@@ -44,12 +44,12 @@ if __name__ == '__main__':
     prompt = args.prompt
 
     model = LlavaForConditionalGeneration.from_pretrained(model_path)
-    model = optimize_model(model, modules_to_not_convert=["multi_modal_projector"])
-    model = model.half().eval()
-    model = model.to('xpu')
+    model = optimize_model(model, low_bit='sym_int4').eval()
+    model = model.half().to("xpu")
 
     processor = AutoProcessor.from_pretrained(model_path)
 
+    # here the prompt tuning refers to https://huggingface.co/llava-hf/llava-1.5-7b-hf#using-pure-transformers
     messages = [
         {
             "role": "user",
@@ -76,5 +76,13 @@ if __name__ == '__main__':
         st = time.time()
         output = model.generate(**inputs, do_sample=False, max_new_tokens=args.n_predict)
         et = time.time()
-        print(et - st)
-    print(processor.decode(output[0]))
+
+    output_str = processor.decode(output[0])
+    print(f'Inference time: {et-st} s')
+    print('-'*20, 'Input Image', '-'*20)
+    print(image_path)
+    print(prompt)
+    print('-'*20, 'Prompt', '-'*20)
+    print(prompt)
+    print('-'*20, 'Output', '-'*20)
+    print(output_str)
