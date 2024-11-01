@@ -20,7 +20,7 @@ import torch
 import time
 import argparse
 from ipex_llm.transformers.npu_model import AutoModelForCausalLM
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, TextStreamer
 from transformers.utils import logging
 
 logger = logging.get_logger(__name__)
@@ -68,6 +68,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-prompt-len", type=int, default=512)
     parser.add_argument("--quantization_group_size", type=int, default=0)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
+    parser.add_argument("--disable-streaming", action="store_true", default=False)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -98,6 +99,11 @@ if __name__ == "__main__":
     if args.lowbit_path and not os.path.exists(args.lowbit_path):
         model.save_low_bit(args.lowbit_path)
 
+    if args.disable_streaming:
+        streamer = None
+    else:
+        streamer = TextStreamer(tokenizer=tokenizer, skip_special_tokens=True)
+
     print("-" * 80)
     print("done")
     with torch.inference_mode():
@@ -108,7 +114,7 @@ if __name__ == "__main__":
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(
-                _input_ids, max_new_tokens=args.n_predict, do_print=True
+                _input_ids, max_new_tokens=args.n_predict, do_print=True, streamer=streamer
             )
             end = time.time()
             print(f"Inference time: {end-st} s")
