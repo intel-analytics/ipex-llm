@@ -74,27 +74,19 @@ Arguments info:
 - `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
 - `--disable-streaming`: Disable streaming mode of generation.
 
-### Sample Output
+### Sample Output of Streaming Mode
 #### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
-
+ 
 ```log
- Number of input tokens: 28
- Generated tokens: 32
- First token generation time: xxxx s
- Generation average latency: xxxx ms, (xxxx token/s)
- Generation time: xxxx s
-
-Inference time: xxxx s
 -------------------- Input --------------------
-<s><s> [INST] <<SYS>>
+input length: 28
+<s>[INST] <<SYS>>
 
 <</SYS>>
 
 What is AI? [/INST]
 -------------------- Output --------------------
-<s><s> [INST] <<SYS>>
+ AI (Artificial Intelligence) is a field of computer science and technology that focuses on the development of intelligent machines that can perform
 
-<</SYS>>
-
-What is AI? [/INST]  AI (Artificial Intelligence) is a field of computer science and technology that focuses on the development of intelligent machines that can perform
+Inference time: xxxx s
 ```

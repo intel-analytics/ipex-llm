@@ -108,22 +108,22 @@ if __name__ == "__main__":
     print("done")
     with torch.inference_mode():
         print("finish to load")
-        for i in range(5):
+        for i in range(3):
             prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
             _input_ids = tokenizer.encode(prompt, return_tensors="pt")
+            print("-" * 20, "Input", "-" * 20)
             print("input length:", len(_input_ids[0]))
+            print(prompt)
+            print("-" * 20, "Output", "-" * 20)
             st = time.time()
             output = model.generate(
-                _input_ids, max_new_tokens=args.n_predict, do_print=True, streamer=streamer
+                _input_ids, max_new_tokens=args.n_predict, streamer=streamer
             )
             end = time.time()
+            if args.disable_streaming:
+                output_str = tokenizer.decode(output[0], skip_special_tokens=False)
+                print(output_str)
             print(f"Inference time: {end-st} s")
-            input_str = tokenizer.decode(_input_ids[0], skip_special_tokens=False)
-            print("-" * 20, "Input", "-" * 20)
-            print(input_str)
-            output_str = tokenizer.decode(output[0], skip_special_tokens=False)
-            print("-" * 20, "Output", "-" * 20)
-            print(output_str)
 
     print("-" * 80)
     print("done")

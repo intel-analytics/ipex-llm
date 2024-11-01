@@ -134,7 +134,6 @@ def generate(
             try:
                 input_pipe = open(in_pipe_path, "wb")
             except:
-                print('Waiting for input pipe')
                 time.sleep(1)
             else:
                 break
@@ -143,7 +142,6 @@ def generate(
             try:
                 output_pipe = open(out_pipe_path, "rb")
             except:
-                print('Waiting for output pipe')
                 time.sleep(1)
             else:
                 break
@@ -152,7 +150,7 @@ def generate(
 
         bdata = str.encode(str(temp_dir))
         invalidInputError(len(bdata) <= 2000,
-                          f"Leng of input directory is too long ({len(bdata)}), "
+                          f"Length of input directory is too long ({len(bdata)}), "
                           "which may cause read error.")
         input_pipe.write(bdata)
         input_pipe.flush()
