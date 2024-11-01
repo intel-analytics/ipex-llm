@@ -87,6 +87,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             model.llm.config.model_type = "llama"
         model = model.llm
 
+    print(model)
     if model.config.model_type in ["qwen2", "llama", "minicpm"]:
         from ipex_llm.transformers.npu_models.common import split_linears
         if quantization_group_size == 0:
@@ -106,8 +107,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         model.apply(lambda m: split_linears(m, n_splits_hidden_size=n_splits_linear,
                                             n_splits_down_proj=n_splits_down_proj,
                                             load=load))
-
-        if quantization_group_size != 0:
+        
+        if quantization_group_size != 0 and model.config.model_type != "minicpm":
             split_num = model.config.hidden_size // quantization_group_size
             if model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40:
                 # workaround for MiniCPM-2B

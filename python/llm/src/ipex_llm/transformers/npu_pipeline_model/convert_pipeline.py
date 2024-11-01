@@ -374,6 +374,7 @@ def convert_llm(model: torch.nn.Module,
         model.lm_head_1.get_fused_lm_head()
         model.lm_head_0.get_fused_lm_head()
 
+    print(model)
     # patch generate function
     import types
     model.generate = types.MethodType(generate, model)
