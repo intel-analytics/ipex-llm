@@ -201,6 +201,7 @@ class LLMBaseNNFactory(NNFactory):
         query_states = self.transpose(query_states, [0, 2, 1, 3])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
         use_ov_sdp = (mode == "prefill") and use_prefill_sdp
+        print(f"------------- use_ov_sdp: {use_ov_sdp}")
         if self.transpose_value:
             new_value_states = self.transpose(value_states, [0, 2, 3, 1])
             if use_ov_sdp:
@@ -273,7 +274,6 @@ class LLMBaseNNFactory(NNFactory):
                                                self.n_splits_linear, wt_dtype=self.dtype,
                                                scale_factor=(self.group_size == 0),
                                                is_prefill=(mode == "prefill"))
-
         return attn_output, new_key_states, new_value_states
 
     def paraformer_layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):
