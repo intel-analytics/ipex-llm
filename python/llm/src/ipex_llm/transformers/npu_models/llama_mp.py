@@ -110,7 +110,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         # define input, the order self.parameter matters
         input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
 
-        # open llama2 other models need to test
+        # llama2 use ov sdp, other models need to test
         use_prefill_sdp = self.intermediate_size == 11008
 
         # Self Attention
