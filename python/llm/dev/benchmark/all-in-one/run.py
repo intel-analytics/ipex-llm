@@ -215,7 +215,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'int4_fp16_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) and not lookahead else 'N/A',
                             streaming if 'win' in test_api else 'N/A',
                             use_fp16_torch_dtype if 'pipeline_parallel_gpu' in test_api else 'N/A',
-                            group_size],
+                            group_size if 'transformers_int4_npu_win' in test_api else 'N/A'],
                             ) 
 
 
@@ -604,16 +604,16 @@ def run_transformer_int4_gpu(repo_id,
 
 
 def transformers_int4_npu_win(repo_id,
-                                 local_model_hub,
-                                 in_out_pairs,
-                                 warm_up,
-                                 num_trials,
-                                 num_beams,
-                                 low_bit,
-                                 batch_size,
-                                 optimize_model,
-                                 transpose_value_cache,
-                                 npu_group_size):
+                              local_model_hub,
+                              in_out_pairs,
+                              warm_up,
+                              num_trials,
+                              num_beams,
+                              low_bit,
+                              batch_size,
+                              optimize_model,
+                              transpose_value_cache,
+                              npu_group_size):
     from ipex_llm.transformers.npu_model import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
@@ -681,15 +681,15 @@ def transformers_int4_npu_win(repo_id,
     return result
 
 def run_transformer_int4_loadlowbit_npu_win(repo_id,
-                                 local_model_hub,
-                                 in_out_pairs,
-                                 warm_up,
-                                 num_trials,
-                                 num_beams,
-                                 low_bit,
-                                 batch_size,
-                                 optimize_model,
-                                 transpose_value_cache):
+                                            local_model_hub,
+                                            in_out_pairs,
+                                            warm_up,
+                                            num_trials,
+                                            num_beams,
+                                            low_bit,
+                                            batch_size,
+                                            optimize_model,
+                                            transpose_value_cache):
     from ipex_llm.transformers.npu_model import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
@@ -2196,6 +2196,8 @@ if __name__ == '__main__':
         task = conf['task']
     if 'optimize_model' in conf:
         optimize_model = conf['optimize_model']
+    if 'group_size' in conf:
+        group_size = conf['group_size']
     if 'npu_group_size' in conf:
         group_size = conf['npu_group_size']
     lookahead = False
