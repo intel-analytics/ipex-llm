@@ -2196,8 +2196,6 @@ if __name__ == '__main__':
         task = conf['task']
     if 'optimize_model' in conf:
         optimize_model = conf['optimize_model']
-    if 'group_size' in conf:
-        group_size = conf['group_size']
     if 'npu_group_size' in conf:
         group_size = conf['npu_group_size']
     lookahead = False
