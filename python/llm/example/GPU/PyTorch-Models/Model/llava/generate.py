@@ -66,12 +66,15 @@ if __name__ == '__main__':
     else:
        image = Image.open(requests.get(image_path, stream=True).raw)
 
-    inputs = processor(text=text, images=image, return_tensors="pt").to(model.device)
+    inputs = processor(text=text, images=image, return_tensors="pt").to('xpu')
 
     with torch.inference_mode():
-        for i in range(3):
-            st = time.time()
-            output = model.generate(**inputs, do_sample=False, max_new_tokens=args.n_predict)
-            et = time.time()
-            print(et - st)
+        # warmup
+        output = model.generate(**inputs, do_sample=False, max_new_tokens=args.n_predict)
+
+        # start inference
+        st = time.time()
+        output = model.generate(**inputs, do_sample=False, max_new_tokens=args.n_predict)
+        et = time.time()
+        print(et - st)
     print(processor.decode(output[0]))
