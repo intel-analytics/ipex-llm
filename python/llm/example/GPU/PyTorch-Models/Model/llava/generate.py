@@ -36,8 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--prompt', type=str, default="Describe image in detail",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
-                        help='Max tokens to predict')
-    
+                        help='Max tokens to predict') 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
@@ -81,7 +80,6 @@ if __name__ == '__main__':
     print(f'Inference time: {et-st} s')
     print('-'*20, 'Input Image', '-'*20)
     print(image_path)
-    print(prompt)
     print('-'*20, 'Prompt', '-'*20)
     print(prompt)
     print('-'*20, 'Output', '-'*20)
