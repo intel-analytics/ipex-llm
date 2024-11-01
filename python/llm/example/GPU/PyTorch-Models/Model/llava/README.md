@@ -5,7 +5,7 @@ In this directory, you will find examples on how you could use IPEX-LLM `optimiz
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
 ## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a LLaVA model to predict the next N tokens using `generate()` API, with IPEX-LLM 'optimize_model' API on Intel GPUs.
+In the example [generate.py](./generate.py), we show a basic use case for a LLaVA model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 ### 1. Install
 #### 1.1 Installation on Linux
 We suggest using conda to manage environment:
