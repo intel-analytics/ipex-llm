@@ -44,47 +44,95 @@ We recommend using [Miniforge](https://conda-forge.org/download/) to create a py
 > [!IMPORTANT]
 > ``ipex-llm`` is tested with Python 3.9, 3.10 and 3.11. Python 3.11 is recommended for best practices.
 
-The easiest ways to install `ipex-llm` is the following commands, choosing either US or CN website for `extra-index-url`:
+The easiest ways to install `ipex-llm` is the following commands.
 
-- For **US**:
+- For **Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake)**:
 
-   ```cmd
-   conda create -n llm python=3.11 libuv
-   conda activate llm
+   Choose either US or CN website for `extra-index-url`:
 
-   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-   ```
+   - For **US**:
 
-- For **CN**:
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
 
-   ```cmd
-   conda create -n llm python=3.11 libuv
-   conda activate llm
+      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/us/
+      ```
 
-   pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-   ```
+   - For **CN**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+      ```
+
+- For **other Intel iGPU and dGPU**:
+
+   Choose either US or CN website for `extra-index-url`:
+
+   - For **US**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+      ```
+
+   - For **CN**:
+
+      ```cmd
+      conda create -n llm python=3.11 libuv
+      conda activate llm
+
+      pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+      ```
 
 #### Install IPEX-LLM From Wheel
 
 If you encounter network issues when installing IPEX, you can also install IPEX-LLM dependencies for Intel XPU from source archives. First you need to download and install torch/torchvision/ipex from wheels listed below before installing `ipex-llm`.
 
-Download the wheels on Windows system:
+- For **Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake)**:
 
-```
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.1.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
-wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp311-cp311-win_amd64.whl
-```
+   Download the wheels on Windows system:
 
-You may install dependencies directly from the wheel archives and then install `ipex-llm` using following commands:
+   ```
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/lnl/torch-2.3.1%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/lnl/torchvision-0.18.1%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/lnl/intel_extension_for_pytorch-2.3.110%2Bxpu-cp311-cp311-win_amd64.whl
+   ```
 
-```
-pip install torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
-pip install torchvision-0.16.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
-pip install intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-win_amd64.whl
+   You may install dependencies directly from the wheel archives and then install `ipex-llm` using following commands:
 
-pip install --pre --upgrade ipex-llm[xpu]
-```
+   ```
+   pip install torch-2.3.1+cxx11.abi-cp311-cp311-win_amd64.whl
+   pip install torchvision-0.18.1+cxx11.abi-cp311-cp311-win_amd64.whl
+   pip install intel_extension_for_pytorch-2.3.110+xpu-cp311-cp311-win_amd64.whl
+
+   pip install --pre --upgrade ipex-llm[xpu_lnl]
+   ```
+
+- For **other Intel iGPU and dGPU**:
+
+   Download the wheels on Windows system:
+
+   ```
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torch-2.1.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/torchvision-0.16.0a0%2Bcxx11.abi-cp311-cp311-win_amd64.whl
+   wget https://intel-extension-for-pytorch.s3.amazonaws.com/ipex_stable/xpu/intel_extension_for_pytorch-2.1.10%2Bxpu-cp311-cp311-win_amd64.whl
+   ```
+
+   You may install dependencies directly from the wheel archives and then install `ipex-llm` using following commands:
+
+   ```
+   pip install torch-2.1.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
+   pip install torchvision-0.16.0a0+cxx11.abi-cp311-cp311-win_amd64.whl
+   pip install intel_extension_for_pytorch-2.1.10+xpu-cp311-cp311-win_amd64.whl
+
+   pip install --pre --upgrade ipex-llm[xpu]
+   ```
 
 > [!NOTE]
 > All the wheel packages mentioned here are for Python 3.11. If you would like to use Python 3.9 or 3.10, you should modify the wheel names for ``torch``, ``torchvision``, and ``intel_extension_for_pytorch`` by replacing ``cp11`` with ``cp39`` or ``cp310``, respectively.
@@ -121,13 +169,7 @@ Please also set the following environment variable if you would like to run LLMs
 
 #### 1. Error loading `intel_extension_for_pytorch`
 
-If you met error when importing `intel_extension_for_pytorch`, please ensure that you have completed the following steps:
-
-* Ensure that you have installed Visual Studio with "Desktop development with C++" workload.
-
-* Make sure that the correct version of oneAPI, specifically 2024.0, is installed.
-
-* Ensure that `libuv` is installed in your conda environment. This can be done during the creation of the environment with the command:
+If you met error when importing `intel_extension_for_pytorch`, please ensure that `libuv` is installed in your conda environment. This can be done during the creation of the environment with the command:
   ```cmd
   conda create -n llm python=3.11 libuv
   ```
@@ -135,12 +177,6 @@ If you met error when importing `intel_extension_for_pytorch`, please ensure tha
   ```cmd
   conda install libuv
   ```
-
-<!-- * For oneAPI installed using the Offline installer, make sure you have configured oneAPI environment variables in your Miniforge Prompt through
-  ```cmd
-  call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
-  ```
-  Please note that you need to set these environment variables again once you have a new Miniforge Prompt window. -->
 
 ## Linux
 
@@ -151,8 +187,12 @@ IPEX-LLM GPU support on Linux has been verified on:
 * Intel Arc™ A-Series Graphics
 * Intel Data Center GPU Flex Series
 * Intel Data Center GPU Max Series
+* Intel iGPU
 
 > [!IMPORTANT]
+> For prerequisite installation on Intel Core™ Ultra Processers (Series 1) with processor number 1xxH/U/HL/UL (code name Meteor Lake), please refer to [this guide](../Quickstart/install_linux_gpu.md#install-prerequisites).
+
+> [!Note]
 > IPEX-LLM on Linux supports PyTorch 2.0 and PyTorch 2.1.
 > 
 > **Warning**
@@ -174,29 +214,6 @@ IPEX-LLM GPU support on Linux has been verified on:
       > For client GPUs, such as the Intel® Arc™ A-series, please refer to [Client GPU Installation Guide](https://dgpu-docs.intel.com/driver/client/overview.html). For data center GPUs, including Intel® Data Center GPU Max Series and Intel® Data Center GPU Flex Series, please refer to our [Installation for Data Center GPU](https://dgpu-docs.intel.com/driver/installation.html) for general purpose GPU capabilities.
       >
       > See [release page](https://dgpu-docs.intel.com/releases/index.html) for latest version.
-
-      > **Note**:
-      >
-      > For Intel Core™ Ultra integrated GPU, please make sure level_zero version >= 1.3.28717. The level_zero version can be checked with ``sycl-ls``, and verison will be tagged be ``[ext_oneapi_level_zero:gpu]``.         
-      > ```
-      > [opencl:acc:0] Intel(R) FPGA Emulation Platform for OpenCL(TM), Intel(R) FPGA Emulation Device OpenCL 1.2  [2023.16.12.0.12_195853.xmain-hotfix]
-      > [opencl:cpu:1] Intel(R) OpenCL, Intel(R) Core(TM) Ultra 5 125H OpenCL 3.0 (Build 0) [2023.16.12.0.12_195853.xmain-hotfix]
-      > [opencl:gpu:2] Intel(R) OpenCL Graphics, Intel(R) Arc(TM) Graphics OpenCL 3.0 NEO  [24.09.28717.12]
-      > [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) Graphics 1.3 [1.3.28717]
-      > ```
-      >
-      > If you have level_zero version < 1.3.28717, you could update as follows:
-      >
-      > ```bash
-      > wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.16238.4/intel-igc-core_1.0.16238.4_amd64.deb
-      > wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.16238.4/intel-igc-opencl_1.0.16238.4_amd64.deb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-level-zero-gpu-dbgsym_1.3.28717.12_amd64.ddeb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-level-zero-gpu_1.3.28717.12_amd64.deb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-opencl-icd-dbgsym_24.09.28717.12_amd64.ddeb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/intel-opencl-icd_24.09.28717.12_amd64.deb
-      > wget https://github.com/intel/compute-runtime/releases/download/24.09.28717.12/libigdgmm12_22.3.17_amd64.deb
-      > sudo dpkg -i *.deb
-      > ```
 
    - Step 2: Download and install [Intel® oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) with version 2024.0. OneDNN, OneMKL and DPC++ compiler are needed, others are optional.
 

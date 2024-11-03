@@ -40,6 +40,7 @@ import math
 import torch
 import warnings
 
+from ipex_llm.transformers.models.common import merge_qkv_base, attention_softmax
 from ipex_llm.transformers.models.utils import (
     use_quantize_kv_cache, restore_fp8_kv_cache,
     should_use_fuse_rope, use_sdp, use_sdp_causal
@@ -54,26 +55,7 @@ from transformers.models.starcoder2.modeling_starcoder2 import Starcoder2Model, 
 
 
 def merge_qkv(module: torch.nn.Module):
-    if isinstance(module, Starcoder2Attention):
-        new_weight = torch.cat([
-            module.q_proj.weight.data,
-            module.k_proj.weight.data,
-            module.v_proj.weight.data,
-        ], dim=0)
-        new_bias = torch.cat([
-            module.q_proj.bias.data,
-            module.k_proj.bias.data,
-            module.v_proj.bias.data,
-        ], dim=-1)
-
-        qkv_proj = torch.nn.Linear(0, 0, bias=True)
-        qkv_proj.weight = torch.nn.Parameter(new_weight, requires_grad=False)
-        qkv_proj.bias = torch.nn.Parameter(new_bias, requires_grad=False)
-        qkv_proj.in_features = new_weight.size(1)
-        qkv_proj.out_features = new_weight.size(0)
-        module.qkv_proj = qkv_proj
-
-        del module.q_proj, module.k_proj, module.v_proj
+    merge_qkv_base(module, Starcoder2Attention)
 
 
 def attention_forward(
@@ -152,8 +134,7 @@ def attention_forward(
             attn_weights = attn_weights + attention_mask
 
         # upcast attention to fp32
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                   dtype=torch.float32).to(query_states.dtype)
+        attn_weights = attention_softmax(attn_weights)
         attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
                                                    training=self.training)
         attn_output = torch.matmul(attn_weights, value_states)

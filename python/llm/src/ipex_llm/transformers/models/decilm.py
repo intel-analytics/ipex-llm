@@ -34,11 +34,10 @@
 import torch
 from typing import Optional, Tuple
 import torch.nn.functional as F
-from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
-    apply_rotary_pos_emb
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
-from ipex_llm.transformers.models.llama import should_use_fuse_rope, repeat_kv
+from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
+from ipex_llm.transformers.models.llama import repeat_kv
+from ipex_llm.transformers.models.utils import should_use_fuse_rope
+from ipex_llm.transformers.models.utils import update_past_key_value
 from ipex_llm.utils.common import invalidInputError
 
 import os
@@ -61,32 +60,9 @@ def decilm_attention_forward_4_35_2(
     is_decode = past_key_value is not None
     device = hidden_states.device
 
-    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
-    enough_kv_room = is_enough_kv_cache_room_4_31(past_key_value, seq_len=q_len)
-
-    if self.config.pretraining_tp > 1:
-        key_value_slicing = ((self.num_key_value_heads * self.head_dim) //
-                             self.config.pretraining_tp)
-        query_slices = self.q_proj.weight.split((self.num_heads * self.head_dim)
-                                                // self.config.pretraining_tp, dim=0)
-        key_slices = self.k_proj.weight.split(key_value_slicing, dim=0)
-        value_slices = self.v_proj.weight.split(key_value_slicing, dim=0)
-
-        query_states = [F.linear(hidden_states, query_slices[i])
-                        for i in range(self.config.pretraining_tp)]
-        query_states = torch.cat(query_states, dim=-1)
-
-        key_states = [F.linear(hidden_states, key_slices[i])
-                      for i in range(self.config.pretraining_tp)]
-        key_states = torch.cat(key_states, dim=-1)
-
-        value_states = [F.linear(hidden_states, value_slices[i])
-                        for i in range(self.config.pretraining_tp)]
-        value_states = torch.cat(value_states, dim=-1)
-    else:
-        query_states = self.q_proj(hidden_states)
-        key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states)
+    query_states = self.q_proj(hidden_states)
+    key_states = self.k_proj(hidden_states)
+    value_states = self.v_proj(hidden_states)
 
     query_states = query_states.view(bsz, q_len,
                                      self.num_heads, self.head_dim).transpose(1, 2)
@@ -99,49 +75,19 @@ def decilm_attention_forward_4_35_2(
     if past_key_value is not None:
         kv_seq_len += past_key_value[0].shape[-2]
 
-    if use_fuse_rope:
-        query_states, key_states = apply_rotary_pos_emb_no_cache_xpu(query_states,
-                                                                     key_states,
-                                                                     position_ids,
-                                                                     "llama")
+    if should_use_fuse_rope(hidden_states, position_ids, self.training):
+        import xe_addons
+        xe_addons.rotary_half_inplaced(self.maybe_rotary.inv_freq, position_ids,
+                                       query_states, key_states)
     else:
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states,
                                                         cos, sin, position_ids, "llama")
 
-    if past_key_value is not None:
-        # reuse k, v, self_attention
-        cache_k = past_key_value[0]
-        cache_v = past_key_value[1]
-        if not enough_kv_room:
-            # allocate new
-            new_cache_k, new_cache_v = extend_kv_cache(bsz,
-                                                       self.num_key_value_heads,  # Support GQA
-                                                       self.head_dim,
-                                                       cache_k.size(2),
-                                                       kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH,
-                                                       dtype=cache_k.dtype,
-                                                       device=device)
-            new_cache_k[:] = cache_k
-            new_cache_v[:] = cache_v
-            cache_k = new_cache_k
-            cache_v = new_cache_v
-
-        key_states, value_states = append_kv_cache(cache_k, cache_v, key_states, value_states)
-
-    elif use_cache:
-        max_cache_length = kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH
-        new_key_states, new_value_states = init_kv_cache(bsz,
-                                                         self.num_key_value_heads,
-                                                         self.head_dim,
-                                                         kv_seq_len,
-                                                         max_cache_length,
-                                                         dtype=key_states.dtype,
-                                                         device=device)
-        new_key_states[:] = key_states
-        new_value_states[:] = value_states
-        key_states = new_key_states
-        value_states = new_value_states
+    key_states, value_states = update_past_key_value(
+        past_key_value, key_states, value_states,
+        kv_seq_len, False, device
+    )
 
     past_key_value = (key_states, value_states) if use_cache else None
 
@@ -167,14 +113,8 @@ def decilm_attention_forward_4_35_2(
 
         attn_output = attn_output.transpose(1, 2).contiguous().view(bsz, q_len, self.hidden_size)
 
-    if self.config.pretraining_tp > 1:
-        attn_output = attn_output.split(self.hidden_size // self.config.pretraining_tp, dim=2)
-        o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.config.pretraining_tp,
-                                                 dim=1)
-        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i])
-                           for i in range(self.config.pretraining_tp)])
-    else:
-        attn_output = self.o_proj(attn_output)
+    attn_output = attn_output.to(hidden_states.dtype)
+    attn_output = self.o_proj(attn_output)
 
     if not output_attentions:
         attn_weights = None

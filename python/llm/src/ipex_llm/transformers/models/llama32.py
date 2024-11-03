@@ -79,7 +79,10 @@ def llama_model_forward(
     # IPEX-LLM OPT start: kv cache and quantize kv cache
     inputs = input_ids if input_ids is not None else inputs_embeds
     use_cache = True if inputs.device.type == "xpu" else use_cache
-    use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs)
+    use_quantize_kv = use_quantize_kv_cache(
+        self.layers[0].mlp.down_proj, inputs,
+        self.config.num_attention_heads // self.config.num_key_value_heads
+    )
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
@@ -114,7 +117,7 @@ def llama_model_forward(
 
     # IPEX-LLM OPT start: use fused rope
     if (should_use_fuse_rope(hidden_states, position_ids, False)
-            and self.rotary_emb.rope_type == "llama3"):
+            and self.rotary_emb.rope_type in ["default", "llama3"]):
         position_embeddings = self.rotary_emb.inv_freq
     # IEPX_LLM OPT end
 
@@ -204,6 +207,8 @@ def llama_attention_forward(
     kv_seq_len = key_states.size(2)
     if attention_mask is not None:  # no matter the length, we just slice it
         causal_mask = attention_mask[:, :, :, :kv_seq_len]
+    else:
+        causal_mask = None
 
     attn_weights = None
     if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
@@ -235,7 +240,7 @@ def llama_attention_forward(
             attn_weights = attn_weights + causal_mask
 
         # upcast attention to fp32
-        attn_weights = attention_softmax(attn_weights, self.training)
+        attn_weights = attention_softmax(attn_weights)
         attn_output = torch.matmul(attn_weights, value_states)
 
     attn_output = attn_output.transpose(1, 2).contiguous()

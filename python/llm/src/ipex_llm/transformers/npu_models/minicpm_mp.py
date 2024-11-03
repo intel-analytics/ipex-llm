@@ -54,7 +54,7 @@ from transformers.modeling_outputs import CausalLMOutputWithPast
 from torch.nn import CrossEntropyLoss
 
 
-class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
+class LowBitMinicpmMultiDecoderlayer(LLMBaseNNFactory):
     def __init__(
         self,
         # batch_size: int,
@@ -118,31 +118,13 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
 
         # Self Attention
         if mode == "decode":
-            attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1))
+            attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1),
+                                                  dtype=np.int64)
         else:
-            attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len))
+            attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len),
+                                                  dtype=np.int64)
 
-        position_ids = self.create_input_op((self.batch_size, self.seq_len))
-        past_keys = []
-        past_values = []
-        if mode == "decode":
-            for i in range(num_layers):
-                past_key = self.create_cache_op(
-                    (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
-                )
-                if transpose_value:
-                    past_value = self.create_cache_op(
-                        (self.batch_size, self.num_key_value_heads, self.head_dim, self.max_seq_len)
-                    )
-                else:
-                    past_value = self.create_cache_op(
-                        (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
-                    )
-                past_keys.append(past_key)
-                past_values.append(past_value)
-        else:
-            past_keys = [None] * num_layers
-            past_values = [None] * num_layers
+        position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
 
         if input_layernorm_weights is None:
             input_layernorm_weights = []
@@ -167,6 +149,27 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         else:
             input_layernorm_weights = [self.constant(w) for w in input_layernorm_weights]
             post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
+
+        past_keys = []
+        past_values = []
+        if mode == "decode":
+            for i in range(num_layers):
+                past_key = self.create_cache_op(
+                    (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                )
+                if transpose_value:
+                    past_value = self.create_cache_op(
+                        (self.batch_size, self.num_key_value_heads, self.head_dim, self.max_seq_len)
+                    )
+                else:
+                    past_value = self.create_cache_op(
+                        (self.batch_size, self.num_key_value_heads, self.max_seq_len, self.head_dim)
+                    )
+                past_keys.append(past_key)
+                past_values.append(past_value)
+        else:
+            past_keys = [None] * num_layers
+            past_values = [None] * num_layers
 
         hidden_states = input
 
@@ -297,7 +300,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
             start, end = self.layer_ranges[i]
             lm_0 = input_laynorm_weights[start:end]
             lm_1 = post_attn_layernorm_weights[start:end]
-            decoder = LowBitLlamaMultiDecoderlayer(
+            decoder = LowBitMinicpmMultiDecoderlayer(
                 [1, 1, num_heads * head_dim],
                 input_layernorm_weights=lm_0,
                 post_attn_layernorm_weights=lm_1,
@@ -334,15 +337,15 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
 
         inputs = (
             hidden_states.to(torch.float16),
-            attention_mask,
-            position_ids,
+            attention_mask.to(torch.int64),
+            position_ids.to(torch.int64),
         )
 
         for i in range(self.intra_stages):
             start, end = self.layer_ranges[i]
             self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
 
-        hidden_states, new_keys, new_values = LowBitLlamaMultiDecoderlayer.run_decoders(
+        hidden_states, new_keys, new_values = LowBitMinicpmMultiDecoderlayer.run_decoders(
             inputs,
             decoders=self.backend_decoders)
 
@@ -403,7 +406,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             np_dtype = np.float16
 
         self.backend_cls_prefill = partial(
-            LowBitLlamaMultiDecoderlayer,
+            LowBitMinicpmMultiDecoderlayer,
             num_heads=num_heads,
             num_key_value_heads=num_key_value_heads,
             num_layers=1,
@@ -445,7 +448,9 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         seq_len = hidden_states.shape[1]
 
         backend_cls = self.backend_cls_prefill
-        inputs = (hidden_states.to(torch.float16), attention_mask, position_ids)
+        inputs = (hidden_states.to(torch.float16),
+                  attention_mask.to(torch.int64),
+                  position_ids.to(torch.int64))
         inputs += (self.layer_norm_0, self.layer_norm_1)
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
@@ -578,9 +583,9 @@ def run_decode(
 
                 pad_mask = (0, pad_len)
                 padded_causal_mask = F.pad(
-                    causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
+                    causal_mask.to(torch.int64), pad_mask, value=torch.iinfo(torch.int64).min
                 )
-                padded_causal_mask[:, :, :, -1] = 0.0
+                padded_causal_mask[:, :, :, -1] = 0
                 dist.recv(hidden_states, src=rank - 1)
                 layer_outputs = multi_decoder(
                     hidden_states,
@@ -824,16 +829,16 @@ class PrefillRunner:
             seq_len <= self.max_prompt_len,
             (
                 f"seq_len: {seq_len} should be less than or equal"
-                " to max_prompt_len {self.max_prompt_len}"
+                f" to max_prompt_len {self.max_prompt_len}"
             ),
         )
         pad_len = self.max_prompt_len - seq_len
         hidden_states = F.pad(hidden_states.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
         position_ids = F.pad(position_ids, (0, pad_len), value=0)
         attention_mask = F.pad(
-            attention_mask.to(torch.float16),
+            attention_mask.to(torch.int64),
             (0, pad_len, 0, pad_len),
-            value=torch.finfo(torch.float16).min,
+            value=torch.iinfo(torch.int64).min,
         )
 
         args = (hidden_states, position_ids, attention_mask, past_key_value)

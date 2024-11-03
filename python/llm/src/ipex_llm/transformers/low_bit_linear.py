@@ -794,8 +794,12 @@ class LowBitLinear(nn.Linear):
                                                    self.weight.qtype, input_seq_size)
                     result = result.to(x.dtype)
                 else:
-                    result = xe_linear.forward_new(x_2d, self.weight.data,
-                                                   self.weight.qtype, input_seq_size)
+                    if self.weight.qtype == NF4:
+                        result = xe_linear.forward_new(x_2d, self.weight.data.view(torch.uint8),
+                                                       self.weight.qtype, input_seq_size)
+                    else:
+                        result = xe_linear.forward_new(x_2d, self.weight.data,
+                                                       self.weight.qtype, input_seq_size)
 
                 if do_empty_cache:
                     torch.xpu.empty_cache()
@@ -886,7 +890,8 @@ class FP16Linear(nn.Linear):
                     self.weight = torch.nn.Parameter(self.weight.transpose(0, 1).contiguous(),
                                                      requires_grad=False)
                     self.weight_type = 2
-                result = torch.ops.torch_ipex.matmul_bias_out(x, self.weight, self.bias)
+                result = torch.ops.torch_ipex.matmul_bias_out(x.contiguous(),
+                                                              self.weight, self.bias)
             if self.mp_group is not None:
                 if get_use_vllm():
                     result = self.mp_group.all_reduce(result)

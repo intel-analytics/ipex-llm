@@ -45,8 +45,8 @@ from transformers.cache_utils import Cache
 from transformers.models.stablelm.modeling_stablelm import repeat_kv
 from transformers.models.stablelm.modeling_stablelm import StableLmAttention, StableLmModel
 
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
-    apply_rotary_pos_emb_cache_freq_xpu
+from ipex_llm.transformers.models.common import merge_qkv_base, attention_softmax
+from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
 from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
@@ -54,29 +54,7 @@ from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
 
 
 def merge_qkv(module: torch.nn.Module):
-    if isinstance(module, StableLmAttention):
-        new_weight = torch.cat([
-            module.q_proj.weight.data,
-            module.k_proj.weight.data,
-            module.v_proj.weight.data,
-        ], dim=0)
-
-        if module.q_proj.bias is not None:
-            qkv_proj = torch.nn.Linear(0, 0, bias=True)
-            new_bias = torch.cat([
-                module.q_proj.bias.data,
-                module.k_proj.bias.data,
-                module.v_proj.bias.data,
-            ], dim=0)
-            qkv_proj.bias = torch.nn.Parameter(new_bias, requires_grad=False)
-        else:
-            qkv_proj = torch.nn.Linear(0, 0, bias=False)
-        qkv_proj.weight = torch.nn.Parameter(new_weight, requires_grad=False)
-        qkv_proj.in_features = new_weight.size(1)
-        qkv_proj.out_features = new_weight.size(0)
-        module.qkv_proj = qkv_proj
-
-        del module.q_proj, module.k_proj, module.v_proj
+    merge_qkv_base(module, StableLmAttention)
 
 
 def stablelm_model_forward(
@@ -197,8 +175,7 @@ def stablelm_attention_forward(
             attn_weights = attn_weights + attention_mask
 
         # upcast attention to fp32
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                   dtype=torch.float32).to(value_states.dtype)
+        attn_weights = attention_softmax(attn_weights)
         attn_weights = self.attention_dropout(attn_weights)
         attn_output = torch.matmul(attn_weights, value_states)
 

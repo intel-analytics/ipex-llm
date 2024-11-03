@@ -21,6 +21,7 @@
 - [Pull Model](./ragflow_quickstart.md#2-pull-model)
 - [Start `RAGFlow` Service](./ragflow_quickstart.md#3-start-ragflow-service)
 - [Using `RAGFlow`](./ragflow_quickstart.md#4-using-ragflow)
+- [Troubleshooting](./ragflow_quickstart.md#5-troubleshooting)
 
 ## Quickstart
 
@@ -71,7 +72,7 @@ Now we need to pull a model for RAG using Ollama. Here we use [Qwen/Qwen2-7B](ht
 You can either clone the repository or download the source zip from [github](https://github.com/infiniflow/ragflow/archive/refs/heads/main.zip):
 
 ```bash
-$ git clone https://github.com/infiniflow/ragflow.git
+git clone https://github.com/infiniflow/ragflow.git
 ```
 
 #### 3.2 Environment Settings
@@ -79,7 +80,7 @@ $ git clone https://github.com/infiniflow/ragflow.git
 Ensure `vm.max_map_count` is set to at least 262144. To check the current value of `vm.max_map_count`, use:
 
 ```bash
-$ sysctl vm.max_map_count
+sysctl vm.max_map_count
 ```
 
 ##### Changing `vm.max_map_count`
@@ -87,7 +88,7 @@ $ sysctl vm.max_map_count
 To set the value temporarily, use:
 
 ```bash
-$ sudo sysctl -w vm.max_map_count=262144
+sudo sysctl -w vm.max_map_count=262144
 ```
 
 To make the change permanent and ensure it persists after a reboot, add or update the following line in `/etc/sysctl.conf`:
@@ -104,10 +105,10 @@ Build the pre-built Docker images and start up the server:
 > Running the following commands automatically downloads the *dev* version RAGFlow Docker image. To download and run a specified Docker version, update `RAGFLOW_VERSION` in **docker/.env** to the intended version, for example `RAGFLOW_VERSION=v0.7.0`, before running the following commands.
 
 ```bash
-$ export no_proxy=localhost,127.0.0.1
-$ cd ragflow/docker
-$ chmod +x ./entrypoint.sh
-$ docker compose up -d
+export no_proxy=localhost,127.0.0.1
+cd ragflow/docker
+chmod +x ./entrypoint.sh
+docker compose up -d
 ```
 
 > [!NOTE]
@@ -116,7 +117,7 @@ $ docker compose up -d
 Check the server status after having the server up and running:
 
 ```bash
-$ docker logs -f ragflow-server
+docker logs -f ragflow-server
 ```
 
 Upon successful deployment, you will see logs in the terminal similar to the following:
@@ -237,3 +238,18 @@ Input your questions into the **Message Resume Assistant** textbox at the bottom
 #### Exit
 
 To shut down the RAGFlow server, use **Ctrl+C** in the terminal where the Ragflow server is runing, then close your browser tab.
+
+### 5. Troubleshooting
+
+#### Stuck when parsing files `Node <Urllib3HttpNode(http://es01:9200)> has failed for xx times in a row, putting on 30 second timeout`
+
+This is because there's no enough space on the disk and the Docker container stop working. Please left enough space on the disk and make sure the disk usage is below 90%.
+
+#### `Max retries exceeded with url: /encodings/cl100k_base.tiktoken` while starting the RAGFlow service through Docker
+
+This may caused by network problem. To resolve this, you could try to:
+
+1. Attach to the Docker container by `docker exec -it ragflow-server /bin/bash`
+2. Set environment variables like `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` at the beginning of the `/ragflow/entrypoint.sh`.
+3. Stop the service by `docker compose stop`.
+4. Restart the service by `docker compose start`.

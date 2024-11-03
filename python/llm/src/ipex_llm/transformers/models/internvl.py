@@ -26,6 +26,7 @@
 
 import torch
 from ipex_llm.utils.common.log4Error import invalidInputError
+from ipex_llm.transformers.models.utils import use_sdp_non_causal
 
 
 def _get_pos_embed(self, pos_embed, H, W):
@@ -163,3 +164,27 @@ def internvl_batch_chat(self, tokenizer, pixel_values, questions, generation_con
     responses = tokenizer.batch_decode(generation_output, skip_special_tokens=True)
     responses = [response.split(template.sep)[0].strip() for response in responses]
     return responses
+
+
+def intern_attention_forward(self, x: torch.Tensor) -> torch.Tensor:
+    B, N, C = x.shape
+    qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+    q, k, v = qkv.unbind(0)  # make torchscript happy (cannot use tensor as tuple)
+
+    if self.qk_normalization:
+        B_, H_, N_, D_ = q.shape
+        q = self.q_norm(q.transpose(1, 2).flatten(-2, -1)).view(B_, N_, H_, D_).transpose(1, 2)
+        k = self.k_norm(k.transpose(1, 2).flatten(-2, -1)).view(B_, N_, H_, D_).transpose(1, 2)
+
+    if use_sdp_non_causal(self.head_dim, q.device, q.dtype):
+        import xe_addons
+        x = xe_addons.sdp_non_causal(q, k.contiguous(), v.contiguous(), None)
+    else:
+        attn = ((q * self.scale) @ k.transpose(-2, -1))
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+        x = attn @ v
+    x = x.transpose(1, 2).reshape(B, N, C)
+    x = self.proj(x)
+    x = self.proj_drop(x)
+    return x

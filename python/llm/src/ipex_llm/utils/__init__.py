@@ -23,7 +23,9 @@ import transformers
 trans_version = transformers.__version__
 
 if trans_version >= "4.45.0":
-    pass
+    from .benchmark_util_4_45 import BenchmarkWrapper
+elif trans_version >= "4.44.0":
+    from .benchmark_util_4_44 import BenchmarkWrapper
 elif trans_version >= "4.43.0":
     from .benchmark_util_4_43 import BenchmarkWrapper
 elif trans_version >= "4.42.0":

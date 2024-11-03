@@ -18,7 +18,8 @@ The [GraphRAG project](https://github.com/microsoft/graphrag) is designed to lev
 
 Follow the steps in [Run Ollama with IPEX-LLM on Intel GPU Guide](./ollama_quickstart.md) to install `ipex-llm[cpp]==2.1.0` and run Ollama on Intel GPU. Ensure that `ollama serve` is running correctly and can be accessed through a local URL (e.g., `https://127.0.0.1:11434`).
 
-**Please note that for GraphRAG, we highly recommand using the stable version of ipex-llm through `pip install ipex-llm[cpp]==2.1.0`**.
+> [!NOTE]
+> Please note that for GraphRAG, we highly recommand using the stable version of ipex-llm through `pip install ipex-llm[cpp]==2.1.0`.
 
 ### 2. Prepare LLM and Embedding Model
 

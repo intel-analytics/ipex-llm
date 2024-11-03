@@ -59,7 +59,7 @@ test_api:
   # - "bigdl_ipex_int8"                     # on Intel CPU, (qtype=int8)
   # - "speculative_cpu"                     # on Intel CPU, inference with self-speculative decoding
   # - "deepspeed_transformer_int4_cpu"      # on Intel CPU, deepspeed autotp inference
-  # - "transformers_int4_npu_win"           # on Intel NPU for Windows,  transformer-like API, (qtype=int4)
+  # - "transformers_int4_npu_win"           # on Intel NPU for Windows, transformer-like API, (qtype=int4)
 cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only available now for gpu win related test_api)
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
@@ -70,7 +70,7 @@ task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
 ## (Optional) Save model in low bit
 If you choose the `transformer_int4_loadlowbit_gpu_win` or `transformer_int4_fp16_loadlowbit_gpu_win` test API, you will need to save the model in low bit first.
 
-Run `python save.py` will save all models declared in `repo_id` list into low bit models under `local_model_hub` folder.
+Running `python save.py` will save all models declared in `repo_id` list into low bit models under `local_model_hub` folder.
 
 ## Run
 

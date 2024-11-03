@@ -41,6 +41,8 @@ LLAMA_IDS = ['meta-llama/Llama-2-7b-chat-hf','meta-llama/Llama-2-13b-chat-hf',
              'decapoda-research/llama-65b-hf','lmsys/vicuna-7b-v1.5',
              'lmsys/vicuna-13b-v1.3','lmsys/vicuna-33b-v1.3','project-baize/merged-baize-30b']
 
+LLAMA3_VISION_IDS = ['meta-llama/Llama-3.2-11B-Vision-Instruct']
+
 CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 
 LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
@@ -136,7 +138,7 @@ def preprocess_prompt(tokenizer, in_len, task):
         input_ids = tokenizer.encode(input_str, return_tensors="pt")    
     return input_ids
 
-def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation', optimize_model=False, transpose_value_cache=True):
+def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, num_trials=3, num_beams=1, low_bit='sym_int4', cpu_embedding=False, batch_size=1, streaming=False, use_fp16_torch_dtype=False, lookahead=False, task='continuation', optimize_model=False, transpose_value_cache=True, group_size=64):
     # TODO: make a parameter
     result= {}
     if test_api == 'transformer_int4':
@@ -188,9 +190,11 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
     elif test_api == 'pipeline_parallel_gpu':
         result = run_pipeline_parallel_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=use_fp16_torch_dtype)
     elif test_api == 'transformers_int4_npu_win':
-        result = transformers_int4_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache)
+        result = transformers_int4_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache, group_size)
     elif test_api == 'transformers_int4_loadlowbit_npu_win':
         result = run_transformer_int4_loadlowbit_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache)
+    elif test_api == 'transformers_openvino':
+        result = run_transformers_openvino(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, group_size)
     else:
         invalidInputError(False, "Unknown test_api " + test_api + ", please check your config.yaml.")
 
@@ -210,7 +214,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             round(result[in_out_pair][-1][5], 2),
                             result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'int4_fp16_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) and not lookahead else 'N/A',
                             streaming if 'win' in test_api else 'N/A',
-                            use_fp16_torch_dtype if 'pipeline_parallel_gpu' in test_api else 'N/A'],
+                            use_fp16_torch_dtype if 'pipeline_parallel_gpu' in test_api else 'N/A',
+                            group_size if 'transformers_int4_npu_win' in test_api else 'N/A'],
                             ) 
 
 
@@ -585,9 +590,9 @@ def run_transformer_int4_gpu(repo_id,
                     file.seek(0, os.SEEK_END)
                     global line_counter
                     if file.tell() == 0:
-                        csv_writer.writerow(["", "model", "1st token avg latency (ms)", "2+ avg latency (ms/token)", "encoder time (ms)", "input/output tokens", "batch_size", "actual input/output tokens", "num_beams", "low_bit", "cpu_embedding", "model loading time (s)", "peak mem (GB)", "streaming", "use_fp16_torch_dtype"])
+                        csv_writer.writerow(["", "model", "1st token avg latency (ms)", "2+ avg latency (ms/token)", "encoder time (ms)", "input/output tokens", "batch_size", "actual input/output tokens", "num_beams", "low_bit", "cpu_embedding", "model loading time (s)", "peak mem (GB)", "streaming", "use_fp16_torch_dtype", "npu_group_size"])
                         line_counter +=1
-                    csv_writer.writerow([line_counter-1, repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', load_time, peak_mem, streaming, use_fp16_torch_dtype])
+                    csv_writer.writerow([line_counter-1, repo_id, first_token_latency, rest_token_latency, encoder_time, input_output_tokens, batch_size, actual_input_output_tokens, num_beams, low_bit, '', load_time, peak_mem, streaming, use_fp16_torch_dtype, group_size])
                     line_counter += 1
 
     model.to('cpu')
@@ -599,37 +604,41 @@ def run_transformer_int4_gpu(repo_id,
 
 
 def transformers_int4_npu_win(repo_id,
-                                 local_model_hub,
-                                 in_out_pairs,
-                                 warm_up,
-                                 num_trials,
-                                 num_beams,
-                                 low_bit,
-                                 batch_size,
-                                 optimize_model,
-                                 transpose_value_cache):
+                              local_model_hub,
+                              in_out_pairs,
+                              warm_up,
+                              num_trials,
+                              num_beams,
+                              low_bit,
+                              batch_size,
+                              optimize_model,
+                              transpose_value_cache,
+                              npu_group_size):
     from ipex_llm.transformers.npu_model import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)
     in_out_len = in_out_pairs[0].split("-")
-    max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
+    max_context_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                          optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                          optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]),
+                                          quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
                                           torch_dtype=torch.float16, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
-                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                                     optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
+                                                     quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
                                                      use_cache=True, attn_implementation="eager").eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
-                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                                     optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
+                                                     quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
                                                      use_cache=True, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
@@ -672,39 +681,111 @@ def transformers_int4_npu_win(repo_id,
     return result
 
 def run_transformer_int4_loadlowbit_npu_win(repo_id,
-                                 local_model_hub,
-                                 in_out_pairs,
-                                 warm_up,
-                                 num_trials,
-                                 num_beams,
-                                 low_bit,
-                                 batch_size,
-                                 optimize_model,
-                                 transpose_value_cache):
+                                            local_model_hub,
+                                            in_out_pairs,
+                                            warm_up,
+                                            num_trials,
+                                            num_beams,
+                                            low_bit,
+                                            batch_size,
+                                            optimize_model,
+                                            transpose_value_cache):
     from ipex_llm.transformers.npu_model import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
     model_path = get_model_path(repo_id, local_model_hub)
     in_out_len = in_out_pairs[0].split("-")
-    max_output_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
+    max_context_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
     if repo_id in CHATGLM_IDS:
         model = AutoModel.load_low_bit(model_path+'-npu-'+low_bit, trust_remote_code=True,
-                                        optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                        optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
                                         torch_dtype=torch.float16, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-npu-'+low_bit, trust_remote_code=True)
     elif repo_id in LLAMA_IDS:
         model = AutoModelForCausalLM.load_low_bit(model_path+'-npu-'+low_bit, trust_remote_code=True, torch_dtype=torch.float16,
-                                                    optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                                    optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
                                                     use_cache=True, attn_implementation="eager").eval()
         tokenizer = LlamaTokenizer.from_pretrained(model_path+'-npu-'+low_bit, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.load_low_bit(model_path+'-npu-'+low_bit, trust_remote_code=True, torch_dtype=torch.float16,
-                                                     optimize_model=optimize_model, max_output_len=max_output_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
+                                                     optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), transpose_value_cache=transpose_value_cache,
                                                      use_cache=True, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-npu-'+low_bit, trust_remote_code=True)
+    end = time.perf_counter()
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
+
+    model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            input_str = get_continuation_input_str(in_len, tokenizer)
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_list = [true_str] * batch_size
+            input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+            input_ids = input_ids[:, :in_len]
+            actual_in_len = input_ids.shape[1]
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                            min_new_tokens=out_len, num_beams=num_beams)
+                end = time.perf_counter()
+                print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                print(output[0])
+                actual_out_len = output_ids.shape[1] - actual_in_len
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                           actual_in_len, actual_out_len, load_time])
+    del model
+    gc.collect()
+    return result
+
+def run_transformers_openvino(repo_id,
+                              local_model_hub,
+                              in_out_pairs,
+                              warm_up,
+                              num_trials,
+                              num_beams,
+                              low_bit,
+                              batch_size,
+                              group_size):
+    from optimum.intel import OVModelForCausalLM
+    from transformers import AutoTokenizer, LlamaTokenizer, PretrainedConfig
+
+    ir_repo_id = (repo_id + '-ov-' + low_bit + '-' +str(group_size))
+    model_path = get_model_path(ir_repo_id, local_model_hub)
+
+    ov_config = {"PERFORMANCE_HINT": "LATENCY",
+                 "NUM_STREAMS": "1", "CACHE_DIR": ""}
+    config_dict = dict(pretrained_model_name_or_path=model_path, 
+                       trust_remote_code=True,
+                       use_cache=True, low_cpu_mem_usage=True)
+
+    config = PretrainedConfig(**config_dict)
+
+    # Load model converted by OpenVINO
+    st = time.perf_counter()
+    if repo_id in LLAMA_IDS:
+        model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
+                                                   ov_config=ov_config, config=config).eval()
+        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    else:
+        model = OVModelForCausalLM.from_pretrained(model_path, device="GPU",
+                                                     ov_config=ov_config, config=config).eval()
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
@@ -769,6 +850,13 @@ def run_optimize_model_gpu(repo_id,
                                                      use_cache=True, low_cpu_mem_usage=True).eval()
         model = optimize_model(model, low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        model = model.to('xpu')
+    elif repo_id in LLAMA3_VISION_IDS:
+        from transformers import MllamaForConditionalGeneration
+        model = MllamaForConditionalGeneration.from_pretrained(model_path, trust_remote_code=True,
+                                                     low_cpu_mem_usage=True).eval()
+        model = optimize_model(model, low_bit=low_bit, modules_to_not_convert=["multi_modal_projector"])
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype='auto', low_cpu_mem_usage=True,
@@ -2099,6 +2187,7 @@ if __name__ == '__main__':
     use_fp16_torch_dtype = False
     task = 'continuation'
     optimize_model = False # only for transformers_int4_npu_win
+    group_size = 64
     if 'streaming' in conf:
         streaming = conf['streaming']
     if 'use_fp16_torch_dtype' in conf:
@@ -2107,6 +2196,10 @@ if __name__ == '__main__':
         task = conf['task']
     if 'optimize_model' in conf:
         optimize_model = conf['optimize_model']
+    if 'group_size' in conf:
+        group_size = conf['group_size']
+    if 'npu_group_size' in conf:
+        group_size = conf['npu_group_size']
     lookahead = False
     transpose_value_cache = True
     if 'transpose_value_cache' in conf:
@@ -2136,10 +2229,10 @@ if __name__ == '__main__':
                 if task in ['QA', 'summarize'] and conf['num_beams'] == 1 and batch_size == 1:
                     lookahead = True
                 run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
-                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, optimize_model, transpose_value_cache)
+                      conf['low_bit'], conf['cpu_embedding'], batch_size, streaming, use_fp16_torch_dtype, lookahead, task, optimize_model, transpose_value_cache, group_size)
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
-                                            'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype'])
+                                            'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype', 'npu_group_size'])
         if "pipeline" in api or "deepspeed" in api:
             if torch.distributed.get_rank() == 0:
                 df.index += max(line_counter - 1, 0)

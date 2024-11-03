@@ -33,10 +33,10 @@
 
 import torch
 from typing import Optional, Tuple
+from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, \
     append_kv_cache, is_enough_kv_cache_room_4_31
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb_no_cache_xpu
 
 import os
 
@@ -44,14 +44,14 @@ KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 
 
 
 def gptneox_attention_forward(
-        self,
-        hidden_states: torch.FloatTensor,
-        attention_mask: torch.FloatTensor,
-        position_ids: torch.LongTensor,
-        head_mask: Optional[torch.FloatTensor] = None,
-        layer_past: Optional[Tuple[torch.Tensor]] = None,
-        use_cache: Optional[bool] = False,
-        output_attentions: Optional[bool] = False,
+    self,
+    hidden_states: torch.FloatTensor,
+    attention_mask: torch.FloatTensor,
+    position_ids: torch.LongTensor,
+    head_mask: Optional[torch.FloatTensor] = None,
+    layer_past: Optional[Tuple[torch.Tensor]] = None,
+    use_cache: Optional[bool] = False,
+    output_attentions: Optional[bool] = False,
 ):
     bsz, q_len, _ = hidden_states.size()
     device = hidden_states.device
@@ -89,11 +89,12 @@ def gptneox_attention_forward(
     use_fuse_rope = query.device.type == "xpu"
     use_fuse_rope = use_fuse_rope and not (self.training and query.requires_grad)
 
-    if use_fuse_rope:
-        query, key = apply_rotary_pos_emb_no_cache_xpu(query_rot,
-                                                       key_rot,
-                                                       position_ids,
-                                                       "gpt_neox")
+    if should_use_fuse_rope(hidden_states, position_ids, self.training):
+        import xe_addons
+        xe_addons.rotary_half_inplaced(self.maybe_rotary.inv_freq, position_ids,
+                                       query_rot, key_rot)
+        query = query_rot
+        key = key_rot
     else:
         cos, sin = self.rotary_emb(value, seq_len=seq_len)
         query, key = apply_rotary_pos_emb(query_rot, key_rot, cos, sin, position_ids, "gpt_neox")

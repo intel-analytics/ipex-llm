@@ -45,10 +45,10 @@ Install [axolotl v0.4.0](https://github.com/OpenAccess-AI-Collective/axolotl/tre
 
 ```bash
 # install axolotl v0.4.0
-git clone https://github.com/OpenAccess-AI-Collective/axolotl/tree/v0.4.0
+git clone https://github.com/OpenAccess-AI-Collective/axolotl -b v0.4.0
 cd axolotl
 # replace requirements.txt
-remove requirements.txt
+rm requirements.txt
 wget -O requirements.txt https://raw.githubusercontent.com/intel-analytics/ipex-llm/main/python/llm/example/GPU/LLM-Finetuning/axolotl/requirements-xpu.txt
 pip install -e .
 pip install transformers==4.36.0
