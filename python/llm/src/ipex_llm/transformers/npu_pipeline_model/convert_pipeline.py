@@ -172,6 +172,9 @@ def generate(
     thread.join()
     time_end = time.perf_counter()
 
+    self.first_cost = (time_t3 - time_start_all - (time_t2 - time_t1)) # s
+    self.rest_cost_mean = (time_end - time_t3) / (idx - 1) # s
+
     if do_print:
         print(f" Start the thread and connect the pipe time: {(time_t2 - time_t1):.2f} s")
         print(f" Number of input tokens: {input_length}")
