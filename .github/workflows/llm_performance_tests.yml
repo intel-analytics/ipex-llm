@@ -229,7 +229,7 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade transformers for model Qwen/Qwen1.5-MoE-A2.7B-Chat
           python -m pip install transformers==4.40.0
-          python -m pip install trl
+          python -m pip install trl<0.12.0
           # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-440.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
@@ -246,7 +246,7 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade for default transformers version
           python -m pip install transformers==4.43.1
-          python -m pip install trl
+          python -m pip install trl<0.12.0
           # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-443.yaml python/llm/dev/benchmark/all-in-one/config.yaml
           cd python/llm/dev/benchmark/all-in-one
@@ -280,7 +280,7 @@ jobs:
           export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           # upgrade for default transformers version
           python -m pip install transformers==4.45.0
-          python -m pip install trl
+          python -m pip install trl<0.12.0
           python -m pip install accelerate==0.33.0
           # batch_size 1
           cp python/llm/test/benchmark/arc-perf-transformers-445.yaml python/llm/dev/benchmark/all-in-one/config.yaml
@@ -862,7 +862,7 @@ jobs:
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -896,7 +896,7 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.45.0
           pip install accelerate==0.33.0
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1045,7 +1045,7 @@ jobs:
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1079,7 +1079,7 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.45.0
           pip install accelerate==0.33.0
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1230,7 +1230,7 @@ jobs:
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1264,7 +1264,7 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.45.0
           pip install accelerate==0.33.0
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1432,7 +1432,7 @@ jobs:
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1476,7 +1476,7 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.45.0
           pip install accelerate==0.33.0
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1609,7 +1609,7 @@ jobs:
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1645,7 +1645,7 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.45.0
           pip install accelerate==0.33.0
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1802,7 +1802,7 @@ jobs:
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1838,7 +1838,7 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.45.0
           pip install accelerate==0.33.0
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1994,7 +1994,7 @@ jobs:
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -2030,7 +2030,7 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.45.0
           pip install accelerate==0.33.0
-          pip install trl
+          pip install trl<0.12.0
 
           if "${{ matrix.platform }}"=="perf-igpu" (
             set SYCL_CACHE_PERSISTENT=1
