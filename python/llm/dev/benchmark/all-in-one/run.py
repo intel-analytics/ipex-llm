@@ -683,16 +683,16 @@ def transformers_int4_npu_win(repo_id,
     return result
 
 def transformers_int4_npu_pipeline_win(repo_id,
-                              local_model_hub,
-                              in_out_pairs,
-                              warm_up,
-                              num_trials,
-                              num_beams,
-                              low_bit,
-                              batch_size,
-                              optimize_model,
-                              transpose_value_cache,
-                              npu_group_size):
+                                       local_model_hub,
+                                       in_out_pairs,
+                                       warm_up,
+                                       num_trials,
+                                       num_beams,
+                                       low_bit,
+                                       batch_size,
+                                       optimize_model,
+                                       transpose_value_cache,
+                                       npu_group_size):
     from ipex_llm.transformers.npu_model import AutoModel, AutoModelForCausalLM
     from transformers import AutoTokenizer, LlamaTokenizer
 
@@ -723,8 +723,6 @@ def transformers_int4_npu_pipeline_win(repo_id,
     end = time.perf_counter()
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
-
-    # TODO: model = BenchmarkWrapper(model)
 
     result = {}
     with torch.inference_mode():
@@ -2312,7 +2310,7 @@ if __name__ == '__main__':
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype', 'npu_group_size'])
-        if "pipeline" in api or "deepspeed" in api:
+        if ("pipeline" in api or "deepspeed" in api) and api != 'transformers_int4_npu_pipeline_win':
             if torch.distributed.get_rank() == 0:
                 df.index += max(line_counter - 1, 0)
                 if line_counter == 0:
