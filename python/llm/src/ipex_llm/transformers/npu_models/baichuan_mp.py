@@ -214,23 +214,19 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
                   k_bias=None,
                   v_bias=None):
         hidden_size = num_heads * head_dim
-        if self.n_splits_linear == 1:
-            proj = self.linear(
-                hidden_states,
-                3 * hidden_size,
-                hidden_size,
-                bias=False,
-                wt_dtype=self.dtype
-            )
-        else:
+        if self.n_splits_linear != 1:
             hidden_states = self.unsqueeze(hidden_states, axis=0)
-            proj = self.linear(
-                hidden_states,
-                3 * hidden_size,
-                hidden_size,
-                bias=False,
-                wt_dtype=self.dtype
-            )
+
+        proj = self.linear(
+            hidden_states,
+            3 * hidden_size,
+            hidden_size,
+            bias=False,
+            wt_dtype=self.dtype,
+            n_splits=self.n_splits_linear,
+            scale_factor=(self.group_size == 0),
+            is_prefill=(mode == "prefill")
+        )
 
         proj = self.reshape(proj, [-1, 3, hidden_size])  # b*s, 3, h
         proj = self.unsqueeze(proj, [0])  # b, s, 3, h
@@ -282,7 +278,10 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
         attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
 
         attn_output = self.linear(
-            attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
+            attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype,
+            n_splits=self.n_splits_linear,
+            scale_factor=(self.group_size == 0),
+            is_prefill=(mode == "prefill")
         )
         return attn_output, new_key_states, new_value_states
 
@@ -617,8 +616,7 @@ def run_decode(
                 weights.append((g.weight, g.scale))
                 weights.append((u.weight, u.scale))
         else:
-            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+            for layer_list in [attn_layer.W_pack_dq_list, attn_layer.o_proj_dq_list,
                                mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
                 l_weights = []
                 scales = []
@@ -845,8 +843,7 @@ def run_prefill(
                 weights.append((g.weight, g.scale))
                 weights.append((u.weight, u.scale))
         else:
-            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+            for layer_list in [attn_layer.W_pack_dq_list, attn_layer.o_proj_dq_list,
                                mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
                 l_weights = []
                 scales = []
