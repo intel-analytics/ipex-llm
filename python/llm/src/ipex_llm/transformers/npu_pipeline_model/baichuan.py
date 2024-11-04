@@ -54,6 +54,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
         dtype=np_dtype,
         model_norm_weight=model_norm.weight.to(torch.float16),
         vocab_size=vocab_size,
+        n_splits=n_splits_linear
     )
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
 
@@ -97,16 +98,34 @@ def convert_baichuan_layer(model, layer_idx, n_splits_linear, n_splits_down_proj
 
     weights = []
     if n_splits_linear == 1:
-        weights = [
-            (attn_layer.W_pack.weight, attn_layer.W_pack.scale),
-            (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-            (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-            (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-        ]
+        for w, o, g, u in zip(attn_layer.W_pack_dq_list,
+                              attn_layer.o_proj_dq_list,
+                              mlp_layer.gate_proj_dq_list,
+                              mlp_layer.up_proj_dq_list):
+            weights.append((w.weight, w.scale))
+            weights.append((o.weight, o.scale))
+            weights.append((g.weight, g.scale))
+            weights.append((u.weight, u.scale))
     else:
-        # TODO
-        pass
+        for layer_list in [attn_layer.W_pack_dq_list, attn_layer.o_proj_dq_list,
+                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
+            l_weights = []
+            scales = []
+            for l in layer_list:
+                l_weights.append(l.weight)
+                scales.append(l.scale)
+            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+
+    if n_splits_down_proj == 1:
+        for l in mlp_layer.down_proj_dq_list:
+            weights.append((l.weight, l.scale))
+    else:
+        l_weights = []
+        scales = []
+        for l in mlp_layer.down_proj_dq_list:
+            l_weights.append(l.weight)
+            scales.append(l.scale)
+        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
     cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
     cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)

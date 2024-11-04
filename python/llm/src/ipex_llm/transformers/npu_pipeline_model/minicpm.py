@@ -119,23 +119,11 @@ class MiniCPMLMHead(LLMBaseNNFactory):
             hidden_states = self.concat(hidden_states_1, hidden_states_2, axis=2)
         else:
             # # for MiniCPM-1B-sft-bf16
-            # hidden_states = self.linear(
-            #         hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-            #     )
-            if n_splits == 1:
-                hidden_states = self.linear(
-                    hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-                )
-            else:
-                # hidden_states = self.dq_split_linear(
-                #     hidden_states, self.vocab_size, self.hidden_size, n_splits,
-                #     wt_dtype=dtype, scale_factor=False
-                # )
-                print("-------------------- dq_split_linear")
-                hidden_states = self.dq_split_linear(
-                    hidden_states, self.vocab_size, self.hidden_size,
-                    n_splits=n_splits, wt_dtype=dtype, scale_factor=False
-                )
+            hidden_states = self.linear(
+                hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype,
+                n_splits=self.n_splits_linear,
+                scale_factor=(n_splits == 1)
+            )
 
         # define outputs
         hidden_states = self.convert_to_fp32(hidden_states)
