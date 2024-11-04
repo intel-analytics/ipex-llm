@@ -574,6 +574,7 @@ def codegeex_attention_forward(
 
 import torch.nn.functional as F
 
+
 def split_mlp(module: torch.nn.Module):
     if module.__class__.__name__ == "MLP":
         gate_weight, up_weight = module.dense_h_to_4h.weight.data.chunk(2, dim=0)
@@ -594,6 +595,7 @@ def split_mlp(module: torch.nn.Module):
         module.activation_fn = F.silu
 
         del module.dense_h_to_4h
+
 
 def mlp_forward(
     self,

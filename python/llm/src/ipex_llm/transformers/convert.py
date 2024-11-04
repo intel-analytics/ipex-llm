@@ -1049,12 +1049,12 @@ def _optimize_pre(model, qtype=None):
             model.llm.config.model_type = "llama"
         _optimize_pre(model.llm, qtype=qtype)
         model.llm.config.model_type = "minicpmv"
-    if  model.config.architectures is not None \
-        and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
+    if model.config.architectures is not None \
+       and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]:
         from ipex_llm.transformers.models.chatglm2 import split_mlp
         if hasattr(model.config, 'padded_vocab_size') and \
-            model.config.padded_vocab_size == 65024:
-            model.apply(split_mlp)
+           model.config.padded_vocab_size == 65024:
+                model.apply(split_mlp)
 
     return model
 
