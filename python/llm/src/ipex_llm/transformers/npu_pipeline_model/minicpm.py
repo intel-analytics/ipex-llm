@@ -260,19 +260,16 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                                                         temp_dir)
 
     if layernorm_const:
-        for idx, (weight, scale) in enumerate(weights):
-            bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{5+idx*2}.bin")
-            weight.numpy().tofile(bin_file)
-            bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{5+idx*2+1}.bin")
-            scale.numpy().tofile(bin_file)
+        st_idx = 5
     else:
         input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
         post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
         layer_norm_0.data.numpy().tofile(input_lm_bin_file)
         layer_norm_1.data.numpy().tofile(post_lm_bin_file)
-        for idx, (weight, scale) in enumerate(weights):
-            bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{7+idx*2}.bin")
-            weight.numpy().tofile(bin_file)
-            bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{7+idx*2+1}.bin")
-            scale.numpy().tofile(bin_file)
+        st_idx = 7
+    for idx, (weight, scale) in enumerate(weights):
+        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2}.bin")
+        weight.numpy().tofile(bin_file)
+        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2+1}.bin")
+        scale.numpy().tofile(bin_file)
     del single_decoder
