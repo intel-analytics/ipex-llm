@@ -189,6 +189,8 @@ def convert_llm(model: torch.nn.Module,
                 max_prompt_len: int,
                 transpose_value_cache: bool,
                 group_size: int):
+    # whether to set layernorm weight as const
+    layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "1") == "1"
     if group_size == 0:
         n_splits_linear = 1
         n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
@@ -230,7 +232,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("llama", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"))
+                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
@@ -270,7 +272,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("baichuan", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"))
+                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
@@ -309,7 +311,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("minicpm", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"))
+                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
@@ -349,7 +351,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("qwen", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"))
+                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
