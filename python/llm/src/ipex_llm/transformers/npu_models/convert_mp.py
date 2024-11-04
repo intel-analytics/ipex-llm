@@ -108,7 +108,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                                             n_splits_down_proj=n_splits_down_proj,
                                             load=load))
         
-        if quantization_group_size != 0 and model.config.model_type != "minicpm":
+        if quantization_group_size != 0:
             split_num = model.config.hidden_size // quantization_group_size
             if model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40:
                 # workaround for MiniCPM-2B
