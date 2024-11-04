@@ -59,6 +59,12 @@ with torch.inference_mode():
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
 ```
 
+### Sample Output
+```bash
+=========First token cost xx.xxxxs and 3.595703125 GB=========
+=========Rest tokens cost average xx.xxxxs (31 tokens in all) and 3.595703125 GB=========
+```
+
 ### Inference on multi GPUs
 Similarly, put this file into your benchmark directory, and then wrap your optimized model with `BenchmarkWrapper` (`model = BenchmarkWrapper(model)`).
 For example, just need to apply following code patch on [Deepspeed Autotp example code](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/Deepspeed-AutoTP/deepspeed_autotp.py) to calculate 1st and the rest token performance:
@@ -81,8 +87,13 @@ For example, just need to apply following code patch on [Deepspeed Autotp exampl
 ```
 
 ### Sample Output
-Output will be like:
+You can also set `verbose = True`
+```python
+model = BenchmarkWrapper(model, do_print=True, verbose=True)
+```
+
 ```bash
-=========First token cost xx.xxxxs=========
-=========Last token cost average xx.xxxxs (31 tokens in all)=========
+=========First token cost xx.xxxxs and 3.595703125 GB=========
+=========Rest token cost average xx.xxxxs (31 tokens in all) and 3.595703125 GB=========
+Peak memory for every token: [3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125, 3.595703125]
 ```
