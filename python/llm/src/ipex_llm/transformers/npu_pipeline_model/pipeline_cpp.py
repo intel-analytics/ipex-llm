@@ -43,7 +43,8 @@ _, _lib_path = get_shared_lib_info("pipeline")
 # Load the library
 _lib = ctypes.cdll.LoadLibrary(_lib_path)
 
-_lib.InitLLMPipeline.argtypes = [ctypes.c_char_p] + [ctypes.c_int] * 5 + [ctypes.c_char_p] * 5
+_lib.InitLLMPipeline.argtypes = [ctypes.c_char_p] + [ctypes.c_int] * 5 + \
+    [ctypes.c_char_p] * 5 + [ctypes.c_bool]
 _lib.InitLLMPipeline.restype = ctypes.c_int
 
 _lib.generate_serve.argtypes = [ctypes.c_int] * 5 + [ctypes.c_bool] + [ctypes.c_int]
@@ -52,11 +53,13 @@ _lib.generate_serve.restype = ctypes.c_int
 
 def InitLLMPipeline(model_type: str, kv_len: int, num_head: int, head_dim: int, num_layers: int,
                     vocab_size: int, model_weight_dir: str, model_name: str,
-                    first_blob_name: str, last_blob_name: str, rest_blob_name: str):
+                    first_blob_name: str, last_blob_name: str, rest_blob_name: str,
+                    layernorm_const: bool):
     return _lib.InitLLMPipeline(model_type.encode('utf-8'), kv_len, num_head, head_dim, num_layers,
                                 vocab_size, model_weight_dir.encode('utf-8'),
                                 model_name.encode('utf-8'), first_blob_name.encode('utf-8'),
-                                last_blob_name.encode('utf-8'), rest_blob_name.encode('utf-8'))
+                                last_blob_name.encode('utf-8'), rest_blob_name.encode('utf-8'),
+                                layernorm_const)
 
 
 def generate_serve(kv_len: int, num_head: int, head_dim: int, num_layers: int,

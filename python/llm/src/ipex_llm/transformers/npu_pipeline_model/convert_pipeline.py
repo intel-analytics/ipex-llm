@@ -189,6 +189,8 @@ def convert_llm(model: torch.nn.Module,
                 max_prompt_len: int,
                 transpose_value_cache: bool,
                 group_size: int):
+    # whether to set layernorm weight as const
+    layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "1") == "1"
     if group_size == 0:
         n_splits_linear = 1
         n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
@@ -207,7 +209,8 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                   layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_llama_layer, param_list)
 
@@ -230,7 +233,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("llama", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"))
+                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
@@ -246,7 +249,8 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                  layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_baichuan_layer, param_list)
 
@@ -270,7 +274,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("baichuan", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"))
+                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
@@ -286,7 +290,8 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                   layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_minicpm_layer, param_list)
 
@@ -309,11 +314,12 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("minicpm", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"))
+                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
     elif model.config.model_type == "qwen2":
+        layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "0") == "1"
         with tempfile.TemporaryDirectory() as temp_dir:
             weight_dir = os.path.join(temp_dir, "model_weights")
             os.mkdir(weight_dir)
@@ -325,7 +331,8 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                  layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_qwen_layer, param_list)
 
@@ -349,7 +356,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("qwen", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"))
+                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")

@@ -197,7 +197,8 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
 
 
 def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
-                          temp_dir, weight_dir, transpose_value_cache, kv_len, group_size):
+                          temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                          layernorm_const):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -238,8 +239,8 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
 
     single_decoder = LowBitMinicpmMultiDecoderlayer(
         [1, 1, num_heads * head_dim],
-        input_layernorm_weights=[layer_norm_0],
-        post_attn_layernorm_weights=[layer_norm_1],
+        input_layernorm_weights=[layer_norm_0] if layernorm_const else None,
+        post_attn_layernorm_weights=[layer_norm_1] if layernorm_const else None,
         cached_cos=cached_cos,
         cached_sin=cached_sin,
         num_heads=num_heads,
@@ -258,9 +259,17 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                                                         f"decoder_layer_{layer_idx}",
                                                         temp_dir)
 
+    if layernorm_const:
+        st_idx = 5
+    else:
+        input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
+        post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
+        layer_norm_0.data.numpy().tofile(input_lm_bin_file)
+        layer_norm_1.data.numpy().tofile(post_lm_bin_file)
+        st_idx = 7
     for idx, (weight, scale) in enumerate(weights):
-        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{5+idx*2}.bin")
+        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2}.bin")
         weight.numpy().tofile(bin_file)
-        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{5+idx*2+1}.bin")
+        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2+1}.bin")
         scale.numpy().tofile(bin_file)
     del single_decoder
