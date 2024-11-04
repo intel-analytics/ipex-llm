@@ -78,3 +78,8 @@ Please refer to these:
 - [Security features from the Hugging Face datasets library · Issue #1135 · EleutherAI/lm-evaluation-harness (github.com)](https://github.com/EleutherAI/lm-evaluation-harness/issues/1135#issuecomment-1961928695)
 
 You have to manually run `export HF_DATASETS_TRUST_REMOTE_CODE=1` to solve the problem.
+
+### 3.Error: xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,RuntimeError: unsupported dtype, only fp32 and fp16 are supported.
+This error is because `ipex-llm` currently only support models with `torch_dtype` of `fp16` or `fp32`.
+
+You can add `--model_args dtype=float16` to your command to solve this problem.
