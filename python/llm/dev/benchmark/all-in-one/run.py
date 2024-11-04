@@ -191,6 +191,8 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
         result = run_pipeline_parallel_gpu(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, cpu_embedding, fp16=use_fp16_torch_dtype)
     elif test_api == 'transformers_int4_npu_win':
         result = transformers_int4_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache, group_size)
+    elif test_api == 'transformers_int4_npu_pipeline_win':
+        result = transformers_int4_npu_pipeline_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache, group_size)
     elif test_api == 'transformers_int4_loadlowbit_npu_win':
         result = run_transformer_int4_loadlowbit_npu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, batch_size, optimize_model, transpose_value_cache)
     elif test_api == 'transformers_openvino':
@@ -215,7 +217,7 @@ def run_model(repo_id, test_api, in_out_pairs, local_model_hub=None, warm_up=1, 
                             result[in_out_pair][-1][6] if any(keyword in test_api for keyword in ['int4_gpu', 'int4_fp16_gpu_win', 'int4_loadlowbit_gpu', 'int4_fp16_loadlowbit_gpu', 'fp16_gpu', 'deepspeed_optimize_model_gpu']) and not lookahead else 'N/A',
                             streaming if 'win' in test_api else 'N/A',
                             use_fp16_torch_dtype if 'pipeline_parallel_gpu' in test_api else 'N/A',
-                            group_size if 'transformers_int4_npu_win' in test_api else 'N/A'],
+                            group_size if any(keyword in test_api for keyword in ['transformers_int4_npu_win', 'transformers_int4_npu_pipeline_win']) else 'N/A'],
                             ) 
 
 
@@ -646,6 +648,70 @@ def transformers_int4_npu_win(repo_id,
     print(">> loading of model costs {}s".format(load_time))
 
     model = BenchmarkWrapper(model)
+
+    result = {}
+    with torch.inference_mode():
+        for in_out in in_out_pairs:
+            in_out_len = in_out.split("-")
+            in_len = int(in_out_len[0])
+            out_len = int(in_out_len[1])
+            input_str = get_continuation_input_str(in_len, tokenizer)
+            # As different tokenizer has different encodings,
+            # slice the input_ids to ensure the prompt length is required length.
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            input_ids = input_ids[:, :in_len]
+            true_str = tokenizer.batch_decode(input_ids)[0]
+            input_list = [true_str] * batch_size
+            input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+            input_ids = input_ids[:, :in_len]
+            actual_in_len = input_ids.shape[1]
+            result[in_out] = []
+            for i in range(num_trials + warm_up):
+                st = time.perf_counter()
+                output_ids = model.generate(input_ids, do_sample=False, max_new_tokens=out_len,
+                                            min_new_tokens=out_len, num_beams=num_beams)
+                end = time.perf_counter()
+                print("model generate cost: " + str(end - st))
+                output = tokenizer.batch_decode(output_ids)
+                print(output[0])
+                actual_out_len = output_ids.shape[1] - actual_in_len
+                if i >= warm_up:
+                    result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
+                                           actual_in_len, actual_out_len, load_time])
+    del model
+    gc.collect()
+    return result
+
+def transformers_int4_npu_pipeline_win(repo_id,
+                                       local_model_hub,
+                                       in_out_pairs,
+                                       warm_up,
+                                       num_trials,
+                                       num_beams,
+                                       low_bit,
+                                       batch_size,
+                                       optimize_model,
+                                       transpose_value_cache,
+                                       npu_group_size):
+    from ipex_llm.transformers.npu_model import AutoModel, AutoModelForCausalLM
+    from transformers import AutoTokenizer, LlamaTokenizer
+
+    model_path = get_model_path(repo_id, local_model_hub)
+    in_out_len = in_out_pairs[0].split("-")
+    max_context_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
+    # Load model in 4 bit,
+    # which convert the relevant layers in the model into INT4 format
+    st = time.perf_counter()
+
+    model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, pipeline=True, torch_dtype=torch.float16,
+                                                 optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
+                                                 quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
+                                                 use_cache=True, attn_implementation="eager").eval()
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
+    end = time.perf_counter()
+    load_time = end - st
+    print(">> loading of model costs {}s".format(load_time))
 
     result = {}
     with torch.inference_mode():
@@ -2186,7 +2252,7 @@ if __name__ == '__main__':
     streaming = False
     use_fp16_torch_dtype = False
     task = 'continuation'
-    optimize_model = False # only for transformers_int4_npu_win
+    optimize_model = False # only for transformers_int4_npu_win, transformers_int4_npu_pipeline_win
     group_size = 64
     if 'streaming' in conf:
         streaming = conf['streaming']
@@ -2233,7 +2299,7 @@ if __name__ == '__main__':
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
                                             'input/output tokens', 'batch_size', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'model loading time (s)', 'peak mem (GB)', 'streaming', 'use_fp16_torch_dtype', 'npu_group_size'])
-        if "pipeline" in api or "deepspeed" in api:
+        if ("pipeline" in api or "deepspeed" in api) and api != 'transformers_int4_npu_pipeline_win':
             if torch.distributed.get_rank() == 0:
                 df.index += max(line_counter - 1, 0)
                 if line_counter == 0:

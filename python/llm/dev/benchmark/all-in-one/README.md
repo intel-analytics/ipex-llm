@@ -27,6 +27,7 @@ Config YAML file has following format
 repo_id:
   # - 'THUDM/chatglm2-6b'
   - 'meta-llama/Llama-2-7b-chat-hf'
+  # - 'meta-llama/Meta-Llama-3.1-8B-Instruct'
   # - 'liuhaotian/llava-v1.5-7b' # requires a LLAVA_REPO_DIR env variables pointing to the llava dir; added only for gpu win related test_api now
 local_model_hub: 'path to your local model hub'
 warm_up: 1 # must set >=2 when run "pipeline_parallel_gpu" test_api
@@ -36,6 +37,7 @@ low_bit: 'sym_int4' # default to use 'sym_int4' (i.e. symmetric int4)
 batch_size: 1 # default to 1
 in_out_pairs:
   - '32-32'
+  - '960-64'
   - '1024-128'
 test_api:
   - "transformer_int4_fp16_gpu"             # on Intel GPU, transformer-like API, (qtype=int4), (dtype=fp16)
@@ -59,11 +61,16 @@ test_api:
   # - "bigdl_ipex_int8"                     # on Intel CPU, (qtype=int8)
   # - "speculative_cpu"                     # on Intel CPU, inference with self-speculative decoding
   # - "deepspeed_transformer_int4_cpu"      # on Intel CPU, deepspeed autotp inference
-  # - "transformers_int4_npu_win"           # on Intel NPU for Windows, transformer-like API, (qtype=int4)
+  # - "transformers_int4_npu_win"           # on Intel NPU for Windows,  transformer-like API, (qtype=int4)
+  # - "transformers_int4_loadlowbit_npu_win" # on Intel NPU for Windows, transformer-like API, (qtype=int4), use load_low_bit API. Please make sure you have used the save_npu.py to save the converted low bit model
+  # - "transformers_int4_npu_pipeline_win"  # on Intel NPU for Windows,  transformer-like API, (qtype=int4)
 cpu_embedding: False # whether put embedding to CPU
 streaming: False # whether output in streaming way (only available now for gpu win related test_api)
+optimize_model: False # whether apply further optimization on NPU (only available now for transformers_int4_npu_win test_api)
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
+transpose_value_cache: True # whether apply transposed v_cache optimization on NPU (only available now for transformers_int4_npu_win test_api)
+npu_group_size: 0 # this can only be either 0 or 128, and only works for `transformers_int4_npu_win` / `transformers_int4_npu_pipeline_win`
 
 ```
 
