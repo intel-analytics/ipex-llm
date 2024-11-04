@@ -70,8 +70,8 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
 
 
 def convert_baichuan_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
-                           temp_dir, weight_dir, transpose_value_cache, kv_len, group_size):
-    layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "1") == "1"
+                           temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                           layernorm_const):
     num_heads = model.model.layers[0].self_attn.num_heads
     head_dim = model.model.layers[0].self_attn.head_dim
     intermediate_size = model.config.intermediate_size

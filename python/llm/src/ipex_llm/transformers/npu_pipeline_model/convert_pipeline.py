@@ -209,7 +209,8 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                   layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_llama_layer, param_list)
 
@@ -248,7 +249,8 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                  layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_baichuan_layer, param_list)
 
@@ -288,7 +290,8 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                   layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_minicpm_layer, param_list)
 
@@ -316,6 +319,7 @@ def convert_llm(model: torch.nn.Module,
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
     elif model.config.model_type == "qwen2":
+        layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "0") == "1"
         with tempfile.TemporaryDirectory() as temp_dir:
             weight_dir = os.path.join(temp_dir, "model_weights")
             os.mkdir(weight_dir)
@@ -327,7 +331,8 @@ def convert_llm(model: torch.nn.Module,
             param_list = []
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size))
+                                  temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                  layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_qwen_layer, param_list)
 

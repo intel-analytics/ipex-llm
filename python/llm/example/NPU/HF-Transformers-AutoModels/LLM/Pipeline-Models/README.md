@@ -36,9 +36,6 @@ pip install --pre --upgrade ipex-llm[npu]
 
 ```cmd
 set BIGDL_USE_NPU=1
-
-# optional, better performance for qwen2 models
-set IPEX_LLM_LAYERNORM_CONST=0
 ```
 
 ## 3. Run Models
