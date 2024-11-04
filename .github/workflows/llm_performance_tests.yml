@@ -615,7 +615,7 @@ jobs:
             if [ ${{ inputs.dgpu }} == "true"  ]; then
               test_platform+=("\"perf-dgpu\"")
             fi
-            printf 'platform=["%s"]' "$(IFS=','; echo "${test_platform[*]}")"
+            printf 'platform=["%s"]\n' "$(IFS=','; echo "${test_platform[*]}")" >> "$GITHUB_OUTPUT"
           else
             echo 'platform=["perf-mtl", "perf-lnl"]' >> "$GITHUB_OUTPUT"
           fi
