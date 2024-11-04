@@ -118,19 +118,24 @@ class MiniCPMLMHead(LLMBaseNNFactory):
             hidden_states_2 = self.slice(hidden_states_2, begin=[0, 0, 0], end=[1, 1, 49313])
             hidden_states = self.concat(hidden_states_1, hidden_states_2, axis=2)
         else:
-            # for MiniCPM-1B-sft-bf16
-            hidden_states = self.linear(
-                    hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-                )
-            # if n_splits == 1:
-            #     hidden_states = self.linear(
+            # # for MiniCPM-1B-sft-bf16
+            # hidden_states = self.linear(
             #         hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
             #     )
-            # else:
-            #     hidden_states = self.dq_split_linear(
-            #         hidden_states, self.vocab_size, self.hidden_size, n_splits,
-            #         wt_dtype=dtype, scale_factor=False
-            #     )
+            if n_splits == 1:
+                hidden_states = self.linear(
+                    hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+                )
+            else:
+                # hidden_states = self.dq_split_linear(
+                #     hidden_states, self.vocab_size, self.hidden_size, n_splits,
+                #     wt_dtype=dtype, scale_factor=False
+                # )
+                print("-------------------- dq_split_linear")
+                hidden_states = self.dq_split_linear(
+                    hidden_states, self.vocab_size, self.hidden_size,
+                    n_splits=n_splits, wt_dtype=dtype, scale_factor=False
+                )
 
         # define outputs
         hidden_states = self.convert_to_fp32(hidden_states)
@@ -146,7 +151,8 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     rms_norm_eps = model.config.rms_norm_eps
     vocab_size = model.config.vocab_size
     model_norm = model.model.norm
-    if n_splits_linear == 1 or True:
+    use_split_lm_head = False
+    if n_splits_linear == 1 or use_split_lm_head:
         if vocab_size == 122753:
             # for MiniCPM-2B-sft-bf16
             weights = [(model.lm_head_0.weight, model.lm_head_0.scale),
@@ -155,12 +161,16 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
             # for MiniCPM-1B-sft-bf16
             weights = [(model.lm_head.weight, model.lm_head.scale)]
     else:
+        print(f"prepare new lmhead")
         lm_heads = model.lm_head.lm_heads
         lm_head_weights = []
         scales = []
-        for i in range(n_splits_linear):
-            lm_head_weights.append(lm_heads[i].weight)
-            scales.append(lm_heads[i].scale)
+        # for i in range(n_splits_linear):
+        #     lm_head_weights.append(lm_heads[i].weight)
+        #     scales.append(lm_heads[i].scale)
+        for l in lm_heads:
+            lm_head_weights.append(l.weight)
+            scales.append(l.scale)
         weights = [(torch.stack(lm_head_weights, axis=0),
                     torch.stack(scales, axis=0))]
     if isinstance(weights[0], tuple):
@@ -178,11 +188,12 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
         dtype=np_dtype,
         model_norm_weight=model_norm.weight.to(torch.float16),
         vocab_size=vocab_size,
+        n_splits=n_splits_linear
     )
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
 
     # save weights bins files
-    if n_splits_linear == 1 or True:
+    if n_splits_linear == 1 or use_split_lm_head:
         if vocab_size == 122753:
             weight_numpy = [model.lm_head_0.weight.data.numpy(),
                             model.lm_head_0.scale.data.numpy(),

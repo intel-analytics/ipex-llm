@@ -108,13 +108,12 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                                             n_splits_down_proj=n_splits_down_proj,
                                             load=load))
         
-        if quantization_group_size != 0 and model.config.model_type != "minicpm":
+        if quantization_group_size != 0:
             split_num = model.config.hidden_size // quantization_group_size
             new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
                                        bias=model.lm_head.bias, use_split=True)
             del model.lm_head
             model.lm_head = new_lm_head
-        print(model)
 
     if model.config.model_type == "qwen2":
         # for Qwen2-7B-Insturct, divide lm_head into 14 parts
