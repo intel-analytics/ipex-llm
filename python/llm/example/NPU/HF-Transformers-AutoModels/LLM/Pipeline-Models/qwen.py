@@ -47,6 +47,7 @@ if __name__ == "__main__":
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument("--quantization_group_size", type=int, default=0)
     parser.add_argument('--load_in_low_bit', type=str, default="sym_int4",
                         help='Load in low bit to use')
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
@@ -62,6 +63,7 @@ if __name__ == "__main__":
                                                      load_in_low_bit=args.load_in_low_bit,
                                                      max_context_len=args.max_context_len,
                                                      max_prompt_len=args.max_prompt_len,
+                                                     quantization_group_size=args.quantization_group_size,
                                                      torch_dtype=torch.float16,
                                                      attn_implementation="eager",
                                                      transpose_value_cache=not args.disable_transpose_value_cache,
