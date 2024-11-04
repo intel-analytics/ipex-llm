@@ -572,8 +572,31 @@ class LLMBaseNNFactory(NNFactory):
         self.input_ops.append(op)
         return op
 
-    def linear(self, *args, **kwargs):
-        op = super().linear(*args, **kwargs)
+    # def linear(self, *args, **kwargs):
+    #     op = super().linear(*args, **kwargs)
+    #     self.linear_ops.append(op)
+    #     return op
+
+    def linear(self,
+               input_node: ctypes._Pointer,
+               output_channels: int,
+               input_channels: int,
+               bias: Optional[bool] = False,
+               act_dtype: npt.DTypeLike = np.float16,
+               wt_dtype: npt.DTypeLike = np.float16,
+               n_splits: int = 1,
+               scale_factor: bool = True,
+               is_prefill: bool = False):
+        if n_splits == 1:
+            op = super().linear(input_node, output_channels,
+                                input_channels, bias, act_dtype,
+                                wt_dtype, scale_factor=scale_factor)
+        else:
+            op = super().dq_split_linear(input_node, n_splits,
+                                         output_channels, input_channels,
+                                         bias=bias, act_dtype=act_dtype,
+                                         wt_dtype=wt_dtype, scale_factor=scale_factor,
+                                         is_prefill=is_prefill)
         self.linear_ops.append(op)
         return op
 

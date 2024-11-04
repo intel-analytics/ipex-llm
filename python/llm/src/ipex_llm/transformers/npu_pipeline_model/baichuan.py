@@ -28,7 +28,17 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     vocab_size = model.config.vocab_size
     model_norm = model.model.norm
     lm_head = model.lm_head
-    weights = [(lm_head.weight, lm_head.scale)]
+    if n_splits_linear == 1:
+        weights = [(lm_head.weight, lm_head.scale)]
+    else:
+        lm_heads = lm_head.lm_heads
+        lm_head_weights = []
+        scales = []
+        for i in range(n_splits_linear):
+            lm_head_weights.append(lm_heads[i].weight)
+            scales.append(lm_heads[i].scale)
+        weights = [(torch.stack(lm_head_weights, axis=0),
+                    torch.stack(scales, axis=0))]
     if isinstance(weights[0], tuple):
         np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
     else:  # FP16 Linear
@@ -48,9 +58,12 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
 
     # save weights bins files
-    weight_numpy = [
-        lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
-    ]
+    if n_splits_linear == 1:
+        weight_numpy = [
+            lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
+        ]
+    else:
+        weight_numpy = [v.numpy() for v in weights[0]]
 
     for idx, weight in enumerate(weight_numpy):
         bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
