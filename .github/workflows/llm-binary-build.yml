@@ -483,7 +483,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          cmake --build . --config Release -j
+          cmake --build . --config Release -t pipeline
       - name: Move release binary
         shell: powershell
         run: |

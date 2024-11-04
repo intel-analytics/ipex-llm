@@ -147,8 +147,8 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
 
     single_decoder = LowBitQwenMultiDecoderlayer(
         [1, 1, num_heads * head_dim],
-        input_layernorm_weights=[layer_norm_0],
-        post_attn_layernorm_weights=[layer_norm_1],
+        input_layernorm_weights=None,
+        post_attn_layernorm_weights=None,
         q_biases=None,
         k_biases=None,
         v_biases=None,
@@ -172,17 +172,21 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                                                         temp_dir)
 
     # 0, 1, 2 are input_embed/attention_mask/position_id
-    q_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
-    k_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
-    v_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_5.bin")
+    input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
+    post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
+    layer_norm_0.data.numpy().tofile(input_lm_bin_file)
+    layer_norm_1.data.numpy().tofile(post_lm_bin_file)
+    q_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_5.bin")
+    k_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_6.bin")
+    v_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_7.bin")
     q_bias.data.numpy().tofile(q_bias_bin_file)
     k_bias.data.numpy().tofile(k_bias_bin_file)
     v_bias.data.numpy().tofile(v_bias_bin_file)
     # 6, 7 are past k/v
     for idx, (weight, scale) in enumerate(weights):
-        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{8+idx*2}.bin")
+        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{10+idx*2}.bin")
         weight.numpy().tofile(bin_file)
-        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{8+idx*2+1}.bin")
+        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{10+idx*2+1}.bin")
         scale.numpy().tofile(bin_file)
 
     del single_decoder

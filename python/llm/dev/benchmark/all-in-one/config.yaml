@@ -43,3 +43,4 @@ optimize_model: False # whether apply further optimization on NPU (only availabl
 use_fp16_torch_dtype: True # whether use fp16 for non-linear layer (only available now for "pipeline_parallel_gpu" test_api)
 task: 'continuation' # task can be 'continuation', 'QA' and 'summarize'
 transpose_value_cache: True # whether apply transposed v_cache optimization on NPU (only available now for transformers_int4_npu_win test_api)
+npu_group_size: 128 # This can only be either 0 or 128, and only works for `transformers_int4_npu_win` / `transformers_int4_npu_pipline_win`
