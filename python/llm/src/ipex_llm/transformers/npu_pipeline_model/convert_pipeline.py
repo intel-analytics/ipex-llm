@@ -172,8 +172,8 @@ def generate(
     thread.join()
     time_end = time.perf_counter()
 
-    self.first_cost = (time_t3 - time_start_all - (time_t2 - time_t1)) # seconds
-    self.rest_cost_mean = (time_end - time_t3) / (idx - 1) # seconds
+    self.first_cost = (time_t3 - time_start_all - (time_t2 - time_t1))  # seconds
+    self.rest_cost_mean = (time_end - time_t3) / (idx - 1)  # seconds
     self.encoder_time = 0.0
 
     if do_print:
