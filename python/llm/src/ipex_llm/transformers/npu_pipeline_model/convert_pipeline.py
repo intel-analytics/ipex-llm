@@ -366,6 +366,9 @@ def convert_llm(model: torch.nn.Module,
 
     if hasattr(model, "lm_head") and isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
+    if hasattr(model, "lm_head_1") and isinstance(model.lm_head_1, SlicedLMHead):
+        model.lm_head_1.get_fused_lm_head()
+        model.lm_head_0.get_fused_lm_head()
 
     print(model)
     # patch generate function

@@ -61,7 +61,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     # save weights bins files
     if n_splits_linear == 1:
         weight_numpy = [
-            lm_heads[0].weight.data.numpy(), lm_heads[0].scale.data.numpy(),
+            lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
         ]
     else:
         weight_numpy = [v.numpy() for v in weights[0]]
