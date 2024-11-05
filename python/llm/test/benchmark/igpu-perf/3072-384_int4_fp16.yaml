@@ -17,6 +17,8 @@ repo_id:
   - 'microsoft/Phi-3-mini-128k-instruct'
   - 'microsoft/phi-3-vision-128k-instruct'
   - 'openbmb/MiniCPM-V-2_6'
+  - 'dummy/dummy-1.5B'
+  - 'dummy/dummy-4B'
 local_model_hub: 'path to your local model hub'
 warm_up: 1
 num_trials: 3
