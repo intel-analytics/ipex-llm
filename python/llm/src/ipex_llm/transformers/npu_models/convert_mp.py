@@ -138,7 +138,6 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                                            bias=model.lm_head.bias, use_split=False)
             del model.lm_head
             model.lm_head = new_lm_head
-    print(model)
 
     # lm_head to cpu optimization
     if cpu_lm_head:
