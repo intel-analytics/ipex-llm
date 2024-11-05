@@ -82,8 +82,8 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install gradio==4.43.0 && \
     pip install transformers==4.44.2 && \
     # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
-    pip install ray && \
-    patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
+    pip install ray 
+    # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
 
 COPY ./vllm_online_benchmark.py        /llm/
 COPY ./vllm_offline_inference.py       /llm/
