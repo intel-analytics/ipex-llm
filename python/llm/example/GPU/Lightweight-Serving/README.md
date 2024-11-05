@@ -41,7 +41,7 @@ pip install gradio # for gradio web UI
 conda install -c conda-forge -y gperftools=2.10 # to enable tcmalloc
 
 # for glm-4v-9b
-pip install transformers==4.42.4 trl
+pip install transformers==4.42.4 "trl<0.12.0"
 
 # for internlm-xcomposer2-vl-7b
 pip install transformers==4.31.0

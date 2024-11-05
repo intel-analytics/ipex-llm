@@ -19,7 +19,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install transformers==4.36.0 datasets
 pip install peft==0.10.0
-pip install bitsandbytes scipy trl
+pip install bitsandbytes scipy "trl<0.12.0"
 ```
 
 ### 2. Configures OneAPI environment variables

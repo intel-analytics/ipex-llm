@@ -17,7 +17,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 pip install transformers==4.45.0
 pip install accelerate==0.33.0
-pip install trl
+pip install "trl<0.12.0"
 ```
 
 #### 1.2 Installation on Windows
@@ -31,7 +31,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 pip install transformers==4.45.0
 pip install accelerate==0.33.0
-pip install trl 
+pip install "trl<0.12.0" 
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
