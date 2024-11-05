@@ -110,8 +110,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         # define input, the order self.parameter matters
         input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
 
-        # llama2 use ov sdp, other models need to test
-        use_prefill_sdp = self.intermediate_size == 11008
+        # llama2/3 use ov sdp, other models need to test
+        use_prefill_sdp = self.intermediate_size in [11008, 14336]
 
         # Self Attention
         if mode == "decode":
@@ -437,7 +437,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
-        self.use_prefill_sdp = intermediate_size == 11008
+        self.use_prefill_sdp = intermediate_size in [11008, 14336]
 
     def forward(
         self,

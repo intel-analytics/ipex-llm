@@ -273,7 +273,6 @@ class LLMBaseNNFactory(NNFactory):
                                                self.n_splits_linear, wt_dtype=self.dtype,
                                                scale_factor=(self.group_size == 0),
                                                is_prefill=(mode == "prefill"))
-
         return attn_output, new_key_states, new_value_states
 
     def paraformer_layer_norm(self, hidden_states, layernorm_weight, layernorm_bias):

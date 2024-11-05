@@ -87,9 +87,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             model.llm.config.model_type = "llama"
         model = model.llm
 
-    if model.config.model_type in ["qwen2", "llama"]:
+    if model.config.model_type in ["qwen2", "llama", "minicpm"]:
         from ipex_llm.transformers.npu_models.common import split_linears
-
         if quantization_group_size == 0:
             n_splits_linear = 1
             n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
@@ -110,10 +109,21 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
 
         if quantization_group_size != 0:
             split_num = model.config.hidden_size // quantization_group_size
-            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
-                                       bias=model.lm_head.bias, use_split=True)
-            del model.lm_head
-            model.lm_head = new_lm_head
+            if model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40:
+                # workaround for MiniCPM-2B
+                new_lm_head_0 = SlicedLMHead(model.lm_head_0.weight, split_num=split_num,
+                                             bias=model.lm_head_0.bias, use_split=True)
+                del model.lm_head_0
+                model.lm_head_0 = new_lm_head_0
+                new_lm_head_1 = SlicedLMHead(model.lm_head_1.weight, split_num=split_num,
+                                             bias=model.lm_head_1.bias, use_split=True)
+                del model.lm_head_1
+                model.lm_head_1 = new_lm_head_1
+            else:
+                new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
+                                           bias=model.lm_head.bias, use_split=True)
+                del model.lm_head
+                model.lm_head = new_lm_head
 
     if model.config.model_type == "qwen2":
         # for Qwen2-7B-Insturct, divide lm_head into 14 parts
@@ -372,6 +382,10 @@ def optimize_llm(
                          transpose_value_cache=transpose_value_cache)
     if hasattr(model, 'lm_head') and isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
+    # MiniCPM-2b
+    if hasattr(model, "lm_head_1") and isinstance(model.lm_head_1, SlicedLMHead):
+        model.lm_head_1.get_fused_lm_head()
+        model.lm_head_0.get_fused_lm_head()
 
 
 def optimize_funasr(

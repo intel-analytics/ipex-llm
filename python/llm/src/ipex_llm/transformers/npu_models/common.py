@@ -76,13 +76,19 @@ def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down
     from transformers.models.llama.modeling_llama import LlamaMLP, LlamaAttention
     attn_module_names = ["q_proj", "k_proj", "v_proj", "o_proj"]
     mlp_module_names = ["down_proj", "up_proj", "gate_proj"]
-    if isinstance(module, (Qwen2Attention, LlamaAttention)):
+    if (
+        isinstance(module, (Qwen2Attention, LlamaAttention))
+        or module.__class__.__name__ in ['MiniCPMAttention', 'Attention']
+    ):
         for name in attn_module_names:
             setattr(module, f"{name}_dq_list", split_linear(getattr(module, name), name,
                                                             n_splits=n_splits_hidden_size,
                                                             load=load))
             delattr(module, name)
-    elif isinstance(module, (Qwen2MLP, LlamaMLP)):
+    elif (
+        isinstance(module, (Qwen2MLP, LlamaMLP))
+        or module.__class__.__name__ in ['MiniCPMMLP', 'MLP']
+    ):
         for name in mlp_module_names:
             n_splits_mlp = n_splits_hidden_size
             if name == 'down_proj':

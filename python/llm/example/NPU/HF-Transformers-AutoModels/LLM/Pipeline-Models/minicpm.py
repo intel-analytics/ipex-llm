@@ -47,6 +47,7 @@ if __name__ == "__main__":
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=512)
+    parser.add_argument("--quantization_group_size", type=int, default=0)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--disable-streaming", action="store_true", default=False)
 
@@ -61,6 +62,7 @@ if __name__ == "__main__":
                                                      max_prompt_len=args.max_prompt_len,
                                                      torch_dtype=torch.float16,
                                                      attn_implementation="eager",
+                                                     quantization_group_size=args.quantization_group_size,
                                                      transpose_value_cache=not args.disable_transpose_value_cache,
                                                      trust_remote_code=True)
     else:
