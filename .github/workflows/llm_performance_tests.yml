@@ -1621,7 +1621,7 @@ jobs:
 
       # 4096-512 int4+fp16
       - name: Prepare igpu perf test (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-mtl' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: bash
         run: |
           sed -i 's/3072-384/4096-512/g' python/llm/dev/benchmark/all-in-one/run.py
@@ -1634,7 +1634,7 @@ jobs:
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
       
       - name: Test on igpu (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-mtl' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
