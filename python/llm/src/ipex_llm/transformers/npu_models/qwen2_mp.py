@@ -351,14 +351,23 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
         self.backend_decoders = []
 
+        self.lm_input = []
+
         for i in range(intra_stages):
             start, end = self.layer_ranges[i]
             lm_0 = input_laynorm_weights[start:end]
             lm_1 = post_attn_layernorm_weights[start:end]
+            lm_input = []
+            for j in range(num_layers):
+                lm_input.append(lm_0[j].to(torch.float16).detach().numpy())
+                lm_input.append(lm_1[j].to(torch.float16).detach().numpy())
+            self.lm_input.append(lm_input)
             decoder = LowBitQwenMultiDecoderlayer(
                 [1, 1, num_heads * head_dim],
-                input_layernorm_weights=lm_0,
-                post_attn_layernorm_weights=lm_1,
+                # input_layernorm_weights=lm_0,
+                # post_attn_layernorm_weights=lm_1,
+                input_layernorm_weights=None,
+                post_attn_layernorm_weights=None,
                 q_biases=q_biases[start:end],
                 k_biases=k_biases[start:end],
                 v_biases=v_biases[start:end],
@@ -380,7 +389,11 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
             self.backend_decoders.append(decoder)
 
         offset = 0
+        self.op_id2 = str(uuid.uuid4())
         for i in range(intra_stages):
+            # set weight for layernorm
+            self.backend_decoders[i].setWeights(3, self.op_id2, *self.lm_input[i])
+            # set weight for Linear
             start, end = self.layer_ranges[i]
             curr_linear_ops = len(self.backend_decoders[i].linear_ops)
             curr_parameters = self.op_parameters[offset:offset + curr_linear_ops]
