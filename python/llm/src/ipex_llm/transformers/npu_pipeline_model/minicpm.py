@@ -125,14 +125,15 @@ class MiniCPMLMHead(LLMBaseNNFactory):
                     hidden_states, 73440, self.hidden_size,
                     n_splits=n_splits, wt_dtype=dtype, scale_factor=False
                 )
-            
+
             hidden_states_2 = self.slice(hidden_states_2, begin=[0, 0, 0], end=[1, 1, 49313])
             hidden_states = self.concat(hidden_states_1, hidden_states_2, axis=2)
         else:
             # for MiniCPM-1B-sft-bf16
             if n_splits == 1:
                 hidden_states = self.linear(
-                    hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
+                    hidden_states, self.vocab_size, self.hidden_size, bias=False,
+                    wt_dtype=self.dtype
                 )
             else:
                 hidden_states = self.dq_split_linear(
@@ -288,7 +289,6 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
             l_weights.append(l.weight)
             scales.append(l.scale)
         weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
 
     cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
     cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
