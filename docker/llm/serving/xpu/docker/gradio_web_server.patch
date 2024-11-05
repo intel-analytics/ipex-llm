@@ -1,6 +1,6 @@
---- gradio_web_server.py	2024-06-20 14:21:48.013518726 +0800
-+++ gradio_web_server_new.py	2024-06-20 14:23:09.822830709 +0800
-@@ -9,8 +9,10 @@
+--- a/gradio_web_server.py
++++ b/gradio_web_server_new.py
+@@ -9,8 +9,10 @@ import hashlib
  import json
  import os
  import random
@@ -11,7 +11,7 @@
  
  import gradio as gr
  import requests
-@@ -241,7 +243,7 @@
+@@ -241,7 +243,7 @@ def clear_history(request: gr.Request):
      ip = get_ip(request)
      logger.info(f"clear_history. ip: {ip}")
      state = None
@@ -20,7 +20,7 @@
  
  
  def get_ip(request: gr.Request):
-@@ -354,6 +356,18 @@
+@@ -354,6 +356,18 @@ def is_limit_reached(model_name, ip):
          return None
  
  
@@ -30,16 +30,16 @@
 +    first_token_latency = "None"
 +    next_token_latency = "None"
 +    if first_token_time is not None:
-+        first_token_latency = str(first_token_time * 1000) + " ms"
++        first_token_latency = f"{first_token_time * 1000 :.2f} ms"
 +    if next_token_time.size > 0:
-+        next_token_latency = str(np.mean(next_token_time) * 1000) + " ms"
++        next_token_latency = f"{np.mean(next_token_time) * 1000 :.2f} ms"
 +    return first_token_latency, next_token_latency
 +
 +
  def bot_response(
      state,
      temperature,
-@@ -372,7 +386,7 @@
+@@ -372,7 +386,7 @@ def bot_response(
      if state.skip_next:
          # This generate call is skipped due to invalid inputs
          state.skip_next = False
@@ -48,7 +48,7 @@
          return
  
      if apply_rate_limit:
-@@ -381,7 +395,7 @@
+@@ -381,7 +395,7 @@ def bot_response(
              error_msg = RATE_LIMIT_MSG + "\n\n" + ret["reason"]
              logger.info(f"rate limit reached. ip: {ip}. error_msg: {ret['reason']}")
              state.conv.update_last_message(error_msg)
@@ -57,7 +57,7 @@
              return
  
      conv, model_name = state.conv, state.model_name
-@@ -404,6 +418,10 @@
+@@ -404,6 +418,10 @@ def bot_response(
              yield (
                  state,
                  state.to_gradio_chatbot(),
@@ -68,7 +68,7 @@
                  disable_btn,
                  disable_btn,
                  disable_btn,
-@@ -444,18 +462,32 @@
+@@ -444,18 +462,32 @@ def bot_response(
          )
  
      conv.update_last_message("▌")
@@ -104,7 +104,7 @@
                      disable_btn,
                      disable_btn,
                      disable_btn,
-@@ -465,13 +497,14 @@
+@@ -465,13 +497,14 @@ def bot_response(
                  return
          output = data["text"].strip()
          conv.update_last_message(output)
@@ -121,7 +121,7 @@
              disable_btn,
              disable_btn,
              disable_btn,
-@@ -484,7 +517,7 @@
+@@ -484,7 +517,7 @@ def bot_response(
              f"{SERVER_ERROR_MSG}\n\n"
              f"(error_code: {ErrorCode.GRADIO_STREAM_UNKNOWN_ERROR}, {e})"
          )
@@ -130,7 +130,7 @@
              disable_btn,
              disable_btn,
              disable_btn,
-@@ -646,7 +679,8 @@
+@@ -646,7 +679,8 @@ def build_single_model_ui(models, add_promotion_links=False):
      )
  
      notice_markdown = f"""
@@ -140,34 +140,30 @@
  {promotion}
  """
  
-@@ -691,6 +725,26 @@
-         regenerate_btn = gr.Button(value="🔄  Regenerate", interactive=False)
-         clear_btn = gr.Button(value="🗑️  Clear history", interactive=False)
+@@ -717,6 +751,22 @@ def build_single_model_ui(models, add_promotion_links=False):
+             label="Max output tokens",
+         )
  
 +    with gr.Row():
 +        with gr.Column():
 +            gr.Markdown("### Performance Metrics")
-+            prompt_token = gr.Textbox(
++            prompt_token = gr.Label(
 +                label="Prompt token length:",
-+                interactive=False,
 +            )
-+            next_token = gr.Textbox(
++            next_token = gr.Label(
 +                label="Generated token length:",
-+                interactive=False,
 +            )
-+            first_token_latency = gr.Textbox(
-+                interactive=False,
++            first_token_latency = gr.Label(
 +                label="First token Latency:",
 +            )
-+            next_token_latency = gr.Textbox(
-+                interactive=False,
++            next_token_latency = gr.Label(
 +                label="Next token Latency:",
 +            )
 +
-     with gr.Accordion("Parameters", open=False) as parameter_row:
-         temperature = gr.Slider(
-             minimum=0.0,
-@@ -743,9 +797,9 @@
+     if add_promotion_links:
+         gr.Markdown(acknowledgment_md, elem_id="ack_markdown")
+ 
+@@ -743,9 +793,9 @@ def build_single_model_ui(models, add_promotion_links=False):
      ).then(
          bot_response,
          [state, temperature, top_p, max_output_tokens],
@@ -179,7 +175,7 @@
  
      model_selector.change(
          clear_history, None, [state, chatbot, textbox, imagebox] + btn_list
-@@ -758,7 +812,7 @@
+@@ -758,7 +808,7 @@ def build_single_model_ui(models, add_promotion_links=False):
      ).then(
          bot_response,
          [state, temperature, top_p, max_output_tokens],
@@ -188,7 +184,7 @@
      )
      send_btn.click(
          add_text,
-@@ -767,7 +821,7 @@
+@@ -767,7 +817,7 @@ def build_single_model_ui(models, add_promotion_links=False):
      ).then(
          bot_response,
          [state, temperature, top_p, max_output_tokens],
@@ -197,7 +193,7 @@
      )
  
      return [state, model_selector]
-@@ -775,7 +829,7 @@
+@@ -775,7 +825,7 @@ def build_single_model_ui(models, add_promotion_links=False):
  
  def build_demo(models):
      with gr.Blocks(
@@ -206,3 +202,8 @@
          theme=gr.themes.Default(),
          css=block_css,
      ) as demo:
+@@ -885,3 +935,4 @@ if __name__ == "__main__":
+         auth=auth,
+         root_path=args.gradio_root_path,
+     )
++
