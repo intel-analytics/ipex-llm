@@ -196,7 +196,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
         print("start compiling")
-        if mode == "prefill":
+        if mode == "prefill" and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1":
             self.compile(npu_dpu_groups=6)
         else:
             self.compile()

@@ -232,7 +232,11 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
         print(f"{mode} start compiling")
-        if group_size != 0 and (mode == "prefill" or num_layers == 2):
+        if (
+            group_size != 0
+            and (mode == "prefill" or num_layers == 2)
+            and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1"
+        ):
             self.compile(npu_dpu_groups=6)
         else:
             self.compile()

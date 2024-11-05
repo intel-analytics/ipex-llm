@@ -62,8 +62,13 @@ on:
         required: false
         type: boolean
         default: true
-      igpu:
-        description: "If trigger performance test on iGPU (Windows)"
+      mtl:
+        description: "If trigger performance test on MTL (Windows)"
+        required: false
+        type: boolean
+        default: true
+      lnl:
+        description: "If trigger performance test on LNL (Windows)"
         required: false
         type: boolean
         default: true
@@ -589,7 +594,7 @@ jobs:
           fi
 
   select-gpu-win-test-platform:
-    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.igpu ) || ( github.event_name == 'workflow_dispatch' && inputs.dgpu ) }}
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.mtl ) || ( github.event_name == 'workflow_dispatch' && inputs.lnl ) || ( github.event_name == 'workflow_dispatch' && inputs.dgpu ) }}
     needs: llm-cpp-build
     runs-on: [self-hosted, Shire]
     outputs:
@@ -599,21 +604,25 @@ jobs:
         shell: bash
         id: select-platform
         run: |
+          test_platform=()
           if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
-            if [ ${{ inputs.igpu }} == "true" ] && [ ${{ inputs.dgpu }} == 'true' ]; then
-              echo 'platform=["perf-igpu", "perf-dgpu"]' >> "$GITHUB_OUTPUT"
-            elif [ ${{ inputs.igpu }} == "true"  ]; then
-              echo 'platform=["perf-igpu"]' >> "$GITHUB_OUTPUT"
-            else
-              echo 'platform=["perf-dgpu"]' >> "$GITHUB_OUTPUT"
+            if [ ${{ inputs.mtl }} == "true"  ]; then
+              test_platform+=("\"perf-mtl\"")
             fi
+            if [ ${{ inputs.lnl }} == "true"  ]; then
+              test_platform+=("\"perf-lnl\"")
+            fi
+            if [ ${{ inputs.dgpu }} == "true"  ]; then
+              test_platform+=("\"perf-dgpu\"")
+            fi
+            printf 'platform=[%s]\n' "$(IFS=','; echo "${test_platform[*]}")" >> "$GITHUB_OUTPUT"
           else
-            echo 'platform=["perf-igpu"]' >> "$GITHUB_OUTPUT"
+            echo 'platform=["perf-mtl", "perf-lnl"]' >> "$GITHUB_OUTPUT"
           fi
 
   # TODO: rename igpu specific tests to gpu-win
   llm-performance-test-on-gpu-win:
-    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.igpu ) || ( github.event_name == 'workflow_dispatch' && inputs.dgpu ) }}
+    if: ${{ github.event.schedule || ( github.event_name == 'workflow_dispatch' && inputs.mtl ) || ( github.event_name == 'workflow_dispatch' && inputs.lnl ) || ( github.event_name == 'workflow_dispatch' && inputs.dgpu ) }}
     needs: select-gpu-win-test-platform
     strategy:
       fail-fast: false
@@ -640,12 +649,12 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         shell: bash
         run: |
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-mtl" ]; then
             sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
             sed -i 's/"bigdl-core-xe-batch-21==" + CORE_XE_VERSION/"bigdl-core-xe-batch-21"/g' python/llm/setup.py
             sed -i 's/"bigdl-core-xe-addons-21==" + CORE_XE_VERSION/"bigdl-core-xe-addons-21"/g' python/llm/setup.py
           fi
-          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-lnl" ] || [ ${{ matrix.platform }} == "perf-dgpu" ]; then
             sed -i 's/"bigdl-core-xe-23==" + CORE_XE_VERSION/"bigdl-core-xe-23"/g' python/llm/setup.py
             sed -i 's/"bigdl-core-xe-batch-23==" + CORE_XE_VERSION/"bigdl-core-xe-batch-23"/g' python/llm/setup.py
             sed -i 's/"bigdl-core-xe-addons-23==" + CORE_XE_VERSION/"bigdl-core-xe-addons-23"/g' python/llm/setup.py
@@ -668,8 +677,11 @@ jobs:
           if not exist dist\ipex_llm*.whl (exit /b 1)
           for %%i in (dist\ipex_llm*.whl) do set whl_name=%%i
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            pip install --pre --upgrade %whl_name%[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             pip install --pre --upgrade %whl_name%[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
@@ -699,8 +711,11 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator matplotlib
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             pip install --pre --upgrade ipex-llm[xpu]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            pip install --pre --upgrade ipex-llm[xpu_lnl]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             pip install --pre --upgrade ipex-llm[xpu_lnl]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
@@ -742,7 +757,7 @@ jobs:
           sed -i "s/date.today()/\"$date_for_test_version\"/g" python/llm/dev/benchmark/all-in-one/run.py
 
       - name: Add extra warmup for chatglm3-6b int4+fp32 & MiniCPM int4+fp16 int4+fp32 for more stable results
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i '/^\s*result = run_transformer_int4_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)/ i\
@@ -754,6 +769,26 @@ jobs:
                   if repo_id in ["openbmb/MiniCPM-1B-sft-bf16", "openbmb/MiniCPM-2B-sft-bf16"]:\
                       run_transformer_int4_fp16_gpu_win(repo_id, local_model_hub, in_out_pairs, warm_up, num_trials, num_beams, low_bit, cpu_embedding, batch_size, streaming)
           ' python/llm/dev/benchmark/all-in-one/run.py
+
+      # lnl: 32/1k/2k/3k/4k, dgpu: 32/1k/2k/3k (in temp)
+      - name: Adjust model list
+        shell: bash
+        run: |
+          if [ ${{ matrix.platform }} == "perf-lnl" ]; then
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/32-32_int4_fp16.yaml
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16.yaml
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16.yaml
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
+          fi
+          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/32-32_int4_fp16.yaml
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16.yaml
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16.yaml
+            sed -i "s/- 'mistralai\/Mistral-7B-Instruct-v0.2'/# - 'mistralai\/Mistral-7B-Instruct-v0.2'/" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
+            sed -i "s/- 'baichuan-inc\/Baichuan2-13B-Chat'/# - 'baichuan-inc\/Baichuan2-13B-Chat'/" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16.yaml
+            sed -i "s/- 'meta-llama\/Llama-2-13b-chat-hf'/# - 'meta-llama\/Llama-2-13b-chat-hf'/" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
+          fi
 
       # 32-32 int4+fp16
       - name: Prepare igpu perf test (32-32 int4+fp16)
@@ -768,9 +803,12 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -801,9 +839,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -832,9 +873,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -864,9 +908,12 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -898,9 +945,12 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -951,9 +1001,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -984,9 +1037,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1015,9 +1071,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1047,9 +1106,12 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1081,9 +1143,12 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1123,9 +1188,6 @@ jobs:
       - name: Prepare igpu perf test (2048-256 int4+fp16)
         shell: bash
         run: |
-          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
-            sed -i "s/- 'baichuan-inc\/Baichuan2-13B-Chat'/# - 'baichuan-inc\/Baichuan2-13B-Chat'/" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16.yaml
-          fi
           sed -i 's/1024-128/2048-256/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test5/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/2048-256_int4_fp16.yaml
@@ -1136,9 +1198,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1169,9 +1234,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1200,9 +1268,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1232,9 +1303,12 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1266,9 +1340,12 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1308,9 +1385,6 @@ jobs:
       - name: Prepare igpu perf test (3072-384 int4+fp16)
         shell: bash
         run: |
-          if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
-            sed -i "s/- 'meta-llama\/Llama-2-13b-chat-hf'/# - 'meta-llama\/Llama-2-13b-chat-hf'/" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
-          fi
           sed -i 's/2048-256/3072-384/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i 's/{today}_test5/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16.yaml
@@ -1321,9 +1395,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1343,22 +1420,25 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.36 (3072-384 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/3072-384_int4_fp16_436.yaml
 
       - name: Test on igpu for transformers 4.36 (3072-384 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1378,7 +1458,7 @@ jobs:
       - name: Prepare igpu perf test for transformers 4.38 (3072-384 int4+fp16)
         shell: bash
         run: |
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-mtl" ] || [ ${{ matrix.platform }} == "perf-lnl" ]; then
             sed -i 's/{today}_test2/{today}_test3/g' python/llm/dev/benchmark/all-in-one/run.py
           fi
           if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
@@ -1392,9 +1472,12 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1406,7 +1489,10 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\3072-384_int4_fp16\log\%LOG_FILE% 2>&1
           REM if %ERRORLEVEL% neq 0 (exit /b 1)
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
+            python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
             python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test3
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
@@ -1419,7 +1505,7 @@ jobs:
       - name: Prepare igpu perf test for transformers 4.43 (3072-384 int4+fp16)
         shell: bash
         run: |
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-mtl" ] || [ ${{ matrix.platform }} == "perf-lnl" ]; then
             sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
           fi
           if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
@@ -1434,9 +1520,12 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1448,7 +1537,10 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\3072-384_int4_fp16\log\%LOG_FILE% 2>&1
           REM if %ERRORLEVEL% neq 0 (exit /b 1)
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
+            python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
             python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test4
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
@@ -1462,7 +1554,7 @@ jobs:
       - name: Prepare igpu perf test for transformers 4.45 (3072-384 int4+fp16)
         shell: bash
         run: |
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-mtl" ] || [ ${{ matrix.platform }} == "perf-lnl" ]; then
             sed -i 's/{today}_test4/{today}_test5/g' python/llm/dev/benchmark/all-in-one/run.py
           fi
           if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
@@ -1478,9 +1570,12 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1492,7 +1587,10 @@ jobs:
           set PYTHONIOENCODING=utf-8
           python run.py >> %CSV_SAVE_PATH%\3072-384_int4_fp16\log\%LOG_FILE% 2>&1
           REM if %ERRORLEVEL% neq 0 (exit /b 1)
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
+            python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test5
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
             python ..\..\..\test\benchmark\igpu-perf\check_csv_results.py --yaml-file config.yaml --suffix test5
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
@@ -1523,11 +1621,11 @@ jobs:
 
       # 4096-512 int4+fp16
       - name: Prepare igpu perf test (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/3072-384/4096-512/g' python/llm/dev/benchmark/all-in-one/run.py
-          if [ ${{ matrix.platform }} == "perf-igpu" ]; then
+          if [ ${{ matrix.platform }} == "perf-mtl" ] || [ ${{ matrix.platform }} == "perf-lnl" ]; then
             sed -i 's/{today}_test5/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           fi
           if [ ${{ matrix.platform }} == "perf-dgpu" ]; then
@@ -1536,15 +1634,18 @@ jobs:
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16.yaml
       
       - name: Test on igpu (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1564,22 +1665,25 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.38 (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16_438.yaml
 
       - name: Test on igpu for transformers 4.38 (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1597,23 +1701,26 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.43 (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test2/{today}_test3/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16_443.yaml
 
       - name: Test on igpu for transformers 4.43 (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1632,14 +1739,14 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.45 (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/4096-512_int4_fp16_445.yaml
 
       - name: Test on igpu for transformers 4.45 (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -1647,9 +1754,12 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1669,7 +1779,7 @@ jobs:
           call conda deactivate
 
       - name: Concat csv and generate html (4096-512 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' || matrix.platform == 'perf-lnl' }}
         shell: cmd
         run: |
           call conda activate html-gen
@@ -1688,7 +1798,7 @@ jobs:
 
       # load_low_bit 1024-128 int4+fp16 
       - name: Prepare igpu perf test (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/4096-512/1024-128/g' python/llm/dev/benchmark/all-in-one/run.py
@@ -1696,15 +1806,18 @@ jobs:
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_loadlowbit.yaml
 
       - name: Test on igpu (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1724,22 +1837,25 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.36 (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_loadlowbit_436.yaml
 
       - name: Test on igpu for transformers 4.36 (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1757,22 +1873,25 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.38 (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test2/{today}_test3/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_loadlowbit_438.yaml
 
       - name: Test on igpu for transformers 4.38 (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1790,23 +1909,26 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.43 (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_loadlowbit_443.yaml
 
       - name: Test on igpu for transformers 4.43 (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1825,14 +1947,14 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.45 (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test4/{today}_test5/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_int4_fp16_loadlowbit_445.yaml
 
       - name: Test on igpu for transformers 4.45 (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -1840,9 +1962,12 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1862,7 +1987,7 @@ jobs:
           call conda deactivate
 
       - name: Concat csv and generate html (load_low_bit 1024-128 int4+fp16)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate html-gen
@@ -1881,22 +2006,25 @@ jobs:
 
       # 1024-128
       - name: Prepare igpu perf test (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test5/{today}_test1/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128.yaml
 
       - name: Test on igpu (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1916,22 +2044,25 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.36 (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test1/{today}_test2/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_436.yaml
 
       - name: Test on igpu for transformers 4.36 (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1949,22 +2080,25 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.38 (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test2/{today}_test3/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_438.yaml
 
       - name: Test on igpu for transformers 4.38 (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1982,23 +2116,26 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.43 (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test3/{today}_test4/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_443.yaml
 
       - name: Test on igpu for transformers 4.43 (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -2017,14 +2154,14 @@ jobs:
           call conda deactivate
 
       - name: Prepare igpu perf test for transformers 4.45 (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: bash
         run: |
           sed -i 's/{today}_test4/{today}_test5/g' python/llm/dev/benchmark/all-in-one/run.py
           sed -i "s/path to your local model hub/$MODEL_HUB_DIR/g" python/llm/test/benchmark/igpu-perf/1024-128_445.yaml
 
       - name: Test on igpu for transformers 4.45 (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate igpu-perf
@@ -2032,9 +2169,12 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-igpu" (
+          if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
             set BIGDL_LLM_XMX_DISABLED=1
+          )
+          if "${{ matrix.platform }}"=="perf-lnl" (
+            set SYCL_CACHE_PERSISTENT=1
           )
           if "${{ matrix.platform }}"=="perf-dgpu" (
             set SYCL_CACHE_PERSISTENT=1
@@ -2054,7 +2194,7 @@ jobs:
           call conda deactivate
 
       - name: Concat csv and generate html (1024-128)
-        if: ${{ matrix.platform == 'perf-igpu' }}
+        if: ${{ matrix.platform == 'perf-mtl' }}
         shell: cmd
         run: |
           call conda activate html-gen
@@ -2078,7 +2218,12 @@ jobs:
         run: |
           cd %CSV_SAVE_PATH%
           IF "${{ github.event_name }}"=="schedule" (
-            IF "${{ matrix.platform }}"=="perf-igpu" (
+            IF "${{ matrix.platform }}"=="perf-mtl" (
+              for %%f in (*.html) do (
+                  curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
+              )
+            )
+            IF "${{ matrix.platform }}"=="perf-lnl" (
               for %%f in (*.html) do (
                   curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
               )
@@ -2086,7 +2231,12 @@ jobs:
           )
           IF "${{ github.event_name }}"=="workflow_dispatch" (
             IF "${{ inputs.checkout-ref }}"=="main" (
-              IF "${{ matrix.platform }}"=="perf-igpu" (
+              IF "${{ matrix.platform }}"=="perf-mtl" (
+                for %%f in (*.html) do (
+                    curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
+                )
+              )
+              IF "${{ matrix.platform }}"=="perf-lnl" (
                 for %%f in (*.html) do (
                     curl -T "%%f" %FTP_IGPU_NIGHTLY_PERF_PATH%
                 )
