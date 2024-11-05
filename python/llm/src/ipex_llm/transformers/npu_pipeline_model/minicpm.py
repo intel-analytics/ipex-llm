@@ -164,26 +164,19 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
             # for MiniCPM-1B-sft-bf16
             weights = [(model.lm_head.weight, model.lm_head.scale)]
     else:
+        weights = []
         if vocab_size == 122753:
-            weights = []
             lm_head_list = [model.lm_head_0.lm_heads, model.lm_head_1.lm_heads]
-            for lh in lm_head_list:
-                lm_head_weights = []
-                scales = []
-                for l in lh:
-                    lm_head_weights.append(l.weight)
-                    scales.append(l.scale)
-                weights.append((torch.stack(lm_head_weights, axis=0),
-                               torch.stack(scales, axis=0)))
         else:
-            lm_heads = model.lm_head.lm_heads
+            lm_head_list = [model.lm_head.lm_heads]
+        for lh in lm_head_list:
             lm_head_weights = []
             scales = []
-            for l in lm_heads:
+            for l in lh:
                 lm_head_weights.append(l.weight)
                 scales.append(l.scale)
-            weights = [(torch.stack(lm_head_weights, axis=0),
-                        torch.stack(scales, axis=0))]
+            weights.append((torch.stack(lm_head_weights, axis=0),
+                            torch.stack(scales, axis=0)))
     if isinstance(weights[0], tuple):
         np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
     else:  # FP16 Linear
@@ -213,11 +206,9 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
         else:
             weight_numpy = [model.lm_head.weight.data.numpy(), model.lm_head.scale.data.numpy(), ]
     else:
+        weight_numpy = [v.numpy() for v in weights[0]]
         if vocab_size == 122753:
-            weight_numpy = [v.numpy() for v in weights[0]]
             weight_numpy.extend([v.numpy() for v in weights[1]])
-        else:
-            weight_numpy = [v.numpy() for v in weights[0]]
 
     for idx, weight in enumerate(weight_numpy):
         bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")

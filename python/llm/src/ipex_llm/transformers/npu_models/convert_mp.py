@@ -87,7 +87,6 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             model.llm.config.model_type = "llama"
         model = model.llm
 
-    print(model)
     if model.config.model_type in ["qwen2", "llama", "minicpm"]:
         from ipex_llm.transformers.npu_models.common import split_linears
         if quantization_group_size == 0:
@@ -139,6 +138,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                                            bias=model.lm_head.bias, use_split=False)
             del model.lm_head
             model.lm_head = new_lm_head
+    print(model)
 
     # lm_head to cpu optimization
     if cpu_lm_head:
@@ -383,6 +383,10 @@ def optimize_llm(
                          transpose_value_cache=transpose_value_cache)
     if hasattr(model, 'lm_head') and isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
+    # MiniCPM-2b
+    if hasattr(model, "lm_head_1") and isinstance(model.lm_head_1, SlicedLMHead):
+        model.lm_head_1.get_fused_lm_head()
+        model.lm_head_0.get_fused_lm_head()
 
 
 def optimize_funasr(

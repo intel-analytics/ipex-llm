@@ -60,7 +60,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
 
     # save weights bins files
-    if  not isinstance(lm_head, SlicedLMHead):
+    if not isinstance(lm_head, SlicedLMHead):
         weight_numpy = [
             lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
         ]
