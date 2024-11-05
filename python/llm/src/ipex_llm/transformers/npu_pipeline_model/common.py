@@ -91,7 +91,10 @@ class LowBitLLMLMHead(LLMBaseNNFactory):
         self.head_dim = self.hidden_size // self.num_heads
 
         # define input, the order self.parameter matters
-        input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
+        if n_splits == 1:
+            input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
+        else:
+            input = self.create_input_op((1, self.batch_size, self.hidden_size))
 
         hidden_states = input
 
@@ -99,11 +102,18 @@ class LowBitLLMLMHead(LLMBaseNNFactory):
         model_norm_weight = self.constant(model_norm_weight)
         hidden_states = self.layer_norm(hidden_states, model_norm_weight)
 
+        # hidden_states = self.linear(
+        #     hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype,
+        #     n_splits=n_splits,
+        #     scale_factor=(n_splits == 1),
+        # )
+
         hidden_states = self.linear(
             hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype,
             n_splits=n_splits,
-            scale_factor=(n_splits == 1),
+            scale_factor=True,
         )
+
 
         # if n_splits == 1:
         #     hidden_states = self.linear(

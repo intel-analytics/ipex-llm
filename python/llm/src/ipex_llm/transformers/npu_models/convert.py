@@ -71,6 +71,8 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
                 iqtype = ggml_tensor_qtype[qtype]
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device)
+        # if layer.out_features == 125696:
+        #     group_size = 0
         return QuantizedLinear(qweights, scale, layer.bias,
                                group_size=group_size)
 

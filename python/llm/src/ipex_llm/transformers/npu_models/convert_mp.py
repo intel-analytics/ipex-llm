@@ -92,7 +92,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         from ipex_llm.transformers.npu_models.common import split_linears
         if quantization_group_size == 0:
             n_splits_linear = 1
-            n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
+            # n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
+            n_splits_down_proj = model.config.intermediate_size // 128
         else:
             invalidInputError(
                 model.config.hidden_size % quantization_group_size == 0 and
@@ -108,7 +109,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                                             n_splits_down_proj=n_splits_down_proj,
                                             load=load))
         
-        if quantization_group_size != 0:
+        if quantization_group_size != 0 and model.config.model_type != "baichuan":
             split_num = model.config.hidden_size // quantization_group_size
             if model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40:
                 # workaround for MiniCPM-2B
@@ -125,6 +126,13 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                                            bias=model.lm_head.bias, use_split=True)
                 del model.lm_head
                 model.lm_head = new_lm_head
+
+        if quantization_group_size == 0 and model.config.model_type == "baichuan":
+            split_num = model.config.hidden_size // 128
+            new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
+                                        bias=model.lm_head.bias, use_split=True)
+            del model.lm_head
+            model.lm_head = new_lm_head
 
         print(model)
 

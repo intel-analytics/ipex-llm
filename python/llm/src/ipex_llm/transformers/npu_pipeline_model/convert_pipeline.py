@@ -247,8 +247,10 @@ def convert_llm(model: torch.nn.Module,
             os.mkdir(weight_dir)
             layer_num = len(model.model.layers)
             from .baichuan import convert_baichuan_layer, convert_lm_head_and_embedding
-            first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
+            first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, 32,
                                                                             temp_dir, weight_dir)
+            # first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
+            #                                                                 temp_dir, weight_dir)
 
             param_list = []
             for layer_idx in range(0, layer_num):
