@@ -155,8 +155,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     rms_norm_eps = model.config.rms_norm_eps
     vocab_size = model.config.vocab_size
     model_norm = model.model.norm
-    use_split_lm_head = False
-    if n_splits_linear == 1 or use_split_lm_head:
+    if n_splits_linear == 1:
         if vocab_size == 122753:
             # for MiniCPM-2B-sft-bf16
             weights = [(model.lm_head_0.weight, model.lm_head_0.scale),
@@ -198,7 +197,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
 
     # save weights bins files
-    if n_splits_linear == 1 or use_split_lm_head:
+    if n_splits_linear == 1:
         if vocab_size == 122753:
             weight_numpy = [model.lm_head_0.weight.data.numpy(),
                             model.lm_head_0.scale.data.numpy(),

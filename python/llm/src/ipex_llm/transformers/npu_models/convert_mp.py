@@ -128,8 +128,6 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
 
         print(model)
 
-        print(model)
-
     if model.config.model_type == "qwen2":
         # for Qwen2-7B-Insturct, divide lm_head into 14 parts
         if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
