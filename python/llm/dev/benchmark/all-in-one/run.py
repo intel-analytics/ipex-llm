@@ -1247,6 +1247,10 @@ def run_transformer_int4_gpu_win(repo_id,
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
         model = model.llm
+    elif repo_id in DUMMY_IDS:
+        model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
+                                                     trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
+        model = model.to('xpu')
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, optimize_model=True, load_in_low_bit=low_bit,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding).eval()
@@ -1257,7 +1261,10 @@ def run_transformer_int4_gpu_win(repo_id,
     print(">> loading of model costs {}s and {}GB".format(load_time, torch.xpu.memory.memory_reserved()/(1024**3)))
 
     model = BenchmarkWrapper(model)
-    streamer = TextStreamer(tokenizer, skip_prompt=True)
+    if repo_id not in DUMMY_IDS:
+        streamer = TextStreamer(tokenizer, skip_prompt=True)
+    else:
+        streaming = False
 
     result = {}
     with torch.inference_mode():
@@ -1266,14 +1273,17 @@ def run_transformer_int4_gpu_win(repo_id,
                 in_out_len = in_out.split("-")
                 in_len = int(in_out_len[0])
                 out_len = int(in_out_len[1])
-                input_str = get_continuation_input_str(in_len, tokenizer)
-                # As different tokenizer has different encodings,
-                # slice the input_ids to ensure the prompt length is required length.
-                input_ids = tokenizer.encode(input_str, return_tensors="pt")
-                input_ids = input_ids[:, :in_len]
-                true_str = tokenizer.batch_decode(input_ids)[0]
-                input_list = [true_str] * batch_size
-                input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
+                if repo_id not in DUMMY_IDS:
+                    input_str = get_continuation_input_str(in_len, tokenizer)
+                    # As different tokenizer has different encodings,
+                    # slice the input_ids to ensure the prompt length is required length.
+                    input_ids = tokenizer.encode(input_str, return_tensors="pt")
+                    input_ids = input_ids[:, :in_len]
+                    true_str = tokenizer.batch_decode(input_ids)[0]
+                    input_list = [true_str] * batch_size
+                    input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
+                else:
+                    input_ids = torch.randint(1000, 2000, [batch_size, in_len], dtype=torch.int64).to('xpu')
                 actual_in_len = input_ids.shape[1]
                 result[in_out] = []
                 for i in range(num_trials + warm_up):
@@ -1290,9 +1300,10 @@ def run_transformer_int4_gpu_win(repo_id,
                     end = time.perf_counter()
                     output_ids = output_ids.cpu()
                     print("model generate cost: " + str(end - st))
-                    output = tokenizer.batch_decode(output_ids)
-                    if not streaming:
-                        print(output[0])
+                    if repo_id not in DUMMY_IDS:
+                        output = tokenizer.batch_decode(output_ids)
+                        if not streaming:
+                            print(output[0])
                     actual_out_len = output_ids.shape[1] - actual_in_len
                     if i >= warm_up:
                         result[in_out].append([model.first_cost, model.rest_cost_mean, model.encoder_time,
@@ -1371,7 +1382,7 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
         model = model.llm
-    if repo_id in DUMMY_IDS:
+    elif repo_id in DUMMY_IDS:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=True,
                                                      trust_remote_code=True, use_cache=True, cpu_embedding=cpu_embedding,
                                                      torch_dtype=torch.float16).eval()
@@ -1409,7 +1420,7 @@ def run_transformer_int4_fp16_gpu_win(repo_id,
                     input_list = [true_str] * batch_size
                     input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
                 else:
-                    input_ids = torch.randint(1000, 2000, [1, in_len], dtype=torch.int64).to('xpu')
+                    input_ids = torch.randint(1000, 2000, [batch_size, in_len], dtype=torch.int64).to('xpu')
                 actual_in_len = input_ids.shape[1]
                 result[in_out] = []
                 for i in range(num_trials + warm_up):
@@ -1604,7 +1615,7 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
                                                   use_cache=True, cpu_embedding=cpu_embedding).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path+'-'+low_bit, trust_remote_code=True)
         model = model.half().to('xpu')
-    if repo_id in DUMMY_IDS:
+    elif repo_id in DUMMY_IDS:
         model = AutoModelForCausalLM.load_low_bit(model_path+'-'+low_bit, optimize_model=True, trust_remote_code=True,
                                                   use_cache=True, cpu_embedding=cpu_embedding).eval()
         model = model.to('xpu')
@@ -1640,7 +1651,7 @@ def run_transformer_int4_fp16_loadlowbit_gpu_win(repo_id,
                     input_list = [true_str] * batch_size
                     input_ids = tokenizer(input_list, return_tensors="pt").input_ids.to('xpu')
                 else:
-                    input_ids = torch.randint(1000, 2000, [1, in_len], dtype=torch.int64).to('xpu')
+                    input_ids = torch.randint(1000, 2000, [batch_size, in_len], dtype=torch.int64).to('xpu')
                 actual_in_len = input_ids.shape[1]
                 result[in_out] = []
                 for i in range(num_trials + warm_up):
