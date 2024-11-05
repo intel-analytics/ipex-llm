@@ -27,7 +27,7 @@ class LoRAParserAction(argparse.Action):
         if values is None:
             values = []
         if isinstance(values, str):
-            raise TypeError("Expected values to be a list")
+            raise TypeError("Expected values to be a list")  # noqa
 
         lora_list: List[LoRAModulePath] = []
         for item in values:
@@ -63,7 +63,7 @@ class PromptAdapterParserAction(argparse.Action):
         if values is None:
             values = []
         if isinstance(values, str):
-            raise TypeError("Expected values to be a list")
+            raise TypeError("Expected values to be a list")  # noqa
 
         adapter_list: List[PromptAdapterPath] = []
         for item in values:
@@ -133,8 +133,7 @@ def make_arg_parser(parser: FlexibleArgumentParser) -> FlexibleArgumentParser:
     parser.add_argument("--response-role",
                         type=nullable_str,
                         default="assistant",
-                        help="The role name to return if "
-                        "`request.add_generation_prompt=true`.")
+                        help="The role name to return if `request.add_generation_prompt=true`.")
     parser.add_argument("--ssl-keyfile",
                         type=nullable_str,
                         default=None,
@@ -186,8 +185,7 @@ def make_arg_parser(parser: FlexibleArgumentParser) -> FlexibleArgumentParser:
         "--enable-auto-tool-choice",
         action="store_true",
         default=False,
-        help=
-        "Enable auto tool choice for supported models. Use --tool-call-parser"
+        help="Enable auto tool choice for supported models. Use --tool-call-parser"
         "to specify which parser to use")
 
     parser.add_argument(
@@ -195,11 +193,9 @@ def make_arg_parser(parser: FlexibleArgumentParser) -> FlexibleArgumentParser:
         type=str,
         choices=["mistral", "hermes"],
         default=None,
-        help=
-        "Select the tool call parser depending on the model that you're using."
+        help="Select the tool call parser depending on the model that you're using."
         " This is used to parse the model-generated tool call into OpenAI API "
         "format. Required for --enable-auto-tool-choice.")
-
 
     parser.add_argument(
         "--load-in-low-bit",

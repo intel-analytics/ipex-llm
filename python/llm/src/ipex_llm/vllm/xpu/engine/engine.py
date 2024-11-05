@@ -134,12 +134,12 @@ def run_mp_engine(engine_args: AsyncEngineArgs, usage_context: UsageContext,
 
     def signal_handler(*_) -> None:
         # Interrupt server on sigterm
-        raise KeyboardInterrupt("MQLLMEngine terminated")
+        raise KeyboardInterrupt("MQLLMEngine terminated")  # noqa
 
     signal.signal(signal.SIGTERM, signal_handler)
 
     engine = IPEXLLMMQLLMEngine.from_engine_args(engine_args=engine_args,
-                                          usage_context=usage_context,
-                                          ipc_path=ipc_path,
-                                          load_in_low_bit=load_in_low_bit)
+                                                 usage_context=usage_context,
+                                                 ipc_path=ipc_path,
+                                                 load_in_low_bit=load_in_low_bit)
     engine.start()
