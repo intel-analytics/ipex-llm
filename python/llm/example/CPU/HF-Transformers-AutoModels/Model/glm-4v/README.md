@@ -19,7 +19,7 @@ conda activate llm
 # install ipex-llm with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
-pip install torchvision tiktoken transformers==4.42.4 trl
+pip install torchvision tiktoken transformers==4.42.4 "trl<0.12.0"
 ```
 
 On Windows:
@@ -30,7 +30,7 @@ conda activate llm
 
 pip install --pre --upgrade ipex-llm[all]
 
-pip install torchvision tiktoken transformers==4.42.4 trl
+pip install torchvision tiktoken transformers==4.42.4 "trl<0.12.0"
 ```
 
 ### 2. Run

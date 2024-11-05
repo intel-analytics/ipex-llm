@@ -4,7 +4,7 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 ## Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
 
-**Important: According to Gemma2's requirement, please make sure you have installed `transformers==4.43.1` and `trl` to run the example.**
+**Important: According to Gemma2's requirement, please make sure you have installed `transformers==4.43.1` and `trl<0.12.0` to run the example.**
 
 ## Example: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a Gemma2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
@@ -19,7 +19,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 # According to Gemma2's requirement, please make sure you are using a stable version of Transformers, 4.43.1 or newer.
 pip install "transformers>=4.43.1"
-pip install trl
+pip install "trl<0.12.0"
 ```
 
 #### 1.2 Installation on Windows
@@ -33,7 +33,7 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 # According to Gemma2's requirement, please make sure you are using a stable version of Transformers, 4.43.1 or newer.
 pip install "transformers>=4.43.1"
-pip install trl
+pip install "trl<0.12.0"
 ```
 
 ### 2. Configures OneAPI environment variables for Linux

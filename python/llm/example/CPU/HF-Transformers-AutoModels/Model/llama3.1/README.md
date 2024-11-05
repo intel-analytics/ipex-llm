@@ -20,7 +20,7 @@ pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pyt
 
 # transformers>=4.43.1 is required for Llama3.1 with IPEX-LLM optimizations
 pip install transformers==4.43.1
-pip install trl 
+pip install "trl<0.12.0" 
 ```
 On Windows:
 
@@ -31,7 +31,7 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 
 pip install transformers==4.43.1
-pip install trl 
+pip install "trl<0.12.0" 
 ```
 
 ### 2. Run
