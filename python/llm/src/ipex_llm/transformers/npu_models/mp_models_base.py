@@ -498,11 +498,12 @@ class LLMBaseNNFactory(NNFactory):
 
     def apply_rotary_pos_emb(self, *, q, k, cos, sin, position_ids,
                              num_heads, seq_len, head_dim):
-        position_ids = self.squeeze(position_ids)
-        cos = self.gather(cos, self.convert_to_int32(position_ids), self.constant(1), 0)
-        sin = self.gather(sin, self.convert_to_int32(position_ids), self.constant(1), 0)
-        cos = self.unsqueeze(cos, [1])
-        sin = self.unsqueeze(sin, [1])
+        if position_ids is not None:
+            position_ids = self.squeeze(position_ids)
+            cos = self.gather(cos, self.convert_to_int32(position_ids), self.constant(1), 0)
+            sin = self.gather(sin, self.convert_to_int32(position_ids), self.constant(1), 0)
+            cos = self.unsqueeze(cos, [1])
+            sin = self.unsqueeze(sin, [1])
 
         rotate_half_q = self.rotate_half(q,
                                          num_heads=num_heads,

@@ -145,7 +145,7 @@ class DynamicFusedNormalCache(DynamicCache):
     # Experimental support for fused decoderlayer implementation on NPU
     # Currently only for llama2
 
-    def __init__(self) -> None:
+    def __init__(self, num_hidden_layers: Optional[int] = None) -> None:
         self.key_cache: Dict[int, torch.Tensor] = {}
         self.value_cache: Dict[int, torch.Tensor] = {}
         self.min_layer_idx = sys.maxsize
@@ -157,6 +157,9 @@ class DynamicFusedNormalCache(DynamicCache):
         layer_idx: int,
         cache_kwargs: Optional[Dict[str, Any]]=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+
+        if key_states == []:
+            return key_states, value_states
 
         batch_size, num_heads, seq_len, head_dim = key_states.shape
 
