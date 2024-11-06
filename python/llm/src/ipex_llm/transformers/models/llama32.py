@@ -89,12 +89,11 @@ def llama_model_forward(
     use_compresskv = should_use_compresskv(inputs, inputs.shape[1]) or \
         isinstance(past_key_values, DynamicCompressCache)
     if use_cache:
-        if use_compresskv:
-            if not isinstance(past_key_values, DynamicCompressCache):
-                if use_quantize_kv:
-                    past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
-                else:
-                    past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+        if use_compresskv and not isinstance(past_key_values, DynamicCompressCache):
+            if use_quantize_kv:
+                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+            else:
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
         elif use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
         elif (
