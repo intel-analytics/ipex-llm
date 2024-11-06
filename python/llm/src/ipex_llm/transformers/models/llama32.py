@@ -88,6 +88,8 @@ def llama_model_forward(
     )
     use_compresskv = should_use_compresskv(inputs, inputs.shape[1]) or \
         isinstance(past_key_values, DynamicCompressCache)
+    # disable llama3.2 1b for prefill performance and output quality
+    use_compresskv = use_compresskv and self.config.hidden_size != 2048
     if use_cache:
         if use_compresskv and not isinstance(past_key_values, DynamicCompressCache):
             if use_quantize_kv:
