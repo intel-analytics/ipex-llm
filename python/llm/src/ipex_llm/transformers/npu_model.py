@@ -549,7 +549,7 @@ class _BaseAutoModelClass:
             from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
             optimize_llm(
                 llm,
-                max_output_len=max_context_len,
+                max_context_len=max_context_len,
                 max_prompt_len=max_prompt_len,
                 inter_pp=inter_pp,
                 intra_pp=intra_pp,
