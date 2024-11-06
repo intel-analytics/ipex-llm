@@ -97,7 +97,7 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         else:
             self.kv_seq_len = self.seq_len
 
-        self.num_heads = num_heads 
+        self.num_heads = num_heads
         self.num_key_value_heads = num_key_value_heads
 
         self.head_dim = self.hidden_size // self.num_heads
@@ -188,8 +188,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             hidden_states, new_key_states, new_value_states = self.build_decoder(
                 hidden_states=hidden_states,
                 attention_mask=attention_mask,
-                position_ids=position_ids if cached_cos is not None \
-                    else (position_ids if mode == "prefill" else None),
+                position_ids=position_ids if cached_cos is not None else (
+                    position_ids if mode == "prefill" else None),
                 input_layernorm_weight=input_layernorm_weights[i],
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
                 past_key=past_keys[i],
@@ -356,8 +356,8 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         output_attentions: bool = False,
         use_cache: bool = False,
         cache_position: Optional[torch.LongTensor] = None,
-        cos = None,
-        sin = None,
+        cos: Optional[torch.Tensor] = None,
+        sin: Optional[torch.Tensor] = None,
         **kwargs,
     ) -> torch.Tensor:
 
@@ -656,7 +656,8 @@ def run_decode(
                 position_ids = position_ids = cache_position.unsqueeze(0)
                 if cached_cos is None:
                     causal_mask = model.model._update_causal_mask(
-                        attention_mask, hidden_states, cache_position, past_key_values, output_attentions
+                        attention_mask, hidden_states, cache_position,
+                        past_key_values, output_attentions
                     )
                 else:
                     causal_mask = model.model._update_causal_mask(
@@ -766,8 +767,8 @@ class DecodeRunner:
         output_attentions: bool = False,
         use_cache: bool = False,
         cache_position: Optional[torch.LongTensor] = None,
-        cos = None,
-        sin = None,
+        cos: Optional[torch.Tensor] = None,
+        sin: Optional[torch.Tensor] = None,
         **kwargs,
     ):
 
@@ -857,14 +858,15 @@ def run_prefill(
                         weights.append((u.weight, u.scale))
                 else:
                     for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                                    attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                                    mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
+                                       attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                                       mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
                         l_weights = []
                         scales = []
                         for l in layer_list:
                             l_weights.append(l.weight)
                             scales.append(l.scale)
-                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+                        weights.append((torch.stack(l_weights, axis=0),
+                                        torch.stack(scales, axis=0)))
 
                 if n_splits_down_proj == 1:
                     for l in mlp_layer.down_proj_dq_list:
@@ -989,7 +991,8 @@ class PrefillRunner:
             value=torch.iinfo(torch.int64).min,
         )
 
-        args = (hidden_states, position_ids, attention_mask, past_key_value, cache_position, cos, sin)
+        args = (hidden_states, position_ids, attention_mask, past_key_value,
+                cache_position, cos, sin)
         self.prefill_input_queue.put(args)
 
         output = self.prefill_result_queue.get()
@@ -1057,9 +1060,12 @@ def gen_llama_fused_model_forward(prefill_runner, decode_runner):
             past_key_values = DynamicFusedNormalCache.from_legacy_cache(past_key_values)
 
         if cache_position is None:
-            past_seen_tokens = past_key_values.get_seq_length() if past_key_values is not None else 0
+            past_seen_tokens = past_key_values.get_seq_length() \
+                if past_key_values is not None else 0
             cache_position = torch.arange(
-                past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1], device=inputs_embeds.device
+                past_seen_tokens,
+                past_seen_tokens + inputs_embeds.shape[1],
+                device=inputs_embeds.device
             )
         # ipex-llm changes end
 
