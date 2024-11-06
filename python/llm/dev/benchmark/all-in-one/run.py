@@ -51,6 +51,8 @@ PHI3VISION_IDS = ['microsoft/phi-3-vision-128k-instruct']
 
 QWENVL_IDS = ['Qwen/Qwen-VL-Chat']
 
+MINICPM_IDS = ['openbmb/MiniCPM-1B-sft-bf16 ', 'openbmb/MiniCPM-2B-sft-bf16']
+
 MINICPM_V_IDS = ['openbmb/MiniCPM-V-2_6', 'openbmb/MiniCPM-Llama3-V-2_5']
 
 DUMMY_IDS = ['dummy/dummy-1.5B', 'dummy/dummy-4B']
@@ -662,10 +664,11 @@ def transformers_int4_npu_win(repo_id,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
-            true_str = tokenizer.batch_decode(input_ids)[0]
-            input_list = [true_str] * batch_size
-            input_ids = tokenizer(input_list, return_tensors="pt").input_ids
-            input_ids = input_ids[:, :in_len]
+            if repo_id not in MINICPM_IDS:
+                true_str = tokenizer.batch_decode(input_ids)[0]
+                input_list = [true_str] * batch_size
+                input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+                input_ids = input_ids[:, :in_len]
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
@@ -708,7 +711,7 @@ def transformers_int4_npu_pipeline_win(repo_id,
     model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, pipeline=True, torch_dtype=torch.float16,
                                                  optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
                                                  quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
-                                                 use_cache=True, attn_implementation="eager").eval()
+                                                 use_cache=True, attn_implementation="eager", mixed_precision=True).eval()
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     end = time.perf_counter()
@@ -726,10 +729,11 @@ def transformers_int4_npu_pipeline_win(repo_id,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
-            true_str = tokenizer.batch_decode(input_ids)[0]
-            input_list = [true_str] * batch_size
-            input_ids = tokenizer(input_list, return_tensors="pt").input_ids
-            input_ids = input_ids[:, :in_len]
+            if repo_id not in MINICPM_IDS:
+                true_str = tokenizer.batch_decode(input_ids)[0]
+                input_list = [true_str] * batch_size
+                input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+                input_ids = input_ids[:, :in_len]
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
