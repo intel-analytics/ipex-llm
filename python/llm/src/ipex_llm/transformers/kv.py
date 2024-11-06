@@ -369,7 +369,7 @@ class DynamicCompressCache(DynamicCache):
                 key_states, value_states = past_key_values[layer_idx]
                 invalidInputError(
                     len(key_states) == 0 and len(value_states) == 0,
-                    "from_legacy_cache should be call with empty kv cache.")
+                    "from_legacy_cache should be called with an empty kv cache.")
         return cache
 
 
