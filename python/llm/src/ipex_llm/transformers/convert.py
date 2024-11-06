@@ -1451,7 +1451,7 @@ def _optimize_post(model, lightweight_bmm=False):
                     pass
 
             elif model.config.num_layers == 40:
-                # glm-4-9b-chat
+                # glm-4-9b
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_attention_forward
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_model_forward
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_encoder_forward
