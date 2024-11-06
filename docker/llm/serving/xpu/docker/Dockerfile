@@ -5,6 +5,8 @@ ARG https_proxy
 
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
+# To prevent RPC_TIMEOUT ERROR for the first request
+ENV VLLM_RPC_TIMEOUT=100000
 
 
 # Disable pip's cache behavior
