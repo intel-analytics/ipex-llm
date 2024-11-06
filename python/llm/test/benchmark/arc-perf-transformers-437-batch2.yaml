@@ -18,6 +18,7 @@ repo_id:
   - 'mistralai/Mistral-7B-Instruct-v0.2'
   - 'deepseek-ai/deepseek-coder-7b-instruct-v1.5'
   - '01-ai/Yi-1.5-6B-Chat'
+  - 'openbmb/MiniCPM-V-2_6'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
