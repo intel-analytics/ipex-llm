@@ -194,7 +194,10 @@ def convert_llama(
         max_prompt_len=max_prompt_len,
         transpose_value_cache=transpose_value_cache,
     )
-    if model.config.num_hidden_layers == 28 or model.config.num_hidden_layers == 16:
+    from packaging import version
+    import transformers
+    trans_version = transformers.__version__
+    if version.parse(trans_version) == version.parse("4.45.0"):
         # llama-3.2-3B & llama-3.2-1B
         llama_model_forward = gen_llama_32_fused_model_forward(
             prefill_runner=prefill_runner, decode_runner=decode_runner
