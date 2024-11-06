@@ -358,7 +358,8 @@ class DynamicCompressCache(DynamicCache):
 
     @classmethod
     def from_legacy_cache(
-        cls, past_key_values: Optional[Tuple[Tuple[torch.FloatTensor]]] = None, num_hidden_layers: int = None
+        cls, past_key_values: Optional[Tuple[Tuple[torch.FloatTensor]]] = None,
+        num_hidden_layers: int = None
     ) -> "DynamicCache":
         """Converts a cache in the legacy cache format into an equivalent `DynamicCache`. Used for
         backward compatibility."""
@@ -370,6 +371,7 @@ class DynamicCompressCache(DynamicCache):
                     len(key_states) == 0 and len(value_states) == 0,
                     "from_legacy_cache should be call with empty kv cache.")
         return cache
+
 
 class DynamicCompressFp8Cache(DynamicCompressCache, DynamicFp8Cache):
     def update(
