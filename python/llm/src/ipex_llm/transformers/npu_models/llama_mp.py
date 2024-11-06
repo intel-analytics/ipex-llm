@@ -188,8 +188,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             hidden_states, new_key_states, new_value_states = self.build_decoder(
                 hidden_states=hidden_states,
                 attention_mask=attention_mask,
-                position_ids=position_ids if cached_cos is not None else (
-                    position_ids if mode == "prefill" else None),
+                position_ids = position_ids if (cached_cos is not None
+                                                or mode == "prefill") else None,
                 input_layernorm_weight=input_layernorm_weights[i],
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
                 past_key=past_keys[i],
