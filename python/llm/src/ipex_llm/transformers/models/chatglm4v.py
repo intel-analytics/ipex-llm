@@ -19,6 +19,7 @@
 
 import torch
 from typing import Optional, Tuple, Union
+from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past_key_value
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, use_sdp_causal
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
@@ -339,3 +340,12 @@ def patch_embedding_forward(self, images: "tensor(B, C, H, W)") -> "tensor(B, L,
     x = torch.cat((cls_token, x), dim=1)
     x += self.position_embedding.weight.unsqueeze(0).to(images.device)
     return x
+
+
+def merge_qkv(module: torch.nn.Module):
+    merge_qkv_base(module, "SiglipAttention")
+
+
+def vision_model_forward(self: torch.nn.Module, image: torch.Tensor):
+    vit_output = self.vit(image)
+    return self.adapter(vit_output)
