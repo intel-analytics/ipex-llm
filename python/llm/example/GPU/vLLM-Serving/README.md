@@ -2,7 +2,7 @@
 
 This example demonstrates how to serve a LLaMA2-7B model using vLLM continuous batching on Intel GPU (with IPEX-LLM low-bits optimizations).
 
-The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.3.3).
+The code shown in the following example is ported from [vLLM](https://github.com/vllm-project/vllm/tree/v0.6.2).
 
 Currently, we support the following models for vLLM engine:
 
@@ -17,7 +17,7 @@ In this example, we will run Llama2-7b model using Arc A770 and provide `OpenAI-
 
 ### 0. Environment
 
-To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit 2024.0. Please check the requirements at [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU#requirements).
+To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit 2024.1. Please check the requirements at [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU#requirements).
 
 After install the toolkit, run the following commands in your environment before starting vLLM GPU:
 ```bash
@@ -44,14 +44,13 @@ conda create -n ipex-vllm python=3.11
 conda activate ipex-vllm
 # Install dependencies
 pip install --pre --upgrade "ipex-llm[xpu]" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+pip install setuptools-scm
+pip install --upgrade cmake
 # cd to your workdir
-git clone -b sycl_xpu https://github.com/analytics-zoo/vllm.git
+# TODO: check this later... for the specific branch
+git clone -b  https://github.com/analytics-zoo/vllm.git
 cd vllm
-pip install -r requirements-xpu.txt
-pip install --no-deps xformers
-VLLM_BUILD_XPU_OPS=1 pip install --no-build-isolation -v -e .
-pip install outlines==0.0.34 --no-deps
-pip install interegular cloudpickle diskcache joblib lark nest-asyncio numba scipy
+VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v . && \
 # For Qwen model support
 pip install transformers_stream_generator einops tiktoken
 ```
@@ -61,6 +60,7 @@ pip install transformers_stream_generator einops tiktoken
 ```bash
 export USE_XETLA=OFF
 export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_CACHE_PERSISTENT=1
 ```
 ### 3. Offline inference/Service
 
