@@ -36,7 +36,7 @@ conda activate llm
 :: install ipex-llm with 'npu' option
 pip install --pre --upgrade ipex-llm[npu]
 
-# [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
+:: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
 pip install transformers==4.45.0 accelerate==0.33.0
 ```
 
