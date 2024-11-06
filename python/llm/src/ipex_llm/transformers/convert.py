@@ -1458,7 +1458,7 @@ def _optimize_post(model, lightweight_bmm=False):
                     from ipex_llm.transformers.models.chatglm4v import vision_model_forward
                     convert_forward(model, vision_module.VisionModel, vision_model_forward)
 
-            elif model.config.num_layers == 40:
+            elif model.config.num_layers in [40, 28]:
                 # glm-4-9b
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_attention_forward
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_model_forward
