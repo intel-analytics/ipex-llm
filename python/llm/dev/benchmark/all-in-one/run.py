@@ -47,7 +47,7 @@ CHATGLM_IDS = ['THUDM/chatglm-6b', 'THUDM/chatglm2-6b', 'THUDM/chatglm3-6b']
 
 LLAVA_IDS = ['liuhaotian/llava-v1.5-7b']
 
-PHI3VISION_IDS = ['microsoft/phi-3-vision-128k-instruct']
+PHI3VISION_IDS = ['microsoft/phi-3-vision-128k-instruct', 'microsoft/Phi-3-vision-128k-instruct']
 
 QWENVL_IDS = ['Qwen/Qwen-VL-Chat']
 
