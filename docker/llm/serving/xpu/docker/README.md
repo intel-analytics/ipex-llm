@@ -61,11 +61,79 @@ For convenience, we have included a file `/llm/start-pp_serving-service.sh` in t
 
 #### FastChat serving engine
 
-To run model-serving using `IPEX-LLM` as backend using FastChat, you can refer to this [quickstart](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#).
+To set up model serving using `IPEX-LLM` as backend using FastChat, you can refer to this [quickstart](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#) or follow these quick steps to deploy a demo.
 
-For convenience, we have included a file `/llm/fastchat-examples/start-fastchat-service.sh` in the image.
+##### Quick Setup for FastChat with IPEX-LLM
 
-You can modify this script to using fastchat with either `ipex_llm_worker` or `vllm_worker`.
+1. **Start the Docker Container** 
+   
+    Run the following command to launch a Docker container with device access:
+
+    ```bash
+    #/bin/bash
+    export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
+
+    sudo docker run -itd \
+            --net=host \
+            --device=/dev/dri \
+            --name=demo-container \
+            # Example: map host model directory to container
+            -v /LLM_MODELS/:/llm/models/ \  
+            --shm-size="16g" \
+            # Optional: set proxy if needed
+            -e http_proxy=... \ 
+            -e https_proxy=... \
+            -e no_proxy="127.0.0.1,localhost" \
+            $DOCKER_IMAGE
+    ```
+
+2. **Start the FastChat Service**
+   
+    Enter the container and start the FastChat service:
+    ```bash
+    #/bin/bash
+
+    # This command assumes that you have mapped the host model directory to the container
+    # and the model directory is /llm/models/
+    # we take Yi-1.5-34B as an example, and you can replace it with your own model
+
+    ps -ef | grep "fastchat" | awk '{print $2}' | xargs kill -9
+    pip install -U gradio==4.43.0
+    
+    # start controller
+    python -m fastchat.serve.controller &
+    
+    
+    export TORCH_LLM_ALLREDUCE=0
+    export CCL_DG2_ALLREDUCE=1
+    # CCL needed environment variables
+    export CCL_WORKER_COUNT=4
+    # pin ccl worker to cores
+    # export CCL_WORKER_AFFINITY=32,33,34,35
+    export FI_PROVIDER=shm
+    export CCL_ATL_TRANSPORT=ofi
+    export CCL_ZE_IPC_EXCHANGE=sockets
+    export CCL_ATL_SHM=1
+    
+    source /opt/intel/1ccl-wks/setvars.sh
+    
+    python -m ipex_llm.serving.fastchat.vllm_worker \
+    --model-path /llm/models/Yi-1.5-34B \
+    --device xpu \
+    --enforce-eager \
+    --dtype float16 \
+    --load-in-low-bit fp8 \
+    --tensor-parallel-size 4 \
+    --gpu-memory-utilization 0.9 \
+    --max-model-len 4096 \
+    --max-num-batched-tokens 8000 &
+    
+    sleep 120
+    
+    python -m fastchat.serve.gradio_web_server &
+    ```
+
+This quick setup allows you to deploy FastChat with IPEX-LLM efficiently.
 
 #### vLLM serving engine
 
