@@ -166,6 +166,8 @@ whose output should contain `Intel(R) Arc(TM) Graphics` or `Intel(R) Graphics` b
         linux-headers-$(uname -r) \
         libc6-dev
     sudo apt install intel-i915-dkms intel-fw-gpu
+    # Notice: if you are using Iris Graphics(integrated in 10-13 Gen Intel laptop CPU), please use below version of intel-i915-dkms instead.
+    # sudo apt install intel-i915-dkms=1.24.2.17.240301.20+i29-1 intel-fw-gpu=2024.17.5-329~22.04
 
     # Install Compute Runtime
     sudo apt-get install -y udev \
@@ -229,6 +231,8 @@ whose output should contain `Intel(R) Arc(TM) Graphics` or `Intel(R) Graphics` b
         linux-headers-$(uname -r) \
         libc6-dev
     sudo apt install -y intel-i915-dkms intel-fw-gpu
+    # Notice: if you are using Iris Graphics(integrated in 10-13 Gen Intel laptop CPU), please use below version of intel-i915-dkms instead.
+    # sudo apt install intel-i915-dkms=1.24.2.17.240301.20+i29-1 intel-fw-gpu=2024.17.5-329~22.04
 
     # Install Compute Runtime
     sudo apt-get install -y udev \
@@ -487,4 +491,3 @@ Answer: AI stands for Artificial Intelligence, which is the simulation of human 
 
 ### Warmup for optimial performance on first run
 When running LLMs on GPU for the first time, you might notice the performance is lower than expected, with delays up to several minutes before the first token is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU types. To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks. If you're developing an application, you can incorporate this warmup step into start-up or loading routine to enhance the user experience.
-
