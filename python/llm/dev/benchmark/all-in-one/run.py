@@ -629,18 +629,13 @@ def transformers_int4_npu_win(repo_id,
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     st = time.perf_counter()
-    if repo_id in CHATGLM_IDS:
-        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True,
-                                          optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]),
+    if repo_id in MINICPM_V_IDS:
+        model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=optimize_model,
+                                          trust_remote_code=True, use_cache=True, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
                                           quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
-                                          torch_dtype=torch.float16, attn_implementation="eager").eval()
+                                          attn_implementation="eager", modules_to_not_convert=["vpm", "resampler"]).eval()
+        model = model.llm
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    elif repo_id in LLAMA_IDS:
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
-                                                     optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
-                                                     quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
-                                                     use_cache=True, attn_implementation="eager").eval()
-        tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
                                                      optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
