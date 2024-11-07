@@ -1055,13 +1055,15 @@ def _optimize_pre(model, qtype=None):
             # chatglm2 and chatglm3
             from ipex_llm.transformers.models.chatglm2 import split_mlp
             model.apply(split_mlp)
-        elif (
-            isinstance(model.config.eos_token_id, list)
-            and hasattr(model.transformer, "vision")
-            and model.config.num_layers != 40
-        ):
-            from ipex_llm.transformers.models.chatglm4v import merge_qkv
-            model.apply(merge_qkv)
+        elif isinstance(model.config.eos_token_id, list):
+            # glm4 family
+            if hasattr(model.transformer, "vision"):
+                if model.config.num_layers != 40:
+                    from ipex_llm.transformers.models.chatglm4v import merge_qkv
+                    model.apply(merge_qkv)
+            elif model.config.num_layers in [40, 28]:
+                from ipex_llm.transformers.models.chatglm2 import split_mlp
+                model.apply(split_mlp)
 
     return model
 
@@ -1463,9 +1465,11 @@ def _optimize_post(model, lightweight_bmm=False):
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_attention_forward
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_model_forward
                 from ipex_llm.transformers.models.chatglm4 import chatglm4_encoder_forward
+                from ipex_llm.transformers.models.chatglm2 import mlp_forward
                 convert_forward(model, module.SelfAttention, chatglm4_attention_forward)
                 convert_forward(model, module.ChatGLMModel, chatglm4_model_forward)
                 convert_forward(model, module.GLMTransformer, chatglm4_encoder_forward)
+                convert_forward(model, module.MLP, mlp_forward)
     elif "mpt" in model.config.model_type:
         if model.config.architectures is not None:
             modeling_module_name = model.__class__.__module__
