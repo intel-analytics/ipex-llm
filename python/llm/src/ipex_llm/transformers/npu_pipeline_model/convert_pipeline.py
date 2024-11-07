@@ -233,8 +233,12 @@ def convert_llm(model: torch.nn.Module,
             model.num_layers = layer_num
             model.transpose_value_cache = transpose_value_cache
 
+            if hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached"):
+                model_type = "llama"
+            else:
+                model_type = "llama_32"
             try:
-                res = InitLLMPipeline("llama", kv_len, model.num_head, model.head_dim, layer_num,
+                res = InitLLMPipeline(model_type, kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
                                       os.path.join(temp_dir, "decoder_layer"), layernorm_const)

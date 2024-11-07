@@ -54,8 +54,7 @@ def run_model(
 
     # Reshape input
     input_dtype = x[0].dtype
-    x_np = [set_contiguous(elem).numpy() if elem.dtype == torch.int64 else
-            set_contiguous(elem).to(torch.float16).numpy() for elem in x]
+    x_np = [set_contiguous(elem).numpy() for elem in x]
     op_args = []
     op_args_flatten = []
     for w in weights:
@@ -651,8 +650,7 @@ class LLMBaseNNFactory(NNFactory):
 
     @staticmethod
     def run_decoders(inputs, decoders, models_ptr=None):
-        x_np = [elem.numpy() if elem.dtype == torch.int64 else
-                elem.to(torch.float16).numpy() for elem in inputs]
+        x_np = [elem.numpy() for elem in inputs]
 
         num_decoders = len(decoders)
         num_inputs = len(x_np)
