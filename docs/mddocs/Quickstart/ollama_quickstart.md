@@ -223,3 +223,6 @@ If you find ollama hang when multiple different questions is asked or context is
 
 #### 7. `signal: bus error (core dumped)` error
 If you meet this error, please check your Linux kernel version first. You may encounter this issue on higher kernel versions (like kernel 6.15). You can also refer to [this issue](https://github.com/intel-analytics/ipex-llm/issues/10955) to see if it helps.
+
+#### 8. Out of Memory
+If you have a limited GPU memory, use `set OLLAMA_NUM_PARALLEL=1` on Windows or `export OLLAMA_NUM_PARALLEL=1` on Linux before `ollama serve` to reduce GPU usage. The default `OLLAMA_NUM_PARALLEL` in ollama upstream is set to 4.
