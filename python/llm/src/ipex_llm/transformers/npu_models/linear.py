@@ -158,7 +158,6 @@ class QuantizedLinear(torch.nn.Module):
         if group_size != 0:
             self.scale = Parameter(scale, requires_grad=False)
         else:
-            # print("scale_factor True")
             if self.weight.dtype == torch.uint8:
                 # Int4 we need to double the input channels because weights are compressed
                 self.inC *= 2
