@@ -218,3 +218,6 @@ Ollama 默认每 5 分钟从 GPU 内存卸载一次模型。针对 ollama 的最
 
 #### 7. `signal: bus error (core dumped)` 错误
 如果你遇到此错误，请先检查你的 Linux 内核版本。较高版本的内核（例如 6.15）可能会导致此问题。你也可以参考[此问题](https://github.com/intel-analytics/ipex-llm/issues/10955)来查看是否有帮助。
+
+### 8. GPU内存不足
+如果你的GPU内存较小，可以通过`set OLLAMA_NUM_PARALLEL=1`（Windows）或`export OLLAMA_NUM_PARALLEL=1`（Linux）来减少内存使用。Ollama默认使用的`OLLAMA_NUM_PARALLEL`为4。
