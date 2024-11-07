@@ -367,3 +367,6 @@ Log end
 
 #### 15. `signal: bus error (core dumped)` 错误
 如果你遇到此错误，请先检查你的 Linux 内核版本。较高版本的内核（例如 6.15）可能会导致此问题。你也可以参考[此问题](https://github.com/intel-analytics/ipex-llm/issues/10955)来查看是否有帮助。
+
+#### 16. `backend buffer base cannot be NULL` 错误
+如果你遇到`ggml-backend.c:96: GGML_ASSERT(base != NULL && "backend buffer base cannot be NULL") failed`错误，可以在推理时传入参数`-c xx`，如`-c 1024`即可解决。
