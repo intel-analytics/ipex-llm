@@ -86,6 +86,7 @@ For vLLM, you can start the service using the following command:
 #!/bin/bash
 model="YOUR_MODEL_PATH"
 served_model_name="YOUR_MODEL_NAME"
+export VLLM_RPC_TIMEOUT=100000
 
  # You may need to adjust the value of
  # --max-model-len, --max-num-batched-tokens, --max-num-seqs
