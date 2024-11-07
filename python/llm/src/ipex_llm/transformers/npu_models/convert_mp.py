@@ -337,7 +337,15 @@ def optimize_llm(
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 2 if group_size == 0 else 8
+            if group_size == 0:
+                inter_pp = 2
+            elif model.config.intermediate_size == 8192:
+                if model.config.hidden_size == 2048:
+                    inter_pp = 1
+                else:
+                    inter_pp = 2
+            else:
+                inter_pp = 8
         convert_llama(model,
                       max_output_len=max_context_len,
                       max_prompt_len=max_prompt_len,
