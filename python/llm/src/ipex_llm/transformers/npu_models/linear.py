@@ -156,7 +156,6 @@ class QuantizedLinear(torch.nn.Module):
             )
         self.outC, self.inC = self.weight.shape
         if group_size != 0:
-            print("scale_factor False")
             self.scale = Parameter(scale, requires_grad=False)
         else:
             # print("scale_factor True")

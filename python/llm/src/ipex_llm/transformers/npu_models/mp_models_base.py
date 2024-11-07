@@ -195,7 +195,6 @@ class LLMBaseNNFactory(NNFactory):
         query_states = self.transpose(query_states, [0, 2, 1, 3])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
         use_ov_sdp = (mode == "prefill") and use_prefill_sdp
-        print(f"------------- use_ov_sdp: {use_ov_sdp}")
         if self.transpose_value:
             new_value_states = self.transpose(value_states, [0, 2, 3, 1])
             if use_ov_sdp:
@@ -550,11 +549,6 @@ class LLMBaseNNFactory(NNFactory):
         op = super().parameter(shape, dtype)
         self.input_ops.append(op)
         return op
-
-    # def linear(self, *args, **kwargs):
-    #     op = super().linear(*args, **kwargs)
-    #     self.linear_ops.append(op)
-    #     return op
 
     def linear(self,
                input_node: ctypes._Pointer,

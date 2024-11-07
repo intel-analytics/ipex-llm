@@ -75,8 +75,7 @@ def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down
     from transformers.models.qwen2.modeling_qwen2 import Qwen2MLP, Qwen2Attention
     from transformers.models.llama.modeling_llama import LlamaMLP, LlamaAttention
     attn_module_names = ["q_proj", "k_proj", "v_proj", "o_proj"]
-    # baichuan_attn_module_names = ["W_pack", "o_proj"]
-    baichuan_attn_module_names = ["o_proj"]
+    baichuan_attn_module_names = ["W_pack", "o_proj"]
     mlp_module_names = ["down_proj", "up_proj", "gate_proj"]
     if (
         isinstance(module, (Qwen2Attention, LlamaAttention))
@@ -99,12 +98,8 @@ def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down
                                                             n_splits=n_splits_mlp,
                                                             load=load))
             delattr(module, name)
-    elif module.__class__.__name__ == 'Attention':
-        # baichuan
-        setattr(module, f"W_pack_dq_list", split_linear(getattr(module, "W_pack"), "W_pack",
-                                                        n_splits=1,
-                                                        load=load))
-        delattr(module, "W_pack")
+    elif module.__class__.__name__ == 'Attention' and module.config.model_type == 'baichuan':
+        # baichuan attention
         for name in baichuan_attn_module_names:
             setattr(module, f"{name}_dq_list", split_linear(getattr(module, name), name,
                                                             n_splits=n_splits_hidden_size,

@@ -102,28 +102,11 @@ class LowBitLLMLMHead(LLMBaseNNFactory):
         model_norm_weight = self.constant(model_norm_weight)
         hidden_states = self.layer_norm(hidden_states, model_norm_weight)
 
-        # hidden_states = self.linear(
-        #     hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype,
-        #     n_splits=n_splits,
-        #     scale_factor=(n_splits == 1),
-        # )
-
         hidden_states = self.linear(
             hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype,
             n_splits=n_splits,
-            scale_factor=True,
+            scale_factor=(n_splits == 1),
         )
-
-
-        # if n_splits == 1:
-        #     hidden_states = self.linear(
-        #         hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype
-        #     )
-        # else:
-        #     hidden_states = self.dq_split_linear(
-        #         hidden_states, self.vocab_size, self.hidden_size, n_splits,
-        #         wt_dtype=dtype, scale_factor=False
-        #     )
 
         # define outputs
         hidden_states = self.convert_to_fp32(hidden_states)

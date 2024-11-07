@@ -34,9 +34,9 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
         lm_heads = lm_head.lm_heads
         lm_head_weights = []
         scales = []
-        for i in range(n_splits_linear):
-            lm_head_weights.append(lm_heads[i].weight)
-            scales.append(lm_heads[i].scale)
+        for l in lm_heads:
+            lm_head_weights.append(l.weight)
+            scales.append(l.scale)
         weights = [(torch.stack(lm_head_weights, axis=0),
                     torch.stack(scales, axis=0))]
     if isinstance(weights[0], tuple):
@@ -97,32 +97,12 @@ def convert_baichuan_layer(model, layer_idx, n_splits_linear, n_splits_down_proj
     mlp_layer = curr_layer.mlp
 
     weights = []
-    if n_splits_linear == 1:
-        for w, o, g, u in zip(attn_layer.W_pack_dq_list,
-                              attn_layer.o_proj_dq_list,
-                              mlp_layer.gate_proj_dq_list,
-                              mlp_layer.up_proj_dq_list):
-            weights.append((w.weight, w.scale))
-            weights.append((o.weight, o.scale))
-            weights.append((g.weight, g.scale))
-            weights.append((u.weight, u.scale))
-    else:
-        for layer_list in [attn_layer.W_pack_dq_list, attn_layer.o_proj_dq_list,
-                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
-            l_weights = []
-            scales = []
-            for l in layer_list:
-                l_weights.append(l.weight)
-                scales.append(l.scale)
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
-    if n_splits_down_proj == 1:
-        for l in mlp_layer.down_proj_dq_list:
-            weights.append((l.weight, l.scale))
-    else:
+    for layer_list in [attn_layer.W_pack_dq_list, attn_layer.o_proj_dq_list,
+                       mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                       mlp_layer.down_proj_dq_list]:
         l_weights = []
         scales = []
-        for l in mlp_layer.down_proj_dq_list:
+        for l in layer_list:
             l_weights.append(l.weight)
             scales.append(l.scale)
         weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
@@ -151,6 +131,9 @@ def convert_baichuan_layer(model, layer_idx, n_splits_linear, n_splits_down_proj
         mode="decode",
         transpose_value=transpose_value_cache,
         dtype=np_dtype,
+        n_splits_linear=n_splits_linear,
+        n_splits_down_proj=n_splits_down_proj,
+        group_size=group_size
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         f"decoder_layer_{layer_idx}",
