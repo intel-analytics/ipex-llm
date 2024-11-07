@@ -792,7 +792,6 @@ docker run -itd \
 #### Serving with FastChat
 
 We can set up model serving using `IPEX-LLM` as backend using FastChat, the following steps gives an example of how to deploy a demo using FastChat.
-This [quickstart](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/fastchat_quickstart.html#) gives a detailed description of how to deploy FastChat.
 
 
 1. **Start the Docker Container** 
