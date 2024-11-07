@@ -339,7 +339,9 @@ def optimize_llm(
         if inter_pp is None:
             if group_size == 0:
                 inter_pp = 2
+            # llama3.2
             elif model.config.intermediate_size == 8192:
+                # llama3.2 1b
                 if model.config.hidden_size == 2048:
                     inter_pp = 1
                 else:
