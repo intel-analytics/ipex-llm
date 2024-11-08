@@ -102,7 +102,9 @@ To set up model serving using `IPEX-LLM` as backend using FastChat, you can refe
     
     # start controller
     python -m fastchat.serve.controller &
-    
+
+    export USE_XETLA=OFF
+    export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
     
     export TORCH_LLM_ALLREDUCE=0
     export CCL_DG2_ALLREDUCE=1
