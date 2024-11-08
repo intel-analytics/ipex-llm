@@ -81,8 +81,8 @@ def padding_linear_hd(linear: torch.nn.Linear,
     return new_linear
 
 
-def padding_qkv_hd_base(module: torch.nn.Module, attention_class,
-                        old_head_dim: int, new_head_dim: int):
+def padding_attention_hd_base(module: torch.nn.Module, attention_class,
+                              old_head_dim: int, new_head_dim: int):
     if (
         isinstance(attention_class, str) and module.__class__.__name__ == attention_class
         or not isinstance(attention_class, str) and isinstance(module, attention_class)
@@ -92,6 +92,26 @@ def padding_qkv_hd_base(module: torch.nn.Module, attention_class,
         module.v_proj = padding_linear_hd(module.v_proj, old_head_dim, new_head_dim)
         module.head_dim = new_head_dim
         module.old_head_dim = old_head_dim
+
+
+def padding_states_hd(states: torch.Tensor, old_head_dim: int, new_head_dim: int):
+    bsz, num_heads, seq_len, head_dim = states.size()
+    if head_dim == old_head_dim and old_head_dim < new_head_dim:
+        new_states = torch.empty([bsz, num_heads, seq_len, new_head_dim],
+                                 dtype=states.dtype, device=states.device)
+        new_states[:, :, :, :old_head_dim] = states
+        new_states[:, :, :, old_head_dim:] = 0
+        return new_states
+    return states
+
+
+def padding_qkv_hd(q: torch.Tensor, k: torch.Tensor, v: torch.Tensor,
+                   old_head_dim: int, new_head_dim: int):
+    return (
+        padding_states_hd(q, old_head_dim, new_head_dim),
+        padding_states_hd(k, old_head_dim, new_head_dim),
+        padding_states_hd(v, old_head_dim, new_head_dim),
+    )
 
 
 def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):

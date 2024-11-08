@@ -26,7 +26,7 @@ import torch
 from threading import Thread
 from typing import Optional, List
 from torch.nn.functional import linear
-from ipex_llm.transformers.models.common import merge_qkv_base
+from ipex_llm.transformers.models.common import merge_qkv_base, padding_qkv_hd
 from ipex_llm.transformers.models.common import attention_softmax
 from ipex_llm.transformers.models.utils import use_sdp_non_causal
 from transformers import AutoProcessor, TextIteratorStreamer
@@ -53,7 +53,12 @@ def siglip_attention_forward(
     qkv = qkv.transpose(1, 2)
     query_states, key_states, value_states = qkv.chunk(3, dim=1)
 
-    if use_sdp_non_causal(self.head_dim, query_states.device, query_states.dtype):
+    query_states, key_states, value_states = padding_qkv_hd(
+        query_states, key_states, value_states,
+        72, 80
+    )
+
+    if use_sdp_non_causal(query_states.size(-1), query_states.device, query_states.dtype):
         import xe_addons
         attn_weights = None
         attn_output = xe_addons.sdp_non_causal(query_states, key_states.contiguous(),
@@ -69,8 +74,7 @@ def siglip_attention_forward(
                                                    p=self.dropout, training=self.training)
         attn_output = torch.matmul(attn_weights, value_states)
 
-    if hasattr(self, "old_head_dim"):
-        attn_output = attn_output[:, :, :, :self.old_head_dim]
+    attn_output = attn_output[:, :, :, :self.head_dim]
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.embed_dim)
