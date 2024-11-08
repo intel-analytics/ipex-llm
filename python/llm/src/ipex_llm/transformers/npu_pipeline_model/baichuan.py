@@ -28,7 +28,17 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
     vocab_size = model.config.vocab_size
     model_norm = model.model.norm
     lm_head = model.lm_head
-    weights = [(lm_head.weight, lm_head.scale)]
+    if n_splits_linear == 1:
+        weights = [(lm_head.weight, lm_head.scale)]
+    else:
+        lm_heads = lm_head.lm_heads
+        lm_head_weights = []
+        scales = []
+        for l in lm_heads:
+            lm_head_weights.append(l.weight)
+            scales.append(l.scale)
+        weights = [(torch.stack(lm_head_weights, axis=0),
+                    torch.stack(scales, axis=0))]
     if isinstance(weights[0], tuple):
         np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
     else:  # FP16 Linear
@@ -44,13 +54,17 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
         dtype=np_dtype,
         model_norm_weight=model_norm.weight.to(torch.float16),
         vocab_size=vocab_size,
+        n_splits=n_splits_linear
     )
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
 
     # save weights bins files
-    weight_numpy = [
-        lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
-    ]
+    if n_splits_linear == 1:
+        weight_numpy = [
+            lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
+        ]
+    else:
+        weight_numpy = [v.numpy() for v in weights[0]]
 
     for idx, weight in enumerate(weight_numpy):
         bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
@@ -83,17 +97,15 @@ def convert_baichuan_layer(model, layer_idx, n_splits_linear, n_splits_down_proj
     mlp_layer = curr_layer.mlp
 
     weights = []
-    if n_splits_linear == 1:
-        weights = [
-            (attn_layer.W_pack.weight, attn_layer.W_pack.scale),
-            (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-            (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-            (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-        ]
-    else:
-        # TODO
-        pass
+    for layer_list in [attn_layer.W_pack_dq_list, attn_layer.o_proj_dq_list,
+                       mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                       mlp_layer.down_proj_dq_list]:
+        l_weights = []
+        scales = []
+        for l in layer_list:
+            l_weights.append(l.weight)
+            scales.append(l.scale)
+        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
     cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
     cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -119,6 +131,9 @@ def convert_baichuan_layer(model, layer_idx, n_splits_linear, n_splits_down_proj
         mode="decode",
         transpose_value=transpose_value_cache,
         dtype=np_dtype,
+        n_splits_linear=n_splits_linear,
+        n_splits_down_proj=n_splits_down_proj,
+        group_size=group_size
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         f"decoder_layer_{layer_idx}",

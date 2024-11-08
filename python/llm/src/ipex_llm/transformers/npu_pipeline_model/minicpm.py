@@ -109,37 +109,23 @@ class MiniCPMLMHead(LLMBaseNNFactory):
         hidden_states = self.layer_norm(hidden_states, model_norm_weight)
         if vocab_size == 122753:
             # for MiniCPM-2B-sft-bf16
-            if n_splits == 1:
-                hidden_states_1 = self.linear(
-                    hidden_states, 73440, self.hidden_size, bias=False, wt_dtype=self.dtype
-                )
-                hidden_states_2 = self.linear(
-                    hidden_states, 73440, self.hidden_size, bias=False, wt_dtype=self.dtype
-                )
-            else:
-                hidden_states_1 = self.dq_split_linear(
-                    hidden_states, 73440, self.hidden_size,
-                    n_splits=n_splits, wt_dtype=dtype, scale_factor=False
-                )
-                hidden_states_2 = self.dq_split_linear(
-                    hidden_states, 73440, self.hidden_size,
-                    n_splits=n_splits, wt_dtype=dtype, scale_factor=False
-                )
+            hidden_states_1 = self.linear(
+                hidden_states, 73440, self.hidden_size, bias=False, wt_dtype=self.dtype,
+                n_splits=n_splits, scale_factor=(n_splits == 1)
+            )
+            hidden_states_2 = self.linear(
+                hidden_states, 73440, self.hidden_size, bias=False, wt_dtype=self.dtype,
+                n_splits=n_splits, scale_factor=(n_splits == 1)
+            )
 
             hidden_states_2 = self.slice(hidden_states_2, begin=[0, 0, 0], end=[1, 1, 49313])
             hidden_states = self.concat(hidden_states_1, hidden_states_2, axis=2)
         else:
             # for MiniCPM-1B-sft-bf16
-            if n_splits == 1:
-                hidden_states = self.linear(
-                    hidden_states, self.vocab_size, self.hidden_size, bias=False,
-                    wt_dtype=self.dtype
-                )
-            else:
-                hidden_states = self.dq_split_linear(
-                    hidden_states, self.vocab_size, self.hidden_size,
-                    n_splits=n_splits, wt_dtype=dtype, scale_factor=False
-                )
+            hidden_states = self.linear(
+                hidden_states, self.vocab_size, self.hidden_size, bias=False,
+                wt_dtype=self.dtype, n_splits=n_splits, scale_factor=(n_splits == 1)
+            )
 
         # define outputs
         hidden_states = self.convert_to_fp32(hidden_states)
@@ -245,38 +231,13 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     mlp_layer = curr_layer.mlp
 
     weights = []
-    if n_splits_linear == 1:
-        for q, k, v, o, g, u in zip(attn_layer.q_proj_dq_list,
-                                    attn_layer.k_proj_dq_list,
-                                    attn_layer.v_proj_dq_list,
-                                    attn_layer.o_proj_dq_list,
-                                    mlp_layer.gate_proj_dq_list,
-                                    mlp_layer.up_proj_dq_list):
-            weights.append((q.weight, q.scale))
-            weights.append((k.weight, k.scale))
-            weights.append((v.weight, v.scale))
-            weights.append((o.weight, o.scale))
-            weights.append((g.weight, g.scale))
-            weights.append((u.weight, u.scale))
-    else:
-        for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                           attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list]:
-            l_weights = []
-            scales = []
-            for l in layer_list:
-                l_weights.append(l.weight)
-                scales.append(l.scale)
-            weights.append((torch.stack(l_weights, axis=0),
-                            torch.stack(scales, axis=0)))
-
-    if n_splits_down_proj == 1:
-        for l in mlp_layer.down_proj_dq_list:
-            weights.append((l.weight, l.scale))
-    else:
+    for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                       attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                       mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                       mlp_layer.down_proj_dq_list]:
         l_weights = []
         scales = []
-        for l in mlp_layer.down_proj_dq_list:
+        for l in layer_list:
             l_weights.append(l.weight)
             scales.append(l.scale)
         weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))

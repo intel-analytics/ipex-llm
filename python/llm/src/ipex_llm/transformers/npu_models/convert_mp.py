@@ -87,7 +87,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             model.llm.config.model_type = "llama"
         model = model.llm
 
-    if model.config.model_type in ["qwen2", "llama", "minicpm"]:
+    if model.config.model_type in ["qwen2", "llama", "minicpm", "baichuan"]:
         from ipex_llm.transformers.npu_models.common import split_linears
         if quantization_group_size == 0:
             n_splits_linear = 1
@@ -245,6 +245,8 @@ def convert_baichuan(
     modeling_module_name = model.__class__.__module__
     module = importlib.import_module(modeling_module_name)
     convert_forward(model, module.BaichuanModel, baichuan_model_forward)
+    from ipex_llm.transformers.npu_models.baichuan_mp import baichuan2_causal_forward
+    convert_forward(model, module.BaichuanForCausalLM, baichuan2_causal_forward)
 
 
 def convert_minicpm(
@@ -392,7 +394,7 @@ def optimize_llm(
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 2
+            inter_pp = 2 if group_size == 0 else 4
         convert_baichuan(model,
                          max_output_len=max_context_len,
                          max_prompt_len=max_prompt_len,

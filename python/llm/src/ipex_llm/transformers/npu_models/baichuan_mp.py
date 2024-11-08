@@ -50,6 +50,9 @@ from transformers.cache_utils import Cache
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
+from ipex_llm.transformers.npu_models.common import reshape_lm_head_input
+from transformers.modeling_outputs import CausalLMOutputWithPast
+from torch.nn import CrossEntropyLoss
 
 
 class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
@@ -75,12 +78,18 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
         device: str = "NPU",
         rms_norm_eps,
         intermediate_size,
+        n_splits_linear: int = 1,
+        n_splits_down_proj: int = 1,
+        group_size: int = 0
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
                          dtype=dtype,
                          profile=profile,
-                         device=device)
+                         device=device,
+                         n_splits_linear=n_splits_linear,
+                         n_splits_down_proj=n_splits_down_proj,
+                         group_size=group_size)
         self.max_seq_len = max_seq_len
         self.intermediate_size = intermediate_size
         self.dtype = dtype
@@ -115,8 +124,7 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1),
                                                   dtype=np.int64)
         else:
-            attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len),
-                                                  dtype=np.int64)
+            attention_mask = None
 
         position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
         # self.num_key_value_heads = num_key_value_heads
@@ -178,6 +186,7 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
                 past_key=past_keys[i],
                 past_value=past_values[i],
+                use_prefill_sdp=True,
             )
             curr_key_values.append((new_key_states, new_value_states))
 
@@ -189,7 +198,10 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
         print("start compiling")
-        self.compile()
+        if mode == "prefill" and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1":
+            self.compile(npu_dpu_groups=6)
+        else:
+            self.compile()
 
     def attention(self,
                   *,
@@ -206,15 +218,23 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
                   seq_len,
                   q_bias=None,
                   k_bias=None,
-                  v_bias=None):
+                  v_bias=None,
+                  use_prefill_sdp=False):
         hidden_size = num_heads * head_dim
+        if self.n_splits_linear != 1:
+            hidden_states = self.unsqueeze(hidden_states, axis=0)
+
         proj = self.linear(
             hidden_states,
             3 * hidden_size,
             hidden_size,
             bias=False,
-            wt_dtype=self.dtype
+            wt_dtype=self.dtype,
+            n_splits=self.n_splits_linear,
+            scale_factor=(self.group_size == 0),
+            is_prefill=(mode == "prefill")
         )
+
         proj = self.reshape(proj, [-1, 3, hidden_size])  # b*s, 3, h
         proj = self.unsqueeze(proj, [0])  # b, s, 3, h
         proj = self.transpose(proj, [2, 1, 0, 3])  # 3, s, b, h
@@ -224,8 +244,14 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
         key_states = self.reshape(proj[1, ...], [1, self.seq_len, num_heads, head_dim])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
         value_states = self.reshape(proj[2, ...], [1, self.seq_len, num_heads, head_dim])
+
+        use_ov_sdp = (mode == "prefill") and use_prefill_sdp
         if self.transpose_value:
-            value_states = self.transpose(value_states, [0, 2, 3, 1])
+            new_value_states = self.transpose(value_states, [0, 2, 3, 1])
+            if use_ov_sdp:
+                value_states = self.transpose(value_states, [0, 2, 1, 3])
+            else:
+                value_states = new_value_states
         else:
             value_states = self.transpose(value_states, [0, 2, 1, 3])
 
@@ -243,7 +269,6 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             head_dim=head_dim,
         )
         new_key_states = key_states
-        new_value_states = value_states
 
         if self.mode == "decode":
             key_states = self.concat(past_key, key_states, axis=-2)
@@ -252,20 +277,31 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             else:
                 value_states = self.concat(past_value, value_states, axis=-2)
 
-        attn_weight = self.matmul(query_states, key_states, False, True) / (
-            math.sqrt(self.head_dim))
-        attention_mask = self.convert_to_fp16(attention_mask)
-        attn_weight = self.eltwise_add(attn_weight, attention_mask)
-        attn_weight = self.convert_to_fp32(attn_weight)
-        attn_weight = self.softmax(attn_weight, -1)
-        attn_weight = self.convert_to_fp16(attn_weight)
-        attn_output = self.matmul(attn_weight, value_states, False, self.transpose_value)
+        if use_ov_sdp:
+            value_states = self.convert_to_fp32(value_states)
+            key_states = self.convert_to_fp32(key_states)
+            query_states = self.convert_to_fp32(query_states)
+            attn_output = self.scaled_dot_product_attention(
+                query_states, key_states, value_states, None, True)
+            attn_output = self.convert_to_fp16(attn_output)
+        else:
+            attn_weight = self.matmul(query_states, key_states, False, True) / (
+                math.sqrt(self.head_dim))
+            attention_mask = self.convert_to_fp16(attention_mask)
+            attn_weight = self.eltwise_add(attn_weight, attention_mask)
+            attn_weight = self.convert_to_fp32(attn_weight)
+            attn_weight = self.softmax(attn_weight, -1)
+            attn_weight = self.convert_to_fp16(attn_weight)
+            attn_output = self.matmul(attn_weight, value_states, False, self.transpose_value)
 
         attn_output = self.transpose(attn_output, [0, 2, 1, 3])
         attn_output = self.reshape(attn_output, [1, seq_len, hidden_size])
 
         attn_output = self.linear(
-            attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype
+            attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype,
+            n_splits=self.n_splits_linear,
+            scale_factor=(self.group_size == 0),
+            is_prefill=(mode == "prefill")
         )
         return attn_output, new_key_states, new_value_states
 
@@ -278,6 +314,7 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
         post_attention_layernorm_weight,
         past_key=None,
         past_value=None,
+        use_prefill_sdp=False,
     ):
 
         residual = hidden_states
@@ -298,12 +335,13 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             num_heads=self.num_heads,
             head_dim=self.head_dim,
             seq_len=self.seq_len,
+            use_prefill_sdp=use_prefill_sdp,
         )
 
         hidden_states = self.eltwise_add(residual, attn_output)
         residual = hidden_states
         hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
-        hidden_states = self.mlp(hidden_states)
+        hidden_states = self.mlp(hidden_states, self.seq_len, self.mode)
         hidden_states = self.eltwise_add(residual, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
 
@@ -329,6 +367,9 @@ class FusedBaichuanLowBitMultiDecoderlayer(torch.nn.Module):
         max_seq_len: int = 1024,
         transpose_value: bool = False,
         do_print: bool = False,
+        n_splits_linear: int = 1,
+        n_splits_down_proj: int = 1,
+        group_size: int = 0
     ):
         super().__init__()
 
@@ -338,6 +379,10 @@ class FusedBaichuanLowBitMultiDecoderlayer(torch.nn.Module):
         for w in parameters:
             if isinstance(w, tuple):  # from QuantizedLinear
                 op_parameters.append((w[0].numpy(), w[1].numpy()))
+            elif w.dtype in [torch.int8, torch.uint8]:    # QuantizedLinear weight
+                op_parameters.append(w.numpy())
+            elif isinstance(w, np.ndarray):     # scale
+                op_parameters.append(w)
             else:
                 op_parameters.append(w.to(torch.float16).numpy())
         self.op_parameters = op_parameters
@@ -346,6 +391,10 @@ class FusedBaichuanLowBitMultiDecoderlayer(torch.nn.Module):
         self.transpose_value = transpose_value
         if isinstance(parameters[0], tuple):
             np_dtype = np.int8 if parameters[0][0].dtype == torch.int8 else np.uint8
+        elif parameters[0].dtype == torch.int8:
+            np_dtype = np.int8
+        elif parameters[0].dtype == torch.uint8:
+            np_dtype = np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
 
@@ -380,6 +429,9 @@ class FusedBaichuanLowBitMultiDecoderlayer(torch.nn.Module):
                 mode="decode",
                 transpose_value=self.transpose_value,
                 dtype=np_dtype,
+                n_splits_linear=n_splits_linear,
+                n_splits_down_proj=n_splits_down_proj,
+                group_size=group_size
             )
             self.backend_decoders.append(decoder)
 
@@ -453,6 +505,9 @@ class FusedBaichuanLowBitDecoderlayer(torch.nn.Module):
         intermediate_size,
         max_seq_len: int = 128,
         transpose_value: bool = False,
+        n_splits_linear: int = 1,
+        n_splits_down_proj: int = 1,
+        group_size: int = 0
     ):
         super().__init__()
         self.op_parameters = parameters
@@ -481,6 +536,9 @@ class FusedBaichuanLowBitDecoderlayer(torch.nn.Module):
             mode="prefill",
             transpose_value=self.transpose_value,
             dtype=np_dtype,
+            n_splits_linear=n_splits_linear,
+            n_splits_down_proj=n_splits_down_proj,
+            group_size=group_size
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
@@ -507,7 +565,6 @@ class FusedBaichuanLowBitDecoderlayer(torch.nn.Module):
 
         backend_cls = self.backend_cls_prefill
         inputs = (hidden_states.to(torch.float16),
-                  attention_mask.to(torch.int64),
                   position_ids.to(torch.int64))
         inputs += (self.layer_norm_0, self.layer_norm_1)
         hidden_states, past_key, past_value = run_model(
@@ -557,22 +614,28 @@ def run_decode(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
+    group_size = getattr(model.config, "group_size", 0)
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
     layer_indexs = range(layer_start, layer_end)
+    n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
+    n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
     for layer_idx in layer_indexs:
         curr_layer = model.model.layers[layer_idx]
         attn_layer = curr_layer.self_attn
         mlp_layer = curr_layer.mlp
 
-        weights = [
-            (attn_layer.W_pack.weight, attn_layer.W_pack.scale),
-            (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-            (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-            (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-        ]
+        weights = []
+        for layer_list in [attn_layer.W_pack_dq_list, attn_layer.o_proj_dq_list,
+                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                           mlp_layer.down_proj_dq_list]:
+            l_weights = []
+            scales = []
+            for l in layer_list:
+                l_weights.append(l.weight)
+                scales.append(l.scale)
+            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -599,6 +662,9 @@ def run_decode(
         max_seq_len=max_seq_len,
         transpose_value=transpose_value_cache,
         do_print=False,
+        n_splits_linear=n_splits_linear,
+        n_splits_down_proj=n_splits_down_proj,
+        group_size=group_size
     )
 
     dist.barrier()
@@ -754,23 +820,29 @@ def run_prefill(
     head_dim = model.model.layers[layer_start].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
+    group_size = getattr(model.config, "group_size", 0)
     deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
     layer_indexs = range(layer_start, layer_end)
+    n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
+    n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
     for layer_idx in layer_indexs:
         curr_layer = model.model.layers[layer_idx]
         attn_layer = curr_layer.self_attn
         mlp_layer = curr_layer.mlp
 
-        weights = [
-            (attn_layer.W_pack.weight, attn_layer.W_pack.scale),
-            (attn_layer.o_proj.weight, attn_layer.o_proj.scale),
-            (mlp_layer.gate_proj.weight, mlp_layer.gate_proj.scale),
-            (mlp_layer.up_proj.weight, mlp_layer.up_proj.scale),
-            (mlp_layer.down_proj.weight, mlp_layer.down_proj.scale),
-        ]
+        weights = []
+        for layer_list in [attn_layer.W_pack_dq_list, attn_layer.o_proj_dq_list,
+                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                           mlp_layer.down_proj_dq_list]:
+            l_weights = []
+            scales = []
+            for l in layer_list:
+                l_weights.append(l.weight)
+                scales.append(l.scale)
+            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -791,6 +863,9 @@ def run_prefill(
             intermediate_size=intermediate_size,
             max_seq_len=max_output_len,
             transpose_value=transpose_value_cache,
+            n_splits_linear=n_splits_linear,
+            n_splits_down_proj=n_splits_down_proj,
+            group_size=group_size
         )
 
         layer_weights.extend(weights)
@@ -1025,3 +1100,71 @@ def gen_baichuan_fused_model_forward(prefill_runner, decode_runner):
         )
 
     return baichuan_fused_model_forward
+
+
+def baichuan2_causal_forward(
+        self,
+        input_ids: torch.LongTensor = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_values: Optional[List[torch.FloatTensor]] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        labels: Optional[torch.LongTensor] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+) -> Union[Tuple, CausalLMOutputWithPast]:
+
+    output_attentions = output_attentions if output_attentions is not None \
+        else self.config.output_attentions
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None
+        else self.config.output_hidden_states
+    )
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+
+    # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
+    outputs = self.model(
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_attentions=output_attentions,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+    )
+
+    hidden_states = outputs[0]
+    # ipex-llm change start
+    hidden_states = reshape_lm_head_input(hidden_states)
+    # ipex-llm change end
+    logits = self.lm_head(hidden_states)
+    loss = None
+    if labels is not None:
+        # Shift so that tokens < n predict n
+        shift_logits = logits[..., :-1, :].contiguous()
+        shift_labels = labels[..., 1:].contiguous()
+        # Flatten the tokens
+        loss_fct = CrossEntropyLoss()
+        shift_logits = shift_logits.view(-1, self.config.vocab_size)
+        shift_labels = shift_labels.view(-1)
+        softmax_normalizer = shift_logits.max(-1).values ** 2
+        z_loss = self.config.z_loss_weight * softmax_normalizer.mean()
+        # Enable model parallelism
+        shift_labels = shift_labels.to(shift_logits.device)
+        loss = loss_fct(shift_logits, shift_labels) + z_loss
+
+    if not return_dict:
+        output = (logits,) + outputs[1:]
+        return (loss,) + output if loss is not None else output
+
+    return CausalLMOutputWithPast(
+        loss=loss,
+        logits=logits,
+        past_key_values=outputs.past_key_values,
+        hidden_states=outputs.hidden_states,
+        attentions=outputs.attentions,
+    )
