@@ -146,6 +146,12 @@ class IPEXImporter:
 
         Raises ImportError and invalidInputError if failed
         """
+
+        # insert a fake module to avoid importing real `intel_extension_for_pytorch.llm`
+        # which will replace some `transformers`'s functions and bring some bugs in ipex 2.3
+        from ipex_llm.utils.modules import insert_fake_module
+        insert_fake_module("intel_extension_for_pytorch.llm", "fake module")
+
         # import ipex
         import intel_extension_for_pytorch as ipex
         if ipex is not None:
