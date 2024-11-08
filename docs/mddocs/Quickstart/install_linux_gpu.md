@@ -2,7 +2,7 @@
 
 This guide demonstrates how to install IPEX-LLM on Linux with Intel GPUs. It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU and Intel iGPU.
 
-IPEX-LLM currently supports the Ubuntu 20.04 operating system and later, and supports PyTorch 2.0 and PyTorch 2.1 on Linux. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](../Overview/install_gpu.md#linux) page for more details.
+IPEX-LLM recommends to use the Ubuntu 22.04 operating system with Linux kernel 6.2 or 6.5. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](../Overview/install_gpu.md#linux) page for more details.
 
 
 ## Table of Contents
