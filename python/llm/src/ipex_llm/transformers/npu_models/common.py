@@ -88,7 +88,8 @@ def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down
             delattr(module, name)
     elif (
         isinstance(module, (Qwen2MLP, LlamaMLP))
-        or module.__class__.__name__ in ['MiniCPMMLP', 'MLP']
+        or module.__class__.__name__ in ['MiniCPMMLP']
+        or (module.__class__.__name__ == 'MLP' and module.config.model_type == 'baichuan')
     ):
         for name in mlp_module_names:
             n_splits_mlp = n_splits_hidden_size
