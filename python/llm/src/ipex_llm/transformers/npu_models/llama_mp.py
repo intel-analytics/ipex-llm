@@ -124,11 +124,12 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         if self.cached_cos is None:
             if mode == "prefill":
                 position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
-                self.cos = self.create_input_op((self.batch_size, self.cos_len, self.head_dim))
-                self.sin = self.create_input_op((self.batch_size, self.cos_len, self.head_dim))
-            else:
-                self.cos = self.create_input_op((self.batch_size, self.cos_len, self.head_dim))
-                self.sin = self.create_input_op((self.batch_size, self.cos_len, self.head_dim))
+            cos = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
+                                       dtype=np.float32)
+            self.cos = self.convert_to_fp16(cos)
+            sin = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
+                                       dtype=np.float32)
+            self.sin = self.convert_to_fp16(sin)
         else:
             position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
             cos = self.constant(self.cached_cos)
@@ -367,7 +368,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
         )
 
         if self.cached_cos is None:
-            inputs += (cos.to(torch.float16), sin.to(torch.float16))
+            inputs += (cos.to(torch.float32), sin.to(torch.float32))
         else:
             inputs += (position_ids.to(torch.int64),)
 
@@ -496,7 +497,7 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
                       attention_mask.to(torch.int64),
                       position_ids.to(torch.int64))
         if self.cached_cos is None:
-            inputs += (cos.to(torch.float16), sin.to(torch.float16),)
+            inputs += (cos.to(torch.float32), sin.to(torch.float32),)
         inputs += (self.layer_norm_0, self.layer_norm_1)
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
