@@ -124,19 +124,12 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         if self.cached_cos is None:
             if mode == "prefill":
                 position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
-                cos = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
-                                           dtype=np.float32)
-                self.cos = self.convert_to_fp16(cos)
-                sin = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
-                                           dtype=np.float32)
-                self.sin = self.convert_to_fp16(sin)
-            else:
-                cos = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
-                                           dtype=np.float32)
-                self.cos = self.convert_to_fp16(cos)
-                sin = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
-                                           dtype=np.float32)
-                self.sin = self.convert_to_fp16(sin)
+            cos = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
+                                       dtype=np.float32)
+            self.cos = self.convert_to_fp16(cos)
+            sin = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
+                                       dtype=np.float32)
+            self.sin = self.convert_to_fp16(sin)
         else:
             position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
             cos = self.constant(self.cached_cos)
