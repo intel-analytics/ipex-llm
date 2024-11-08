@@ -28,6 +28,7 @@ from typing import Optional, List
 from torch.nn.functional import linear
 from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.common import attention_softmax
+from ipex_llm.transformers.models.utils import use_sdp_non_causal
 from transformers import AutoProcessor, TextIteratorStreamer
 from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
 
@@ -52,14 +53,24 @@ def siglip_attention_forward(
     qkv = qkv.transpose(1, 2)
     query_states, key_states, value_states = qkv.chunk(3, dim=1)
 
-    attn_weights = torch.matmul(query_states * self.scale, key_states.transpose(2, 3))
-    if attention_mask is not None:
-        attn_weights = attn_weights + attention_mask
+    if use_sdp_non_causal(self.head_dim, query_states.device, query_states.dtype):
+        import xe_addons
+        attn_weights = None
+        attn_output = xe_addons.sdp_non_causal(query_states, key_states.contiguous(),
+                                               value_states.contiguous(), attention_mask)
+    else:
+        attn_weights = torch.matmul(query_states * self.scale, key_states.transpose(2, 3))
+        if attention_mask is not None:
+            attn_weights = attn_weights + attention_mask
 
-    attn_weights = attention_softmax(attn_weights)
+        attn_weights = attention_softmax(attn_weights)
 
-    attn_weights = torch.nn.functional.dropout(attn_weights, p=self.dropout, training=self.training)
-    attn_output = torch.matmul(attn_weights, value_states)
+        attn_weights = torch.nn.functional.dropout(attn_weights,
+                                                   p=self.dropout, training=self.training)
+        attn_output = torch.matmul(attn_weights, value_states)
+
+    if hasattr(self, "old_head_dim"):
+        attn_output = attn_output[:, :, :, :self.old_head_dim]
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.embed_dim)

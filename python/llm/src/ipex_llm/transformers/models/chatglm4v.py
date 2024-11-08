@@ -19,7 +19,7 @@
 
 import torch
 from typing import Optional, Tuple, Union
-from ipex_llm.transformers.models.common import merge_qkv_base
+from ipex_llm.transformers.models.common import merge_qkv_base, padding_qkv_hd_base
 from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past_key_value
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, use_sdp_causal
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
@@ -343,6 +343,7 @@ def patch_embedding_forward(self, images: "tensor(B, C, H, W)") -> "tensor(B, L,
 
 
 def merge_qkv(module: torch.nn.Module):
+    padding_qkv_hd_base(module, "SiglipAttention", 72, 80)
     merge_qkv_base(module, "SiglipAttention")
 
 

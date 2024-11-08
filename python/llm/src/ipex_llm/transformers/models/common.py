@@ -51,6 +51,49 @@ def merge_qkv_base(module: torch.nn.Module, attention_class):
             del module.q_proj, module.k_proj, module.v_proj
 
 
+def padding_linear_hd(linear: torch.nn.Linear,
+                      old_head_dim: int, new_head_dim: int) -> torch.nn.Linear:
+    in_features, out_features = linear.in_features, linear.out_features
+
+    weight = linear.weight.data
+    weight = weight.view(-1, old_head_dim, in_features)
+    new_weight = torch.empty([weight.size(0), new_head_dim, in_features],
+                             dtype=weight.dtype, device=weight.device)
+    new_weight[:, :old_head_dim, :] = weight
+    new_weight[:, old_head_dim:, :] = 0
+    new_weight = new_weight.view(-1, in_features)
+    if linear.bias is not None:
+        bias = linear.bias.data
+        bias = bias.view(-1, old_head_dim)
+        new_bias = torch.empty([bias.size(0), new_head_dim],
+                               dtype=bias.dtype, device=bias.device)
+        new_bias[:, :old_head_dim] = bias
+        new_bias[:, old_head_dim:] = 0
+        new_bias = new_bias.flatten()
+
+        new_linear = torch.nn.Linear(0, 0, bias=True)
+        new_linear.bias = torch.nn.Parameter(new_bias, requires_grad=False)
+    else:
+        new_linear = torch.nn.Linear(0, 0, bias=False)
+    new_linear.weight = torch.nn.Parameter(new_weight, requires_grad=False)
+    new_linear.in_features = new_weight.size(1)
+    new_linear.out_features = new_weight.size(0)
+    return new_linear
+
+
+def padding_qkv_hd_base(module: torch.nn.Module, attention_class,
+                        old_head_dim: int, new_head_dim: int):
+    if (
+        isinstance(attention_class, str) and module.__class__.__name__ == attention_class
+        or not isinstance(attention_class, str) and isinstance(module, attention_class)
+    ) and module.head_dim == old_head_dim:
+        module.q_proj = padding_linear_hd(module.q_proj, old_head_dim, new_head_dim)
+        module.k_proj = padding_linear_hd(module.k_proj, old_head_dim, new_head_dim)
+        module.v_proj = padding_linear_hd(module.v_proj, old_head_dim, new_head_dim)
+        module.head_dim = new_head_dim
+        module.old_head_dim = old_head_dim
+
+
 def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):
     from ipex_llm.transformers.models.utils import mlp_fusion_check
     x_2d = x.view(-1, x.size(-1))
