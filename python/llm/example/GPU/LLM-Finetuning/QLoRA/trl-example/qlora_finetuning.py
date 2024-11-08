@@ -105,6 +105,9 @@ if __name__ == "__main__":
             gradient_checkpointing=True, # can further reduce memory but slower
         ),
         dataset_text_field="instruction",
+        data_collator=transformers.DataCollatorForSeq2Seq(
+            tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
+        ),
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
     result = trainer.train()
