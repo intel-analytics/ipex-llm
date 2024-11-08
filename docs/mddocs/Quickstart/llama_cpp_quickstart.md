@@ -366,3 +366,6 @@ On latest version of `ipex-llm`, you might come across `native API failed` error
 
 #### 15. `signal: bus error (core dumped)` error
 If you meet this error, please check your Linux kernel version first. You may encounter this issue on higher kernel versions (like kernel 6.15). You can also refer to [this issue](https://github.com/intel-analytics/ipex-llm/issues/10955) to see if it helps.
+
+#### 16. `backend buffer base cannot be NULL` error
+If you meet `ggml-backend.c:96: GGML_ASSERT(base != NULL && "backend buffer base cannot be NULL") failed`, simply adding `-c xx` parameter during inference, for example `-c 1024` would resolve this problem.

@@ -173,7 +173,8 @@ def convert_llama(
         intra_pp=None,
         transpose_value_cache=True,
 ):
-    from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward
+    from ipex_llm.transformers.npu_models.llama_mp import gen_llama_fused_model_forward,\
+        gen_llama_32_fused_model_forward
     from ipex_llm.transformers.npu_models.llama_mp import DecodeRunner, PrefillRunner
     from transformers.models.llama.modeling_llama import LlamaModel
 
@@ -193,9 +194,18 @@ def convert_llama(
         max_prompt_len=max_prompt_len,
         transpose_value_cache=transpose_value_cache,
     )
-    llama_model_forward = gen_llama_fused_model_forward(
-        prefill_runner=prefill_runner, decode_runner=decode_runner
-    )
+    from packaging import version
+    import transformers
+    trans_version = transformers.__version__
+    if version.parse(trans_version) == version.parse("4.45.0"):
+        # llama-3.2-3B & llama-3.2-1B
+        llama_model_forward = gen_llama_32_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
+    else:
+        llama_model_forward = gen_llama_fused_model_forward(
+            prefill_runner=prefill_runner, decode_runner=decode_runner
+        )
     convert_forward(model, LlamaModel, llama_model_forward)
     from transformers.models.llama.modeling_llama import LlamaForCausalLM
     from ipex_llm.transformers.npu_models.llama_mp import llama2_casullm_forward
@@ -329,7 +339,17 @@ def optimize_llm(
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
-            inter_pp = 2 if group_size == 0 else 8
+            if group_size == 0:
+                inter_pp = 2
+            # llama3.2
+            elif model.config.intermediate_size == 8192:
+                # llama3.2 1b
+                if model.config.hidden_size == 2048:
+                    inter_pp = 1
+                else:
+                    inter_pp = 2
+            else:
+                inter_pp = 8
         convert_llama(model,
                       max_output_len=max_context_len,
                       max_prompt_len=max_prompt_len,

@@ -7,6 +7,8 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 |------------|----------------------------------------------------------------|
 | Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
 | Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
+| Llama3.2-1B | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) |
+| Llama3.2-3B | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | Chatglm3 | [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) |
 | Chatglm2 | [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b) |
 | Qwen2 | [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct), [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
@@ -33,6 +35,9 @@ conda activate llm
 
 :: install ipex-llm with 'npu' option
 pip install --pre --upgrade ipex-llm[npu]
+
+:: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
+pip install transformers==4.45.0 accelerate==0.33.0
 ```
 
 ## 2. Runtime Configurations
@@ -82,6 +87,8 @@ done
 The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU, including
 - [Llama2-7B](./llama.py)
 - [Llama3-8B](./llama.py)
+- [Llama3.2-1B](./llama.py)
+- [Llama3.2-3B](./llama.py)
 - [Qwen2-1.5B](./qwen.py)
 - [Qwen2.5-7B](./qwen.py)
 - [MiniCPM-1B](./minicpm.py)
@@ -105,6 +112,12 @@ python llama.py
 
 :: to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
+
+:: to run Llama-3.2-1B-Instruct
+python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-1B-Instruct
+
+:: to run Llama-3.2-3B-Instruct
+python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct
 
 :: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py
@@ -144,6 +157,12 @@ python llama.py --disable-transpose-value-cache
 
 :: to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
 python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
+
+:: to run Llama-3.2-1B-Instruct
+python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-1B-Instruct --disable-transpose-value-cache
+
+:: to run Llama-3.2-3B-Instruct
+python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct --disable-transpose-value-cache
 
 :: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py --disable-transpose-value-cache

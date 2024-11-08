@@ -44,6 +44,7 @@ def chatglm4_model_forward(
     use_cache: Optional[bool] = None,
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
+    **kwargs,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
     output_hidden_states = (
         output_hidden_states if output_hidden_states is not None else
@@ -55,7 +56,7 @@ def chatglm4_model_forward(
     if use_cache:
         inputs = input_ids if input_ids is not None else inputs_embeds
         use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
-        use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.dense_h_to_4h,
+        use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.gate_proj,
                                                 inputs)
         if use_compress_kv and not isinstance(past_key_values,
                                               DynamicCompressCache):

@@ -118,7 +118,7 @@ def generate(
                                         self.head_dim, self.num_layers,
                                         self.vocab_size,
                                         self.transpose_value_cache,
-                                        new_tokens - 1))
+                                        new_tokens))
         thread.start()
 
         in_pipe_path = "\\\\.\\pipe\\llminputpipe"
