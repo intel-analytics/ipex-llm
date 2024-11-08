@@ -124,7 +124,8 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1),
                                                   dtype=np.int64)
         else:
-            # attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len, self.seq_len),
+            # attention_mask = self.create_input_op((self.batch_size, 1, self.seq_len,
+            #                                        self.seq_len),
             #                                       dtype=np.int64)
             attention_mask = None
 
@@ -204,7 +205,6 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             self.compile(npu_dpu_groups=6)
         else:
             self.compile()
-
 
     def attention(self,
                   *,
@@ -568,7 +568,6 @@ class FusedBaichuanLowBitDecoderlayer(torch.nn.Module):
 
         backend_cls = self.backend_cls_prefill
         inputs = (hidden_states.to(torch.float16),
-                #   attention_mask.to(torch.int64),
                   position_ids.to(torch.int64))
         inputs += (self.layer_norm_0, self.layer_norm_1)
         hidden_states, past_key, past_value = run_model(
@@ -1104,6 +1103,7 @@ def gen_baichuan_fused_model_forward(prefill_runner, decode_runner):
         )
 
     return baichuan_fused_model_forward
+
 
 def baichuan2_causal_forward(
         self,
