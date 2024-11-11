@@ -1,22 +1,30 @@
 diff --git a/src/gpu/dpcpp_ccl.cpp b/src/gpu/dpcpp_ccl.cpp
-index bb1f236..08aec80 100644
+index bb1f236..289d490 100644
 --- a/src/gpu/dpcpp_ccl.cpp
 +++ b/src/gpu/dpcpp_ccl.cpp
-@@ -33,7 +33,7 @@
- #include <ProcessGroupCCL.hpp>
- #include <dispatch_stub.h>
- #include <ipex.h>
--
-+#include <cstdlib> // For std::getenv
- #include <sycl/sycl.hpp>
- //#include "allreduce.h"
- #include "allreduce_small.h"
-@@ -759,6 +759,10 @@ c10::intrusive_ptr<ProcessGroupCCL::AsyncWorkCCL> XPUCCLStubs::allreduce_impl(st
+@@ -80,6 +80,16 @@ int get_sync_only(int init_value = 0) {
+   return tmp_sync_only;
+ }
+ 
++char* get_cached_env(const char* var_name) {
++    static char* cached_value = nullptr;
++    if (!cached_value) {
++        cached_value = std::getenv(var_name);
++        if (!cached_value) {
++           cached_value = "0";
++        }
++    }
++    return cached_value;
++}
+ 
+ #define CCL_KERNEL_SUBMIT(cmd, q) \
+ ({bool profile_barrier = (xpu::is_profiler_enabled());                        \
+@@ -759,6 +769,10 @@ c10::intrusive_ptr<ProcessGroupCCL::AsyncWorkCCL> XPUCCLStubs::allreduce_impl(st
                                              stream,
                                              attr), stream.get_native());
        });
-+    const char* enable_wait_env = std::getenv("IPEX_LLM_CCL_ENABLE_NATIVE_WAIT");
-+    if (enable_wait_env != nullptr && std::string(enable_wait_env) == "1") {
++    const char* env_value = get_cached_env("IPEX_LLM_CCL_ENABLE_NATIVE_WAIT");
++    if (env_value && std::string(env_value) == "1") {
 +        stream.get_native().wait();
 +    }
      // printf("Use One CCL allreduce.\n");
