@@ -350,7 +350,8 @@ def multi_head_attn_forward(
     average_attn_weights: bool = True,
     is_causal: bool = False,
 ) -> Tuple[Tensor, Optional[Tensor]]:
-    # Port this function to solve conflict of fp16 and fp32 dtype
+    # port from https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/resampler.py#L338
+    # to solve conflict of fp16 and fp32 dtype
     is_batched = True if query.dim() == 3 else False
 
     # For unbatched input, we unsqueeze at the expected batch-dim to pretend that the input
@@ -498,6 +499,7 @@ def multi_head_attn_forward(
 
 
 def resampler_forward(self, x, tgt_sizes=None):
+    # port from https://huggingface.co/openbmb/MiniCPM-V-2_6/blob/main/resampler.py#L130
     bs = x.shape[0]
 
     device = x.device
