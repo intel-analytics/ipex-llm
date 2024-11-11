@@ -241,6 +241,11 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         else:
             self.compile()
         print(f"{mode} end compiling")
+        qwen_size = "7b" if self.hidden_size == 3584 else "1.5b"
+        xml_path = f"gw/qwen-{qwen_size}-npu-qkv-{mode}-{num_layers}-{n_splits_linear}-{n_splits_down_proj}.xml"
+
+        if not os.path.exists(xml_path):
+            self.save(xml_path)
 
     def build_decoder(
         self,
@@ -815,16 +820,41 @@ def run_prefill(
         mlp_layer = curr_layer.mlp
 
         weights = []
-        for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                           attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                           mlp_layer.down_proj_dq_list]:
-            l_weights = []
-            scales = []
-            for l in layer_list:
-                l_weights.append(l.weight)
-                scales.append(l.scale)
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+        if n_splits_linear == 1:
+            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                            attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                            mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                            mlp_layer.down_proj_dq_list]:
+                l_weights = []
+                scales = []
+                for l in layer_list:
+                    l_weights.append(l.weight)
+                    scales.append(l.scale)
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+        else:
+            qkv_weights = []
+            qkv_scales = []
+            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                            attn_layer.v_proj_dq_list]:
+                l_weights = []
+                scales = []
+                for l in layer_list:
+                    l_weights.append(l.weight)
+                    scales.append(l.scale)
+                qkv_weights.append(torch.stack(l_weights, axis=0))
+                qkv_scales.append(torch.stack(scales, axis=0))
+
+            weights.append((torch.cat(qkv_weights, dim=1), torch.cat(qkv_scales, dim=1)))
+
+            for layer_list in [attn_layer.o_proj_dq_list,
+                            mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                            mlp_layer.down_proj_dq_list]:
+                l_weights = []
+                scales = []
+                for l in layer_list:
+                    l_weights.append(l.weight)
+                    scales.append(l.scale)
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
         cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
         cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
