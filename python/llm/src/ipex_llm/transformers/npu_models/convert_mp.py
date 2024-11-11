@@ -46,12 +46,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
 
-    # MiniCPM-V 2.6 must put lm_head on CPU now
-    cpu_lm_head = (
-        (model.config.model_type == "minicpmv" and model.config.hidden_size == 3584 and
-         model.config.vocab_size == 151666)
-        or os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0"
-    )
+    cpu_lm_head = os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0"
 
     # workaround for MiniCPM-2B
     if model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40:
@@ -106,6 +101,11 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                                                                           "modeling_navit_siglip"))
             setattr(module.SiglipAttention, "forward", encoder_attn_forward)
             setattr(module.SiglipMLP, "forward", pad_mlp_forward)
+
+            # workaround for lm_head on NPU
+            from ipex_llm.transformers.npu_models.minicpmv_mp import pad_lm_head, lm_head_forward
+            model.apply(pad_lm_head)    # pad lm_head to avoid compile error
+            setattr(model.llm.lm_head, "forward", lm_head_forward)
         elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
             # MiniCPM-V 2.5
             from transformers.models.idefics2.modeling_idefics2 import Idefics2VisionMLP, \

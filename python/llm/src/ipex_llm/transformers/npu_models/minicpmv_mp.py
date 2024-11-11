@@ -228,6 +228,26 @@ def pad_mlp_forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
     return hidden_states
 
 
+def pad_lm_head(module: torch.nn.Module):
+    if hasattr(module, 'lm_head') and module.lm_head.in_features == 3584 \
+        and module.lm_head.out_features == 151666:
+        new_linear = torch.nn.Linear(0, 0, bias=False)
+        padded_weight = F.pad(module.lm_head.weight,
+                              (0, 0, 0, 152064-151666))  # 152064 is qwen2-7b vocab_size
+        new_weight = torch.nn.Parameter(padded_weight, requires_grad=False)
+        new_linear.weight = new_weight
+        new_linear.in_features = new_weight.size(1)
+        new_linear.out_features = new_weight.size(0)
+        module.lm_head = new_linear
+        del new_linear
+
+
+def lm_head_forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+    hidden_states = self(hidden_states)
+    hidden_states = hidden_states[:, :, :151666]
+    return hidden_states
+
+
 def encoder_attn_forward(
     self,
     hidden_states: torch.Tensor,
