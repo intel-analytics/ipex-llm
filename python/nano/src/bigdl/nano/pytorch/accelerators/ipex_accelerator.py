@@ -17,7 +17,7 @@
 
 from typing import Union, Dict, Any, Optional
 import logging
-import intel_pytorch_extension as ipex
+import intel_extension_for_pytorch as ipex
 
 import torch
 from torch.optim import Optimizer
@@ -41,7 +41,7 @@ class IPEXAccelerator(Accelerator):
         self,
         precision_plugin: PrecisionPlugin = PrecisionPlugin(),
         training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
-            torch.device(ipex.DEVICE)),
+            torch.device('cpu')),
         enable_bf16=False,
     ) -> None:
         """
@@ -53,8 +53,6 @@ class IPEXAccelerator(Accelerator):
         if enable_bf16:
             # Automatically mix precision
             ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
-
-        self.device = ipex.DEVICE
 
         super().__init__(precision_plugin=precision_plugin,
                          training_type_plugin=training_type_plugin)
@@ -70,6 +68,16 @@ class IPEXAccelerator(Accelerator):
                 "amp is not supported in bigdl-nano.")
 
         return super().setup(trainer, model)
+
+    def setup_precision_plugin(self) -> None:
+        """Attaches the precision plugin to the accelerator."""
+        model, optimizers, schedulers = self.precision_plugin.connect(self.model, self.optimizers,
+                                                                      self.lr_schedulers)
+        model, optimizer = ipex.optimize(model, optimizer=optimizers[0])
+
+        self.model = model
+        self.optimizers = [optimizer]
+        self.lr_schedulers = schedulers
 
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
         """
@@ -110,7 +118,6 @@ class IPEXAccelerator(Accelerator):
         """
         Moving back loss to xpu device
         """
-        closure_loss = closure_loss.to(self.device)
         return super().backward(
             closure_loss,
             *args,
