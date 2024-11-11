@@ -59,11 +59,155 @@ from torch import Tensor
 import warnings
 from torch.nn.functional import *
 from torch.nn.modules.activation import *
+from intel_npu_acceleration_library.backend.factory import NNFactory
+import numpy as np
+from functools import partial
+import uuid
+from ipex_llm.transformers.npu_models.mp_models_base import run_model
+from ipex_llm.transformers.npu_models.convert import module_optimization
+
+
+class MinicpmVConv2d(NNFactory):
+    def __init__(
+        self,
+        input_shape,
+        weight_shape,
+        bias,
+        strides,
+        padding,
+        dilation,
+        groups,
+        device: str = "NPU",
+    ):
+        super().__init__(False, device)
+
+        # define input
+        input = self.parameter(input_shape, dtype=np.float16)
+        weight = self.parameter(weight_shape, dtype=np.float16)
+        if bias is not None:
+            bias_node = self.parameter((1, weight_shape[0], 1, 1), dtype=np.float16)
+        else:
+            bias_node = None
+
+        input = self.concat(input, input, axis=2) # current workaround for compile error
+        res = self.convolution(input_node=input,
+                               weights_node=weight,
+                               bias=bias_node,
+                               strides=strides,
+                               padding=padding,
+                               dilation=dilation,
+                               groups=groups)
+        res = self.slice(res, begin=[0, 0, 0, 0],
+                         end=[res.shape[0], res.shape[1], 1, res.shape[3]])
+        # define outputs
+        res = self.convert_to_fp16(res)
+
+        print("start compiling")
+        self.compile()
+
+
+class MinicpmVPatchEmbedding(torch.nn.Module):
+    def __init__(
+        self,
+        weight,
+        bias,
+        strides=1,
+        padding=0,
+        dilation=1,
+        groups=1,
+    ):
+        super().__init__()
+
+        self.op_id = str(uuid.uuid4())
+        self.parameters = [weight]
+        if bias is not None:
+            self.parameters.append(bias)
+        self.backend_cls = partial(
+            MinicpmVConv2d,
+            weight_shape=weight.shape,
+            bias=bias,
+            strides=strides,
+            padding=padding,
+            dilation=dilation,
+            groups=groups,
+        )
+
+    def forward(self, x):
+        x = x.to(torch.float16)
+        return run_model(x, self.parameters, self.backend_cls, self.op_id)
+
+
+class LayerNorm(NNFactory):
+    def __init__(
+        self,
+        input_shape,
+        weight_shape,
+        bias_shape,
+        eps,
+        device: str = "NPU",
+    ):
+        super().__init__(False, device)
+
+        # define input
+        input = self.parameter(input_shape, dtype=np.float16)
+        weight = self.parameter(weight_shape, dtype=np.float16)
+        bias = self.parameter(bias_shape, dtype=np.float16)
+        
+        input = self.convert_to_fp32(input)
+        mean_res = self.reduce_mean(input, -1, keep_dims=True,)
+        variance = self.reduce_mean(
+            self.power(input - mean_res, self.constant(np.array([[2]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
+        eps = self.constant(eps)
+        input = self.eltwise_div(input - mean_res, self.sqrt(self.eltwise_add(variance, eps)))
+        weight = self.convert_to_fp32(weight)
+        input = self.eltwise_mul(weight, input)
+        bias = self.convert_to_fp32(bias)
+        input = self.eltwise_add(bias, input)
+
+        # define outputs
+        input = self.convert_to_fp16(input)
+
+        print("start compiling")
+        self.compile()
+
+
+class MinicpmVLayerNorm(torch.nn.Module):
+    def __init__(
+        self,
+        weight,
+        bias,
+        eps=1e-6,
+    ):
+        super().__init__()
+        self.op_id = str(uuid.uuid4())
+        self.parameters = [weight, bias]
+        self.backend_cls = partial(
+            LayerNorm,
+            weight_shape=weight.shape,
+            bias_shape=bias.shape,
+            eps=eps,
+        )
+
+    def forward(self, x):
+        x = x.to(torch.float16)
+        return run_model(x, self.parameters, self.backend_cls, self.op_id)
+
+
+@module_optimization
+def replace_with_Layernorm(layer, qtype=None, device='NPU',
+                           modules_to_not_convert=[], group_size=0):
+    if isinstance(layer, torch.nn.LayerNorm):
+        return MinicpmVLayerNorm(
+            weight=layer.weight.to(torch.float16),
+            bias=layer.bias.to(torch.float16),
+        )
 
 
 def pad_mlp_fc2(module: torch.nn.Module):
-    from transformers.models.idefics2.modeling_idefics2 import Idefics2VisionMLP
-    if isinstance(module, Idefics2VisionMLP) and module.fc2.in_features == 4304:
+    if hasattr(module, 'fc2') and module.fc2.in_features == 4304:
         new_linear = torch.nn.Linear(0, 0, bias=True)
         padded_weight = torch.cat((module.fc2.weight, module.fc2.weight[:, :(1152*4-4304)]), dim=1)
         new_weight = torch.nn.Parameter(padded_weight, requires_grad=False)
@@ -84,7 +228,7 @@ def pad_mlp_forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
     return hidden_states
 
 
-def idefics2_attn_forward(
+def encoder_attn_forward(
     self,
     hidden_states: torch.Tensor,
     attention_mask: Optional[torch.Tensor] = None,

@@ -76,6 +76,43 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
 
     if model.config.model_type == "minicpmv" and hasattr(model, "llm"):
         # MiniCPM-V
+        # convert conv2d and layernorm
+        from ipex_llm.transformers.npu_models.minicpmv_mp import MinicpmVPatchEmbedding, \
+            replace_with_Layernorm
+        origin_conv = model.vpm.embeddings.patch_embedding
+        new_conv = MinicpmVPatchEmbedding(
+            weight=origin_conv.weight.to(torch.float16),
+            bias=origin_conv.bias.to(torch.float16),
+            strides=model.config.vision_config.patch_size,
+        )
+        model.vpm.embeddings.patch_embedding = new_conv
+        del new_conv
+        replace_with_Layernorm(model, qtype=None, device='NPU',
+                               modules_to_not_convert=[], group_size=0)
+
+        # replace forward function
+        from ipex_llm.transformers.npu_models.minicpmv_mp import pad_mlp_fc2, pad_mlp_forward, \
+            encoder_attn_forward, multi_head_attn_forward, resampler_forward
+        model.apply(pad_mlp_fc2)    # pad mlp.fc2 to avoid compile error
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        setattr(module.Resampler, "forward", resampler_forward)
+        module = importlib.import_module(modeling_module_name.replace("modeling_minicpmv",
+                                                                      "resampler"))
+        setattr(module.MultiheadAttention, "multi_head_attention_forward", multi_head_attn_forward)
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            # MiniCPM-V 2.6
+            module = importlib.import_module(modeling_module_name.replace("modeling_minicpmv",
+                                                                          "modeling_navit_siglip"))
+            setattr(module.SiglipAttention, "forward", encoder_attn_forward)
+            setattr(module.SiglipMLP, "forward", pad_mlp_forward)
+        elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
+            # MiniCPM-V 2.5
+            from transformers.models.idefics2.modeling_idefics2 import Idefics2VisionMLP, \
+                Idefics2VisionAttention
+            convert_forward(model, Idefics2VisionAttention, encoder_attn_forward)
+            convert_forward(model, Idefics2VisionMLP, pad_mlp_forward)
+
         if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
             # MiniCPM-V 2
             model.llm.config.model_type = "minicpm"
