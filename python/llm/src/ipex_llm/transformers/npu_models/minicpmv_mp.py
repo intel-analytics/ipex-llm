@@ -89,7 +89,7 @@ class MinicpmVConv2d(NNFactory):
         else:
             bias_node = None
 
-        input = self.concat(input, input, axis=2) # current workaround for compile error
+        input = self.concat(input, input, axis=2)  # current workaround for compile error
         res = self.convolution(input_node=input,
                                weights_node=weight,
                                bias=bias_node,
@@ -152,7 +152,7 @@ class LayerNorm(NNFactory):
         input = self.parameter(input_shape, dtype=np.float16)
         weight = self.parameter(weight_shape, dtype=np.float16)
         bias = self.parameter(bias_shape, dtype=np.float16)
-        
+
         input = self.convert_to_fp32(input)
         mean_res = self.reduce_mean(input, -1, keep_dims=True,)
         variance = self.reduce_mean(
@@ -242,13 +242,17 @@ def encoder_attn_forward(
     key_states = self.k_proj(hidden_states)
     value_states = self.v_proj(hidden_states)
 
-    query_states = query_states.view(batch_size, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    key_states = key_states.view(batch_size, q_len, self.num_heads, self.head_dim).transpose(1, 2)
-    value_states = value_states.view(batch_size, q_len, self.num_heads, self.head_dim).transpose(1, 2)
+    query_states = query_states.view(batch_size, q_len,
+                                     self.num_heads, self.head_dim).transpose(1, 2)
+    key_states = key_states.view(batch_size, q_len,
+                                 self.num_heads, self.head_dim).transpose(1, 2)
+    value_states = value_states.view(batch_size, q_len,
+                                     self.num_heads, self.head_dim).transpose(1, 2)
 
     k_v_seq_len = key_states.shape[-2]
     # ipex-llm change starts
-    attn_weights = torch.matmul(query_states.float(), key_states.float().transpose(2, 3)) * self.scale
+    attn_weights = torch.matmul(query_states.float(),
+                                key_states.float().transpose(2, 3)) * self.scale
     # ipex-llm change ends
 
     if attn_weights.size() != (batch_size, self.num_heads, q_len, k_v_seq_len):
@@ -263,7 +267,8 @@ def encoder_attn_forward(
         attn_weights = attn_weights + attention_mask
 
     # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
+    attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                         dtype=torch.float32).to(query_states.dtype)
     attn_weights = nn.functional.dropout(attn_weights, p=self.dropout, training=self.training)
     # ipex-llm change starts
     attn_output = torch.matmul(attn_weights.float(), value_states.float())
@@ -294,7 +299,7 @@ def _in_projection_packed(
         b_q, b_k, b_v = b.chunk(3)
     return linear(q.float(), w_q.float(), b_q.float()), \
         linear(k.float(), w_k.float(), b_k.float()), \
-            linear(v.float(), w_v.float(), b_v.float())
+        linear(v.float(), w_v.float(), b_v.float())
 
 
 def multi_head_attn_forward(
@@ -423,7 +428,8 @@ def multi_head_attn_forward(
         q_scaled = q / math.sqrt(E)
 
         if attn_mask is not None:
-            attn_output_weights = torch.baddbmm(attn_mask.float(), q_scaled.float(), k.transpose(-2, -1))
+            attn_output_weights = torch.baddbmm(attn_mask.float(),
+                                                q_scaled.float(), k.transpose(-2, -1))
         else:
             attn_output_weights = torch.bmm(q_scaled, k.transpose(-2, -1))
         attn_output_weights = softmax(attn_output_weights, dim=-1)
