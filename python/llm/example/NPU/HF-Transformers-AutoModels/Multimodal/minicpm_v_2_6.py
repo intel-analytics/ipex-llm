@@ -47,7 +47,7 @@ if __name__ == '__main__':
     image_path = args.image_url_or_path
 
     model = AutoModel.from_pretrained(model_path, 
-                                      torch_dtype=torch.float32,
+                                      torch_dtype=torch.float16,
                                       trust_remote_code=True,
                                       attn_implementation="eager",
                                       load_in_low_bit="sym_int4",
@@ -57,8 +57,7 @@ if __name__ == '__main__':
                                       intra_pp=args.intra_pp,
                                       inter_pp=args.inter_pp,
                                       transpose_value_cache=not args.disable_transpose_value_cache,
-                                      modules_to_not_convert=['vpm', 'resampler']
-                                     )
+                                      )
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     model.eval()
