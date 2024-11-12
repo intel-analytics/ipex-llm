@@ -45,7 +45,7 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         # Create the engine configs.
         _ipex_llm_convert(load_in_low_bit)
         return super().from_engine_args(engine_args=engine_args, engine_config=engine_config,
-                                        engine_start_engine_loop=start_engine_loop,
+                                        start_engine_loop=start_engine_loop,
                                         usage_context=usage_context, stat_loggers=stat_loggers)
 
 
