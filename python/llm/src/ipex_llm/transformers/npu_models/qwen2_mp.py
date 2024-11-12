@@ -173,13 +173,18 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             post_attn_layernorm_weights = [self.constant(w) for w in post_attn_layernorm_weights]
 
         if q_biases is None:
-            q_biases = []
-            k_biases = []
-            v_biases = []
-            for i in range(num_layers):
-                q_biases.append(self.create_input_op((self.num_heads * self.head_dim,)))
-                k_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
-                v_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
+            if mode == "prefill":
+                q_biases = []
+                for i in range(num_layers):
+                    q_biases.append(self.create_input_op((self.num_heads * self.head_dim + self.num_key_value_heads * self.head_dim * 2,)))
+            else:
+                q_biases = []
+                k_biases = []
+                v_biases = []
+                for i in range(num_layers):
+                    q_biases.append(self.create_input_op((self.num_heads * self.head_dim,)))
+                    k_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
+                    v_biases.append(self.create_input_op((self.num_key_value_heads * self.head_dim,)))
         else:
             q_biases = [self.constant(w) for w in q_biases]
             k_biases = [self.constant(w) for w in k_biases]
@@ -217,8 +222,8 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
                 input_layernorm_weight=input_layernorm_weights[i],
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
                 q_bias=q_biases[i],
-                k_bias=k_biases[i],
-                v_bias=v_biases[i],
+                k_bias=k_biases[i] if mode == "decode" else None,
+                v_bias=v_biases[i] if mode == "decode" else None,
                 past_key=past_keys[i],
                 past_value=past_values[i],
             )
@@ -530,7 +535,9 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
                   attention_mask.to(torch.int64),
                   position_ids.to(torch.int64))
         inputs += (self.layer_norm_0, self.layer_norm_1)
-        inputs += (self.q_bias, self.k_bias, self.v_bias)
+        inputs += (self.layer_norm_0, self.layer_norm_1, self.q_bias)
+        # inputs += (self.q_bias, self.k_bias, self.v_bias)
+        # inputs += (self.q_bias)
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
         )
@@ -862,6 +869,10 @@ def run_prefill(
         layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
         layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
+        merge_bias = torch.cat([attn_layer.q_proj_dq_list.q_proj_dq_0.bias,
+                                attn_layer.k_proj_dq_list.k_proj_dq_0.bias,
+                                attn_layer.v_proj_dq_list.v_proj_dq_0.bias]).to(torch.float16)
+
         new_decoderlayer = FusedQwenLowBitDecoderlayer(
             weights,
             num_heads=num_heads,
@@ -870,9 +881,12 @@ def run_prefill(
             cached_sin=cached_sin,
             layer_norm_0=layer_norm_0,
             layer_norm_1=layer_norm_1,
-            q_bias=attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16),
-            k_bias=attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16),
-            v_bias=attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16),
+            # q_bias=attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16),
+            # k_bias=attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16),
+            # v_bias=attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16),
+            q_bias=merge_bias,
+            k_bias=None,
+            v_bias=None,
             layer_idx=layer_idx,
             rms_norm_eps=rms_norm_eps,
             intermediate_size=intermediate_size,
