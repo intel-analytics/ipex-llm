@@ -45,19 +45,6 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Install opencl-related repos
     apt-get update && \
     apt-get install -y --no-install-recommends intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
-    # install nodejs and npm and get webui
-    apt purge nodejs -y && \
-    apt purge libnode-dev -y && \
-    apt autoremove -y && \
-    apt clean -y && \
-    wget -qO- https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
-    apt install -y nodejs && \
-    git clone https://github.com/open-webui/open-webui.git /llm/open-webui && \
-    git -C /llm/open-webui checkout e29a999dc910afad91995221cb4bb7c274f87cd6 && \
-    cp -RPp /llm/open-webui/.env.example /llm/open-webui/.env && \
-    # Build frontend
-    npm --prefix /llm/open-webui i && \
-    npm --prefix /llm/open-webui run build && \
     # Install Dependencies
     # remove blinker to avoid error
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
@@ -67,7 +54,6 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
 
 COPY ./start-llama-cpp.sh /llm/scripts/start-llama-cpp.sh
 COPY ./start-ollama.sh /llm/scripts/start-ollama.sh
-COPY ./start-open-webui.sh /llm/scripts/start-open-webui.sh
 COPY ./benchmark_llama-cpp.sh /llm/scripts/benchmark_llama-cpp.sh
 
 WORKDIR /llm/
