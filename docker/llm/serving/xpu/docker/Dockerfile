@@ -43,7 +43,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
     git clone https://github.com/intel-analytics/ipex-llm && \
-    # # TODO: remove the following steps
+    # The following comment segment is used when building from source...
     # cd ipex-llm && \
     # git fetch origin pull/12338/head:local_pr && \
     # git checkout local_pr && \
@@ -51,7 +51,6 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # cd python/llm && \
     # python setup.py install && \
     # cd ../../../ && \
-    # # REMOVE END
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     cp -r ./ipex-llm/python/llm/example/GPU/HuggingFace/LLM ./examples && \
     # Install vllm dependencies
