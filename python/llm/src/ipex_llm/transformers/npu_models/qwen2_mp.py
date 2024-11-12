@@ -247,7 +247,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             self.compile()
         print(f"{mode} end compiling")
         qwen_size = "7b" if self.hidden_size == 3584 else "1.5b"
-        xml_path = f"gw/qwen-{qwen_size}-npu-qkv-{mode}-{num_layers}-{n_splits_linear}-{n_splits_down_proj}.xml"
+        xml_path = f"gw/qwen-{qwen_size}-npu-qkv-split-{mode}-{num_layers}-{n_splits_linear}-{n_splits_down_proj}.xml"
 
         if not os.path.exists(xml_path):
             self.save(xml_path)
@@ -534,10 +534,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         inputs = (hidden_states.to(torch.float16),
                   attention_mask.to(torch.int64),
                   position_ids.to(torch.int64))
-        inputs += (self.layer_norm_0, self.layer_norm_1)
         inputs += (self.layer_norm_0, self.layer_norm_1, self.q_bias)
-        # inputs += (self.q_bias, self.k_bias, self.v_bias)
-        # inputs += (self.q_bias)
         hidden_states, past_key, past_value = run_model(
             inputs, self.op_parameters, backend_cls, self.op_id, replica=2
         )

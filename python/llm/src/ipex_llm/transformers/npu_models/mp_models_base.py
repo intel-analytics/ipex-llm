@@ -149,8 +149,12 @@ class LLMBaseNNFactory(NNFactory):
                                         n_splits=self.n_splits_linear,
                                         scale_factor=(self.group_size == 0),
                                         is_prefill=(mode == "prefill"))
-            concat_linear = concat_linear + q_bias
-            query_states, key_states, value_states = self.variadic_split(concat_linear, 2, [1536, 256, 256])
+            if q_bias is not None:
+                concat_linear = concat_linear + q_bias
+            query_states, key_states, value_states = self.variadic_split(
+                concat_linear, 2,
+                [num_heads * head_dim, num_key_value_heads * head_dim, num_key_value_heads * head_dim]
+            )
             # query_states = self.simple_slice(concat_linear, begin=[0, 0, 0],
             #                                  end=[1, seq_len, num_heads * head_dim])
             # key_states = self.simple_slice(concat_linear, begin=[0, 0, num_heads * head_dim],
