@@ -164,8 +164,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
 
     if model.config.model_type == "qwen2":
         # for Qwen2-7B-Insturct and MiniCPM-V 2.6, divide lm_head into 14 parts
-        if model.config.hidden_size == 3584 and hasattr(model, 'lm_head') and \
-           model.lm_head.out_features == 152064 and not cpu_lm_head:
+        if model.config.hidden_size == 3584 and (model.config.vocab_size == 152064 or
+           model.config.vocab_size == 151666) and not cpu_lm_head:
             # Do not split lm_head and use sym_int8 instead when mixed_precison is True
             if quantization_group_size == 0:
                 # Do not split lm_head and use sym_int8 instead when mixed_precison is True
