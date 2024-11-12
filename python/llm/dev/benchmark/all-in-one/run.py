@@ -633,7 +633,7 @@ def transformers_int4_npu_win(repo_id,
         model = AutoModel.from_pretrained(model_path, load_in_low_bit=low_bit, optimize_model=optimize_model,
                                           trust_remote_code=True, use_cache=True, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
                                           quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
-                                          attn_implementation="eager", modules_to_not_convert=["vpm", "resampler"]).eval()
+                                          attn_implementation="eager", torch_dtype=torch.float16).eval()
         model = model.llm
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     else:
