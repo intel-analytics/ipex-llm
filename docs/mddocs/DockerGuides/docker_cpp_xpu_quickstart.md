@@ -196,14 +196,27 @@ Please refer to this [documentation](../Quickstart/ollama_quickstart.md#4-pull-m
 
 ### Running Open WebUI with Intel GPU
 
-Start the ollama and load the model first, then use the open-webui to chat.
-If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add `export HF_ENDPOINT=https://hf-mirror.com`before running bash start.sh.
+1. Start the ollama and load the model first, then use the open-webui to chat. If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add export HF_ENDPOINT=<https://hf-mirror.com> and run following script to start open-webui docker.
+
 ```bash
-cd /llm/scripts/
-bash start-open-webui.sh
+export DOCKER_IMAGE=ghcr.io/open-webui/open-webui:main
+export CONTAINER_NAME=<YOUR-DOCKER-CONTAINER-NAME>
+
+docker rm -f $CONTAINER_NAME
+
+docker run -itd \
+            -v open-webui:/app/backend/data \
+            -e PORT=8080 \
+            --privileged \
+            --network=host \
+            --name $CONTAINER_NAME \
+            --restart always $DOCKER_IMAGE
 ```
 
+2. Visit <http://localhost:8080> to use open-webui, the default ollama serve address in open-webui is `http://localhost:11434`, you can change it in connections on `http://localhost:8080/admin/settings`.
+
 Sample output:
+
 ```bash
 INFO:     Started server process [1055]
 INFO:     Waiting for application startup.
