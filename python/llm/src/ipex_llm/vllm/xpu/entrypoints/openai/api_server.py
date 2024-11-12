@@ -131,6 +131,7 @@ async def build_async_engine_client_from_engine_args(
 
         build_engine = partial(AsyncLLMEngine.from_engine_args,
                                engine_args=engine_args,
+                               load_in_low_bit=load_in_low_bit,
                                engine_config=engine_config,
                                usage_context=UsageContext.OPENAI_API_SERVER)
         if uses_ray:
