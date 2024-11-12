@@ -47,8 +47,7 @@ pip install --pre --upgrade "ipex-llm[xpu]" --extra-index-url https://pytorch-ex
 pip install setuptools-scm
 pip install --upgrade cmake
 # cd to your workdir
-# TODO: check this later... for the specific branch
-git clone -b  https://github.com/analytics-zoo/vllm.git
+git clone -b 0.6.2 https://github.com/analytics-zoo/vllm.git
 cd vllm
 VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v .
 # For Qwen model support
