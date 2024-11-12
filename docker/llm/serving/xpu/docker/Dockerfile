@@ -38,22 +38,20 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    # TODO: only take effect after it has been merged...
     pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
-    # TODO: remove the following things...
     pip install transformers_stream_generator einops tiktoken && \
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
     git clone https://github.com/intel-analytics/ipex-llm && \
-    # TODO: remove the following steps
-    cd ipex-llm && \
-    git fetch origin pull/12338/head:local_pr && \
-    git checkout local_pr && \
-    pip uninstall -y ipex-llm && \
-    cd python/llm && \
-    python setup.py install && \
-    cd ../../../ && \
-    # REMOVE END
+    # # TODO: remove the following steps
+    # cd ipex-llm && \
+    # git fetch origin pull/12338/head:local_pr && \
+    # git checkout local_pr && \
+    # pip uninstall -y ipex-llm && \
+    # cd python/llm && \
+    # python setup.py install && \
+    # cd ../../../ && \
+    # # REMOVE END
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     cp -r ./ipex-llm/python/llm/example/GPU/HuggingFace/LLM ./examples && \
     # Install vllm dependencies
@@ -87,7 +85,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     rm -rf /tmp/neo && \
     mkdir -p /llm && \
     cd /llm && \
-    git clone -b 062_test_0929 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    git clone -b 0.6.2 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
     cd /llm/vllm && \
     pip install setuptools-scm && \
     pip install --upgrade cmake && \
