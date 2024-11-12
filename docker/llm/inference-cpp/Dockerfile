@@ -61,7 +61,6 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Install Dependencies
     # remove blinker to avoid error
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
-    pip install -r /llm/open-webui/backend/requirements.txt -U && \
     rm -rf /root/.cache/Cypress && \
     pip uninstall -y gunicorn python-jose PyMySQL
 
