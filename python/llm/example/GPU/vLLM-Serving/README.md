@@ -105,7 +105,8 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --max-model-len 4096 \
   --max-num-batched-tokens 10240 \
   --max-num-seqs 12 \
-  --tensor-parallel-size 1
+  --tensor-parallel-size 1 \
+  --disable-async-output-proc
 ```
 
 You can tune the service using these four arguments:
@@ -201,5 +202,7 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --max-model-len 4096 \
   --max-num-batched-tokens 10240 \
   --max-num-seqs 12 \
-  --tensor-parallel-size 2
+  --tensor-parallel-size 2 \
+  --distributed-executor-backend ray \
+  --disable-async-output-proc
 ```
