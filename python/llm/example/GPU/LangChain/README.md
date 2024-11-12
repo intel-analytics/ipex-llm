@@ -87,8 +87,7 @@ set SYCL_CACHE_PERSISTENT=1
 Install dependencies:
 
 ```bash
-pip install langchain==0.0.184
-pip install -U pandas==2.0.3
+pip install -U langchain langchain-community
 ```
 
 Then execute:
@@ -104,19 +103,18 @@ arguments info:
 
 Install dependencies:
 ```bash
-pip install langchain==0.0.184
-pip install -U chromadb==0.3.25
-pip install -U pandas==2.0.3
+pip install -U langchain langchain-community langchain-chroma sentence-transformers==3.0.1
 ```
 
 Then execute:
 
 ```bash
-python rag.py -m <path_to_model> [-q QUESTION] [-i INPUT_PATH]
+python rag.py -m <path_to_llm_model> -e <path_to_embedding_model> [-q QUESTION] [-i INPUT_PATH]
 ```
 arguments info:
-- `-m MODEL_PATH`: **required**, path to the model.
-- `-q QUESTION`: question to ask. Default is `What is IPEX?`.
+- `-m LLM_MODEL_PATH`: **required**, path to the model.
+- `-e EMBEDDING_MODEL_PATH`: **required**, path to the embedding model.
+- `-q QUESTION`: question to ask. Default is `What is IPEX-LLM?`.
 - `-i INPUT_PATH`: path to the input doc.
 
 
@@ -129,8 +127,7 @@ By `save_low_bit` we save the weights of low_bit model into the target folder.
 
 Install dependencies:
 ```bash
-pip install langchain==0.0.184
-pip install -U pandas==2.0.3
+pip install -U langchain langchain-community
 ```
 Then execute:
 
