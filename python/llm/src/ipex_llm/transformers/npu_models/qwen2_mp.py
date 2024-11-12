@@ -141,10 +141,10 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         # Self Attention
         if mode == "decode":
             attention_mask = self.create_input_op(
-                (self.batch_size, 1, 1, self.max_seq_len + 1), dtype=np.int64)
+                (self.batch_size, 1, 1, self.max_seq_len + 1), dtype=np.float16)
         else:
             attention_mask = self.create_input_op(
-                (self.batch_size, 1, self.seq_len, self.seq_len), dtype=np.int64)
+                (self.batch_size, 1, self.seq_len, self.seq_len), dtype=np.float16)
 
         position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
 
@@ -234,7 +234,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         print(f"{mode} start compiling")
         if (
             group_size != 0
-            and (mode == "prefill" or num_layers == 2)
+            and (mode == "prefill" or num_layers == 2 or num_layers == 3)
             and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1"
         ):
             self.compile(npu_dpu_groups=6)
