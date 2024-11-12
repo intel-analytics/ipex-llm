@@ -17,7 +17,7 @@ In this example, we will run Llama2-7b model using Arc A770 and provide `OpenAI-
 
 ### 0. Environment
 
-To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit 2024.1. Please check the requirements at [here](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU#requirements).
+To use Intel GPUs for deep-learning tasks, you should install the XPU driver and the oneAPI Base Toolkit 2024.1. Please check the requirements at [here](https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2024-1/overview.html).
 
 After install the toolkit, run the following commands in your environment before starting vLLM GPU:
 ```bash
@@ -50,7 +50,7 @@ pip install --upgrade cmake
 # TODO: check this later... for the specific branch
 git clone -b  https://github.com/analytics-zoo/vllm.git
 cd vllm
-VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v . && \
+VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v .
 # For Qwen model support
 pip install transformers_stream_generator einops tiktoken
 ```
@@ -59,7 +59,7 @@ pip install transformers_stream_generator einops tiktoken
 
 ```bash
 export USE_XETLA=OFF
-export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
 export SYCL_CACHE_PERSISTENT=1
 ```
 ### 3. Offline inference/Service
