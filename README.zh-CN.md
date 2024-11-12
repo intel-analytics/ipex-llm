@@ -177,7 +177,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 ## `ipex-llm` 快速入门
 
 ### Docker
-- [GPU Inference in C++](docs/mddocs/DockerGuides/docker_cpp_xpu_quickstart.md): 在 Intel GPU 上使用 `ipex-llm` 运行 `llama.cpp`, `ollama`, `OpenWebUI`，等
+- [GPU Inference in C++](docs/mddocs/DockerGuides/docker_cpp_xpu_quickstart.md): 在 Intel GPU 上使用 `ipex-llm` 运行 `llama.cpp`, `ollama`等
 - [GPU Inference in Python](docs/mddocs/DockerGuides/docker_pytorch_inference_gpu.md) : 在 Intel GPU 上使用 `ipex-llm` 运行 HuggingFace `transformers`, `LangChain`, `LlamaIndex`, `ModelScope`，等
 - [vLLM on GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md): 在 Intel GPU 上使用 `ipex-llm` 运行 `vLLM` 推理服务
 - [vLLM on CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md): 在 Intel CPU 上使用 `ipex-llm` 运行 `vLLM` 推理服务  
