@@ -154,9 +154,7 @@ Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/d
 
 ### Running Open WebUI with Intel GPU
 
-1. Start the ollama and load the model first, then use the open-webui to chat.
-
-If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add export HF_ENDPOINT=https://hf-mirror.com and run following script to start open-webui docker.
+1. Start the ollama and load the model first, then use the open-webui to chat. If you have difficulty accessing the huggingface repositories, you may use a mirror, e.g. add export HF_ENDPOINT=<https://hf-mirror.com> and run following script to start open-webui docker.
 
 ```bash
 export DOCKER_IMAGE=ghcr.io/open-webui/open-webui:main
@@ -175,4 +173,17 @@ docker run -itd \
 
 2. Visit <http://localhost:8080> to use open-webui, the default ollama serve address in open-webui is `http://localhost:11434`, you can change it in connections on `http://localhost:8080/admin/settings`.
 
-For how to log-in or other guide, Please refer to this [documentation](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/open_webui_with_ollama_quickstart.html) for more details.
+Sample output:
+
+```bash
+INFO:     Started server process [1055]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+```
+
+<a href="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_signup.png" target="_blank">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_signup.png" width="100%" />
+</a>
+
+For how to log-in or other guide, Please refer to this [documentation](../Quickstart/open_webui_with_ollama_quickstart.md) for more details.
