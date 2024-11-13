@@ -37,8 +37,10 @@ from transformers.pytorch_utils import apply_chunking_to_forward
 from transformers.utils import logging
 
 from ipex_llm.utils.common import invalidInputError
+from ipex_llm.transformers.npu_models.convert import module_optimization
 from ipex_llm.transformers.npu_models.mp_models_base import run_model
 from ipex_llm.transformers.npu_models.mp_models_base import LLMBaseNNFactory
+from intel_npu_acceleration_library.backend.factory import NNFactory
 from intel_npu_acceleration_library.backend.bindings import lib as backend_lib
 
 logger = logging.get_logger(__name__)
@@ -601,3 +603,128 @@ def gen_xlm_fused_encoder_forward(prefill_runner):
         )
 
     return xlm_fused_encoder_forward
+
+
+class XLMPoolLinear(NNFactory):
+    def __init__(
+        self,
+        input_shape,
+        output_channels,
+        input_channels,
+        device: str = "NPU",
+    ):
+        super().__init__(False, device)
+
+        # define input
+        input_node = self.parameter(input_shape, dtype=np.float16)
+        res = self.linear(input_node, output_channels, input_channels, bias=True)
+
+        # define outputs
+        res = self.convert_to_fp16(res)
+
+        print("start compiling")
+        self.compile()
+
+
+class XLMPoolLayer(torch.nn.Module):
+    def __init__(
+        self,
+        weight,
+        bias,
+        output_channel,
+        input_channel,
+    ):
+        super().__init__()
+
+        self.op_id = str(uuid.uuid4())
+        self.parameters = [weight, bias]
+        self.backend_cls_pooler = partial(
+            XLMPoolLinear,
+            output_channels=output_channel,
+            input_channels=input_channel,
+        )
+
+    def forward(
+        self, hidden_states
+        ):
+        backend_cls = self.backend_cls_pooler
+        hidden_states = hidden_states.to(torch.float16)
+        return run_model(
+            hidden_states, self.parameters, backend_cls, self.op_id
+        )
+
+class LayerNorm(NNFactory):
+    def __init__(
+        self,
+        input_shape,
+        weight_shape,
+        bias_shape,
+        eps,
+        device: str = "NPU",
+    ):
+        super().__init__(False, device)
+
+        # define input
+        input = self.parameter(input_shape, dtype=np.float16)
+        weight = self.parameter(weight_shape, dtype=np.float16)
+        bias = self.parameter(bias_shape, dtype=np.float16)
+
+        input = self.convert_to_fp32(input)
+        mean_res = self.reduce_mean(input, -1, keep_dims=True,)
+        variance = self.reduce_mean(
+            self.power(input - mean_res, self.constant(np.array([[2]], dtype=np.float32))),
+            -1,
+            keep_dims=True,
+        )
+        eps = self.constant(eps)
+        input = self.eltwise_div(input - mean_res, self.sqrt(self.eltwise_add(variance, eps)))
+        weight = self.convert_to_fp32(weight)
+        input = self.eltwise_mul(weight, input)
+        bias = self.convert_to_fp32(bias)
+        input = self.eltwise_add(bias, input)
+
+        # define outputs
+        input = self.convert_to_fp16(input)
+
+        print("start compiling")
+        self.compile()
+
+
+class XLMLayerNorm(torch.nn.Module):
+    def __init__(
+        self,
+        weight,
+        bias,
+        eps=1e-05,
+    ):
+        super().__init__()
+        self.op_id = str(uuid.uuid4())
+        self.parameters = [weight, bias]
+        self.backend_cls = partial(
+            LayerNorm,
+            weight_shape=weight.shape,
+            bias_shape=bias.shape,
+            eps=eps,
+        )
+
+    def forward(self, x):
+        x = x.to(torch.float16)
+        return run_model(x, self.parameters, self.backend_cls, self.op_id)
+
+
+@module_optimization
+def replace_with_Layernorm(layer, qtype=None, device='NPU',
+                           modules_to_not_convert=[], group_size=0):
+    if isinstance(layer, torch.nn.LayerNorm):
+        return XLMLayerNorm(
+            weight=layer.weight.to(torch.float16),
+            bias=layer.bias.to(torch.float16),
+        )
+
+
+@module_optimization
+def replace_with_FP16Linear(layer, qtype, device, modules_to_not_convert,
+                            group_size):
+    from ipex_llm.transformers.npu_models.linear import Linear
+    if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
+        return Linear(layer.weight, layer.bias)
