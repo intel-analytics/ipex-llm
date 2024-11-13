@@ -363,6 +363,27 @@ def convert_qwen(
     convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
 
 
+def convert_bce(
+    model: torch.nn.Module,
+    max_context_len=1024,
+    max_prompt_len=1024,
+    transpose_value_cache=True,
+):
+    from ipex_llm.transformers.npu_models.xlm_mp import gen_xlm_fused_encoder_forward
+    from ipex_llm.transformers.npu_models.xlm_mp import PrefillRunner
+    prefill_runner = PrefillRunner(
+        model,
+        max_output_len=max_context_len,
+        max_prompt_len=max_prompt_len,
+        transpose_value_cache=transpose_value_cache,
+    )
+    encoder_forward = gen_xlm_fused_encoder_forward(
+        prefill_runner=prefill_runner
+    )
+    from transformers.models.xlm_roberta.modeling_xlm_roberta import XLMRobertaEncoder
+    convert_forward(model, XLMRobertaEncoder, encoder_forward)
+
+
 def optimize_llm(
     model: torch.nn.Module,
     max_context_len=1024,
@@ -439,6 +460,12 @@ def optimize_llm(
                          intra_pp=intra_pp,
                          decoder=True,
                          transpose_value_cache=transpose_value_cache)
+    elif model.config.model_type == "xlm-roberta":
+        # for bce-embedding-base_v1 
+        convert_bce(model,
+                    max_output_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    transpose_value_cache=transpose_value_cache)
     if hasattr(model, 'lm_head') and isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
     # MiniCPM-2b

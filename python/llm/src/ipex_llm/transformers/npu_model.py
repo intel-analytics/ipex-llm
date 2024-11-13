@@ -659,3 +659,57 @@ class FunAsrAutoModel(_BaseAutoModelClass):
         model.save_low_bit = types.MethodType(save_low_bit, model)
 
         return model
+
+
+class EmbeddingModel(_BaseAutoModelClass):
+
+    def __init__(self, *args, **kwargs):
+        self.model = self.from_pretrained(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self.model, name)
+
+    @classmethod
+    def get_cls_model(cls):
+        cls_model = transformers.AutoModel
+        return cls_model
+
+    @classmethod
+    def optimize_npu_model(cls, *args, **kwargs):
+        from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
+        from intel_npu_acceleration_library.compiler import create_npu_kernels
+
+        model = kwargs.pop("model")
+        qtype = kwargs.pop("qtype", "sym_int4")
+        mixed_precision = kwargs.pop("mixed_precision", False)
+        quantization_group_size = kwargs.pop("quantization_group_size", 0)
+        modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        pipeline = kwargs.pop("pipeline", False)
+        max_context_len = kwargs.pop("max_context_len", 1024)
+        max_prompt_len = kwargs.pop("max_prompt_len", 512)
+        inter_pp = kwargs.pop("inter_pp", None)
+        intra_pp = kwargs.pop("intra_pp", None)
+        transpose_value_cache = kwargs.pop("transpose_value_cache", True)
+
+        with torch.no_grad():
+            cls.load_convert_fp16(qtype, model.encoder, "cpu", modules_to_not_convert,
+                                  quantization_group_size, *args, **kwargs)
+            create_npu_kernels(model.encoder)
+        model = model.eval()
+        logger.info(f"Finish to convert model")
+
+        optimize_llm(
+            model,
+            max_context_len=max_context_len,
+            max_prompt_len=max_prompt_len,
+            transpose_value_cache=transpose_value_cache,
+        )
+        return model
+
+    @classmethod
+    def load_convert_fp16(cls, q_k, optimize_model, device, modules_to_not_convert,
+                     group_size=0, *arg, **kwarg):
+        from ipex_llm.transformers.npu_models.convert import replace_with_FP16Linear
+        replace_with_FP16Linear(optimize_model, q_k, device=device,
+                                modules_to_not_convert=modules_to_not_convert,
+                                group_size=group_size)
