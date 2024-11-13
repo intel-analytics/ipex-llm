@@ -25,7 +25,7 @@
 import argparse
 
 from langchain.chains import LLMMathChain
-from ipex_llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
+from langchain_community.llms import IpexLLM
 
 
 def main(args):
@@ -33,9 +33,13 @@ def main(args):
     question = args.question
     model_path = args.model_path
     
-    llm = TransformersLLM.from_model_id(
+    llm = IpexLLM.from_model_id(
         model_id=model_path,
-        model_kwargs={"temperature": 0, "max_length": 1024, "trust_remote_code": True},
+        model_kwargs={
+            "temperature": 0,
+            "max_length": 1024,
+            "trust_remote_code": True,
+        },
     )
     
     llm_math = LLMMathChain.from_llm(llm, verbose=True)

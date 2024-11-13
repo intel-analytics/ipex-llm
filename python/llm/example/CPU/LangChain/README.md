@@ -1,45 +1,70 @@
-## Langchain Examples
+# Langchain examples
 
-This folder contains examples showcasing how to use `langchain` with `ipex-llm`. 
+The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel CPU.
 
-### Install-IPEX LLM
+### 1. Install ipex-llm
+Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm
 
-Ensure `ipex-llm` is installed by following the [IPEX-LLM Installation Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_cpu.html). 
+### 2. Using langchain upstream to run examples
 
-### Install Dependences Required by the Examples
+#### 2.1. Streaming Chat
 
-
-```bash
-pip install langchain==0.0.184
-pip install -U chromadb==0.3.25
-pip install -U pandas==2.0.3
-```
-
-
-### Example: Chat
-
-The chat example ([chat.py](./chat.py)) shows how to use `LLMChain` to build a chat pipeline. 
-
-To run the example, execute the following command in the current directory:
+Install dependencies:
 
 ```bash
-python chat.py -m <path_to_model> [-q <your_question>]
+pip install -U langchain langchain-community
 ```
-> Note: if `-q` is not specified, it will use `What is AI` by default. 
 
-### Example: RAG (Retrival Augmented Generation) 
-
-The RAG example ([rag.py](./rag.py)) shows how to load the input text into vector database,  and then use `load_qa_chain` to build a retrival pipeline.
-
-To run the example, execute the following command in the current directory:
+Then execute:
 
 ```bash
-python rag.py -m <path_to_model> [-q <your_question>] [-i <path_to_input_txt>]
+python chat.py -m MODEL_PATH -q QUESTION
 ```
-> Note: If `-i` is not specified, it will use a short introduction to Big-DL as input by default. if `-q` is not specified, `What is IPEX LLM?` will be used by default. 
+arguments info:
+- `-m MODEL_PATH`: **required**, path to the model
+- `-q QUESTION`: question to ask. Default is `What is AI?`.
+
+#### 2.2. RAG (Retrival Augmented Generation)
+
+Install dependencies:
+```bash
+pip install -U langchain langchain-community langchain-chroma sentence-transformers==3.0.1
+```
+
+Then execute:
+
+```bash
+python rag.py -m <path_to_llm_model> -e <path_to_embedding_model> [-q QUESTION] [-i INPUT_PATH]
+```
+arguments info:
+- `-m LLM_MODEL_PATH`: **required**, path to the model.
+- `-e EMBEDDING_MODEL_PATH`: **required**, path to the embedding model.
+- `-q QUESTION`: question to ask. Default is `What is IPEX-LLM?`.
+- `-i INPUT_PATH`: path to the input doc.
 
 
-### Example: Math
+#### 2.3. Low Bit
+
+The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use langchain with low_bit optimized model.
+By `save_low_bit` we save the weights of low_bit model into the target folder.
+> Note: `save_low_bit` only saves the weights of the model. 
+> Users could copy the tokenizer model into the target folder or specify `tokenizer_id` during initialization. 
+
+Install dependencies:
+```bash
+pip install -U langchain langchain-community
+```
+Then execute:
+
+```bash
+python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
+```
+**Runtime Arguments Explained**:
+- `-m MODEL_PATH`: **Required**, the path to the model
+- `-t TARGET_PATH`: **Required**, the path to save the low_bit model
+- `-q QUESTION`: the question
+
+#### 2.4 Math
 
 The math example ([math.py](./llm_math.py)) shows how to build a chat pipeline specialized in solving math questions. For example, you can ask `What is 13 raised to the .3432 power?`
 
@@ -50,8 +75,7 @@ python llm_math.py -m <path_to_model> [-q <your_question>]
 ```
 > Note: if `-q` is not specified, it will use `What is 13 raised to the .3432 power?` by default. 
 
-
-### Example: Voice Assistant
+### 2.5 Voice Assistant
 
 The voice assistant example ([voiceassistant.py](./voiceassistant.py)) showcases how to use langchain to build a pipeline that takes in your speech as input in realtime, use an ASR model (e.g. [Whisper-Medium](https://huggingface.co/openai/whisper-medium)) to turn speech into text, and then feed the text into large language model to get response.  
 
@@ -66,25 +90,3 @@ python voiceassistant.py -m <path_to_model> [-q <your_question>]
 - `-x MAX_NEW_TOKENS`: the max new tokens of model tokens input
 - `-l LANGUAGE`: you can specify a language such as "english" or "chinese" 
 - `-d True|False`: whether the model path specified in -m is saved low bit model.
-
-
-### Example: Low Bit
-
-The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use langchain with low_bit optimized model.
-By `save_low_bit` we save the weights of low_bit model into the target folder.
-> Note: `save_low_bit` only saves the weights of the model. 
-> Users could copy the tokenizer model into the target folder or specify `tokenizer_id` during initialization. 
-```bash
-python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
-```
-**Runtime Arguments Explained**:
-- `-m MODEL_PATH`: **Required**, the path to the model
-- `-t TARGET_PATH`: **Required**, the path to save the low_bit model
-- `-q QUESTION`: the question
-
-
-
-### Legacy (Native INT4 examples)
-
-IPEX-LLM also provides langchain integrations using native INT4 mode. Those examples can be foud in [native_int4](./native_int4/) folder. For detailed instructions of settting up and running `native_int4` examples, refer to [Native INT4 Examples README](./README_nativeint4.md). 
-
