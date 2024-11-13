@@ -3,7 +3,7 @@
 The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel GPU.
 
 ### 1. Install ipex-llm
-Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install ipex-llm
+Follow the instructions in [GPU Install Guide](../../../../../docs/mddocs/Overview/install_gpu.md) to install ipex-llm
 
 ### 2. Configures OneAPI environment variables for Linux
 
@@ -80,7 +80,7 @@ set SYCL_CACHE_PERSISTENT=1
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
-### 4. Run the examples
+### 4. Using langchain upstream to run examples
 
 #### 4.1. Streaming Chat
 
@@ -139,7 +139,9 @@ python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
 - `-t TARGET_PATH`: **Required**, the path to save the low_bit model
 - `-q QUESTION`: the question
 
-#### 4.4 vLLM
+### 5. Using ipex-llm integrated langchain to run example
+
+#### 5.1 vLLM
 
 The vLLM example ([vllm.py](./vllm.py)) showcases how to use langchain with ipex-llm integrated vLLM engine.
 
@@ -148,7 +150,7 @@ Install dependencies:
 pip install "langchain<0.2"
 ```
 
-Besides, you should also install IPEX-LLM integrated vLLM according instructions listed [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#install-vllm)
+Besides, you should also install IPEX-LLM integrated vLLM according instructions listed [here](../../../../../docs/mddocs/Quickstart/vLLM_quickstart.md#2-install-vllm)
 
 **Runtime Arguments Explained**:
 - `-m MODEL_PATH`: **Required**, the path to the model
@@ -167,7 +169,7 @@ python ./vllm.py -m YOUR_MODEL_PATH -q "What is AI?" -t 128 -p 1 -l sym_int4
 
 ##### Multi cards
 
-To use `-p TENSOR_PARALLEL_SIZE` option, you will need to use our docker image: `intelanalytics/ipex-llm-serving-xpu:latest`. For how to use the image, try check this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/vllm_docker_quickstart.html#multi-card-serving).
+To use `-p TENSOR_PARALLEL_SIZE` option, you will need to use our docker image: `intelanalytics/ipex-llm-serving-xpu:latest`. For how to use the image, try check this [guide](../../../../../docs/mddocs/DockerGuides/vllm_docker_quickstart.md#multi-card-serving).
 
 The following command shows an example on how to execute the example using two cards:
 
