@@ -727,7 +727,7 @@ class LowBitLinear(nn.Linear):
             # return empty tensor with output shape, x.dtype and x.device
             return torch.empty(new_shape, dtype=x.dtype, device=x.device)
 
-        x_2d = x.view(-1, x_shape[-1])
+        x_2d = x.contiguous().view(-1, x_shape[-1])
 
         if self.act_order:
             x_2d = x_2d[:, self.g_idx_map]
