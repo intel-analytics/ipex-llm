@@ -240,17 +240,20 @@ Modify the `--load-in-low-bit` value to `fp6`, `fp8`, `fp8_e4m3` or `fp16`
 python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --served-model-name $served_model_name \
   --port 8000 \
-  --model $model \
+  --model $model \ 
   --trust-remote-code \
-  --gpu-memory-utilization 0.75 \
-  --device xpu \
+  --block-size 8 \
+  --gpu-memory-utilization 0.9 \
+  --device xpu \ 
   --dtype float16 \
   --enforce-eager \
   --load-in-low-bit sym_int4 \
-  --max-model-len 4096 \
-  --max-num-batched-tokens 10240 \
+  --max-model-len 2048 \
+  --max-num-batched-tokens 4000 \
   --max-num-seqs 12 \
-  --tensor-parallel-size 1
+  --tensor-parallel-size 1 \
+  --disable-async-output-proc \
+  --distributed-executor-backend ray
 ```
   
 then run following command to start vllm service
@@ -680,6 +683,7 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --max-num-batched-tokens 10240 \
   --max-num-seqs 12 \
   --tensor-parallel-size 1 \
+  --distributed-executor-backend ray \
   --enable-lora \
   --lora-modules sql-lora=$SQL_LOARA
 ```
@@ -742,16 +746,38 @@ vLLM Serving can be deployed as a server that implements the OpenAI API protocol
 
 ```bash
 #!/bin/bash
-model="/llm/models/Meta-Llama-3.1-8B-Instruct"
-served_model_name="llama-3.1-8b"
-...
+model="/llm/models/Qwen1.5-14B-Chat"
+served_model_name="Qwen1.5-14B-Chat"
+
+#export SYCL_CACHE_PERSISTENT=1
+export CCL_WORKER_COUNT=4
+export FI_PROVIDER=shm
+export CCL_ATL_TRANSPORT=ofi
+export CCL_ZE_IPC_EXCHANGE=sockets
+export CCL_ATL_SHM=1
+
+export USE_XETLA=OFF
+export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=2
+export TORCH_LLM_ALLREDUCE=0
+
+source /opt/intel/1ccl-wks/setvars.sh
+
 python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --served-model-name $served_model_name \
   --port 8000 \
   --model $model \
-  ...
+  --trust-remote-code \
+  --gpu-memory-utilization 0.9 \
+  --device xpu \
+  --dtype float16 \
+  --enforce-eager \
+  --load-in-low-bit fp8 \
+  --max-model-len 2048 \
+  --max-num-batched-tokens 4000 \
+  --max-num-seqs 12 \
   --api-key <your-api-key> \
-  --tensor-parallel-size 2
+  --tensor-parallel-size 4 \
+  --distributed-executor-backend ray
 ```
 
 2. Send http request with `api-key` header to verify the model has deployed successfully.
@@ -761,7 +787,7 @@ curl http://localhost:8000/v1/completions \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer <your-api-key>" \
     -d '{
-    "model": "llama-3.1-8b",
+    "model": "Qwen1.5-14B-Chat",
     "prompt": "San Francisco is a",
     "max_tokens": 128
     }'
@@ -785,7 +811,7 @@ docker run -itd \
            --restart always $DOCKER_IMAGE  
 ```
 
-  Then you should start the docker on host that make sure you can visit vLLM backend serving.
+Then you should start the docker on host that make sure you can visit vLLM backend serving.
 
 4. After installation, you can access Open WebUI at <http://localhost:3000>. Enjoy! 😄
 
@@ -793,9 +819,8 @@ docker run -itd \
 
 We can set up model serving using `IPEX-LLM` as backend using FastChat, the following steps gives an example of how to deploy a demo using FastChat.
 
+1. **Start the Docker Container**
 
-1. **Start the Docker Container** 
-   
     Run the following command to launch a Docker container with device access:
 
     ```bash
@@ -817,8 +842,9 @@ We can set up model serving using `IPEX-LLM` as backend using FastChat, the foll
     ```
 
 2. **Start the FastChat Service**
-   
+
     Enter the container and start the FastChat service:
+
     ```bash
     #/bin/bash
 
