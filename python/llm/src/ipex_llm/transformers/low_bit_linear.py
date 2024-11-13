@@ -362,10 +362,8 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
     batch_size = x.shape[0]
     hard_condition = (
         x.dtype in [torch.float, torch.half]
-        and ((
-                x.shape[1] % 128 == 0
-                and qtype in [SYM_INT4]
-            )
+        and (
+            x.shape[1] % 128 == 0 and qtype in [SYM_INT4]
             or (
                 x.shape[1] % 256 == 0
                 and output_len % 32 == 0
