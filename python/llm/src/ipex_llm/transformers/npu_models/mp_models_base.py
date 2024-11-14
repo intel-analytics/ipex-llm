@@ -247,8 +247,6 @@ class LLMBaseNNFactory(NNFactory):
             attn_weight = self.matmul(query_states, key_states, False, True) / (
                 math.sqrt(head_dim)
             )
-            if mode != "prefill":
-                attention_mask = self.convert_to_fp16(attention_mask)
             attn_weight = self.eltwise_add(attn_weight, attention_mask)
             attn_weight = self.convert_to_fp32(attn_weight)
             attn_weight = self.softmax(attn_weight, -1)
