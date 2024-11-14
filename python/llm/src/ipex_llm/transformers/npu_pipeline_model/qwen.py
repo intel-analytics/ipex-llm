@@ -150,8 +150,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         f"decoder_layer_{layer_idx}",
-                                                        temp_dir,
-                                                        npu_dpu_groups=6)
+                                                        temp_dir)
     bin_path = os.path.join(temp_dir, f"decoder_layer_{layer_idx}" + ".bin")
     os.remove(bin_path)
 
