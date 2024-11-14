@@ -88,6 +88,14 @@ def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
         return DequantizedLinear(qweights, scale, layer.bias)
 
 
+@module_optimization
+def replace_with_FP16Linear(layer, qtype, device, modules_to_not_convert,
+                            group_size):
+    from ipex_llm.transformers.npu_models.linear import Linear
+    if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
+        return Linear(layer.weight, layer.bias)
+
+
 def convert_forward(m, target_m, new_forward):
     if m.__class__ == target_m:
         bound_method = new_forward.__get__(m, m.__class__)

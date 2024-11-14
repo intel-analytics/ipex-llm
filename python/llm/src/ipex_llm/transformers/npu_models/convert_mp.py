@@ -176,6 +176,19 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             del model.lm_head
             model.lm_head = new_lm_head
 
+    if model.config.model_type == "xlm-roberta":
+        from ipex_llm.transformers.npu_models.xlm_mp import XLMPoolLayer, replace_with_Layernorm
+        pooler_dense = model.pooler.dense
+        opt_linear = XLMPoolLayer(
+            weight=pooler_dense.weight.to(torch.float16),
+            bias=pooler_dense.bias.to(torch.float16),
+            output_channel=model.config.hidden_size,
+            input_channel=model.config.hidden_size
+        )
+        model.pooler.dense = opt_linear
+        replace_with_Layernorm(model.embeddings, qtype=None, device='NPU',
+                               modules_to_not_convert=[], group_size=0)
+
     # lm_head to cpu optimization
     if cpu_lm_head:
         # disable the optimization by default
@@ -363,6 +376,27 @@ def convert_qwen(
     convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
 
 
+def convert_bce(
+    model: torch.nn.Module,
+    max_context_len=1024,
+    max_prompt_len=1024,
+    transpose_value_cache=True,
+):
+    from ipex_llm.transformers.npu_models.xlm_mp import gen_xlm_fused_encoder_forward
+    from ipex_llm.transformers.npu_models.xlm_mp import PrefillRunner
+    prefill_runner = PrefillRunner(
+        model,
+        max_output_len=max_context_len,
+        max_prompt_len=max_prompt_len,
+        transpose_value_cache=transpose_value_cache,
+    )
+    encoder_forward = gen_xlm_fused_encoder_forward(
+        prefill_runner=prefill_runner
+    )
+    from transformers.models.xlm_roberta.modeling_xlm_roberta import XLMRobertaEncoder
+    convert_forward(model, XLMRobertaEncoder, encoder_forward)
+
+
 def optimize_llm(
     model: torch.nn.Module,
     max_context_len=1024,
@@ -439,6 +473,12 @@ def optimize_llm(
                          intra_pp=intra_pp,
                          decoder=True,
                          transpose_value_cache=transpose_value_cache)
+    elif model.config.model_type == "xlm-roberta":
+        # for bce-embedding-base_v1
+        convert_bce(model,
+                    max_context_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    transpose_value_cache=transpose_value_cache)
     if hasattr(model, 'lm_head') and isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
     # MiniCPM-2b
