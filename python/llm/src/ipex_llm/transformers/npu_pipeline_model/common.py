@@ -23,7 +23,7 @@ from intel_npu_acceleration_library.backend.factory import NNFactory
 import numpy as np
 
 
-def update_names_of_IR_and_export_blob(model, model_name, dir):
+def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True):
     xml_path = os.path.join(dir, model_name + ".xml")
     model.save(xml_path)
     new_ir_path = os.path.join(dir, model_name + "_new.xml")
@@ -47,7 +47,7 @@ def update_names_of_IR_and_export_blob(model, model_name, dir):
     if new_ir_path is not None:
         serialize(model, new_ir_path)
 
-    if blob_path is not None:
+    if compile_blob:
         compiledModel = core.compile_model(model, device_name="NPU")
         model_stream = compiledModel.export_model()
         with open(blob_path, 'wb') as f:

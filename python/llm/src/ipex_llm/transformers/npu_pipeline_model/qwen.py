@@ -58,7 +58,9 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, 
         n_splits=n_splits_linear
     )
     suffix = "_prefill" if input_length > 1 else ""
-    last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head{suffix}", temp_dir)
+    compile = False if input_length > 1 else True
+    last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head{suffix}",
+                                                        temp_dir, compile)
 
     # save weights bins files
     if not isinstance(lm_head, SlicedLMHead):
@@ -83,7 +85,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, 
         input_length=input_length,
     )
     first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding{suffix}",
-                                                         temp_dir)
+                                                         temp_dir, compile)
     return first_blob_path, last_blob_path
 
 
@@ -266,7 +268,8 @@ def convert_qwen_prefill_layer(model, n_splits_linear, n_splits_down_proj,
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         "decoder_layer_prefill",
-                                                        temp_dir)
+                                                        temp_dir,
+                                                        False)
     bin_path = os.path.join(temp_dir, "decoder_layer_prefill" + ".bin")
     os.remove(bin_path)
 
