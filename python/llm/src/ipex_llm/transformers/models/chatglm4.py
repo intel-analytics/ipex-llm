@@ -76,7 +76,7 @@ def chatglm4_model_forward(
     if full_attention_mask is None:
         if (attention_mask is not None and not attention_mask.all()) or\
                 (past_key_values and seq_length != 1):
-            full_attention_mask = self.get_masks(input_ids,
+            full_attention_mask = self.get_masks(inputs_embeds,
                                                  past_key_values,
                                                  padding_mask=attention_mask)
 
