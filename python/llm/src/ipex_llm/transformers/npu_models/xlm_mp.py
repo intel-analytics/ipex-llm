@@ -434,7 +434,7 @@ def run_prefill(
             (attn_layer.self.query.weight),
             (attn_layer.self.key.weight),
             (attn_layer.self.value.weight),
-            (attn_layer.output.dense.weight),  
+            (attn_layer.output.dense.weight),
             (curr_layer.intermediate.dense.weight),
             (curr_layer.output.dense.weight),
         ]
