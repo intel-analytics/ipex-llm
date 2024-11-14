@@ -141,7 +141,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         # Self Attention
         if mode == "decode":
             attention_mask = self.create_input_op(
-                (self.batch_size, 1, 1, self.max_seq_len + 1), dtype=np.int64)
+                (self.batch_size, 1, 1, self.max_seq_len + 1), dtype=np.float16)
         else:
             attention_mask = self.create_input_op(
                 (self.batch_size, 1, self.seq_len, self.seq_len), dtype=np.float16)
@@ -403,7 +403,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
         inputs = (
             hidden_states.to(torch.float16),
-            attention_mask.to(torch.int64),
+            attention_mask.to(torch.float16),
             position_ids.to(torch.int64),
         )
 
@@ -649,7 +649,7 @@ def run_decode(
                 past_key_values = input_queue.get()
             else:
                 past_seen_tokens = past_key_values.get_seq_length()
-                attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
+                attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.float16)
                 position_ids = torch.arange(
                     past_seen_tokens,
                     1 + past_seen_tokens,
@@ -672,9 +672,9 @@ def run_decode(
                 causal_mask[:, :, :, -1] = torch.finfo(torch.float16).min
                 pad_mask = (0, pad_len)
                 padded_causal_mask = F.pad(
-                    causal_mask.to(torch.int64), pad_mask, value=torch.iinfo(torch.int64).min
+                    causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
                 )
-                padded_causal_mask[:, :, :, -1] = 0
+                padded_causal_mask[:, :, :, -1] = 0.0
                 dist.recv(hidden_states, src=rank - 1)
                 layer_outputs = multi_decoder(
                     hidden_states,

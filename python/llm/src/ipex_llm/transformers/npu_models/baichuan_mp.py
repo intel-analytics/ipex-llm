@@ -122,7 +122,7 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
         # Self Attention
         if mode == "decode":
             attention_mask = self.create_input_op((self.batch_size, 1, 1, self.max_seq_len + 1),
-                                                  dtype=np.int64)
+                                                  dtype=np.float16)
         else:
             attention_mask = None
 
@@ -287,7 +287,6 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
         else:
             attn_weight = self.matmul(query_states, key_states, False, True) / (
                 math.sqrt(self.head_dim))
-            attention_mask = self.convert_to_fp16(attention_mask)
             attn_weight = self.eltwise_add(attn_weight, attention_mask)
             attn_weight = self.convert_to_fp32(attn_weight)
             attn_weight = self.softmax(attn_weight, -1)
@@ -451,7 +450,7 @@ class FusedBaichuanLowBitMultiDecoderlayer(torch.nn.Module):
 
         inputs = (
             hidden_states.to(torch.float16),
-            attention_mask.to(torch.int64),
+            attention_mask.to(torch.float16),
             position_ids.to(torch.int64),
         )
 
@@ -697,9 +696,9 @@ def run_decode(
 
                 pad_mask = (0, pad_len)
                 padded_causal_mask = F.pad(
-                    attention_mask.to(torch.int64), pad_mask, value=torch.iinfo(torch.int64).min
+                    attention_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
                 )
-                padded_causal_mask[:, :, :, -1] = 0
+                padded_causal_mask[:, :, :, -1] = 0.0
                 dist.recv(hidden_states, src=rank - 1)
                 layer_outputs = multi_decoder(
                     hidden_states,
@@ -950,9 +949,9 @@ class PrefillRunner:
         hidden_states = F.pad(hidden_states.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
         position_ids = F.pad(position_ids, (0, pad_len), value=0)
         attention_mask = F.pad(
-            attention_mask.to(torch.int64),
+            attention_mask.to(torch.float16),
             (0, pad_len, 0, pad_len),
-            value=torch.iinfo(torch.int64).min,
+            value=torch.finfo(torch.float16).min,
         )
 
         args = (hidden_states, position_ids, attention_mask, past_key_value)
