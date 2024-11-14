@@ -166,7 +166,7 @@ Arguments info:
 ##### [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) |
 
 ```log
-Inference time: 0.3975503444671631 s
+Inference time: xxx s
 [[-0.00674987 -0.01700369 -0.0028928  ... -0.05296675 -0.00352772
    0.00827096]
  [-0.04398304  0.00023038  0.00643183 ... -0.02717186  0.00483789

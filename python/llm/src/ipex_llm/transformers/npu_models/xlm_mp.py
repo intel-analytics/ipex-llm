@@ -419,7 +419,7 @@ def run_prefill(
 ):
 
     layer_start = 0
-    layer_end = 12
+    layer_end = model.config.num_hidden_layers
 
     decoderlayers = []
     layer_weights = []
