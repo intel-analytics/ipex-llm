@@ -33,6 +33,7 @@ def update_names_of_IR_and_export_blob(model, model_name, dir):
     core.set_property("NPU", {"NPU_COMPILATION_MODE_PARAMS":
                               "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"})
     core.set_property("NPU", {"PERFORMANCE_HINT": "LATENCY"})
+    print(xml_path)
     model = core.read_model(xml_path)
     inputs = model.inputs
     for idx, input in enumerate(inputs):
@@ -53,7 +54,7 @@ def update_names_of_IR_and_export_blob(model, model_name, dir):
             f.write(model_stream)
 
     os.remove(xml_path)
-    os.remove(new_ir_path)
+    # os.remove(new_ir_path)
 
     return blob_path
 
@@ -94,7 +95,8 @@ class LowBitLLMLMHead(LLMBaseNNFactory):
         if n_splits == 1:
             input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
         else:
-            input = self.create_input_op((1, self.batch_size, self.hidden_size))
+            # input = self.create_input_op((1, self.batch_size, self.hidden_size))
+            input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
 
         hidden_states = input
 
@@ -123,6 +125,7 @@ class LLMEmbedding(NNFactory):
         embedding_weight,
         padding_idx,
         dtype,  # fp16
+        input_length: int = 1,
         device: str = "NPU",
     ):
         super().__init__(False, device)
@@ -133,7 +136,7 @@ class LLMEmbedding(NNFactory):
 
         # define input
         weight = self.constant(embedding_weight)
-        input = self.parameter((1, 1), dtype=np.int32)
+        input = self.parameter((1, input_length), dtype=np.int32)
 
         if padding_idx == -1:
             padding_idx += vocab_size

@@ -192,7 +192,9 @@ def convert_llm(model: torch.nn.Module,
                 kv_len: int,
                 max_prompt_len: int,
                 transpose_value_cache: bool,
-                group_size: int):
+                group_size: int,
+                compile_full_model: bool=True,
+                save_directory: str=None):
     # whether to set layernorm weight as const
     layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "1") == "1"
     if group_size == 0:
@@ -329,12 +331,19 @@ def convert_llm(model: torch.nn.Module,
     elif model.config.model_type == "qwen2":
         layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "0") == "1"
         with tempfile.TemporaryDirectory() as temp_dir:
+            if save_directory is not None:
+                temp_dir = save_directory
+            temp_dir = r"D:\ruonan\qwen2.5-7B-full-weights-960"
+            if os.path.exists(temp_dir):
+                import shutil
+                shutil.rmtree(temp_dir)
+            os.mkdir(temp_dir)
             weight_dir = os.path.join(temp_dir, "model_weights")
             os.mkdir(weight_dir)
             layer_num = len(model.model.layers)
             from .qwen import convert_qwen_layer, convert_lm_head_and_embedding
             first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
-                                                                            temp_dir, weight_dir)
+                                                                            temp_dir, weight_dir, 1)
 
             param_list = []
             for layer_idx in range(0, layer_num):
@@ -343,6 +352,13 @@ def convert_llm(model: torch.nn.Module,
                                   layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_qwen_layer, param_list)
+            
+            if compile_full_model:
+                from .qwen import convert_qwen_prefill_layer, convert_lm_head_and_embedding
+                convert_qwen_prefill_layer(model, n_splits_linear, n_splits_down_proj,
+                                           temp_dir, weight_dir, transpose_value_cache, max_prompt_len, group_size)
+                convert_lm_head_and_embedding(model, n_splits_linear,
+                                              temp_dir, weight_dir, max_prompt_len)
 
             # Prefill Runner
             from ipex_llm.transformers.npu_models.convert_mp import convert_qwen
