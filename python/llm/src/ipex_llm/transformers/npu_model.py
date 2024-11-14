@@ -713,53 +713,53 @@ class EmbeddingModel(_BaseAutoModelClass):
 
     @classmethod
     def load_convert_fp16(cls, q_k, optimize_model, device, modules_to_not_convert,
-                     group_size=0, *arg, **kwarg):
+                          group_size=0, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.xlm_mp import replace_with_FP16Linear
         replace_with_FP16Linear(optimize_model, q_k, device=device,
-                            modules_to_not_convert=modules_to_not_convert,
-                            group_size=group_size)
+                                modules_to_not_convert=modules_to_not_convert,
+                                group_size=group_size)
 
-    def encode(
-            self,
-            sentences,
-            batch_size: int=256,
-            max_length: int=512,
-            normalize_to_unit: bool=True,
-            return_numpy: bool=True,
-            enable_tqdm: bool=True,
-            query_instruction: str="",
-            **kwargs
-        ):
+    def encode(self,
+               sentences,
+               batch_size: int=256,
+               max_length: int=512,
+               normalize_to_unit: bool=True,
+               return_numpy: bool=True,
+               enable_tqdm: bool=True,
+               query_instruction: str="",
+               **kwargs):
 
         from tqdm import tqdm
         from numpy import ndarray
+
         if isinstance(sentences, str):
             sentences = [sentences]
-        
+
         with torch.no_grad():
             embeddings_collection = []
-            for sentence_id in tqdm(range(0, len(sentences), batch_size), desc='Extract embeddings', disable=not enable_tqdm):
+            for sentence_id in tqdm(range(0, len(sentences), batch_size),
+                                    desc='Extract embeddings', disable=not enable_tqdm):
                 if isinstance(query_instruction, str) and len(query_instruction) > 0:
-                    sentence_batch = [query_instruction+sent for sent in sentences[sentence_id:sentence_id+batch_size]] 
+                    sentence_batch = [query_instruction+sent for sent in
+                                      sentences[sentence_id:sentence_id+batch_size]]
                 else:
                     sentence_batch = sentences[sentence_id:sentence_id+batch_size]
-                inputs = self.tokenizer(
-                        sentence_batch, 
-                        padding=True,
-                        truncation=True,
-                        max_length=max_length,
-                        return_tensors="pt",
-                    )
+                inputs = self.tokenizer(sentence_batch,
+                                        padding=True,
+                                        truncation=True,
+                                        max_length=max_length,
+                                        return_tensors="pt",
+                                        )
                 outputs = self.model(**inputs, return_dict=True)
-                
+
                 embeddings = outputs.last_hidden_state[:, 0]
-                
+
                 if normalize_to_unit:
                     embeddings = embeddings / embeddings.norm(dim=1, keepdim=True)
                 embeddings_collection.append(embeddings)
             embeddings = torch.cat(embeddings_collection, dim=0)
-        
+
         if return_numpy and not isinstance(embeddings, ndarray):
             embeddings = embeddings.numpy()
-        
+
         return embeddings

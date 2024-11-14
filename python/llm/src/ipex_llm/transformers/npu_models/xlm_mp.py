@@ -171,48 +171,42 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
         self.compile()
 
     def build_encoder(self,
-        hidden_states,
-        attention_mask,
-        attn_output_norm_weight,
-        attn_output_norm_bias,
-        encoder_output_norm_weight,
-        encoder_output_norm_bias,
-        attn_self_query_bias,
-        attn_self_key_bias,
-        attn_self_value_bias,
-        attn_output_dense_bias,
-        encoder_inter_dense_bias,
-        encoder_output_dense_bias,
-        ):
+                      hidden_states,
+                      attention_mask,
+                      attn_output_norm_weight,
+                      attn_output_norm_bias,
+                      encoder_output_norm_weight,
+                      encoder_output_norm_bias,
+                      attn_self_query_bias,
+                      attn_self_key_bias,
+                      attn_self_value_bias,
+                      attn_output_dense_bias,
+                      encoder_inter_dense_bias,
+                      encoder_output_dense_bias,):
 
-        # XLMRobertaAttention    
+        # XLMRobertaAttention
         self_outputs = self.self_attention(
             hidden_states=hidden_states,
             attention_mask=attention_mask,
             query_bias=attn_self_query_bias,
             key_bias=attn_self_key_bias,
-            value_bias=attn_self_value_bias,
-            )
+            value_bias=attn_self_value_bias,)
 
         attention_output = self.self_output(input_tensor=self_outputs,
                                             hidden_states=hidden_states,
                                             output_bias=attn_output_dense_bias,
                                             layer_norm_weight=attn_output_norm_weight,
-                                            layer_norm_bias=attn_output_norm_bias,
-                                            )
+                                            layer_norm_bias=attn_output_norm_bias,)
         # # XLMRobertaAttention End
 
         intermediate_output = self.self_intermediate(inter_tensor=attention_output,
-                                                     inter_bias=encoder_inter_dense_bias,
-                                                     )
-        
-        
+                                                     inter_bias=encoder_inter_dense_bias,)
+
         layer_output = self.encoder_output(input_tensor=intermediate_output,
-                                   hidden_states=attention_output,
-                                   output_bias=encoder_output_dense_bias,
-                                   layer_norm_weight=encoder_output_norm_weight,
-                                   layer_norm_bias=encoder_output_norm_bias,
-                                   )
+                                           hidden_states=attention_output,
+                                           output_bias=encoder_output_dense_bias,
+                                           layer_norm_weight=encoder_output_norm_weight,
+                                           layer_norm_bias=encoder_output_norm_bias,)
         outputs = layer_output
         return outputs
 
@@ -233,14 +227,20 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
         value_states = value_states + value_bias
 
         mixed_query_states = self.reshape(mixed_query_states,
-                                          [self.batch_size, self.seq_len,
-                                           self.num_attention_heads, self.attention_head_size])
+                                          [self.batch_size,
+                                           self.seq_len,
+                                           self.num_attention_heads,
+                                           self.attention_head_size])
         key_states = self.reshape(key_states,
-                                  [self.batch_size, self.seq_len,
-                                   self.num_attention_heads, self.attention_head_size])
+                                  [self.batch_size,
+                                   self.seq_len,
+                                   self.num_attention_heads,
+                                   self.attention_head_size])
         value_states = self.reshape(value_states,
-                                    [self.batch_size, self.seq_len,
-                                     self.num_attention_heads, self.attention_head_size])
+                                    [self.batch_size,
+                                     self.seq_len,
+                                     self.num_attention_heads,
+                                     self.attention_head_size])
 
         query_states = self.transpose(mixed_query_states, [0, 2, 1, 3])
         key_states = self.transpose(key_states, [0, 2, 1, 3])
@@ -251,7 +251,7 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
         if attention_mask is not None:
             attention_scores = self.eltwise_add(attention_scores, attention_mask)
         attention_probs = self.softmax(attention_scores, -1)
-        
+
         context_states = self.matmul(attention_probs, value_states, False, False)
         context_states = self.transpose(context_states, [0, 2, 1, 3])
         context_states = self.reshape(context_states,
@@ -266,14 +266,24 @@ class LowBitMultiEncoderlayer(LLMBaseNNFactory):
                     output_bias,
                     layer_norm_weight,
                     layer_norm_bias):
-        output_states = self.linear(input_tensor, self.hidden_size, self.hidden_size, bias=False, wt_dtype=self.dtype,)
+        output_states = self.linear(input_tensor,
+                                    self.hidden_size,
+                                    self.hidden_size,
+                                    bias=False,
+                                    wt_dtype=self.dtype,)
         output_states = output_states + output_bias
         output_states = self.eltwise_add(output_states, hidden_states)
-        output_states = self.paraformer_layer_norm(output_states, layer_norm_weight, layer_norm_bias)
+        output_states = self.paraformer_layer_norm(output_states,
+                                                   layer_norm_weight,
+                                                   layer_norm_bias)
         return output_states
 
     def self_intermediate(self, inter_tensor, inter_bias):
-        inter_states = self.linear(inter_tensor, self.inter_size, self.hidden_size, bias=False, wt_dtype=self.dtype,)
+        inter_states = self.linear(inter_tensor,
+                                   self.inter_size,
+                                   self.hidden_size,
+                                   bias=False,
+                                   wt_dtype=self.dtype,)
         inter_states = self.convert_to_fp32(inter_states)
         inter_bias = self.convert_to_fp32(inter_bias)
         inter_states = inter_states + inter_bias
@@ -358,16 +368,16 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             dtype=np_dtype,
         )
 
-        self.attn_output_norm_weight=attn_output_norm_weight
-        self.attn_output_norm_bias=attn_output_norm_bias
-        self.encoder_output_norm_weight=encoder_output_norm_weight
-        self.encoder_output_norm_bias=encoder_output_norm_bias
-        self.attn_self_query_bias=attn_self_query_bias
-        self.attn_self_key_bias=attn_self_key_bias
-        self.attn_self_value_bias=attn_self_value_bias
-        self.attn_output_dense_bias=attn_output_dense_bias
-        self.encoder_inter_dense_bias=encoder_inter_dense_bias
-        self.encoder_output_dense_bias=encoder_output_dense_bias
+        self.attn_output_norm_weight = attn_output_norm_weight
+        self.attn_output_norm_bias = attn_output_norm_bias
+        self.encoder_output_norm_weight = encoder_output_norm_weight
+        self.encoder_output_norm_bias = encoder_output_norm_bias
+        self.attn_self_query_bias = attn_self_query_bias
+        self.attn_self_key_bias = attn_self_key_bias
+        self.attn_self_value_bias = attn_self_value_bias
+        self.attn_output_dense_bias = attn_output_dense_bias
+        self.encoder_inter_dense_bias = encoder_inter_dense_bias
+        self.encoder_output_dense_bias = encoder_output_dense_bias
 
     def forward(
         self,
@@ -424,7 +434,7 @@ def run_prefill(
             (attn_layer.self.query.weight),
             (attn_layer.self.key.weight),
             (attn_layer.self.value.weight),
-            (attn_layer.output.dense.weight),         
+            (attn_layer.output.dense.weight),  
             (curr_layer.intermediate.dense.weight),
             (curr_layer.output.dense.weight),
         ]
@@ -550,27 +560,17 @@ def gen_xlm_fused_encoder_forward(prefill_runner):
         output_hidden_states: Optional[bool] = False,
         return_dict: Optional[bool] = True,
     ) -> Union[Tuple[torch.Tensor], BaseModelOutputWithPastAndCrossAttentions]:
-        
+
         all_hidden_states = () if output_hidden_states else None
         all_self_attentions = () if output_attentions else None
         all_cross_attentions = () if output_attentions and self.config.add_cross_attention else None
 
-        if self.gradient_checkpointing and self.training:
-            if use_cache:
-                logger.warning_once(
-                    "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`..."
-                )
-                use_cache = False
-
         next_decoder_cache = () if use_cache else None
-        layer_outputs = prefill_runner.forward(
-                hidden_states,
-                attention_mask,
-        )
-        
+        layer_outputs = prefill_runner.forward(hidden_states, attention_mask)
+
         layer_outputs = layer_outputs.to(torch.float32)
         hidden_states = layer_outputs
-        
+
         if use_cache:
             next_decoder_cache += (layer_outputs[-1],)
 
@@ -644,14 +644,11 @@ class XLMPoolLayer(torch.nn.Module):
             input_channels=input_channel,
         )
 
-    def forward(
-        self, hidden_states
-        ):
+    def forward(self, hidden_states):
         backend_cls = self.backend_cls_pooler
         hidden_states = hidden_states.to(torch.float16)
-        return run_model(
-            hidden_states, self.parameters, backend_cls, self.op_id
-        )
+        return run_model(hidden_states, self.parameters, backend_cls, self.op_id)
+
 
 class LayerNorm(NNFactory):
     def __init__(

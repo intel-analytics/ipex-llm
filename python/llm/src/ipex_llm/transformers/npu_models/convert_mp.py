@@ -474,7 +474,7 @@ def optimize_llm(
                          decoder=True,
                          transpose_value_cache=transpose_value_cache)
     elif model.config.model_type == "xlm-roberta":
-        # for bce-embedding-base_v1 
+        # for bce-embedding-base_v1
         convert_bce(model,
                     max_output_len=max_context_len,
                     max_prompt_len=max_prompt_len,
