@@ -852,6 +852,8 @@ We can set up model serving using `IPEX-LLM` as backend using FastChat, the foll
     --model-path /llm/models/Yi-1.5-34B \
     --device xpu \
     --enforce-eager \
+    --disable-async-output-proc \
+    --distributed-executor-backend ray \
     --dtype float16 \
     --load-in-low-bit fp8 \
     --tensor-parallel-size 4 \
