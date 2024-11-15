@@ -510,7 +510,7 @@ def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=Fa
                 for k, v in past_key_values
             ]
         elif self.config.model_type == "chatglm":
-            if self.config.num_layers == 40 and hasattr(self.config, 'rope_ratio'):
+            if self.config.num_layers in [28, 40] and hasattr(self.config, 'rope_ratio'):
                 past_key_values = [
                     (k[:, :, :-(new_cache_size), :],
                         v[:, :, :-(new_cache_size), :])
@@ -768,7 +768,7 @@ def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_
         forward_args["attention_mask"] = cur_attention_mask
 
     if self.config.model_type == "chatglm":
-        if self.config.num_layers == 40 and hasattr(self.config, 'rope_ratio'):
+        if self.config.num_layers in [28, 40] and hasattr(self.config, 'rope_ratio'):
             past_key_value_len = past_key_values[0][0].shape[2]
         else:
             past_key_value_len = past_key_values[0][0].shape[0]
