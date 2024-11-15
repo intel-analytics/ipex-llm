@@ -482,6 +482,7 @@ jobs:
           cd bigdl-core-npu-level0
           mkdir build
           cd build
+          "C:\Program Files (x86)\Intel\openvino_2024.4.0\setupvars.ps1"
           cmake ..
           cmake --build . --config Release -t pipeline
       - name: Move release binary
