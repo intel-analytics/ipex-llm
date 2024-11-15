@@ -1,4 +1,7 @@
 # 在带有 Intel GPU 的Linux系统上安装 IPEX-LLM
+<p>
+  < <a href='./install_linux_gpu.md'>English</a> | <b>中文</b> >
+</p>
 
 本指南将引导你如何在带有 Intel GPU 的 Linux 系统上安装 IPEX-LLM。适用于 Intel 数据中心的 GPU Flex 和 Max 系列，以及 Intel Arc 系列 GPU 和 Intel iGPU。
 
