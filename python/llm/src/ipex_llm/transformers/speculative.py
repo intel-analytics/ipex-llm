@@ -768,7 +768,10 @@ def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_
         forward_args["attention_mask"] = cur_attention_mask
 
     if self.config.model_type == "chatglm":
-        past_key_value_len = past_key_values[0][0].shape[0]
+        if self.config.num_layers == 40 and hasattr(self.config, 'rope_ratio'):
+            past_key_value_len = past_key_values[0][0].shape[2]
+        else:
+            past_key_value_len = past_key_values[0][0].shape[0]
         position_ids = torch.arange(verify_input_ids.shape[1], dtype=torch.long,
                                     device=verify_input_ids.device)
         position_ids = position_ids.unsqueeze(0).repeat(1, 1) + past_key_value_len
