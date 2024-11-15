@@ -476,7 +476,7 @@ jobs:
           msbuild-architecture: x64
       - name: Add cmake to PATH
         uses: ilammy/msvc-dev-cmd@v1
-      - name: Setup OV
+      - name: Build binary
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Intel\openvino_2024.4.0\setupvars.bat"
