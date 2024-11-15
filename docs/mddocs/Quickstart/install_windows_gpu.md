@@ -1,5 +1,8 @@
 # Install IPEX-LLM on Windows with Intel GPU
-
+<p>
+  < <b>English</b> | <a href='./install_windows_gpu.zh-CN.md'>中文</a> >
+</p>
+    
 This guide demonstrates how to install IPEX-LLM on Windows with Intel GPUs. 
 
 It applies to Intel Core Ultra and Core 11 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
