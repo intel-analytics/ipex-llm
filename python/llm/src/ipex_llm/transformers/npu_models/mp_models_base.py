@@ -155,13 +155,6 @@ class LLMBaseNNFactory(NNFactory):
                 concat_linear, 2,
                 [num_heads * head_dim, num_key_value_heads * head_dim, num_key_value_heads * head_dim]
             )
-            # query_states = self.simple_slice(concat_linear, begin=[0, 0, 0],
-            #                                  end=[1, seq_len, num_heads * head_dim])
-            # key_states = self.simple_slice(concat_linear, begin=[0, 0, num_heads * head_dim],
-            #                                end=[1, seq_len, num_heads * head_dim + num_key_value_heads * head_dim])
-            # value_states = self.simple_slice(concat_linear,
-            #                                  begin=[0, 0, num_heads * head_dim + num_key_value_heads * head_dim],
-            #                                  end=[1, seq_len, num_heads * head_dim + num_key_value_heads * head_dim * 2])
         else:
             query_states = self.linear(
                 hidden_states,
