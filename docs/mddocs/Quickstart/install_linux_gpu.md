@@ -125,7 +125,7 @@ clinfo | grep "Device Name"
 whose output should contain `Intel(R) Arc(TM) Graphics` or `Intel(R) Graphics` based on your GPU model.
 
 > [!TIP]
-> You could refer to the [official driver guide for client GPUS](https://dgpu-docs.intel.com/driver/client/overview.html#installing-client-gpus-on-ubuntu-desktop-22-04-lts) for more information.
+> You could refer to the [official driver guide for client GPUs](https://dgpu-docs.intel.com/driver/client/overview.html#installing-client-gpus-on-ubuntu-desktop-22-04-lts) for more information.
 
 
 #### For other Intel iGPU and dGPU

@@ -141,10 +141,10 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         # Self Attention
         if mode == "decode":
             attention_mask = self.create_input_op(
-                (self.batch_size, 1, 1, self.max_seq_len + 1), dtype=np.int64)
+                (self.batch_size, 1, 1, self.max_seq_len + 1), dtype=np.float16)
         else:
             attention_mask = self.create_input_op(
-                (self.batch_size, 1, self.seq_len, self.seq_len), dtype=np.int64)
+                (self.batch_size, 1, self.seq_len, self.seq_len), dtype=np.float16)
 
         position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
 
@@ -239,7 +239,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         print(f"{mode} start compiling")
         if (
             group_size != 0
-            and (mode == "prefill" or num_layers == 2)
+            and (mode == "prefill" or num_layers == 2 or num_layers == 3)
             and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1"
         ):
             self.compile(npu_dpu_groups=6)
@@ -413,7 +413,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
 
         inputs = (
             hidden_states.to(torch.float16),
-            attention_mask.to(torch.int64),
+            attention_mask.to(torch.float16),
             position_ids.to(torch.int64),
         )
 
@@ -532,7 +532,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
 
         backend_cls = self.backend_cls_prefill
         inputs = (hidden_states.to(torch.float16),
-                  attention_mask.to(torch.int64),
+                  attention_mask.to(torch.float16),
                   position_ids.to(torch.int64))
         inputs += (self.layer_norm_0, self.layer_norm_1, self.q_bias)
         hidden_states, past_key, past_value = run_model(
@@ -658,7 +658,7 @@ def run_decode(
                 past_key_values = input_queue.get()
             else:
                 past_seen_tokens = past_key_values.get_seq_length()
-                attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.int64)
+                attention_mask = torch.ones([1, past_seen_tokens + 1], dtype=torch.float16)
                 position_ids = torch.arange(
                     past_seen_tokens,
                     1 + past_seen_tokens,
@@ -681,9 +681,9 @@ def run_decode(
                 causal_mask[:, :, :, -1] = torch.finfo(torch.float16).min
                 pad_mask = (0, pad_len)
                 padded_causal_mask = F.pad(
-                    causal_mask.to(torch.int64), pad_mask, value=torch.iinfo(torch.int64).min
+                    causal_mask.to(torch.float16), pad_mask, value=torch.finfo(torch.float16).min
                 )
-                padded_causal_mask[:, :, :, -1] = 0
+                padded_causal_mask[:, :, :, -1] = 0.0
                 dist.recv(hidden_states, src=rank - 1)
                 layer_outputs = multi_decoder(
                     hidden_states,
@@ -975,9 +975,9 @@ class PrefillRunner:
         hidden_states = F.pad(hidden_states.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
         position_ids = F.pad(position_ids, (0, pad_len), value=0)
         attention_mask = F.pad(
-            attention_mask.to(torch.int64),
+            attention_mask.to(torch.float16),
             (0, pad_len, 0, pad_len),
-            value=torch.iinfo(torch.int64).min,
+            value=torch.finfo(torch.float16).min,
         )
 
         args = (hidden_states, position_ids, attention_mask, past_key_value)

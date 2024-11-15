@@ -5,11 +5,14 @@ ARG https_proxy
 
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
+# To prevent RPC_TIMEOUT ERROR for the first request
+ENV VLLM_RPC_TIMEOUT=100000
 
 
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
+ADD ./oneccl-binding.patch /tmp/oneccl-binding.patch
 
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " | tee /etc/apt/sources.list.d/oneAPI.list && \
@@ -41,6 +44,14 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
     git clone https://github.com/intel-analytics/ipex-llm && \
+    # The following comment segment is used when building from source...
+    # cd ipex-llm && \
+    # git fetch origin pull/12338/head:local_pr && \
+    # git checkout local_pr && \
+    # pip uninstall -y ipex-llm && \
+    # cd python/llm && \
+    # python setup.py install && \
+    # cd ../../../ && \
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     cp -r ./ipex-llm/python/llm/example/GPU/HuggingFace/LLM ./examples && \
     # Install vllm dependencies
@@ -57,6 +68,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     bash oneccl_wks_installer_2024.0.0.5.1.sh && \
     git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
     cd torch-ccl && \
+    patch -p1 < /tmp/oneccl-binding.patch && \
     USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install && \
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
@@ -74,13 +86,16 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     rm -rf /tmp/neo && \
     mkdir -p /llm && \
     cd /llm && \
-    git clone -b 0.5.4 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    git clone -b 0.6.2 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
     cd /llm/vllm && \
-    pip install -r /llm/vllm/requirements-xpu.txt && \
-    VLLM_TARGET_DEVICE=xpu python setup.py install && \
+    pip install setuptools-scm && \
+    pip install --upgrade cmake && \
+    VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v /llm/vllm && \
+    # pip install -r /llm/vllm/requirements-xpu.txt && \
+    # VLLM_TARGET_DEVICE=xpu python setup.py install && \
     pip install mpi4py fastapi uvicorn openai && \
     pip install gradio==4.43.0 && \
-    pip install transformers==4.44.2 && \
+    # pip install transformers==4.44.2 && \
     # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
     pip install ray && \
     patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch

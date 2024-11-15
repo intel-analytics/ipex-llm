@@ -28,4 +28,6 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --max-model-len 2048 \
   --max-num-batched-tokens 4000 \
   --max-num-seqs 12 \
-  --tensor-parallel-size 1
+  --tensor-parallel-size 1 \
+  --disable-async-output-proc \
+  --distributed-executor-backend ray

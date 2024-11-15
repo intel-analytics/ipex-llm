@@ -75,14 +75,13 @@ def get_load_function(low_bit):
         _model_sample_convert()
 
         # from vllm.utils import measure_device_memory
-        from vllm.utils import CudaMemoryProfiler
-        with CudaMemoryProfiler() as m:
+        from vllm.utils import DeviceMemoryProfiler
+        with DeviceMemoryProfiler() as m:
             self.model = get_model(
                 model_config=self.model_config,
                 device_config=DeviceConfig("cpu"),
                 load_config=self.load_config,
                 lora_config=self.lora_config,
-                multimodal_config=self.multimodal_config,
                 parallel_config=self.parallel_config,
                 scheduler_config=self.scheduler_config,
                 cache_config=self.cache_config,

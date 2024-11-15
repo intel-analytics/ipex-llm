@@ -45,6 +45,9 @@ if __name__ == "__main__":
     model_path = args.repo_id_or_model_path
     dataset_path = args.dataset
     tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    # Avoid tokenizer doesn't have a padding token
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
 
     if dataset_path.endswith(".json") or dataset_path.endswith(".jsonl"):
         data = load_dataset("json", data_files=dataset_path)
@@ -105,6 +108,9 @@ if __name__ == "__main__":
             gradient_checkpointing=True, # can further reduce memory but slower
         ),
         dataset_text_field="instruction",
+        data_collator=transformers.DataCollatorForSeq2Seq(
+            tokenizer, pad_to_multiple_of=8, return_tensors="pt", padding=True
+        ),
     )
     model.config.use_cache = False  # silence the warnings. Please re-enable for inference!
     result = trainer.train()

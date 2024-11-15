@@ -19,9 +19,12 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.engine.arg_utils import AsyncEngineArgs, EngineArgs
 from vllm.entrypoints.llm import LLM
 from vllm.utils import Counter
+from vllm.config import EngineConfig
 from ipex_llm.vllm.xpu.model_convert import _ipex_llm_convert
 from vllm.usage.usage_lib import UsageContext
 from vllm.engine.metrics import StatLoggerBase
+from vllm.engine.multiprocessing.engine import MQLLMEngine
+import signal
 
 
 class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
@@ -32,6 +35,7 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     def from_engine_args(
         cls,
         engine_args: AsyncEngineArgs,
+        engine_config: Optional[EngineConfig] = None,
         start_engine_loop: bool = True,
         usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
         load_in_low_bit: str = "sym_int4",
@@ -40,7 +44,9 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         """Creates an async LLM engine from the engine arguments."""
         # Create the engine configs.
         _ipex_llm_convert(load_in_low_bit)
-        return super().from_engine_args(engine_args, start_engine_loop, usage_context, stat_loggers)
+        return super().from_engine_args(engine_args=engine_args, engine_config=engine_config,
+                                        start_engine_loop=start_engine_loop,
+                                        usage_context=usage_context, stat_loggers=stat_loggers)
 
 
 class IPEXLLMClass(LLM):
@@ -117,3 +123,27 @@ class IPEXLLMLLMEngine(LLMEngine):
         # Create the engine configs.
         _ipex_llm_convert(load_in_low_bit)
         return super().from_engine_args(engine_args, usage_context, stat_loggers)
+
+
+class IPEXLLMMQLLMEngine(MQLLMEngine):
+    @classmethod
+    def from_engine_args(cls, engine_args: AsyncEngineArgs,
+                         usage_context: UsageContext, ipc_path: str, load_in_low_bit: str):
+        _ipex_llm_convert(load_in_low_bit)
+        return super().from_engine_args(engine_args, usage_context, ipc_path)
+
+
+def run_mp_engine(engine_args: AsyncEngineArgs, usage_context: UsageContext,
+                  ipc_path: str, load_in_low_bit: str):
+
+    def signal_handler(*_) -> None:
+        # Interrupt server on sigterm
+        raise KeyboardInterrupt("MQLLMEngine terminated")  # noqa
+
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    engine = IPEXLLMMQLLMEngine.from_engine_args(engine_args=engine_args,
+                                                 usage_context=usage_context,
+                                                 ipc_path=ipc_path,
+                                                 load_in_low_bit=load_in_low_bit)
+    engine.start()

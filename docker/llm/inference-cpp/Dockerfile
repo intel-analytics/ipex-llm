@@ -44,30 +44,28 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \
-    apt-get install -y --no-install-recommends intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
-    # install nodejs and npm and get webui
-    apt purge nodejs -y && \
-    apt purge libnode-dev -y && \
-    apt autoremove -y && \
-    apt clean -y && \
-    wget -qO- https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
-    apt install -y nodejs && \
-    git clone https://github.com/open-webui/open-webui.git /llm/open-webui && \
-    git -C /llm/open-webui checkout e29a999dc910afad91995221cb4bb7c274f87cd6 && \
-    cp -RPp /llm/open-webui/.env.example /llm/open-webui/.env && \
-    # Build frontend
-    npm --prefix /llm/open-webui i && \
-    npm --prefix /llm/open-webui run build && \
+    # apt-get install -y --no-install-recommends intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
+    mkdir -p /tmp/gpu && \
+    cd /tmp/gpu && \
+    wget https://github.com/oneapi-src/level-zero/releases/download/v1.18.3/level-zero_1.18.3+u22.04_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-core_1.0.17791.9_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-opencl_1.0.17791.9_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-level-zero-gpu_1.6.31294.12_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-opencl-icd_24.39.31294.12_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/libigdgmm12_22.5.2_amd64.deb && \
+    dpkg -i *.deb && \
+    rm *.deb && \
+    rm -rf /tmp/gpu && \
+    mkdir -p /llm && \
+    cd /llm && \
     # Install Dependencies
     # remove blinker to avoid error
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
-    pip install -r /llm/open-webui/backend/requirements.txt -U && \
     rm -rf /root/.cache/Cypress && \
     pip uninstall -y gunicorn python-jose PyMySQL
 
 COPY ./start-llama-cpp.sh /llm/scripts/start-llama-cpp.sh
 COPY ./start-ollama.sh /llm/scripts/start-ollama.sh
-COPY ./start-open-webui.sh /llm/scripts/start-open-webui.sh
 COPY ./benchmark_llama-cpp.sh /llm/scripts/benchmark_llama-cpp.sh
 
 WORKDIR /llm/

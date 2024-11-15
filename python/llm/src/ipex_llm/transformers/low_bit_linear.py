@@ -362,12 +362,19 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
     batch_size = x.shape[0]
     hard_condition = (
         x.dtype in [torch.float, torch.half]
-        and x.shape[1] % 256 == 0
-        and output_len % 32 == 0
-        and device in ["arc", "flex", "pvc", "mtl"]
-        and qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, FP4,
-                      FP8E5, FP6, FP8E4, Q4_K, Q6_K]
-        and batch_size <= 64
+        and batch_size <= 48
+        and (
+            (
+                qtype in [SYM_INT4, ASYM_INT4, FP8E5, FP8E4]
+                and x.shape[1] % 128 == 0
+            )
+            or (
+                qtype in [SYM_INT8, FP4, FP6, Q4_K, Q6_K]
+                and device in ["arc", "flex", "pvc", "mtl"]
+                and x.shape[1] % 256 == 0
+                and output_len % 32 == 0
+            )
+        )
     )
     if hard_condition:
         return (
@@ -727,7 +734,7 @@ class LowBitLinear(nn.Linear):
             # return empty tensor with output shape, x.dtype and x.device
             return torch.empty(new_shape, dtype=x.dtype, device=x.device)
 
-        x_2d = x.view(-1, x_shape[-1])
+        x_2d = x.contiguous().view(-1, x_shape[-1])
 
         if self.act_order:
             x_2d = x_2d[:, self.g_idx_map]

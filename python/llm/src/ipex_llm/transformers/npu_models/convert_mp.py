@@ -46,12 +46,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             from ipex_llm.transformers.models.baichuan import pre_compute_inv_freq
             model.apply(pre_compute_inv_freq)
 
-    # MiniCPM-V 2.6 must put lm_head on CPU now
-    cpu_lm_head = (
-        (model.config.model_type == "minicpmv" and model.config.hidden_size == 3584 and
-         model.config.vocab_size == 151666)
-        or os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0"
-    )
+    cpu_lm_head = os.environ.get("IPEX_LLM_CPU_LM_HEAD", "0") != "0"
 
     # workaround for MiniCPM-2B
     if model.config.model_type == "minicpm" and model.config.num_hidden_layers == 40:
@@ -76,6 +71,48 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
 
     if model.config.model_type == "minicpmv" and hasattr(model, "llm"):
         # MiniCPM-V
+        # convert conv2d and layernorm
+        from ipex_llm.transformers.npu_models.minicpmv_mp import MinicpmVPatchEmbedding, \
+            replace_with_Layernorm
+        origin_conv = model.vpm.embeddings.patch_embedding
+        new_conv = MinicpmVPatchEmbedding(
+            weight=origin_conv.weight.to(torch.float16),
+            bias=origin_conv.bias.to(torch.float16),
+            strides=model.config.vision_config.patch_size,
+        )
+        model.vpm.embeddings.patch_embedding = new_conv
+        del new_conv
+        replace_with_Layernorm(model, qtype=None, device='NPU',
+                               modules_to_not_convert=[], group_size=0)
+
+        # replace forward function
+        from ipex_llm.transformers.npu_models.minicpmv_mp import pad_mlp_fc2, pad_mlp_forward, \
+            encoder_attn_forward, multi_head_attn_forward, resampler_forward
+        model.apply(pad_mlp_fc2)    # pad mlp.fc2 to avoid compile error
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        setattr(module.Resampler, "forward", resampler_forward)
+        module = importlib.import_module(modeling_module_name.replace("modeling_minicpmv",
+                                                                      "resampler"))
+        setattr(module.MultiheadAttention, "multi_head_attention_forward", multi_head_attn_forward)
+        if model.config.hidden_size == 3584 and model.config.vocab_size == 151666:
+            # MiniCPM-V 2.6
+            module = importlib.import_module(modeling_module_name.replace("modeling_minicpmv",
+                                                                          "modeling_navit_siglip"))
+            setattr(module.SiglipAttention, "forward", encoder_attn_forward)
+            setattr(module.SiglipMLP, "forward", pad_mlp_forward)
+
+            # workaround for lm_head on NPU
+            from ipex_llm.transformers.npu_models.minicpmv_mp import pad_lm_head, lm_head_forward
+            model.apply(pad_lm_head)    # pad lm_head to avoid compile error
+            setattr(model.llm.lm_head, "forward", lm_head_forward)
+        elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
+            # MiniCPM-V 2.5
+            from transformers.models.idefics2.modeling_idefics2 import Idefics2VisionMLP, \
+                Idefics2VisionAttention
+            convert_forward(model, Idefics2VisionAttention, encoder_attn_forward)
+            convert_forward(model, Idefics2VisionMLP, pad_mlp_forward)
+
         if model.config.hidden_size == 2304 and model.config.vocab_size == 122753:
             # MiniCPM-V 2
             model.llm.config.model_type = "minicpm"
@@ -126,9 +163,9 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                 model.lm_head = new_lm_head
 
     if model.config.model_type == "qwen2":
-        # for Qwen2-7B-Insturct, divide lm_head into 14 parts
-        if model.config.hidden_size == 3584 and model.config.vocab_size == 152064 and \
-                not cpu_lm_head:
+        # for Qwen2-7B-Insturct and MiniCPM-V 2.6, divide lm_head into 14 parts
+        if model.config.hidden_size == 3584 and (model.config.vocab_size == 152064 or
+           model.config.vocab_size == 151666) and not cpu_lm_head:
             # Do not split lm_head and use sym_int8 instead when mixed_precison is True
             if quantization_group_size == 0:
                 # Do not split lm_head and use sym_int8 instead when mixed_precison is True
@@ -138,6 +175,19 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                                            bias=model.lm_head.bias, use_split=False)
             del model.lm_head
             model.lm_head = new_lm_head
+
+    if model.config.model_type == "xlm-roberta":
+        from ipex_llm.transformers.npu_models.xlm_mp import XLMPoolLayer, replace_with_Layernorm
+        pooler_dense = model.pooler.dense
+        opt_linear = XLMPoolLayer(
+            weight=pooler_dense.weight.to(torch.float16),
+            bias=pooler_dense.bias.to(torch.float16),
+            output_channel=model.config.hidden_size,
+            input_channel=model.config.hidden_size
+        )
+        model.pooler.dense = opt_linear
+        replace_with_Layernorm(model.embeddings, qtype=None, device='NPU',
+                               modules_to_not_convert=[], group_size=0)
 
     # lm_head to cpu optimization
     if cpu_lm_head:
@@ -326,6 +376,27 @@ def convert_qwen(
     convert_forward(model, Qwen2ForCausalLM, qwen2_casullm_forward)
 
 
+def convert_bce(
+    model: torch.nn.Module,
+    max_context_len=1024,
+    max_prompt_len=1024,
+    transpose_value_cache=True,
+):
+    from ipex_llm.transformers.npu_models.xlm_mp import gen_xlm_fused_encoder_forward
+    from ipex_llm.transformers.npu_models.xlm_mp import PrefillRunner
+    prefill_runner = PrefillRunner(
+        model,
+        max_output_len=max_context_len,
+        max_prompt_len=max_prompt_len,
+        transpose_value_cache=transpose_value_cache,
+    )
+    encoder_forward = gen_xlm_fused_encoder_forward(
+        prefill_runner=prefill_runner
+    )
+    from transformers.models.xlm_roberta.modeling_xlm_roberta import XLMRobertaEncoder
+    convert_forward(model, XLMRobertaEncoder, encoder_forward)
+
+
 def optimize_llm(
     model: torch.nn.Module,
     max_context_len=1024,
@@ -402,6 +473,12 @@ def optimize_llm(
                          intra_pp=intra_pp,
                          decoder=True,
                          transpose_value_cache=transpose_value_cache)
+    elif model.config.model_type == "xlm-roberta":
+        # for bce-embedding-base_v1
+        convert_bce(model,
+                    max_context_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    transpose_value_cache=transpose_value_cache)
     if hasattr(model, 'lm_head') and isinstance(model.lm_head, SlicedLMHead):
         model.lm_head.get_fused_lm_head()
     # MiniCPM-2b
