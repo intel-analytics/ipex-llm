@@ -477,12 +477,12 @@ jobs:
       - name: Add cmake to PATH
         uses: ilammy/msvc-dev-cmd@v1
       - name: Build binary
-        shell: powershell
+        shell: cmd
         run: |
+          call "C:\Program Files (x86)\Intel\openvino_2024.4.0\setupvars.bat"
           cd bigdl-core-npu-level0
           mkdir build
           cd build
-          "C:\Program Files (x86)\Intel\openvino_2024.4.0\setupvars.ps1"
           cmake ..
           cmake --build . --config Release -t pipeline
       - name: Move release binary
