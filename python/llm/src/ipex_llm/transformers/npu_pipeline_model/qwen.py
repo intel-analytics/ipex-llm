@@ -22,7 +22,7 @@ from .common import update_names_of_IR_and_export_blob, LLMEmbedding, LowBitLLML
 from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 
 
-def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, input_length=1):
+def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, compile_full_model=False):
     num_heads = model.model.layers[0].self_attn.num_heads
     head_dim = model.model.layers[0].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
@@ -69,10 +69,9 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, 
     else:
         weight_numpy = [v.numpy() for v in weights[0]]
 
-    if input_length == 1:
-        for idx, weight in enumerate(weight_numpy):
-            bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
-            weight.tofile(bin_file)
+    for idx, weight in enumerate(weight_numpy):
+        bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
+        weight.tofile(bin_file)
 
     embedding_layer = model.model.embed_tokens
     new_embedding = LLMEmbedding(
@@ -81,17 +80,13 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, 
         embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
         padding_idx=model.config.pad_token_id,
         dtype=np.float16,
-        input_length=input_length,
+        input_length=1,
     )
-    suffix = "_prefill" if input_length > 1 else ""
-    compile = False if input_length > 1 else True
-    if input_length == 1:
-        first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding{suffix}",
-                                                             temp_dir, compile, keep_ir=False)
-    else:
+    first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
+                                                         temp_dir, True, keep_ir=False)
+    if compile_full_model:
         bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
         embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
-        first_blob_path = None
     return first_blob_path, last_blob_path
 
 
@@ -135,61 +130,40 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         np_dtype = np.float16
 
     if mode == "decode":
-        single_decoder = LowBitQwenMultiDecoderlayer(
-            [1, 1, num_heads * head_dim],
-            input_layernorm_weights=[layer_norm_0] if layernorm_const else None,
-            post_attn_layernorm_weights=[layer_norm_1] if layernorm_const else None,
-            q_biases=None,
-            k_biases=None,
-            v_biases=None,
-            cached_cos=cached_cos,
-            cached_sin=cached_sin,
-            num_heads=num_heads,
-            num_key_value_heads=num_key_value_heads,
-            num_layers=1,
-            max_seq_len=kv_len,
-            rms_norm_eps=rms_norm_eps,
-            intermediate_size=intermediate_size,
-            mode="decode",
-            transpose_value=transpose_value_cache,
-            dtype=np_dtype,
-            n_splits_linear=n_splits_linear,
-            n_splits_down_proj=n_splits_down_proj,
-            group_size=group_size
-        )
+        input_len = 1
+        decoder_name = f"decoder_layer_{layer_idx}"
+        compile = True
+        keep_ir = False
     else:
-        single_decoder = LowBitQwenMultiDecoderlayer(
-            [1, kv_len, num_heads * head_dim],
-            input_layernorm_weights=None,
-            post_attn_layernorm_weights=None,
-            q_biases=None,
-            k_biases=None,
-            v_biases=None,
-            cached_cos=cached_cos,
-            cached_sin=cached_sin,
-            num_heads=num_heads,
-            num_key_value_heads=num_key_value_heads,
-            num_layers=1,
-            max_seq_len=kv_len,
-            rms_norm_eps=rms_norm_eps,
-            intermediate_size=intermediate_size,
-            mode="prefill",
-            transpose_value=transpose_value_cache,
-            dtype=np_dtype,
-            n_splits_linear=n_splits_linear,
-            n_splits_down_proj=n_splits_down_proj,
-            group_size=group_size
-        )
-    if mode == "decode":
-        rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
-                                                            f"decoder_layer_{layer_idx}",
-                                                            temp_dir)
-    else:
-        rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
-                                                            f"decoder_layer_prefill",
-                                                            temp_dir)
-    bin_path = os.path.join(temp_dir, f"decoder_layer_{layer_idx}" + ".bin")
-    os.remove(bin_path)
+        input_len = kv_len
+        decoder_name = "decoder_layer_prefill"
+        compile = False
+        keep_ir = True
+    single_decoder = LowBitQwenMultiDecoderlayer(
+        [1, input_len, num_heads * head_dim],
+        input_layernorm_weights=None,
+        post_attn_layernorm_weights=None,
+        q_biases=None,
+        k_biases=None,
+        v_biases=None,
+        cached_cos=cached_cos,
+        cached_sin=cached_sin,
+        num_heads=num_heads,
+        num_key_value_heads=num_key_value_heads,
+        num_layers=1,
+        max_seq_len=kv_len,
+        rms_norm_eps=rms_norm_eps,
+        intermediate_size=intermediate_size,
+        mode=mode,
+        transpose_value=transpose_value_cache,
+        dtype=np_dtype,
+        n_splits_linear=n_splits_linear,
+        n_splits_down_proj=n_splits_down_proj,
+        group_size=group_size
+    )
+    rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
+                                                        decoder_name,
+                                                        temp_dir, compile, keep_ir)
 
     # 0, 1, 2 are input_embed/attention_mask/position_id
     if mode == "decode":

@@ -193,7 +193,7 @@ def convert_llm(model: torch.nn.Module,
                 max_prompt_len: int,
                 transpose_value_cache: bool,
                 group_size: int,
-                compile_full_model: bool=True,
+                compile_full_model: bool=False,
                 save_directory: str=None):
     # whether to set layernorm weight as const
     layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "1") == "1"
@@ -339,7 +339,8 @@ def convert_llm(model: torch.nn.Module,
             layer_num = len(model.model.layers)
             from .qwen import convert_qwen_layer, convert_lm_head_and_embedding
             first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
-                                                                            temp_dir, weight_dir, 1)
+                                                                            temp_dir, weight_dir,
+                                                                            compile_full_model)
 
             param_list = []
             for layer_idx in range(0, layer_num):
@@ -348,13 +349,11 @@ def convert_llm(model: torch.nn.Module,
                                   layernorm_const))
             with Pool() as pool:
                 result = pool.starmap(convert_qwen_layer, param_list)
-            
+
             if compile_full_model:
                 convert_qwen_layer(model, 0, n_splits_linear, n_splits_down_proj,
                                    temp_dir, weight_dir, transpose_value_cache, max_prompt_len, group_size,
-                                   "prefill")
-                convert_lm_head_and_embedding(model, n_splits_linear,
-                                              temp_dir, weight_dir, max_prompt_len)
+                                   layernorm_const, "prefill")
 
             # Prefill Runner
             from ipex_llm.transformers.npu_models.convert_mp import convert_qwen
