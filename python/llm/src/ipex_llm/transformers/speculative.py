@@ -18,7 +18,8 @@
 # https://github.com/huggingface/transformers/blob/v4.45.2/src/transformers/generation/utils.py
 # which are licensed under Apache License 2.0:
 #
-# Copyright 2020 The Google AI Language Team Authors, Facebook AI Research authors and The HuggingFace Inc. team.
+# Copyright 2020 The Google AI Language Team Authors, Facebook AI Research authors
+# and The HuggingFace Inc. team.
 # Copyright (c) 2020, NVIDIA CORPORATION.  All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -510,8 +511,9 @@ def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=Fa
                 for k, v in past_key_values
             ]
         elif self.config.model_type == "chatglm":
-            if isinstance(self.config.eos_token_id, list) and not hasattr(self.transformer, "vision") \
-                and self.config.num_layers in [28, 40]:
+            if isinstance(self.config.eos_token_id, list) and \
+                    not hasattr(self.transformer, "vision") and \
+                    self.config.num_layers in [28, 40]:
                 # glm4 models
                 past_key_values = [
                     (k[:, :, :-(new_cache_size), :],
@@ -651,9 +653,11 @@ def _prepare_generate_args(self, inputs, generation_config, streamer=None, **sam
 
 
 def _prepare_generate_args_4_45(self, inputs, generation_config, streamer=None, **kwargs):
-    # 1. Handle `generation_config` and kwargs that might update it, and validate the `.generate()` call
+    # 1. Handle `generation_config` and kwargs that might update it,
+    # and validate the `.generate()` call
     self._validate_model_class()
-    tokenizer = kwargs.pop("tokenizer", None)  # Pull this out first, we only use it for stopping criteria
+    # Pull this out first, we only use it for stopping criteria
+    tokenizer = kwargs.pop("tokenizer", None)
     generation_config, model_kwargs = self._prepare_generation_config(generation_config, **kwargs)
     self._validate_model_kwargs(model_kwargs.copy())
 
@@ -661,9 +665,11 @@ def _prepare_generate_args_4_45(self, inputs, generation_config, streamer=None, 
     logits_processor = kwargs.pop("logits_processor", None)
     stopping_criteria = kwargs.pop("stopping_criteria", None)
     logits_processor = logits_processor if logits_processor is not None else LogitsProcessorList()
-    stopping_criteria = stopping_criteria if stopping_criteria is not None else StoppingCriteriaList()
+    stopping_criteria = \
+        stopping_criteria if stopping_criteria is not None else StoppingCriteriaList()
 
-    accepts_attention_mask = "attention_mask" in set(inspect.signature(self.forward).parameters.keys())
+    accepts_attention_mask = \
+        "attention_mask" in set(inspect.signature(self.forward).parameters.keys())
     requires_attention_mask = "encoder_outputs" not in model_kwargs
     kwargs_has_attention_mask = model_kwargs.get("attention_mask", None) is not None
 
@@ -680,7 +686,8 @@ def _prepare_generate_args_4_45(self, inputs, generation_config, streamer=None, 
     from transformers.utils import is_torchdynamo_compiling
     if not self.config.is_encoder_decoder and not is_torchdynamo_compiling():
         # If `input_ids` was given, check if the last id in any sequence is `pad_token_id`
-        # Note: If using, `inputs_embeds` this check does not work, because we want to be more hands-off.
+        # Note: If using, `inputs_embeds` this check does not work
+        # because we want to be more hands-off.
         if (
             generation_config._pad_token_tensor is not None
             and batch_size > 1
@@ -688,8 +695,9 @@ def _prepare_generate_args_4_45(self, inputs, generation_config, streamer=None, 
             and torch.sum(inputs_tensor[:, -1] == generation_config._pad_token_tensor) > 0
         ):
             logger.warning(
-                "A decoder-only architecture is being used, but right-padding was detected! For correct "
-                "generation results, please set `padding_side='left'` when initializing the tokenizer."
+                "A decoder-only architecture is being used, but right-padding was detected! "
+                "For correct generation results, please set `padding_side='left'` "
+                "when initializing the tokenizer."
             )
     else:
         perf_mode = os.environ.get("IPEX_LLM_PERFORMANCE_MODE", None)
@@ -700,8 +708,9 @@ def _prepare_generate_args_4_45(self, inputs, generation_config, streamer=None, 
         invalidInputError(False, f"Encoder-decoder models are not supported now for {error_str}.")
 
     # 4. Define other model kwargs
-    # decoder-only models with inputs_embeds forwarding must use caching (otherwise we can't detect whether we are
-    # generating the first new token or not, and we only want to use the embeddings for the first new token)
+    # decoder-only models with inputs_embeds forwarding must use caching
+    # (otherwise we can't detect whether we are generating the first new token or not,
+    # and we only want to use the embeddings for the first new token)
     if not self.config.is_encoder_decoder and model_input_name == "inputs_embeds":
         model_kwargs["use_cache"] = True
     else:
@@ -713,8 +722,8 @@ def _prepare_generate_args_4_45(self, inputs, generation_config, streamer=None, 
         )
     elif kwargs_has_attention_mask:
         if model_input_name == "input_ids" and len(model_kwargs["attention_mask"].shape) > 2:
-            raise ValueError("`attention_mask` passed to `generate` must be 2D.")
-    
+            invalidInputError(False, "`attention_mask` passed to `generate` must be 2D.")
+
     # 5. Prepare `input_ids` which will be used for auto-regressive generation
     input_ids = inputs_tensor if model_input_name == "input_ids" else model_kwargs.pop("input_ids")
 
@@ -734,8 +743,10 @@ def _prepare_generate_args_4_45(self, inputs, generation_config, streamer=None, 
     # 8. determine generation mode
     # skip
     if streamer is not None and (generation_config.num_beams > 1):
-        raise ValueError(
-            "`streamer` cannot be used with beam search (yet!). Make sure that `num_beams` is set to 1."
+        invalidInputError(
+            False,
+            "`streamer` cannot be used with beam search (yet!). "
+            "Make sure that `num_beams` is set to 1."
         )
 
     # 9. prepare logits processors and stopping criteria
@@ -752,10 +763,14 @@ def _prepare_generate_args_4_45(self, inputs, generation_config, streamer=None, 
         negative_prompt_attention_mask=None,
     )
     prepared_stopping_criteria = self._get_stopping_criteria(
-        generation_config=generation_config, stopping_criteria=stopping_criteria, tokenizer=tokenizer, **kwargs
+        generation_config=generation_config,
+        stopping_criteria=stopping_criteria,
+        tokenizer=tokenizer,
+        **kwargs
     )
 
-    return input_ids, generation_config, prepared_logits_processor, prepared_stopping_criteria, model_kwargs
+    return input_ids, generation_config, prepared_logits_processor, prepared_stopping_criteria,\
+        model_kwargs
 
 
 def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_mask=None,
@@ -771,7 +786,7 @@ def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_
 
     if self.config.model_type == "chatglm":
         if isinstance(self.config.eos_token_id, list) and not hasattr(self.transformer, "vision") \
-            and self.config.num_layers in [28, 40]:
+                and self.config.num_layers in [28, 40]:
             # glm4 models
             past_key_value_len = past_key_values[0][0].shape[2]
         else:
