@@ -77,6 +77,7 @@ def chatglm4_model_forward(
         if (attention_mask is not None and not attention_mask.all()) or\
                 (past_key_values and seq_length != 1):
             if self.config.hidden_size == 4096:
+                # glm4-9b
                 full_attention_mask = self.get_masks(input_ids,
                                                      past_key_values,
                                                      padding_mask=attention_mask)

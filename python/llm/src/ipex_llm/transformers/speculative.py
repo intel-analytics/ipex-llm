@@ -510,14 +510,16 @@ def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=Fa
                 for k, v in past_key_values
             ]
         elif self.config.model_type == "chatglm":
-            if self.config.num_layers in [28, 40] and hasattr(self.config, 'rope_ratio'):
+            if isinstance(self.config.eos_token_id, list) and not hasattr(self.transformer, "vision") \
+                and self.config.num_layers in [28, 40]:
+                # glm4 models
                 past_key_values = [
                     (k[:, :, :-(new_cache_size), :],
                         v[:, :, :-(new_cache_size), :])
                     for k, v in past_key_values
                 ]
             else:
-                # for chatglm, cache shape is [sl, bs, nh, hn]
+                # chatglm2 & chatglm3, cache shape is [sl, bs, nh, hn]
                 past_key_values = [
                     (k[:-(new_cache_size), :, :, :],
                         v[:-(new_cache_size), :, :, :])
@@ -768,9 +770,12 @@ def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_
         forward_args["attention_mask"] = cur_attention_mask
 
     if self.config.model_type == "chatglm":
-        if self.config.num_layers in [28, 40] and hasattr(self.config, 'rope_ratio'):
+        if isinstance(self.config.eos_token_id, list) and not hasattr(self.transformer, "vision") \
+            and self.config.num_layers in [28, 40]:
+            # glm4 models
             past_key_value_len = past_key_values[0][0].shape[2]
         else:
+            # chatglm2 and chatglm3
             past_key_value_len = past_key_values[0][0].shape[0]
         position_ids = torch.arange(verify_input_ids.shape[1], dtype=torch.long,
                                     device=verify_input_ids.device)
