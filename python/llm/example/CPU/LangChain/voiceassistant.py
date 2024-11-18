@@ -23,13 +23,12 @@
 
 
 from langchain import LLMChain, PromptTemplate
-from ipex_llm.langchain.llms import TransformersLLM
+from langchain_community.llms import IpexLLM
 from langchain.memory import ConversationBufferWindowMemory
 from ipex_llm.transformers import AutoModelForSpeechSeq2Seq
 from transformers import WhisperProcessor
 import speech_recognition as sr
 import numpy as np
-import pyttsx3
 import argparse
 import time
 
@@ -47,8 +46,8 @@ template_dict = {
 }
 
 llm_load_methods = (
-    TransformersLLM.from_model_id,
-    TransformersLLM.from_model_id_low_bit,
+    IpexLLM.from_model_id,
+    IpexLLM.from_model_id_low_bit,
 )
 
 def prepare_chain(args):
@@ -90,7 +89,6 @@ def listen(chain):
 
     voiceassitant_chain, processor, recogn_model, forced_decoder_ids = chain
 
-    # engine = pyttsx3.init()
     r = sr.Recognizer()
     with sr.Microphone(device_index=1, sample_rate=16000) as source:
         print("Calibrating...")

@@ -79,10 +79,16 @@ python llm_math.py -m <path_to_model> [-q <your_question>]
 
 The voice assistant example ([voiceassistant.py](./voiceassistant.py)) showcases how to use langchain to build a pipeline that takes in your speech as input in realtime, use an ASR model (e.g. [Whisper-Medium](https://huggingface.co/openai/whisper-medium)) to turn speech into text, and then feed the text into large language model to get response.  
 
+Install dependencies:
+```bash
+pip install -U langchain langchain-community
+pip install transformers==4.36.2
+```
+
 To run the exmaple, execute the following command in the current directory:
 
 ```bash
-python voiceassistant.py -m <path_to_model> [-q <your_question>]
+python voiceassistant.py -m <path_to_model> -r <path_to_recognition_model> [-q <your_question>]
 ```
 **Runtime Arguments Explained**:
 - `-m MODEL_PATH`: **Required**, the path to the 
