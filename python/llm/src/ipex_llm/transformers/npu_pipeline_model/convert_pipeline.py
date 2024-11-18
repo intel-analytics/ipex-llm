@@ -352,8 +352,8 @@ def convert_llm(model: torch.nn.Module,
 
             if compile_full_model:
                 convert_qwen_layer(model, 0, n_splits_linear, n_splits_down_proj,
-                                   temp_dir, weight_dir, transpose_value_cache, max_prompt_len, group_size,
-                                   layernorm_const, "prefill")
+                                   temp_dir, weight_dir, transpose_value_cache, max_prompt_len,
+                                   group_size, layernorm_const, "prefill")
 
             # Prefill Runner
             from ipex_llm.transformers.npu_models.convert_mp import convert_qwen
