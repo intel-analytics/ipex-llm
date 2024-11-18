@@ -23,10 +23,12 @@ from intel_npu_acceleration_library.backend.factory import NNFactory
 import numpy as np
 
 
-def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True):
+def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True, keep_ir=True):
     xml_path = os.path.join(dir, model_name + ".xml")
+    bin_path = os.path.join(dir, model_name + ".bin")
     model.save(xml_path)
     new_ir_path = os.path.join(dir, model_name + "_new.xml")
+    new_bin_path = os.path.join(dir, model_name + "_new.bin")
     blob_path = os.path.join(dir, model_name + ".blob")
 
     core = Core()
@@ -54,7 +56,11 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
             f.write(model_stream)
 
     os.remove(xml_path)
-    # os.remove(new_ir_path)
+    os.remove(bin_path)
+
+    if not keep_ir:
+        os.remove(new_ir_path)
+        os.remove(new_bin_path)
 
     return blob_path
 
@@ -95,8 +101,7 @@ class LowBitLLMLMHead(LLMBaseNNFactory):
         if n_splits == 1:
             input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
         else:
-            # input = self.create_input_op((1, self.batch_size, self.hidden_size))
-            input = self.create_input_op((self.batch_size, self.seq_len, self.hidden_size))
+            input = self.create_input_op((1, self.batch_size, self.hidden_size))
 
         hidden_states = input
 
@@ -135,10 +140,7 @@ class LLMEmbedding(NNFactory):
         self.dtype = dtype
 
         # define input
-        if input_length > 1:
-            weight = self.parameter((vocab_size, embedding_dim))
-        else:
-            weight = self.constant(embedding_weight)
+        weight = self.constant(embedding_weight)
         input = self.parameter((1, input_length), dtype=np.int32)
 
         if padding_idx == -1:

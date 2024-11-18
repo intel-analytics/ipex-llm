@@ -333,11 +333,7 @@ def convert_llm(model: torch.nn.Module,
         with tempfile.TemporaryDirectory() as temp_dir:
             if save_directory is not None:
                 temp_dir = save_directory
-            temp_dir = r"D:\ruonan\qwen2.5-7B-full-weights-512-new"
-            if os.path.exists(temp_dir):
-                import shutil
-                shutil.rmtree(temp_dir)
-            os.mkdir(temp_dir)
+                os.mkdir(temp_dir)
             weight_dir = os.path.join(temp_dir, "model_weights")
             os.mkdir(weight_dir)
             layer_num = len(model.model.layers)

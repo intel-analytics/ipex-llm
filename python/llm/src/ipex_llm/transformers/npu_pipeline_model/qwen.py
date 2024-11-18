@@ -46,7 +46,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, 
         np_dtype = np.float16
 
     new_lm_head = LowBitLLMLMHead(
-        [1, input_length, num_heads * head_dim],
+        [1, 1, num_heads * head_dim],
         num_heads=num_heads,
         max_seq_len=1,  # seems doesn't matter
         rms_norm_eps=rms_norm_eps,
@@ -57,10 +57,9 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, 
         vocab_size=vocab_size,
         n_splits=n_splits_linear
     )
-    suffix = "_prefill" if input_length > 1 else ""
-    compile = False if input_length > 1 else True
-    last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head{suffix}",
-                                                        temp_dir, compile)
+
+    last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head",
+                                                        temp_dir, True, True)
 
     # save weights bins files
     if not isinstance(lm_head, SlicedLMHead):
@@ -84,8 +83,11 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir, 
         dtype=np.float16,
         input_length=input_length,
     )
-    first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding{suffix}",
-                                                         temp_dir, compile)
+    suffix = "_prefill" if input_length > 1 else ""
+    compile = False if input_length > 1 else True
+    if input_length == 0:
+        first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding{suffix}",
+                                                             temp_dir, compile, keep_ir=False)
     if input_length > 1:
         bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
         embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
