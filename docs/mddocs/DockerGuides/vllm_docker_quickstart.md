@@ -250,7 +250,6 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --load-in-low-bit sym_int4 \
   --max-model-len 2048 \
   --max-num-batched-tokens 4000 \
-  --max-num-seqs 12 \
   --tensor-parallel-size 1 \
   --disable-async-output-proc \
   --distributed-executor-backend ray
@@ -681,7 +680,6 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --load-in-low-bit fp8 \
   --max-model-len 4096 \
   --max-num-batched-tokens 10240 \
-  --max-num-seqs 12 \
   --tensor-parallel-size 1 \
   --distributed-executor-backend ray \
   --enable-lora \
@@ -774,7 +772,6 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --load-in-low-bit fp8 \
   --max-model-len 2048 \
   --max-num-batched-tokens 4000 \
-  --max-num-seqs 12 \
   --api-key <your-api-key> \
   --tensor-parallel-size 4 \
   --distributed-executor-backend ray
