@@ -56,7 +56,7 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
             f.write(model_stream)
 
     os.remove(xml_path)
-    os.remove(bin_path)
+    # os.remove(bin_path)
 
     if not keep_ir:
         os.remove(new_ir_path)

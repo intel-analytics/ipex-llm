@@ -239,6 +239,8 @@ class _BaseAutoModelClass:
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
+        compile_full_model = kwargs.pop('compile_full_model', False)
+        save_directory = kwargs.pop('save_directory', None)
 
         if hasattr(model, "llm"):
             llm = model.llm

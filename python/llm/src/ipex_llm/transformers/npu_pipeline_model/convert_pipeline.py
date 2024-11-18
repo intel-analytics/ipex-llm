@@ -350,9 +350,9 @@ def convert_llm(model: torch.nn.Module,
                 result = pool.starmap(convert_qwen_layer, param_list)
             
             if compile_full_model:
-                from .qwen import convert_qwen_prefill_layer, convert_lm_head_and_embedding
-                convert_qwen_prefill_layer(model, n_splits_linear, n_splits_down_proj,
-                                           temp_dir, weight_dir, transpose_value_cache, max_prompt_len, group_size)
+                convert_qwen_layer(model, 0, n_splits_linear, n_splits_down_proj,
+                                   temp_dir, weight_dir, transpose_value_cache, max_prompt_len, group_size,
+                                   "prefill")
                 convert_lm_head_and_embedding(model, n_splits_linear,
                                               temp_dir, weight_dir, max_prompt_len)
 
