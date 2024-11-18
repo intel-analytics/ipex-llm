@@ -135,7 +135,10 @@ class LLMEmbedding(NNFactory):
         self.dtype = dtype
 
         # define input
-        weight = self.constant(embedding_weight)
+        if input_length > 1:
+            weight = self.parameter((vocab_size, embedding_dim))
+        else:
+            weight = self.constant(embedding_weight)
         input = self.parameter((1, input_length), dtype=np.int32)
 
         if padding_idx == -1:
