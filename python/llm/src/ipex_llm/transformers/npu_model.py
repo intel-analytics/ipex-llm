@@ -162,11 +162,13 @@ class _BaseAutoModelClass:
                 model = cls.HF_Model.from_pretrained(*args, **kwargs)
             else:
                 model = cls.HF_Model(*args, **kwargs)
-            model.config.update({"bigdl_lcmu_enabled": False})
+            if hasattr(model, "config"):
+                model.config.update({"bigdl_lcmu_enabled": False})
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
 
-        model.config.update({"optimize_model": optimize_model})
+        if hasattr(model, "config"):
+            model.config.update({"optimize_model": optimize_model})
 
         if mock_device == "cpu":
             with torch.no_grad():

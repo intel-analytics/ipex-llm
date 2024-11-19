@@ -294,17 +294,17 @@ class FusedLlamaLowBitDecoderlayer(torch.nn.Module):
             torch.Tensor: result
         """
         backend_cls = self.backend_cls_prefill
-        inputs = (x,
-                  masks,
-                  self.layer_norm_0_weight,
-                  self.layer_norm_0_bias,
-                  self.layer_norm_1_weight,
-                  self.layer_norm_1_bias,
-                  self.fsmn_weight,
-                  self.qkv_bias,
-                  self.out_bias,
-                  self.w1_bias,
-                  self.w2_bias,
+        inputs = (x.to(torch.float16),
+                  masks.to(torch.float16),
+                  self.layer_norm_0_weight.to(torch.float16),
+                  self.layer_norm_0_bias.to(torch.float16),
+                  self.layer_norm_1_weight.to(torch.float16),
+                  self.layer_norm_1_bias.to(torch.float16),
+                  self.fsmn_weight.to(torch.float16),
+                  self.qkv_bias.to(torch.float16),
+                  self.out_bias.to(torch.float16),
+                  self.w1_bias.to(torch.float16),
+                  self.w2_bias.to(torch.float16),
                   )
 
         outputs = run_model(
@@ -431,6 +431,8 @@ class PrefillRunner:
         args = (xs_pad, masks)
         self.prefill_input_queue.put(args)
         xs_pad, masks = self.prefill_result_queue.get()
+        xs_pad = xs_pad.to(torch.float32)
+        masks = masks.to(torch.float32)
         return xs_pad, masks
 
     def shutdown(self):
@@ -639,7 +641,7 @@ class FusedLlamaLowBitMultiDecoderlayer(torch.nn.Module):
     ):
         super().__init__()
 
-        self.do_print = True
+        self.do_print = do_print
 
         op_parameters = []
         for w in parameters:
