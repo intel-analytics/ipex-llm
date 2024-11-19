@@ -37,8 +37,8 @@ pip install timm torch==2.1.2 torchvision==0.16.2
 pip install BCEmbedding==0.1.5 transformers==4.40.0
 
 # [optional] for Speech_Paraformer-Large
-pip install -U funasr
-pip install modelscope torch==2.1.2 torchaudio==2.1.2
+pip install funasr==1.1.14
+pip install modelscope==1.20.1 torch==2.1.2 torchaudio==2.1.2
 ```
 
 ### 2. Runtime Configurations
