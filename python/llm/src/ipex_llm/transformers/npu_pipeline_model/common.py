@@ -35,7 +35,7 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
     core.set_property("NPU", {"NPU_COMPILATION_MODE_PARAMS":
                               "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"})
     core.set_property("NPU", {"PERFORMANCE_HINT": "LATENCY"})
-    print(xml_path)
+
     model = core.read_model(xml_path)
     inputs = model.inputs
     for idx, input in enumerate(inputs):
@@ -56,7 +56,6 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
             f.write(model_stream)
 
     os.remove(xml_path)
-    # os.remove(bin_path)
 
     if not keep_ir:
         os.remove(new_ir_path)
