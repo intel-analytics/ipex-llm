@@ -280,7 +280,7 @@ if __name__ == "__main__":
     parser.add_argument("--prompt", type=str, default="What is in the image?", help="prompt for model to response")
     parser.add_argument("--image-url", type=str, help="image_url for model to generate")
     parser.add_argument("--output-length", type=int, default=512, help="Output length")
-    parser.add_argument("--port", type=int, default=7999, help="Port number")
+    parser.add_argument("--port", type=int, default=8000, help="Port number")
 
     args = parser.parse_args()
     main(args)
