@@ -84,7 +84,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
         input_length=1,
     )
     first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
-                                                         temp_dir, True, keep_ir=False)
+                                                         temp_dir, True, keep_ir=True)
     if compile_full_model:
         bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
         embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
