@@ -134,7 +134,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         input_len = 1
         decoder_name = f"decoder_layer_{layer_idx}"
         compile = True
-        keep_ir = False
+        keep_ir = True
     else:
         input_len = kv_len
         decoder_name = "decoder_layer_prefill"

@@ -371,6 +371,16 @@ def convert_llm(model: torch.nn.Module,
             model.transpose_value_cache = transpose_value_cache
             model.vocab_size = model.config.vocab_size
 
+            if save_directory is not None:
+                update_dict = {"kv_len": kv_len, "num_head": model.num_head,
+                               "head_dim": model.head_dim,
+                               "transpose_value_cache": transpose_value_cache,
+                               "max_prompt_len": max_prompt_len,
+                               "layernorm_const": layernorm_const,
+                               "group_size":  group_size}
+                model.config.update(update_dict)
+                model.config.save_pretrained(save_directory)
+
             try:
                 res = InitLLMPipeline("qwen", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
