@@ -1,60 +1,61 @@
-# Install IPEX-LLM on Windows with Intel GPU
+# 在带有 Intel GPU 的 Windows 系统上安装 IPEX-LLM
 <p>
-  < <b>English</b> | <a href='./install_windows_gpu.zh-CN.md'>中文</a> >
+  < <a href='./install_windows_gpu.md'>English</a> | <b>中文</b> >
 </p>
     
-This guide demonstrates how to install IPEX-LLM on Windows with Intel GPUs. 
+本指南将引导你如何在具有 Intel GPUs 的 Windows 系统上安装 IPEX-LLM。 
 
-It applies to Intel Core Ultra and Core 11 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
+适用于 Intel Core Ultra 和 Core 11-14 代集成的 GPUs (iGPUs)，以及 Intel Arc 系列 GPU。
 
-## Table of Contents
-- [Install Prerequisites](./install_windows_gpu.md#install-prerequisites)
-- [Install ipex-llm](./install_windows_gpu.md#install-ipex-llm)
-- [Verify Installation](./install_windows_gpu.md#verify-installation)
-- [Monitor GPU Status](./install_windows_gpu.md#monitor-gpu-status)
-- [A Quick Example](./install_windows_gpu.md#a-quick-example)
-- [Tips & Troubleshooting](./install_windows_gpu.md#tips--troubleshooting)
+## 目录
+- [系统环境安装](./install_windows_gpu.zh-CN.md#系统环境安装)
+- [安装 ipex-llm](./install_windows_gpu.zh-CN.md#安装-ipex-llm)
+- [验证安装](./install_windows_gpu.zh-CN.md#验证安装)
+- [监控 GPU 状态](./install_windows_gpu.zh-CN.md#监控-gpu-状态)
+- [快速示例](./install_windows_gpu.zh-CN.md#快速示例)
+- [故障排除和提示](./install_windows_gpu.zh-CN.md#故障排除和提示)
 
-## Install Prerequisites
+## 系统环境安装
 
-### (Optional) Update GPU Driver
+### (可选) 更新 GPU 驱动程序
 
 > [!IMPORTANT]
-> If you have driver version lower than `31.0.101.5122`, it is required to update your GPU driver. Refer to [here](../Overview/install_gpu.md#prerequisites) for more information.
+> 如果你的驱动程序版本低于 `31.0.101.5122`，请更新 GPU 驱动程序。 可参考[此处](../Overview/install_gpu.md#prerequisites)获取更多信息。
 
-Download and install the latest GPU driver from the [official Intel download page](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html). A system reboot is necessary to apply the changes after the installation is complete.
+可以从 [Intel 官方下载页面](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)下载并安装最新的 GPU 驱动程序。更新后需要重启以完成安装。
 
 > [!NOTE]
-> The process could take around 10 minutes. After reboot, check for the **Intel Arc Control** application to verify the driver has been installed correctly. If the installation was successful, you should see the **Arc Control** interface similar to the figure below
+> 该过程可能需要大约 10 分钟。重启后，检查 **Intel Arc Control** 应用程序以验证驱动程序是否已正确安装。如果安装成功，应该会看到类似下图的 **Arc Control** 界面。
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_3.png" width=100%; />
 
-### Setup Python Environment
+### 设置 Python 环境
 
-Visit [Miniforge installation page](https://conda-forge.org/download/), download the **Miniforge installer for Windows**, and follow the instructions to complete the installation.
+访问 [Miniforge 安装页面](https://conda-forge.org/download/)，下载 **适用于 Windows 的 Miniforge 安装程序**，并按照说明步骤完成安装。
 
 <div align="center">
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_miniforge_download.png"  width=80%/>
 </div>
 
-After installation, open the **Miniforge Prompt**, create a new python environment `llm`:
+安装完成后，打开 **Miniforge Prompt**，创建一个新的 Python 环境 `llm` ：
+
 ```cmd
 conda create -n llm python=3.11 libuv
 ```
-Activate the newly created environment `llm`:
+激活新创建的环境 `llm`:
+
 ```cmd
 conda activate llm
 ```
   
-## Install `ipex-llm`
+## 安装 `ipex-llm`
 
-With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
+在 `llm` 环境处于激活状态下，使用 `pip` 安装适用于 GPU 的 `ipex-llm`。 
+- **对于处理器编号为 2xxV 的第二代 Intel Core™ Ultra Processers (代号 Lunar Lake)**：
 
-- For **Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake)**:
+  可以根据区域选择不同的 `extra-index-url`，提供 US 和 CN 两个选项：
 
-   Choose either US or CN website for `extra-index-url`:
-
-   - For **US**:
+  - **US**:
 
       ```cmd
       conda create -n llm python=3.11 libuv
@@ -62,8 +63,7 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
 
       pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/us/
       ```
-
-   - For **CN**:
+  - **CN**:
 
       ```cmd
       conda create -n llm python=3.11 libuv
@@ -71,12 +71,11 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
 
       pip install --pre --upgrade ipex-llm[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
       ```
+- 对于**其他 Intel iGPU 和 dGPU**:
 
-- For **other Intel iGPU and dGPU**:
+   可以根据区域选择不同的 `extra-index-url`，提供 US 和 CN 两个选项：
 
-   Choose either US or CN website for `extra-index-url`:
-
-   - For **US**:
+   - **US**:
 
       ```cmd
       conda create -n llm python=3.11 libuv
@@ -85,7 +84,7 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
       pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
       ```
 
-   - For **CN**:
+   - **CN**:
 
       ```cmd
       conda create -n llm python=3.11 libuv
@@ -95,41 +94,41 @@ With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
       ```
 
 > [!NOTE]
-> If you encounter network issues while installing IPEX, refer to [this guide](../Overview/install_gpu.md#install-ipex-llm-from-wheel) for troubleshooting advice.
+> 如果在安装 IPEX 时遇到网络问题，请参阅[本指南](../Overview/install_gpu.md#install-ipex-llm-from-wheel)获取故障排除建议。
 
-## Verify Installation
-You can verify if `ipex-llm` is successfully installed following below steps.
+## 验证安装
+你可以通过以下步骤验证 `ipex-llm` 是否已安装成功。
 
-### Step 1: Runtime Configurations
-- Open the **Miniforge Prompt** and activate the Python environment `llm` you previously created:
+### 步骤 1: 运行时配置
+- 打开 **Miniforge Prompt**，激活已创建的 Python 环境 `llm`：
 
    ```cmd
    conda activate llm
    ```
 
-- Set the following environment variables according to your device:
+- 根据你的设备，设置以下环境参数：
 
-  - For **Intel iGPU**:
+  - **Intel iGPU**:
 
     ```cmd
     set SYCL_CACHE_PERSISTENT=1
     set BIGDL_LLM_XMX_DISABLED=1
     ```
 
-  - For **Intel Arc™ A770**:
+  - **Intel Arc™ A770**:
 
     ```cmd
     set SYCL_CACHE_PERSISTENT=1
     ```
   
 > [!TIP]
-> For other Intel dGPU Series, please refer to [this guide](../Overview/install_gpu.md#runtime-configuration) for more details regarding runtime configuration.
+> 对于其他的 Intel dGPU 系列，请参阅[此指南](../Overview/install_gpu.md#runtime-configuration)了解有关运行时配置的更多详细信息。
 
-### Step 2: Run Python Code
+### 步骤 2: 运行 Python 代码
 
-- Launch the Python interactive shell by typing `python` in the Miniforge Prompt window and then press Enter.
+- 在 Miniforge Prompt 窗口中，通过输入 `python` 并按下 Enter 键以启动 Python 交互式控制台。
 
-- Copy following code to Miniforge Prompt **line by line** and press Enter **after copying each line**.
+- 请在 Miniforge Prompt 中**逐行复制** 以下代码，**每复制一行**后按 Enter 键。
 
   ```python
   import torch 
@@ -139,34 +138,34 @@ You can verify if `ipex-llm` is successfully installed following below steps.
   print(torch.matmul(tensor_1, tensor_2).size()) 
   ```
 
-  It will output following content at the end:
+  最后会输出如下内容：
 
   ```
   torch.Size([1, 1, 40, 40])
   ```
 
-  > **Tip**:
+  > **提示**:
   >
-  > If you encounter any problem, please refer to [here](../Overview/install_gpu.md#troubleshooting) for help.
+  > 如果您遇到任何问题，请参阅[这里](../Overview/install_gpu.md#troubleshooting)寻求帮助。
 
-- To exit the Python interactive shell, simply press Ctrl+Z then press Enter (or input `exit()` then press Enter).
+- 退出 Python 交互式控制台，只需按 Ctrl+Z，然后按下 Enter 键（或者输入 `exit()`，再按 Enter 键）。
 
-## Monitor GPU Status
-To monitor your GPU's performance and status (e.g. memory consumption, utilization, etc.), you can use either the **Windows Task Manager (in `Performance` Tab)** (see the left side of the figure below) or the **Arc Control** application (see the right side of the figure below)
+## 监控 GPU 状态
+要监控 GPU 性能和状态 (例如内存消耗、利用率等)，你可以 **使用 Windows 任务管理器的 `性能` 选项卡**（参见下图左侧）或 **Arc Control** 应用程序（参见下图右侧）
 
 <img src="https://llm-assets.readthedocs.io/en/latest/_images/quickstart_windows_gpu_4.png"  width=100%; />
 
-## A Quick Example
+## 快速示例
 
-Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) model, a 1.5 billion parameter LLM for this demonstration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
+现在让我们实际运行一个大型语言模型（LLM）。本示例将使用 [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) 模型，一个拥有15亿参数的LLM。 请按照以下步骤设置和运行模型，并观察它如何对提示词 "What is AI?" 做出响应。
 
-- Step 1: Follow [Runtime Configurations Section](#step-1-runtime-configurations) above to prepare your runtime environment.
+- 步骤 1: 按照上述 [运行时配置](#步骤-1-运行时配置)章节，准备运行时环境。
 
-- Step 2: Create code file. IPEX-LLM supports loading model from Hugging Face or ModelScope. Please choose according to your requirements.
+- 步骤 2: 创建代码文件。IPEX-LLM 支持从 Hugging Face 或 ModelScope 加载模型。请根据你的需求选择。
 
-  - For **loading model from Hugging Face**:
+  - **从 Hugging Face 加载模型**:
     
-    Create a new file named `demo.py` and insert the code snippet below to run [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) model with IPEX-LLM optimizations.
+    创建一个名为 `demo.py` 新文件，并将如下代码复制进其中，从而运行基于 IPEX-LLM 优化的 [Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) 模型。
 
       ```python
       # Copy/Paste the contents to a new file demo.py
@@ -227,14 +226,15 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
          output_str = tokenizer.decode(output[0], skip_special_tokens=False)
          print(output_str)
       ```
-  - For **loading model ModelScopee**:
+  - **从 ModelScope 加载模型**:
 
-    Please first run following command in Miniforge Prompt to install ModelScope:
+    请在 Miniforge Prompt 中运行以下命令来安装 ModelScope：
+    
     ```cmd
     pip install modelscope==1.11.0
     ```
 
-    Create a new file named `demo.py` and insert the code snippet below to run [Qwen2-1.5B-Instruct](https://www.modelscope.cn/models/qwen/Qwen2-1.5B-Instruct/summary) model with IPEX-LLM optimizations.
+    创建一个名为 `demo.py` 新文件，并将如下代码复制进其中，从而运行基于 IPEX-LLM 优化的 [Qwen2-1.5B-Instruct](https://www.modelscope.cn/models/qwen/Qwen2-1.5B-Instruct/summary) 模型。
 
       ```python
       # Copy/Paste the contents to a new file demo.py
@@ -296,23 +296,22 @@ Now let's play with a real LLM. We'll be using the [Qwen2-1.5B-Instruct](https:/
          output_str = tokenizer.decode(output[0], skip_special_tokens=False)
          print(output_str)
       ```
-      > **Note**:
+      > **提示**:
       >
-      > Please note that the repo id on ModelScope may be different from Hugging Face for some models.
+      > 请注意，有些模型在 ModelScope 上的 repo id 可能与 Hugging Face 不同。
 
 > [!NOTE]
-> When running LLMs on Intel iGPUs with limited memory size, we recommend setting `cpu_embedding=True` in the `from_pretrained` function.
-> This will allow the memory-intensive embedding layer to utilize the CPU instead of GPU.
+> 在内存有限的 Intel iGPU 上运行大语言模型时，我们建议在 `from_pretrained` 函数中设置 `cpu_embedding=True`。这将使内存占用较大的 embedding 层使用 CPU 而非 GPU。 
 
-- Step 3. Run `demo.py` within the activated Python environment using the following command:
+- 步骤 3. 使用以下命令在激活的 `Python` 环境 `llm` 中运行 `demo.py`：
 
   ```cmd
   python demo.py
   ```
    
-### Example output
+### 示例输出
 
-Example output on a system equipped with an Intel Core Ultra 5 125H CPU and Intel Arc Graphics iGPU:
+以下是在一个配备 Intel Core Ultra 5 125H CPU 和 Intel Arc Graphics iGPU 的系统上的示例输出：
 ```
 <|im_start|>system
 You are a helpful assistant.<|im_end|>
@@ -322,7 +321,7 @@ What is AI?<|im_end|>
 Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and act like humans. It involves the development of algorithms,
 ```
 
-## Tips & Troubleshooting
+## 故障排除和提示
 
-### Warm-up for optimal performance on first run
-When running LLMs on GPU for the first time, you might notice the performance is lower than expected, with delays up to several minutes before the first token is generated. This delay occurs because the GPU kernels require compilation and initialization, which varies across different GPU types. To achieve optimal and consistent performance, we recommend a one-time warm-up by running `model.generate(...)` an additional time before starting your actual generation tasks. If you're developing an application, you can incorporate this warm-up step into start-up or loading routine to enhance the user experience.
+### 首次运行时进行 Warm-up 以获得最佳性能
+首次在 GPU 上运行大语言模型时，你可能会注意到性能低于预期，在生成第一个 token 之前可能会有长达几分钟的延迟。发生这种延迟是因为 GPU 内核需要编译和初始化，这在不同类型的 GPU 之间会有所差异。为获得最佳且稳定的性能，我们推荐在正式生成任务开始之前，额外运行一次 `model.generate(...)` 做为 warm-up。如果你正在开发应用程序，你可以将此 warm-up 步骤集成到启动或加载流程中以加强用户体验。

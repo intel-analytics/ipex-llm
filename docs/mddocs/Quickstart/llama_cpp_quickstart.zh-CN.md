@@ -42,11 +42,11 @@ IPEX-LLM 现在已支持在 Linux 和 Windows 系统上运行 `llama.cpp`。
 #### Linux
 对于 Linux 系统，我们推荐使用 Ubuntu 20.04 或更高版本 (优先推荐 Ubuntu 22.04)。
 
-请仔细参阅网页[在配有 Intel GPU 的 Linux 系统下安装 IPEX-LLM](./install_linux_gpu.md), 首先按照 [Intel GPU 驱动程序安装](./install_linux_gpu.md#install-gpu-driver)步骤安装 Intel GPU 驱动程序，然后参考 [oneAPI 安装](./install_linux_gpu.md#install-oneapi)步骤安装 Intel® oneAPI Base Toolkit 2024.0。
+请仔细参阅网页[在配有 Intel GPU 的 Linux 系统下安装 IPEX-LLM](./install_linux_gpu.zh-CN.md), 首先按照 [Intel GPU 驱动程序安装](./install_linux_gpu.zh-CN.md#安装-gpu-驱动程序)步骤安装 Intel GPU 驱动程序，然后参考 [oneAPI 安装](./install_linux_gpu.zh-CN.md#安装-oneapi)步骤安装 Intel® oneAPI Base Toolkit 2024.0。
 
 #### Windows (可选)
 
-请确保你的 GPU 驱动程序版本不低于 `31.0.101.5522`。 如果版本较低，请参考 [GPU 驱动更新指南](./install_windows_gpu.md#optional-update-gpu-driver)进行升级，否则可能会遇到输出乱码的问题。 
+请确保你的 GPU 驱动程序版本不低于 `31.0.101.5522`。 如果版本较低，请参考 [GPU 驱动更新指南](./install_windows_gpu.zh-CN.md#可选-更新-gpu-驱动程序)进行升级，否则可能会遇到输出乱码的问题。 
 
 ### 1. 为 llama.cpp 安装 IPEX-LLM
 
@@ -324,7 +324,7 @@ Log end
 如果出现类似 `main: prompt is too long (xxx tokens, max xxx)` 的错误，请将 `-c` 参数设置为更大的数值，来支持更长的上下文内容。
 
 #### 4. `gemm: cannot allocate memory on host` 错误 / `could not create an engine` 错误
-如果在 Linux 上遇到 `oneapi::mkl::oneapi::mkl::blas::gemm: cannot allocate memory on host` 或 `could not create an engine` 错误，可能是因为你使用 pip 安装了 oneAPI 依赖项（例如 `pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0`）。建议换用 `apt` 来安装 oneAPI 依赖项以避免此问题。更多详情信息请参考[此处指南](./install_linux_gpu.md)。
+如果在 Linux 上遇到 `oneapi::mkl::oneapi::mkl::blas::gemm: cannot allocate memory on host` 或 `could not create an engine` 错误，可能是因为你使用 pip 安装了 oneAPI 依赖项（例如 `pip install dpcpp-cpp-rt==2024.0.2 mkl-dpcpp==2024.0.0 onednn==2024.0.0`）。建议换用 `apt` 来安装 oneAPI 依赖项以避免此问题。更多详情信息请参考[此处指南](./install_linux_gpu.zh-CN.md)。
 
 #### 5. 无法量化模型
 如果你遇到 `main: failed to quantize model from xxx`，请确保已经创建相关的输出目录。
@@ -354,7 +354,7 @@ Log end
 2. Linux：是否已经在运行 llama.cpp 命令前执行了 `source /opt/intel/oneapi/setvars.sh`。执行此 source 命令只在当前会话有效。
 
 #### 11. 遇到输出乱码请先检查驱动
-如果你遇到输出乱码，请检查 GPU 驱动版本是否 >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html)。如果不是，请参照[这里](./install_linux_gpu.md#install-gpu-driver) 的说明更新你的 GPU 驱动。
+如果你遇到输出乱码，请检查 GPU 驱动版本是否 >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html)。如果不是，请参照[这里](./install_linux_gpu.zh-CN.md#安装-GPU-驱动程序) 的说明更新你的 GPU 驱动。
 
 #### 12. 为什么我的程序找不到 sycl 设备
 如果你遇到 `GGML_ASSERT: C:/Users/Administrator/actions-runner/cpp-release/_work/llm.cpp/llm.cpp/llama-cpp-bigdl/ggml-sycl.cpp:18283: main_gpu_id<g_all_sycl_device_count` 错误或者类似错误，并且发现使用 `ls-sycl-device` 时没有任何输出，这是因为 llama.cpp 无法找到 sycl 设备。在某些笔记本电脑上，安装 ARC 驱动程序可能会导致被 Microsoft 强制安装 `OpenCL, OpenGL, and Vulkan Compatibility Pack`，这会无意中阻止系统定位 sycl 设备。这个问题可以通过在微软应用商店中手动卸载这个软件包来解决。

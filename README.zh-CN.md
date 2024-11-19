@@ -27,7 +27,7 @@
 <br/>
  
 - [2024/05] 你可以使用 **Docker** [images](#docker) 很容易地运行 `ipex-llm` 推理、服务和微调。
-- [2024/05] 你能够在 Windows 上仅使用 "*[one command](docs/mddocs/Quickstart/install_windows_gpu.md#install-ipex-llm)*" 来安装 `ipex-llm`。
+- [2024/05] 你能够在 Windows 上仅使用 "*[one command](docs/mddocs/Quickstart/install_windows_gpu.zh-CN.md#安装-ipex-llm)*" 来安装 `ipex-llm`。
 - [2024/04] 你现在可以在 Intel GPU 上使用 `ipex-llm` 运行 **Open WebUI** ，详情参考[快速入门指南](docs/mddocs/Quickstart/open_webui_with_ollama_quickstart.md)。
 - [2024/04] 你现在可以在 Intel GPU 上使用 `ipex-llm` 以及 `llama.cpp` 和 `ollama` 运行 **Llama 3** ，详情参考[快速入门指南](docs/mddocs/Quickstart/llama3_llamacpp_ollama_quickstart.md)。
 - [2024/04] `ipex-llm` 现在在Intel [GPU](python/llm/example/GPU/HuggingFace/LLM/llama3) 和 [CPU](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3) 上都支持 **Llama 3** 了。
@@ -187,7 +187,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 ### 使用
 - [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md): 在 Intel GPU 上运行 **llama.cpp** (*使用 `ipex-llm` 的 C++ 接口*) 
 - [Ollama](docs/mddocs/Quickstart/ollama_quickstart.zh-CN.md): 在 Intel GPU 上运行 **ollama** (*使用 `ipex-llm` 的 C++ 接口*) 
-- [PyTorch/HuggingFace](docs/mddocs/Quickstart/install_windows_gpu.md): 使用 [Windows](docs/mddocs/Quickstart/install_windows_gpu.md) 和 [Linux](docs/mddocs/Quickstart/install_linux_gpu.md) 在 Intel GPU 上运行 **PyTorch**、**HuggingFace**、**LangChain**、**LlamaIndex** 等 (*使用 `ipex-llm` 的 Python 接口*) 
+- [PyTorch/HuggingFace](docs/mddocs/Quickstart/install_windows_gpu.zh-CN.md): 使用 [Windows](docs/mddocs/Quickstart/install_windows_gpu.zh-CN.md) 和 [Linux](docs/mddocs/Quickstart/install_linux_gpu.zh-CN.md) 在 Intel GPU 上运行 **PyTorch**、**HuggingFace**、**LangChain**、**LlamaIndex** 等 (*使用 `ipex-llm` 的 Python 接口*) 
 - [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md): 在 Intel [GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 和 [CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md) 上使用 `ipex-llm` 运行 **vLLM** 
 - [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md): 在 Intel GPU 和 CPU 上使用 `ipex-llm` 运行 **FastChat** 服务
 - [Serving on multiple Intel GPUs](docs/mddocs/Quickstart/deepspeed_autotp_fastapi_quickstart.md): 利用 DeepSpeed AutoTP 和 FastAPI 在 **多个 Intel GPU** 上运行 `ipex-llm` 推理服务
@@ -205,8 +205,8 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 - [Dify platform](docs/mddocs/Quickstart/dify_quickstart.md): 在`Dify`(*一款开源的大语言模型应用开发平台*) 里接入 `ipex-llm` 加速本地 LLM
 
 ### 安装
-- [Windows GPU](docs/mddocs/Quickstart/install_windows_gpu.md): 在带有 Intel GPU 的 Windows 系统上安装 `ipex-llm` 
-- [Linux GPU](docs/mddocs/Quickstart/install_linux_gpu.md): 在带有 Intel GPU 的Linux系统上安装 `ipex-llm` 
+- [Windows GPU](docs/mddocs/Quickstart/install_windows_gpu.zh-CN.md): 在带有 Intel GPU 的 Windows 系统上安装 `ipex-llm` 
+- [Linux GPU](docs/mddocs/Quickstart/install_linux_gpu.zh-CN.md): 在带有 Intel GPU 的Linux系统上安装 `ipex-llm` 
 - *更多内容, 请参考[完整安装指南](docs/mddocs/Overview/install.md)*
 
 ### 代码示例
