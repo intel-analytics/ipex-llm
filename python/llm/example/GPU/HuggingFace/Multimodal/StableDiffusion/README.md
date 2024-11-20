@@ -89,7 +89,7 @@ set SYCL_CACHE_PERSISTENT=1
 
 ### 4. Examples
 #### 4.1 Openjourney Example
-The example shows how to run StableDiffusion XL example on Intel GPU.
+The example shows how to run Openjourney example on Intel GPU.
 ```bash
 python ./openjourney.py
 ```
