@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Code is adapted from https://huggingface.co/docs/diffusers/en/using-diffusers/sdxl
+# Code is adapted from https://huggingface.co/prompthero/openjourney
 
 from diffusers import StableDiffusionPipeline
 import torch
@@ -28,16 +28,17 @@ def main(args):
         torch_dtype=torch.float16, 
         use_safetensors=True)
     pipe = pipe.to("xpu")
-    
-    # warmup
-    image = pipe(args.prompt, num_inference_steps=args.num_steps).images[0]
 
-    # start inference
-    st = time.time()
-    image = pipe(args.prompt, num_inference_steps=args.num_steps).images[0]
-    end = time.time()
-    print(f'Inference time: {end-st} s')
-    image.save(args.save_path)
+    with torch.inference_mode():
+        # warmup
+        image = pipe(args.prompt, num_inference_steps=args.num_steps).images[0]
+
+        # start inference
+        st = time.time()
+        image = pipe(args.prompt, num_inference_steps=args.num_steps).images[0]
+        end = time.time()
+        print(f'Inference time: {end-st} s')
+        image.save(args.save_path)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Stable Diffusion")
