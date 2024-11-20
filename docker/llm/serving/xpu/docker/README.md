@@ -180,6 +180,36 @@ P90 next token latency: xxx milliseconds.
 P95 next token latency: xxx milliseconds.
 ```
 
+###### Online benchmark with multimodal through benchmark_util
+
+
+After starting vllm service, Sending reqs through `vllm_online_benchmark_multimodal.py`
+```bash
+export image_url="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"
+python vllm_online_benchmark_multimodal.py --model-name $model_name --image-url $image_url --prompt "What is in the image?" --port 8000
+```
+
+`image_url` can be `/llm/xxx.jpg` or `"http://xxx.jpg`.
+
+And it will output like this:
+```bash
+model_name: MiniCPM-V-2_6
+Warm Up: 100%|███████████████████████████████████████████████████████| 2/2 [00:03<00:00,  1.68s/req]
+Warm Up: 100%|███████████████████████████████████████████████████████| 1/1 [00:10<00:00, 10.42s/req]
+Benchmarking: 100%|██████████████████████████████████████████████████| 3/3 [00:31<00:00, 10.43s/req]
+Total time for 3 requests with 1 concurrent requests: xxx seconds.
+Average responce time: xxx
+Token throughput: xxx
+
+Average first token latency: xxx milliseconds.
+P90 first token latency: xxx milliseconds.
+P95 first token latency: xxx milliseconds.
+
+Average next token latency: xxx milliseconds.
+P90 next token latency: xxx milliseconds.
+P95 next token latency: xxx milliseconds.
+```
+
 ###### Online benchmark through wrk
 In container, do the following:
 1. modify the `/llm/payload-1024.lua` so that the "model" attribute is correct.  By default, we use a prompt that is roughly 1024 token long, you can change it if needed.
