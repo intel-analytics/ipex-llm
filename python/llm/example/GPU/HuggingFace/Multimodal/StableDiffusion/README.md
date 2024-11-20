@@ -88,8 +88,19 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
 ### 4. Examples
+#### 4.1 Openjourney Example
+The example shows how to run StableDiffusion XL example on Intel GPU.
+```bash
+python ./openjourney.py
+```
 
-#### 4.1 StableDiffusion XL Example
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Openjourney model (e.g. `prompthero/openjourney`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'prompthero/openjourney'`.
+- `--prompt PROMPT`: argument defining the prompt to be infered. It is default to be `'An astronaut in the forest, detailed, 8k'`.
+- `--save-path`: argument defining the path to save the generated figure. It is default to be `openjourney-gpu.png`.
+- `--num-steps`: argument defining the number of inference steps. It is default to be `20`. 
+
+#### 4.2 StableDiffusion XL Example
 The example shows how to run StableDiffusion XL example on Intel GPU.
 ```bash
 python ./sdxl.py
@@ -105,7 +116,7 @@ Arguments info:
 The sample output image looks like below. 
 ![image](https://llm-assets.readthedocs.io/en/latest/_images/sdxl-gpu.png)
 
-#### 4.2 LCM-LoRA Example
+#### 4.3 LCM-LoRA Example
 The example shows how to performing inference with LCM-LoRA on Intel GPU.
 ```bash
 python ./lora-lcm.py
