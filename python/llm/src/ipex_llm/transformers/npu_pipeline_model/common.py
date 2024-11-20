@@ -23,16 +23,19 @@ from intel_npu_acceleration_library.backend.factory import NNFactory
 import numpy as np
 
 
-def update_names_of_IR_and_export_blob(model, model_name, dir):
+def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True, keep_ir=True):
     xml_path = os.path.join(dir, model_name + ".xml")
+    bin_path = os.path.join(dir, model_name + ".bin")
     model.save(xml_path)
     new_ir_path = os.path.join(dir, model_name + "_new.xml")
+    new_bin_path = os.path.join(dir, model_name + "_new.bin")
     blob_path = os.path.join(dir, model_name + ".blob")
 
     core = Core()
     core.set_property("NPU", {"NPU_COMPILATION_MODE_PARAMS":
                               "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"})
     core.set_property("NPU", {"PERFORMANCE_HINT": "LATENCY"})
+
     model = core.read_model(xml_path)
     inputs = model.inputs
     for idx, input in enumerate(inputs):
@@ -46,14 +49,17 @@ def update_names_of_IR_and_export_blob(model, model_name, dir):
     if new_ir_path is not None:
         serialize(model, new_ir_path)
 
-    if blob_path is not None:
+    if compile_blob:
         compiledModel = core.compile_model(model, device_name="NPU")
         model_stream = compiledModel.export_model()
         with open(blob_path, 'wb') as f:
             f.write(model_stream)
 
     os.remove(xml_path)
-    os.remove(new_ir_path)
+
+    if not keep_ir:
+        os.remove(new_ir_path)
+        os.remove(new_bin_path)
 
     return blob_path
 
@@ -123,6 +129,7 @@ class LLMEmbedding(NNFactory):
         embedding_weight,
         padding_idx,
         dtype,  # fp16
+        input_length: int = 1,
         device: str = "NPU",
     ):
         super().__init__(False, device)
@@ -133,7 +140,7 @@ class LLMEmbedding(NNFactory):
 
         # define input
         weight = self.constant(embedding_weight)
-        input = self.parameter((1, 1), dtype=np.int32)
+        input = self.parameter((1, input_length), dtype=np.int32)
 
         if padding_idx == -1:
             padding_idx += vocab_size
