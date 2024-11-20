@@ -329,6 +329,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 | MiniCPM-V-2 |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V-2) |
 | MiniCPM-Llama3-V-2_5 |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-Llama3-V-2_5) |
 | MiniCPM-V-2_6 |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V-2_6) | 
+| StableDiffusion | | [link](python/llm/example/GPU/HuggingFace/Multimodal/StableDiffusion) |
 
 ## 官方支持
 - 如果遇到问题，或者请求新功能支持，请提交 [Github Issue](https://github.com/intel-analytics/ipex-llm/issues) 告诉我们

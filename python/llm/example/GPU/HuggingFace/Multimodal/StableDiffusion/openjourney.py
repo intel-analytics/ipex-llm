@@ -13,42 +13,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Code is adapted from https://huggingface.co/docs/diffusers/en/using-diffusers/sdxl
+# Code is adapted from https://huggingface.co/prompthero/openjourney
 
-from diffusers import AutoPipelineForText2Image
+from diffusers import StableDiffusionPipeline
 import torch
 import ipex_llm
-import numpy as np
-from PIL import Image
 import argparse
 import time
 
 
 def main(args):
-    pipeline_text2image = AutoPipelineForText2Image.from_pretrained(
+    pipe = StableDiffusionPipeline.from_pretrained(
         args.repo_id_or_model_path, 
-        torch_dtype=torch.bfloat16, 
-        use_safetensors=True
-    ).to("xpu")
+        torch_dtype=torch.float16, 
+        use_safetensors=True)
+    pipe = pipe.to("xpu")
 
     with torch.inference_mode():
         # warmup
-        image = pipeline_text2image(prompt=args.prompt,num_inference_steps=args.num_steps).images[0]
+        image = pipe(args.prompt, num_inference_steps=args.num_steps).images[0]
 
         # start inference
         st = time.time()
-        image = pipeline_text2image(prompt=args.prompt,num_inference_steps=args.num_steps).images[0]
+        image = pipe(args.prompt, num_inference_steps=args.num_steps).images[0]
         end = time.time()
         print(f'Inference time: {end-st} s')
         image.save(args.save_path)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Stable Diffusion")
-    parser.add_argument('--repo-id-or-model-path', type=str, default="stabilityai/stable-diffusion-xl-base-1.0",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="prompthero/openjourney",
                         help='The huggingface repo id for the stable diffusion model checkpoint')
     parser.add_argument('--prompt', type=str, default="An astronaut in the forest, detailed, 8k",
                         help='Prompt to infer')
-    parser.add_argument('--save-path',type=str,default="sdxl-gpu.png",
+    parser.add_argument('--save-path',type=str,default="openjourney-gpu.png",
                         help="Path to save the generated figure")
     parser.add_argument('--num-steps',type=int,default=20,
                         help="Number of inference steps")

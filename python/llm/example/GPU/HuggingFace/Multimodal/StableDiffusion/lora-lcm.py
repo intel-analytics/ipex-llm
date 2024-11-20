@@ -19,6 +19,7 @@ import torch
 from diffusers import DiffusionPipeline, LCMScheduler
 import ipex_llm
 import argparse
+import time
 
 
 def main(args):
@@ -34,10 +35,21 @@ def main(args):
     pipe.load_lora_weights(args.lora_weights_path)
 
     generator = torch.manual_seed(42)
-    image = pipe(
-        prompt=args.prompt, num_inference_steps=args.num_steps, generator=generator, guidance_scale=1.0
-    ).images[0]
-    image.save(args.save_path)
+
+    with torch.inference_mode():
+        # warmup
+        image = pipe(
+            prompt=args.prompt, num_inference_steps=args.num_steps, generator=generator, guidance_scale=1.0
+        ).images[0]
+
+        # start inference
+        st = time.time()
+        image = pipe(
+            prompt=args.prompt, num_inference_steps=args.num_steps, generator=generator, guidance_scale=1.0
+        ).images[0]   
+        end = time.time()
+        print(f'Inference time: {end-st} s')
+        image.save(args.save_path)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Stable Diffusion lora-lcm")
