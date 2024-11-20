@@ -185,10 +185,11 @@ P95 next token latency: xxx milliseconds.
 
 After starting vllm service, Sending reqs through `vllm_online_benchmark_multimodal.py`
 ```bash
+export image_url="http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg"
 python vllm_online_benchmark_multimodal.py --model-name $model_name --image-url $image_url --prompt "What is in the image?" --port 8000
 ```
 
-`Image_url` can be `/llm/xxx.jpg` or `"http://xxx.jpg`.
+`image_url` can be `/llm/xxx.jpg` or `"http://xxx.jpg`.
 
 And it will output like this:
 ```bash
