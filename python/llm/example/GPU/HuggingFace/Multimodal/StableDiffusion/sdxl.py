@@ -21,6 +21,7 @@ import ipex_llm
 import numpy as np
 from PIL import Image
 import argparse
+import time
 
 
 def main(args):
@@ -30,8 +31,16 @@ def main(args):
         use_safetensors=True
     ).to("xpu")
 
-    image = pipeline_text2image(prompt=args.prompt,num_inference_steps=args.num_steps).images[0]
-    image.save(args.save_path)
+    with torch.inference_mode():
+        # warmup
+        image = pipeline_text2image(prompt=args.prompt,num_inference_steps=args.num_steps).images[0]
+
+        # start inference
+        st = time.time()
+        image = pipeline_text2image(prompt=args.prompt,num_inference_steps=args.num_steps).images[0]
+        end = time.time()
+        print(f'Inference time: {end-st} s')
+        image.save(args.save_path)
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Stable Diffusion")
