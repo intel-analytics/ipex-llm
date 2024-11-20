@@ -167,7 +167,7 @@ class PromptLookupCandidateGenerator():
         self.num_output_tokens = num_output_tokens
         self.max_matching_ngram_size = max_matching_ngram_size if max_matching_ngram_size else 2
 
-        if device == "mtl":
+        if device in ["mtl", "lnl"]:
             self.max_candidates = 3
             self.min_candidates = 0
         else:
@@ -418,7 +418,7 @@ def lookup_generate(self,
             accept_rate = self.n_matched/self.n_drafted if self.n_drafted > 0 else 1
             self.accept_rate.append(accept_rate)
             # Update the candidate generation strategy if needed
-            if device_name != 'mtl':
+            if device_name not in ["mtl", "lnl"]:
                 candidates_generator.update_candidate_strategy(candidate_length, n_matches,
                                                                accept_rate)
 
