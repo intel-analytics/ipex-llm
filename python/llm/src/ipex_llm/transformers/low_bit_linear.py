@@ -381,6 +381,7 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
             batch_size > 1
             or (device in ["arc", "flex"] and qtype in [SYM_INT8, FP4])
             or (device in ["arc", "flex", "mtl"] and qtype in [FP8E4])
+            or (device in ["lnl"] and qtype in [SYM_INT4] and x.shape[1] % 512 == 0)
         )
     return False
 
