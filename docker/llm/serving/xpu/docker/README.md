@@ -208,6 +208,7 @@ P95 first token latency: xxx milliseconds.
 Average next token latency: xxx milliseconds.
 P90 next token latency: xxx milliseconds.
 P95 next token latency: xxx milliseconds.
+```
 
 ###### Online benchmark through wrk
 In container, do the following:
