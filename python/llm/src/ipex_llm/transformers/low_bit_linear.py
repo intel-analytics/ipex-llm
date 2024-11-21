@@ -362,14 +362,22 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
     batch_size = x.shape[0]
     hard_condition = (
         x.dtype in [torch.float, torch.half]
-        and batch_size <= 48
+        and x.shape[1] % 128 == 0
         and (
             (
                 qtype in [SYM_INT4, ASYM_INT4, FP8E5, FP8E4]
-                and x.shape[1] % 128 == 0
+                and (
+                    batch_size <= 48
+                    or (
+                        batch_size <= 64
+                        and x.shape[1] % 256 == 0
+                        and output_len % 64 == 0
+                    )
+                )
             )
             or (
                 qtype in [SYM_INT8, FP4, FP6, Q4_K, Q6_K]
+                and batch_size <= 48
                 and device in ["arc", "flex", "pvc", "mtl"]
                 and x.shape[1] % 256 == 0
                 and output_len % 32 == 0
