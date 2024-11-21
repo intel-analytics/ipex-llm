@@ -92,7 +92,7 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor, kv_group: in
 
 
 def kv_cache_device_check(x: torch.Tensor, kv_group: int) -> bool:
-    return (get_xpu_device_type(x) == "mtl" and kv_group <= 1) or \
+    return (get_xpu_device_type(x) in ["mtl", "lnl"] and kv_group <= 1) or \
         ((get_xpu_device_type(x) == "arc" or get_xpu_device_type(x) == "flex") and
             1 < x.size(0) and x.size(0) <= 8)
 
@@ -348,7 +348,7 @@ def mlp_fusion_check(x, qtype, training):
         return False
     if qtype == FP6:
         device = get_xpu_device_type(x)
-        if device == "mtl":
+        if device in ["mtl", "lnl"]:
             return False
     return True
 
@@ -395,7 +395,7 @@ def use_fused_layer_norm(x: torch.Tensor, training: bool):
     return (
         not training
         and not x.requires_grad
-        and device in ["arc", "flex", "pvc", "mtl"]  # fused layer norm cannot run on UHD
+        and device in ["arc", "flex", "pvc", "mtl", "lnl"]  # fused layer norm cannot run on UHD
         and x.numel() // x.size(-1) == 1  # fused layer norm is slower in first token
     )
 
@@ -474,7 +474,7 @@ def should_use_compresskv(x: torch.Tensor, prompt_len: int):
     else:
         if use_compress_kv is None:
             return (
-                get_xpu_device_type(x) == "mtl"
+                get_xpu_device_type(x) in ["mtl", "lnl"]
                 and prompt_len >= 1800
                 and prompt_len <= 4500
             )

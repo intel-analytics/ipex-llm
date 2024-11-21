@@ -175,7 +175,10 @@ def get_xpu_device_type(x):
     if name.startswith("Intel(R) Arc(TM) A"):
         return "arc"
     elif name.startswith("Intel(R) Arc(TM)"):
-        return "mtl"
+        if 'V' in name:
+            return "lnl"
+        else:
+            return "mtl"
     elif name.startswith("Intel(R) Data Center GPU Flex"):
         return "flex"
     elif name.startswith("Intel(R) Data Center GPU Max"):
