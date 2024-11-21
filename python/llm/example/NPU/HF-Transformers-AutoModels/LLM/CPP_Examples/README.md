@@ -31,13 +31,23 @@ pip install transformers==4.45.0 accelerate==0.33.0
 
 ## 2. Convert Model
 We provide a [convert script](convert_model.py) under current directory, by running it, you can obtain the whole weights and configuration files which are required to run C++ example.
+
 ```cmd
-python convert_model.py
+:: to run Qwen2.5-7b-Instruct
+python convert_model.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --save-directory <converted_model_path>
+
 ```
 
-
+Arguments info:
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the model (e.g. `Qwen/Qwen2.5-7B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder.
+- `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the converted model will be saved into `SAVE_DIRECTORY`.
+- `--max-context-len MAX_CONTEXT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
+- `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `960`.
+- `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
 
 ## 3. Build C++ Example `llm-npu-cli`
+
+You can run below cmake script in cmd to build `llm-npu-cli`, don't forget to replace below conda env dir with your own path.
 
 ```cmd
 :: under current directory
@@ -52,11 +62,16 @@ cd Release
 
 ## 4. Run `llm-npu-cli`
 
-Then you can run the example with specified paramaters. For example,
+With built `llm-npu-cli`, you can run the example with specified paramaters. For example,
 
 ```cmd
 llm-npu-cli.exe -m <converted_model_path> -n 64 "AI是什么?"
 ```
+
+Arguments info:
+- `-m` : argument defining the path of saved converted model.
+- `-n` : argument defining how many tokens will be generated.
+- Last argument is your input prompt.
 
 ### 5. Sample Output
 #### [`Qwen/Qwen2.5-7B-Instruct`](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct)
