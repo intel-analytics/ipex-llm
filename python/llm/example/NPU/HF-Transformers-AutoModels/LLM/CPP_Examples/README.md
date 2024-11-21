@@ -33,7 +33,7 @@ pip install transformers==4.45.0 accelerate==0.33.0
 We provide a [convert script](convert_model.py) under current directory, by running it, you can obtain the whole weights and configuration files which are required to run C++ example.
 
 ```cmd
-:: to run Qwen2.5-7b-Instruct
+:: to convert Qwen2.5-7b-Instruct
 python convert_model.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --save-directory <converted_model_path>
 
 ```
