@@ -349,6 +349,7 @@ def setup_package():
                         "xpu-2-1": xpu_21_requires,
                         "xpu-lnl": xpu_lnl_requires,
                         "xpu-arl": xpu_lnl_requires,
+                        "xpu-arc": xpu_lnl_requires,
                         "serving": serving_requires,
                         "cpp": cpp_requires,
                         "cpp-arl": cpp_arl_requires,
