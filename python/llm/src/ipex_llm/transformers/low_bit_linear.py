@@ -370,7 +370,7 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
             )
             or (
                 qtype in [SYM_INT8, FP4, FP6, Q4_K, Q6_K]
-                and device in ["arc", "flex", "pvc", "mtl", "lnl"]
+                and device in ["arc", "flex", "pvc", "mtl"]
                 and x.shape[1] % 256 == 0
                 and output_len % 32 == 0
             )
