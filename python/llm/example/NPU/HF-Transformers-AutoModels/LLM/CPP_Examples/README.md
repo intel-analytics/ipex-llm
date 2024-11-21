@@ -1,4 +1,4 @@
-# C++ Example of running LLM on Intel NPU using IPEX-LLM
+# C++ Example of running LLM on Intel NPU using IPEX-LLM (Experimental)
 In this directory, you will find a C++ example on how to run LLM models on Intel NPUs using IPEX-LLM (leveraging *Intel NPU Acceleration Library*). See the table blow for verified models.
 
 ## Verified Models

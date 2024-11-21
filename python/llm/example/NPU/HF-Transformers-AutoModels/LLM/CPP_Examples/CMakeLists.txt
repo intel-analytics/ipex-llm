@@ -35,5 +35,5 @@ add_custom_command(TARGET llm-npu-cli POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${DLL_DIR}/
         ${CMAKE_BINARY_DIR}/Release/
-    COMMENT "Copying ov dll to build/Release\n"
+    COMMENT "Copying dependency to build/Release\n"
 )
