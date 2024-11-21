@@ -297,9 +297,9 @@ def setup_package():
     xpu_lnl_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
         xpu_lnl_requires.remove(exclude_require)
-    xpu_lnl_requires += ["torch==2.3.1+cxx11.abi",
-                         "torchvision==0.18.1+cxx11.abi",
-                         "intel-extension-for-pytorch==2.3.110+xpu",
+    xpu_lnl_requires += ["torch==2.3.1.post0+cxx11.abi;platform_system=='Windows'",
+                         "torchvision==0.18.1.post0+cxx11.abi;platform_system=='Windows'",
+                         "intel-extension-for-pytorch==2.3.110.post0+xpu;platform_system=='Windows'",
                          "bigdl-core-xe-23==" + CORE_XE_VERSION,
                          "bigdl-core-xe-batch-23==" + CORE_XE_VERSION,
                          "bigdl-core-xe-addons-23==" + CORE_XE_VERSION,
