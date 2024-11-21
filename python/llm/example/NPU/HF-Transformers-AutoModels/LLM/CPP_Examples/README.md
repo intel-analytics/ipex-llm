@@ -1,5 +1,5 @@
-# C++ Example of running HuggingFace `transformers` Models on Intel NPU using IPEX-LLM
-In this directory, you will find a C++ example on how to run HuggingFace `transformers` LLM models on Intel NPUs (leveraging *Intel NPU Acceleration Library*). See the table blow for verified models.
+# C++ Example of running LLM on Intel NPU using IPEX-LLM
+In this directory, you will find a C++ example on how to run LLM models on Intel NPUs using IPEX-LLM (leveraging *Intel NPU Acceleration Library*). See the table blow for verified models.
 
 ## Verified Models
 
@@ -35,18 +35,19 @@ We provide a [convert script](convert_model.py) under current directory, by runn
 python convert_model.py
 ```
 
-## 3. Obtain C++ header files and library
 
 
-## 4. Build C++ Example `llm-npu-cli`
-Note, before build below C++ exmaple, please make sure you have installed OpenViNO and have activated it in your current terminal. You can refer to [official guide](https://docs.openvino.ai/2024/get-started/install-openvino/install-openvino-windows.html) about this part.
+## 3. Build C++ Example `llm-npu-cli`
 
 ```cmd
-# under current directory
+:: under current directory
+:: please replace below conda env dir with your own path
+set CONDA_ENV_DIR=C:\Users\arda\miniforge3\envs\llm\Lib\site-packages
 mkdir build
 cd build
 cmake ..
 cmake --build . --config Release -j
+cd Release
 ```
 
 ## 4. Run `llm-npu-cli`
@@ -54,10 +55,11 @@ cmake --build . --config Release -j
 Then you can run the example with specified paramaters. For example,
 
 ```cmd
-Release\llm-npu-cli.exe -m <converted_model_path> -n 64 "AI是什么?"
+llm-npu-cli.exe -m <converted_model_path> -n 64 "AI是什么?"
 ```
 
-## 5. Demo Output of `Qwen/Qwen2.5-7B-Instruct`
+### 5. Sample Output
+#### [`Qwen/Qwen2.5-7B-Instruct`](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct)
 ```cmd
 Input:
 <|im_start|>system
@@ -69,7 +71,7 @@ AI是什么?<|im_end|>
 
 Prefill 22 tokens cost xxxx ms.
 Output:
-AI是"人工智能"的缩写，是英文"Artificial Intelligence"的翻译。它是研究如何使计算机也具有智能的一种技术和理论。简而言之，人工智能就 是让计算机能够模仿人智能行为的一项技术。
+AI是"人工智能"的缩写，是英文"Artificial Intelligence"的翻译。它是研究如何使计算机也具有智能的一种技术和理论。简而言之，人工智能就是让计算机能够模仿人智能行为的一项技术。
 
 Decode 46 tokens cost xxxx ms (avg xx.xx ms each token).
 ```
