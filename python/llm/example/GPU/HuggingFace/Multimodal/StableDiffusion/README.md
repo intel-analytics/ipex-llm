@@ -9,7 +9,7 @@ Follow the instructions in IPEX-GPU installation guides ([Linux Guide](https://i
 Assume you have created a conda environment named diffusion with ipex-llm installed. Run below commands to install dependencies for running Stable Diffusion.
 ```bash
 conda activate diffusion
-pip install diffusers["torch"] transformers
+pip install diffusers["torch"]==0.31.0 transformers
 pip install -U PEFT transformers
 ```
 
