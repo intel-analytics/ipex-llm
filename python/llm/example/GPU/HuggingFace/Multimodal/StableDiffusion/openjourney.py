@@ -17,7 +17,7 @@
 
 from diffusers import StableDiffusionPipeline
 import torch
-import ipex_llm
+from ipex_llm.transformers.models.sd15 import AttnProcessor2_0
 import argparse
 import time
 
@@ -27,6 +27,7 @@ def main(args):
         args.repo_id_or_model_path, 
         torch_dtype=torch.float16, 
         use_safetensors=True)
+    pipe.unet.set_attn_processor(AttnProcessor2_0())
     pipe = pipe.to("xpu")
 
     with torch.inference_mode():
