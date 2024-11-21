@@ -17,7 +17,7 @@
 
 from diffusers import StableDiffusionPipeline
 import torch
-import ipex_llm
+from ipex_llm import optimize_model
 import argparse
 import time
 
@@ -27,6 +27,7 @@ def main(args):
         args.repo_id_or_model_path, 
         torch_dtype=torch.float16, 
         use_safetensors=True)
+    pipe = optimize_model(pipe, low_bit=None)
     pipe = pipe.to("xpu")
 
     with torch.inference_mode():
