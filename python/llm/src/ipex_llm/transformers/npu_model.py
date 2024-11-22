@@ -134,7 +134,7 @@ class _BaseAutoModelClass:
         mixed_precision = kwargs.pop('mixed_precision', False)
         quantization_group_size = kwargs.pop("quantization_group_size", 0)
         mock_device = kwargs.pop('device', None)  # For mock on CPU
-        compile_full_model = kwargs.pop('compile_full_model', False)
+        convert_model = kwargs.pop('convert_model', False)
         save_directory = kwargs.pop('save_directory', None)
 
         invalidInputError(
@@ -202,7 +202,7 @@ class _BaseAutoModelClass:
                     "inter_pp": inter_pp,
                     "intra_pp": intra_pp,
                     "transpose_value_cache": transpose_value_cache,
-                    "compile_full_model": compile_full_model,
+                    "convert_model": convert_model,
                     "save_directory": save_directory,
                 }
                 model = cls.optimize_npu_model(*args, **optimize_kwargs)
@@ -241,7 +241,7 @@ class _BaseAutoModelClass:
         inter_pp = kwargs.pop("inter_pp", None)
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
-        compile_full_model = kwargs.pop('compile_full_model', False)
+        convert_model = kwargs.pop('convert_model', False)
         save_directory = kwargs.pop('save_directory', None)
 
         if hasattr(model, "llm"):
@@ -280,7 +280,7 @@ class _BaseAutoModelClass:
                         max_prompt_len=max_prompt_len,
                         transpose_value_cache=transpose_value_cache,
                         group_size=quantization_group_size,
-                        compile_full_model=compile_full_model,
+                        convert_model=convert_model,
                         save_directory=save_directory)
         model.save_low_bit = types.MethodType(save_low_bit, model)
         return model

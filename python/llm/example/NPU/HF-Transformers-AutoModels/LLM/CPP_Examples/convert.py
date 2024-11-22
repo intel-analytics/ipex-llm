@@ -63,7 +63,7 @@ if __name__ == "__main__":
                                                  transpose_value_cache=not args.disable_transpose_value_cache,
                                                  mixed_precision=True,
                                                  trust_remote_code=True,
-                                                 compile_full_model=True,
+                                                 convert_model=True,
                                                  save_directory=save_dir)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
