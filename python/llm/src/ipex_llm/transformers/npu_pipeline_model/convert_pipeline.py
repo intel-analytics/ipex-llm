@@ -436,7 +436,11 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "max_prompt_len": max_prompt_len,
                        "layernorm_const": layernorm_const,
                        "group_size":  group_size,
-                       "fused_layers": fused_layers}
+                       "fused_layers": fused_layers,
+                       "qkv_bias": True,
+                       "use_prefill_sdp": False,
+                       "weight_num": 7,
+                       "weight_idx": 8}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
@@ -450,6 +454,42 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         convert_qwen_layer(model, 0, n_splits_linear, n_splits_down_proj,
                            save_directory, weight_dir, transpose_value_cache, max_prompt_len,
                            group_size, layernorm_const, "prefill")
+        # save blob of lmhead and bin of embedding
+        convert_lm_head_and_embedding(model, n_splits_linear,
+                                      save_directory, weight_dir, True)
+    elif model.config.model_type == "llama":
+        layernorm_const = True
+        if model.config.vocab_size == 32000:
+            # for Llama2-7B
+            fused_layers = 4
+        else:
+            # for Llama3-8B
+            fused_layers = 2
+        update_dict = {"kv_len": kv_len,
+                       "num_head": model.model.layers[0].self_attn.num_heads,
+                       "head_dim": model.model.layers[0].self_attn.head_dim,
+                       "transpose_value_cache": transpose_value_cache,
+                       "max_prompt_len": max_prompt_len,
+                       "layernorm_const": layernorm_const,
+                       "group_size":  group_size,
+                       "fused_layers": fused_layers,
+                       "qkv_bias": False,
+                       "use_prefill_sdp": True,
+                       "weight_num": 7,
+                       "weight_idx": 5}
+        model.config.update(update_dict)
+        model.config.save_pretrained(save_directory)
+
+        from .llama import convert_llama_layer, convert_fused_llama_layer
+        from .llama import convert_lm_head_and_embedding
+        # save fused_layers blobs of fused decoder layers
+        convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
+                                  save_directory, weight_dir, transpose_value_cache, kv_len,
+                                  group_size, layernorm_const, "decode")
+        # save blob of single prefill layer
+        convert_llama_layer(model, 0, n_splits_linear, n_splits_down_proj,
+                            save_directory, weight_dir, transpose_value_cache, max_prompt_len,
+                            group_size, layernorm_const, "prefill")
         # save blob of lmhead and bin of embedding
         convert_lm_head_and_embedding(model, n_splits_linear,
                                       save_directory, weight_dir, True)
