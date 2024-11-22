@@ -436,7 +436,11 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "max_prompt_len": max_prompt_len,
                        "layernorm_const": layernorm_const,
                        "group_size":  group_size,
-                       "fused_layers": fused_layers}
+                       "fused_layers": fused_layers,
+                       "qkv_bias": True,
+                       "use_prefill_sdp": False,
+                       "weight_num": 7,
+                       "weight_idx": 8}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
@@ -463,7 +467,11 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "max_prompt_len": max_prompt_len,
                        "layernorm_const": layernorm_const,
                        "group_size":  group_size,
-                       "fused_layers": fused_layers}
+                       "fused_layers": fused_layers,
+                       "qkv_bias": False,
+                       "use_prefill_sdp": True,
+                       "weight_num": 7,
+                       "weight_idx": 5}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
