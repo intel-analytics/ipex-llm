@@ -207,7 +207,7 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
 
     from ipex_llm.transformers.npu_models.qwen2_mp import LowBitQwenMultiDecoderlayer
     for i in range(fused_layers):
-        layer_start =  i * fused_layer_num
+        layer_start = i * fused_layer_num
         layer_end = min((i + 1) * fused_layer_num, layer_num)
         layer_weights = []
         input_layer_norm_weights = []
@@ -264,7 +264,8 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             for idx, (weight, scale) in enumerate(weights):
                 bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*2}.bin")
                 weight.numpy().tofile(bin_file)
-                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
+                bin_file = os.path.join(weight_dir,
+                                        f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
                 scale.numpy().tofile(bin_file)
 
         if isinstance(weights[0], tuple):

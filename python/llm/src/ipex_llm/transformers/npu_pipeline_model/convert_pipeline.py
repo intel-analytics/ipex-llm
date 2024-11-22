@@ -203,7 +203,7 @@ def convert_llm(model: torch.nn.Module,
     else:
         n_splits_linear = model.config.hidden_size // group_size
         n_splits_down_proj = model.config.intermediate_size // group_size
-    if convert_model == True:
+    if convert_model:
         convert_llm_for_deploy(model,
                                kv_len,
                                max_prompt_len,
@@ -423,9 +423,9 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     os.mkdir(weight_dir)
 
     if model.config.model_type == "qwen2":
-        layernorm_const =True
+        layernorm_const = True
         if model.config.hidden_size == 1536:
-            # Qwen2-1.5B-Instruct 
+            # Qwen2-1.5B-Instruct
             fused_layers = 1
         else:
             fused_layers = 2
