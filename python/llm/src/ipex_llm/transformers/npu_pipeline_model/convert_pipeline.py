@@ -444,7 +444,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         from .qwen import convert_lm_head_and_embedding
         # save fused decoder layers's blob
         convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
-                                 save_directory, weight_dir, transpose_value_cache, max_prompt_len,
+                                 save_directory, weight_dir, transpose_value_cache, kv_len,
                                  group_size, layernorm_const, "decode")
         # save prefill IR
         convert_qwen_layer(model, 0, n_splits_linear, n_splits_down_proj,
