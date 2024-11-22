@@ -632,16 +632,6 @@ def run_decode(
         n_splits_down_proj=n_splits_down_proj,
         group_size=group_size
     )
-    dir = "D:\\ruonan\\converted-qwen2-1.5B"
-    if intra_stages > 1:
-        for i in range(intra_stages):
-            xml_path = f"Qwen2-1.5B-{len(layer_indexs)}-{intra_stages * (my_rank-1) + i}.xml"
-            print(os.path.join(dir, xml_path))
-            multi_decoder.backend_decoders[i].save(os.path.join(dir, xml_path))
-    else:
-        xml_path = f"Qwen2-1.5B-{len(layer_indexs)}-{(my_rank-1)}.xml"
-        print(os.path.join(dir, xml_path))
-        multi_decoder.backend_decoders[0].save(os.path.join(dir, xml_path))
 
     dist.barrier()
 
