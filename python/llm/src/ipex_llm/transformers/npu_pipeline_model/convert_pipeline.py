@@ -495,7 +495,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                                       save_directory, weight_dir, True)
     elif model.config.model_type == "minicpm":
         layernorm_const = True
-        fused_layers = 2
+        fused_layers = 4
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
