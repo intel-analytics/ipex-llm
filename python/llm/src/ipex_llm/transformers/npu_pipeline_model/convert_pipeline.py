@@ -515,9 +515,6 @@ def convert_llm_for_deploy(model: torch.nn.Module,
 
         from .minicpm import convert_minicpm_layer, convert_fused_minicpm_layer
         from .minicpm import convert_lm_head_and_embedding
-        # save blob of lmhead and bin of embedding
-        convert_lm_head_and_embedding(model, n_splits_linear,
-                                      save_directory, weight_dir, True, max_prompt_len)
         # save fused_layers blobs of fused decoder layers
         convert_fused_minicpm_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                                     save_directory, weight_dir, transpose_value_cache, kv_len,
@@ -526,3 +523,6 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         convert_minicpm_layer(model, 0, n_splits_linear, n_splits_down_proj,
                               save_directory, weight_dir, transpose_value_cache, max_prompt_len,
                               group_size, layernorm_const, "prefill")
+        # save blob of lmhead and bin of embedding
+        convert_lm_head_and_embedding(model, n_splits_linear,
+                                      save_directory, weight_dir, True, max_prompt_len)

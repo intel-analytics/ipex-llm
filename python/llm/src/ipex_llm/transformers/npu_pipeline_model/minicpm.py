@@ -58,8 +58,6 @@ class MiniCPMEmbedding(NNFactory):
             res = self.gather(node_masked_w, input, axis_node, 0)
         else:
             res = self.gather(weight, input, axis_node, 0)
-        print(res)
-        print(scale_emb)
         res = res * scale_emb
 
         # define outputs
@@ -83,8 +81,6 @@ class MiniCPMPostEmbedding(NNFactory):
         self.dtype = dtype
 
         input = self.parameter((1, input_size, embedding_dim), dtype=dtype)
-        print(input)
-        print(scale_emb)
         res = input * scale_emb
 
         # define outputs
