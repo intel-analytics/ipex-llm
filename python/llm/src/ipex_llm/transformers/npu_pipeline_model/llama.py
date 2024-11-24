@@ -147,10 +147,11 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
         )
     else:
         # llama-3.2-3B & llama-3.2-1B
+        embedding_layer = model.model.embed_tokens
         new_embedding = Llama32Embedding(
             vocab_size=model.config.vocab_size,
             embedding_dim=model.config.hidden_size,
-            embedding_weight=model.model.embed_tokens.weight.to(torch.float16).detach().numpy(),
+            embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
             padding_idx=model.config.pad_token_id,
             inv_freq=model.model.rotary_emb.inv_freq.to(torch.float16),
             attention_scaling=model.model.rotary_emb.attention_scaling,

@@ -58,7 +58,34 @@ class MiniCPMEmbedding(NNFactory):
             res = self.gather(node_masked_w, input, axis_node, 0)
         else:
             res = self.gather(weight, input, axis_node, 0)
+        print(res)
+        print(scale_emb)
         res = res * scale_emb
+
+        # define outputs
+        res = self.convert_to_fp16(res)
+
+        print("start compiling")
+        self.compile()
+
+
+class MiniCPMPostEmbedding(NNFactory):
+    def __init__(
+        self,
+        input_size,
+        embedding_dim,
+        dtype,  # fp16
+        scale_emb,
+        device: str = "NPU",
+    ):
+        super().__init__(False, device)
+        self.embedding_dim = embedding_dim
+        self.dtype = dtype
+
+        input = self.parameter((1, input_size, embedding_dim), dtype=dtype)
+        print(input)
+        print(scale_emb)
+        res = input * scale_emb
 
         # define outputs
         res = self.convert_to_fp16(res)
@@ -134,7 +161,8 @@ class MiniCPMLMHead(LLMBaseNNFactory):
         self.compile()
 
 
-def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
+def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
+                                  convert_model=False, max_prompt_len=1):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -180,7 +208,8 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
         vocab_size=vocab_size,
         n_splits=n_splits_linear
     )
-    last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir)
+    last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir,
+                                                        True, True)
 
     # save weights bins files
     if n_splits_linear == 1:
@@ -209,14 +238,31 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir):
         dtype=np.float16,
         scale_emb=model.config.scale_emb,
     )
-    first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
-                                                         temp_dir)
+    if convert_model:
+        bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
+        embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
+        first_blob_path = None
+        # save embedding post module
+        embedding_post = MiniCPMPostEmbedding(1, model.config.hidden_size,
+                                              dtype=np.float16,
+                                              scale_emb=model.config.scale_emb)
+        update_names_of_IR_and_export_blob(embedding_post, "embedding_post",
+                                           temp_dir, True, False)
+        embedding_post_prefill = MiniCPMPostEmbedding(max_prompt_len, model.config.hidden_size,
+                                                      dtype=np.float16,
+                                                      scale_emb=model.config.scale_emb)
+        update_names_of_IR_and_export_blob(embedding_post_prefill,
+                                           "embedding_post_prefill",
+                                           temp_dir, True, False)
+    else:
+        first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
+                                                             temp_dir, True, False)
     return first_blob_path, last_blob_path
 
 
 def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                           temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                          layernorm_const):
+                          layernorm_const, mode="decode"):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -252,8 +298,16 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     else:  # FP16 Linear
         np_dtype = np.float16
 
+    if mode == "decode":
+        input_len = 1
+        decoder_name = f"decoder_layer_{layer_idx}"
+    else:
+        input_len = kv_len
+        decoder_name = "decoder_layer_prefill"
+        layernorm_const = False
+
     single_decoder = LowBitMinicpmMultiDecoderlayer(
-        [1, 1, num_heads * head_dim],
+        [1, input_len, num_heads * head_dim],
         input_layernorm_weights=[layer_norm_0] if layernorm_const else None,
         post_attn_layernorm_weights=[layer_norm_1] if layernorm_const else None,
         cached_cos=cached_cos,
@@ -266,7 +320,7 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         intermediate_size=intermediate_size,
         scale_depth=scale_depth,
         num_hidden_layers=num_hidden_layers,
-        mode="decode",
+        mode=mode,
         transpose_value=transpose_value_cache,
         dtype=np_dtype,
         n_splits_linear=n_splits_linear,
@@ -274,20 +328,119 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         group_size=group_size
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
-                                                        f"decoder_layer_{layer_idx}",
-                                                        temp_dir)
+                                                        decoder_name,
+                                                        temp_dir,
+                                                        True, True)
 
-    if layernorm_const:
-        st_idx = 5
-    else:
-        input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
-        post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
-        layer_norm_0.data.numpy().tofile(input_lm_bin_file)
-        layer_norm_1.data.numpy().tofile(post_lm_bin_file)
-        st_idx = 7
-    for idx, (weight, scale) in enumerate(weights):
-        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2}.bin")
-        weight.numpy().tofile(bin_file)
-        bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2+1}.bin")
-        scale.numpy().tofile(bin_file)
-    del single_decoder
+    if mode == "decode":
+        if layernorm_const:
+            st_idx = 5
+        else:
+            input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
+            post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
+            layer_norm_0.data.numpy().tofile(input_lm_bin_file)
+            layer_norm_1.data.numpy().tofile(post_lm_bin_file)
+            st_idx = 7
+        for idx, (weight, scale) in enumerate(weights):
+            bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2}.bin")
+            weight.numpy().tofile(bin_file)
+            bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2+1}.bin")
+            scale.numpy().tofile(bin_file)
+        del single_decoder
+
+
+def convert_fused_minicpm_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
+                                save_dir, weight_dir, transpose_value_cache, kv_len, group_size,
+                                layernorm_const, mode="decode"):
+    num_heads = model.model.layers[0].self_attn.num_heads
+    num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
+    head_dim = model.model.layers[0].self_attn.head_dim
+    intermediate_size = model.config.intermediate_size
+    rms_norm_eps = model.config.rms_norm_eps
+    num_hidden_layers = model.config.num_hidden_layers
+    scale_depth = model.model.config.scale_depth
+    layer_num = len(model.model.layers)
+    fused_layer_num = layer_num // fused_layers
+
+    from ipex_llm.transformers.npu_models.minicpm_mp import LowBitMinicpmMultiDecoderlayer
+    for i in range(fused_layers):
+        layer_start = i * fused_layer_num
+        layer_end = min((i + 1) * fused_layer_num, layer_num)
+        layer_weights = []
+        input_layer_norm_weights = []
+        post_attn_layernorm_weights = []
+        layer_indexs = range(layer_start, layer_end)
+        n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
+        n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
+        for layer_idx in layer_indexs:
+            curr_layer = model.model.layers[layer_idx]
+            attn_layer = curr_layer.self_attn
+            mlp_layer = curr_layer.mlp
+
+            weights = []
+            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                               mlp_layer.down_proj_dq_list]:
+                l_weights = []
+                scales = []
+                for l in layer_list:
+                    l_weights.append(l.weight)
+                    scales.append(l.scale)
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+
+            cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
+            cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+            layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
+            layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
+
+            layer_weights.extend(weights)
+            input_layer_norm_weights.append(layer_norm_0)
+            post_attn_layernorm_weights.append(layer_norm_1)
+
+            # save weight
+            input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
+            post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
+            layer_norm_0.data.numpy().tofile(input_lm_bin_file)
+            layer_norm_1.data.numpy().tofile(post_lm_bin_file)
+            st_idx = 5
+            # 6, 7 are past k/v
+            for idx, (weight, scale) in enumerate(weights):
+                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2}.bin")
+                weight.numpy().tofile(bin_file)
+                bin_file = os.path.join(weight_dir,
+                                        f"model_{layer_idx}_input_{st_idx+idx*2+1}.bin")
+                scale.numpy().tofile(bin_file)
+
+        if isinstance(weights[0], tuple):
+            np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
+        else:  # FP16 Linear
+            np_dtype = np.float16
+
+        fused_decoder = LowBitMinicpmMultiDecoderlayer(
+            [1, 1, num_heads * head_dim],
+            input_layernorm_weights=input_layer_norm_weights,
+            post_attn_layernorm_weights=post_attn_layernorm_weights,
+            cached_cos=cached_cos,
+            cached_sin=cached_sin,
+            num_heads=num_heads,
+            num_key_value_heads=num_key_value_heads,
+            num_layers=fused_layer_num,
+            max_seq_len=kv_len,
+            rms_norm_eps=rms_norm_eps,
+            intermediate_size=intermediate_size,
+            scale_depth=scale_depth,
+            num_hidden_layers=num_hidden_layers,
+            mode=mode,
+            transpose_value=transpose_value_cache,
+            dtype=np_dtype,
+            n_splits_linear=n_splits_linear,
+            n_splits_down_proj=n_splits_down_proj,
+            group_size=group_size
+        )
+        update_names_of_IR_and_export_blob(fused_decoder,
+                                           f"decoder_layer_{i}",
+                                           save_dir,
+                                           compile_blob=True,
+                                           keep_ir=False)
+    return 0
