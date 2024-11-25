@@ -428,8 +428,8 @@ def optimize_llm(
                       intra_pp=intra_pp,
                       decoder=True,
                       transpose_value_cache=transpose_value_cache)
-    elif model.config.model_type == "qwen2" and model.config.num_hidden_layers == 28:
-        # for qwen2-1.5B and qwen2-7B
+    elif model.config.model_type == "qwen2":
+        # for qwen2-1.5B, qwen2-7B, qwen2.5-3B
         if intra_pp is None:
             intra_pp = 2
         if inter_pp is None:
