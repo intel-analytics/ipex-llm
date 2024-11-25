@@ -1160,8 +1160,6 @@ def gen_llama_32_fused_model_forward(prefill_runner, decode_runner):
         if seq_len == 1:
             layers_runner = decode_runner
         else:
-            print(position_ids.shape, position_ids)
-            print(cos.shape, sin.shape, cos)
             layers_runner = prefill_runner
 
         layer_outputs = layers_runner.forward(
