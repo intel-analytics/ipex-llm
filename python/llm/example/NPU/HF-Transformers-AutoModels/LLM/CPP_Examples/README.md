@@ -95,6 +95,10 @@ Decode 46 tokens cost xxxx ms (avg xx.xx ms each token).
 ### Troubleshooting
 
 #### Program crash with Chinese prompt
-If you run CPP examples on Windows and find that your program aborting or outputs abnormally when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
+If you run CPP examples on Windows and find that your program raises below error when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
+```log
+thread '<unnamed>' panicked at src\lib.rs:151:91:
+called `Result::unwrap()` on an `Err` value: Utf8Error { valid_up_to: 77, error_len: Some(1) }
+```
 
-For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).
+For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105598660).
