@@ -189,7 +189,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
             first_blob_path = None
         else:
             first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
-                                                                 temp_dir)
+                                                                 temp_dir, True, False)
     else:
         # llama-3.2-3B & llama-3.2-1B
         embedding_layer = model.model.embed_tokens
@@ -213,13 +213,13 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
                                                   attention_scaling=attention_scaling,
                                                   input_len=1)
             update_names_of_IR_and_export_blob(embedding_post, "embedding_post",
-                                               temp_dir, True, True)
+                                               temp_dir, True, False)
             embedding_post_prefill = Llama32PostEmbedding(inv_freq=inv_freq,
                                                           attention_scaling=attention_scaling,
                                                           input_len=max_prompt_len)
             update_names_of_IR_and_export_blob(embedding_post_prefill,
                                                "embedding_post_prefill",
-                                               temp_dir, True, True)
+                                               temp_dir, True, False)
         else:
             first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
                                                                  temp_dir)
@@ -303,7 +303,7 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         decoder_name,
                                                         temp_dir,
-                                                        True, True)
+                                                        True, False)
 
     if mode == "decode":
         if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
@@ -429,5 +429,5 @@ def convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_dow
                                            f"decoder_layer_{i}",
                                            save_dir,
                                            compile_blob=True,
-                                           keep_ir=True)
+                                           keep_ir=False)
     return 0
