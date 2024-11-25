@@ -106,8 +106,8 @@ class AttnProcessor2_0:
 
         # the output of sdp = (batch, num_heads, seq_len, head_dim)
         # IPEX-LLM changes start
-        # padding head_dim 40 to 64
         if query.device.type == "xpu" and query.dtype in [torch.half, torch.float]:
+            # padding head_dim 40 to 64
             query, key, value = padding_qkv_hd(query, key, value, 40, 64)
 
             if use_sdp_non_causal(head_dim, query.device, query.dtype):
