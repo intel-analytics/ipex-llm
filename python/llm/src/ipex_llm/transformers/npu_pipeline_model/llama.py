@@ -88,7 +88,7 @@ class Llama32PostEmbedding(NNFactory):
         self,
         inv_freq,
         attention_scaling,
-        input_len: int =  1,
+        input_len: int = 1,
         device: str = "NPU",
     ):
         super().__init__(False, device)
@@ -189,7 +189,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
             first_blob_path = None
         else:
             first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
-                                                                temp_dir)
+                                                                 temp_dir)
     else:
         # llama-3.2-3B & llama-3.2-1B
         embedding_layer = model.model.embed_tokens
@@ -207,20 +207,22 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
             embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
             first_blob_path = None
             # save embedding post module
-            embedding_post = Llama32PostEmbedding(inv_freq=model.model.rotary_emb.inv_freq.to(torch.float16),
-                                                  attention_scaling=model.model.rotary_emb.attention_scaling,
+            inv_freq = model.model.rotary_emb.inv_freq.to(torch.float16)
+            attention_scaling = model.model.rotary_emb.attention_scaling
+            embedding_post = Llama32PostEmbedding(inv_freq=inv_freq,
+                                                  attention_scaling=attention_scaling,
                                                   input_len=1)
             update_names_of_IR_and_export_blob(embedding_post, "embedding_post",
                                                temp_dir, True, True)
-            embedding_post_prefill = Llama32PostEmbedding(inv_freq=model.model.rotary_emb.inv_freq.to(torch.float16),
-                                                          attention_scaling=model.model.rotary_emb.attention_scaling,
+            embedding_post_prefill = Llama32PostEmbedding(inv_freq=inv_freq,
+                                                          attention_scaling=attention_scaling,
                                                           input_len=max_prompt_len)
             update_names_of_IR_and_export_blob(embedding_post_prefill,
                                                "embedding_post_prefill",
                                                temp_dir, True, True)
         else:
             first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
-                                                                temp_dir)
+                                                                 temp_dir)
     return first_blob_path, last_blob_path
 
 

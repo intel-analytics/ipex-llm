@@ -126,10 +126,10 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
             if mode == "prefill" and keep_position_ids:
                 position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
             cos = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
-                                    dtype=np.float32)
+                                       dtype=np.float32)
             self.cos = self.convert_to_fp16(cos)
             sin = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
-                                    dtype=np.float32)
+                                       dtype=np.float32)
             self.sin = self.convert_to_fp16(sin)
         else:
             position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
@@ -191,7 +191,8 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
                 hidden_states=hidden_states,
                 attention_mask=attention_mask,
                 position_ids=position_ids if (cached_cos is not None
-                                              or (mode == "prefill" and keep_position_ids)) else None,
+                                              or (mode == "prefill" and keep_position_ids))
+                                          else None,
                 input_layernorm_weight=input_layernorm_weights[i],
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
                 past_key=past_keys[i],
