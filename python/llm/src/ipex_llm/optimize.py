@@ -229,7 +229,7 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
                       f"Unknown load_in_low_bit value: {low_bit}, expected:"
                       f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
     invalidInputError(isinstance(model, torch.nn.Module) or
-                      model.__class__.__name__ == "StableDiffusionPipeline",
+                      "StableDiffusion" in model.__class__.__name__,
                       "model should be an instance of "
                       f"`torch.nn.Module`, but got {type(model)} at last.")
     # To adapt vLLM models
