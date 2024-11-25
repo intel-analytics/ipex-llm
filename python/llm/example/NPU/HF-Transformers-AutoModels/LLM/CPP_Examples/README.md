@@ -6,7 +6,7 @@ In this directory, you will find a C++ example on how to run LLM models on Intel
 | Model      | Model Link                                                    |
 |------------|----------------------------------------------------------------|
 | Qwen2 | [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct), [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
-| Qwen2.5 | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
+| Qwen2.5 | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct), [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct) |
 | Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
 | Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
@@ -35,9 +35,26 @@ pip install transformers==4.45.0 accelerate==0.33.0
 We provide a [convert script](convert.py) under current directory, by running it, you can obtain the whole weights and configuration files which are required to run C++ example.
 
 ```cmd
-:: to convert Qwen2.5-7b-Instruct
+:: to convert Qwen2.5-7B-Instruct
 python convert.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --save-directory <converted_model_path>
 
+:: to convert Qwen2-1.5B-Instruct
+python convert.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --save-directory <converted_model_path>
+
+:: to convert Qwen2.5-3B-Instruct
+python convert.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --save-directory <converted_model_path> --low_bit "sym_int8"
+
+:: to convert Llama-2-7b-chat-hf
+python convert.py --repo-id-or-model-path meta-llama/Llama-2-7b-chat-hf --save-directory <converted_model_path>
+
+:: to convert Meta-Llama-3-8B-Instruct
+python convert.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --save-directory <converted_model_path>
+
+:: to convert MiniCPM-1B-sft-bf16
+python convert.py --repo-id-or-model-path openbmb/MiniCPM-1B-sft-bf16 --save-directory <converted_model_path>
+
+:: to convert MiniCPM-2B-sft-bf16
+python convert.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --save-directory <converted_model_path>
 ```
 
 Arguments info:
@@ -45,6 +62,7 @@ Arguments info:
 - `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the converted model will be saved into `SAVE_DIRECTORY`.
 - `--max-context-len MAX_CONTEXT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
 - `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `960`.
+- `--low_bit LOW_BIT`: Defines the low bit precision to quantize the model. It is default to be `sym_int4`.
 - `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
 
 ## 3. Build C++ Example `llm-npu-cli`

@@ -64,7 +64,7 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
     iqtype = ggml_tensor_qtype[qtype]
     if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
         if qtype == "sym_int4_rtn":
-            # workaround for qwen2 & int4
+            # workaround for qwen2-7B & int4
             if (layer.in_features == 3584 and layer.out_features == 152064) or \
                (layer.in_features == 18944 and layer.out_features == 3584):
                 qtype = "sym_int8_rtn"

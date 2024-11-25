@@ -70,7 +70,7 @@ Arguments info:
 - `--lowbit-path LOWBIT_MODEL_PATH`: argument defining the path to save/load lowbit version of the model. If it is an empty string, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded. If it is an existing path, the lowbit model in `LOWBIT_MODEL_PATH` will be loaded. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the converted lowbit version will be saved into `LOWBIT_MODEL_PATH`. It is default to be `''`, i.e. an empty string.
 - `--prompt PROMPT`: argument defining the prompt to be infered. It is default to be `'Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
-- `--load_in_low_bit`: argument defining the `load_in_low_bit` format used. It is default to be `sym_int8`, `sym_int4` can also be used.
+- `--low_bit`: argument defining the `low_bit` format used. It is default to be `sym_int8`, `sym_int4` can also be used.
 
 ### Sample Output
 #### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
@@ -90,6 +90,7 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [Llama3.2-1B](./llama.py)
 - [Llama3.2-3B](./llama.py)
 - [Qwen2-1.5B](./qwen.py)
+- [Qwen2.5-3B](./qwen.py)
 - [Qwen2.5-7B](./qwen.py)
 - [MiniCPM-1B](./minicpm.py)
 - [MiniCPM-2B](./minicpm.py)
@@ -121,6 +122,9 @@ python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct
 
 :: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py
+
+:: to run Qwen2.5-3B-Instruct (LNL driver version: 32.0.101.2715)
+python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --low_bit sym_int8
 
 :: to run Qwen2.5-7B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct
