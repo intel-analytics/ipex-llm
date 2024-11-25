@@ -294,6 +294,7 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         n_splits_linear=n_splits_linear,
         n_splits_down_proj=n_splits_down_proj,
         group_size=group_size,
+        cos_len=input_len,
         keep_position_ids=keep_position_ids
     )
 
