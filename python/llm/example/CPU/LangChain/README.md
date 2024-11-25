@@ -1,16 +1,17 @@
-# Langchain examples
+# Langchain Example
 
 The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel CPU.
 
+> [!NOTE]
+> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream langchain documentation with ipex-llm.
+
 ## Streaming Chat Example
 
-### 1. Install Prerequisites
+### 1. Setting up Dependencies
 
 To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for tools installation and environment preparation.
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
-
-### 2. Setting up Dependencies
 
 Install langchain dependencies:
 
@@ -18,7 +19,7 @@ Install langchain dependencies:
 pip install -U langchain langchain-community
 ```
 
-### 3. Running the Streaming Chat Example
+### 2. Running the Streaming Chat Example
 
 In the current directory, run the example with command:
 
@@ -31,13 +32,11 @@ python chat.py -m MODEL_PATH -q QUESTION
 
 ## Retrival Augmented Generation (RAG) Example
 
-### 1. Install Prerequisites
+### 1. Setting up Dependencies
 
 To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for tools installation and environment preparation.
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
-
-### 2. Setting up Dependencies
 
 Install langchain dependencies:
 
@@ -45,7 +44,7 @@ Install langchain dependencies:
 pip install -U langchain langchain-community langchain-chroma sentence-transformers==3.0.1
 ```
 
-### 3. Running the Retrival Augmented Generation (RAG) Example
+### 2. Running the Retrival Augmented Generation (RAG) Example
 
 In the current directory, run the example with command:
 
@@ -67,13 +66,11 @@ By `save_low_bit` we save the weights of low_bit model into the target folder.
 > `save_low_bit` only saves the weights of the model. 
 > Users could copy the tokenizer model into the target folder or specify `tokenizer_id` during initialization. 
 
-### 1. Install Prerequisites
+### 1. Setting up Dependencies
 
 To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for tools installation and environment preparation.
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
-
-### 2. Setting up Dependencies
 
 Install langchain dependencies:
 
@@ -81,7 +78,7 @@ Install langchain dependencies:
 pip install -U langchain langchain-community
 ```
 
-### 3. Running the Low Bit Example
+### 2. Running the Low Bit Example
 
 ```bash
 python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
@@ -95,13 +92,11 @@ python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
 
 The math example ([math.py](./llm_math.py)) shows how to build a chat pipeline specialized in solving math questions. For example, you can ask `What is 13 raised to the .3432 power?`
 
-### 1. Install Prerequisites
+### 1. Setting up Dependencies
 
 To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for tools installation and environment preparation.
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
-
-### 2. Setting up Dependencies
 
 Install langchain dependencies:
 
@@ -109,7 +104,7 @@ Install langchain dependencies:
 pip install -U langchain langchain-community
 ```
 
-### 3. Running the Low Bit Example
+### 2. Running the Low Bit Example
 
 ```bash
 python llm_math.py -m <path_to_model> [-q <your_question>]
@@ -126,13 +121,11 @@ python llm_math.py -m <path_to_model> [-q <your_question>]
 
 The voice assistant example ([voiceassistant.py](./voiceassistant.py)) showcases how to use langchain to build a pipeline that takes in your speech as input in realtime, use an ASR model (e.g. [Whisper-Medium](https://huggingface.co/openai/whisper-medium)) to turn speech into text, and then feed the text into large language model to get response.  
 
-### 1. Install Prerequisites
+### 1. Setting up Dependencies
 
 To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for tools installation and environment preparation.
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
-
-### 2. Setting up Dependencies
 
 Install langchain dependencies:
 ```bash
@@ -140,7 +133,7 @@ pip install -U langchain langchain-community
 pip install transformers==4.36.2
 ```
 
-### 3. Running the Voice Assistant Example
+### 2. Running the Voice Assistant Example
 
 To run the exmaple, execute the following command in the current directory:
 
