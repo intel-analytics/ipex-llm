@@ -152,12 +152,10 @@ class AttnProcessor2_0:
 
 
 def upcast_vae(self):
+    # workaround overflow and ipex's bugs
     if get_xpu_device_type(self.vae.post_quant_conv.weight) in ["arc", "flex", "pvc"]:
         self.vae.to(torch.bfloat16)
     else:
-        origin_dtype = self.vae.dtype
-        new_dtype = torch.bfloat16
-        self.vae.to(new_dtype)
-        self.vae.post_quant_conv.to(origin_dtype)
-        self.vae.decoder.conv_in.to(origin_dtype)
-        self.vae.decoder.mid_block.to(origin_dtype)
+        self.vae.decoder.up_blocks.to(torch.bfloat16)
+        self.vae.decoder.conv_norm_out.to(torch.bfloat16)
+        self.vae.decoder.conv_out.to(torch.bfloat16)
