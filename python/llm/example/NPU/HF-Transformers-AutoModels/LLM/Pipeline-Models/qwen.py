@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default=r"D:\\llm-models\\Qwen2-1.5B-Instruct",  # Or Qwen2-7B-Instruct, Qwen2-1.5B-Instruct
+        default="Qwen/Qwen2.5-7B-Instruct",  # Or Qwen2-7B-Instruct, Qwen2-1.5B-Instruct
         help="The huggingface repo id for the Qwen model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
