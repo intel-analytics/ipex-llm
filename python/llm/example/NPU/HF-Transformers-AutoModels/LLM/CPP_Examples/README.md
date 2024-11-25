@@ -6,7 +6,7 @@ In this directory, you will find a C++ example on how to run LLM models on Intel
 | Model      | Model Link                                                    |
 |------------|----------------------------------------------------------------|
 | Qwen2 | [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct), [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
-| Qwen2.5 | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
+| Qwen2.5 | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct), [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct) |
 | Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
 | Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
@@ -35,9 +35,26 @@ pip install transformers==4.45.0 accelerate==0.33.0
 We provide a [convert script](convert.py) under current directory, by running it, you can obtain the whole weights and configuration files which are required to run C++ example.
 
 ```cmd
-:: to convert Qwen2.5-7b-Instruct
+:: to convert Qwen2.5-7B-Instruct
 python convert.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --save-directory <converted_model_path>
 
+:: to convert Qwen2-1.5B-Instruct
+python convert.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --save-directory <converted_model_path>
+
+:: to convert Qwen2.5-3B-Instruct
+python convert.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --save-directory <converted_model_path> --load_in_low_bit "sym_int8"
+
+:: to convert Llama-2-7b-chat-hf
+python convert.py --repo-id-or-model-path meta-llama/Llama-2-7b-chat-hf --save-directory <converted_model_path>
+
+:: to convert Meta-Llama-3-8B-Instruct
+python convert.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --save-directory <converted_model_path>
+
+:: to convert MiniCPM-1B-sft-bf16
+python convert.py --repo-id-or-model-path openbmb/MiniCPM-1B-sft-bf16 --save-directory <converted_model_path>
+
+:: to convert MiniCPM-2B-sft-bf16
+python convert.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --save-directory <converted_model_path>
 ```
 
 Arguments info:

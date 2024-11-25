@@ -90,6 +90,7 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [Llama3.2-1B](./llama.py)
 - [Llama3.2-3B](./llama.py)
 - [Qwen2-1.5B](./qwen.py)
+- [Qwen2.5-3B](./qwen.py)
 - [Qwen2.5-7B](./qwen.py)
 - [MiniCPM-1B](./minicpm.py)
 - [MiniCPM-2B](./minicpm.py)
@@ -121,6 +122,9 @@ python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct
 
 :: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py
+
+:: to run Qwen2.5-3B-Instruct (LNL driver version: 32.0.101.2715)
+python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --load_in_low_bit sym_int8
 
 :: to run Qwen2.5-7B-Instruct (LNL driver version: 32.0.101.2715)
 python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct

@@ -10,7 +10,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 | Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
 | Llama3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | Qwen2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
-| Qwen2.5 | [Qwen/Qwen2.5-7b-Instruct](https://huggingface.co/Qwen/Qwen2.5-7b-Instruct) |
+| Qwen2.5 | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct), [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct) |
 | Baichuan2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
 
@@ -58,11 +58,14 @@ python llama3.py --repo-id-or-model-path "meta-llama/Llama-3.2-1B-Instruct"
 :: to run Llama-3.2-3B-Instruct
 python llama3.py --repo-id-or-model-path "meta-llama/Llama-3.2-3B-Instruct"
 
-:: to run Qwen2.5-7b-Instruct
+:: to run Qwen2.5-7B-Instruct
 python qwen.py
 
-:: to run Qwen2-1.5b-Instruct
+:: to run Qwen2-1.5B-Instruct
 python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct" --load_in_low_bit "sym_int8"
+
+:: to run Qwen2.5-3B-Instruct
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-3B-Instruct" --load_in_low_bit "sym_int8"
 
 :: to run Baichuan2-7B-Chat
 python baichuan2.py
