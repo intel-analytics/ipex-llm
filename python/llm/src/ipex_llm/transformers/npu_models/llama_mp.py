@@ -186,13 +186,12 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
         hidden_states = input
 
         curr_key_values = []
+        cos_condition = cached_cos is not None or (mode == "prefill" and keep_position_ids)
         for i in range(num_layers):
             hidden_states, new_key_states, new_value_states = self.build_decoder(
                 hidden_states=hidden_states,
                 attention_mask=attention_mask,
-                position_ids=position_ids if (cached_cos is not None
-                                              or (mode == "prefill" and keep_position_ids))
-                                          else None,
+                position_ids=position_ids if cos_condition else None,
                 input_layernorm_weight=input_layernorm_weights[i],
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
                 past_key=past_keys[i],
