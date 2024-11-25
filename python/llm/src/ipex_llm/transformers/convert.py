@@ -1246,8 +1246,8 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
 
 def _optimize_post(model, lightweight_bmm=False):
     try:
-        from diffusers import StableDiffusionPipeline
-        if isinstance(model, StableDiffusionPipeline):
+        from diffusers import DiffusionPipeline
+        if isinstance(model, DiffusionPipeline):
             from ipex_llm.transformers.models.sd15 import AttnProcessor2_0
             model.unet.set_attn_processor(AttnProcessor2_0())
             return model
