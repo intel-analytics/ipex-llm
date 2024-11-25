@@ -1248,7 +1248,7 @@ def _optimize_post(model, lightweight_bmm=False):
     try:
         from diffusers import DiffusionPipeline
         if isinstance(model, DiffusionPipeline):
-            from ipex_llm.transformers.models.sd15 import AttnProcessor2_0
+            from ipex_llm.transformers.models.sd import AttnProcessor2_0
             model.unet.set_attn_processor(AttnProcessor2_0())
             return model
     except ModuleNotFoundError:

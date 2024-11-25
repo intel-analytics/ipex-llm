@@ -329,7 +329,7 @@ def use_sdp_causal(q_len, kv_len, head_dim, query_states, training):
 
 def use_sdp_non_causal(head_dim, device, dtype):
     return (
-        head_dim in [40, 64, 80]
+        head_dim in [64, 80, 128]
         and device.type == "xpu"                # GPU
         and dtype in [torch.float, torch.half]  # fp32/fp16
     )
