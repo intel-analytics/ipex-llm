@@ -1246,10 +1246,14 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
 
 def _optimize_post(model, lightweight_bmm=False):
     try:
-        from diffusers import DiffusionPipeline
+        from diffusers import DiffusionPipeline, StableDiffusionXLPipeline
         if isinstance(model, DiffusionPipeline):
             from ipex_llm.transformers.models.sd import AttnProcessor2_0
             model.unet.set_attn_processor(AttnProcessor2_0())
+
+            if isinstance(model, StableDiffusionXLPipeline):
+                from ipex_llm.transformers.models.sd import upcast_vae
+                model.upcast_vae = MethodType(upcast_vae, model)
             return model
     except ModuleNotFoundError:
         pass

@@ -36,6 +36,7 @@ import math
 import torch
 from typing import Optional
 
+from ipex_llm.transformers.utils import get_xpu_device_type
 from ipex_llm.transformers.models.common import padding_qkv_hd, attention_softmax
 from ipex_llm.transformers.models.utils import use_sdp_non_causal
 from diffusers.models.attention_processor import Attention
@@ -148,3 +149,15 @@ class AttnProcessor2_0:
         hidden_states = hidden_states / attn.rescale_output_factor
 
         return hidden_states
+
+
+def upcast_vae(self):
+    if get_xpu_device_type(self.vae.post_quant_conv.weight) in ["arc", "flex", "pvc"]:
+        self.vae.to(torch.bfloat16)
+    else:
+        origin_dtype = self.vae.dtype
+        new_dtype = torch.bfloat16
+        self.vae.to(new_dtype)
+        self.vae.post_quant_conv.to(origin_dtype)
+        self.vae.decoder.conv_in.to(origin_dtype)
+        self.vae.decoder.mid_block.to(origin_dtype)
