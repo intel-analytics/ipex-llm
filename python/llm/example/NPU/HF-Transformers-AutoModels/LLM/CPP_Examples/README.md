@@ -42,7 +42,7 @@ python convert.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --save-direc
 python convert.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --save-directory <converted_model_path>
 
 :: to convert Qwen2.5-3B-Instruct
-python convert.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --save-directory <converted_model_path> --load_in_low_bit "sym_int8"
+python convert.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --save-directory <converted_model_path> --low_bit "sym_int8"
 
 :: to convert Llama-2-7b-chat-hf
 python convert.py --repo-id-or-model-path meta-llama/Llama-2-7b-chat-hf --save-directory <converted_model_path>
@@ -62,6 +62,7 @@ Arguments info:
 - `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the converted model will be saved into `SAVE_DIRECTORY`.
 - `--max-context-len MAX_CONTEXT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
 - `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `960`.
+- `--low_bit LOW_BIT`: Defines the low bit precision to quantize the model. It is default to be `sym_int4`.
 - `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
 
 ## 3. Build C++ Example `llm-npu-cli`

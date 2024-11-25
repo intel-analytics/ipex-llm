@@ -62,10 +62,10 @@ python llama3.py --repo-id-or-model-path "meta-llama/Llama-3.2-3B-Instruct"
 python qwen.py
 
 :: to run Qwen2-1.5B-Instruct
-python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct" --load_in_low_bit "sym_int8"
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct" --low_bit "sym_int8"
 
 :: to run Qwen2.5-3B-Instruct
-python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-3B-Instruct" --load_in_low_bit "sym_int8"
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-3B-Instruct" --low_bit "sym_int8"
 
 :: to run Baichuan2-7B-Chat
 python baichuan2.py
