@@ -95,11 +95,12 @@ class Llama32PostEmbedding(NNFactory):
         self.attention_scaling = attention_scaling
 
         # define input
-        position_ids = self.parameter((1, 1, input_len), dtype=np.int64)
+        position_ids = self.parameter((1, input_len), dtype=np.int64)
         inv_freq = self.constant(inv_freq)
 
         # rotary_emb module
         inv_freq = self.reshape(inv_freq, (1, inv_freq.shape[0], 1))
+        position_ids = self.reshape(position_ids, (1, 1, input_len))
         freqs = self.eltwise_mul(self.convert_to_fp32(inv_freq),
                                  self.convert_to_fp32(position_ids))
         freqs = self.transpose(freqs, [0, 2, 1])
@@ -108,6 +109,9 @@ class Llama32PostEmbedding(NNFactory):
         sin = self.sin(emb)
         cos = cos * self.attention_scaling
         sin = sin * self.attention_scaling
+        if input_len > 1:
+            cos = self.unsqueeze(cos, [1])
+            sin = self.unsqueeze(sin, [1])
 
         # define outputs
         cos = self.convert_to_fp32(cos)
@@ -266,13 +270,11 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         input_len = 1
         decoder_name = f"decoder_layer_{layer_idx}"
         keep_position_ids = True
-        cos_len = 1
     else:
         input_len = kv_len
         decoder_name = "decoder_layer_prefill"
         layernorm_const = False
         keep_position_ids = False
-        cos_len = kv_len
 
     single_decoder = LowBitLlamaMultiDecoderlayer(
         [1, input_len, num_heads * head_dim],
@@ -292,7 +294,6 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         n_splits_linear=n_splits_linear,
         n_splits_down_proj=n_splits_down_proj,
         group_size=group_size,
-        cos_len=cos_len,
         keep_position_ids=keep_position_ids
     )
 
