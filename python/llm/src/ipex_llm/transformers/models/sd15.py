@@ -36,7 +36,8 @@ import math
 import torch
 from typing import Optional
 
-from ipex_llm.transformers.models.common import attention_softmax
+from ipex_llm.transformers.models.common import padding_qkv_hd, attention_softmax
+from ipex_llm.transformers.models.utils import use_sdp_non_causal
 from diffusers.models.attention_processor import Attention
 
 
@@ -105,17 +106,27 @@ class AttnProcessor2_0:
 
         # the output of sdp = (batch, num_heads, seq_len, head_dim)
         # IPEX-LLM changes start
-        if head_dim in [40, 80]:
-            import xe_addons
-            hidden_states = xe_addons.sdp_non_causal(query, key.contiguous(),
-                                                     value.contiguous(), attention_mask)
+        # padding head_dim 40 to 64
+        if query.device.type == "xpu" and query.dtype in [torch.half, torch.float]:
+            query, key, value = padding_qkv_hd(query, key, value, 40, 64)
+
+            if use_sdp_non_causal(head_dim, query.device, query.dtype):
+                import xe_addons
+                hidden_states = xe_addons.sdp_non_causal(query, key.contiguous(),
+                                                         value.contiguous(), attention_mask)
+            else:
+                scale = 1 / math.sqrt(head_dim)
+                attn_weights = torch.matmul(query * scale, key.transpose(-1, -2))
+                if attention_mask is not None:
+                    attn_weights = attn_weights + attention_mask
+                attn_weights = attention_softmax(attn_weights)
+                hidden_states = torch.matmul(attn_weights, value)
+
+            hidden_states = hidden_states[:, :, :, :head_dim]
         else:
-            scale = 1 / math.sqrt(head_dim)
-            attn_weights = torch.matmul(query * scale, key.transpose(-1, -2))
-            if attention_mask is not None:
-                attn_weights = attn_weights + attention_mask
-            attn_weights = attention_softmax(attn_weights)
-            hidden_states = torch.matmul(attn_weights, value)
+            hidden_states = torch.nn.functional.scaled_dot_product_attention(
+                query, key, value, attn_mask=attention_mask, dropout_p=0.0, is_causal=False
+            )
         # IPEX-LLM changes end
 
         hidden_states = hidden_states.transpose(1, 2).reshape(batch_size, -1,
