@@ -51,8 +51,6 @@ if __name__ == "__main__":
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--intra-pp", type=int, default=2)
     parser.add_argument("--inter-pp", type=int, default=2)
-    parser.add_argument('--load_in_low_bit', type=str, default="sym_int4",
-                        help='Load in low bit to use')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
