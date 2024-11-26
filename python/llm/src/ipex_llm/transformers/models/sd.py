@@ -111,7 +111,7 @@ class AttnProcessor2_0:
             # padding head_dim 40 to 64
             query, key, value = padding_qkv_hd(query, key, value, 40, 64)
 
-            if use_sdp_non_causal(head_dim, query.device, query.dtype):
+            if use_sdp_non_causal(query.size(-1), query.device, query.dtype):
                 import xe_addons
                 hidden_states = xe_addons.sdp_non_causal(query, key.contiguous(),
                                                          value.contiguous(), attention_mask)
