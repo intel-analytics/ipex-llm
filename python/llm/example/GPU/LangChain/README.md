@@ -3,7 +3,7 @@
 The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel GPU.
 
 > [!NOTE]
-> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream LangChain documentation with ipex-llm.
+> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream LangChain LLM documentation with ipex-llm and [here](https://python.langchain.com/docs/integrations/text_embedding/ipex_llm_gpu/) for upstream LangChain embedding documentation with ipex-llm.
 
 ## 1. Install Prerequisites
 
