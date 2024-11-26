@@ -272,11 +272,13 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         input_len = 1
         decoder_name = f"decoder_layer_{layer_idx}"
         keep_position_ids = True
+        npu_dpu_groups = None
     else:
         input_len = kv_len
         decoder_name = "decoder_layer_prefill"
         layernorm_const = False
         keep_position_ids = False
+        npu_dpu_groups = 6
 
     single_decoder = LowBitLlamaMultiDecoderlayer(
         [1, input_len, num_heads * head_dim],
@@ -303,7 +305,8 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         decoder_name,
                                                         temp_dir,
-                                                        True, False)
+                                                        True, False,
+                                                        npu_dpu_groups=npu_dpu_groups)
 
     if mode == "decode":
         if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
