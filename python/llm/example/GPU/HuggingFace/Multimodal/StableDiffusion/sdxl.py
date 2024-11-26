@@ -17,7 +17,7 @@
 
 from diffusers import AutoPipelineForText2Image
 import torch
-import ipex_llm
+from ipex_llm import optimize_model
 import numpy as np
 from PIL import Image
 import argparse
@@ -27,9 +27,11 @@ import time
 def main(args):
     pipeline_text2image = AutoPipelineForText2Image.from_pretrained(
         args.repo_id_or_model_path, 
-        torch_dtype=torch.bfloat16, 
+        torch_dtype=torch.float16, 
         use_safetensors=True
-    ).to("xpu")
+    )
+    pipeline_text2image = optimize_model(pipeline_text2image, low_bit=None)
+    pipeline_text2image.to("xpu")
 
     with torch.inference_mode():
         # warmup

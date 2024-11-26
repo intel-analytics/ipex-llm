@@ -23,7 +23,8 @@ from intel_npu_acceleration_library.backend.factory import NNFactory
 import numpy as np
 
 
-def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True, keep_ir=True):
+def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True, keep_ir=True,
+                                       npu_dpu_groups=None):
     xml_path = os.path.join(dir, model_name + ".xml")
     bin_path = os.path.join(dir, model_name + ".bin")
     model.save(xml_path)
@@ -35,6 +36,11 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
     core.set_property("NPU", {"NPU_COMPILATION_MODE_PARAMS":
                               "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"})
     core.set_property("NPU", {"PERFORMANCE_HINT": "LATENCY"})
+    if (
+        npu_dpu_groups is not None
+        and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1"
+    ):
+        core.set_property("NPU", {"NPU_DPU_GROUPS": str(npu_dpu_groups)})
 
     model = core.read_model(xml_path)
     inputs = model.inputs
