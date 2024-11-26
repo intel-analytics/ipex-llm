@@ -193,7 +193,7 @@ def convert_llm(model: torch.nn.Module,
                 max_prompt_len: int,
                 transpose_value_cache: bool,
                 group_size: int,
-                qtype : str,
+                qtype: str,
                 convert_model: bool=False,
                 save_directory: str=None):
     # whether to set layernorm weight as const
