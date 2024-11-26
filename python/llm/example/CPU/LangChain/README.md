@@ -113,7 +113,7 @@ python llm_math.py -m <path_to_model> [-q <your_question>]
 
 **Additional Parameters for Configuration:**
 - `-m MODEL_PATH`: **Required**, the path to the model
-- `-q QUESTION`: the question
+- `-q QUESTION`: question to ask. Default is `What is 13 raised to the .3432 power?`.
 
 > [!NOTE]
 > If `-q` is not specified, it will use `What is 13 raised to the .3432 power?` by default. 
