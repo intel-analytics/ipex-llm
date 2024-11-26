@@ -5,13 +5,28 @@ The examples in this folder shows how to use [LangChain](https://www.langchain.c
 > [!NOTE]
 > Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream LangChain LLM documentation with ipex-llm and [here](https://python.langchain.com/docs/integrations/text_embedding/ipex_llm_gpu/) for upstream LangChain embedding documentation with ipex-llm.
 
-## 1. Install Prerequisites
+## 0. Requirements
+To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#requirements) for more information.
 
-To benefit from IPEX-LLM on Intel GPUs, there are several prerequisite steps for tools installation and environment preparation.
+## 1. Install
 
-If you are a Windows user, visit the [Install IPEX-LLM on Windows with Intel GPU Guide](../../../../../docs/mddocs/Quickstart/install_windows_gpu.md), and follow [Install Prerequisites](../../../../../docs/mddocs/Quickstart/install_windows_gpu.md#install-prerequisites) to update GPU driver (optional) and install Conda.
+### 1.1 Installation on Linux
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.11
+conda activate llm
 
-If you are a Linux user, visit the [Install IPEX-LLM on Linux with Intel GPU](../../../../../docs/mddocs/Quickstart/install_linux_gpu.md), and follow [Install Prerequisites](../../../../../docs/mddocs/Quickstart/install_linux_gpu.md#install-prerequisites) to install GPU driver, Intel® oneAPI Base Toolkit 2024.0, and Conda.
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+```
+
+### 1.2 Installation on Windows
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.11 libuv
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+```
 
 ## 2. Configures OneAPI environment variables for Linux
 
