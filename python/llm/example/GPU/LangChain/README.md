@@ -103,9 +103,9 @@ set SYCL_CACHE_PERSISTENT=1
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
-## 4. Using LangChain upstream to run examples
+## 4. Run examples with LangChain
 
-### 4.1 Streaming Chat Example
+### 4.1. Example: Streaming Chat
 
 Install LangChain dependencies:
 
@@ -122,7 +122,9 @@ python chat.py -m MODEL_PATH -q QUESTION
 - `-m MODEL_PATH`: **required**, path to the model
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
 
-### 4.2. Running the Retrival Augmented Generation (RAG) Example
+### 4.2. Example: Retrival Augmented Generation (RAG)
+
+The RAG example ([rag.py](./rag.py)) shows how to load the input text into vector database, and then use LangChain to build a retrival pipeline.
 
 Install LangChain dependencies:
 
@@ -142,7 +144,7 @@ python rag.py -m <path_to_llm_model> -e <path_to_embedding_model> [-q QUESTION] 
 - `-i INPUT_PATH`: path to the input doc.
 
 
-### 4.3. Running the Low Bit Example
+### 4.3. Example: Low Bit
 
 The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use LangChain with low_bit optimized model.LangChain
 By `save_low_bit` we save the weights of low_bit model into the target folder.
@@ -164,4 +166,4 @@ python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
 **Additional Parameters for Configuration:**
 - `-m MODEL_PATH`: **Required**, the path to the model
 - `-t TARGET_PATH`: **Required**, the path to save the low_bit model
-- `-q QUESTION`: the question
+- `-q QUESTION`: question to ask. Default is `What is AI?`.

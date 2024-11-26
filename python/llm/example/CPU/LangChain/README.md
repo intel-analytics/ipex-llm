@@ -30,9 +30,9 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[all]
 ```
 
-## 2. Using LangChain upstream to run examples
+## 2. Run examples with LangChain
 
-### 2.1. Streaming Chat Example
+### 2.1. Example: Streaming Chat
 
 Install LangChain dependencies:
 
@@ -49,7 +49,9 @@ python chat.py -m MODEL_PATH -q QUESTION
 - `-m MODEL_PATH`: **required**, path to the model
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
 
-### 2.2. Retrival Augmented Generation (RAG) Example
+### 2.2. Example: Retrival Augmented Generation (RAG)
+
+The RAG example ([rag.py](./rag.py)) shows how to load the input text into vector database, and then use LangChain to build a retrival pipeline.
 
 Install LangChain dependencies:
 
@@ -69,7 +71,7 @@ python rag.py -m <path_to_llm_model> -e <path_to_embedding_model> [-q QUESTION] 
 - `-i INPUT_PATH`: path to the input doc.
 
 
-### 2.3. Low Bit Example
+### 2.3. Example: Low Bit
 
 The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use LangChain with low_bit optimized model.
 By `save_low_bit` we save the weights of low_bit model into the target folder.
@@ -91,9 +93,9 @@ python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
 **Additional Parameters for Configuration:**
 - `-m MODEL_PATH`: **Required**, the path to the model
 - `-t TARGET_PATH`: **Required**, the path to save the low_bit model
-- `-q QUESTION`: the question
+- `-q QUESTION`: question to ask. Default is `What is AI?`.
 
-### 2.4. Math Example
+### 2.4. Example: Math
 
 The math example ([math.py](./llm_math.py)) shows how to build a chat pipeline specialized in solving math questions. For example, you can ask `What is 13 raised to the .3432 power?`
 
@@ -116,7 +118,7 @@ python llm_math.py -m <path_to_model> [-q <your_question>]
 > [!NOTE]
 > If `-q` is not specified, it will use `What is 13 raised to the .3432 power?` by default. 
 
-### 2.5. Voice Assistant Example
+### 2.5. Example: Voice Assistant
 
 The voice assistant example ([voiceassistant.py](./voiceassistant.py)) showcases how to use LangChain to build a pipeline that takes in your speech as input in realtime, use an ASR model (e.g. [Whisper-Medium](https://huggingface.co/openai/whisper-medium)) to turn speech into text, and then feed the text into large language model to get response.  
 
