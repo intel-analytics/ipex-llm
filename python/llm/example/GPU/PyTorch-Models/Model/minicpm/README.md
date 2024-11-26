@@ -73,7 +73,6 @@ export ENABLE_SDP_FUSION=1
 
 ```bash
 export SYCL_CACHE_PERSISTENT=1
-export BIGDL_LLM_XMX_DISABLED=1
 ```
 
 </details>
@@ -85,7 +84,6 @@ export BIGDL_LLM_XMX_DISABLED=1
 
 ```cmd
 set SYCL_CACHE_PERSISTENT=1
-set BIGDL_LLM_XMX_DISABLED=1
 ```
 
 </details>
