@@ -113,7 +113,7 @@ int main(int argc, char ** argv) {
     for (int i = 1; i < params.n_predict; i++){
         auto logits = run_decode(model, embd[i-1]);
         int32_t token = llm_sample_token(logits, true, model_params);
-        if (token != tok_params.eos_token_id) {
+        if (std::find(tok_params.eos_token_id.begin(), tok_params.eos_token_id.end(), token) == tok_params.eos_token_id.end()){
             embd.push_back(token);
             token_nums ++;
         } else {

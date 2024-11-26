@@ -18,8 +18,12 @@
 import torch
 import argparse
 from ipex_llm.transformers.npu_model import AutoModelForCausalLM
+import transformers
 from transformers import AutoTokenizer
 from transformers.utils import logging
+from packaging import version
+import os
+import shutil
 
 logger = logging.get_logger(__name__)
 
@@ -67,7 +71,14 @@ if __name__ == "__main__":
                                                  save_directory=save_dir)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    tokenizer.save_pretrained(save_dir)
+
+    trans_version = transformers.__version__
+    if version.parse(trans_version) >= version.parse("4.45.0"):
+        tokenizer_json = os.path.join(model_path, "tokenizer.json")
+        dst_path = os.path.join(save_dir, "tokenizer.json")
+        shutil.copy(tokenizer_json, dst_path)
+    else:
+        tokenizer.save_pretrained(save_dir)
 
     print("-" * 80)
     print(f"finish save model to {save_dir}")

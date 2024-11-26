@@ -456,15 +456,27 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            group_size, layernorm_const, "prefill")
         # save blob of lmhead and bin of embedding
         convert_lm_head_and_embedding(model, n_splits_linear,
-                                      save_directory, weight_dir, True)
+                                      save_directory, weight_dir,
+                                      convert_model=True)
     elif model.config.model_type == "llama":
         layernorm_const = True
+        embedding_post = False
+        cos_sin_input = False
+        use_prefill_sdp = False
         if model.config.vocab_size == 32000:
             # for Llama2-7B
             fused_layers = 4
+            use_prefill_sdp = True
         else:
-            # for Llama3-8B
-            fused_layers = 2
+            if model.config.intermediate_size == 8192:
+                # llama3.2 1B & # llama3.2 3B
+                embedding_post = True
+                cos_sin_input = True
+                fused_layers = 2
+            else:
+                # for Llama3-8B
+                fused_layers = 2
+                use_prefill_sdp = True
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
@@ -474,14 +486,21 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "group_size":  group_size,
                        "fused_layers": fused_layers,
                        "qkv_bias": False,
-                       "use_prefill_sdp": True,
+                       "use_prefill_sdp": use_prefill_sdp,
                        "weight_num": 7,
-                       "weight_idx": 5}
+                       "weight_idx": 5,
+                       "embedding_post": embedding_post,
+                       "cos_sin_input": cos_sin_input}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
         from .llama import convert_llama_layer, convert_fused_llama_layer
         from .llama import convert_lm_head_and_embedding
+        # save blob of lmhead and bin of embedding & (optional) embedding_post
+        convert_lm_head_and_embedding(model, n_splits_linear,
+                                      save_directory, weight_dir,
+                                      convert_model=True,
+                                      max_prompt_len=max_prompt_len)
         # save fused_layers blobs of fused decoder layers
         convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                                   save_directory, weight_dir, transpose_value_cache, kv_len,
@@ -490,9 +509,6 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         convert_llama_layer(model, 0, n_splits_linear, n_splits_down_proj,
                             save_directory, weight_dir, transpose_value_cache, max_prompt_len,
                             group_size, layernorm_const, "prefill")
-        # save blob of lmhead and bin of embedding
-        convert_lm_head_and_embedding(model, n_splits_linear,
-                                      save_directory, weight_dir, True)
     elif model.config.model_type == "minicpm":
         layernorm_const = True
         fused_layers = 4
@@ -523,6 +539,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         convert_minicpm_layer(model, 0, n_splits_linear, n_splits_down_proj,
                               save_directory, weight_dir, transpose_value_cache, max_prompt_len,
                               group_size, layernorm_const, "prefill")
-        # save blob of lmhead and bin of embedding
+        # save blob of lmhead and bin of embedding and embedding_post
         convert_lm_head_and_embedding(model, n_splits_linear,
-                                      save_directory, weight_dir, True, max_prompt_len)
+                                      save_directory, weight_dir,
+                                      convert_model=True,
+                                      max_prompt_len=max_prompt_len)
