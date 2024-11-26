@@ -19,7 +19,7 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-# Code is adapted from https://python.langchain.com/docs/modules/chains/additional/question_answering.html
+# Code is adapted from https://github.com/langchain-ai/langchain/blob/master/docs/docs/tutorials/rag.ipynb
 
 import argparse
 
