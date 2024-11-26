@@ -17,7 +17,7 @@
 
 import torch
 from diffusers import DiffusionPipeline, LCMScheduler
-import ipex_llm
+from ipex_llm import optimize_model
 import argparse
 import time
 
@@ -25,8 +25,10 @@ import time
 def main(args):
     pipe = DiffusionPipeline.from_pretrained(
         args.repo_id_or_model_path,
-        torch_dtype=torch.bfloat16,
-    ).to("xpu")
+        torch_dtype=torch.float16,
+    )
+    pipe = optimize_model(pipe, low_bit=None)
+    pipe.to("xpu")
 
     # set scheduler
     pipe.scheduler = LCMScheduler.from_config(pipe.scheduler.config)
