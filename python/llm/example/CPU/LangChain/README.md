@@ -1,9 +1,9 @@
-# Langchain Example
+# LangChain Example
 
 The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel CPU.
 
 > [!NOTE]
-> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream langchain documentation with ipex-llm.
+> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream LangChain documentation with ipex-llm.
 
 ## Streaming Chat Example
 
@@ -13,7 +13,7 @@ To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
 
-Install langchain dependencies:
+Install LangChain dependencies:
 
 ```bash
 pip install -U langchain langchain-community
@@ -38,7 +38,7 @@ To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
 
-Install langchain dependencies:
+Install LangChain dependencies:
 
 ```bash
 pip install -U langchain langchain-community langchain-chroma sentence-transformers==3.0.1
@@ -60,7 +60,7 @@ python rag.py -m <path_to_llm_model> -e <path_to_embedding_model> [-q QUESTION] 
 
 ## Low Bit Example
 
-The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use langchain with low_bit optimized model.
+The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use LangChain with low_bit optimized model.
 By `save_low_bit` we save the weights of low_bit model into the target folder.
 > [!NOTE]
 > `save_low_bit` only saves the weights of the model. 
@@ -72,7 +72,7 @@ To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
 
-Install langchain dependencies:
+Install LangChain dependencies:
 
 ```bash
 pip install -U langchain langchain-community
@@ -98,7 +98,7 @@ To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
 
-Install langchain dependencies:
+Install LangChain dependencies:
 
 ```bash
 pip install -U langchain langchain-community
@@ -119,7 +119,7 @@ python llm_math.py -m <path_to_model> [-q <your_question>]
 
 ## Voice Assistant Example
 
-The voice assistant example ([voiceassistant.py](./voiceassistant.py)) showcases how to use langchain to build a pipeline that takes in your speech as input in realtime, use an ASR model (e.g. [Whisper-Medium](https://huggingface.co/openai/whisper-medium)) to turn speech into text, and then feed the text into large language model to get response.  
+The voice assistant example ([voiceassistant.py](./voiceassistant.py)) showcases how to use LangChain to build a pipeline that takes in your speech as input in realtime, use an ASR model (e.g. [Whisper-Medium](https://huggingface.co/openai/whisper-medium)) to turn speech into text, and then feed the text into large language model to get response.  
 
 ### 1. Setting up Dependencies
 
@@ -127,7 +127,7 @@ To benefit from IPEX-LLM on Intel CPUs, there are several prerequisite steps for
 
 Follow the instructions in [CPU Install Guide](../../../../../docs/mddocs/Overview/install_cpu.md) to install ipex-llm.
 
-Install langchain dependencies:
+Install LangChain dependencies:
 ```bash
 pip install -U langchain langchain-community
 pip install transformers==4.36.2

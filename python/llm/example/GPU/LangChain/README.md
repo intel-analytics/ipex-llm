@@ -3,7 +3,7 @@
 The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel GPU.
 
 > [!NOTE]
-> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream langchain documentation with ipex-llm.
+> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream LangChain documentation with ipex-llm.
 
 ## 1. Install Prerequisites
 
@@ -88,11 +88,11 @@ set SYCL_CACHE_PERSISTENT=1
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
-## 4. Using langchain upstream to run examples
+## 4. Using LangChain upstream to run examples
 
 ### 4.1 Streaming Chat Example
 
-Install langchain dependencies:
+Install LangChain dependencies:
 
 ```bash
 pip install -U langchain langchain-community
@@ -109,7 +109,7 @@ python chat.py -m MODEL_PATH -q QUESTION
 
 ### 4.2. Running the Retrival Augmented Generation (RAG) Example
 
-Install langchain dependencies:
+Install LangChain dependencies:
 
 ```bash
 pip install -U langchain langchain-community langchain-chroma sentence-transformers==3.0.1
@@ -129,13 +129,13 @@ python rag.py -m <path_to_llm_model> -e <path_to_embedding_model> [-q QUESTION] 
 
 ### 4.3. Running the Low Bit Example
 
-The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use langchain with low_bit optimized model.
+The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use LangChain with low_bit optimized model.LangChain
 By `save_low_bit` we save the weights of low_bit model into the target folder.
 > [!NOTE]
 > `save_low_bit` only saves the weights of the model. 
 > Users could copy the tokenizer model into the target folder or specify `tokenizer_id` during initialization. 
 
-Install langchain dependencies:
+Install LangChain dependencies:
 
 ```bash
 pip install -U langchain langchain-community
