@@ -97,10 +97,6 @@ root@arda-arc12:/# sycl-ls
 > # Reduce memory accesses by fusing SDP ops.
 > # Recommended for use on Intel Data Center GPU Max Series.
 > export ENABLE_SDP_FUSION=1
-> 
-> # Disable XMX computation.
-> # Recommended for use on integrated GPUs.
-> export BIGDL_LLM_XMX_DISABLED=1
 > ```
 
 

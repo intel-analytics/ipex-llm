@@ -150,13 +150,7 @@ call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
 
 Please also set the following environment variable if you would like to run LLMs on: -->
 
-- For **Intel iGPU**:
-   ```cmd
-   set SYCL_CACHE_PERSISTENT=1
-   set BIGDL_LLM_XMX_DISABLED=1
-   ```
-
-- For **Intel Arc™ A-Series Graphics**:
+- For **Intel iGPU** and **Intel Arc™ A-Series Graphics**:
    ```cmd
    set SYCL_CACHE_PERSISTENT=1
    ```
@@ -596,7 +590,6 @@ To use GPU acceleration on Linux, several environment variables are required or 
       source /opt/intel/oneapi/setvars.sh
 
       export SYCL_CACHE_PERSISTENT=1
-      export BIGDL_LLM_XMX_DISABLED=1
       ```
 
 > [!NOTE]
