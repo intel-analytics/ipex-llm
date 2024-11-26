@@ -19,36 +19,31 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-# Code is adapted from https://python.langchain.com/docs/modules/chains/additional/question_answering.html
+# Code is adapted from https://github.com/langchain-ai/langchain/blob/master/docs/docs/tutorials/rag.ipynb
 
-import torch
 import argparse
+import warnings
 
-from langchain.vectorstores import Chroma
-from langchain.chains.chat_vector_db.prompts import (CONDENSE_QUESTION_PROMPT,
-                                                     QA_PROMPT)
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.chains.question_answering import load_qa_chain
-from langchain.callbacks.manager import CallbackManager
+from langchain import hub
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_community.embeddings import IpexLLMBgeEmbeddings
+from langchain_community.llms import IpexLLM
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from langchain_chroma import Chroma
 
-from ipex_llm.langchain.llms import TransformersLLM
-from ipex_llm.langchain.embeddings import TransformersEmbeddings
+warnings.filterwarnings("ignore", category=UserWarning, message=".*padding_mask.*")
+
 
 text_doc = '''
-BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
-LLM: Low-bit (INT3/INT4/INT5/INT8) large language model library for Intel CPU/GPU
-Orca: Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
-Nano: Transparent Acceleration of Tensorflow & PyTorch Programs on Intel CPU/GPU
-DLlib: "Equivalent of Spark MLlib" for Deep Learning
-Chronos: Scalable Time Series Analysis using AutoML
-Friesian: End-to-End Recommendation Systems
-PPML: Secure Big Data and AI (with SGX Hardware Security)
+IPEX-LLM is an LLM acceleration library for Intel CPU, GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max) and NPU. It is built on top of the excellent work of llama.cpp, transformers, bitsandbytes, vLLM, qlora, AutoGPTQ, AutoAWQ, etc. It provides seamless integration with llama.cpp, Ollama, HuggingFace transformers, LangChain, LlamaIndex, vLLM, Text-Generation-WebUI, DeepSpeed-AutoTP, FastChat, Axolotl, HuggingFace PEFT, HuggingFace TRL, AutoGen, ModeScope, etc. 70+ models have been optimized/verified on ipex-llm (e.g., Llama, Phi, Mistral, Mixtral, Whisper, Qwen, MiniCPM, Qwen-VL, MiniCPM-V and more), with state-of-art LLM optimizations, XPU acceleration and low-bit (FP8/FP6/FP4/INT4) support.
 '''
 
 def main(args):
 
     input_path = args.input_path 
     model_path = args.model_path
+    embed_model_path = args.embed_model_path
     query = args.question
 
     # split texts of input doc
@@ -62,37 +57,46 @@ def main(args):
     texts = text_splitter.split_text(input_doc)
 
     # create embeddings and store into vectordb
-    embeddings = TransformersEmbeddings.from_model_id(
-        model_id=model_path, 
-        model_kwargs={"trust_remote_code": True},
-        device_map='xpu'
-        )
-    docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
+    embeddings = IpexLLMBgeEmbeddings(
+        model_name=embed_model_path,
+        model_kwargs={"device": "xpu"},
+        encode_kwargs={"normalize_embeddings": True},
+    )
+    retriever = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
-    #get relavant texts
-    docs = docsearch.get_relevant_documents(query)
-
-    bigdl_llm = TransformersLLM.from_model_id(
+    llm = IpexLLM.from_model_id(
         model_id=model_path,
-        model_kwargs={"temperature": 0, "max_length": 1024, "trust_remote_code": True},
-        device_map='xpu'
+        model_kwargs={
+            "temperature": 0,
+            "max_length": 512,
+            "trust_remote_code": True,
+            "device": "xpu",
+        },
     )
 
-    doc_chain = load_qa_chain(
-        bigdl_llm, chain_type="stuff", prompt=QA_PROMPT
-    )
+    def format_docs(docs):
+        return "\n\n".join(doc.page_content for doc in docs)
+    
+    prompt = hub.pull("rlm/rag-prompt")
 
-    output = doc_chain.run(input_documents=docs, question=query)
-    print(output)
+    rag_chain = (
+        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+    rag_chain.invoke(query)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='TransformersLLM Langchain QA over Docs Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
+    parser.add_argument('-e','--embed-model-path', type=str, required=True,
+                        help='the path to embedding model')
     parser.add_argument('-i', '--input-path', type=str,
                         help='the path to the input doc.')
-    parser.add_argument('-q', '--question', type=str, default='What is BigDL?',
+    parser.add_argument('-q', '--question', type=str, default='What is IPEX-LLM?',
                         help='qustion you want to ask.')
     args = parser.parse_args()
     

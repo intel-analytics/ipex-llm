@@ -20,10 +20,13 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 import argparse
+import warnings
 
-from ipex_llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
-from langchain import PromptTemplate, LLMChain
-from langchain import HuggingFacePipeline
+from langchain.chains import LLMChain
+from langchain_community.llms import IpexLLM
+from langchain_core.prompts import PromptTemplate
+
+warnings.filterwarnings("ignore", category=UserWarning, message=".*padding_mask.*")
 
 
 def main(args):
@@ -38,20 +41,18 @@ def main(args):
 
     prompt = PromptTemplate(template=template, input_variables=["question"])
 
-    # llm = TransformersPipelineLLM.from_model_id(
-    #     model_id=model_path,
-    #     task="text-generation",
-    #     model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
-    # )
-
-    llm = TransformersLLM.from_model_id(
+    llm = IpexLLM.from_model_id(
         model_id=model_path,
-        model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+        model_kwargs={
+            "temperature": 0,
+            "max_length": 64,
+            "trust_remote_code": True,
+        },
     )
 
-    llm_chain = LLMChain(prompt=prompt, llm=llm)
+    llm_chain = prompt | llm
 
-    output = llm_chain.run(question)
+    output = llm_chain.invoke(question)
     print("====output=====")
     print(output)
 
