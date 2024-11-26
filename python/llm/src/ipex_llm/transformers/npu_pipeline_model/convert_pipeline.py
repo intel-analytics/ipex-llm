@@ -445,7 +445,9 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "qkv_bias": True,
                        "use_prefill_sdp": False,
                        "weight_num": 7,
-                       "weight_idx": 8}
+                       "weight_idx": 8,
+                       "n_splits_linear": n_splits_linear,
+                       "n_splits_down_proj": n_splits_down_proj}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
@@ -495,7 +497,9 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "weight_num": 7,
                        "weight_idx": 5,
                        "embedding_post": embedding_post,
-                       "cos_sin_input": cos_sin_input}
+                       "cos_sin_input": cos_sin_input,
+                       "n_splits_linear": n_splits_linear,
+                       "n_splits_down_proj": n_splits_down_proj}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
@@ -530,7 +534,9 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "weight_num": 7,
                        "weight_idx": 5,
                        "model_type": "minicpm",
-                       "embedding_post": True}
+                       "embedding_post": True,
+                       "n_splits_linear": n_splits_linear,
+                       "n_splits_down_proj": n_splits_down_proj}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
