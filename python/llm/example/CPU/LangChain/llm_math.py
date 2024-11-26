@@ -23,9 +23,12 @@
 # Code is adapted from https://python.langchain.com/docs/modules/chains/additional/llm_math
 
 import argparse
+import warnings
 
 from langchain.chains import LLMMathChain
 from langchain_community.llms import IpexLLM
+
+warnings.filterwarnings("ignore", category=UserWarning, message=".*padding_mask.*")
 
 
 def main(args):

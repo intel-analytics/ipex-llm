@@ -30,7 +30,11 @@ from transformers import WhisperProcessor
 import speech_recognition as sr
 import numpy as np
 import argparse
+import warnings
 import time
+
+warnings.filterwarnings("ignore", category=UserWarning, message=".*padding_mask.*")
+
 
 english_template = """
 {history}

@@ -22,6 +22,7 @@
 # Code is adapted from https://github.com/langchain-ai/langchain/blob/master/docs/docs/tutorials/rag.ipynb
 
 import argparse
+import warnings
 
 from langchain import hub
 from langchain_text_splitters import CharacterTextSplitter
@@ -30,6 +31,9 @@ from langchain_community.llms import IpexLLM
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_chroma import Chroma
+
+warnings.filterwarnings("ignore", category=UserWarning, message=".*padding_mask.*")
+
 
 text_doc = '''
 IPEX-LLM is an LLM acceleration library for Intel CPU, GPU (e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max) and NPU. It is built on top of the excellent work of llama.cpp, transformers, bitsandbytes, vLLM, qlora, AutoGPTQ, AutoAWQ, etc. It provides seamless integration with llama.cpp, Ollama, HuggingFace transformers, LangChain, LlamaIndex, vLLM, Text-Generation-WebUI, DeepSpeed-AutoTP, FastChat, Axolotl, HuggingFace PEFT, HuggingFace TRL, AutoGen, ModeScope, etc. 70+ models have been optimized/verified on ipex-llm (e.g., Llama, Phi, Mistral, Mixtral, Whisper, Qwen, MiniCPM, Qwen-VL, MiniCPM-V and more), with state-of-art LLM optimizations, XPU acceleration and low-bit (FP8/FP6/FP4/INT4) support.
