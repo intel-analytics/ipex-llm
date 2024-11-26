@@ -82,7 +82,7 @@ export SYCL_CACHE_PERSISTENT=1
 ### 3.2 Configurations for Windows
 <details>
 
-<summary>For Intel iGPU</summary>
+<summary>For Intel iGPU and Intel Arc™ A-Series Graphics</summary>
 
 ```cmd
 set SYCL_CACHE_PERSISTENT=1
@@ -90,15 +90,6 @@ set SYCL_CACHE_PERSISTENT=1
 
 </details>
 
-<details>
-
-<summary>For Intel Arc™ A-Series Graphics</summary>
-
-```cmd
-set SYCL_CACHE_PERSISTENT=1
-```
-
-</details>
 
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
