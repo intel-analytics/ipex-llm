@@ -193,13 +193,18 @@ def convert_llm(model: torch.nn.Module,
                 max_prompt_len: int,
                 transpose_value_cache: bool,
                 group_size: int,
+                qtype: str,
                 convert_model: bool=False,
                 save_directory: str=None):
     # whether to set layernorm weight as const
     layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "1") == "1"
     if group_size == 0:
         n_splits_linear = 1
-        n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
+        if qtype == "sym_int8_rtn":
+            # do not split mlp down_proj for Qwen2-7B & sym_int8
+            n_splits_down_proj = 1
+        else:
+            n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
     else:
         n_splits_linear = model.config.hidden_size // group_size
         n_splits_down_proj = model.config.intermediate_size // group_size
