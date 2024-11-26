@@ -805,7 +805,6 @@ jobs:
           call conda activate igpu-perf
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -841,7 +840,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -875,7 +873,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -910,7 +907,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -947,7 +943,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1003,7 +998,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1039,7 +1033,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1073,7 +1066,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1108,7 +1100,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1145,7 +1136,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1200,7 +1190,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1236,7 +1225,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1270,7 +1258,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1305,7 +1292,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1342,7 +1328,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1397,7 +1382,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1435,7 +1419,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1474,7 +1457,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1522,7 +1504,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1572,7 +1553,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1642,7 +1622,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1680,7 +1659,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1717,7 +1695,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1756,7 +1733,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1814,7 +1790,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1852,7 +1827,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1888,7 +1862,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1925,7 +1898,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -1964,7 +1936,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -2021,7 +1992,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -2059,7 +2029,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -2095,7 +2064,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -2132,7 +2100,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
@@ -2171,7 +2138,6 @@ jobs:
 
           if "${{ matrix.platform }}"=="perf-mtl" (
             set SYCL_CACHE_PERSISTENT=1
-            set BIGDL_LLM_XMX_DISABLED=1
           )
           if "${{ matrix.platform }}"=="perf-lnl" (
             set SYCL_CACHE_PERSISTENT=1
