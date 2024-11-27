@@ -363,3 +363,68 @@ def chatglm4_encoder_forward(
         hidden_states = self.final_layernorm(hidden_states)
 
     return hidden_states, presents, all_hidden_states, all_self_attentions
+
+
+def chatglm4_block_forward(
+    self,
+    hidden_states,
+    attention_mask,
+    rotary_pos_emb,
+    kv_cache=None,
+    use_cache=True,
+):
+    # hidden_states: [s, b, h]
+
+    # Layer norm at the beginning of the transformer layer.
+    layernorm_output = self.input_layernorm(hidden_states)
+    # Self attention.
+    attention_output, kv_cache = self.self_attention(
+        layernorm_output,
+        attention_mask,
+        rotary_pos_emb,
+        kv_cache=kv_cache,
+        use_cache=use_cache
+    )
+
+    # Residual connection.
+    if self.apply_residual_connection_post_layernorm:
+        residual = layernorm_output
+    else:
+        residual = hidden_states
+
+    layernorm_input = torch.nn.functional.dropout(attention_output, p=self.hidden_dropout,
+                                                  training=self.training)
+    layernorm_input = residual + layernorm_input
+
+    # Layer norm post the self attention.
+    layernorm_output = self.post_attention_layernorm(layernorm_input)
+
+    # ipex-llm changes start: workaround fp16 overflow
+    scale = 10
+    if self.layer_number == 39 and layernorm_output.device.type == 'xpu':
+        gate = self.mlp.gate_proj(layernorm_output)
+        up = self.mlp.up_proj(layernorm_output) / scale
+        down = self.mlp.activation_fn(gate) * up
+        mlp_output = self.mlp.dense_4h_to_h(down)
+    else:
+        # MLP.
+        mlp_output = self.mlp(layernorm_output)
+    # ipex-llm changes end
+
+    # Second residual connection.
+    if self.apply_residual_connection_post_layernorm:
+        residual = layernorm_output
+    else:
+        residual = layernorm_input
+
+    output = torch.nn.functional.dropout(mlp_output, p=self.hidden_dropout,
+                                         training=self.training)
+
+    # ipex-llm changes start: workaround fp16 overflow
+    if self.layer_number == 39 and layernorm_output.device.type == 'xpu':
+        output = residual + output * scale
+    else:
+        output = residual + output
+    # ipex-llm changes end
+
+    return output, kv_cache

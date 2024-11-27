@@ -1477,6 +1477,12 @@ def _optimize_post(model, lightweight_bmm=False):
                 convert_forward(model, module.ChatGLMModel, chatglm4_model_forward)
                 convert_forward(model, module.GLMTransformer, chatglm4_encoder_forward)
                 convert_forward(model, module.MLP, mlp_forward)
+
+                if model.config.num_layers == 40:
+                    # workaround glm4-9b fp16 overflow
+                    from ipex_llm.transformers.models.chatglm4 import chatglm4_block_forward
+                    convert_forward(model, module.GLMBlock, chatglm4_block_forward)
+
     elif "mpt" in model.config.model_type:
         if model.config.architectures is not None:
             modeling_module_name = model.__class__.__module__
