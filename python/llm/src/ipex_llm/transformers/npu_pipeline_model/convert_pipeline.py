@@ -197,7 +197,7 @@ def convert_llm(model: torch.nn.Module,
                 convert_model: bool=False,
                 save_directory: str=None):
     # whether to set layernorm weight as const
-    layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "1") == "1"
+    layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
     if group_size == 0:
         n_splits_linear = 1
         if qtype == "sym_int8_rtn":
@@ -344,7 +344,7 @@ def convert_llm(model: torch.nn.Module,
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
     elif model.config.model_type == "qwen2":
-        layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "0") == "1"
+        layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "0") == "1"
         with tempfile.TemporaryDirectory() as temp_dir:
             if save_directory is not None:
                 temp_dir = save_directory
@@ -426,11 +426,11 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     os.mkdir(save_directory)
     weight_dir = os.path.join(save_directory, "model_weights")
     os.mkdir(weight_dir)
-    use_level_zero = os.environ.get("IPEX_LLM_USE_LEVEL_ZERO", "0") == "1"
-    layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "1") == "1"
+    use_level_zero = os.environ.get("IPEX_LLM_NPU_USE_LEVEL0", "0") == "1"
+    layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
 
     if model.config.model_type == "qwen2":
-        layernorm_const = os.environ.get("IPEX_LLM_LAYERNORM_CONST", "0") == "1"
+        layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "0") == "1"
         if model.config.hidden_size == 1536:
             # Qwen2-1.5B-Instruct
             fused_layers = 1
