@@ -2,8 +2,8 @@
 
 The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel CPU.
 
-> [!NOTE]
-> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream LangChain LLM documentation with ipex-llm and [here](https://python.langchain.com/docs/integrations/text_embedding/ipex_llm/) for upstream LangChain embedding documentation with ipex-llm.
+> [!TIP]
+> For more information, please refer to the upstream LangChain LLM documentation with IPEX-LLM [here](https://python.langchain.com/docs/integrations/llms/ipex_llm), and upstream LangChain embedding model documentation with IPEX-LLM [here](https://python.langchain.com/docs/integrations/text_embedding/ipex_llm/).
 
 ## 0. Requirements
 To run these examples with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
