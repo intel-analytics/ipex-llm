@@ -141,45 +141,60 @@ class LLMBaseNNFactory(NNFactory):
         if self.n_splits_linear != 1:
             hidden_states = self.unsqueeze(hidden_states, axis=0)
 
-        query_states = self.linear(
-            hidden_states,
-            num_heads * head_dim,
-            hidden_size,
-            bias=False,
-            wt_dtype=self.dtype,
-            n_splits=self.n_splits_linear,
-            scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
-        )
+        if mode == "prefill":
+            concat_linear = self.linear(hidden_states,
+                                        num_key_value_heads * head_dim * 2 + num_heads * head_dim,
+                                        hidden_size,
+                                        wt_dtype=self.dtype,
+                                        n_splits=self.n_splits_linear,
+                                        scale_factor=(self.group_size == 0),
+                                        is_prefill=(mode == "prefill"))
+            if q_bias is not None:
+                concat_linear = concat_linear + q_bias
+            query_states, key_states, value_states = self.variadic_split(
+                concat_linear, 2,
+                [num_heads * head_dim, num_key_value_heads * head_dim, num_key_value_heads * head_dim]
+            )
+        else:
+            query_states = self.linear(
+                hidden_states,
+                num_heads * head_dim,
+                hidden_size,
+                bias=False,
+                wt_dtype=self.dtype,
+                n_splits=self.n_splits_linear,
+                scale_factor=(self.group_size == 0),
+                is_prefill=(mode == "prefill")
+            )
 
-        key_states = self.linear(
-            hidden_states,
-            num_key_value_heads * head_dim,
-            hidden_size,
-            bias=False,
-            wt_dtype=self.dtype,
-            n_splits=self.n_splits_linear,
-            scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
-        )
+            key_states = self.linear(
+                hidden_states,
+                num_key_value_heads * head_dim,
+                hidden_size,
+                bias=False,
+                wt_dtype=self.dtype,
+                n_splits=self.n_splits_linear,
+                scale_factor=(self.group_size == 0),
+                is_prefill=(mode == "prefill")
+            )
 
-        value_states = self.linear(
-            hidden_states,
-            num_key_value_heads * head_dim,
-            hidden_size,
-            bias=False,
-            wt_dtype=self.dtype,
-            n_splits=self.n_splits_linear,
-            scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
-        )
+            value_states = self.linear(
+                hidden_states,
+                num_key_value_heads * head_dim,
+                hidden_size,
+                bias=False,
+                wt_dtype=self.dtype,
+                n_splits=self.n_splits_linear,
+                scale_factor=(self.group_size == 0),
+                is_prefill=(mode == "prefill")
+            )
 
-        if q_bias is not None:
-            query_states = query_states + q_bias
-        if k_bias is not None:
-            key_states = key_states + k_bias
-        if v_bias is not None:
-            value_states = value_states + v_bias
+            if q_bias is not None:
+                query_states = query_states + q_bias
+            if k_bias is not None:
+                key_states = key_states + k_bias
+            if v_bias is not None:
+                value_states = value_states + v_bias
 
         query_states = self.reshape(
             query_states, [1, seq_len, num_heads, head_dim]
