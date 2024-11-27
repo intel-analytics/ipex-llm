@@ -80,7 +80,7 @@ Some parameters in the yaml file that you can configure:
 
 Please refer to [here](../Overview/install_gpu.md#runtime-configuration) to configure oneAPI environment variables. Choose corresponding commands base on your device.
 
-- For **Intel iGPU and Intel Arc™ A-Series Graphics**:
+- For **Intel iGPU** and **Intel Arc™ A-Series Graphics**:
 
   ```bash
   set SYCL_CACHE_PERSISTENT=1
@@ -92,7 +92,7 @@ Please refer to [here](../Overview/install_gpu.md#runtime-configuration) to conf
 
 Please choose corresponding commands base on your device.
 
-- For **Intel Arc™ A-Series and Intel Data Center GPU Flex**:
+- For **Intel Arc™ A-Series** and **Intel Data Center GPU Flex**:
 
   For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series, we recommend:
   
