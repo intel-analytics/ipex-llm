@@ -353,8 +353,8 @@ Log end
 1. Windows：是否已经安装了 conda 并激活了正确的 conda 环境，环境中是否已经使用 pip 安装了 oneAPI 依赖项
 2. Linux：是否已经在运行 llama.cpp 命令前执行了 `source /opt/intel/oneapi/setvars.sh`。执行此 source 命令只在当前会话有效。
 
-#### 11. 遇到输出乱码请先检查驱动
-如果你遇到输出乱码，请检查 GPU 驱动版本是否 >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html)。如果不是，请参照[这里](./install_linux_gpu.zh-CN.md#安装-GPU-驱动程序) 的说明更新你的 GPU 驱动。
+#### 11. 在 Windows 上遇到输出乱码请先检查驱动
+如果你在 Windows 上遇到输出乱码，请检查 GPU 驱动版本是否 >= [31.0.101.5522](https://www.intel.cn/content/www/cn/zh/download/785597/823163/intel-arc-iris-xe-graphics-windows.html)。如果不是，请参照[这里](./install_windows_gpu.zh-CN.md#可选-更新-gpu-驱动程序) 的说明更新你的 GPU 驱动。
 
 #### 12. 为什么我的程序找不到 sycl 设备
 如果你遇到 `GGML_ASSERT: C:/Users/Administrator/actions-runner/cpp-release/_work/llm.cpp/llm.cpp/llama-cpp-bigdl/ggml-sycl.cpp:18283: main_gpu_id<g_all_sycl_device_count` 错误或者类似错误，并且发现使用 `ls-sycl-device` 时没有任何输出，这是因为 llama.cpp 无法找到 sycl 设备。在某些笔记本电脑上，安装 ARC 驱动程序可能会导致被 Microsoft 强制安装 `OpenCL, OpenGL, and Vulkan Compatibility Pack`，这会无意中阻止系统定位 sycl 设备。这个问题可以通过在微软应用商店中手动卸载这个软件包来解决。
