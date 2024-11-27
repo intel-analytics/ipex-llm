@@ -120,7 +120,6 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         self.num_layers = num_layers
         self.mixed_precision = mixed_precision
 
-
         cos = self.constant(self.cached_cos)
         self.cos = self.unsqueeze(cos, axis=0)
 
