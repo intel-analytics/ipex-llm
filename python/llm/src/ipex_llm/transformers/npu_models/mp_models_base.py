@@ -438,7 +438,6 @@ class LLMBaseNNFactory(NNFactory):
         )  # type: ignore[attr-defined]
         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
 
-        print(f'mixed_precision: {mixed_precision}')
         wt_dtype = torch.int8 if mixed_precision else self.dtype
         hidden_states = self.linear(
             mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=wt_dtype,
