@@ -17,8 +17,8 @@ conda activate llm
 # install the latest ipex-llm nightly build with 'all' option
 pip install --pre --upgrade ipex-llm[all] --extra-index-url https://download.pytorch.org/whl/cpu
 
-# install packages required for GLM-4
-pip install "tiktoken>=0.7.0" transformers==4.42.4 "trl<0.12.0"
+# install packages required for GLM-4, it is recommended to use transformers>=4.44 for THUDM/glm-4-9b-chat updated after August 12, 2024
+pip install "tiktoken>=0.7.0" transformers==4.44 "trl<0.12.0"
 ```
 
 On Windows:
