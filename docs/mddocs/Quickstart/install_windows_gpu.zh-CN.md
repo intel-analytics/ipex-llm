@@ -108,14 +108,7 @@ conda activate llm
 
 - 根据你的设备，设置以下环境参数：
 
-  - **Intel iGPU**:
-
-    ```cmd
-    set SYCL_CACHE_PERSISTENT=1
-    set BIGDL_LLM_XMX_DISABLED=1
-    ```
-
-  - **Intel Arc™ A770**:
+  - **Intel iGPU** and **Intel Arc™ A770**:
 
     ```cmd
     set SYCL_CACHE_PERSISTENT=1

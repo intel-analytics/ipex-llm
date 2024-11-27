@@ -109,19 +109,12 @@ You can verify if `ipex-llm` is successfully installed following below steps.
 
 - Set the following environment variables according to your device:
 
-  - For **Intel iGPU**:
-
-    ```cmd
-    set SYCL_CACHE_PERSISTENT=1
-    set BIGDL_LLM_XMX_DISABLED=1
-    ```
-
-  - For **Intel Arc™ A770**:
+  - For **Intel iGPU** and **Intel Arc™ A770**:
 
     ```cmd
     set SYCL_CACHE_PERSISTENT=1
     ```
-  
+    
 > [!TIP]
 > For other Intel dGPU Series, please refer to [this guide](../Overview/install_gpu.md#runtime-configuration) for more details regarding runtime configuration.
 

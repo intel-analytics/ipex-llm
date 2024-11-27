@@ -422,7 +422,6 @@ To use GPU acceleration on Linux, several environment variables are required or 
   source /opt/intel/oneapi/setvars.sh
 
   export SYCL_CACHE_PERSISTENT=1
-  export BIGDL_LLM_XMX_DISABLED=1
   ```
 
 > [!NOTE]

@@ -70,11 +70,6 @@ Configure oneAPI variables by running the following command in **Miniforge Promp
 set SYCL_CACHE_PERSISTENT=1
 ```
 
-If you're running on iGPU, set additional environment variables by running the following commands:
-```cmd
-set BIGDL_LLM_XMX_DISABLED=1
-```
-
 #### Launch the Server
 In **Miniforge Prompt** with the conda environment `llm` activated, navigate to the `text-generation-webui` folder and execute the following commands (You can optionally lanch the server with or without the API service): 
 
