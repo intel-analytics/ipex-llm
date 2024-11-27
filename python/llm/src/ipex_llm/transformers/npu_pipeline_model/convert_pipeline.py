@@ -426,11 +426,9 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     os.mkdir(save_directory)
     weight_dir = os.path.join(save_directory, "model_weights")
     os.mkdir(weight_dir)
-    use_level_zero = os.environ.get("IPEX_LLM_NPU_USE_LEVEL0", "0") == "1"
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
 
     if model.config.model_type == "qwen2":
-        layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "0") == "1"
         if model.config.hidden_size == 1536:
             # Qwen2-1.5B-Instruct
             fused_layers = 1
@@ -449,28 +447,16 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "weight_num": 7,
                        "weight_idx": 8,
                        "n_splits_linear": n_splits_linear,
-                       "n_splits_down_proj": n_splits_down_proj,
-                       "use_level_zero": use_level_zero}
+                       "n_splits_down_proj": n_splits_down_proj}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
         from .qwen import convert_qwen_layer, convert_fused_qwen_layer
         from .qwen import convert_lm_head_and_embedding
-        if not use_level_zero:
-            # save fused_layers blobs of fused decoder layers
-            convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
-                                     save_directory, weight_dir, transpose_value_cache, kv_len,
-                                     group_size, layernorm_const, "decode")
-        else:
-            # save layer_num blobs of each decoder layer
-            layer_num = len(model.model.layers)
-            param_list = []
-            for layer_idx in range(0, layer_num):
-                param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
-                                  save_directory, weight_dir, transpose_value_cache, kv_len,
-                                  group_size, layernorm_const))
-            with Pool() as pool:
-                result = pool.starmap(convert_qwen_layer, param_list)
+        # save fused_layers blobs of fused decoder layers
+        convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
+                                 save_directory, weight_dir, transpose_value_cache, kv_len,
+                                 group_size, layernorm_const, "decode")
         # save blob of single prefill layer
         convert_qwen_layer(model, 0, n_splits_linear, n_splits_down_proj,
                            save_directory, weight_dir, transpose_value_cache, max_prompt_len,
@@ -512,8 +498,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "embedding_post": embedding_post,
                        "cos_sin_input": cos_sin_input,
                        "n_splits_linear": n_splits_linear,
-                       "n_splits_down_proj": n_splits_down_proj,
-                       "use_level_zero": use_level_zero}
+                       "n_splits_down_proj": n_splits_down_proj}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
@@ -549,8 +534,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "model_type": "minicpm",
                        "embedding_post": True,
                        "n_splits_linear": n_splits_linear,
-                       "n_splits_down_proj": n_splits_down_proj,
-                       "use_level_zero": use_level_zero}
+                       "n_splits_down_proj": n_splits_down_proj}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
