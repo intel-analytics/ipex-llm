@@ -98,7 +98,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
         group_size: int = 0,
-        mixed_precision: bool = False
+        mixed_precision: bool = False,
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
@@ -314,6 +314,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
         group_size: int = 0,
+        mixed_precision: bool = False,
     ):
         super().__init__()
 
@@ -378,7 +379,8 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
                 dtype=np_dtype,
                 n_splits_linear=n_splits_linear,
                 n_splits_down_proj=n_splits_down_proj,
-                group_size=group_size
+                group_size=group_size,
+                mixed_precision=mixed_precision,
             )
             self.backend_decoders.append(decoder)
 
@@ -464,6 +466,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
         group_size: int = 0,
+        mixed_precision: bool = False,
     ):
         super().__init__()
         self.op_parameters = parameters
@@ -494,7 +497,8 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
             dtype=np_dtype,
             n_splits_linear=n_splits_linear,
             n_splits_down_proj=n_splits_down_proj,
-            group_size=group_size
+            group_size=group_size,
+            mixed_precision=mixed_precision,
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
@@ -574,6 +578,7 @@ def run_decode(
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
     group_size = getattr(model.config, "group_size", 0)
+    mixed_precision = getattr(model.config, "mixed_precision", False)
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
@@ -633,7 +638,8 @@ def run_decode(
         do_print=False,
         n_splits_linear=n_splits_linear,
         n_splits_down_proj=n_splits_down_proj,
-        group_size=group_size
+        group_size=group_size,
+        mixed_precision=mixed_precision,
     )
 
     dist.barrier()
@@ -805,6 +811,7 @@ def run_prefill(
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
     group_size = getattr(model.config, "group_size", 0)
+    mixed_precision = getattr(model.config, "mixed_precision", False)
     deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
@@ -853,7 +860,8 @@ def run_prefill(
             transpose_value=transpose_value_cache,
             n_splits_linear=n_splits_linear,
             n_splits_down_proj=n_splits_down_proj,
-            group_size=group_size
+            group_size=group_size,
+            mixed_precision=mixed_precision,
         )
 
         layer_weights.extend(weights)
