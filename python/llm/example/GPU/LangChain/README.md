@@ -1,11 +1,34 @@
-# Langchain examples
+# Langchain Example
 
 The examples in this folder shows how to use [LangChain](https://www.langchain.com/) with `ipex-llm` on Intel GPU.
 
-### 1. Install ipex-llm
-Follow the instructions in [GPU Install Guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Overview/install_gpu.html) to install ipex-llm
+> [!NOTE]
+> Please refer [here](https://python.langchain.com/docs/integrations/llms/ipex_llm) for upstream LangChain LLM documentation with ipex-llm and [here](https://python.langchain.com/docs/integrations/text_embedding/ipex_llm_gpu/) for upstream LangChain embedding documentation with ipex-llm.
 
-### 2. Configures OneAPI environment variables for Linux
+## 0. Requirements
+To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#requirements) for more information.
+
+## 1. Install
+
+### 1.1 Installation on Linux
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.11
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+```
+
+### 1.2 Installation on Windows
+We suggest using conda to manage environment:
+```bash
+conda create -n llm python=3.11 libuv
+conda activate llm
+
+pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+```
+
+## 2. Configures OneAPI environment variables for Linux
 
 > [!NOTE]
 > Skip this step if you are running on Windows.
@@ -16,9 +39,9 @@ This is a required step on Linux for APT or offline installed oneAPI. Skip this 
 source /opt/intel/oneapi/setvars.sh
 ```
 
-### 3. Runtime Configurations
+## 3. Runtime Configurations
 For optimal performance, it is recommended to set several environment variables. Please check out the suggestions based on your device.
-#### 3.1 Configurations for Linux
+### 3.1 Configurations for Linux
 <details>
 
 <summary>For Intel Arc™ A-Series Graphics and Intel Data Center GPU Flex Series</summary>
@@ -54,7 +77,7 @@ export SYCL_CACHE_PERSISTENT=1
 
 </details>
 
-#### 3.2 Configurations for Windows
+### 3.2 Configurations for Windows
 <details>
 
 <summary>For Intel iGPU and Intel Arc™ A-Series Graphics</summary>
@@ -69,105 +92,67 @@ set SYCL_CACHE_PERSISTENT=1
 > [!NOTE]
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
-### 4. Run the examples
+## 4. Run examples with LangChain
 
-#### 4.1. Streaming Chat
+### 4.1. Example: Streaming Chat
 
-Install dependencies:
+Install LangChain dependencies:
 
 ```bash
-pip install langchain==0.0.184
-pip install -U pandas==2.0.3
+pip install -U langchain langchain-community
 ```
 
-Then execute:
+In the current directory, run the example with command:
 
 ```bash
 python chat.py -m MODEL_PATH -q QUESTION
 ```
-arguments info:
+**Additional Parameters for Configuration:**
 - `-m MODEL_PATH`: **required**, path to the model
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
 
-#### 4.2. RAG (Retrival Augmented Generation)
+### 4.2. Example: Retrival Augmented Generation (RAG)
 
-Install dependencies:
-```bash
-pip install langchain==0.0.184
-pip install -U chromadb==0.3.25
-pip install -U pandas==2.0.3
-```
+The RAG example ([rag.py](./rag.py)) shows how to load the input text into vector database, and then use LangChain to build a retrival pipeline.
 
-Then execute:
+Install LangChain dependencies:
 
 ```bash
-python rag.py -m <path_to_model> [-q QUESTION] [-i INPUT_PATH]
+pip install -U langchain langchain-community langchain-chroma sentence-transformers==3.0.1
 ```
-arguments info:
-- `-m MODEL_PATH`: **required**, path to the model.
-- `-q QUESTION`: question to ask. Default is `What is IPEX?`.
+
+In the current directory, run the example with command:
+
+```bash
+python rag.py -m <path_to_llm_model> -e <path_to_embedding_model> [-q QUESTION] [-i INPUT_PATH]
+```
+**Additional Parameters for Configuration:**
+- `-m LLM_MODEL_PATH`: **required**, path to the model.
+- `-e EMBEDDING_MODEL_PATH`: **required**, path to the embedding model.
+- `-q QUESTION`: question to ask. Default is `What is IPEX-LLM?`.
 - `-i INPUT_PATH`: path to the input doc.
 
 
-#### 4.3. Low Bit
+### 4.3. Example: Low Bit
 
-The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use langchain with low_bit optimized model.
+The low_bit example ([low_bit.py](./low_bit.py)) showcases how to use use LangChain with low_bit optimized model.LangChain
 By `save_low_bit` we save the weights of low_bit model into the target folder.
-> Note: `save_low_bit` only saves the weights of the model. 
+> [!NOTE]
+> `save_low_bit` only saves the weights of the model. 
 > Users could copy the tokenizer model into the target folder or specify `tokenizer_id` during initialization. 
 
-Install dependencies:
+Install LangChain dependencies:
+
 ```bash
-pip install langchain==0.0.184
-pip install -U pandas==2.0.3
+pip install -U langchain langchain-community
 ```
-Then execute:
+
+In the current directory, run the example with command:
 
 ```bash
 python low_bit.py -m <path_to_model> -t <path_to_target> [-q <your question>]
 ```
-**Runtime Arguments Explained**:
+**Additional Parameters for Configuration:**
 - `-m MODEL_PATH`: **Required**, the path to the model
 - `-t TARGET_PATH`: **Required**, the path to save the low_bit model
-- `-q QUESTION`: the question
-
-#### 4.4 vLLM
-
-The vLLM example ([vllm.py](./vllm.py)) showcases how to use langchain with ipex-llm integrated vLLM engine.
-
-Install dependencies:
-```bash
-pip install "langchain<0.2"
-```
-
-Besides, you should also install IPEX-LLM integrated vLLM according instructions listed [here](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/Quickstart/vLLM_quickstart.html#install-vllm)
-
-**Runtime Arguments Explained**:
-- `-m MODEL_PATH`: **Required**, the path to the model
-- `-q QUESTION`: the question
-- `-t MAX_TOKENS`: max tokens to generate, default 128
-- `-p TENSOR_PARALLEL_SIZE`: Use multiple cards for generation
-- `-l LOAD_IN_LOW_BIT`: Low bit format for quantization
-
-##### Single card
-
-The following command shows an example on how to execute the example using one card:
-
-```bash
-python ./vllm.py -m YOUR_MODEL_PATH -q "What is AI?" -t 128 -p 1 -l sym_int4
-```
-
-##### Multi cards
-
-To use `-p TENSOR_PARALLEL_SIZE` option, you will need to use our docker image: `intelanalytics/ipex-llm-serving-xpu:latest`. For how to use the image, try check this [guide](https://ipex-llm.readthedocs.io/en/latest/doc/LLM/DockerGuides/vllm_docker_quickstart.html#multi-card-serving).
-
-The following command shows an example on how to execute the example using two cards:
-
-```bash
-export CCL_WORKER_COUNT=2
-export FI_PROVIDER=shm
-export CCL_ATL_TRANSPORT=ofi
-export CCL_ZE_IPC_EXCHANGE=sockets
-export CCL_ATL_SHM=1
-python ./vllm.py -m YOUR_MODEL_PATH -q "What is AI?" -t 128 -p 2 -l sym_int4
-```
+- `-q QUESTION`: question to ask. Default is `What is AI?`.

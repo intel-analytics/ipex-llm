@@ -16,9 +16,13 @@
 
 
 import argparse
-from ipex_llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
-from langchain import PromptTemplate, LLMChain
-from langchain import HuggingFacePipeline
+import warnings
+
+from langchain.chains import LLMChain
+from langchain_community.llms import IpexLLM
+from langchain_core.prompts import PromptTemplate
+
+warnings.filterwarnings("ignore", category=UserWarning, message=".*padding_mask.*")
 
 
 def main(args):
@@ -29,20 +33,29 @@ def main(args):
 
     prompt = PromptTemplate(template=template, input_variables=["question"])
 
-    llm = TransformersLLM.from_model_id(
+    llm = IpexLLM.from_model_id(
         model_id=model_path,
-        model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+        model_kwargs={
+            "temperature": 0,
+            "max_length": 64,
+            "trust_remote_code": True,
+        },
     )
     llm.model.save_low_bit(low_bit_model_path)
     del llm
-    low_bit_llm = TransformersLLM.from_model_id_low_bit(
+    llm_lowbit = IpexLLM.from_model_id_low_bit(
         model_id=low_bit_model_path,
         tokenizer_id=model_path,
-        model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True}
+        # tokenizer_name=saved_lowbit_model_path,  # copy the tokenizers to saved path if you want to use it this way
+        model_kwargs={
+            "temperature": 0,
+            "max_length": 64,
+            "trust_remote_code": True,
+        },
     )
-    llm_chain = LLMChain(prompt=prompt, llm=low_bit_llm)
+    llm_chain = prompt | llm_lowbit
 
-    output = llm_chain.run(question)
+    output = llm_chain.invoke(question)
     print("====output=====")
     print(output)
 

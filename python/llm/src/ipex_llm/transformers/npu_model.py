@@ -231,7 +231,7 @@ class _BaseAutoModelClass:
         from intel_npu_acceleration_library.compiler import create_npu_kernels
 
         model = kwargs.pop("model")
-        qtype = kwargs.pop("qtype", "sym_int4")
+        qtype = kwargs.pop("qtype", "sym_int4_rtn")
         mixed_precision = kwargs.pop("mixed_precision", False)
         quantization_group_size = kwargs.pop("quantization_group_size", 0)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
@@ -280,6 +280,7 @@ class _BaseAutoModelClass:
                         max_prompt_len=max_prompt_len,
                         transpose_value_cache=transpose_value_cache,
                         group_size=quantization_group_size,
+                        qtype=qtype,
                         convert_model=convert_model,
                         save_directory=save_directory)
         model.save_low_bit = types.MethodType(save_low_bit, model)
