@@ -24,6 +24,8 @@ from transformers.utils import logging
 from packaging import version
 import os
 import shutil
+import time
+
 
 logger = logging.get_logger(__name__)
 
@@ -55,6 +57,7 @@ if __name__ == "__main__":
     model_path = args.repo_id_or_model_path
     save_dir = args.save_directory
 
+    t0 = time.perf_counter()
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
                                                  pipeline=True,
@@ -69,6 +72,7 @@ if __name__ == "__main__":
                                                  trust_remote_code=True,
                                                  convert_model=True,
                                                  save_directory=save_dir)
+    t1 = time.perf_counter()
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
@@ -81,5 +85,6 @@ if __name__ == "__main__":
         tokenizer.save_pretrained(save_dir)
 
     print("-" * 80)
+    print(f"Convert model cost {t1 - t0}s.")
     print(f"finish save model to {save_dir}")
     print("success shut down")

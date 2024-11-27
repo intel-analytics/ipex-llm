@@ -135,9 +135,12 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     if mode == "decode":
         input_len = 1
         decoder_name = f"decoder_layer_{layer_idx}"
+        npu_dpu_groups = None
     else:
         input_len = kv_len
         decoder_name = "decoder_layer_prefill"
+        npu_dpu_groups = 6
+
     single_decoder = LowBitQwenMultiDecoderlayer(
         [1, input_len, num_heads * head_dim],
         input_layernorm_weights=None,
@@ -162,7 +165,8 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         decoder_name,
-                                                        temp_dir, True, False)
+                                                        temp_dir, True, False,
+                                                        npu_dpu_groups=npu_dpu_groups)
 
     # 0, 1, 2 are input_embed/attention_mask/position_id
     if mode == "decode":
