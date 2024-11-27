@@ -403,8 +403,8 @@ def chatglm4_block_forward(
     scale = 10
     if self.layer_number == 39 and layernorm_output.device.type == 'xpu':
         gate = self.mlp.gate_proj(layernorm_output)
-        up = self.mlp.up_proj(layernorm_output) / scale
-        down = self.mlp.activation_fn(gate) * up
+        up = self.mlp.up_proj(layernorm_output)
+        down = self.mlp.activation_fn(gate) / scale * up
         mlp_output = self.mlp.dense_4h_to_h(down)
     else:
         # MLP.
@@ -423,6 +423,7 @@ def chatglm4_block_forward(
     # ipex-llm changes start: workaround fp16 overflow
     if self.layer_number == 39 and layernorm_output.device.type == 'xpu':
         output = residual + output * scale
+        output = torch.nan_to_num(output)
     else:
         output = residual + output
     # ipex-llm changes end
