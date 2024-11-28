@@ -14,6 +14,7 @@
 # limitations under the License.
 
 
+import os
 import torch
 import importlib
 from ipex_llm.transformers.npu_models.linear import QuantizedLinear
@@ -69,8 +70,10 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
                (layer.in_features == 18944 and layer.out_features == 3584):
                 qtype = "sym_int8_rtn"
                 iqtype = ggml_tensor_qtype[qtype]
+        enable_scale_search = os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0"
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
-                                             iqtype, device=device)
+                                             iqtype, device=device,
+                                             enable_scale_search=enable_scale_search)
         return QuantizedLinear(qweights, scale, layer.bias,
                                group_size=group_size)
 
@@ -83,8 +86,10 @@ def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
     if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
+        enable_scale_search = os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0"
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
-                                             iqtype, device=device)
+                                             iqtype, device=device,
+                                             enable_scale_search=enable_scale_search)
         return DequantizedLinear(qweights, scale, layer.bias)
 
 
