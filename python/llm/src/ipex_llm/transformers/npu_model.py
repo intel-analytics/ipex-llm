@@ -275,7 +275,8 @@ class _BaseAutoModelClass:
                     transpose_value_cache=transpose_value_cache,
                     group_size=quantization_group_size,
                     qtype=qtype,
-                    save_directory=save_directory
+                    save_directory=save_directory,
+                    fuse_layers=fuse_layers
                 )
             else:
                 optimize_llm(
