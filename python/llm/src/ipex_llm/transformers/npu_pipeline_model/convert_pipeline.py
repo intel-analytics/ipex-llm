@@ -439,7 +439,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
             else:
                 fused_layers = 2 if fuse_layers is None else fuse_layers
         else:
-            fuse_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
+            fused_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
@@ -502,7 +502,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                 else:
                     # for Llama3-8B
                     use_prefill_sdp = True
-            fuse_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
+            fused_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
@@ -541,7 +541,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         if group_size == 0:
             fused_layers = 4 if fuse_layers is None else fuse_layers
         else:
-            fuse_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
+            fused_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
