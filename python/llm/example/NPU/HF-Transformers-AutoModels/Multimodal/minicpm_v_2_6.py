@@ -41,6 +41,7 @@ if __name__ == '__main__':
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--intra-pp", type=int, default=None)
     parser.add_argument("--inter-pp", type=int, default=None)
+    parser.add_argument("--mixed-precision", action='store_true')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -57,6 +58,7 @@ if __name__ == '__main__':
                                       intra_pp=args.intra_pp,
                                       inter_pp=args.inter_pp,
                                       transpose_value_cache=not args.disable_transpose_value_cache,
+                                      mixed_precision=args.mixed_precision,
                                       )
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)

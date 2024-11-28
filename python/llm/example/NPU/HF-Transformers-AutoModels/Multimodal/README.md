@@ -22,7 +22,7 @@ In the example [generate.py](./generate.py), we show a basic use case for a phi-
 ### 1. Install
 #### 1.1 Installation on Windows
 We suggest using conda to manage environment:
-```bash
+```cmd
 conda create -n llm python=3.10 libuv
 conda activate llm
 
@@ -100,7 +100,7 @@ The examples below show how to run the **_optimized HuggingFace & FunASR model i
 - [Speech_Paraformer-Large](./speech_paraformer-large.py)
 
 ### 4.1 Run MiniCPM-Llama3-V-2_5 & MiniCPM-V-2_6
-```bash
+```cmd
 # to run MiniCPM-Llama3-V-2_5
 python minicpm-llama3-v2.5.py
 
@@ -117,6 +117,12 @@ Arguments info:
 - `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `512`.
 - `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
 
+For [MiniCPM-V-2_6](./minicpm_v_2_6.py), you could also try to enable mixed precision optimization when encountering output problems:
+
+```cmd
+python minicpm_v_2_6.py --mixed-precision
+``` 
+
 #### Sample Output
 ##### [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6)
 
@@ -131,7 +137,7 @@ The image features a young child holding and showing off a white teddy bear wear
 ```
 
 ### 4.2 Run Speech_Paraformer-Large
-```bash
+```cmd
 # to run Speech_Paraformer-Large
 python speech_paraformer-large.py
 ```
@@ -154,7 +160,7 @@ rtf_avg: 0.232: 100%|███████████████████�
 ```
 
 ### 4.3 Run Bce-Embedding-Base-V1
-```bash
+```cmd
 # to run Bce-Embedding-Base-V1
 python bce-embedding.py
 ```
