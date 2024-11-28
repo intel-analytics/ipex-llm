@@ -183,7 +183,7 @@ class _BaseAutoModelClass:
             from intel_npu_acceleration_library.compiler import create_npu_kernels
 
             if optimize_model:
-                #TODO: enable mixed_precision when pipeline=True
+                # TODO: enable mixed_precision when pipeline=True
                 if pipeline:
                     mixed_precision = False
 
