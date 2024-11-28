@@ -492,11 +492,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
             else:
                 fused_layers = 2 if fuse_layers is None else fuse_layers
         else:
-            if model.config.intermediate_size == 11008:
-                # for Llama2-7B
-                use_prefill_sdp = True
-            elif model.config.intermediate_size == 14336:
-                # for Llama3-8B
+            if model.config.intermediate_size in [11008, 14336]:
+                # for Llama2-7B & Llama3-8B
                 use_prefill_sdp = True
             elif not hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached"):
                 # llama3.2 1B & # llama3.2 3B
