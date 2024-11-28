@@ -129,10 +129,14 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         if quantization_group_size == 0:
             n_splits_linear = 1
             if qtype == "sym_int8_rtn":
-                # do not split mlp down_proj for Qwen2-7B & sym_int8
+                # do not split mlp down_proj for Qwen2-7B/MiniCPM-V-2_6 & sym_int8
                 n_splits_down_proj = 1
             else:
-                n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
+                if (not mixed_precision) and model.config.intermediate_size == 18944:
+                    # For Qwen2-7B and MiniCPM-V-2_6
+                    n_splits_down_proj = 16
+                else:
+                    n_splits_down_proj = 1
         else:
             invalidInputError(
                 model.config.hidden_size % quantization_group_size == 0 and
@@ -170,10 +174,10 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         # for Qwen2-7B-Insturct and MiniCPM-V 2.6, divide lm_head into 14 parts
         if model.config.hidden_size == 3584 and (model.config.vocab_size == 152064 or
            model.config.vocab_size == 151666) and not cpu_lm_head:
-            # Do not split lm_head and use sym_int8 instead when mixed_precison is True
             if quantization_group_size == 0:
-                # Do not split lm_head and use sym_int8 instead when mixed_precison is True
-                is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
+                # TODO: may further adjust strategy, use sym_int8 for now
+                # is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
+                is_split = False
                 split_num = 14 if is_split else 1
                 new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
                                            bias=model.lm_head.bias, use_split=False)

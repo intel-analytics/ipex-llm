@@ -423,7 +423,7 @@ class LLMBaseNNFactory(NNFactory):
         w_2 = self.linear(w_1_norm, 512, 2048, bias=False, wt_dtype=self.dtype)
         return w_2
 
-    def mlp(self, hidden_states, seq_len=-1, mode="prefill"):
+    def mlp(self, hidden_states, seq_len=-1, mode="prefill", mixed_precision=False):
         mm1 = self.linear(
             hidden_states, self.intermediate_size, self.hidden_size, bias=False,
             wt_dtype=self.dtype, n_splits=self.n_splits_linear,
@@ -438,8 +438,9 @@ class LLMBaseNNFactory(NNFactory):
         )  # type: ignore[attr-defined]
         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
 
+        wt_dtype = torch.int8 if mixed_precision else self.dtype
         hidden_states = self.linear(
-            mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype,
+            mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=wt_dtype,
             n_splits=self.n_splits_down_proj,
             scale_factor=(self.group_size == 0),
             is_prefill=(mode == "prefill")

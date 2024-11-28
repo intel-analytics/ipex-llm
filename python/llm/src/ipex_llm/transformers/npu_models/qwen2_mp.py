@@ -97,7 +97,8 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         intermediate_size,
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
-        group_size: int = 0
+        group_size: int = 0,
+        mixed_precision: bool = False,
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
@@ -117,6 +118,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         self.rms_norm_eps = rms_norm_eps
         self.transpose_value = transpose_value
         self.num_layers = num_layers
+        self.mixed_precision = mixed_precision
 
         cos = self.constant(self.cached_cos)
         self.cos = self.unsqueeze(cos, axis=0)
@@ -279,7 +281,7 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         hidden_states = self.eltwise_add(residual, attn_output)
         residual = hidden_states
         hidden_states = self.layer_norm(hidden_states, post_attention_layernorm_weight)
-        hidden_states = self.mlp(hidden_states, self.seq_len, self.mode)
+        hidden_states = self.mlp(hidden_states, self.seq_len, self.mode, self.mixed_precision)
         hidden_states = self.eltwise_add(residual, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
 
@@ -311,6 +313,7 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
         group_size: int = 0,
+        mixed_precision: bool = False,
     ):
         super().__init__()
 
@@ -375,7 +378,8 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
                 dtype=np_dtype,
                 n_splits_linear=n_splits_linear,
                 n_splits_down_proj=n_splits_down_proj,
-                group_size=group_size
+                group_size=group_size,
+                mixed_precision=mixed_precision,
             )
             self.backend_decoders.append(decoder)
 
@@ -461,6 +465,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
         group_size: int = 0,
+        mixed_precision: bool = False,
     ):
         super().__init__()
         self.op_parameters = parameters
@@ -491,7 +496,8 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
             dtype=np_dtype,
             n_splits_linear=n_splits_linear,
             n_splits_down_proj=n_splits_down_proj,
-            group_size=group_size
+            group_size=group_size,
+            mixed_precision=mixed_precision,
         )
         self.layer_norm_0 = layer_norm_0
         self.layer_norm_1 = layer_norm_1
@@ -571,6 +577,7 @@ def run_decode(
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
     group_size = getattr(model.config, "group_size", 0)
+    mixed_precision = getattr(model.config, "mixed_precision", False)
     layer_weights = []
     input_layer_norm_weights = []
     post_attn_layernorm_weights = []
@@ -630,7 +637,8 @@ def run_decode(
         do_print=False,
         n_splits_linear=n_splits_linear,
         n_splits_down_proj=n_splits_down_proj,
-        group_size=group_size
+        group_size=group_size,
+        mixed_precision=mixed_precision,
     )
 
     dist.barrier()
@@ -802,6 +810,7 @@ def run_prefill(
     rms_norm_eps = model.config.rms_norm_eps
     intermediate_size = model.config.intermediate_size
     group_size = getattr(model.config, "group_size", 0)
+    mixed_precision = getattr(model.config, "mixed_precision", False)
     deocderlayers = []
     layer_weights = []
     input_layer_norm_weights = []
@@ -850,7 +859,8 @@ def run_prefill(
             transpose_value=transpose_value_cache,
             n_splits_linear=n_splits_linear,
             n_splits_down_proj=n_splits_down_proj,
-            group_size=group_size
+            group_size=group_size,
+            mixed_precision=mixed_precision,
         )
 
         layer_weights.extend(weights)
