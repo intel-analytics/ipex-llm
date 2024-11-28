@@ -476,32 +476,32 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         cos_sin_input = False
         use_prefill_sdp = False
         if group_size == 0:
-            if model.config.vocab_size == 32000:
+            if model.config.intermediate_size == 11008:
                 # for Llama2-7B
                 fused_layers = 4 if fuse_layers is None else fuse_layers
                 use_prefill_sdp = True
+            elif model.config.intermediate_size == 14336:
+                # for Llama3-8B
+                fused_layers = 2 if fuse_layers is None else fuse_layers
+                use_prefill_sdp = True
+            elif not hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached"):
+                # llama3.2 1B & # llama3.2 3B
+                embedding_post = True
+                cos_sin_input = True
+                fused_layers = 2 if fuse_layers is None else fuse_layers
             else:
-                if model.config.intermediate_size == 8192:
-                    # llama3.2 1B & # llama3.2 3B
-                    embedding_post = True
-                    cos_sin_input = True
-                    fused_layers = 2 if fuse_layers is None else fuse_layers
-                else:
-                    # for Llama3-8B
-                    fused_layers = 2 if fuse_layers is None else fuse_layers
-                    use_prefill_sdp = True
+                fused_layers = 2 if fuse_layers is None else fuse_layers
         else:
-            if model.config.vocab_size == 32000:
+            if model.config.intermediate_size == 11008:
                 # for Llama2-7B
                 use_prefill_sdp = True
-            else:
-                if model.config.intermediate_size == 8192:
-                    # llama3.2 1B & # llama3.2 3B
-                    embedding_post = True
-                    cos_sin_input = True
-                else:
-                    # for Llama3-8B
-                    use_prefill_sdp = True
+            elif model.config.intermediate_size == 14336:
+                # for Llama3-8B
+                use_prefill_sdp = True
+            elif not hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached"):
+                # llama3.2 1B & # llama3.2 3B
+                embedding_post = True
+                cos_sin_input = True
             fused_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
