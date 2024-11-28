@@ -428,7 +428,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            fuse_layers: int=None):
     os.mkdir(save_directory)
     weight_dir = os.path.join(save_directory, "model_weights")
-    os.mkdir(weight_dir)
+    if not os.path.exists(weight_dir):
+        os.mkdir(weight_dir)
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
 
     if model.config.model_type == "qwen2":

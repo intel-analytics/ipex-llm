@@ -54,7 +54,13 @@ if __name__ == "__main__":
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--intra-pp", type=int, default=None)
     parser.add_argument("--inter-pp", type=int, default=None)
-    parser.add_argument("--mixed-precision", action='store_true')
+    parser.add_argument("--mixed-precision", action='store_false')
+    parser.add_argument("--save-directory", type=str,
+        required=True,
+        help="The path of folder to save converted model, "
+             "If path not exists, lowbit model will be saved there. "
+             "Else, program will raise error.",
+    )
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -74,6 +80,7 @@ if __name__ == "__main__":
             transpose_value_cache=not args.disable_transpose_value_cache,
             mixed_precision=args.mixed_precision,
             quantization_group_size=args.quantization_group_size,
+            save_directory=args.save_directory
         )
     else:
         model = AutoModelForCausalLM.load_low_bit(
