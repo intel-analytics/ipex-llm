@@ -34,7 +34,7 @@ int main(int argc, char ** argv) {
     common_params params;
 
     // path to the npu model directory
-    std::string model_dir;
+    char* model_dir;
     // prompt to generate text from
     std::string prompt = "AI是什么?";
     // number of tokens to predict
@@ -69,7 +69,7 @@ int main(int argc, char ** argv) {
                 break;
             }
         }
-        if (model_dir.empty()) {
+        if (model_dir == nullptr || model_dir[0] == '\0') {
             print_usage(argc, argv);
             return 1;
         }
@@ -86,8 +86,9 @@ int main(int argc, char ** argv) {
     params.model = model_dir;
     params.prompt = prompt;
 
+    void* model = load_model_from_file(params.model);
     npu_model_params model_params;
-    NPUModel* model = load_model_from_file(model_params, params.model);
+    load_config_from_file(model_params, params.model);
 
     tokenizer_params tok_params;
     load_tokenizer(tok_params, params.model);
@@ -101,8 +102,8 @@ int main(int argc, char ** argv) {
 
     std::vector<int32_t> embd;  // output ids
     auto start = std::chrono::high_resolution_clock::now();
-    float* logits = run_prefill(model, embd_inp);
-    int32_t token = llm_sample_token(logits, true, model_params);
+    float* logits = run_prefill(model, embd_inp.data(), embd_inp.size());
+    int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     printf("\nPrefill %d tokens cost %d ms.\n", embd_inp.size(), duration.count());
@@ -112,7 +113,7 @@ int main(int argc, char ** argv) {
     start = std::chrono::high_resolution_clock::now();
     for (int i = 1; i < params.n_predict; i++){
         auto logits = run_decode(model, embd[i-1]);
-        int32_t token = llm_sample_token(logits, true, model_params);
+        int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
         if (std::find(tok_params.eos_token_id.begin(), tok_params.eos_token_id.end(), token) == tok_params.eos_token_id.end()){
             embd.push_back(token);
             token_nums ++;

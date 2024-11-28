@@ -426,7 +426,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            group_size: int,
                            save_directory: str=None,
                            fuse_layers: int=None):
-    os.mkdir(save_directory)
+    if not os.path.exists(save_directory):
+        os.mkdir(save_directory)
     weight_dir = os.path.join(save_directory, "model_weights")
     if not os.path.exists(weight_dir):
         os.mkdir(weight_dir)

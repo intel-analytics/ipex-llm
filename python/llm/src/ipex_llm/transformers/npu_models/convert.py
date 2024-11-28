@@ -14,10 +14,16 @@
 # limitations under the License.
 
 
+from ipex_llm.utils.common.log4Error import invalidInputError
 import os
 import torch
 import importlib
 from ipex_llm.transformers.npu_models.linear import QuantizedLinear
+import tempfile
+import time
+from typing import Callable, List, Optional
+from transformers import GenerationConfig, \
+    LogitsProcessorList, StoppingCriteriaList
 
 
 def module_optimization(func) -> torch.nn.Module:
