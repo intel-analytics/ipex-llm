@@ -246,8 +246,17 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
         if qtype not in [IQ2_XXS, IQ2_XS, Q2_K, IQ1_S, Q4_K, Q6_K, Q5_K, FP6_K]:
             if qtype in [SYM_INT8_RTN, SYM_INT4_RTN]:
                 scale_ptr = ctypes.cast(scale.data.data_ptr(), ctypes.POINTER(ctypes.c_float))
-                ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n,
-                                              k, hist, enable_scale_search)
+                if imatrix is None:
+                    ggml.ggml_quantize_tensor_rtn(src, dst, scale_ptr, qtype, n,
+                                                  k, hist, enable_scale_search)
+                else:
+                    enable_scale_search = True
+                    print("enter here")
+                    ggml.ggml_quantize_tensor_rtn_with_weights(src, dst, scale_ptr,
+                                                               qtype, n,
+                                                               k, hist,
+                                                               enable_scale_search,
+                                                               imatrix)
                 return dst_tensor, scale.type(torch.float16)
             else:
                 ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist, enable_scale_search)

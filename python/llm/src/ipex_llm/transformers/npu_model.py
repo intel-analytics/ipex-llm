@@ -26,7 +26,7 @@ from transformers.dynamic_module_utils import get_imports
 from transformers.configuration_utils import PretrainedConfig
 
 from ipex_llm.utils.common.log4Error import invalidInputError
-from ipex_llm.transformers.utils import logger
+from ipex_llm.transformers.utils import logger, load_imatrix_data
 from ipex_llm.transformers.npu_models.convert import optimize_llm, optimize_llm_post
 
 
@@ -137,6 +137,16 @@ class _BaseAutoModelClass:
         convert_model = kwargs.pop('convert_model', False)
         save_directory = kwargs.pop('save_directory', None)
         fuse_layers = kwargs.pop('fuse_layers', None)
+        imatrix_file = kwargs.pop('imatrix_file', None)
+
+        if imatrix_file is not None:
+            imatrix_data = load_imatrix_data(imatrix_file)
+        else:
+            imatrix_data = None
+
+        print("imatrix data is")
+        print(imatrix_data.keys())
+        print(imatrix_data['27_down'].shape)
 
         invalidInputError(
             quantization_group_size in [0, 32, 64, 128],
@@ -205,7 +215,8 @@ class _BaseAutoModelClass:
                     "transpose_value_cache": transpose_value_cache,
                     "convert_model": convert_model,
                     "save_directory": save_directory,
-                    "fuse_layers": fuse_layers
+                    "fuse_layers": fuse_layers,
+                    "imatrix_data": imatrix_data
                 }
                 model = cls.optimize_npu_model(*args, **optimize_kwargs)
             else:
@@ -213,7 +224,8 @@ class _BaseAutoModelClass:
                 optimize_llm(model)
                 with torch.no_grad():
                     cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
-                                     quantization_group_size, *args, **kwargs)
+                                     quantization_group_size, imatrix_data=imatrix_data,
+                                     *args, **kwargs)
                     if hasattr(model, "llm"):
                         create_npu_kernels(model.llm)
                     else:
@@ -246,6 +258,8 @@ class _BaseAutoModelClass:
         convert_model = kwargs.pop('convert_model', False)
         save_directory = kwargs.pop('save_directory', None)
         fuse_layers = kwargs.pop('fuse_layers', None)
+        imatrix_data = kwargs.pop('imatrix_data', None)
+        print(imatrix_data)
 
         if hasattr(model, "llm"):
             llm = model.llm
@@ -255,10 +269,14 @@ class _BaseAutoModelClass:
         with torch.no_grad():
             model.config.update({"mixed_precision": mixed_precision})
             model.config.update({"group_size": quantization_group_size})
+            print(model)
             optimize_llm_pre(model, qtype, mixed_precision,
                              quantization_group_size=quantization_group_size)
+            print(args)
+            print(kwargs)
             cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
-                             quantization_group_size, *args, **kwargs)
+                             quantization_group_size, imatrix_data,
+                             *args, **kwargs)
             create_npu_kernels(llm)
         model = model.eval()
         logger.info(f"Finish to convert model")
@@ -305,12 +323,12 @@ class _BaseAutoModelClass:
 
     @classmethod
     def load_convert(cls, q_k, optimize_model, device, modules_to_not_convert,
-                     group_size=0, *arg, **kwarg):
+                     group_size=0, imatrix_data=None, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_QuantizedLinear
 
         replace_with_QuantizedLinear(optimize_model, q_k, device=device,
                                      modules_to_not_convert=modules_to_not_convert,
-                                     group_size=group_size)
+                                     group_size=group_size, imatrix=imatrix_data)
 
     @classmethod
     def load_convert_cpu(cls, q_k, optimize_model, device, modules_to_not_convert,

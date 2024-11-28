@@ -19,11 +19,15 @@ import os
 import torch
 import importlib
 from ipex_llm.transformers.npu_models.linear import QuantizedLinear
+<<<<<<< HEAD
 import tempfile
 import time
 from typing import Callable, List, Optional
 from transformers import GenerationConfig, \
     LogitsProcessorList, StoppingCriteriaList
+=======
+from ipex_llm.transformers.utils import module_name_process
+>>>>>>> f2eea036b1 (init commit)
 
 
 def module_optimization(func) -> torch.nn.Module:
@@ -39,7 +43,7 @@ def module_optimization(func) -> torch.nn.Module:
     """
 
     def wrapper(model: torch.nn.Module, qtype, device, modules_to_not_convert,
-                group_size=0, *args, **kwargs):
+                group_size=0, imatrix=None, full_name="", *args, **kwargs):
         """Recursively apply the optimization function.
 
         Args:
@@ -49,23 +53,41 @@ def module_optimization(func) -> torch.nn.Module:
 
         """
         for name, layer in model.named_children():
+            if full_name == "":
+                cur_full_name = name
+            else:
+                cur_full_name = full_name + "." + name
+            cur_imatrix = None
+            if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
+                new_module_name, _, cur_module_name, dq_idx = module_name_process(cur_full_name)
+                if imatrix is not None and new_module_name in imatrix:
+                    cur_imatrix = imatrix[new_module_name]
+                    if cur_imatrix.shape[0] != layer.weight.shape[1]:
+                        ws = layer.weight.shape[1]
+                        cur_imatrix = cur_imatrix[ws * dq_idx : ws * (dq_idx + 1)]
+                    print(new_module_name, cur_imatrix.shape, layer.weight.shape)
             if name not in modules_to_not_convert:
                 new_layer = func(layer, qtype, device, modules_to_not_convert,
-                                 group_size=group_size, *args, **kwargs)
+                                 group_size=group_size, imatrix=cur_imatrix,
+                                 *args, **kwargs)
                 if new_layer:
                     model.add_module(name, new_layer)
                     wrapper(new_layer, qtype, device, modules_to_not_convert,
-                            group_size=group_size, *args, **kwargs)
+                            group_size=group_size, imatrix=imatrix,
+                            full_name=cur_full_name,
+                            *args, **kwargs)
                 else:
                     wrapper(layer, qtype, device, modules_to_not_convert,
-                            group_size=group_size, *args, **kwargs)
+                            group_size=group_size, imatrix=imatrix,
+                            full_name=cur_full_name,
+                            *args, **kwargs)
 
     return wrapper
 
 
 @module_optimization
 def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
-                                 group_size):
+                                 group_size, imatrix):
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
@@ -79,7 +101,8 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
         enable_scale_search = os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0"
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device,
-                                             enable_scale_search=enable_scale_search)
+                                             enable_scale_search=enable_scale_search,
+                                             imatrix=imatrix)
         return QuantizedLinear(qweights, scale, layer.bias,
                                group_size=group_size)
 
