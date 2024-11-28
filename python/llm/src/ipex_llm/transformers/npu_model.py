@@ -183,6 +183,10 @@ class _BaseAutoModelClass:
             from intel_npu_acceleration_library.compiler import create_npu_kernels
 
             if optimize_model:
+                #TODO: enable mixed_precision when pipeline=True
+                if pipeline:
+                    mixed_precision = False
+
                 invalidInputError(
                     max_prompt_len < max_context_len,
                     (
@@ -282,7 +286,8 @@ class _BaseAutoModelClass:
                         group_size=quantization_group_size,
                         qtype=qtype,
                         convert_model=convert_model,
-                        save_directory=save_directory)
+                        save_directory=save_directory,
+                        mixed_precision=mixed_precision)
         model.save_low_bit = types.MethodType(save_low_bit, model)
         return model
 
