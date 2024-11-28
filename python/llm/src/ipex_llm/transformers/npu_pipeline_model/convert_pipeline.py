@@ -195,7 +195,8 @@ def convert_llm(model: torch.nn.Module,
                 group_size: int,
                 qtype: str,
                 convert_model: bool=False,
-                save_directory: str=None):
+                save_directory: str=None,
+                fuse_layers: int=None):
     # whether to set layernorm weight as const
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
     if group_size == 0:
@@ -216,7 +217,8 @@ def convert_llm(model: torch.nn.Module,
                                n_splits_linear,
                                n_splits_down_proj,
                                group_size,
-                               save_directory)
+                               save_directory,
+                               fuse_layers=fuse_layers)
         return 0
     if model.config.model_type == "llama":
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -422,18 +424,22 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            n_splits_linear: int,
                            n_splits_down_proj: int,
                            group_size: int,
-                           save_directory: str=None):
+                           save_directory: str=None,
+                           fuse_layers: int=None):
     os.mkdir(save_directory)
     weight_dir = os.path.join(save_directory, "model_weights")
     os.mkdir(weight_dir)
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
 
     if model.config.model_type == "qwen2":
-        if model.config.hidden_size == 1536:
-            # Qwen2-1.5B-Instruct
-            fused_layers = 1
+        if group_size == 0:
+            if model.config.hidden_size == 1536:
+                # Qwen2-1.5B-Instruct
+                fused_layers = 1 if fuse_layers is None else fuse_layers
+            else:
+                fused_layers = 2 if fuse_layers is None else fuse_layers
         else:
-            fused_layers = 2
+            fuse_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
@@ -469,20 +475,34 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         embedding_post = False
         cos_sin_input = False
         use_prefill_sdp = False
-        if model.config.vocab_size == 32000:
-            # for Llama2-7B
-            fused_layers = 4
-            use_prefill_sdp = True
-        else:
-            if model.config.intermediate_size == 8192:
-                # llama3.2 1B & # llama3.2 3B
-                embedding_post = True
-                cos_sin_input = True
-                fused_layers = 2
-            else:
-                # for Llama3-8B
-                fused_layers = 2
+        if group_size == 0:
+            if model.config.vocab_size == 32000:
+                # for Llama2-7B
+                fused_layers = 4 if fuse_layers is None else fuse_layers
                 use_prefill_sdp = True
+            else:
+                if model.config.intermediate_size == 8192:
+                    # llama3.2 1B & # llama3.2 3B
+                    embedding_post = True
+                    cos_sin_input = True
+                    fused_layers = 2 if fuse_layers is None else fuse_layers
+                else:
+                    # for Llama3-8B
+                    fused_layers = 2 if fuse_layers is None else fuse_layers
+                    use_prefill_sdp = True
+        else:
+            if model.config.vocab_size == 32000:
+                # for Llama2-7B
+                use_prefill_sdp = True
+            else:
+                if model.config.intermediate_size == 8192:
+                    # llama3.2 1B & # llama3.2 3B
+                    embedding_post = True
+                    cos_sin_input = True
+                else:
+                    # for Llama3-8B
+                    use_prefill_sdp = True
+            fuse_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
@@ -518,7 +538,10 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                             save_directory, weight_dir, transpose_value_cache, max_prompt_len,
                             group_size, layernorm_const, "prefill")
     elif model.config.model_type == "minicpm":
-        fused_layers = 4
+        if group_size == 0:
+            fused_layers = 4 if fuse_layers is None else fuse_layers
+        else:
+            fuse_layers = len(model.model.layers) if fuse_layers is None else fuse_layers
         update_dict = {"kv_len": kv_len,
                        "num_head": model.model.layers[0].self_attn.num_heads,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
