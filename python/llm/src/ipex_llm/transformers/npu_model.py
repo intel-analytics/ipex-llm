@@ -136,6 +136,7 @@ class _BaseAutoModelClass:
         mock_device = kwargs.pop('device', None)  # For mock on CPU
         convert_model = kwargs.pop('convert_model', False)
         save_directory = kwargs.pop('save_directory', None)
+        fuse_layers = kwargs.pop('fuse_layers', None)
 
         invalidInputError(
             quantization_group_size in [0, 32, 64, 128],
@@ -204,6 +205,7 @@ class _BaseAutoModelClass:
                     "transpose_value_cache": transpose_value_cache,
                     "convert_model": convert_model,
                     "save_directory": save_directory,
+                    "fuse_layers": fuse_layers
                 }
                 model = cls.optimize_npu_model(*args, **optimize_kwargs)
             else:
@@ -243,6 +245,7 @@ class _BaseAutoModelClass:
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
         convert_model = kwargs.pop('convert_model', False)
         save_directory = kwargs.pop('save_directory', None)
+        fuse_layers = kwargs.pop('fuse_layers', None)
 
         if hasattr(model, "llm"):
             llm = model.llm
@@ -282,7 +285,8 @@ class _BaseAutoModelClass:
                         group_size=quantization_group_size,
                         qtype=qtype,
                         convert_model=convert_model,
-                        save_directory=save_directory)
+                        save_directory=save_directory,
+                        fuse_layers=fuse_layers)
         model.save_low_bit = types.MethodType(save_low_bit, model)
         return model
 
