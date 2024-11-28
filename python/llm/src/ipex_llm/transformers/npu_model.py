@@ -144,10 +144,6 @@ class _BaseAutoModelClass:
         else:
             imatrix_data = None
 
-        print("imatrix data is")
-        print(imatrix_data.keys())
-        print(imatrix_data['27_down'].shape)
-
         invalidInputError(
             quantization_group_size in [0, 32, 64, 128],
             (
@@ -259,7 +255,6 @@ class _BaseAutoModelClass:
         save_directory = kwargs.pop('save_directory', None)
         fuse_layers = kwargs.pop('fuse_layers', None)
         imatrix_data = kwargs.pop('imatrix_data', None)
-        print(imatrix_data)
 
         if hasattr(model, "llm"):
             llm = model.llm
@@ -269,11 +264,8 @@ class _BaseAutoModelClass:
         with torch.no_grad():
             model.config.update({"mixed_precision": mixed_precision})
             model.config.update({"group_size": quantization_group_size})
-            print(model)
             optimize_llm_pre(model, qtype, mixed_precision,
                              quantization_group_size=quantization_group_size)
-            print(args)
-            print(kwargs)
             cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
                              quantization_group_size, imatrix_data,
                              *args, **kwargs)
