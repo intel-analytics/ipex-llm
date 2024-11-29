@@ -252,6 +252,8 @@ def ggml_convert_qtype(tensor: torch.Tensor, qtype: int,
                 else:
                     enable_scale_search = True
                     print("enter here")
+                    imatrix = imatrix.data.data_ptr()
+                    imatrix = ctypes.cast(imatrix, ctypes.POINTER(ctypes.c_float))
                     ggml.ggml_quantize_tensor_rtn_with_weights(src, dst, scale_ptr,
                                                                qtype, n,
                                                                k, hist,
