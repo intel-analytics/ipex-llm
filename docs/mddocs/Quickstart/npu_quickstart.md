@@ -197,3 +197,7 @@ You could try to use group-wise quantization for better outputs.
 ### 2. `IPEX_LLM_NPU_QUANTIZATION_OPT`
 
 You could set environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` before loading the model to further enhance model accuracy of low-bit models.
+
+### 3. Mixed Precision
+
+When loading the model with Auto Model class from `ipex_llm.transformers.npu_model`, you could try to set parameter `mixed_precision=True` to enable mixed precision optimization when encountering output problems.
