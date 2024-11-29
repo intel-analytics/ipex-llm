@@ -641,7 +641,7 @@ def transformers_int4_npu_win(repo_id,
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
                                                      optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
                                                      quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
-                                                     save_directory=save_directory, use_cache=True, attn_implementation="eager").eval()
+                                                     mixed_precision=True, save_directory=save_directory, use_cache=True, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     load_time = end - st
