@@ -85,10 +85,10 @@ done
 
 ## 4. Run Optimized Models (Experimental)
 The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU, including
-- [Llama2-7B](./llama.py)
-- [Llama3-8B](./llama.py)
-- [Llama3.2-1B](./llama.py)
-- [Llama3.2-3B](./llama.py)
+- [Llama2-7B](./llama2.py)
+- [Llama3-8B](./llama3.py)
+- [Llama3.2-1B](./llama3.py)
+- [Llama3.2-3B](./llama3.py)
 - [Qwen2-1.5B](./qwen.py)
 - [Qwen2.5-3B](./qwen.py)
 - [Qwen2.5-7B](./qwen.py)
@@ -96,44 +96,34 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [MiniCPM-2B](./minicpm.py)
 - [Baichuan2-7B](./baichuan2.py)
 
-### Recommended NPU Driver Version for MTL Users
-#### 32.0.100.2540
-Supported models: Llama2-7B, Llama3-8B, Qwen2-1.5B, MiniCPM-1B, MiniCPM-2B, Baichuan2-7B
-
-### Recommended NPU Driver Version for LNL Users
-#### 32.0.100.2625
-Supported models: Llama2-7B, MiniCPM-1B, Baichuan2-7B
-#### 32.0.101.2715
-Supported models: Llama3-8B, MiniCPM-2B, Qwen2-1.5B, Qwen2.5-7B
-
 ### Run
 ```cmd
 :: to run Llama-2-7b-chat-hf
-python llama.py
+python llama2.py --save-directory <converted_model_path>
 
-:: to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
-python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct
+:: to run Meta-Llama-3-8B-Instruct
+python llama3.py --save-directory <converted_model_path>
 
 :: to run Llama-3.2-1B-Instruct
-python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-1B-Instruct
+python llama3.py --repo-id-or-model-path meta-llama/Llama-3.2-1B-Instruct --save-directory <converted_model_path>
 
 :: to run Llama-3.2-3B-Instruct
-python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct
+python llama3.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct --save-directory <converted_model_path>
 
-:: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen.py
+:: to run Qwen2-1.5B-Instruct
+python qwen.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --low_bit sym_int8 --save-directory <converted_model_path>
 
-:: to run Qwen2.5-3B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --low_bit sym_int8
+:: to run Qwen2.5-3B-Instruct
+python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --low_bit sym_int8 --save-directory <converted_model_path>
 
-:: to run Qwen2.5-7B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct
+:: to run Qwen2.5-7B-Instruct
+python qwen.py --save-directory <converted_model_path>
 
 :: to run MiniCPM-1B-sft-bf16
-python minicpm.py
+python minicpm.py --save-directory <converted_model_path>
 
-:: to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
-python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16
+:: to run MiniCPM-2B-sft-bf16
+python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --save-directory <converted_model_path>
 
 :: to run Baichuan2-7B-Chat
 python baichuan2.py
@@ -147,6 +137,7 @@ Arguments info:
 - `--max-context-len MAX_CONTEXT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
 - `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `512`.
 - `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
+- `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model.
 
 ### Troubleshooting
 
@@ -154,40 +145,10 @@ Arguments info:
 If you encounter `TypeError: can't convert meta device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.` error when loading lowbit model, please try re-saving the lowbit model with the example script you are currently using. Please note that lowbit models saved by `qwen.py`, `llama.py`, etc. cannot be loaded by `generate.py`.
 
 #### Output Problem
-If you encounter output problem, please try to disable the optimization of transposing value cache with following command:
+If you encounter output problem, please try to disable the optimization of transposing value cache such as the following command:
 ```cmd
 :: to run Llama-2-7b-chat-hf
-python llama.py --disable-transpose-value-cache
-
-:: to run Meta-Llama-3-8B-Instruct (LNL driver version: 32.0.101.2715)
-python llama.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --disable-transpose-value-cache
-
-:: to run Llama-3.2-1B-Instruct
-python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-1B-Instruct --disable-transpose-value-cache
-
-:: to run Llama-3.2-3B-Instruct
-python llama.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct --disable-transpose-value-cache
-
-:: to run Qwen2-1.5B-Instruct (LNL driver version: 32.0.101.2715)
-python qwen.py --disable-transpose-value-cache
-
-:: to run Qwen2.5-7B-Instruct LNL driver version: 32.0.101.2715)
-python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --disable-transpose-value-cache
-
-:: to run MiniCPM-1B-sft-bf16
-python minicpm.py --disable-transpose-value-cache
-
-:: to run MiniCPM-2B-sft-bf16 (LNL driver version: 32.0.101.2715)
-python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --disable-transpose-value-cache
-
-:: to run Baichuan2-7B-Chat
-python baichuan2.py --disable-transpose-value-cache
-```
-
-For [Qwen2.5-7B](./qwen.py), you could also try to enable mixed precision optimization when encountering output problems:
-
-```cmd
-python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --mixed-precision
+python llama2.py --save-directory <converted_model_path> --disable-transpose-value-cache
 ``` 
 
 #### Better Performance with High CPU Utilization

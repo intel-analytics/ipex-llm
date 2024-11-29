@@ -52,9 +52,6 @@ if __name__ == "__main__":
     parser.add_argument('--low_bit', type=str, default="sym_int4",
                         help='Load in low bit to use')
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
-    parser.add_argument("--intra-pp", type=int, default=None)
-    parser.add_argument("--inter-pp", type=int, default=None)
-    parser.add_argument("--mixed-precision", action='store_false')
     parser.add_argument("--save-directory", type=str,
         required=True,
         help="The path of folder to save converted model, "
@@ -75,10 +72,8 @@ if __name__ == "__main__":
             optimize_model=True,
             max_context_len=args.max_context_len,
             max_prompt_len=args.max_prompt_len,
-            intra_pp=args.intra_pp,
-            inter_pp=args.inter_pp,
             transpose_value_cache=not args.disable_transpose_value_cache,
-            mixed_precision=args.mixed_precision,
+            mixed_precision=True,
             quantization_group_size=args.quantization_group_size,
             save_directory=args.save_directory
         )

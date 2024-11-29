@@ -26,6 +26,20 @@ from transformers.utils import logging
 
 logger = logging.get_logger(__name__)
 
+def get_prompt(user_input: str, chat_history: list[tuple[str, str]],
+               system_prompt: str) -> str:
+    prompt_texts = [f'<|begin_of_text|>']
+
+    if system_prompt != '':
+        prompt_texts.append(f'<|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|>')
+
+    for history_input, history_response in chat_history:
+        prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n\n{history_input.strip()}<|eot_id|>')
+        prompt_texts.append(f'<|start_header_id|>assistant<|end_header_id|>\n\n{history_response.strip()}<|eot_id|>')
+
+    prompt_texts.append(f'<|start_header_id|>user<|end_header_id|>\n\n{user_input.strip()}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n')
+    return ''.join(prompt_texts)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Predict Tokens using `generate()` API for npu model"
@@ -33,8 +47,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default="openbmb/MiniCPM-1B-sft-bf16",
-        help="The huggingface repo id for the Llama2 model to be downloaded"
+        default="meta-llama/Meta-Llama-3-8B-Instruct",
+        help="The huggingface repo id for the Llama3 model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument("--lowbit-path", type=str,
@@ -58,6 +72,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
+
     if not args.lowbit_path or not os.path.exists(args.lowbit_path):
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
@@ -82,20 +97,23 @@ if __name__ == "__main__":
             intra_pp=args.intra_pp,
             inter_pp=args.inter_pp,
             transpose_value_cache=not args.disable_transpose_value_cache,
-            trust_remote_code=True,
         )
+
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     if args.lowbit_path and not os.path.exists(args.lowbit_path):
         model.save_low_bit(args.lowbit_path)
 
+    DEFAULT_SYSTEM_PROMPT = """\
+    """
+
     print("-" * 80)
     print("done")
     with torch.inference_mode():
-
         print("finish to load")
         for i in range(5):
-            _input_ids = tokenizer.encode("<用户>{}<AI>".format(args.prompt), return_tensors="pt")
+            prompt = get_prompt(args.prompt, [], system_prompt=DEFAULT_SYSTEM_PROMPT)
+            _input_ids = tokenizer.encode(prompt, return_tensors="pt")
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(
