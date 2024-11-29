@@ -35,7 +35,7 @@ test_api:
   # - "bigdl_ipex_int8"                     # on Intel CPU, (qtype=int8)
   # - "speculative_cpu"                     # on Intel CPU, inference with self-speculative decoding
   # - "deepspeed_transformer_int4_cpu"      # on Intel CPU, deepspeed autotp inference
-  - "transformers_int4_npu_win"           # on Intel NPU for Windows,  transformer-like API, (qtype=int4)
+  # - "transformers_int4_npu_win"           # on Intel NPU for Windows,  transformer-like API, (qtype=int4)
   # - "transformers_int4_loadlowbit_npu_win" # on Intel NPU for Windows, transformer-like API, (qtype=int4), use load_low_bit API. Please make sure you have used the save_npu.py to save the converted low bit model
   # - "transformers_int4_npu_pipeline_win"  # on Intel NPU for Windows,  transformer-like API, (qtype=int4)
 cpu_embedding: False # whether put embedding to CPU
