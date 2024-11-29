@@ -14,10 +14,16 @@
 # limitations under the License.
 
 
+from ipex_llm.utils.common.log4Error import invalidInputError
 import os
 import torch
 import importlib
 from ipex_llm.transformers.npu_models.linear import QuantizedLinear
+import tempfile
+import time
+from typing import Callable, List, Optional
+from transformers import GenerationConfig, \
+    LogitsProcessorList, StoppingCriteriaList
 
 
 def module_optimization(func) -> torch.nn.Module:
@@ -265,3 +271,110 @@ def optimize_llm_post(model: torch.nn.Module):
                                      in_features=model.lm_head.in_features).to("cpu")
             new_linear._parameters['weight'] = paramsLowBit
             model.lm_head = new_linear
+
+
+def generate(
+    self,
+    inputs: Optional[torch.Tensor] = None,
+    generation_config: Optional[GenerationConfig] = None,
+    logits_processor: Optional[LogitsProcessorList] = None,
+    stopping_criteria: Optional[StoppingCriteriaList] = None,
+    prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]]=None,
+    synced_gpus: Optional[bool] = None,
+    assistant_model: Optional["PreTrainedModel"] = None,
+    streamer: Optional["BaseStreamer"] = None,
+    **kwargs,
+):
+    # if do_print=True, output timing message
+    do_print = kwargs.pop("do_print", False)
+    time_t1 = time.perf_counter()
+    new_generate_kwargs = {}
+    for var in ['max_new_tokens', 'attention_mask', 'eos_token_id']:
+        value = kwargs.pop(var, None)
+        if value is not None:
+            new_generate_kwargs[var] = value
+
+    if isinstance(inputs[0], torch.Tensor):
+        input_list = inputs[0].flatten().tolist()
+    else:
+        input_list = inputs[0]
+    input_length = len(input_list)
+
+    new_tokens = new_generate_kwargs['max_new_tokens']
+    invalidInputError(input_length + new_tokens <= self.kv_len + 1,
+                      "Input plus output tokens should not exceed max_context_len.")
+    # TODO: may optimize this part later
+    invalidInputError(new_tokens < 1024,
+                      f"Generated tokens ({new_tokens}) exceed named pipeline limitation.")
+
+    if "eos_token_id" not in new_generate_kwargs:
+        eos = 0xffffffff
+    else:
+        eos = new_generate_kwargs["eos_token_id"]
+    output_tokens = []
+    from .npu_llm_cpp import run_decode, run_prefill, reset
+
+    token = run_prefill(self.model_ptr, input_list, self.vocab_size)
+    idx = 1
+    time_t2 = time.perf_counter()
+    output_tokens.append(torch.tensor([token]))
+    for i in range(new_tokens - 1):
+        if token == eos:
+            break
+        token = run_decode(self.model_ptr, token, self.vocab_size)
+        idx += 1
+        output_tokens.append(torch.tensor([token]))
+    output = torch.stack(output_tokens, dim=1)
+    output = torch.cat((inputs, output), dim=1)
+    time_t3 = time.perf_counter()
+
+    reset(self.model_ptr)
+    self.first_cost = time_t2 - time_t1  # seconds
+    self.rest_cost_mean = (time_t3 - time_t2) / (idx - 1)  # seconds
+    self.encoder_time = 0.0
+
+    if do_print:
+        print(f" Number of input tokens: {input_length}")
+        print(f" Generated tokens: {idx}")
+        print(f" First token generation time: {(time_t2 - time_t1):.2f} s")
+        print(f" Generation average latency: {(time_t3 - time_t2) * 1000 /(idx - 1):.2f} ms, "
+              f"({(idx - 1)/(time_t3 - time_t2):.2f} token/s)")
+        print(f" Generation time: {(time_t3 - time_t1):.2f} s\n")
+
+    return output
+
+
+def optimize_llm_single_process(
+    model: torch.nn.Module,
+    kv_len: int,
+    max_prompt_len: int,
+    transpose_value_cache: bool,
+    group_size: int,
+    qtype: str,
+    save_directory: str,
+    fuse_layers: int=None
+):
+    from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm
+    from .npu_llm_cpp import load_model_from_file
+
+    convert_llm(model,
+                kv_len=kv_len,
+                max_prompt_len=max_prompt_len,
+                transpose_value_cache=transpose_value_cache,
+                group_size=group_size,
+                qtype=qtype,
+                convert_model=True,
+                save_directory=save_directory,
+                fuse_layers=fuse_layers)
+    try:
+        model_ptr = load_model_from_file(save_directory)
+        model.kv_len = kv_len
+        model.model_ptr = model_ptr
+        model.vocab_size = model.config.vocab_size
+    except:
+        invalidInputError(False,
+                          "False to InitLLMPipeline.")
+    # patch generate function
+    import types
+    model.generate = types.MethodType(generate, model)
+    return model
