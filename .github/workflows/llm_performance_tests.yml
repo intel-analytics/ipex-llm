@@ -148,6 +148,7 @@ jobs:
           #   exit 1
           # fi
           pip install --pre --upgrade ipex-llm[xpu_arc]==2.2.0b20241130.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+          unset OCL_ICD_VENDORS
 
       - name: Test installed xpu version
         shell: bash
