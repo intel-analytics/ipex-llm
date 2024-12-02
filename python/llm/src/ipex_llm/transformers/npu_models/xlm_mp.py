@@ -721,7 +721,7 @@ def replace_with_Layernorm(layer, qtype=None, device='NPU',
 
 @module_optimization
 def replace_with_FP16Linear(layer, qtype, device, modules_to_not_convert,
-                            group_size):
+                            group_size, imatrix=None):
     from ipex_llm.transformers.npu_models.linear import Linear
     if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
         return Linear(layer.weight, layer.bias)

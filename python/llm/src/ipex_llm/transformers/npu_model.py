@@ -183,7 +183,7 @@ class _BaseAutoModelClass:
             with torch.no_grad():
                 # Only mock quantization_group_size=0 for now
                 cls.load_convert_cpu(qtype, model, "cpu", modules_to_not_convert, 0,
-                                     *args, **kwargs)
+                                     imatrix_data, *args, **kwargs)
             model = model.eval()
             logger.info(f"Finish to convert model")
         else:
@@ -220,7 +220,7 @@ class _BaseAutoModelClass:
                 optimize_llm(model)
                 with torch.no_grad():
                     cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
-                                     quantization_group_size, imatrix_data=imatrix_data,
+                                     quantization_group_size, imatrix_data,
                                      *args, **kwargs)
                     if hasattr(model, "llm"):
                         create_npu_kernels(model.llm)
@@ -325,12 +325,12 @@ class _BaseAutoModelClass:
 
     @classmethod
     def load_convert_cpu(cls, q_k, optimize_model, device, modules_to_not_convert,
-                         group_size=0, *arg, **kwarg):
+                         group_size=0, imatrix_data=None, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.convert import replace_with_DequantizedLinear
 
         replace_with_DequantizedLinear(optimize_model, q_k, device=device,
                                        modules_to_not_convert=modules_to_not_convert,
-                                       group_size=group_size)
+                                       group_size=group_size, imatrix=imatrix_data)
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
@@ -737,7 +737,7 @@ class EmbeddingModel(_BaseAutoModelClass):
             optimize_llm_pre(model, qtype, mixed_precision,
                              quantization_group_size=quantization_group_size)
             cls.load_convert_fp16(qtype, model.encoder, "cpu", modules_to_not_convert,
-                                  quantization_group_size, *args, **kwargs)
+                                  quantization_group_size, None, *args, **kwargs)
             create_npu_kernels(model.encoder)
         model = model.eval()
         logger.info(f"Finish to convert model")
@@ -752,11 +752,11 @@ class EmbeddingModel(_BaseAutoModelClass):
 
     @classmethod
     def load_convert_fp16(cls, q_k, optimize_model, device, modules_to_not_convert,
-                          group_size=0, *arg, **kwarg):
+                          group_size=0, imatrix_data=None, *arg, **kwarg):
         from ipex_llm.transformers.npu_models.xlm_mp import replace_with_FP16Linear
         replace_with_FP16Linear(optimize_model, q_k, device=device,
                                 modules_to_not_convert=modules_to_not_convert,
-                                group_size=group_size)
+                                group_size=group_size, imatrix=imatrix_data)
 
     def encode(self,
                sentences,
