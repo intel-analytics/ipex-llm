@@ -45,11 +45,9 @@ def ignore_argument(kwargs: dict, key: "str"):
 
 
 def save_low_bit(self, model_dir: str, *args, **kwargs):
-<<<<<<< HEAD
-=======
     if hasattr(self, "save_directory"):
+        warnings.warn(f"Model is already saved at {self.save_directory}")
         return 1
->>>>>>> 714887ef85 (save_directory is required argument for all models)
     origin_device = self.device
     kwargs["safe_serialization"] = False
     self.save_pretrained(model_dir, *args, **kwargs)
