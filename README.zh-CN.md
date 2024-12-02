@@ -194,6 +194,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 - [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md): 使用 `ipex-llm` 运行 `oobabooga` **WebUI** 
 - [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md): 使用 **Axolotl** 和 `ipex-llm` 进行 LLM 微调
 - [Benchmarking](docs/mddocs/Quickstart/benchmark_quickstart.md):  在 Intel GPU 和 CPU 上运行**性能基准测试**（延迟和吞吐量）
+- [NPU](docs/mddocs/Quickstart/npu_quickstart.md): 在 Intel **NPU** 上运行 `ipex-llm`
 
 ### 应用
 - [GraphRAG](docs/mddocs/Quickstart/graphrag_quickstart.md): 基于 `ipex-llm` 使用本地 LLM 运行 Microsoft 的 `GraphRAG`
