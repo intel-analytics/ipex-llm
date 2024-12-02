@@ -34,6 +34,7 @@
   - [Run IPEX-LLM serving on Multiple Intel GPUs using DeepSpeed AutoTP and FastApi](./Quickstart/deepspeed_autotp_fastapi_quickstart.md)
   - [Run RAGFlow with IPEX-LLM on Intel GPU](./Quickstart/ragflow_quickstart.md)
   - [Run GraphRAG with IPEX-LLM on Intel GPU](./Quickstart/graphrag_quickstart.md)
+  - [Run IPEX-LLM on Intel NPU](./Quickstart/npu_quickstart.md)
 - [Key Features](./Overview/KeyFeatures/)
   - [PyTorch API](./Overview/KeyFeatures/optimize_model.md)
   - [`transformers`-style API](./Overview/KeyFeatures/hugging_face_format.md)

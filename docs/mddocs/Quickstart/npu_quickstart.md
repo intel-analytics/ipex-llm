@@ -38,7 +38,7 @@ To update driver for Intel NPU:
 
    - Open **Device Manager** and locate **Neural processors** -> **Intel(R) AI Boost** in the device list
    - Right-click on **Intel(R) AI Boost** and select **Update driver**
-   - Choose **Browse my computer for drivers**, navigate to the folder where you extracted the driver, and select **Next**
+   - Choose **Browse my computer for drivers**, navigate to the folder where you extracted the driver zip file, and select **Next**
    - Wait for the installation finished
 
 A system reboot is necessary to apply the changes after the installation is complete.
@@ -79,7 +79,6 @@ conda activate llm-npu
 With the `llm-npu` environment active, use `pip` to install `ipex-llm` for NPU:
 
 ```cmd
-conda create -n llm-npu python=3.11
 conda activate llm-npu
 
 pip install --pre --upgrade ipex-llm[npu]
@@ -141,16 +140,16 @@ IPEX-LLM provides several optimization methods for enhancing the accuracy of mod
 
 ### 1. `IPEX_LLM_NPU_QUANTIZATION_OPT` Env
 
-You could set environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` before loading the model to further enhance model accuracy of low-bit models.
+You could set environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` before loading & optimizing the model with `from_pretrained` function from `ipex_llm.transformers.npu_model` Auto Model class to further enhance model accuracy of low-bit models.
 
 ### 2. Mixed Precision
 
-When loading the model with Auto Model class from `ipex_llm.transformers.npu_model`, you could try to set parameter `mixed_precision=True` to enable mixed precision optimization when encountering output problems.
+When loading & optimizing the model with `from_pretrained` function of `ipex_llm.transformers.npu_model` Auto Model class, you could try to set parameter `mixed_precision=True` to enable mixed precision optimization when encountering output problems.
 
 ### 3. Group Size
 
-IPEX-LLM low-bit optimizations support both channel-wise and group-wise quantization on Intel NPU. When loading the model with Auto Model class from `ipex_llm.transformers.npu_model`, parameter `quantization_group_size` will control whether to use channel-wise or group-wise quantization.
+IPEX-LLM low-bit optimizations support both channel-wise and group-wise quantization on Intel NPU. When loading & optimizing the model with `from_pretrained` function of Auto Model class from `ipex_llm.transformers.npu_model`, parameter `quantization_group_size` will control whether to use channel-wise or group-wise quantization.
 
-If setting `quantization_group_size=0`, IPEX-LLM will use channel-wise quantization. If setting `quantization_group_size` larger than 0, e.g. `quantization_group_size=128`, IPEX-LLM will use group-wise quantization with group size to be 128.
+If setting `quantization_group_size=0`, IPEX-LLM will use channel-wise quantization. If setting `quantization_group_size=128`, IPEX-LLM will use group-wise quantization with group size 128.
 
 You could try to use group-wise quantization for better outputs.

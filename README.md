@@ -194,6 +194,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md): running `ipex-llm` in `oobabooga` **WebUI**
 - [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md): running `ipex-llm` in **Axolotl** for LLM finetuning
 - [Benchmarking](docs/mddocs/Quickstart/benchmark_quickstart.md): running  (latency and throughput) **benchmarks** for `ipex-llm` on Intel CPU and GPU
+- [NPU](docs/mddocs/Quickstart/npu_quickstart.md): running `ipex-llm` on Intel **NPU**
 
 ### Applications
 - [GraphRAG](docs/mddocs/Quickstart/graphrag_quickstart.md): running Microsoft's `GraphRAG` using local LLM with `ipex-llm`
