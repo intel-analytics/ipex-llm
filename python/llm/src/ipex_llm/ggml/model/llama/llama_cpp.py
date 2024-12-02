@@ -1027,9 +1027,10 @@ def ggml_quantize_tensor_rtn_with_weights(
     k: ctypes.c_int,
     hist,  # type: ctypes.Array[ctypes.c_int64] # type: ignore
     scale_search: ctypes.c_bool,
-    weights, # type: ctypes.Array[ctypes.c_float] # type: ignore
+    weights,  # type: ctypes.Array[ctypes.c_float] # type: ignore
 ) -> int:
-    return _lib.ggml_quantize_tensor_rtn_with_weights(src, dst, scale_ptr, qtype, n, k, hist, scale_search, weights)
+    return _lib.ggml_quantize_tensor_rtn_with_weights(src, dst, scale_ptr, qtype, n, k,
+                                                      hist, scale_search, weights)
 
 
 _lib.ggml_quantize_tensor_rtn_with_weights.argtypes = [
