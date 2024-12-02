@@ -254,7 +254,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
   
 | 模型       | CPU 示例                                  | GPU 示例                                  | NPU 示例                                  |
 |----------- |------------------------------------------|-------------------------------------------|-------------------------------------------|
-| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/vicuna) |[link](python/llm/example/GPU/HuggingFace/LLM/vicuna)| [link]() |
+| LLaMA  | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/vicuna) |[link](python/llm/example/GPU/HuggingFace/LLM/vicuna)| [link]() |
 | LLaMA 2    | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](python/llm/example/GPU/HuggingFace/LLM/llama2)  | [link1](python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples)  |
 | LLaMA 3    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3) | [link](python/llm/example/GPU/HuggingFace/LLM/llama3)  | [link1](python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples)  |
 | LLaMA 3.1    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3.1) | [link](python/llm/example/GPU/HuggingFace/LLM/llama3.1)  |
