@@ -324,7 +324,7 @@ Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaM
 | CodeGemma | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegemma) | [link](python/llm/example/GPU/HuggingFace/LLM/codegemma) |
 | Command-R/cohere | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/cohere) | [link](python/llm/example/GPU/HuggingFace/LLM/cohere) |
 | CodeGeeX2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegeex2) | [link](python/llm/example/GPU/HuggingFace/LLM/codegeex2) |
-| MiniCPM | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm) | [link](python/llm/example/GPU/HuggingFace/LLM/minicpm) | [link](python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples) |
+| MiniCPM | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm) | [link](python/llm/example/GPU/HuggingFace/LLM/minicpm) | [link1](python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples) |
 | MiniCPM3 |  | [link](python/llm/example/GPU/HuggingFace/LLM/minicpm3) |
 | MiniCPM-V |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V) |
 | MiniCPM-V-2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm-v-2) | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V-2) |
