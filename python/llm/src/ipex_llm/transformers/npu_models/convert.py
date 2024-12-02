@@ -326,7 +326,8 @@ def generate(
                       f"Generated tokens ({new_tokens}) exceed named pipeline limitation.")
 
     if "eos_token_id" not in new_generate_kwargs:
-        eos = 0xffffffff
+        generation_config = GenerationConfig.from_model_config(self.config)
+        eos = generation_config.eos_token_id
     else:
         eos = new_generate_kwargs["eos_token_id"]
     output_tokens = []
