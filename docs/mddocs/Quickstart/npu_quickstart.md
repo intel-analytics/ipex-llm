@@ -1,15 +1,17 @@
-# Install IPEX-LLM on Windows with Intel NPU
+llm# Install IPEX-LLM on Windows with Intel NPU
 
-IPEX-LLM provides NPU support for LLM acceleration on Intel Core™ Ultra Processers (Series 2), and offers both Python and C++ API. This guide not only demonstrates how to install IPEX-LLM on Windows with Intel NPU, but also includes a quick example of running an LLM on Intel NPU with IPEX-LLM Python/C++ API.
+IPEX-LLM provides NPU support for LLM acceleration on Intel Core™ Ultra Processers (Series 2), and offers both Python and C++ API. This guide demonstrates:
+
+- How to install IPEX-LLM for Intel NPU on Intel Core™ Ultra Processers (Series 2)
+- Python and C++ APIs for running IPEX-LLM on Intel NPU
 
 ## Table of Contents
 
 - [Install Prerequisites](#install-prerequisites)
 - [Install `ipex-llm` with NPU Support](#install-ipex-llm-with-npu-support)
 - [Runtime Configurations](#runtime-configurations)
-- [A Quick Example](#a-quick-example)
-  - [Python API](#python-api)
-  - [C++ API](#c-api)
+- [Python API](#python-api)
+- [C++ API](#c-api)
 - [Accuracy Tuning](#accuracy-tuning)
 
 ## Install Prerequisites
@@ -67,7 +69,7 @@ conda activate llm
 ```
 
 > [!TIP]
-> `ipex-llm` for NPU supports 3.10 and 3.11.
+> `ipex-llm` for NPU supports Python 3.10 and 3.11.
 
 ## Install `ipex-llm` with NPU Support
 
@@ -88,116 +90,64 @@ For `ipex-llm` NPU support, set the following environment variable with active `
 set BIGDL_USE_NPU=1
 ```
 
-## A Quick Example
+## Python API
 
-Now let's play with a real LLM on Intel NPU. We'll be using the [Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) model, a 7.61 billion parameter LLM for this demonstration. Follow the steps below to setup and run the model, and observe how it responds to a prompt "What is AI?". 
+IPEX-LLM offers Hugging Face `transformers`-like Python API, enabling seamless running of Hugging Face transformers models on Intel NPU.
 
-**IPEX-LLM on Intel NPU offers two API options: Python and C++**. You can choose the one that best suits your requirements.
+Refer to the following table for examples of verified models:
+[](../../../python/llm/)
+| Model | Model link | Example link |
+|:--|:--|:--|
+| LLaMA 2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
+| LLaMA 3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
+| LLaMA 3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
+| Qwen 2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct), [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
+| Qwen 2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
+| MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
+| Baichuan 2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
+| MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
+| MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
+| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
+| Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
 
-### Python API
-
-#### Step 1: Create `demo.py`
-
-Create a new file named `demo.py` and insert the code snippet below to run [Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) model with IPEX-LLM optimizations on NPU:
-
-```python
-# Copy/Paste the contents to a new file demo.py
-
-import torch
-from ipex_llm.transformers.npu_model import AutoModelForCausalLM
-from transformers import AutoTokenizer
-
-print('Now start loading Tokenizer and optimizing Model...')
-tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-7B-Instruct",
-                                          trust_remote_code=True)
-
-# Load & optimize model using ipex-llm and load it to NPU
-model = AutoModelForCausalLM.from_pretrained(
-    "Qwen/Qwen2.5-7B-Instruct",
-    torch_dtype=torch.float16,
-    trust_remote_code=True,
-    attn_implementation="eager",
-    load_in_low_bit="sym_int4",
-    optimize_model=True,
-    max_context_len=1024,
-    max_prompt_len=512,
-    mixed_precision=True,
-    quantization_group_size=0,
-    save_directory="./save_converted_model_dir"
-)
-print('Successfully loaded Tokenizer and optimized Model!')
-
-# Format the prompt
-# you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://huggingface.co/Qwen/Qwen2.5-7B-Instruct#quickstart
-question = "What is AI?"
-messages = [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": question}
-]
-text = tokenizer.apply_chat_template(
-    messages,
-    tokenize=False,
-    add_generation_prompt=True
-)
-
-# Generate predicted tokens
-with torch.inference_mode():
-    input_ids = tokenizer.encode(text, return_tensors="pt")
-
-    output = model.generate(input_ids,
-                            do_sample=False,
-                            max_new_tokens=32)
-    output_str = tokenizer.decode(output[0], skip_special_tokens=False)
-    print(output_str)
-```
 
 > [!TIP]
-> When loading the model:
->
-> - `ipex-llm` on NPU currently supports low-bit optimizations `load_in_low_bit='sym_int4'`/`'sym_int8'`.
-> - `max_context_len` defines the maximum sequence length, which is the total number of token for both actual input and output combined.
-> - The actual input token number should be smaller than `max_prompt_len`.
+> You could refer to [here](../../../python/llm/example/NPU/HF-Transformers-AutoModels) for full IPEX-LLM examples on Intel NPU.
 
+## C++ API
 
-#### Step 2: Run `demo.py`
+IPEX-LLM also provides C++ API for running Hugging Face `transformers` models.
 
-Run `demo.py` within the activated Python environment using the following command:
+Refer to the following table for examples of verified models:
 
-```cmd
-python demo.py
-```
+| Model | Model link | Example link |
+|:--|:--|:--|
+| LLaMA 2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples) |
+| LLaMA 3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples) |
+| LLaMA 3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples) |
+| Qwen 2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct), [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples) |
+| Qwen 2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples) |
+| MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples) |
 
-#### Example output
-
-TO BE ADDED
-
-### C++ API
-
-TO BE ADDED
-
-#### Step 1: Convert model with `convert.py`
-#### Step 2: Create `demo.cpp`
-#### Step 3: Build `demo.exe`
-#### Step 4: Run `demo.exe`
-#### Example output
+> [!TIP]
+> You could refer to [here](../../../python/llm/example/NPU/HF-Transformers-AutoModels) for full IPEX-LLM examples on Intel NPU.
 
 ## Accuracy Tuning
 
 IPEX-LLM provides several optimization methods for enhancing the accuracy of model outputs on Intel NPU. You can select and combine these techniques to achieve better outputs based on your specific use case.
 
-### 1. Channel-Wise and Group-Wise Quantization
+### 1. `IPEX_LLM_NPU_QUANTIZATION_OPT` Env
+
+You could set environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` before loading the model to further enhance model accuracy of low-bit models.
+
+### 2. Mixed Precision
+
+When loading the model with Auto Model class from `ipex_llm.transformers.npu_model`, you could try to set parameter `mixed_precision=True` to enable mixed precision optimization when encountering output problems.
+
+### 3. Group Size
 
 IPEX-LLM low-bit optimizations support both channel-wise and group-wise quantization on Intel NPU. When loading the model with Auto Model class from `ipex_llm.transformers.npu_model`, parameter `quantization_group_size` will control whether to use channel-wise or group-wise quantization.
 
 If setting `quantization_group_size=0`, IPEX-LLM will use channel-wise quantization. If setting `quantization_group_size` larger than 0, e.g. `quantization_group_size=128`, IPEX-LLM will use group-wise quantization with group size to be 128.
 
 You could try to use group-wise quantization for better outputs.
-
-### 2. `IPEX_LLM_NPU_QUANTIZATION_OPT`
-
-You could set environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` before loading the model to further enhance model accuracy of low-bit models.
-
-### 3. Mixed Precision
-
-When loading the model with Auto Model class from `ipex_llm.transformers.npu_model`, you could try to set parameter `mixed_precision=True` to enable mixed precision optimization when encountering output problems.
