@@ -65,7 +65,6 @@ def module_optimization(func) -> torch.nn.Module:
                     if cur_imatrix.shape[0] != layer.weight.shape[1]:
                         ws = layer.weight.shape[1]
                         cur_imatrix = cur_imatrix[ws * dq_idx : ws * (dq_idx + 1)]
-                    print(new_module_name, cur_imatrix.shape, layer.weight.shape)
             if name not in modules_to_not_convert:
                 new_layer = func(layer, qtype, device, modules_to_not_convert,
                                  group_size=group_size, imatrix=cur_imatrix,
