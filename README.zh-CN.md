@@ -252,13 +252,13 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 ## 模型验证
 50+ 模型已经在 `ipex-llm` 上得到优化和验证，包括 *LLaMA/LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM2/ChatGLM3, Baichuan/Baichuan2, Qwen/Qwen-1.5, InternLM,* 更多模型请参看下表，
   
-| 模型      | CPU 示例                                                    | GPU 示例                                                     |
-|------------|----------------------------------------------------------------|-----------------------------------------------------------------|
-| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/vicuna) |[link](python/llm/example/GPU/HuggingFace/LLM/vicuna)|
-| LLaMA 2    | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](python/llm/example/GPU/HuggingFace/LLM/llama2)  |
-| LLaMA 3    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3) | [link](python/llm/example/GPU/HuggingFace/LLM/llama3)  |
+| 模型       | CPU 示例                                  | GPU 示例                                  | NPU 示例                                  |
+|----------- |------------------------------------------|-------------------------------------------|-------------------------------------------|
+| LLaMA *(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.)* | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/vicuna) |[link](python/llm/example/GPU/HuggingFace/LLM/vicuna)| [link]() |
+| LLaMA 2    | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama2) | [link](python/llm/example/GPU/HuggingFace/LLM/llama2)  | [link1](python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples)  |
+| LLaMA 3    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3) | [link](python/llm/example/GPU/HuggingFace/LLM/llama3)  | [link1](python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples)  |
 | LLaMA 3.1    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/llama3.1) | [link](python/llm/example/GPU/HuggingFace/LLM/llama3.1)  |
-| LLaMA 3.2    |  | [link](python/llm/example/GPU/HuggingFace/LLM/llama3.2)  |
+| LLaMA 3.2    |  | [link](python/llm/example/GPU/HuggingFace/LLM/llama3.2)  | [link1](python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples)  |
 | LLaMA 3.2-Vision    |  | [link](python/llm/example/GPU/PyTorch-Models/Model/llama3.2-vision/)  |
 | ChatGLM    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm)   |    | 
 | ChatGLM2   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/chatglm2)  | [link](python/llm/example/GPU/HuggingFace/LLM/chatglm2)   |
@@ -276,15 +276,16 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 | Phoenix    | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/phoenix)   |    | 
 | StarCoder  | [link1](python/llm/example/CPU/Native-Models), [link2](python/llm/example/CPU/HF-Transformers-AutoModels/Model/starcoder) | [link](python/llm/example/GPU/HuggingFace/LLM/starcoder) | 
 | Baichuan   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan)  | [link](python/llm/example/GPU/HuggingFace/LLM/baichuan)   |
-| Baichuan2  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](python/llm/example/GPU/HuggingFace/LLM/baichuan2)  |
+| Baichuan2  | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/baichuan2) | [link](python/llm/example/GPU/HuggingFace/LLM/baichuan2)  | [link](python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental),  |
 | InternLM   | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/internlm)  | [link](python/llm/example/GPU/HuggingFace/LLM/internlm)   |
 | InternVL2   |   | [link](python/llm/example/GPU/HuggingFace/Multimodal/internvl2)   |
 | Qwen       | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen)      | [link](python/llm/example/GPU/HuggingFace/LLM/qwen)       |
 | Qwen1.5 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen1.5) | [link](python/llm/example/GPU/HuggingFace/LLM/qwen1.5) |
-| Qwen2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen2) | [link](python/llm/example/GPU/HuggingFace/LLM/qwen2) |
-| Qwen2.5 |  | [link](python/llm/example/GPU/HuggingFace/LLM/qwen2.5) |
+| Qwen2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen2) | [link](python/llm/example/GPU/HuggingFace/LLM/qwen2) | [link1](python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples)  |
+| Qwen2.5 |  | [link](python/llm/example/GPU/HuggingFace/LLM/qwen2.5) | [link1](python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental), [link2](python/llm/example/NPU/HF-Transformers-AutoModels/LLM/CPP_Examples)  |
 | Qwen-VL    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/qwen-vl)   | [link](python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl)    |
 | Qwen2-VL    || [link](python/llm/example/GPU/PyTorch-Models/Model/qwen2-vl)    |
+| Qwen2-Audio    |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/qwen2-audio)    |
 | Aquila     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila)    | [link](python/llm/example/GPU/HuggingFace/LLM/aquila)     |
 | Aquila2     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/aquila2)    | [link](python/llm/example/GPU/HuggingFace/LLM/aquila2)     |
 | MOSS       | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/moss)      |    | 
@@ -323,13 +324,15 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 | CodeGemma | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegemma) | [link](python/llm/example/GPU/HuggingFace/LLM/codegemma) |
 | Command-R/cohere | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/cohere) | [link](python/llm/example/GPU/HuggingFace/LLM/cohere) |
 | CodeGeeX2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/codegeex2) | [link](python/llm/example/GPU/HuggingFace/LLM/codegeex2) |
-| MiniCPM | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm) | [link](python/llm/example/GPU/HuggingFace/LLM/minicpm) |
+| MiniCPM | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm) | [link](python/llm/example/GPU/HuggingFace/LLM/minicpm) | [link](python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
 | MiniCPM3 |  | [link](python/llm/example/GPU/HuggingFace/LLM/minicpm3) |
 | MiniCPM-V |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V) |
-| MiniCPM-V-2 |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V-2) |
-| MiniCPM-Llama3-V-2_5 |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-Llama3-V-2_5) |
-| MiniCPM-V-2_6 |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V-2_6) | 
+| MiniCPM-V-2 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm-v-2) | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V-2) |
+| MiniCPM-Llama3-V-2_5 |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-Llama3-V-2_5) | [link](python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
+| MiniCPM-V-2_6 | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/minicpm-v-2_6) | [link](python/llm/example/GPU/HuggingFace/Multimodal/MiniCPM-V-2_6) | [link](python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
 | StableDiffusion | | [link](python/llm/example/GPU/HuggingFace/Multimodal/StableDiffusion) |
+| Bce-Embedding-Base-V1 | | | [link](python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
+| Speech_Paraformer-Large | | | [link](python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
 
 ## 官方支持
 - 如果遇到问题，或者请求新功能支持，请提交 [Github Issue](https://github.com/intel-analytics/ipex-llm/issues) 告诉我们
