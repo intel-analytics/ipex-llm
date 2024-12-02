@@ -25,7 +25,7 @@ This guide demonstrates:
 ### Update NPU Driver
 
 > [!IMPORTANT]
-> If you have NPU driver version lower than `31.0.100.3104`, it is highly recommended to update your NPU driver to the latest.
+> If you have NPU driver version lower than `32.0.100.3104`, it is highly recommended to update your NPU driver to the latest.
 
 To update driver for Intel NPU:
 
@@ -64,11 +64,11 @@ Visit [Miniforge installation page](https://conda-forge.org/download/), download
 
 After installation, open the **Miniforge Prompt**, create a new python environment `llm-npu`:
 ```cmd
-conda create -n llm python=3.11
+conda create -n llm-npu python=3.11
 ```
 Activate the newly created environment `llm-npu`:
 ```cmd
-conda activate llm
+conda activate llm-npu
 ```
 
 > [!TIP]
