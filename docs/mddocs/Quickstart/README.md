@@ -13,6 +13,7 @@ This section includes efficient guide to show you how to:
 
 ## Inference
 
+- [Run IPEX-LLM on Intel NPU](./npu_quickstart.md)
 - [Run Performance Benchmarking with IPEX-LLM](./benchmark_quickstart.md)
 - [Run Local RAG using Langchain-Chatchat on Intel GPU](./chatchat_quickstart.md)
 - [Run Text Generation WebUI on Intel GPU](./webui_quickstart.md)
@@ -25,7 +26,6 @@ This section includes efficient guide to show you how to:
 - [Run Llama 3 on Intel GPU using llama.cpp and ollama with IPEX-LLM](./llama3_llamacpp_ollama_quickstart.md)
 - [Run RAGFlow with IPEX-LLM on Intel GPU](./ragflow_quickstart.md)
 - [Run GraphRAG with IPEX-LLM on Intel GPU](./graphrag_quickstart.md)
-- [Run IPEX-LLM on Intel NPU](./npu_quickstart.md)
 
 ## Serving
 

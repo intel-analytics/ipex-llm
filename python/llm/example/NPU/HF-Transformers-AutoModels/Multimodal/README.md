@@ -98,6 +98,7 @@ The examples below show how to run the **_optimized HuggingFace & FunASR model i
 - [MiniCPM-Llama3-V-2_5](./minicpm-llama3-v2.5.py)
 - [MiniCPM-V-2_6](./minicpm_v_2_6.py)
 - [Speech_Paraformer-Large](./speech_paraformer-large.py)
+- [Bce-Embedding-Base-V1 ](./bce-embedding.py)
 
 ### 4.1 Run MiniCPM-Llama3-V-2_5 & MiniCPM-V-2_6
 ```bash
