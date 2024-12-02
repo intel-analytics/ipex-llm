@@ -18,6 +18,7 @@
   - [`bigdl-llm` Migration Guide](./Quickstart/bigdl_llm_migration.md)
   - [Install IPEX-LLM on Linux with Intel GPU](./Quickstart/install_linux_gpu.md)
   - [Install IPEX-LLM on Windows with Intel GPU](./Quickstart/install_windows_gpu.md)
+  - [Run IPEX-LLM on Intel NPU](./Quickstart/npu_quickstart.md)
   - [Run Local RAG using Langchain-Chatchat on Intel CPU and GPU](./Quickstart/chatchat_quickstart.md)
   - [Run Text Generation WebUI on Intel GPU](./Quickstart/webui_quickstart.md)
   - [Run Open WebUI with Intel GPU](./Quickstart/open_webui_with_ollama_quickstart.md)

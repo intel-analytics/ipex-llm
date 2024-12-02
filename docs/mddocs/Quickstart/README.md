@@ -13,6 +13,7 @@ This section includes efficient guide to show you how to:
 
 ## Inference
 
+- [Run IPEX-LLM on Intel NPU](./npu_quickstart.md)
 - [Run Performance Benchmarking with IPEX-LLM](./benchmark_quickstart.md)
 - [Run Local RAG using Langchain-Chatchat on Intel GPU](./chatchat_quickstart.md)
 - [Run Text Generation WebUI on Intel GPU](./webui_quickstart.md)
