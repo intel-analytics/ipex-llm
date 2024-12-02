@@ -82,6 +82,7 @@ if __name__ == "__main__":
             transpose_value_cache=not args.disable_transpose_value_cache,
         )
 
+    model.save_low_bit(r"D:\binbin\test-111")
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     print("-" * 80)
@@ -98,7 +99,7 @@ if __name__ == "__main__":
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(
-                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict, do_print=True
+                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict
             )
             end = time.time()
             print(f"Inference time: {end-st} s")
