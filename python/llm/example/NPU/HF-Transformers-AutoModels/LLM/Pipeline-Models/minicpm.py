@@ -36,12 +36,6 @@ if __name__ == "__main__":
         help="The huggingface repo id for the MiniCPM model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
-    parser.add_argument("--lowbit-path", type=str,
-        default="",
-        help="The path to the lowbit model folder, leave blank if you do not want to save. \
-             If path not exists, lowbit model will be saved there. \
-             Else, lowbit model will be loaded.",
-    )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
@@ -50,11 +44,17 @@ if __name__ == "__main__":
     parser.add_argument("--quantization_group_size", type=int, default=0)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--disable-streaming", action="store_true", default=False)
+    parser.add_argument("--save-directory", type=str,
+        required=True,
+        help="The path of folder to save converted model, "
+             "If path not exists, lowbit model will be saved there. "
+             "Else, lowbit model will be loaded.",
+    )
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    if not args.lowbit_path or not os.path.exists(args.lowbit_path):
+    if not os.path.exists(args.save_directory):
         model = AutoModelForCausalLM.from_pretrained(model_path,
                                                      optimize_model=True,
                                                      pipeline=True,
@@ -64,10 +64,11 @@ if __name__ == "__main__":
                                                      attn_implementation="eager",
                                                      quantization_group_size=args.quantization_group_size,
                                                      transpose_value_cache=not args.disable_transpose_value_cache,
-                                                     trust_remote_code=True)
+                                                     trust_remote_code=True,
+                                                     save_directory=args.save_directory)
     else:
         model = AutoModelForCausalLM.load_low_bit(
-            args.lowbit_path,
+            args.save_directory,
             attn_implementation="eager",
             torch_dtype=torch.float16,
             max_context_len=args.max_context_len,
@@ -78,9 +79,6 @@ if __name__ == "__main__":
         )
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    if args.lowbit_path and not os.path.exists(args.lowbit_path):
-        model.save_low_bit(args.lowbit_path)
 
     if args.disable_streaming:
         streamer = None

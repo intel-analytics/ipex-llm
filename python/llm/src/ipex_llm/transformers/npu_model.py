@@ -45,6 +45,11 @@ def ignore_argument(kwargs: dict, key: "str"):
 
 
 def save_low_bit(self, model_dir: str, *args, **kwargs):
+<<<<<<< HEAD
+=======
+    if hasattr(self, "save_directory"):
+        return 1
+>>>>>>> 714887ef85 (save_directory is required argument for all models)
     origin_device = self.device
     kwargs["safe_serialization"] = False
     self.save_pretrained(model_dir, *args, **kwargs)
@@ -255,6 +260,9 @@ class _BaseAutoModelClass:
         save_directory = kwargs.pop('save_directory', None)
         fuse_layers = kwargs.pop('fuse_layers', None)
         imatrix_data = kwargs.pop('imatrix_data', None)
+        invalidInputError(save_directory is not None,
+                          "Please provide the path to save converted model "
+                          "through `save_directory`.")
 
         if hasattr(model, "llm"):
             llm = model.llm
@@ -312,6 +320,8 @@ class _BaseAutoModelClass:
                         save_directory=save_directory,
                         fuse_layers=fuse_layers)
         model.save_low_bit = types.MethodType(save_low_bit, model)
+        model.save_low_bit(save_directory)
+        logger.info(f"Converted model has already saved to {save_directory}.")
         return model
 
     @classmethod

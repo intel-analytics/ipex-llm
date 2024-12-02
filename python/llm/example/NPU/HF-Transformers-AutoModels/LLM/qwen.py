@@ -49,7 +49,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument("--quantization_group_size", type=int, default=0)
-    parser.add_argument('--low_bit', type=str, default="sym_int4",
+    parser.add_argument('--low-bit', type=str, default="sym_int4",
                         help='Load in low bit to use')
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--save-directory", type=str,
@@ -109,7 +109,7 @@ if __name__ == "__main__":
             print("input length:", len(_input_ids[0]))
             st = time.time()
             output = model.generate(
-                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict
+                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict, do_print=True
             )
             end = time.time()
             print(f"Inference time: {end-st} s")

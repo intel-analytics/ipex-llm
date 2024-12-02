@@ -35,8 +35,12 @@ if __name__ == "__main__":
     )
     parser.add_argument('--load_in_low_bit', type=str, default="sym_int8",
                         help='Load in low bit to use')
-    parser.add_argument("--intra-pp", type=int, default=2)
-    parser.add_argument("--inter-pp", type=int, default=2)
+    parser.add_argument("--save-directory", type=str,
+        required=True,
+        help="The path of folder to save converted model, "
+             "If path not exists, lowbit model will be saved there. "
+             "Else, lowbit model will be loaded.",
+    )
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -47,8 +51,7 @@ if __name__ == "__main__":
         load_in_low_bit=args.load_in_low_bit,
         low_cpu_mem_usage=True,
         optimize_model=True,
-        intra_pp=args.intra_pp,
-        inter_pp=args.inter_pp,
+        save_directory=args.save_directory
     )
 
     res = model.generate(input=f"{model.model_path}/example/asr_example.wav",

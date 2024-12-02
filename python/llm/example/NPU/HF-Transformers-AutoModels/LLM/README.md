@@ -99,34 +99,34 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 ### Run
 ```cmd
 :: to run Llama-2-7b-chat-hf
-python llama2.py --repo-id-or-model-path meta-llama/Llama-2-7b-chat-hf --save-directory <converted_model_path>
+python llama2.py --repo-id-or-model-path "meta-llama/Llama-2-7b-chat-hf" --save-directory <converted_model_path>
 
 :: to run Meta-Llama-3-8B-Instruct
-python llama3.py --repo-id-or-model-path meta-llama/Meta-Llama-3-8B-Instruct --save-directory <converted_model_path>
+python llama3.py --repo-id-or-model-path "meta-llama/Meta-Llama-3-8B-Instruct" --save-directory <converted_model_path>
 
 :: to run Llama-3.2-1B-Instruct
-python llama3.py --repo-id-or-model-path meta-llama/Llama-3.2-1B-Instruct --save-directory <converted_model_path>
+python llama3.py --repo-id-or-model-path "meta-llama/Llama-3.2-1B-Instruct" --save-directory <converted_model_path>
 
 :: to run Llama-3.2-3B-Instruct
-python llama3.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct --save-directory <converted_model_path>
+python llama3.py --repo-id-or-model-path "meta-llama/Llama-3.2-3B-Instruct" --save-directory <converted_model_path>
 
 :: to run Qwen2-1.5B-Instruct
-python qwen.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --low_bit sym_int8 --save-directory <converted_model_path>
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct" --low-bit sym_int8 --save-directory <converted_model_path>
 
 :: to run Qwen2.5-3B-Instruct
-python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --low_bit sym_int8 --save-directory <converted_model_path>
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-3B-Instruct" --low-bit sym_int8 --save-directory <converted_model_path>
 
 :: to run Qwen2.5-7B-Instruct
-python qwen.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --save-directory <converted_model_path>
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-7B-Instruct" --save-directory <converted_model_path>
 
 :: to run MiniCPM-1B-sft-bf16
-python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-1B-sft-bf16 --save-directory <converted_model_path>
+python minicpm.py --repo-id-or-model-path "openbmb/MiniCPM-1B-sft-bf16" --save-directory <converted_model_path>
 
 :: to run MiniCPM-2B-sft-bf16
-python minicpm.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --save-directory <converted_model_path>
+python minicpm.py --repo-id-or-model-path "openbmb/MiniCPM-2B-sft-bf16" --save-directory <converted_model_path>
 
 :: to run Baichuan2-7B-Chat
-python baichuan2.py
+python baichuan2.py --repo-id-or-model-path "baichuan-inc/Baichuan2-7B-Chat" --save-directory <converted_model_path>
 ```
 
 Arguments info:

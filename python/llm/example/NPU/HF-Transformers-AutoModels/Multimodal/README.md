@@ -103,10 +103,10 @@ The examples below show how to run the **_optimized HuggingFace & FunASR model i
 ### 4.1 Run MiniCPM-Llama3-V-2_5 & MiniCPM-V-2_6
 ```bash
 # to run MiniCPM-Llama3-V-2_5
-python minicpm-llama3-v2.5.py
+python minicpm-llama3-v2.5.py --save-directory <converted_model_path>
 
 # to run MiniCPM-V-2_6
-python minicpm_v_2_6.py
+python minicpm_v_2_6.py --save-directory <converted_model_path>
 ```
 
 Arguments info:
@@ -117,6 +117,7 @@ Arguments info:
 - `--max-output-len MAX_OUTPUT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
 - `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `512`.
 - `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
+- `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, otherwise the lowbit model in `SAVE_DIRECTORY` will be loaded.
 
 #### Sample Output
 ##### [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6)
@@ -134,12 +135,13 @@ The image features a young child holding and showing off a white teddy bear wear
 ### 4.2 Run Speech_Paraformer-Large
 ```bash
 # to run Speech_Paraformer-Large
-python speech_paraformer-large.py
+python speech_paraformer-large.py --save-directory <converted_model_path>
 ```
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the asr repo id for the model (i.e. `iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch`) to be downloaded, or the path to the asr checkpoint folder.
 - `--load_in_low_bit`: argument defining the `load_in_low_bit` format used. It is default to be `sym_int8`, `sym_int4` can also be used.
+- `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, otherwise the lowbit model in `SAVE_DIRECTORY` will be loaded.
 
 #### Sample Output
 ##### [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch)
@@ -157,11 +159,12 @@ rtf_avg: 0.232: 100%|███████████████████�
 ### 4.3 Run Bce-Embedding-Base-V1
 ```bash
 # to run Bce-Embedding-Base-V1
-python bce-embedding.py
+python bce-embedding.py --save-directory <converted_model_path>
 ```
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the asr repo id for the model (i.e. `maidalun1020/bce-embedding-base_v1`) to be downloaded, or the path to the asr checkpoint folder.
+- `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, otherwise the lowbit model in `SAVE_DIRECTORY` will be loaded.
 
 #### Sample Output
 ##### [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) |
