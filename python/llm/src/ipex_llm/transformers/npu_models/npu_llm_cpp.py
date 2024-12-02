@@ -60,6 +60,9 @@ _lib.llm_sample_token.restype = ctypes.c_int
 _lib.reset.argtypes = [ctypes.c_void_p]
 _lib.reset.restype = None
 
+_lib.get_logits.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float)]
+_lib.reset.restype = None
+
 
 def load_model_from_file(model_dir: str):
     return _lib.load_model_from_file(model_dir.encode('utf-8'))
@@ -81,3 +84,10 @@ def run_decode(model_ptr, input_id, vocab_size):
 
 def reset(model_ptr):
     _lib.reset(model_ptr)
+
+
+def get_logits(model_ptr, logits):
+    src = logits.data.data_ptr()
+    src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
+    _lib.get_logits(model_ptr, src)
+    return logits
