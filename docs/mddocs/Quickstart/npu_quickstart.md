@@ -1,9 +1,12 @@
-# Install IPEX-LLM on Windows with Intel NPU
+# Run IPEX-LLM on Intel NPU
 
-IPEX-LLM provides NPU support for LLM acceleration on Intel Core™ Ultra Processers (Series 2), and offers both Python and C++ API. This guide demonstrates:
+This guide demonstrates:
 
 - How to install IPEX-LLM for Intel NPU on Intel Core™ Ultra Processers (Series 2)
 - Python and C++ APIs for running IPEX-LLM on Intel NPU
+
+> [!IMPORTANT]
+> IPEX-LLM currently only supports Windows on Intel NPU.
 
 ## Table of Contents
 
@@ -76,8 +79,8 @@ conda activate llm
 With the `llm-npu` environment active, use `pip` to install `ipex-llm` for NPU:
 
 ```cmd
-conda create -n llm python=3.11 libuv
-conda activate llm
+conda create -n llm-npu python=3.11
+conda activate llm-npu
 
 pip install --pre --upgrade ipex-llm[npu]
 ```
