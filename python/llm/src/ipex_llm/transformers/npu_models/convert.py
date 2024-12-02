@@ -327,7 +327,10 @@ def generate(
 
     if "eos_token_id" not in new_generate_kwargs:
         generation_config = GenerationConfig.from_model_config(self.config)
-        eos = generation_config.eos_token_id
+        if hasattr(generation_config, "eos_token_id"):
+            eos = generation_config.eos_token_id
+        else:
+            eos = 0xffffffff
     else:
         eos = new_generate_kwargs["eos_token_id"]
     output_tokens = []
