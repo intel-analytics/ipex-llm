@@ -430,8 +430,7 @@ def optimize_llm_single_process(
 
 
 def prepare_input_ids(
-        self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs
-    ):
+        self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs):
     if past_key_values is not None:  # kvcache
         input_ids = input_ids[:, -1]
     else:  # prefill, reset the model here
