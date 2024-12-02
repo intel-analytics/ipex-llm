@@ -1,4 +1,4 @@
-llm# Install IPEX-LLM on Windows with Intel NPU
+# Install IPEX-LLM on Windows with Intel NPU
 
 IPEX-LLM provides NPU support for LLM acceleration on Intel Core™ Ultra Processers (Series 2), and offers both Python and C++ API. This guide demonstrates:
 
