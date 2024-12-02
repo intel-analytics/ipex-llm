@@ -82,7 +82,6 @@ if __name__ == "__main__":
             transpose_value_cache=not args.disable_transpose_value_cache,
         )
 
-    model.save_low_bit(r"D:\binbin\test-111")
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     print("-" * 80)
