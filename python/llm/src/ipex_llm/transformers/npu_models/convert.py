@@ -392,6 +392,7 @@ def optimize_llm_single_process(
         model_ptr = load_model_from_file(save_directory)
         model.kv_len = kv_len
         model.model_ptr = model_ptr
+        model.save_directory = save_directory
         model.vocab_size = model.config.vocab_size
     except:
         invalidInputError(False,

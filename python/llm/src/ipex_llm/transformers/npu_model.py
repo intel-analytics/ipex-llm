@@ -406,6 +406,7 @@ class _BaseAutoModelClass:
         mixed_precision = config_dict.pop("mixed_precision", False)
         quantization_group_size = config_dict.pop("group_size", 0)
         optimize_model = config_dict.pop("optimize_model", False)
+        enable_cpp_backend = "weight_idx" in config_dict
 
         invalidInputError(
             qtype,
@@ -419,6 +420,25 @@ class _BaseAutoModelClass:
             f"Unknown bigdl_transformers_low_bit value: {qtype},"
             f" expected: sym_int8_rtn, sym_int4_rtn. "
         )
+
+        if enable_cpp_backend:
+            from .npu_models.npu_llm_cpp import load_model_from_file
+            from .npu_models.convert import generate
+            import json
+            dummy_model = torch.nn.Module()
+            try:
+                model_ptr = load_model_from_file(pretrained_model_name_or_path)
+                dummy_model.model_ptr = model_ptr
+                dummy_model.save_directory = pretrained_model_name_or_path
+                dummy_model.kv_len = config_dict['kv_len']
+                dummy_model.vocab_size = config_dict['vocab_size']
+            except:
+                invalidInputError(False,
+                                  "False to InitLLMPipeline.")
+            # patch generate function
+            import types
+            dummy_model.generate = types.MethodType(generate, dummy_model)
+            return dummy_model
 
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
         has_local_code = type(config) in cls.HF_Model._model_mapping.keys()
