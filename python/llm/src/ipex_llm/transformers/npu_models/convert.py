@@ -19,15 +19,11 @@ import os
 import torch
 import importlib
 from ipex_llm.transformers.npu_models.linear import QuantizedLinear
-<<<<<<< HEAD
-import tempfile
 import time
 from typing import Callable, List, Optional
 from transformers import GenerationConfig, \
     LogitsProcessorList, StoppingCriteriaList
-=======
 from ipex_llm.transformers.utils import module_name_process
->>>>>>> f2eea036b1 (init commit)
 
 
 def module_optimization(func) -> torch.nn.Module:
