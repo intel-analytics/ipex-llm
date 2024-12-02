@@ -321,9 +321,6 @@ def generate(
     new_tokens = new_generate_kwargs['max_new_tokens']
     invalidInputError(input_length + new_tokens <= self.kv_len + 1,
                       "Input plus output tokens should not exceed max_context_len.")
-    # TODO: may optimize this part later
-    invalidInputError(new_tokens < 1024,
-                      f"Generated tokens ({new_tokens}) exceed named pipeline limitation.")
 
     if "eos_token_id" not in new_generate_kwargs:
         generation_config = GenerationConfig.from_model_config(self.config)
