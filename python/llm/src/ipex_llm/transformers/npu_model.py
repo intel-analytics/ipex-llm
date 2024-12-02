@@ -424,10 +424,10 @@ class _BaseAutoModelClass:
         if enable_cpp_backend:
             from .npu_models.npu_llm_cpp import load_model_from_file
             from .npu_models.convert import generate
-            import json
             dummy_model = torch.nn.Module()
             try:
                 model_ptr = load_model_from_file(pretrained_model_name_or_path)
+                dummy_model.config = PretrainedConfig.from_dict(config_dict)
                 dummy_model.model_ptr = model_ptr
                 dummy_model.save_directory = pretrained_model_name_or_path
                 dummy_model.kv_len = config_dict['kv_len']
@@ -435,6 +435,7 @@ class _BaseAutoModelClass:
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
+            dummy_model.eval()
             # patch generate function
             import types
             dummy_model.generate = types.MethodType(generate, dummy_model)
