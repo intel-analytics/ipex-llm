@@ -276,7 +276,8 @@ class _BaseAutoModelClass:
         model.share_memory()
 
         if not pipeline:
-            if not hasattr(model, 'llm') and model.config.model_type in ["qwen2", "llama", "minicpm"]:
+            if (not hasattr(model, 'llm') and
+                    model.config.model_type in ["qwen2", "llama", "minicpm"]):
                 from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
                 optimize_llm_single_process(
                     llm,
