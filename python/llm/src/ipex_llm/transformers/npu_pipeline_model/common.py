@@ -85,7 +85,7 @@ class LowBitLLMLMHead(LLMBaseNNFactory):
         profile: bool = False,
         device: str = "NPU",
         n_splits: int = 1,
-        group_size: int = 0, # For the case group_size != n_splits
+        group_size: int = 0,
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
