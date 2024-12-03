@@ -70,6 +70,8 @@ if __name__ == "__main__":
                                                      mixed_precision=True,
                                                      trust_remote_code=True,
                                                      save_directory=args.save_directory)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        tokenizer.save_pretrained(args.save_directory)
     else:
         model = AutoModelForCausalLM.load_low_bit(
             args.save_directory,
@@ -79,8 +81,8 @@ if __name__ == "__main__":
             max_prompt_len=args.max_prompt_len,
             pipeline=True,
             transpose_value_cache=not args.disable_transpose_value_cache)
+        tokenizer = AutoTokenizer.from_pretrained(args.save_directory, trust_remote_code=True)        
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     if args.disable_streaming:
         streamer = None
