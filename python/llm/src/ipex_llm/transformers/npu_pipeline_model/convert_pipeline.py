@@ -357,7 +357,8 @@ def convert_llm(model: torch.nn.Module,
             from .qwen import convert_qwen_layer, convert_lm_head_and_embedding
             first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
                                                                             temp_dir, weight_dir,
-                                                                            convert_model, group_size=group_size)
+                                                                            convert_model,
+                                                                            group_size=group_size)
 
             param_list = []
             for layer_idx in range(0, layer_num):

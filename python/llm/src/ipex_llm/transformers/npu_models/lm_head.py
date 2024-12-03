@@ -162,7 +162,7 @@ class SlicedLMHead(nn.Module):
         np_dtype = np.uint8 if self.get_weight_dtype() == torch.uint8 else np.int8
         self.fused_lm_head = LMHeadLinear(self.inC, self.outC, 1, self.split_num,
                                           False, "NPU", dtype=np_dtype, use_split=self.use_split,
-                                          group_size = self.group_size)
+                                          group_size=self.group_size)
         if self.use_split:
             weights = []
             scales = []
