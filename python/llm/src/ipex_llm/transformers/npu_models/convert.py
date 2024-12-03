@@ -455,7 +455,6 @@ def causal_lm_forward(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, CausalLMOutputWithPast]:
-    start = time.perf_counter()
     from .npu_llm_cpp import run_prefill_with_logits, run_decode_with_logits
     if isinstance(input_ids[0], torch.Tensor):
         input_list = input_ids[0].flatten().tolist()
@@ -466,9 +465,6 @@ def causal_lm_forward(
         logits = run_prefill_with_logits(self.model_ptr, input_list, self.logits_buffer, self.vocab_size)
     else:
         logits = run_decode_with_logits(self.model_ptr, input_list[0], self.logits_buffer, self.vocab_size)
-    end = time.perf_counter()
-    overall = (end - start) * 1000
-    print("Overall time: ", overall)
 
     return CausalLMOutputWithPast(
         loss=None,
