@@ -251,7 +251,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 - [FAQ & Trouble Shooting](docs/mddocs/Overview/FAQ/faq.md)
 
 ## Verified Models
-Over 50 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM2/ChatGLM3, Baichuan/Baichuan2, Qwen/Qwen-1.5, InternLM* and more; see the list below.
+Over 70 models have been optimized/verified on `ipex-llm`, including *LLaMA/LLaMA2, Mistral, Mixtral, Gemma, LLaVA, Whisper, ChatGLM2/ChatGLM3, Baichuan/Baichuan2, Qwen/Qwen-1.5, InternLM* and more; see the list below.
   
 | Model      | CPU Example                                  | GPU Example                                  | NPU Example                                  |
 |------------|----------------------------------------------|----------------------------------------------|----------------------------------------------|
