@@ -103,6 +103,7 @@ class _BaseAutoModelClass:
         qtype_map = {
             "sym_int4": "sym_int4_rtn",
             "sym_int8": "sym_int8_rtn",
+            "asym_int4": "asym_int4_rtn",
         }
 
         invalidInputError(

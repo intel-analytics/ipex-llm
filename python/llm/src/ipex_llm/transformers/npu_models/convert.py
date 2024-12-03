@@ -99,8 +99,12 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
                                              iqtype, device=device,
                                              enable_scale_search=enable_scale_search,
                                              imatrix=imatrix)
-        return QuantizedLinear(qweights, scale, layer.bias,
-                               group_size=group_size)
+        min = None
+        # split scale to scale & min
+        if qtype == "asym_int4_rtn":
+            scale, min = torch.split(scale, scale.shape[0] // 2)
+        return QuantizedLinear(qweights, scale, min, layer.bias,
+                               group_size=group_size, qtype=qtype)
 
 
 @module_optimization
@@ -111,12 +115,21 @@ def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
     iqtype = ggml_tensor_qtype[qtype]
     if isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
+        if qtype == "sym_int4_rtn":
+            # workaround for qwen2-7B & int4
+            if (layer.in_features == 3584 and layer.out_features == 152064):
+                qtype = "sym_int8_rtn"
+                iqtype = ggml_tensor_qtype[qtype]
         enable_scale_search = os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0"
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device,
                                              enable_scale_search=enable_scale_search,
                                              imatrix=imatrix)
-        return DequantizedLinear(qweights, scale, layer.bias)
+        min = None
+        # split scale to scale & min
+        if qtype == "asym_int4_rtn":
+            scale, min = torch.split(scale, scale.shape[0] // 2)
+        return DequantizedLinear(qweights, scale, min, layer.bias, qtype)
 
 
 @module_optimization
