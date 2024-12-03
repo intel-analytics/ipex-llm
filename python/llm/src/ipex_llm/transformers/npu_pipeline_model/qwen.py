@@ -23,13 +23,14 @@ from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 
 
 def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
-                                  convert_model=False):
+                                  convert_model=False, group_size=0):
     num_heads = model.model.layers[0].self_attn.num_heads
     head_dim = model.model.layers[0].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
     vocab_size = model.config.vocab_size
     model_norm = model.model.norm
     lm_head = model.lm_head
+    lm_head_n_splits = 1
     if not isinstance(lm_head, SlicedLMHead):
         weights = [(lm_head.weight, lm_head.scale)]
     else:
@@ -41,6 +42,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
             scales.append(l.scale)
         weights = [(torch.stack(lm_head_weights, axis=0),
                     torch.stack(scales, axis=0))]
+        lm_head_n_splits = lm_head.split_num
     if isinstance(weights[0], tuple):
         np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
     else:  # FP16 Linear
@@ -56,7 +58,8 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
         dtype=np_dtype,
         model_norm_weight=model_norm.weight.to(torch.float16),
         vocab_size=vocab_size,
-        n_splits=n_splits_linear
+        n_splits=lm_head_n_splits,
+        group_size=group_size,
     )
 
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head",
