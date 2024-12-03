@@ -421,8 +421,8 @@ def optimize_llm_single_process(
         invalidInputError(False,
                           "False to InitLLMPipeline.")
     # patch generate function
-    # import types
-    # model.generate = types.MethodType(generate, model)
+    import types
+    model.simple_generate = types.MethodType(generate, model)
     from transformers.modeling_utils import PreTrainedModel
     general_convert(model, PreTrainedModel, prepare_input_ids, "prepare_inputs_for_generation")
     general_convert(model, PreTrainedModel, causal_lm_forward)
@@ -456,17 +456,16 @@ def causal_lm_forward(
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, CausalLMOutputWithPast]:
     start = time.perf_counter()
-    from .npu_llm_cpp import run_decode, run_prefill, get_logits
+    from .npu_llm_cpp import run_prefill_with_logits, run_decode_with_logits
     if isinstance(input_ids[0], torch.Tensor):
         input_list = input_ids[0].flatten().tolist()
     else:
         input_list = input_ids[0]
     input_length = len(input_list)
     if input_length > 1:
-        run_prefill(self.model_ptr, input_list, self.vocab_size)
+        logits = run_prefill_with_logits(self.model_ptr, input_list, self.logits_buffer, self.vocab_size)
     else:
-        run_decode(self.model_ptr, input_list[0], self.vocab_size)
-    logits = get_logits(self.model_ptr, self.logits_buffer)
+        logits = run_decode_with_logits(self.model_ptr, input_list[0], self.logits_buffer, self.vocab_size)
     end = time.perf_counter()
     overall = (end - start) * 1000
     print("Overall time: ", overall)

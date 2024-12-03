@@ -60,8 +60,11 @@ _lib.llm_sample_token.restype = ctypes.c_int
 _lib.reset.argtypes = [ctypes.c_void_p]
 _lib.reset.restype = None
 
-_lib.get_logits.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float)]
-_lib.reset.restype = None
+_lib.run_prefill_with_logits.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
+_lib.run_prefill_with_logits.restype = None
+
+_lib.run_decode_with_logits.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
+_lib.run_decode_with_logits.restype = None
 
 
 def load_model_from_file(model_dir: str):
@@ -82,12 +85,21 @@ def run_decode(model_ptr, input_id, vocab_size):
     return new_token
 
 
+def run_prefill_with_logits(model_ptr, input_ids, logits, vocab_size):
+    input_ptr = (ctypes.c_int32 * len(input_ids))(*input_ids)
+    input_len = len(input_ids)
+    logits_ptr = logits.data.data_ptr()
+    logits_ptr = ctypes.cast(logits_ptr, ctypes.POINTER(ctypes.c_float))
+    _lib.run_prefill_with_logits(model_ptr, input_ptr, input_len, logits_ptr, vocab_size)
+    return logits
+
+
+def run_decode_with_logits(model_ptr, input_id, logits, vocab_size):
+    logits_ptr = logits.data.data_ptr()
+    logits_ptr = ctypes.cast(logits_ptr, ctypes.POINTER(ctypes.c_float))
+    _lib.run_decode_with_logits(model_ptr, input_id, logits_ptr, vocab_size)
+    return logits
+
+
 def reset(model_ptr):
     _lib.reset(model_ptr)
-
-
-def get_logits(model_ptr, logits):
-    src = logits.data.data_ptr()
-    src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
-    _lib.get_logits(model_ptr, src)
-    return logits
