@@ -45,6 +45,9 @@ def ignore_argument(kwargs: dict, key: "str"):
 
 
 def save_low_bit(self, model_dir: str, *args, **kwargs):
+    if hasattr(self, "save_directory"):
+        warnings.warn(f"Model is already saved at {self.save_directory}")
+        return 1
     origin_device = self.device
     kwargs["safe_serialization"] = False
     self.save_pretrained(model_dir, *args, **kwargs)
@@ -255,6 +258,9 @@ class _BaseAutoModelClass:
         save_directory = kwargs.pop('save_directory', None)
         fuse_layers = kwargs.pop('fuse_layers', None)
         imatrix_data = kwargs.pop('imatrix_data', None)
+        invalidInputError(save_directory is not None,
+                          "Please provide the path to save converted model "
+                          "through `save_directory`.")
 
         if hasattr(model, "llm"):
             llm = model.llm
@@ -312,6 +318,8 @@ class _BaseAutoModelClass:
                         save_directory=save_directory,
                         fuse_layers=fuse_layers)
         model.save_low_bit = types.MethodType(save_low_bit, model)
+        model.save_low_bit(save_directory)
+        logger.info(f"Converted model has already saved to {save_directory}.")
         return model
 
     @classmethod
@@ -398,6 +406,7 @@ class _BaseAutoModelClass:
         mixed_precision = config_dict.pop("mixed_precision", False)
         quantization_group_size = config_dict.pop("group_size", 0)
         optimize_model = config_dict.pop("optimize_model", False)
+        enable_cpp_backend = "weight_idx" in config_dict
 
         invalidInputError(
             qtype,
@@ -411,6 +420,26 @@ class _BaseAutoModelClass:
             f"Unknown bigdl_transformers_low_bit value: {qtype},"
             f" expected: sym_int8_rtn, sym_int4_rtn. "
         )
+
+        if enable_cpp_backend:
+            from .npu_models.npu_llm_cpp import load_model_from_file
+            from .npu_models.convert import generate
+            dummy_model = torch.nn.Module()
+            try:
+                model_ptr = load_model_from_file(pretrained_model_name_or_path)
+                dummy_model.config = PretrainedConfig.from_dict(config_dict)
+                dummy_model.model_ptr = model_ptr
+                dummy_model.save_directory = pretrained_model_name_or_path
+                dummy_model.kv_len = config_dict['kv_len']
+                dummy_model.vocab_size = config_dict['vocab_size']
+            except:
+                invalidInputError(False,
+                                  "False to InitLLMPipeline.")
+            dummy_model.eval()
+            # patch generate function
+            import types
+            dummy_model.generate = types.MethodType(generate, dummy_model)
+            return dummy_model
 
         has_remote_code = hasattr(config, "auto_map") and cls.HF_Model.__name__ in config.auto_map
         has_local_code = type(config) in cls.HF_Model._model_mapping.keys()
