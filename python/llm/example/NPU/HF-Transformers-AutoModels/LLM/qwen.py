@@ -67,7 +67,6 @@ if __name__ == "__main__":
             max_context_len=args.max_context_len,
             max_prompt_len=args.max_prompt_len,
             transpose_value_cache=not args.disable_transpose_value_cache,
-            mixed_precision=True,
             quantization_group_size=args.quantization_group_size,
             save_directory=args.save_directory
         )
