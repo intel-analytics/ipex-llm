@@ -104,7 +104,7 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
 
 @module_optimization
 def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
-                                   group_size):
+                                   group_size, imatrix):
     from ipex_llm.transformers.npu_models.linear import DequantizedLinear
     from ipex_llm.transformers.low_bit_linear import ggml_convert_qtype
     from ipex_llm.ggml.quantize import ggml_tensor_qtype
@@ -113,7 +113,8 @@ def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
         enable_scale_search = os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0"
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device,
-                                             enable_scale_search=enable_scale_search)
+                                             enable_scale_search=enable_scale_search,
+                                             imatrix=imatrix)
         return DequantizedLinear(qweights, scale, layer.bias)
 
 
