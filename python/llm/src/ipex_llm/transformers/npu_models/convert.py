@@ -351,11 +351,11 @@ def generate(
         if token == eos:
             break
         token = run_decode(self.model_ptr, token, self.vocab_size)
-        idx += 1
-        output_tokens.append(torch.tensor([token]))
         if streamer is not None:
             # rest tokens
             streamer.put(torch.tensor([token]))
+        idx += 1
+        output_tokens.append(torch.tensor([token]))
     output = torch.stack(output_tokens, dim=1)
     output = torch.cat((inputs, output), dim=1)
     time_t3 = time.perf_counter()
