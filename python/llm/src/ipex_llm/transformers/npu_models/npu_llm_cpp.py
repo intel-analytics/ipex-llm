@@ -60,10 +60,12 @@ _lib.llm_sample_token.restype = ctypes.c_int
 _lib.reset.argtypes = [ctypes.c_void_p]
 _lib.reset.restype = None
 
-_lib.run_prefill_with_logits.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
+_lib.run_prefill_with_logits.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_float), ctypes.c_int]
 _lib.run_prefill_with_logits.restype = None
 
-_lib.run_decode_with_logits.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
+_lib.run_decode_with_logits.argtypes = [ctypes.c_void_p, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_float), ctypes.c_int]
 _lib.run_decode_with_logits.restype = None
 
 
