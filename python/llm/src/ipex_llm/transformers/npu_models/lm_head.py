@@ -35,7 +35,7 @@ class LMHeadLinear(NNFactory):
         device: str = "NPU",
         dtype: np.dtype = np.int8,
         use_split: bool = False,
-        group_size: bool = 0,
+        group_size: int = 0,
     ):
         """Initialize the LMHeadLinear class.
 
