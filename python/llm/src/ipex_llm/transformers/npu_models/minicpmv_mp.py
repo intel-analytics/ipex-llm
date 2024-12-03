@@ -198,7 +198,7 @@ class MinicpmVLayerNorm(torch.nn.Module):
 
 @module_optimization
 def replace_with_Layernorm(layer, qtype=None, device='NPU',
-                           modules_to_not_convert=[], group_size=0):
+                           modules_to_not_convert=[], group_size=0, imatrix=None):
     if isinstance(layer, torch.nn.LayerNorm):
         return MinicpmVLayerNorm(
             weight=layer.weight.to(torch.float16),
