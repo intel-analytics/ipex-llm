@@ -781,7 +781,7 @@ class EmbeddingModel(_BaseAutoModelClass):
 
     @classmethod
     def load_convert_fp16(cls, q_k, optimize_model, device, modules_to_not_convert,
-                          group_size, imatrix_data=None):
+                          group_size=0, imatrix_data=None):
         from ipex_llm.transformers.npu_models.xlm_mp import replace_with_FP16Linear
         replace_with_FP16Linear(optimize_model, q_k, device=device,
                                 modules_to_not_convert=modules_to_not_convert,
