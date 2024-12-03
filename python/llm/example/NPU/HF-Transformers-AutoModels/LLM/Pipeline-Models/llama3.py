@@ -84,6 +84,8 @@ if __name__ == "__main__":
                                                     attn_implementation="eager",
                                                     transpose_value_cache=not args.disable_transpose_value_cache,
                                                     save_directory=args.save_directory)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        tokenizer.save_pretrained(args.save_directory)
     else:
         model = AutoModelForCausalLM.load_low_bit(
             args.save_directory,
@@ -94,8 +96,8 @@ if __name__ == "__main__":
             pipeline=True,
             transpose_value_cache=not args.disable_transpose_value_cache,
         )
+        tokenizer = AutoTokenizer.from_pretrained(args.save_directory, trust_remote_code=True)        
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     if args.disable_streaming:
         streamer = None

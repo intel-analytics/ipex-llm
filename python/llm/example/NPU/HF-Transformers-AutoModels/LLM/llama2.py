@@ -79,6 +79,8 @@ if __name__ == "__main__":
             transpose_value_cache=not args.disable_transpose_value_cache,
             save_directory=args.save_directory
         )
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        tokenizer.save_pretrained(args.save_directory)
     else:
         model = AutoModelForCausalLM.load_low_bit(
             args.save_directory,
@@ -89,8 +91,8 @@ if __name__ == "__main__":
             max_prompt_len=args.max_prompt_len,
             transpose_value_cache=not args.disable_transpose_value_cache,
         )
+        tokenizer = AutoTokenizer.from_pretrained(args.save_directory, trust_remote_code=True)        
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     DEFAULT_SYSTEM_PROMPT = """\
     """

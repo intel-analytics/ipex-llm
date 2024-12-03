@@ -43,7 +43,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     if not args.lowbit_path or not os.path.exists(args.lowbit_path):
         model = AutoModelForCausalLM.from_pretrained(
@@ -52,6 +51,8 @@ if __name__ == '__main__':
             load_in_low_bit=args.load_in_low_bit,
             attn_implementation="eager"
         )
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        tokenizer.save_pretrained(args.lowbit_path)
     else:
         model = AutoModelForCausalLM.load_low_bit(
             args.lowbit_path,
@@ -59,6 +60,7 @@ if __name__ == '__main__':
             bigdl_transformers_low_bit=args.load_in_low_bit,
             attn_implementation="eager"
         )
+        tokenizer = AutoTokenizer.from_pretrained(args.lowbit_path, trust_remote_code=True)        
     
     print(model)
 
