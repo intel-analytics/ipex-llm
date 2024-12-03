@@ -245,7 +245,8 @@ class DequantizedLinear(torch.nn.Module):
             )
 
         if weight.dtype == torch.uint8:
-            weight = weight.view(torch.int8)
+            if qtype == "sym_int_rtn":
+                weight = weight.view(torch.int8)
             high_4bits = weight >> 4
             low_4bits = (weight << 4) >> 4
 
