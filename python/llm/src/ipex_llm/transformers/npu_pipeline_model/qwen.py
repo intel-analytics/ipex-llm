@@ -104,6 +104,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     head_dim = model.model.layers[0].self_attn.head_dim
     intermediate_size = model.config.intermediate_size
     rms_norm_eps = model.config.rms_norm_eps
+    asym = getattr(model.config, "asym", False)
 
     from ipex_llm.transformers.npu_models.qwen2_mp import LowBitQwenMultiDecoderlayer
     curr_layer = model.model.layers[layer_idx]
@@ -117,10 +118,17 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                        mlp_layer.down_proj_dq_list]:
         l_weights = []
         scales = []
+        mins = []
         for l in layer_list:
             l_weights.append(l.weight)
             scales.append(l.scale)
-        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+            if l.min is not None:
+                mins.append(l.min)
+        if len(mins):
+            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
+                            torch.stack(mins, axis=0)))
+        else:
+            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
     q_bias = attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16)
     k_bias = attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16)
@@ -164,7 +172,8 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         dtype=np_dtype,
         n_splits_linear=n_splits_linear,
         n_splits_down_proj=n_splits_down_proj,
-        group_size=group_size
+        group_size=group_size,
+        asym=asym
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         decoder_name,
@@ -188,11 +197,23 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         k_bias.data.numpy().tofile(k_bias_bin_file)
         v_bias.data.numpy().tofile(v_bias_bin_file)
         # 6, 7 are past k/v
-        for idx, (weight, scale) in enumerate(weights):
-            bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+5+idx*2}.bin")
-            weight.numpy().tofile(bin_file)
-            bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+5+idx*2+1}.bin")
-            scale.numpy().tofile(bin_file)
+        if not asym:
+            for idx, (weight, scale) in enumerate(weights):
+                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*2}.bin")
+                weight.numpy().tofile(bin_file)
+                bin_file = os.path.join(weight_dir,
+                                        f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
+                scale.numpy().tofile(bin_file)
+        else:
+            for idx, (weight, scale, min) in enumerate(weights):
+                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*3}.bin")
+                weight.numpy().tofile(bin_file)
+                bin_file = os.path.join(weight_dir,
+                                        f"model_{layer_idx}_input_{st_idx+3+idx*3+1}.bin")
+                scale.numpy().tofile(bin_file)
+                bin_file = os.path.join(weight_dir,
+                                        f"model_{layer_idx}_input_{st_idx+3+idx*3+2}.bin")
+                min.numpy().tofile(bin_file)
 
     del single_decoder
 
@@ -207,6 +228,7 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
     rms_norm_eps = model.config.rms_norm_eps
     layer_num = len(model.model.layers)
     fused_layer_num = layer_num // fused_layers
+    asym = getattr(model.config, "asym", False)
 
     from ipex_llm.transformers.npu_models.qwen2_mp import LowBitQwenMultiDecoderlayer
     for i in range(fused_layers):
@@ -228,15 +250,22 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
 
             weights = []
             for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                               mlp_layer.down_proj_dq_list]:
+                            attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                            mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                            mlp_layer.down_proj_dq_list]:
                 l_weights = []
                 scales = []
+                mins = []
                 for l in layer_list:
                     l_weights.append(l.weight)
                     scales.append(l.scale)
-                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+                    if l.min is not None:
+                        mins.append(l.min)
+                if len(mins):
+                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
+                                    torch.stack(mins, axis=0)))
+                else:
+                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
             cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
             cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -264,12 +293,23 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             k_biases[-1].data.numpy().tofile(k_bias_bin_file)
             v_biases[-1].data.numpy().tofile(v_bias_bin_file)
             # 6, 7 are past k/v
-            for idx, (weight, scale) in enumerate(weights):
-                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*2}.bin")
-                weight.numpy().tofile(bin_file)
-                bin_file = os.path.join(weight_dir,
-                                        f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
-                scale.numpy().tofile(bin_file)
+            if not asym:
+                for idx, (weight, scale) in enumerate(weights):
+                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*2}.bin")
+                    weight.numpy().tofile(bin_file)
+                    bin_file = os.path.join(weight_dir,
+                                            f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
+                    scale.numpy().tofile(bin_file)
+            else:
+                for idx, (weight, scale, min) in enumerate(weights):
+                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*3}.bin")
+                    weight.numpy().tofile(bin_file)
+                    bin_file = os.path.join(weight_dir,
+                                            f"model_{layer_idx}_input_{st_idx+3+idx*3+1}.bin")
+                    scale.numpy().tofile(bin_file)
+                    bin_file = os.path.join(weight_dir,
+                                            f"model_{layer_idx}_input_{st_idx+3+idx*3+2}.bin")
+                    min.numpy().tofile(bin_file)
 
         if isinstance(weights[0], tuple):
             np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
@@ -297,6 +337,7 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             n_splits_linear=n_splits_linear,
             n_splits_down_proj=n_splits_down_proj,
             group_size=group_size
+            asym=asym
         )
         update_names_of_IR_and_export_blob(fused_decoder,
                                            f"decoder_layer_{i}",

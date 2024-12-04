@@ -201,7 +201,7 @@ def convert_llm(model: torch.nn.Module,
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
     if group_size == 0:
         n_splits_linear = 1
-        if qtype == "sym_int8_rtn":
+        if qtype in ["sym_int8_rtn", "asym_int4_rtn"]:
             # do not split mlp down_proj for Qwen2-7B & sym_int8
             n_splits_down_proj = 1
         else:
@@ -433,6 +433,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     if not os.path.exists(weight_dir):
         os.mkdir(weight_dir)
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
+    asym = getattr(model.config, "asym", False)
 
     if model.config.model_type == "qwen2":
         if group_size == 0:
@@ -456,7 +457,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "weight_num": 7,
                        "weight_idx": 8,
                        "n_splits_linear": n_splits_linear,
-                       "n_splits_down_proj": n_splits_down_proj}
+                       "n_splits_down_proj": n_splits_down_proj,
+                       "asym": asym}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
