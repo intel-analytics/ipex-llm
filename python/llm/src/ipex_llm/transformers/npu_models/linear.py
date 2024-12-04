@@ -205,7 +205,6 @@ class QuantizedLinear(torch.nn.Module):
             )
 
         min_data = self.min.data if self.min is not None else None
-        print("min is None:", min is None)
         out = run_matmul(x, self.weight.data, self.scale.data, min_data, self.op_id)
 
         if self.bias is None:
