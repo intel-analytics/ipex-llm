@@ -128,7 +128,7 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         from ipex_llm.transformers.npu_models.common import split_linears
         if quantization_group_size == 0:
             n_splits_linear = 1
-            if qtype == "sym_int8_rtn":
+            if qtype in ["sym_int8_rtn", "asym_int4_rtn"]:
                 # do not split mlp down_proj for Qwen2-7B & sym_int8
                 n_splits_down_proj = 1
             else:

@@ -276,6 +276,7 @@ class _BaseAutoModelClass:
         with torch.no_grad():
             model.config.update({"mixed_precision": mixed_precision})
             model.config.update({"group_size": quantization_group_size})
+            model.config.update({"asym": qtype == "asym_int4_rtn"})
             optimize_llm_pre(model, qtype, mixed_precision,
                              quantization_group_size=quantization_group_size)
             cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
@@ -288,29 +289,29 @@ class _BaseAutoModelClass:
         model.share_memory()
 
         if not pipeline:
-            if (not hasattr(model, 'llm') and
-                    model.config.model_type in ["qwen2", "llama", "minicpm"]):
-                from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
-                optimize_llm_single_process(
-                    llm,
-                    kv_len=max_context_len,
-                    max_prompt_len=max_prompt_len,
-                    transpose_value_cache=transpose_value_cache,
-                    group_size=quantization_group_size,
-                    qtype=qtype,
-                    save_directory=save_directory,
-                    fuse_layers=fuse_layers
-                )
-            else:
-                optimize_llm(
-                    llm,
-                    max_context_len=max_context_len,
-                    max_prompt_len=max_prompt_len,
-                    inter_pp=inter_pp,
-                    intra_pp=intra_pp,
-                    transpose_value_cache=transpose_value_cache,
-                    group_size=quantization_group_size
-                )
+            # if (not hasattr(model, 'llm') and
+            #         model.config.model_type in ["qwen2", "llama", "minicpm"]):
+            #     from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
+            #     optimize_llm_single_process(
+            #         llm,
+            #         kv_len=max_context_len,
+            #         max_prompt_len=max_prompt_len,
+            #         transpose_value_cache=transpose_value_cache,
+            #         group_size=quantization_group_size,
+            #         qtype=qtype,
+            #         save_directory=save_directory,
+            #         fuse_layers=fuse_layers
+            #     )
+            # else:
+            optimize_llm(
+                llm,
+                max_context_len=max_context_len,
+                max_prompt_len=max_prompt_len,
+                inter_pp=inter_pp,
+                intra_pp=intra_pp,
+                transpose_value_cache=transpose_value_cache,
+                group_size=quantization_group_size
+            )
         else:
             from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
                 import convert_llm
@@ -422,9 +423,9 @@ class _BaseAutoModelClass:
         )
 
         invalidInputError(
-            qtype in ["sym_int8_rtn", "sym_int4_rtn"],
+            qtype in ["sym_int8_rtn", "sym_int4_rtn", "asym_int4_rtn"],
             f"Unknown bigdl_transformers_low_bit value: {qtype},"
-            f" expected: sym_int8_rtn, sym_int4_rtn. "
+            f" expected: sym_int8_rtn, sym_int4_rtn, asym_int4_rtn. "
         )
 
         if enable_cpp_backend:
