@@ -433,7 +433,7 @@ class _BaseAutoModelClass:
                     config, trust_remote_code=trust_remote_code)
             try:
                 model_ptr = load_model_from_file(pretrained_model_name_or_path)
-                model.config = PretrainedConfig.from_dict(config_dict)
+                model.config = config
                 model.model_ptr = model_ptr
                 model.save_directory = pretrained_model_name_or_path
                 model.kv_len = config_dict['kv_len']
