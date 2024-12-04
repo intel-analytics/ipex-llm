@@ -155,7 +155,7 @@ class _BaseAutoModelClass:
                 f"but got {quantization_group_size}"
             )
         )
-        
+
         if low_bit == "asym_int4":
             invalidInputError(quantization_group_size > 0,
                               "asym_int4 only support quantization_group_size == 0 for now.")
