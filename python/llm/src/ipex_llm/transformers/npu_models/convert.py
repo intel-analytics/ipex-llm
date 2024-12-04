@@ -313,9 +313,9 @@ def generate(
     streamer: Optional["BaseStreamer"] = None,
     negative_prompt_ids: Optional[torch.Tensor] = None,
     negative_prompt_attention_mask: Optional[torch.Tensor] = None,
-    simple: bool = True,
     **kwargs,
 ):
+    simple = kwargs.pop("simple", True)
     if simple:
         return simple_generate(self, inputs=inputs, streamer=streamer, **kwargs)
     else:
