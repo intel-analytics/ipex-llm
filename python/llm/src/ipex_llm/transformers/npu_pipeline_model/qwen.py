@@ -22,7 +22,7 @@ from .common import update_names_of_IR_and_export_blob, LLMEmbedding, LowBitLLML
 from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 
 
-def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
+def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
                                   convert_model=False, group_size=0):
     num_heads = model.model.layers[0].self_attn.num_heads
     head_dim = model.model.layers[0].self_attn.head_dim
