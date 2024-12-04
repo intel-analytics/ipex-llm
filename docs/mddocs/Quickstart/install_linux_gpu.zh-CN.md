@@ -5,6 +5,9 @@
 
 本指南将引导你如何在带有 Intel GPU 的 Linux 系统上安装 IPEX-LLM。适用于 Intel 数据中心的 GPU Flex 和 Max 系列，以及 Intel Arc 系列 GPU 和 Intel iGPU。
 
+> [!NOTE]
+> 如果是在 Windows 系统上安装，请参阅本[指南](./install_windows_gpu.zh-CN.md).
+
 我们建议使用带有 Linux 内核 6.2 或 6.5 的 Ubuntu 22.04 操作系统上使用 IPEX-LLM。本页演示了如何在 PyTorch 2.1 中使用 IPEX-LLM。你可以查看[完整安装页面](../Overview/install_gpu.md#linux)了解更多详细信息。
 
 ## 目录
