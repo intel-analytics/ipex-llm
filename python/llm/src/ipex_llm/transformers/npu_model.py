@@ -423,11 +423,14 @@ class _BaseAutoModelClass:
 
         if enable_cpp_backend:
             from .npu_models.npu_llm_cpp import load_model_from_file
-            from .npu_models.convert import generate, general_convert, prepare_input_ids, causal_lm_forward
-            config = AutoConfig.from_pretrained(os.path.join(pretrained_model_name_or_path, "config.json"),
-                                                trust_remote_code=trust_remote_code)
+            from .npu_models.convert import generate, general_convert
+            from .npu_models.convert import prepare_input_ids, causal_lm_forward
+            config = AutoConfig.from_pretrained(
+                os.path.join(pretrained_model_name_or_path, "config.json"),
+                trust_remote_code=trust_remote_code)
             with torch.device('meta'):
-                model = transformers.AutoModelForCausalLM.from_config(config, trust_remote_code=trust_remote_code)
+                model = transformers.AutoModelForCausalLM.from_config(
+                    config, trust_remote_code=trust_remote_code)
             try:
                 model_ptr = load_model_from_file(pretrained_model_name_or_path)
                 model.config = PretrainedConfig.from_dict(config_dict)
@@ -442,7 +445,8 @@ class _BaseAutoModelClass:
             model.eval()
             # patch model forward
             from transformers.modeling_utils import PreTrainedModel
-            general_convert(model, PreTrainedModel, prepare_input_ids, "prepare_inputs_for_generation")
+            general_convert(model, PreTrainedModel, prepare_input_ids,
+                            "prepare_inputs_for_generation")
             general_convert(model, PreTrainedModel, causal_lm_forward)
             # patch generate function
             import types
