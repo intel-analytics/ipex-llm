@@ -433,7 +433,6 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     if not os.path.exists(weight_dir):
         os.mkdir(weight_dir)
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
-    asym = getattr(model.config, "asym", False)
 
     if model.config.model_type == "qwen2":
         if group_size == 0:
@@ -457,8 +456,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "weight_num": 7,
                        "weight_idx": 8,
                        "n_splits_linear": n_splits_linear,
-                       "n_splits_down_proj": n_splits_down_proj,
-                       "asym": asym}
+                       "n_splits_down_proj": n_splits_down_proj}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 

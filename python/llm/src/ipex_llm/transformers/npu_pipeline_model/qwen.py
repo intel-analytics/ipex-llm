@@ -205,7 +205,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                                         f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
                 scale.numpy().tofile(bin_file)
         else:
-            for idx, (weight, scale, min) in enumerate(weights):
+            for idx, (weight, scale, m) in enumerate(weights):
                 bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*3}.bin")
                 weight.numpy().tofile(bin_file)
                 bin_file = os.path.join(weight_dir,
@@ -213,7 +213,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                 scale.numpy().tofile(bin_file)
                 bin_file = os.path.join(weight_dir,
                                         f"model_{layer_idx}_input_{st_idx+3+idx*3+2}.bin")
-                min.numpy().tofile(bin_file)
+                m.numpy().tofile(bin_file)
 
     del single_decoder
 
@@ -301,7 +301,7 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
                                             f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
                     scale.numpy().tofile(bin_file)
             else:
-                for idx, (weight, scale, min) in enumerate(weights):
+                for idx, (weight, scale, m) in enumerate(weights):
                     bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*3}.bin")
                     weight.numpy().tofile(bin_file)
                     bin_file = os.path.join(weight_dir,
@@ -309,7 +309,7 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
                     scale.numpy().tofile(bin_file)
                     bin_file = os.path.join(weight_dir,
                                             f"model_{layer_idx}_input_{st_idx+3+idx*3+2}.bin")
-                    min.numpy().tofile(bin_file)
+                    m.numpy().tofile(bin_file)
 
         if isinstance(weights[0], tuple):
             np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
@@ -336,7 +336,7 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             dtype=np_dtype,
             n_splits_linear=n_splits_linear,
             n_splits_down_proj=n_splits_down_proj,
-            group_size=group_size
+            group_size=group_size,
             asym=asym
         )
         update_names_of_IR_and_export_blob(fused_decoder,
