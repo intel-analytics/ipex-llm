@@ -166,8 +166,11 @@ class QuantizedLinear(torch.nn.Module):
                 # Int4 we need to double the input channels because weights are compressed
                 self.inC *= 2
             self.scale = Parameter(scale * math.sqrt(self.inC), requires_grad=False)
+            if min is not None:
+                self.min = Parameter(min * math.sqrt(self.inC), requires_grad=False)
+            else:
+                self.min = None
         self.bias = bias
-        self.min = min
         self.qtype = qtype
         self.op_id = str(uuid.uuid4())
 
@@ -202,10 +205,8 @@ class QuantizedLinear(torch.nn.Module):
             )
 
         min_data = self.min.data if self.min is not None else None
+        print("min is None:", min is None)
         out = run_matmul(x, self.weight.data, self.scale.data, min_data, self.op_id)
-
-        if self.qtype == "asym_int4_rtn" and self.min is not None:
-            out = out + self.min
 
         if self.bias is None:
             return out
