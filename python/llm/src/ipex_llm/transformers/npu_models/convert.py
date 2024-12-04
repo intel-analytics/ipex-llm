@@ -307,9 +307,31 @@ def generate(
     generation_config: Optional[GenerationConfig] = None,
     logits_processor: Optional[LogitsProcessorList] = None,
     stopping_criteria: Optional[StoppingCriteriaList] = None,
-    prefix_allowed_tokens_fn: Optional[Callable[[int, torch.Tensor], List[int]]]=None,
+    prefix_allowed_tokens_fn: Optional[Callable] = None,
     synced_gpus: Optional[bool] = None,
     assistant_model: Optional["PreTrainedModel"] = None,
+    streamer: Optional["BaseStreamer"] = None,
+    negative_prompt_ids: Optional[torch.Tensor] = None,
+    negative_prompt_attention_mask: Optional[torch.Tensor] = None,
+    simple: bool = True,
+    **kwargs,
+):
+    if simple:
+        return simple_generate(self, inputs=inputs, streamer=streamer, **kwargs)
+    else:
+        return self.original_generate(inputs=inputs, generation_config=generation_config,
+                                      logits_processor=logits_processor,
+                                      stopping_criteria=stopping_criteria,
+                                      prefix_allowed_tokens_fn=prefix_allowed_tokens_fn,
+                                      synced_gpus=synced_gpus, assistant_model=assistant_model,
+                                      streamer=streamer, negative_prompt_ids=negative_prompt_ids,
+                                      negative_prompt_attention_mask=negative_prompt_attention_mask,
+                                      **kwargs)
+
+
+def simple_generate(
+    self,
+    inputs: Optional[torch.Tensor] = None,
     streamer: Optional["BaseStreamer"] = None,
     **kwargs,
 ):
@@ -420,12 +442,14 @@ def optimize_llm_single_process(
     except:
         invalidInputError(False,
                           "False to InitLLMPipeline.")
-    # patch generate function
-    import types
-    model.simple_generate = types.MethodType(generate, model)
+    # patch model forward
     from transformers.modeling_utils import PreTrainedModel
     general_convert(model, PreTrainedModel, prepare_input_ids, "prepare_inputs_for_generation")
     general_convert(model, PreTrainedModel, causal_lm_forward)
+    # patch generate function
+    import types
+    model.original_generate = model.generate
+    model.generate = types.MethodType(generate, model)
     return model
 
 
