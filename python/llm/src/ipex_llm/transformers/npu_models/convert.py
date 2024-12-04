@@ -455,7 +455,7 @@ def optimize_llm_single_process(
 
 def prepare_input_ids(
         self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs):
-    if past_key_values is not None:  # kvcache
+    if isinstance(past_key_values, bool) and past_key_values:  # kvcache
         input_ids = input_ids[:, -1]
     else:  # prefill, reset the model here
         from .npu_llm_cpp import reset
@@ -495,7 +495,7 @@ def causal_lm_forward(
     return CausalLMOutputWithPast(
         loss=None,
         logits=logits,
-        past_key_values=1,  # just an indicator
+        past_key_values=True,  # just an indicator
         hidden_states=None,
         attentions=None,
     )
