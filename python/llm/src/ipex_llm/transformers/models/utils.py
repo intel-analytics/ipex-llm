@@ -336,9 +336,7 @@ def use_sdp_non_causal(head_dim, device, dtype):
 
 
 def mlp_fusion_check(x, qtype, training):
-    invalidInputError(x.dim() == 2,
-                      "Here input x's dim should be 2.")
-    if x.shape[0] != 1:
+    if x.numel() // x.size(-1) != 1:
         return False
     if x.device.type != 'xpu':
         return False
