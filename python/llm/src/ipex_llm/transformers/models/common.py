@@ -127,9 +127,9 @@ def fuse_mlp_base(module: torch.nn.Module, act: int, x: torch.Tensor):
                 act, qtype
             )
         )
+        return output.view(x.shape)
     else:
-        output = module.down_proj(module.act_fn(module.gate_proj(x)) * module.up_proj(x))
-    return output.view(x.shape)
+        return module.down_proj(module.act_fn(module.gate_proj(x)) * module.up_proj(x))
 
 
 def mlp_silu_forward(self, x: torch.Tensor):
