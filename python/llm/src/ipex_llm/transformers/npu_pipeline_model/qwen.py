@@ -250,9 +250,9 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
 
             weights = []
             for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                            attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                            mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                            mlp_layer.down_proj_dq_list]:
+                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                               mlp_layer.down_proj_dq_list]:
                 l_weights = []
                 scales = []
                 mins = []
@@ -295,14 +295,16 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             # 6, 7 are past k/v
             if not asym:
                 for idx, (weight, scale) in enumerate(weights):
-                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*2}.bin")
+                    bin_file = os.path.join(weight_dir,
+                                            f"model_{layer_idx}_input_{st_idx+3+idx*2}.bin")
                     weight.numpy().tofile(bin_file)
                     bin_file = os.path.join(weight_dir,
                                             f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
                     scale.numpy().tofile(bin_file)
             else:
                 for idx, (weight, scale, m) in enumerate(weights):
-                    bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*3}.bin")
+                    bin_file = os.path.join(weight_dir,
+                                            f"model_{layer_idx}_input_{st_idx+3+idx*3}.bin")
                     weight.numpy().tofile(bin_file)
                     bin_file = os.path.join(weight_dir,
                                             f"model_{layer_idx}_input_{st_idx+3+idx*3+1}.bin")

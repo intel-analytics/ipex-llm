@@ -64,7 +64,8 @@ def run_model(
                 op_args_flatten.append(op_args[-1][0])
                 op_args_flatten.append(op_args[-1][1])
             else:
-                op_args.append((set_contiguous(w[0]).numpy(), set_contiguous(w[1]).numpy(), set_contiguous(w[2]).numpy()))
+                op_args.append((set_contiguous(w[0]).numpy(), set_contiguous(w[1]).numpy(),
+                                set_contiguous(w[2]).numpy()))
                 op_args_flatten.append(op_args[-1][0])
                 op_args_flatten.append(op_args[-1][1])
                 op_args_flatten.append(op_args[-1][2])
