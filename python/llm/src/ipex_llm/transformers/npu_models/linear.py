@@ -252,8 +252,8 @@ class DequantizedLinear(torch.nn.Module):
 
             combined_weight = torch.cat((low_4bits.unsqueeze(2), high_4bits.unsqueeze(2)), dim=2)
             decompressed_weight = combined_weight.view(combined_weight.size(0), -1)
-            dequantized_weight = decompressed_weight.to(torch.float32)
-            dequantized_weight = dequantized_weight * torch.unsqueeze(scale.to(torch.float32), dim=1)
+            dequantized_weight = decompressed_weight.to(torch.float32) * \
+                torch.unsqueeze(scale.to(torch.float32), dim=1)
             if qtype == "asym_int4_rtn" and min is not None:
                 dequantized_weight = dequantized_weight + torch.unsqueeze(min.to(torch.float32),
                                                                           dim=1)
