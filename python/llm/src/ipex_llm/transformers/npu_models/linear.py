@@ -201,7 +201,8 @@ class QuantizedLinear(torch.nn.Module):
                 )
             )
 
-        out = run_matmul(x, self.weight.data, self.scale.data, self.op_id)
+        min_data = self.min.data if self.min is not None else None
+        out = run_matmul(x, self.weight.data, self.scale.data, min_data, self.op_id)
 
         if self.qtype == "asym_int4_rtn" and self.min is not None:
             out = out + self.min
@@ -245,15 +246,16 @@ class DequantizedLinear(torch.nn.Module):
             )
 
         if weight.dtype == torch.uint8:
-            if qtype == "sym_int4_rtn":
-                weight = weight.view(torch.int8)
+            weight = weight.view(torch.int8)
             high_4bits = weight >> 4
             low_4bits = (weight << 4) >> 4
 
             combined_weight = torch.cat((low_4bits.unsqueeze(2), high_4bits.unsqueeze(2)), dim=2)
             decompressed_weight = combined_weight.view(combined_weight.size(0), -1)
-            dequantized_weight = decompressed_weight.to(torch.float32) * \
-                torch.unsqueeze(scale.to(torch.float32), dim=1)
+            if qtype == "asym_int4_rtn":
+                decompressed_weight = decompressed_weight + 8
+            dequantized_weight = decompressed_weight.to(torch.float32)
+            dequantized_weight = dequantized_weight * torch.unsqueeze(scale.to(torch.float32), dim=1)
             if qtype == "asym_int4_rtn" and min is not None:
                 dequantized_weight = dequantized_weight + torch.unsqueeze(min.to(torch.float32),
                                                                           dim=1)

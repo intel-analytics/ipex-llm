@@ -221,7 +221,7 @@ class _BaseAutoModelClass:
                 model = cls.optimize_npu_model(*args, **optimize_kwargs)
             else:
                 from ipex_llm.transformers.npu_models.convert import optimize_llm
-                optimize_llm(model)
+                # optimize_llm(model)
                 with torch.no_grad():
                     cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
                                      quantization_group_size, imatrix_data,
