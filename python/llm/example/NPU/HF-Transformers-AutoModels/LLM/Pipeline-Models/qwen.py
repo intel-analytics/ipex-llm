@@ -67,7 +67,6 @@ if __name__ == "__main__":
                                                      torch_dtype=torch.float16,
                                                      attn_implementation="eager",
                                                      transpose_value_cache=not args.disable_transpose_value_cache,
-                                                     mixed_precision=True,
                                                      trust_remote_code=True,
                                                      save_directory=args.save_directory)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)

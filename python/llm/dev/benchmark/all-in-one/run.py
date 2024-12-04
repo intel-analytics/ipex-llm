@@ -641,7 +641,7 @@ def transformers_int4_npu_win(repo_id,
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, torch_dtype=torch.float16,
                                                      optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
                                                      quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
-                                                     mixed_precision=True, save_directory=save_directory, use_cache=True, attn_implementation="eager").eval()
+                                                     save_directory=save_directory, use_cache=True, attn_implementation="eager").eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     end = time.perf_counter()
     load_time = end - st
@@ -701,7 +701,6 @@ def transformers_int4_npu_pipeline_win(repo_id,
     model_path = get_model_path(repo_id, local_model_hub)
     in_out_len = in_out_pairs[0].split("-")
     max_context_len = max(int(in_out_len[0]) + int(in_out_len[1]), 1024)
-    mixed_precision = True if npu_group_size == 0 else False
     save_directory = "./save_converted_model_dir"
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -710,7 +709,7 @@ def transformers_int4_npu_pipeline_win(repo_id,
     model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit, trust_remote_code=True, pipeline=True, torch_dtype=torch.float16,
                                                  optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
                                                  quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
-                                                 use_cache=True, attn_implementation="eager", mixed_precision=mixed_precision,
+                                                 use_cache=True, attn_implementation="eager",
                                                  save_directory=save_directory).eval()
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 

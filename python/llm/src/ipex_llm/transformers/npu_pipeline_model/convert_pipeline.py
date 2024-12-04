@@ -355,9 +355,10 @@ def convert_llm(model: torch.nn.Module,
             os.mkdir(weight_dir)
             layer_num = len(model.model.layers)
             from .qwen import convert_qwen_layer, convert_lm_head_and_embedding
-            first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, n_splits_linear,
-                                                                            temp_dir, weight_dir,
-                                                                            convert_model)
+            first_blob_path, last_blob_path = convert_lm_head_and_embedding(model, temp_dir,
+                                                                            weight_dir,
+                                                                            convert_model,
+                                                                            group_size=group_size)
 
             param_list = []
             for layer_idx in range(0, layer_num):
@@ -470,9 +471,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            save_directory, weight_dir, transpose_value_cache, max_prompt_len,
                            group_size, layernorm_const, "prefill")
         # save blob of lmhead and bin of embedding
-        convert_lm_head_and_embedding(model, n_splits_linear,
-                                      save_directory, weight_dir,
-                                      convert_model=True)
+        convert_lm_head_and_embedding(model, save_directory, weight_dir,
+                                      convert_model=True, group_size=group_size)
     elif model.config.model_type == "llama":
         embedding_post = False
         cos_sin_input = False

@@ -35,6 +35,7 @@ class LMHeadLinear(NNFactory):
         device: str = "NPU",
         dtype: np.dtype = np.int8,
         use_split: bool = False,
+        group_size: int = 0,
     ):
         """Initialize the LMHeadLinear class.
 
@@ -57,7 +58,7 @@ class LMHeadLinear(NNFactory):
         if use_split:
             input = self.parameter((1, self.batch, self.inC))
             res = self.dq_split_linear(input, self.split_num, self.outC, self.inC, wt_dtype=dtype,
-                                       scale_factor=False)
+                                       scale_factor=(group_size == 0))
         else:
             input = self.parameter((self.batch, self.inC))
             split_size = self.inC // split_num // 2 * 2
@@ -108,12 +109,13 @@ class LMHeadLinear(NNFactory):
 
 
 class SlicedLMHead(nn.Module):
-    def __init__(self, weight, bias, split_num, use_split=False):
+    def __init__(self, weight, bias, split_num, use_split=False, group_size=0):
         super().__init__()
         self.split_num = split_num
         self.outC, self.inC = weight.shape
         split_size = weight.size(1) // split_num // 2 * 2
         self.lm_heads = nn.Sequential()
+        self.group_size = group_size
         for i in range(split_num):
             new_linear = torch.nn.Linear(0, 0, bias=False)
             start_idx = i * split_size
@@ -159,7 +161,8 @@ class SlicedLMHead(nn.Module):
     def get_fused_lm_head(self):
         np_dtype = np.uint8 if self.get_weight_dtype() == torch.uint8 else np.int8
         self.fused_lm_head = LMHeadLinear(self.inC, self.outC, 1, self.split_num,
-                                          False, "NPU", dtype=np_dtype, use_split=self.use_split)
+                                          False, "NPU", dtype=np_dtype, use_split=self.use_split,
+                                          group_size=self.group_size)
         if self.use_split:
             weights = []
             scales = []
