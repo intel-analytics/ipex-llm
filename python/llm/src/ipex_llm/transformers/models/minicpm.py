@@ -56,6 +56,17 @@ def merge_qkv(module: torch.nn.Module):
     return merge_qkv_base(module, "MiniCPMAttention")
 
 
+def apply_residual_scale(module: torch.nn.Module):
+    if module.__class__.__name__ == "MiniCPMDecoderLayer":
+        scale = module.scale_depth / math.sqrt(module.num_hidden_layers)
+        module.self_attn.o_proj.weight.data *= scale
+        if module.self_attn.o_proj.bias is not None:
+            module.self_attn.o_proj.bias.weight.data *= scale
+        module.mlp.down_proj.weight.data *= scale
+        if module.mlp.down_proj.bias is not None:
+            module.mlp.down_proj.bias.weight.data *= scale
+
+
 def minicpm_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -214,3 +225,52 @@ def minicpm_model_forward_wrapper(origin_forward):
         )
 
     return minicpm_model_forward
+
+
+def minicpm_decoder_layer_forward(
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Tuple[torch.Tensor]] = None,
+    output_attentions: Optional[bool] = False,
+    use_cache: Optional[bool] = False,
+    **kwargs,
+) -> Tuple[torch.FloatTensor, Optional[Tuple[torch.FloatTensor, torch.FloatTensor]]]:
+    residual = hidden_states
+    hidden_states = self.input_layernorm(hidden_states)
+
+    # Self Attention
+    hidden_states, self_attn_weights, present_key_value = self.self_attn(
+        hidden_states=hidden_states,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_value=past_key_value,
+        output_attentions=output_attentions,
+        use_cache=use_cache,
+        **kwargs,
+    )
+
+    # ipex-llm changes start
+    hidden_states = residual + hidden_states
+    # ipex-llm changes end
+
+    # Fully Connected
+    residual = hidden_states
+    hidden_states = self.post_attention_layernorm(hidden_states)
+
+    hidden_states = self.mlp(hidden_states)
+
+    # ipex-llm changes start
+    hidden_states = residual + hidden_states
+    # ipex-llm changes end
+
+    outputs = (hidden_states,)
+
+    if output_attentions:
+        outputs += (self_attn_weights,)
+
+    if use_cache:
+        outputs += (present_key_value,)
+
+    return outputs

@@ -1032,8 +1032,9 @@ def _optimize_pre(model, qtype=None):
         from ipex_llm.transformers.models.mllama import merge_qkv
         model.apply(merge_qkv)
     elif model.config.model_type == "minicpm":
-        from ipex_llm.transformers.models.minicpm import merge_qkv
+        from ipex_llm.transformers.models.minicpm import merge_qkv, apply_residual_scale
         model.apply(merge_qkv)
+        model.apply(apply_residual_scale)
     elif model.config.model_type == "minicpm3":
         from ipex_llm.transformers.models.minicpm3 import pre_compute_inv_freq
         model.apply(pre_compute_inv_freq)
@@ -2101,9 +2102,11 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.minicpm import minicpm_attention_forward
         from ipex_llm.transformers.models.minicpm import minicpm_model_forward_wrapper
+        from ipex_llm.transformers.models.minicpm import minicpm_decoder_layer_forward
         convert_forward(model, module.MiniCPMAttention, minicpm_attention_forward)
         convert_forward(model, module.MiniCPMMLP, llama_mlp_forward)
         convert_forward(model, module.MiniCPMRMSNorm, llama_rms_norm_forward)
+        convert_forward(model, module.MiniCPMDecoderLayer, minicpm_decoder_layer_forward)
         minicpm_model_forward = minicpm_model_forward_wrapper(module.MiniCPMModel.forward)
         convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
     elif model.config.model_type == "minicpm3":
