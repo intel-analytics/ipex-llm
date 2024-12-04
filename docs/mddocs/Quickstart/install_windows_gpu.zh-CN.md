@@ -4,6 +4,8 @@
 </p>
     
 本指南将引导你如何在具有 Intel GPUs 的 Windows 系统上安装 IPEX-LLM。 
+> [!NOTE]
+> 如果是在 Linux 系统上安装，请参阅本[指南](./install_linux_gpu.zh-CN.md).
 
 适用于 Intel Core Ultra 和 Core 11-14 代集成的 GPUs (iGPUs)，以及 Intel Arc 系列 GPU。
 
