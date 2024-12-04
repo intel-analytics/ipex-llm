@@ -455,7 +455,7 @@ def optimize_llm_single_process(
 
 def prepare_input_ids(
         self, input_ids, past_key_values=None, attention_mask=None, inputs_embeds=None, **kwargs):
-    if isinstance(past_key_values, bool) and past_key_values:  # kvcache
+    if past_key_values and isinstance(past_key_values, bool):  # kvcache
         input_ids = input_ids[:, -1]
     else:  # prefill, reset the model here
         from .npu_llm_cpp import reset
