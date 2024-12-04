@@ -710,6 +710,7 @@ def transformers_int4_npu_pipeline_win(repo_id,
                                                  optimize_model=optimize_model, max_context_len=max_context_len, max_prompt_len=int(in_out_len[0]), 
                                                  quantization_group_size=npu_group_size, transpose_value_cache=transpose_value_cache,
                                                  use_cache=True, attn_implementation="eager",
+                                                 save_directory=save_directory).eval()
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     end = time.perf_counter()
