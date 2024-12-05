@@ -86,6 +86,7 @@ class LowBitLLMLMHead(LLMBaseNNFactory):
         device: str = "NPU",
         n_splits: int = 1,
         group_size: int = 0,
+        asym: bool = False
     ):
         super().__init__(max_seq_len=max_seq_len,
                          transpose_value=transpose_value,
@@ -119,6 +120,7 @@ class LowBitLLMLMHead(LLMBaseNNFactory):
             hidden_states, self.vocab_size, self.hidden_size, bias=False, wt_dtype=self.dtype,
             n_splits=n_splits,
             scale_factor=(group_size == 0),
+            asym=asym
         )
 
         # define outputs

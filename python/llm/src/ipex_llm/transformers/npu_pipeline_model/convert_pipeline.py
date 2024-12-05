@@ -434,6 +434,12 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         os.mkdir(weight_dir)
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
 
+    lm_head_low_bit = getattr(model.config, "bigdl_transformers_low_bit", "sym_int4_rtn")
+    if not isinstance(model.lm_head, SlicedLMHead):
+        lm_head_low_bit = model.lm_head.qtype
+    else:
+        lm_head_low_bit = model.lm_head.lm_heads[0].qtype
+
     if model.config.model_type == "qwen2":
         if group_size == 0:
             if model.config.hidden_size == 1536:
@@ -456,7 +462,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "weight_num": 7,
                        "weight_idx": 8,
                        "n_splits_linear": n_splits_linear,
-                       "n_splits_down_proj": n_splits_down_proj}
+                       "n_splits_down_proj": n_splits_down_proj,
+                       "lm_head_low_bit": lm_head_low_bit}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
@@ -517,7 +524,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "embedding_post": embedding_post,
                        "cos_sin_input": cos_sin_input,
                        "n_splits_linear": n_splits_linear,
-                       "n_splits_down_proj": n_splits_down_proj}
+                       "n_splits_down_proj": n_splits_down_proj,
+                       "lm_head_low_bit": lm_head_low_bit}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 
@@ -556,7 +564,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "model_type": "minicpm",
                        "embedding_post": True,
                        "n_splits_linear": n_splits_linear,
-                       "n_splits_down_proj": n_splits_down_proj}
+                       "n_splits_down_proj": n_splits_down_proj,
+                       "lm_head_low_bit": lm_head_low_bit}
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
 

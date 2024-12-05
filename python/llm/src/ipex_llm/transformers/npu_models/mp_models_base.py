@@ -585,7 +585,8 @@ class LLMBaseNNFactory(NNFactory):
                                          output_channels, input_channels,
                                          bias=bias, act_dtype=act_dtype,
                                          wt_dtype=wt_dtype, scale_factor=scale_factor,
-                                         is_prefill=is_prefill)
+                                         is_prefill=is_prefill,
+                                         asym=asym)
         self.linear_ops.append(op)
         return op
 
@@ -597,10 +598,11 @@ class LLMBaseNNFactory(NNFactory):
                         act_dtype: npt.DTypeLike = np.float16,
                         wt_dtype: npt.DTypeLike = np.float16,
                         scale_factor: bool = False,
-                        is_prefill: bool = False):
+                        is_prefill: bool = False,
+                        asym: bool = False):
         op = super().dq_split_linear(input_node, n_splits, output_channels, input_channels,
                                      False, act_dtype, wt_dtype, scale_factor,
-                                     is_prefill=is_prefill)
+                                     is_prefill=is_prefill, asym=asym)
         self.linear_ops.append(op)
         return op
 

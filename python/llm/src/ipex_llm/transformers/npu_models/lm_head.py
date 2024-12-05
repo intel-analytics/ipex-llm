@@ -36,6 +36,7 @@ class LMHeadLinear(NNFactory):
         dtype: np.dtype = np.int8,
         use_split: bool = False,
         group_size: int = 0,
+        asym: bool = False,
     ):
         """Initialize the LMHeadLinear class.
 
@@ -58,7 +59,7 @@ class LMHeadLinear(NNFactory):
         if use_split:
             input = self.parameter((1, self.batch, self.inC))
             res = self.dq_split_linear(input, self.split_num, self.outC, self.inC, wt_dtype=dtype,
-                                       scale_factor=(group_size == 0))
+                                       scale_factor=(group_size == 0), asym=asym)
         else:
             input = self.parameter((self.batch, self.inC))
             split_size = self.inC // split_num // 2 * 2
@@ -69,7 +70,7 @@ class LMHeadLinear(NNFactory):
                 input_slice = self.slice(input, begin=[0, start_idx],
                                          end=[self.batch, end_idx])
                 linear_slice = self.linear(input_slice, outC, split_size, bias=False,
-                                           wt_dtype=dtype)
+                                           wt_dtype=dtype, asym=asym)
                 if i == 0:
                     res = linear_slice
                 else:
@@ -109,7 +110,7 @@ class LMHeadLinear(NNFactory):
 
 
 class SlicedLMHead(nn.Module):
-    def __init__(self, weight, bias, split_num, use_split=False, group_size=0):
+    def __init__(self, weight, bias, split_num, use_split=False, group_size=0, asym=False):
         super().__init__()
         self.split_num = split_num
         self.outC, self.inC = weight.shape
@@ -128,6 +129,7 @@ class SlicedLMHead(nn.Module):
             self.lm_heads.append(new_linear)
         self.bias = bias
         self.use_split = use_split
+        self.asym = asym
 
     def forward(self, hidden_states):
         if hidden_states.size(0) * hidden_states.size(1) == 1:
@@ -162,19 +164,33 @@ class SlicedLMHead(nn.Module):
         np_dtype = np.uint8 if self.get_weight_dtype() == torch.uint8 else np.int8
         self.fused_lm_head = LMHeadLinear(self.inC, self.outC, 1, self.split_num,
                                           False, "NPU", dtype=np_dtype, use_split=self.use_split,
-                                          group_size=self.group_size)
+                                          group_size=self.group_size, asym=self.asym)
         if self.use_split:
             weights = []
             scales = []
+            zeros = []
             for i in range(self.split_num):
                 weights.append(self.lm_heads[i].weight)
                 scales.append(self.lm_heads[i].scale)
-            fused_lm_head_weights = (torch.stack(weights, axis=0).numpy(),
-                                     torch.stack(scales, axis=0).numpy())
+                if self.asym:
+                    zeros.append(self.lm_heads[i].zero)
+            if self.asym:
+                fused_lm_head_weights = (torch.stack(weights, axis=0).numpy(),
+                                         torch.stack(scales, axis=0).numpy(),
+                                         torch.stack(zeros, axis=0).numpy(),)
+            else:
+                fused_lm_head_weights = (torch.stack(weights, axis=0).numpy(),
+                                         torch.stack(scales, axis=0).numpy())
         else:
-            fused_lm_head_weights = [(self.lm_heads[i].weight.data.numpy(),
-                                      self.lm_heads[i].scale.data.numpy())
-                                     for i in range(self.split_num)]
+            if self.asym:
+                fused_lm_head_weights = [(self.lm_heads[i].weight.data.numpy(),
+                                          self.lm_heads[i].scale.data.numpy(),
+                                          self.lm_heads[i].zero.data.numpy())
+                                         for i in range(self.split_num)]
+            else:
+                fused_lm_head_weights = [(self.lm_heads[i].weight.data.numpy(),
+                                          self.lm_heads[i].scale.data.numpy())
+                                         for i in range(self.split_num)]
 
         self.fused_lm_head.set_weights(self.lm_heads[0].op_id,
                                        fused_lm_head_weights)

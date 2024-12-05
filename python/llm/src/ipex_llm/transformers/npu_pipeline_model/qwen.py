@@ -31,17 +31,33 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
     model_norm = model.model.norm
     lm_head = model.lm_head
     lm_head_n_splits = 1
+    asym = getattr(model.config, "asym", False)
+
     if not isinstance(lm_head, SlicedLMHead):
-        weights = [(lm_head.weight, lm_head.scale)]
+        asym = lm_head.qtype == "asym_int4_rtn"
+        if asym:
+            weights = [(lm_head.weight, lm_head.scale, lm_head.zero)]
+        else:
+            weights = [(lm_head.weight, lm_head.scale)]
     else:
         lm_heads = lm_head.lm_heads
+        asym = lm_heads[0].qtype == "asym_int4_rtn"
+        print("asym is ", asym, lm_heads[0].qtype)
         lm_head_weights = []
         scales = []
+        zeros = []
         for l in lm_heads:
             lm_head_weights.append(l.weight)
             scales.append(l.scale)
-        weights = [(torch.stack(lm_head_weights, axis=0),
-                    torch.stack(scales, axis=0))]
+            if l.zero is not None:
+                zeros.append(l.zero)
+        if len(zeros):
+            weights = [(torch.stack(lm_head_weights, axis=0),
+                        torch.stack(scales, axis=0),
+                        torch.stack(zeros, axis=0))]
+        else:
+            weights = [(torch.stack(lm_head_weights, axis=0),
+                        torch.stack(scales, axis=0))]
         lm_head_n_splits = lm_head.split_num
     if isinstance(weights[0], tuple):
         np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
@@ -60,6 +76,7 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
         vocab_size=vocab_size,
         n_splits=lm_head_n_splits,
         group_size=group_size,
+        asym=asym
     )
 
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head",
@@ -67,9 +84,15 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
 
     # save weights bins files
     if not isinstance(lm_head, SlicedLMHead):
-        weight_numpy = [
-            lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
-        ]
+        if not asym:
+            weight_numpy = [
+                lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
+            ]
+        else:
+            weight_numpy = [
+                lm_head.weight.data.numpy(), lm_head.scale.data.numpy(),
+                lm_head.zero.data.numpy()
+            ]
     else:
         weight_numpy = [v.numpy() for v in weights[0]]
 

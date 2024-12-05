@@ -154,18 +154,21 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                 # workaround for MiniCPM-2B
                 new_lm_head_0 = SlicedLMHead(model.lm_head_0.weight, split_num=split_num,
                                              bias=model.lm_head_0.bias, use_split=True,
-                                             group_size=quantization_group_size)
+                                             group_size=quantization_group_size,
+                                             asym=(qtype == "asym_int4_rtn"))
                 del model.lm_head_0
                 model.lm_head_0 = new_lm_head_0
                 new_lm_head_1 = SlicedLMHead(model.lm_head_1.weight, split_num=split_num,
                                              bias=model.lm_head_1.bias, use_split=True,
-                                             group_size=quantization_group_size)
+                                             group_size=quantization_group_size,
+                                             asym=(qtype == "asym_int4_rtn"))
                 del model.lm_head_1
                 model.lm_head_1 = new_lm_head_1
             else:
                 new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
                                            bias=model.lm_head.bias, use_split=True,
-                                           group_size=quantization_group_size)
+                                           group_size=quantization_group_size,
+                                           asym=(qtype == "asym_int4_rtn"))
                 del model.lm_head
                 model.lm_head = new_lm_head
 
@@ -176,11 +179,13 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
             # Do not split lm_head and use sym_int8 instead when mixed_precison is True
             if quantization_group_size == 0:
                 # Do not split lm_head and use sym_int8 instead when mixed_precison is True
-                is_split = (not mixed_precision) and qtype == "sym_int4_rtn"
+                is_split = (not mixed_precision) and qtype in ["sym_int4_rtn", "asym_int4_rtn"]
                 split_num = 14 if is_split else 1
+                print("enter here, split num is ", split_num)
                 new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
                                            bias=model.lm_head.bias, use_split=True,
-                                           group_size=quantization_group_size)
+                                           group_size=quantization_group_size,
+                                           asym=(qtype == "asym_int4_rtn"))
             del model.lm_head
             model.lm_head = new_lm_head
 

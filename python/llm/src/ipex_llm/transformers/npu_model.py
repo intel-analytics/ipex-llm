@@ -156,11 +156,6 @@ class _BaseAutoModelClass:
             )
         )
 
-        if low_bit == "asym_int4":
-            invalidInputError(quantization_group_size == 0,
-                              "asym_int4 only support quantization_group_size == 0 for now.")
-
-        _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
 
         try:
