@@ -438,6 +438,12 @@ class _BaseAutoModelClass:
                 model.kv_len = config_dict['kv_len']
                 model.vocab_size = config_dict['vocab_size']
                 model.logits_buffer = torch.empty(1, 1, model.vocab_size, dtype=torch.float32)
+                if model.can_generate():
+                    model.generation_config = GenerationConfig.from_pretrained(
+                        pretrained_model_name_or_path,
+                        subfolder=subfolder,
+                        **kwargs,
+                    )
             except:
                 invalidInputError(False,
                                   "Fail to InitLLMPipeline.")
