@@ -110,7 +110,7 @@ See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, sing
       <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama (Mistral-7B Q4_K) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/llama_cpp_quickstart.md">NPU (Llama3.2-3B Q4_0)</a>
+      <a href="docs/mddocs/Quickstart/npu_quickstart.md">PyTorch (Llama3.2-3B SYM_INT4)</a>
     </td>
     <td align="center" width="25%">
       <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI (Llama3-8B FP8) </a>
