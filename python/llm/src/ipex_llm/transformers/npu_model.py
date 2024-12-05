@@ -103,6 +103,7 @@ class _BaseAutoModelClass:
         qtype_map = {
             "sym_int4": "sym_int4_rtn",
             "sym_int8": "sym_int8_rtn",
+            "asym_int4": "asym_int4_rtn",
         }
 
         invalidInputError(
@@ -154,7 +155,7 @@ class _BaseAutoModelClass:
                 f"but got {quantization_group_size}"
             )
         )
-        _args = copy.deepcopy(args)
+
         _kwargs = copy.deepcopy(kwargs)
 
         try:
@@ -270,6 +271,7 @@ class _BaseAutoModelClass:
         with torch.no_grad():
             model.config.update({"mixed_precision": mixed_precision})
             model.config.update({"group_size": quantization_group_size})
+            model.config.update({"asym": qtype == "asym_int4_rtn"})
             optimize_llm_pre(model, qtype, mixed_precision,
                              quantization_group_size=quantization_group_size)
             cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
@@ -416,9 +418,9 @@ class _BaseAutoModelClass:
         )
 
         invalidInputError(
-            qtype in ["sym_int8_rtn", "sym_int4_rtn"],
+            qtype in ["sym_int8_rtn", "sym_int4_rtn", "asym_int4_rtn"],
             f"Unknown bigdl_transformers_low_bit value: {qtype},"
-            f" expected: sym_int8_rtn, sym_int4_rtn. "
+            f" expected: sym_int8_rtn, sym_int4_rtn, asym_int4_rtn. "
         )
 
         if enable_cpp_backend:

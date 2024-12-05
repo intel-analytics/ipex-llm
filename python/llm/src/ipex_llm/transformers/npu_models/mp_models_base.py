@@ -59,9 +59,16 @@ def run_model(
     op_args_flatten = []
     for w in weights:
         if isinstance(w, tuple):  # from QuantizedLinear
-            op_args.append((set_contiguous(w[0]).numpy(), set_contiguous(w[1]).numpy()))
-            op_args_flatten.append(op_args[-1][0])
-            op_args_flatten.append(op_args[-1][1])
+            if len(w) == 2:
+                op_args.append((set_contiguous(w[0]).numpy(), set_contiguous(w[1]).numpy()))
+                op_args_flatten.append(op_args[-1][0])
+                op_args_flatten.append(op_args[-1][1])
+            else:
+                op_args.append((set_contiguous(w[0]).numpy(), set_contiguous(w[1]).numpy(),
+                                set_contiguous(w[2]).numpy()))
+                op_args_flatten.append(op_args[-1][0])
+                op_args_flatten.append(op_args[-1][1])
+                op_args_flatten.append(op_args[-1][2])
         elif w.dtype in [torch.int8, torch.uint8]:    # QuantizedLinear weight
             op_args.append(w.numpy())
             op_args_flatten.append(op_args[-1])
@@ -104,7 +111,7 @@ def run_model(
 class LLMBaseNNFactory(NNFactory):
 
     def __init__(self, max_seq_len, transpose_value, dtype, profile=False, device="NPU",
-                 n_splits_linear=1, n_splits_down_proj=1, group_size=0):
+                 n_splits_linear=1, n_splits_down_proj=1, group_size=0, asym=False):
         super().__init__(profile, device)
         self.cache_parameter_ops = []
         self.input_ops = []
@@ -117,6 +124,7 @@ class LLMBaseNNFactory(NNFactory):
         self.n_splits_linear = n_splits_linear
         self.n_splits_down_proj = n_splits_down_proj
         self.group_size = group_size
+        self.asym = asym
 
     def attention(self,
                   *,
@@ -149,7 +157,8 @@ class LLMBaseNNFactory(NNFactory):
             wt_dtype=self.dtype,
             n_splits=self.n_splits_linear,
             scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
+            is_prefill=(mode == "prefill"),
+            asym=self.asym
         )
 
         key_states = self.linear(
@@ -160,7 +169,8 @@ class LLMBaseNNFactory(NNFactory):
             wt_dtype=self.dtype,
             n_splits=self.n_splits_linear,
             scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
+            is_prefill=(mode == "prefill"),
+            asym=self.asym
         )
 
         value_states = self.linear(
@@ -171,7 +181,8 @@ class LLMBaseNNFactory(NNFactory):
             wt_dtype=self.dtype,
             n_splits=self.n_splits_linear,
             scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
+            is_prefill=(mode == "prefill"),
+            asym=self.asym
         )
 
         if q_bias is not None:
@@ -260,7 +271,8 @@ class LLMBaseNNFactory(NNFactory):
             attn_output, hidden_size, hidden_size, bias=False, wt_dtype=self.dtype,
             n_splits=self.n_splits_linear,
             scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
+            is_prefill=(mode == "prefill"),
+            asym=self.asym
         )
         return attn_output, new_key_states, new_value_states
 
@@ -428,13 +440,15 @@ class LLMBaseNNFactory(NNFactory):
             hidden_states, self.intermediate_size, self.hidden_size, bias=False,
             wt_dtype=self.dtype, n_splits=self.n_splits_linear,
             scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
+            is_prefill=(mode == "prefill"),
+            asym=self.asym
         )
         mm2 = self.linear(
             hidden_states, self.intermediate_size, self.hidden_size, bias=False,
             wt_dtype=self.dtype, n_splits=self.n_splits_linear,
             scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
+            is_prefill=(mode == "prefill"),
+            asym=self.asym
         )  # type: ignore[attr-defined]
         mm1 = self.eltwise_mul(self.swish(mm1), mm2)  # type: ignore[attr-defined]
 
@@ -442,7 +456,8 @@ class LLMBaseNNFactory(NNFactory):
             mm1, self.hidden_size, self.intermediate_size, bias=False, wt_dtype=self.dtype,
             n_splits=self.n_splits_down_proj,
             scale_factor=(self.group_size == 0),
-            is_prefill=(mode == "prefill")
+            is_prefill=(mode == "prefill"),
+            asym=self.asym
         )
         return hidden_states
 
@@ -558,17 +573,20 @@ class LLMBaseNNFactory(NNFactory):
                wt_dtype: npt.DTypeLike = np.float16,
                n_splits: int = 1,
                scale_factor: bool = True,
-               is_prefill: bool = False):
+               is_prefill: bool = False,
+               asym: bool = False):
         if n_splits == 1:
             op = super().linear(input_node, output_channels,
                                 input_channels, bias, act_dtype,
-                                wt_dtype, scale_factor=scale_factor)
+                                wt_dtype, scale_factor=scale_factor,
+                                asym=asym)
         else:
             op = super().dq_split_linear(input_node, n_splits,
                                          output_channels, input_channels,
                                          bias=bias, act_dtype=act_dtype,
                                          wt_dtype=wt_dtype, scale_factor=scale_factor,
-                                         is_prefill=is_prefill)
+                                         is_prefill=is_prefill,
+                                         asym=asym)
         self.linear_ops.append(op)
         return op
 
@@ -580,10 +598,11 @@ class LLMBaseNNFactory(NNFactory):
                         act_dtype: npt.DTypeLike = np.float16,
                         wt_dtype: npt.DTypeLike = np.float16,
                         scale_factor: bool = False,
-                        is_prefill: bool = False):
+                        is_prefill: bool = False,
+                        asym: bool = False):
         op = super().dq_split_linear(input_node, n_splits, output_channels, input_channels,
                                      False, act_dtype, wt_dtype, scale_factor,
-                                     is_prefill=is_prefill)
+                                     is_prefill=is_prefill, asym=asym)
         self.linear_ops.append(op)
         return op
 
