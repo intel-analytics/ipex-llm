@@ -14,18 +14,16 @@
 > - *它可以与  [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md), [Ollama](docs/mddocs/Quickstart/ollama_quickstart.zh-CN.md), [HuggingFace transformers](python/llm/example/GPU/HuggingFace), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models) 等无缝衔接。* 
 > - ***70+** 模型已经在 `ipex-llm` 上得到优化和验证（如 Llama, Phi, Mistral, Mixtral, Whisper, Qwen, MiniCPM, Qwen-VL, MiniCPM-V 等), 以获得先进的 **大模型算法优化**, **XPU 加速** 以及 **低比特（FP8FP8/FP6/FP4/INT4) 支持**；更多模型信息请参阅[这里](#模型验证)。*
 
-## 最近更新 🔥 
-- [2024/07] 新增 Microsoft **GraphRAG** 的支持（使用运行在本地 Intel GPU 上的 LLM），详情参考[快速入门指南](docs/mddocs/Quickstart/graphrag_quickstart.md)。
+<details><summary>项目更新</summary>
+<br/>
+
+ - [2024/07] 新增 Microsoft **GraphRAG** 的支持（使用运行在本地 Intel GPU 上的 LLM），详情参考[快速入门指南](docs/mddocs/Quickstart/graphrag_quickstart.md)。
 - [2024/07] 全面增强了对多模态大模型的支持，包括 [StableDiffusion](https://github.com/jason-dai/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Multimodal/StableDiffusion), [Phi-3-Vision](python/llm/example/GPU/HuggingFace/Multimodal/phi-3-vision), [Qwen-VL](python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl)，更多详情请点击[这里](python/llm/example/GPU/HuggingFace/Multimodal)。
 - [2024/07] 新增 Intel GPU 上 **FP6** 的支持，详情参考[更多数据类型样例](python/llm/example/GPU/HuggingFace/More-Data-Types)。 
 - [2024/06] 新增对 Intel Core Ultra 处理器中 **NPU** 的实验性支持，详情参考[相关示例](python/llm/example/NPU/HF-Transformers-AutoModels)。 
 - [2024/06] 增加了对[流水线并行推理](python/llm/example/GPU/Pipeline-Parallel-Inference)的全面支持，使得用两块或更多 Intel GPU（如 Arc）上运行 LLM 变得更容易。
 - [2024/06] 新增在 Intel GPU 上运行 **RAGFlow** 的支持，详情参考[快速入门指南](docs/mddocs/Quickstart/ragflow_quickstart.md)。
 - [2024/05] 新增 **Axolotl** 的支持，可以在 Intel GPU 上进行LLM微调，详情参考[快速入门指南](docs/mddocs/Quickstart/axolotl_quickstart.md)。
-
-<details><summary>更多更新</summary>
-<br/>
- 
 - [2024/05] 你可以使用 **Docker** [images](#docker) 很容易地运行 `ipex-llm` 推理、服务和微调。
 - [2024/05] 你能够在 Windows 上仅使用 "*[one command](docs/mddocs/Quickstart/install_windows_gpu.zh-CN.md#安装-ipex-llm)*" 来安装 `ipex-llm`。
 - [2024/04] 你现在可以在 Intel GPU 上使用 `ipex-llm` 运行 **Open WebUI** ，详情参考[快速入门指南](docs/mddocs/Quickstart/open_webui_with_ollama_quickstart.md)。
@@ -52,46 +50,26 @@
  
 </details> 
 
-## `ipex-llm` 性能
-下图展示了在 Intel Core Ultra 和 Intel Arc GPU 上的 **Token 生成速度**[^1]（更多详情可点击 [[2]](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-meta-llama3-with-intel-ai-solutions.html)[[3]](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-microsoft-phi-3-models-intel-ai-soln.html)[[4]](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-ai-solutions-accelerate-alibaba-qwen2-llms.html))。
-
-<table width="100%">
-  <tr>
-    <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" target="_blank">
-        <img src="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" width=100%; />
-      </a>
-    </td>
-    <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" target="_blank">
-        <img src="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" width=100%; />
-      </a>
-    </td>
-  </tr>
-</table>
-
-如果需要自己进行 `ipex-llm` 性能基准测试，可参考[基准测试指南](docs/mddocs/Quickstart/benchmark_quickstart.md)。
-
 ## `ipex-llm` Demo
 
-以下分别是使用 `ipex-llm` 在 Intel Iris iGPU，Intel Core Ultra iGPU，单卡 Arc GPU 或双卡 Arc GPU 上运行本地 LLM 的 DEMO 演示，
+以下分别是使用 `ipex-llm` 在英特尔酷睿Ultra iGPU、酷睿Ultra NPU、单卡 Arc GPU 或双卡 Arc GPU 上运行本地 LLM 的 DEMO 演示，
 
 <table width="100%">
   <tr>
-    <td align="center" colspan="1"><strong>Intel Iris iGPU</strong></td>
-    <td align="center" colspan="1"><strong>Intel Core Ultra iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra (Series 1) iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra (Series 2) NPU</strong></td>
     <td align="center" colspan="1"><strong>Intel Arc dGPU</strong></td>
-    <td align="center" colspan="1"><strong>双卡 Intel Arc dGPU</strong></td>
+    <td align="center" colspan="1"><strong>2-Card Intel Arc dGPUs</strong></td>
   </tr>
   <tr>
-    <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/iris_phi3-3.8B_q4_0_llamacpp_long.gif" target="_blank">
-        <img src="https://llm-assets.readthedocs.io/en/latest/_images/iris_phi3-3.8B_q4_0_llamacpp_long.gif" width=100%; />
-      </a>
-    </td>
     <td>
       <a href="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" target="_blank">
         <img src="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" width=100%; />
+      </a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/npu_llama3.2-3B.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/npu_llama3.2-3B.gif" width=100%; />
       </a>
     </td>
     <td>
@@ -107,16 +85,16 @@
   </tr>
   <tr>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md">llama.cpp (Phi-3-mini Q4_0)</a>
+      <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama <br> (Mistral-7B Q4_K) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/ollama_quickstart.zh-CN.md">Ollama (Mistral-7B Q4_K) </a>
+      <a href="docs/mddocs/Quickstart/npu_quickstart.md">HuggingFace <br> (Llama3.2-3B SYM_INT4)</a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI (Llama3-8B FP8) </a>
+      <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI <br> (Llama3-8B FP8) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/fastchat_quickstart.md">FastChat (QWen1.5-32B FP6)</a>
+      <a href="docs/mddocs/Quickstart/fastchat_quickstart.md">FastChat <br> (QWen1.5-32B FP6)</a>
     </td>  </tr>
 </table>
 
@@ -157,6 +135,26 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
     </td>  </tr>
 </table>
 -->
+
+## `ipex-llm` 性能
+下图展示了在 Intel Core Ultra 和 Intel Arc GPU 上的 **Token 生成速度**[^1]（更多详情可点击 [[2]](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-meta-llama3-with-intel-ai-solutions.html)[[3]](https://www.intel.com/content/www/us/en/developer/articles/technical/accelerate-microsoft-phi-3-models-intel-ai-soln.html)[[4]](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-ai-solutions-accelerate-alibaba-qwen2-llms.html))。
+
+<table width="100%">
+  <tr>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/MTL_perf.jpg" width=100%; />
+      </a>
+    </td>
+    <td>
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/Arc_perf.jpg" width=100%; />
+      </a>
+    </td>
+  </tr>
+</table>
+
+如果需要自己进行 `ipex-llm` 性能基准测试，可参考[基准测试指南](docs/mddocs/Quickstart/benchmark_quickstart.md)。
 
 ## 模型准确率
 部分模型的 **Perplexity** 结果如下所示（使用 Wikitext 数据集和[此处](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/dev/benchmark/perplexity)的脚本进行测试)。
