@@ -1,4 +1,4 @@
-# C++ Example of running LLM on Intel NPU using IPEX-LLM (Experimental)
+# C++ Example of running LLM on Intel NPU using IPEX-LLM
 In this directory, you will find a C++ example on how to run LLM models on Intel NPUs using IPEX-LLM (leveraging *Intel NPU Acceleration Library*). See the table blow for verified models.
 
 ## Verified Models
@@ -121,7 +121,7 @@ Decode 46 tokens cost xxxx ms (avg xx.xx ms each token).
 ### Troubleshooting
 
 #### Program crash with Chinese prompt
-If you run CPP examples on Windows and find that your program raises below error when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
+If you run CPP examples on Windows and find that your program raises below error when accepting Chinese prompts, you can search for `region` in the Windows search bar and go to `Region->Administrative->Change System locale..`, tick `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
 ```log
 thread '<unnamed>' panicked at src\lib.rs:151:91:
 called `Result::unwrap()` on an `Err` value: Utf8Error { valid_up_to: 77, error_len: Some(1) }
