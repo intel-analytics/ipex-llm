@@ -98,11 +98,11 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
                                              iqtype, device=device,
                                              enable_scale_search=enable_scale_search,
                                              imatrix=imatrix)
-        min = None
-        # split scale to scale & min
+        zero = None
+        # split scale to scale & zero
         if qtype == "asym_int4_rtn":
-            scale, min = torch.split(scale, scale.shape[0] // 2)
-        return QuantizedLinear(qweights, scale, min, layer.bias,
+            scale, zero = torch.split(scale, scale.shape[0] // 2)
+        return QuantizedLinear(qweights, scale, zero, layer.bias,
                                group_size=group_size, qtype=qtype)
 
 
@@ -124,11 +124,11 @@ def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
                                              iqtype, device=device,
                                              enable_scale_search=enable_scale_search,
                                              imatrix=imatrix)
-        min = None
-        # split scale to scale & min
+        zero = None
+        # split scale to scale & zero
         if qtype == "asym_int4_rtn":
-            scale, min = torch.split(scale, scale.shape[0] // 2)
-        return DequantizedLinear(qweights, scale, min, layer.bias, qtype)
+            scale, zero = torch.split(scale, scale.shape[0] // 2)
+        return DequantizedLinear(qweights, scale, zero, layer.bias, qtype)
 
 
 @module_optimization

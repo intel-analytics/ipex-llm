@@ -129,7 +129,7 @@ class QuantizedLinear(torch.nn.Module):
         self,
         weight: torch.Tensor,
         scale: torch.Tensor,
-        min: Optional[torch.Tensor] = None,
+        zero: Optional[torch.Tensor] = None,
         bias: Optional[torch.Tensor] = None,
         qtype: Optional[str] = "sym_int4_rtn",
         group_size: int = 0,
@@ -139,7 +139,7 @@ class QuantizedLinear(torch.nn.Module):
         Args:
             weight (torch.Tensor): Linear operation weight
             scale (torch.Tensor): Quantization scale
-            min (Optional[torch.Tensor], optional): Quantization min for asym_int4_rtn
+            zero (Optional[torch.Tensor], optional): Quantization zero for asym_int4_rtn
             bias (Optional[torch.Tensor], optional): Linear operation optional bias.
                                                      Defaults to None.
             qtype (Optional[str], optional): qtype of this Linear
@@ -166,10 +166,10 @@ class QuantizedLinear(torch.nn.Module):
                 # Int4 we need to double the input channels because weights are compressed
                 self.inC *= 2
             self.scale = Parameter(scale * math.sqrt(self.inC), requires_grad=False)
-            if min is not None:
-                self.min = Parameter(min * math.sqrt(self.inC), requires_grad=False)
+            if zero is not None:
+                self.zero = Parameter(zero * math.sqrt(self.inC), requires_grad=False)
             else:
-                self.min = None
+                self.zero = None
         self.bias = bias
         self.qtype = qtype
         self.op_id = str(uuid.uuid4())
@@ -204,8 +204,8 @@ class QuantizedLinear(torch.nn.Module):
                 )
             )
 
-        min_data = self.min.data if self.min is not None else None
-        out = run_matmul(x, self.weight.data, self.scale.data, min_data, self.op_id)
+        zero_data = self.zero.data if self.zero is not None else None
+        out = run_matmul(x, self.weight.data, self.scale.data, zero_data, self.op_id)
 
         if self.bias is None:
             return out
@@ -219,7 +219,7 @@ class DequantizedLinear(torch.nn.Module):
         self,
         weight: torch.Tensor,
         scale: torch.Tensor,
-        min: Optional[torch.Tensor] = None,
+        zero: Optional[torch.Tensor] = None,
         bias: Optional[torch.Tensor] = None,
         qtype: Optional[str] = "sym_int4_rtn",
     ):
@@ -227,7 +227,7 @@ class DequantizedLinear(torch.nn.Module):
         Args:
             weight (torch.Tensor): Linear operation quantized weight
             scale (torch.Tensor): Quantization scale
-            min (Optional[torch.Tensor], optional): Quantization min for asym_int4_rtn
+            zero (Optional[torch.Tensor], optional): Quantization zero for asym_int4_rtn
             bias (Optional[torch.Tensor], optional): Linear operation optional bias.
                                                      Defaults to None.
             qtype (Optional[str], optional): qtype of this Linear
@@ -254,8 +254,8 @@ class DequantizedLinear(torch.nn.Module):
             decompressed_weight = combined_weight.view(combined_weight.size(0), -1)
             dequantized_weight = decompressed_weight.to(torch.float32) * \
                 torch.unsqueeze(scale.to(torch.float32), dim=1)
-            if qtype == "asym_int4_rtn" and min is not None:
-                dequantized_weight = dequantized_weight + torch.unsqueeze(min.to(torch.float32),
+            if qtype == "asym_int4_rtn" and zero is not None:
+                dequantized_weight = dequantized_weight + torch.unsqueeze(zero.to(torch.float32),
                                                                           dim=1)
             self.weight = Parameter(dequantized_weight, requires_grad=False).contiguous()
         else:

@@ -601,15 +601,15 @@ def run_decode(
                            mlp_layer.down_proj_dq_list]:
             l_weights = []
             scales = []
-            mins = []
+            zeros = []
             for l in layer_list:
                 l_weights.append(l.weight)
                 scales.append(l.scale)
-                if l.min is not None:
-                    mins.append(l.min)
-            if len(mins):
+                if l.zero is not None:
+                    zeros.append(l.zero)
+            if len(zeros):
                 weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                                torch.stack(mins, axis=0)))
+                                torch.stack(zeros, axis=0)))
             else:
                 weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
@@ -839,15 +839,15 @@ def run_prefill(
                            mlp_layer.down_proj_dq_list]:
             l_weights = []
             scales = []
-            mins = []
+            zeros = []
             for l in layer_list:
                 l_weights.append(l.weight)
                 scales.append(l.scale)
-                if l.min is not None:
-                    mins.append(l.min)
-            if len(mins):
+                if l.zero is not None:
+                    zeros.append(l.zero)
+            if len(zeros):
                 weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                                torch.stack(mins, axis=0)))
+                                torch.stack(zeros, axis=0)))
             else:
                 weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
 
