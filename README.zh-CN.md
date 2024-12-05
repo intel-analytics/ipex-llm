@@ -8,7 +8,7 @@
   < <a href='./README.md'>English</a> | <b>中文 ></b> 
 </p>
 
-**`ipex-llm`** 是一个将大语言模型高效地运行于 Intel CPU，GPU *(如搭载集成显卡的个人电脑，Arc 独立显卡等)* 和 NPU 上的大模型 XPU 加速库[^1]。 
+**`ipex-llm`** 是一个将大语言模型高效地运行于 Intel [GPU](docs/mddocs/Quickstart/install_windows_gpu.md) *(如搭载集成显卡的个人电脑，Arc 独立显卡、Flex 及 Max 数据中心 GPU 等)*、[NPU](docs/mddocs/Quickstart/npu_quickstart.md) 和 CPU 上的大模型 XPU 加速库[^1]。 
 > [!NOTE]
 > - *它构建在 **`llama.cpp`**, **`transformers`**, **`bitsandbytes`**, **`vLLM`**, **`qlora`**, **`AutoGPTQ`**, **`AutoAWQ`** 等优秀工作之上。*
 > - *它可以与  [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md), [Ollama](docs/mddocs/Quickstart/ollama_quickstart.zh-CN.md), [HuggingFace transformers](python/llm/example/GPU/HuggingFace), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models) 等无缝衔接。* 
