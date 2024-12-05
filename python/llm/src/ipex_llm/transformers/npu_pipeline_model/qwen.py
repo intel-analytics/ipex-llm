@@ -42,7 +42,6 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
     else:
         lm_heads = lm_head.lm_heads
         asym = lm_heads[0].qtype == "asym_int4_rtn"
-        print("asym is ", asym, lm_heads[0].qtype)
         lm_head_weights = []
         scales = []
         zeros = []
