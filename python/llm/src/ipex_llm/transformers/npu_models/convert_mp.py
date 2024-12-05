@@ -184,7 +184,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                 new_lm_head = SlicedLMHead(model.lm_head.weight, split_num=split_num,
                                            bias=model.lm_head.bias, use_split=True,
                                            group_size=quantization_group_size,
-                                           asym=(qtype == "asym_int4_rtn") and (not mixed_precision))
+                                           asym=((qtype == "asym_int4_rtn") and
+                                                 (not mixed_precision)))
             del model.lm_head
             model.lm_head = new_lm_head
 
