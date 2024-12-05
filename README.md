@@ -107,16 +107,16 @@ See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, sing
   </tr>
   <tr>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama (Mistral-7B Q4_K) </a>
+      <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama <br> (Mistral-7B Q4_K) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/npu_quickstart.md">HuggingFace (Llama3.2-3B SYM_INT4)</a>
+      <a href="docs/mddocs/Quickstart/npu_quickstart.md">HuggingFace <br> (Llama3.2-3B SYM_INT4)</a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI (Llama3-8B FP8) </a>
+      <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI <br> (Llama3-8B FP8) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/fastchat_quickstart.md">FastChat (QWen1.5-32B FP6)</a>
+      <a href="docs/mddocs/Quickstart/fastchat_quickstart.md">FastChat <br> (QWen1.5-32B FP6)</a>
     </td>  </tr>
 </table>
 
