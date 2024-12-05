@@ -789,7 +789,8 @@ def run_transformer_int4_loadlowbit_npu_win(repo_id,
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
 
-    model = BenchmarkWrapper(model)
+    if not hasattr(model, "model_ptr"):
+        model = BenchmarkWrapper(model)
 
     result = {}
     with torch.inference_mode():
@@ -802,10 +803,11 @@ def run_transformer_int4_loadlowbit_npu_win(repo_id,
             # slice the input_ids to ensure the prompt length is required length.
             input_ids = tokenizer.encode(input_str, return_tensors="pt")
             input_ids = input_ids[:, :in_len]
-            true_str = tokenizer.batch_decode(input_ids)[0]
-            input_list = [true_str] * batch_size
-            input_ids = tokenizer(input_list, return_tensors="pt").input_ids
-            input_ids = input_ids[:, :in_len]
+            if repo_id not in MINICPM_IDS:
+                true_str = tokenizer.batch_decode(input_ids)[0]
+                input_list = [true_str] * batch_size
+                input_ids = tokenizer(input_list, return_tensors="pt").input_ids
+                input_ids = input_ids[:, :in_len]
             actual_in_len = input_ids.shape[1]
             result[in_out] = []
             for i in range(num_trials + warm_up):
