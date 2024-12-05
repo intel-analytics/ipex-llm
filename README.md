@@ -78,20 +78,20 @@ See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, sing
 
 <table width="100%">
   <tr>
-    <td align="center" colspan="1"><strong>Intel Iris iGPU</strong></td>
-    <td align="center" colspan="1"><strong>Intel Core Ultra iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra (Series 1) iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra (Series 2) NPU</strong></td>
     <td align="center" colspan="1"><strong>Intel Arc dGPU</strong></td>
     <td align="center" colspan="1"><strong>2-Card Intel Arc dGPUs</strong></td>
   </tr>
   <tr>
     <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/iris_phi3-3.8B_q4_0_llamacpp_long.gif" target="_blank">
-        <img src="https://llm-assets.readthedocs.io/en/latest/_images/iris_phi3-3.8B_q4_0_llamacpp_long.gif" width=100%; />
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" width=100%; />
       </a>
     </td>
     <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" target="_blank">
-        <img src="https://llm-assets.readthedocs.io/en/latest/_images/mtl_mistral-7B_q4_k_m_ollama.gif" width=100%; />
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/npu_llama3.2-3B.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/npu_llama3.2-3B.gif" width=100%; />
       </a>
     </td>
     <td>
@@ -107,10 +107,10 @@ See demos of running local LLMs *on Intel Iris iGPU, Intel Core Ultra iGPU, sing
   </tr>
   <tr>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/llama_cpp_quickstart.md">llama.cpp (Phi-3-mini Q4_0)</a>
+      <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama (Mistral-7B Q4_K) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama (Mistral-7B Q4_K) </a>
+      <a href="docs/mddocs/Quickstart/llama_cpp_quickstart.md">NPU (Llama3.2-3B Q4_0)</a>
     </td>
     <td align="center" width="25%">
       <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI (Llama3-8B FP8) </a>
