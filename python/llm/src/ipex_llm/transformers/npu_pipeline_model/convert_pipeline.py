@@ -460,7 +460,6 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         model.config.update(update_dict)
         model.config.save_pretrained(save_directory)
         if model.can_generate():
-            print("can generate!!!!!!!!")
             model.generation_config.save_pretrained(save_directory)
 
         from .qwen import convert_qwen_layer, convert_fused_qwen_layer
