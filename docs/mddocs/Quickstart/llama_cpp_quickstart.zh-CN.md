@@ -343,9 +343,9 @@ Log end
 此外，你也可以在执行命令前使用 `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` 来指定要使用的 GPU 设备，更多详情信息请参阅[此处指南](../Overview/KeyFeatures/multi_gpus_selection.md#2-oneapi-device-selector)。
 
 #### 9. 使用中文提示词时发生程序崩溃
-如果你在 Windows 上运行 llama.cpp 程序时，发现程序在接受中文提示时崩溃或者输出异常，可以进入“区域设置 -> 管理 -> 更改系统区域设置”，勾选“Beta: 使用 Unicode UTF-8 提供全球语言支持”选项，然后重启计算机。
+如果你在 Windows 上运行 llama.cpp 程序时，发现程序在接受中文提示时崩溃或者输出异常，可以在Windows搜索栏搜索“区域设置”，进入“区域设置 -> 管理 -> 更改系统区域设置”，勾选“Beta: 使用 Unicode UTF-8 提供全球语言支持”选项，然后重启计算机。
 
-有关如何执行此操作的详细说明，请参阅[此问题](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469)。
+有关如何执行此操作的详细说明，请参阅[此问题](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105598660)。
 
 #### 10. sycl7.dll 未找到错误
 如果你在 Linux 或者 Windows 上遇到类似 `System Error: sycl7.dll not found` 的错误, 请根据操作系统进行下列检查:

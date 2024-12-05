@@ -342,9 +342,9 @@ If your machine has multi GPUs, `llama.cpp` will default use all GPUs which may 
 Also, you can use `ONEAPI_DEVICE_SELECTOR=level_zero:[gpu_id]` to select device before excuting your command, more details can refer to [here](../Overview/KeyFeatures/multi_gpus_selection.md#2-oneapi-device-selector).
 
 #### 9. Program crash with Chinese prompt
-If you run the llama.cpp program on Windows and find that your program crashes or outputs abnormally when accepting Chinese prompts, you can open `Region->Administrative->Change System locale..`, check `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
+If you run the llama.cpp program on Windows and find that your program crashes or outputs abnormally when accepting Chinese prompts, you can search for `region` in the Windows search bar and go to `Region->Administrative->Change System locale..`, tick `Beta: Use Unicode UTF-8 for worldwide language support` option and then restart your computer.
 
-For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105600469).
+For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105598660).
 
 #### 10. sycl7.dll not found error
 If you meet `System Error: sycl7.dll not found` on Windows or you meet similar error on Linux, please check:
