@@ -55,7 +55,6 @@ class LMHeadLinear(NNFactory):
         self.batch = batch
 
         self.split_num = split_num
-
         if use_split:
             input = self.parameter((1, self.batch, self.inC))
             res = self.dq_split_linear(input, self.split_num, self.outC, self.inC, wt_dtype=dtype,
@@ -172,15 +171,15 @@ class SlicedLMHead(nn.Module):
             for i in range(self.split_num):
                 weights.append(self.lm_heads[i].weight)
                 scales.append(self.lm_heads[i].scale)
-                if self.asym:
+                if self.lm_heads[i].zero is not None:
                     zeros.append(self.lm_heads[i].zero)
-            if self.asym:
-                fused_lm_head_weights = (torch.stack(weights, axis=0).numpy(),
-                                         torch.stack(scales, axis=0).numpy(),
-                                         torch.stack(zeros, axis=0).numpy(),)
+            if len(zeros):
+                fused_lm_head_weights = [(torch.stack(weights, axis=0).numpy(),
+                                          torch.stack(scales, axis=0).numpy(),
+                                          torch.stack(zeros, axis=0).numpy())]
             else:
-                fused_lm_head_weights = (torch.stack(weights, axis=0).numpy(),
-                                         torch.stack(scales, axis=0).numpy())
+                fused_lm_head_weights = [(torch.stack(weights, axis=0).numpy(),
+                                          torch.stack(scales, axis=0).numpy())]
         else:
             if self.asym:
                 fused_lm_head_weights = [(self.lm_heads[i].weight.data.numpy(),
