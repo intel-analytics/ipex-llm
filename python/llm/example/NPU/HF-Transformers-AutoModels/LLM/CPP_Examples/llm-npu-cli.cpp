@@ -25,8 +25,116 @@
 
 static void print_usage(int, char ** argv) {
     printf("\nexample usage:\n");
-    printf("\n    %s -m npu_model_dir [-n n_predict] [prompt]\n", argv[0]);
+    printf("\n    %s -m npu_model_dir [-cnv] [-n n_predict] [prompt]\n", argv[0]);
     printf("\n");
+}
+
+
+const std::string llama2_template = "<s>[INST] <<SYS>>\n\n<</SYS>>\n\n%s [/INST]";
+const std::string llama3_template = "<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n%s<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n";
+const std::string minicpm_template = "<用户>%s<AI>";
+const std::string qwen2_template = "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\n%s<|im_end|>\n<|im_start|>assistant\n";
+
+
+std::string add_chat_history(npu_model_params model_params,
+                             std::string new_prompt, std::string chat_history, bool is_input) {
+    char prompt[8092];
+    if (model_params.model_type == std::string("llama") && model_params.vocab_size == 32000) {
+        if (chat_history == ""){
+            sprintf_s(prompt, llama2_template.c_str(), new_prompt.c_str());
+        }else{
+            if (is_input){
+                std::string input_template = "%s%s [/INST]";
+                sprintf_s(prompt, input_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+            else{
+                std::string res_template = "%s%s </s><s>[INST]";
+                sprintf_s(prompt, res_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+        }
+        
+    } else if (model_params.model_type == std::string("llama")) {
+        if (chat_history == ""){
+            sprintf_s(prompt, llama3_template.c_str(), new_prompt.c_str());
+        }else{
+            if (is_input){
+                std::string input_template = "%s<|start_header_id|>user<|end_header_id|>\n\n%s<|eot_id|>";
+                sprintf_s(prompt, input_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+            else{
+                std::string res_template = "%s<|start_header_id|>assistant<|end_header_id|>\n\n%s<|eot_id|>";
+                sprintf_s(prompt, res_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+        }
+    } else if (model_params.model_type == std::string("qwen2")) {
+        if (chat_history == ""){
+            sprintf_s(prompt, qwen2_template.c_str(), new_prompt.c_str());
+        }else{
+            if (is_input){
+                std::string input_template = "%s%s<|im_end|>\n<|im_start|>assistant";
+                sprintf_s(prompt, input_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+            else{
+                std::string res_template = "%s%s<|im_end|>\n<|im_start|>user\n";
+                sprintf_s(prompt, res_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+        }
+    } else if (model_params.model_type == std::string("minicpm")) {
+        if (chat_history == ""){
+            sprintf_s(prompt, minicpm_template.c_str(), new_prompt.c_str());
+        }else{
+            if (is_input){
+                std::string input_template = "%s%s<AI>";
+                sprintf_s(prompt, input_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+            else{
+                std::string res_template = "%s%s<用户>";
+                sprintf_s(prompt, res_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+        }
+    } else {
+        sprintf_s(prompt, chat_history.c_str(), new_prompt.c_str());
+    }
+    return prompt;
+}
+
+
+std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_inp_size,
+                         npu_model_params model_params, tokenizer_params tok_params, int32_t max_new_token, bool do_print){
+    auto start = std::chrono::high_resolution_clock::now();
+    float* logits = run_prefill(void_model, embd_inp_ptr, embd_inp_size);
+    int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    if (do_print){
+        printf("\nPrefill %d tokens cost %d ms.\n", embd_inp_size, duration.count());
+    }
+
+    std::vector<int32_t> embd;  // output ids
+    embd.push_back(token);
+
+    int token_nums = 0;
+    start = std::chrono::high_resolution_clock::now();
+    for (int i = 1; i < max_new_token; i++){
+        auto logits = run_decode(void_model, embd[i-1]);
+        int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
+        if (std::find(tok_params.eos_token_id.begin(), tok_params.eos_token_id.end(), token) == tok_params.eos_token_id.end()){
+            embd.push_back(token);
+            token_nums ++;
+        } else {
+            break;
+        }
+    }
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    std::string output = llm_decode(embd);
+
+    if (do_print){
+        printf("\nDecode %d tokens cost %d ms (avg %f ms each token).\n", token_nums, duration.count(), (float)duration.count() / token_nums);
+    }
+
+    return output;
 }
 
 
@@ -39,6 +147,7 @@ int main(int argc, char ** argv) {
     std::string prompt = "AI是什么?";
     // number of tokens to predict
     int n_predict = 32;
+    bool cnv_mode = false;
 
     // parse command line arguments
 
@@ -52,7 +161,11 @@ int main(int argc, char ** argv) {
                     print_usage(argc, argv);
                     return 1;
                 }
-            } else if (strcmp(argv[i], "-n") == 0) {
+            } else if (strcmp(argv[i], "-cnv") == 0){
+                // multi-round conversation mode
+                cnv_mode = true;
+                break;
+            }else if (strcmp(argv[i], "-n") == 0) {
                 if (i + 1 < argc) {
                     try {
                         n_predict = std::stoi(argv[++i]);
@@ -86,6 +199,7 @@ int main(int argc, char ** argv) {
     params.model = model_dir;
     params.prompt = prompt;
 
+    // npu_model_params model_params;
     void* model = load_model_from_file(params.model);
     npu_model_params model_params;
     load_config_from_file(model_params, params.model);
@@ -93,43 +207,54 @@ int main(int argc, char ** argv) {
     tokenizer_params tok_params;
     load_tokenizer(tok_params, params.model);
 
-    std::string full_prompt = add_chat_template(model_params, params.prompt);
-    std::cout << "Input: " << std::endl;
-    std::cout << full_prompt << std::endl;
+    if (cnv_mode){
+        std::string prompt;
+        std::string history = "";
+        std::string response;
+        while(true){
+            std::cout << "User:";
+            std::getline(std::cin, prompt);
+            if (prompt == "exit"){
+                break;
+            }
+            else{
+                // process prompt with chat history
+                std::string full_prompt = add_chat_history(model_params, prompt, history, true);
 
-    // tokenize input
-    std::vector<int32_t> embd_inp = llm_tokenize(full_prompt, false);
+                // tokenize input
+                std::vector<int32_t> embd_inp = llm_tokenize(full_prompt, false);
+                if (embd_inp.size() > model_params.max_prompt_len){
+                    // empty chat history
+                    full_prompt = add_chat_history(model_params, prompt, "", true);
+                    embd_inp = llm_tokenize(full_prompt, false);
+                }
+                
+                response = run_generate(model, embd_inp.data(), embd_inp.size(),
+                                        model_params, tok_params, model_params.kv_len - embd_inp.size(), false);
 
-    std::vector<int32_t> embd;  // output ids
-    auto start = std::chrono::high_resolution_clock::now();
-    float* logits = run_prefill(model, embd_inp.data(), embd_inp.size());
-    int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    printf("\nPrefill %d tokens cost %d ms.\n", embd_inp.size(), duration.count());
-    embd.push_back(token);
+                std::cout << "Assistant:";
+                std::cout << response << std::endl;
 
-    int token_nums = 0;
-    start = std::chrono::high_resolution_clock::now();
-    for (int i = 1; i < params.n_predict; i++){
-        auto logits = run_decode(model, embd[i-1]);
-        int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
-        if (std::find(tok_params.eos_token_id.begin(), tok_params.eos_token_id.end(), token) == tok_params.eos_token_id.end()){
-            embd.push_back(token);
-            token_nums ++;
-        } else {
-            break;
+                history = add_chat_history(model_params, response, full_prompt, false);
+
+                reset(model);
+            }
         }
     }
-    end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    else{
+        std::string full_prompt = add_chat_template(model_params, params.prompt);
+        std::cout << "Input: " << std::endl;
+        std::cout << full_prompt << std::endl;
 
-    std::string output = llm_decode(embd);
+        // tokenize input
+        std::vector<int32_t> embd_inp = llm_tokenize(full_prompt, false);
 
-    std::cout << "Output: " << std::endl;
-    std::cout << output << std::endl;
+        // single text generation
+        std::string output = run_generate(model, embd_inp.data(), embd_inp.size(),
+                                          model_params, tok_params, params.n_predict, true);
 
-    printf("\nDecode %d tokens cost %d ms (avg %f ms each token).\n", token_nums, duration.count(), (float)duration.count() / token_nums);
-
+        std::cout << "Output: " << std::endl;
+        std::cout << output << std::endl;
+    }
     return 0;
 }
