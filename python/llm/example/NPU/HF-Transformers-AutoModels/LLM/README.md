@@ -11,6 +11,7 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 | Llama3.2-3B | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | Chatglm3 | [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) |
 | Chatglm2 | [THUDM/chatglm2-6b](https://huggingface.co/THUDM/chatglm2-6b) |
+| GLM-Edge | [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat), [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat) |
 | Qwen2 | [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct), [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
 | Qwen2.5 | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
@@ -38,6 +39,10 @@ pip install --pre --upgrade ipex-llm[npu]
 
 :: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
 pip install transformers==4.45.0 accelerate==0.33.0
+
+:: [optional] for glm-edge-1.5b-chat & glm-edge-4b-chat
+pip install git+https://github.com/huggingface/transformers.git
+pip install accelerate==0.26.0
 ```
 
 ## 2. Runtime Configurations
@@ -94,6 +99,8 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [Qwen2.5-7B](./qwen.py)
 - [MiniCPM-1B](./minicpm.py)
 - [MiniCPM-2B](./minicpm.py)
+- [GLM-Edge-1.5B-Chat](./glm.py)
+- [GLM-Edge-4B-Chat](./glm.py)
 - [Baichuan2-7B](./baichuan2.py)
 
 ### Run
@@ -124,6 +131,12 @@ python minicpm.py --repo-id-or-model-path "openbmb/MiniCPM-1B-sft-bf16" --save-d
 
 :: to run MiniCPM-2B-sft-bf16
 python minicpm.py --repo-id-or-model-path "openbmb/MiniCPM-2B-sft-bf16" --save-directory <converted_model_path>
+
+:: to run glm-edge-1.5b-chat
+python glm.py --repo-id-or-model-path "THUDM/glm-edge-1.5b-chat" --save-directory <converted_model_path>
+
+:: to run glm-edge-4b-chat
+python glm.py --repo-id-or-model-path "THUDM/glm-edge-4b-chat" --save-directory <converted_model_path>
 
 :: to run Baichuan2-7B-Chat
 python baichuan2.py --repo-id-or-model-path "baichuan-inc/Baichuan2-7B-Chat" --save-directory <converted_model_path>
