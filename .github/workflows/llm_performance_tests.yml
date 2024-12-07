@@ -137,7 +137,7 @@ jobs:
       #     extra-dependency: "xpu_2.1"
 
       - name: Install IPEX-LLM from Pypi
-        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'main')) }}
+        if: ${{ github.event.schedule || (github.event_name == 'workflow_dispatch' && (inputs.checkout-ref == 'sj-test')) }}
         shell: bash
         run: |
           # test_version_date=`date -d 'yesterday' '+%Y%m%d'`
