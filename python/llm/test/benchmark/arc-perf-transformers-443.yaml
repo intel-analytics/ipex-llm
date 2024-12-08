@@ -1,5 +1,6 @@
 repo_id:
   - 'meta-llama/Llama-3.1-8B-Instruct'
+  - 'google/gemma-2-9b-it'
 local_model_hub: '/mnt/disk1/models'
 warm_up: 1
 num_trials: 3
@@ -10,6 +11,7 @@ in_out_pairs:
   - '32-32'
   - '1024-128'
   - '2048-256'
+  - '3072-384'
 test_api:
   - "transformer_int4_fp16_gpu"  # on Intel GPU
 cpu_embedding: False # whether put embedding to CPU (only avaiable now for gpu win related test_api)
