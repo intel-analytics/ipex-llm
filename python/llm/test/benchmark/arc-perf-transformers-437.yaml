@@ -12,7 +12,7 @@ repo_id:
   - 'deepseek-ai/deepseek-coder-7b-instruct-v1.5'
   - '01-ai/Yi-1.5-9B-Chat'
   - 'microsoft/Phi-3-mini-128k-instruct'
-  - 'Tele-AI/TeleChat2-3B'
+  # - 'Tele-AI/TeleChat2-3B'
   # - 'Qwen/Qwen1.5-7B-Chat'
   # - 'microsoft/Phi-3-mini-4k-instruct'
   # - 'meta-llama/Meta-Llama-3-8B-Instruct'
