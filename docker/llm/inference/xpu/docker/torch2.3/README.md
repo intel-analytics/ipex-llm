@@ -42,4 +42,31 @@ root@arda-arc12:/# sycl-ls
 ```
 
 
-To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU).
+To run inference using `IPEX-LLM` using xpu, you could refer to this [documentation](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU). Here, we provide how to run [torch graph mode](https://pytorch.org/blog/optimizing-production-pytorch-performance-with-graph-transformations/) with ipex-llm, and [gpt2-medium](https://huggingface.co/openai-community/gpt2-medium) for classification task is used as illustration:
+
+First, enter the docker container:
+
+   ```bash
+   docker exec -it CONTAINER_NAME bash
+   ```
+
+Convert text-generating GPT2-Medium to the classification:
+
+   ```bash
+   # The convert step needs to access the internet
+   export http_proxy=http://your_proxy_url
+   export https_proxy=http://your_proxy_url
+
+   # This will yield gpt2-medium-classification under /llm/models in the container
+   python convert-model-textgen-to-classfication.py
+   ```
+
+Benchmark GPT2-Medium's performance with IPEX-LLM engine:
+
+   ``` sbash
+   ipexrun xpu gpt2-benchmark-for-sangfor.py --device xpu --engine ipex-llm --batch 16
+
+   # You will see the key output like:
+   # Average time taken (excluding the first two loops): xxxx seconds, Classification per seconds is xxxx
+   ```
+
