@@ -81,7 +81,6 @@ def convert_state_dict(original_state_dict: dict, config: LlamaConfig,
     param_count = 0
     index_dict = {"weight_map": {}}
     for key, value in original_state_dict.items():
-        print("Processing key: ", key)
         if "model.vision" in key:  # vit
             vit_dict[key.replace("model.vision.", "")] = value.detach().clone()
         elif "q_proj." in key:
