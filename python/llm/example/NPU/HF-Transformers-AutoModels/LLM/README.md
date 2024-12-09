@@ -41,7 +41,7 @@ pip install --pre --upgrade ipex-llm[npu]
 pip install transformers==4.45.0 accelerate==0.33.0
 
 :: [optional] for glm-edge-1.5b-chat & glm-edge-4b-chat
-pip install transformers==4.46.3 accelerate==0.26.0
+pip install transformers==4.47.0 accelerate==0.26.0
 ```
 
 ## 2. Runtime Configurations
