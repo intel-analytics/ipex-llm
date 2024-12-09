@@ -20,7 +20,7 @@ import time
 import argparse
 
 from ipex_llm.transformers.npu_model import AutoModelForCausalLM
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, TextStreamer
 
 from transformers.utils import logging
 
@@ -42,6 +42,9 @@ if __name__ == "__main__":
     parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=512)
+    parser.add_argument('--low-bit', type=str, default="sym_int4",
+                        help='Load in low bit to use')
+    parser.add_argument("--disable-streaming", action="store_true", default=False)
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--save-directory", type=str,
         required=True,
@@ -59,13 +62,15 @@ if __name__ == "__main__":
             torch_dtype=torch.float16,
             trust_remote_code=True,
             attn_implementation="eager",
-            load_in_low_bit="sym_int4",
+            load_in_low_bit=args.low_bit,
             optimize_model=True,
             max_context_len=args.max_context_len,
             max_prompt_len=args.max_prompt_len,
             transpose_value_cache=not args.disable_transpose_value_cache,
             save_directory=args.save_directory
         )
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        tokenizer.save_pretrained(args.save_directory)
     else:
         model = AutoModelForCausalLM.load_low_bit(
             args.save_directory,
@@ -76,11 +81,12 @@ if __name__ == "__main__":
             max_prompt_len=args.max_prompt_len,
             transpose_value_cache=not args.disable_transpose_value_cache,
         )
+        tokenizer = AutoTokenizer.from_pretrained(args.save_directory, trust_remote_code=True)
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    DEFAULT_SYSTEM_PROMPT = """\
-    """
+    if args.disable_streaming:
+        streamer = None
+    else:
+        streamer = TextStreamer(tokenizer=tokenizer, skip_special_tokens=True)
 
     print("-" * 80)
     print("done")
@@ -97,19 +103,20 @@ if __name__ == "__main__":
             )
             _input_ids = inputs["input_ids"]
             
+            print("-" * 20, "Input", "-" * 20)
             print("input length:", len(_input_ids[0]))
+            input_str = tokenizer.decode(_input_ids[0], skip_special_tokens=False)
+            print(input_str)
+            print("-" * 20, "Output", "-" * 20)
             st = time.time()
             output = model.generate(
-                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict
+                _input_ids, num_beams=1, do_sample=False, max_new_tokens=args.n_predict, streamer=streamer
             )
             end = time.time()
+            if args.disable_streaming:
+                output_str = tokenizer.decode(output[0], skip_special_tokens=False)
+                print(output_str)
             print(f"Inference time: {end-st} s")
-            input_str = tokenizer.decode(_input_ids[0], skip_special_tokens=False)
-            print("-" * 20, "Input", "-" * 20)
-            print(input_str)
-            output_str = tokenizer.decode(output[0], skip_special_tokens=False)
-            print("-" * 20, "Output", "-" * 20)
-            print(output_str)
 
     print("-" * 80)
     print("done")
