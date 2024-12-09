@@ -64,7 +64,7 @@ Convert text-generating GPT2-Medium to the classification:
 Benchmark GPT2-Medium's performance with IPEX-LLM engine:
 
    ``` sbash
-   ipexrun xpu gpt2-benchmark-for-sangfor.py --device xpu --engine ipex-llm --batch 16
+   ipexrun xpu gpt2-graph-mode-benchmark.py --device xpu --engine ipex-llm --batch 16
 
    # You will see the key output like:
    # Average time taken (excluding the first two loops): xxxx seconds, Classification per seconds is xxxx
