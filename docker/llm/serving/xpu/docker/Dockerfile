@@ -1,4 +1,4 @@
-FROM intel/oneapi-basekit:2024.1.1-devel-ubuntu22.04
+FROM intel/oneapi-basekit:2024.2.1-0-devel-ubuntu22.04
 
 ARG http_proxy
 ARG https_proxy
@@ -39,7 +39,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install --pre --upgrade ipex-llm[xpu-arc,serving] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     pip install transformers_stream_generator einops tiktoken && \
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
