@@ -186,14 +186,14 @@ class _BaseAutoModelClass:
             import json
             original_path = model.config._name_or_path
             del model
-            
+
             with open(os.path.join(original_path, "config.json")) as f:
                 original_config = json.load(f)
             config = convert_config(original_config)
             original_state_dict = load_weights(original_path)
-            new_dict, vit_dict = convert_state_dict(original_state_dict, config,
-                                                    original_config.get("partial_rotary_factor", 1.0),
-                                                    decouple_tied_embeddings=False)
+            new_dict, _ = convert_state_dict(original_state_dict, config,
+                                             original_config.get("partial_rotary_factor", 1.0),
+                                             decouple_tied_embeddings=False)
             torch.set_default_dtype(config.torch_dtype)
             model = cls.HF_Model.from_pretrained(original_path, config=config, state_dict=new_dict)
 
