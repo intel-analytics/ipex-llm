@@ -230,10 +230,9 @@ class LowBitLlamaMultiDecoderlayer(LLMBaseNNFactory):
     ):
 
         residual = hidden_states
-        input_2d = self.reshape(hidden_states, (self.batch_size * self.seq_len, self.hidden_size))
-        input_2d = self.layer_norm(input_2d, input_layernorm_weight)
+        hidden_states = self.layer_norm(hidden_states, input_layernorm_weight)
         attn_output, new_key_states, new_value_states = self.attention(
-            hidden_states=input_2d,
+            hidden_states=hidden_states,
             position_ids=position_ids,
             attention_mask=attention_mask,
             past_key=past_key,
