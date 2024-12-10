@@ -355,7 +355,7 @@ def simple_generate(
     do_print = kwargs.pop("do_print", False)
     time_t1 = time.perf_counter()
     new_generate_kwargs = {}
-    for var in ['max_new_tokens', 'attention_mask', 'eos_token_id']:
+    for var in ['max_new_tokens', 'attention_mask', 'eos_token_id', 'repetition_penalty']:
         value = kwargs.pop(var, None)
         if value is not None:
             new_generate_kwargs[var] = value
@@ -376,8 +376,8 @@ def simple_generate(
     invalidInputError(input_length + new_tokens <= self.kv_len + 1,
                       "Input plus output tokens should not exceed max_context_len.")
 
+    generation_config = GenerationConfig.from_model_config(self.config)
     if "eos_token_id" not in new_generate_kwargs:
-        generation_config = GenerationConfig.from_model_config(self.config)
         if hasattr(generation_config, "eos_token_id"):
             eos = generation_config.eos_token_id
         else:
@@ -388,27 +388,38 @@ def simple_generate(
     if not isinstance(eos, list):
         eos = [eos]
 
-    output_tokens = []
+    if "repetition_penalty" not in new_generate_kwargs:
+        if hasattr(generation_config, "eos_token_id"):
+            repetition_penalty = generation_config.repetition_penalty
+        else:
+            repetition_penalty = 1
+    else:
+        repetition_penalty = new_generate_kwargs['repetition_penalty']
+    invalidInputError(repetition_penalty > 0,
+                      "repetition_penalty should be a positive value. "
+                      f"But you have: {repetition_penalty}")
+
     from .npu_llm_cpp import run_decode, run_prefill, reset
 
-    token = run_prefill(self.model_ptr, input_list, self.vocab_size)
+    token = run_prefill(self.model_ptr, input_list, self.vocab_size,
+                        repetition_penalty)
     if streamer is not None:
         # 1st tokens
         streamer.put(torch.tensor([token]))
     idx = 1
     time_t2 = time.perf_counter()
-    output_tokens.append(torch.tensor([token]))
+    input_list.append(torch.tensor([token]))
     for i in range(new_tokens - 1):
         if token in eos:
             break
-        token = run_decode(self.model_ptr, token, self.vocab_size)
+        token = run_decode(self.model_ptr, token, self.vocab_size,
+                           input_list, repetition_penalty)
         if streamer is not None:
             # rest tokens
             streamer.put(torch.tensor([token]))
         idx += 1
-        output_tokens.append(torch.tensor([token]))
-    output = torch.stack(output_tokens, dim=1)
-    output = torch.cat((inputs, output), dim=1)
+        input_list.append(torch.tensor([token]))
+    output = torch.stack(input_list, dim=1)
     time_t3 = time.perf_counter()
 
     if streamer is not None:
