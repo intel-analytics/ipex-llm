@@ -84,7 +84,20 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     dpkg -i *.deb && \
     rm -rf /tmp/neo && \
     mkdir -p /llm && \
-    cd /llm
+    cd /llm && \
+    git clone -b 0.6.2 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    cd /llm/vllm && \
+    pip install setuptools-scm && \
+    pip install --upgrade cmake && \
+    VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v /llm/vllm && \
+    # pip install -r /llm/vllm/requirements-xpu.txt && \
+    # VLLM_TARGET_DEVICE=xpu python setup.py install && \
+    pip install mpi4py fastapi uvicorn openai && \
+    pip install gradio==4.43.0 && \
+    # pip install transformers==4.44.2 && \
+    # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
+    pip install ray && \
+    patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
 
 COPY ./vllm_online_benchmark.py        /llm/
 COPY ./vllm_offline_inference.py       /llm/
