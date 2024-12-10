@@ -394,7 +394,6 @@ def simple_generate(
             repetition_penalty = 1
     else:
         repetition_penalty = new_generate_kwargs['repetition_penalty']
-    print(f"repetition_penalty: {repetition_penalty}")
     invalidInputError(repetition_penalty > 0,
                       "repetition_penalty should be a positive value. "
                       f"But you have: {repetition_penalty}")
