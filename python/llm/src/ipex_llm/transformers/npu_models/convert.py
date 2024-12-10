@@ -375,8 +375,6 @@ def simple_generate(
     new_tokens = new_generate_kwargs['max_new_tokens']
     invalidInputError(input_length + new_tokens <= self.kv_len + 1,
                       "Input plus output tokens should not exceed max_context_len.")
-    
-    print(f"generation_config: {self.generation_config}")
 
     if "eos_token_id" not in new_generate_kwargs:
         if hasattr(self.generation_config, "eos_token_id"):
