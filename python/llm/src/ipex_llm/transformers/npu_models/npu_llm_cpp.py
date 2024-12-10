@@ -83,7 +83,7 @@ def run_prefill(model_ptr, input_ids, vocab_size, repetition_penalty=1.0):
     input_len = len(input_ids)
     plogits = _lib.run_prefill(model_ptr, input_ptr, input_len)
     if repetition_penalty != 1:
-        plogits = _lib.process_logits(plogits, len(plogits),
+        plogits = _lib.process_logits(plogits, vocab_size,
                                       input_ptr, input_len,
                                       repetition_penalty)
     new_token = _lib.llm_sample_token(plogits, True, vocab_size)
@@ -95,7 +95,7 @@ def run_decode(model_ptr, input_id, vocab_size, updated_input_ids, repetition_pe
     updated_input_ptr = (ctypes.c_int32 * len(updated_input_ids))(*updated_input_ids)
     updated_input_len = len(updated_input_ids)
     if repetition_penalty != 1:
-        plogits = _lib.process_logits(plogits, len(plogits),
+        plogits = _lib.process_logits(plogits, vocab_size,
                                       updated_input_ptr, updated_input_len,
                                       repetition_penalty)
     new_token = _lib.llm_sample_token(plogits, True, vocab_size)

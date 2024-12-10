@@ -375,11 +375,12 @@ def simple_generate(
     new_tokens = new_generate_kwargs['max_new_tokens']
     invalidInputError(input_length + new_tokens <= self.kv_len + 1,
                       "Input plus output tokens should not exceed max_context_len.")
+    
+    print(f"generation_config: {self.generation_config}")
 
-    generation_config = GenerationConfig.from_model_config(self.config)
     if "eos_token_id" not in new_generate_kwargs:
-        if hasattr(generation_config, "eos_token_id"):
-            eos = generation_config.eos_token_id
+        if hasattr(self.generation_config, "eos_token_id"):
+            eos = self.generation_config.eos_token_id
         else:
             eos = 0xffffffff
     else:
@@ -389,12 +390,13 @@ def simple_generate(
         eos = [eos]
 
     if "repetition_penalty" not in new_generate_kwargs:
-        if hasattr(generation_config, "eos_token_id"):
-            repetition_penalty = generation_config.repetition_penalty
+        if hasattr(self.generation_config, "repetition_penalty"):
+            repetition_penalty = self.generation_config.repetition_penalty
         else:
             repetition_penalty = 1
     else:
         repetition_penalty = new_generate_kwargs['repetition_penalty']
+    print(f"repetition_penalty: {repetition_penalty}")
     invalidInputError(repetition_penalty > 0,
                       "repetition_penalty should be a positive value. "
                       f"But you have: {repetition_penalty}")
@@ -408,7 +410,7 @@ def simple_generate(
         streamer.put(torch.tensor([token]))
     idx = 1
     time_t2 = time.perf_counter()
-    input_list.append(torch.tensor([token]))
+    input_list.append(token)
     for i in range(new_tokens - 1):
         if token in eos:
             break
@@ -418,8 +420,8 @@ def simple_generate(
             # rest tokens
             streamer.put(torch.tensor([token]))
         idx += 1
-        input_list.append(torch.tensor([token]))
-    output = torch.stack(input_list, dim=1)
+        input_list.append(token)
+    output = torch.tensor([input_list])
     time_t3 = time.perf_counter()
 
     if streamer is not None:
