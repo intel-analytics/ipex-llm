@@ -180,6 +180,23 @@ class _BaseAutoModelClass:
 
         logger.info(f"Converting model, it may takes up to several minutes ...")
 
+        if hasattr(model, "config") and model.config.model_type == "glm":
+            # convert to llama structure
+            from .npu_models.glm_edge import convert_config, load_weights, convert_state_dict
+            import json
+            original_path = model.config._name_or_path
+            del model
+
+            with open(os.path.join(original_path, "config.json")) as f:
+                original_config = json.load(f)
+            config = convert_config(original_config)
+            original_state_dict = load_weights(original_path)
+            new_dict, _ = convert_state_dict(original_state_dict, config,
+                                             original_config.get("partial_rotary_factor", 1.0),
+                                             decouple_tied_embeddings=False)
+            torch.set_default_dtype(config.torch_dtype)
+            model = cls.HF_Model.from_pretrained(original_path, config=config, state_dict=new_dict)
+
         if hasattr(model, "config"):
             model.config.update({"optimize_model": optimize_model})
 
