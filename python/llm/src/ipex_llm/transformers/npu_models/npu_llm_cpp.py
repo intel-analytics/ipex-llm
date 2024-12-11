@@ -57,6 +57,11 @@ _lib.run_decode.restype = ctypes.POINTER(ctypes.c_float)
 _lib.llm_sample_token.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.c_bool, ctypes.c_int]
 _lib.llm_sample_token.restype = ctypes.c_int
 
+_lib.process_logits.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_int), ctypes.c_int,
+                                ctypes.c_float]
+_lib.process_logits.restype = ctypes.POINTER(ctypes.c_float)
+
 _lib.reset.argtypes = [ctypes.c_void_p]
 _lib.reset.restype = None
 
@@ -73,16 +78,26 @@ def load_model_from_file(model_dir: str):
     return _lib.load_model_from_file(model_dir.encode('utf-8'))
 
 
-def run_prefill(model_ptr, input_ids, vocab_size):
+def run_prefill(model_ptr, input_ids, vocab_size, repetition_penalty=1.0):
     input_ptr = (ctypes.c_int32 * len(input_ids))(*input_ids)
     input_len = len(input_ids)
     plogits = _lib.run_prefill(model_ptr, input_ptr, input_len)
+    if repetition_penalty != 1:
+        plogits = _lib.process_logits(plogits, vocab_size,
+                                      input_ptr, input_len,
+                                      repetition_penalty)
     new_token = _lib.llm_sample_token(plogits, True, vocab_size)
     return new_token
 
 
-def run_decode(model_ptr, input_id, vocab_size):
+def run_decode(model_ptr, input_id, vocab_size, updated_input_ids, repetition_penalty=1.0):
     plogits = _lib.run_decode(model_ptr, input_id)
+    if repetition_penalty != 1:
+        updated_input_ptr = (ctypes.c_int32 * len(updated_input_ids))(*updated_input_ids)
+        updated_input_len = len(updated_input_ids)
+        plogits = _lib.process_logits(plogits, vocab_size,
+                                      updated_input_ptr, updated_input_len,
+                                      repetition_penalty)
     new_token = _lib.llm_sample_token(plogits, True, vocab_size)
     return new_token
 
