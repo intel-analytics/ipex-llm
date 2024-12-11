@@ -32,7 +32,10 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
 
-from ipex_llm.utils import BenchmarkWrapper
+try:
+    from ipex_llm.utils import BenchmarkWrapper
+except:
+    pass
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.utils.common import invalidInputError
 
