@@ -376,24 +376,23 @@ def simple_generate(
     invalidInputError(input_length + new_tokens <= self.kv_len + 1,
                       "Input plus output tokens should not exceed max_context_len.")
 
-    if "eos_token_id" not in new_generate_kwargs:
-        if hasattr(self.generation_config, "eos_token_id"):
-            eos = self.generation_config.eos_token_id
-        else:
-            eos = 0xffffffff
-    else:
+    if "eos_token_id" in new_generate_kwargs:
         eos = new_generate_kwargs["eos_token_id"]
+    elif hasattr(self.generation_config, "eos_token_id"):
+        eos = self.generation_config.eos_token_id
+    else:
+        eos = 0xffffffff
 
     if not isinstance(eos, list):
         eos = [eos]
 
-    if "repetition_penalty" not in new_generate_kwargs:
-        if hasattr(self.generation_config, "repetition_penalty"):
-            repetition_penalty = self.generation_config.repetition_penalty
-        else:
-            repetition_penalty = 1
-    else:
+    if "repetition_penalty" in new_generate_kwargs:
         repetition_penalty = new_generate_kwargs['repetition_penalty']
+    elif hasattr(self.generation_config, "repetition_penalty"):
+        repetition_penalty = self.generation_config.repetition_penalty
+    else:
+        repetition_penalty = 1
+
     invalidInputError(repetition_penalty > 0,
                       "repetition_penalty should be a positive value. "
                       f"But you have: {repetition_penalty}")
