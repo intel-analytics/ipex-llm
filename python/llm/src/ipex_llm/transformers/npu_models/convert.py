@@ -97,12 +97,23 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
             if (layer.in_features == 18944 and layer.out_features == 3584):
                 qtype = "sym_int8_rtn"
                 iqtype = ggml_tensor_qtype[qtype]
-        enable_scale_search = (os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0" or
-                               os.environ.get("IPEX_LLM_NPU_QUANTIZATION_HQQ", "0") != "0")
+        if qtype == "asym_int4_rtn":
+            enable_scale_search = (os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0" or
+                                   os.environ.get("IPEX_LLM_NPU_QUANTIZATION_HQQ", "0") != "0")
+        elif qtype == "sym_int4_rtn":
+            enable_scale_search = os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0"
+        else:
+            enable_scale_search = False
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device,
                                              enable_scale_search=enable_scale_search,
                                              imatrix=imatrix)
+        if qtype == "sym_int4_rtn" and os.environ.get("IPEX_LLM_NPU_QUANTIZATION_HQQ", "0") != "0":
+            from .quantize  import scale_grid_search
+            # scale grid search
+            qweights, scale = scale_grid_search(layer.weight.data.to(torch.float32),
+                                                scale.to(torch.float32),
+                                                qweights)
         zero = None
         # split scale to scale & zero
         if qtype == "asym_int4_rtn":
