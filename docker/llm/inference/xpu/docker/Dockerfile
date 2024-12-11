@@ -94,6 +94,4 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
 
 
 WORKDIR /llm/
-COPY ./gpt2-graph-mode-benchmark.py /llm/gpt2-graph-mode-benchmark.py
-COPY ./convert-model-textgen-to-classfication.py /llm/convert-model-textgen-to-classfication.py
 ENV BIGDL_CHECK_DUPLICATE_IMPORT=0

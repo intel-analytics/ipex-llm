@@ -27,11 +27,13 @@ parser.add_argument('--batch_size', type=int, default=1, help='an integer for th
 parser.add_argument('--device', type=str, default='cpu', help='an string for the device')
 parser.add_argument('--profile', type=bool, default=False, help='enable protch profiler for CPU/XPU')
 parser.add_argument('--engine', type=str, default='ipex-llm', help='an string for the device')
+parser.add_argument('--model_path', type=str, help='an string for the device')
 args = parser.parse_args()
 enable_profile=args.profile
 batch_size = args.batch_size
 device = args.device
 engine = args.engine
+model_path = args.model_path
 print(f"The batch size is: {batch_size}, device is {device}")
 
 
@@ -66,12 +68,10 @@ def trace_handler(p):
 dtype = torch.bfloat16 if device == 'cpu' else torch.float16
 num_labels = 5
 
-model_name="/llm/models/gpt2-medium-classification"
-# model_name="/home/llm/local_models/Qwen/Qwen2-0.5B-Instruct"
+model_name = model_path
 
-#model_name = model_name + "-classification"
+model_name = model_name + "-classification"
 model_name_ov = model_name + "-ov"
-# model_name_ov = model_name_ov + "-int8"
 model_name_ov = model_name_ov + "-fp16"
 
 if (engine == 'ipex') :

@@ -1,14 +1,32 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# This is modified from https://github.com/intel-sandbox/customer-ai-test-code/blob/main/convert-model-textgen-to-classfication.py
+#
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, AutoConfig, AutoModelForCausalLM
+import argparse
 
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--model_path', type=str, help='an string for the device')
+args = parser.parse_args()
+model_path = args.model_path
 
 dtype=torch.bfloat16
 num_labels = 5
 
-model_name="/llm/models/gpt2-medium"
-# model_name="/home/llm/local_models/Qwen/Qwen2-0.5B-Instruct"
-# model_name="/home/llm/disk/llm/EleutherAI/gpt-neo-1.3B"
-# model_name="/home/llm/disk/llm/facebook/opt-350m"
+model_name=model_path
 
 save_directory = model_name + "-classification"
 
