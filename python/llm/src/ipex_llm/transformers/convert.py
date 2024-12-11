@@ -1049,6 +1049,10 @@ def _optimize_pre(model, qtype=None):
             model.llm.config.model_type = "qwen2"
         elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
             model.llm.config.model_type = "llama"
+        elif model.config.hidden_size == 1536 and model.config.vocab_size == 73464:
+            from ipex_llm.transformers.models.minicpm3 import pre_compute_inv_freq
+            model.llm.apply(pre_compute_inv_freq)
+            model.llm.config.model_type = "minicpm"
         _optimize_pre(model.llm, qtype=qtype)
         model.llm.config.model_type = "minicpmv"
     elif model.config.model_type == "chatglm":
@@ -2137,6 +2141,9 @@ def _optimize_post(model, lightweight_bmm=False):
         elif model.config.hidden_size == 4096 and model.config.vocab_size == 128256:
             # MiniCPM-V 2.5
             model.llm.config.model_type = "llama"
+        elif model.config.hidden_size == 1536 and model.config.vocab_size == 73464:
+            # MiniCPM-V ?
+            model.llm.config.model_type = "minicpm"
         _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
         model.llm.config.model_type = "minicpmv"
 
