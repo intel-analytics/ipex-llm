@@ -97,7 +97,8 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
             if (layer.in_features == 18944 and layer.out_features == 3584):
                 qtype = "sym_int8_rtn"
                 iqtype = ggml_tensor_qtype[qtype]
-        enable_scale_search = os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0"
+        enable_scale_search = (os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0" or
+                               os.environ.get("IPEX_LLM_NPU_QUANTIZATION_HQQ", "0") != "0")
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device,
                                              enable_scale_search=enable_scale_search,
@@ -123,7 +124,8 @@ def replace_with_DequantizedLinear(layer, qtype, device, modules_to_not_convert,
             if (layer.in_features == 3584 and layer.out_features == 152064):
                 qtype = "sym_int8_rtn"
                 iqtype = ggml_tensor_qtype[qtype]
-        enable_scale_search = os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0"
+        enable_scale_search = (os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0" or
+                               os.environ.get("IPEX_LLM_NPU_QUANTIZATION_HQQ", "0") != "0")
         qweights, scale = ggml_convert_qtype(layer.weight.data.to(torch.float32),
                                              iqtype, device=device,
                                              enable_scale_search=enable_scale_search,
