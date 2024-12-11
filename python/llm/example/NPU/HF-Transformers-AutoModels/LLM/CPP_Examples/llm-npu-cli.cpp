@@ -110,13 +110,13 @@ std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_i
         printf("\nPrefill %d tokens cost %d ms.\n", embd_inp_size, duration.count());
     }
 
-    std::vector<int32_t> embd(embd_inp_ptr, embd_inp_ptr + embd_inp_size);  // output ids, togather with input_ids
+    std::vector<int32_t> embd;  // output ids;
     embd.push_back(token);
 
     int token_nums = 0;
     start = std::chrono::high_resolution_clock::now();
     for (int i = 1; i < generation_params.max_new_token; i++){
-        auto logits = run_decode(void_model, embd[i+embd_inp_size-1],
+        auto logits = run_decode(void_model, embd[i-1],
                                  generation_params.repetition_penalty);
         int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
         if (std::find(tok_params.eos_token_id.begin(), tok_params.eos_token_id.end(), token) == tok_params.eos_token_id.end()){
