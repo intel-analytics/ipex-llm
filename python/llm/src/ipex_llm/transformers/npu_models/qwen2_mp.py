@@ -116,6 +116,9 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         self.cached_sin = cached_sin
         self.batch_size, self.seq_len, self.hidden_size = hidden_shape
         self.mode = mode
+        if mode == "prefill":
+            print(" rms_norm_eps is ", rms_norm_eps)
+            print(" n_splits_down_proj is ", n_splits_down_proj)
         self.rms_norm_eps = rms_norm_eps
         self.transpose_value = transpose_value
         self.num_layers = num_layers
@@ -234,15 +237,25 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             new_value_states = self.convert_to_fp16(curr_key_values[i][1])
 
         print(f"{mode} start compiling")
-        if (
-            group_size != 0
-            and (mode == "prefill" or num_layers == 2 or num_layers == 3)
-            and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1"
-        ):
-            self.compile(npu_dpu_groups=6)
-        else:
-            self.compile()
+        # if (
+        #     group_size != 0
+        #     and (mode == "prefill" or num_layers == 2 or num_layers == 3)
+        #     and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1"
+        # ):
+        #     self.compile(npu_dpu_groups=6)
+        # else:
+        #     self.compile()
+        self.compile()
         print(f"{mode} end compiling")
+        # if mode == "prefill":
+        # #     # path =  r"D:\\ruonan\\debug log\\python cpp\\prefill_layer.xml"
+        #     path = r"D:\\ruonan\\debug log\\acc lib\\prefill_layer.xml"
+        #     print("save Prefill IR!!!!!")
+        #     self.save(path)
+        #     # path =  r"D:\\ruonan\\debug log\\python cpp\\prefill_layer.blob"
+            # path = r"D:\\ruonan\\debug log\\acc lib\\prefill_layer.blob"
+            # self.saveCompiledModel(path)
+
 
     def build_decoder(
         self,
@@ -416,6 +429,20 @@ class FusedQwenLowBitMultiDecoderlayer(torch.nn.Module):
         for i in range(self.intra_stages):
             start, end = self.layer_ranges[i]
             self.backend_decoders[i].update_cache(past_key_value, self.layer_indexes[start:end])
+            for j in range(start, end):
+                key_ = past_key_value.key_cache[self.layer_indexes[j]] # shape is [1, 32, 28, 128]
+                val_ = past_key_value.value_cache[self.layer_indexes[j]]
+                new_size = (
+                    key_.size(0),
+                    key_.size(1),
+                    self.max_seq_len,
+                    key_.size(3),
+                )
+                key = key_.as_strided(new_size, key_.stride(), storage_offset=0)
+                print(val_.shape, val_.stride())
+                val = val_.as_strided(new_size, val_.stride(), storage_offset=0)
+                key.numpy().tofile(rf"D:\ruonan\debug log\acc lib\forward_input_key_{self.layer_indexes[j]}.bin")
+                val.numpy().tofile(rf"D:\ruonan\debug log\acc lib\forward_input_value_{self.layer_indexes[j]}.bin")
 
         hidden_states, new_keys, new_values = LowBitQwenMultiDecoderlayer.run_decoders(
             inputs,
@@ -535,7 +562,7 @@ class FusedQwenLowBitDecoderlayer(torch.nn.Module):
         inputs += (self.layer_norm_0, self.layer_norm_1)
         inputs += (self.q_bias, self.k_bias, self.v_bias)
         hidden_states, past_key, past_value = run_model(
-            inputs, self.op_parameters, backend_cls, self.op_id, replica=2
+            inputs, self.op_parameters, backend_cls, self.op_id, replica=1
         )
         cache_kwargs = {"max_seq_len": self.max_seq_len, "transpose": self.transpose_value}
         key_states, value_states = past_key_value.update(
@@ -878,7 +905,18 @@ def run_prefill(
             group_size=group_size,
             asym=asym
         )
-
+        if layer_idx == 0:
+            save_idx = 3
+            for w in [layer_norm_0, layer_norm_1, attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16), attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16),
+                      attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16), *weights]:
+                if isinstance(w, torch.Tensor):
+                    w.detach().to(torch.float16).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_input_{save_idx}.bin")
+                    save_idx += 1
+                elif len(w) == 2:
+                    w[0].detach().to(torch.uint8).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_input_{save_idx}.bin")
+                    save_idx += 1
+                    w[1].detach().to(torch.float16).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_input_{save_idx}.bin")
+                    save_idx += 1
         layer_weights.extend(weights)
         input_layer_norm_weights.append(layer_norm_0)
         post_attn_layernorm_weights.append(layer_norm_1)
@@ -895,8 +933,13 @@ def run_prefill(
             break
 
         hidden_states, position_ids, causal_mask, past_key_values = result
+
+        hidden_states.to(torch.float16).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_input_0.bin")
+        causal_mask.to(torch.float16).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_input_1.bin")
+        position_ids.to(torch.int64).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_input_2.bin")
+
         with torch.inference_mode():
-            for decoder_layer in deocderlayers:
+            for idx, decoder_layer in enumerate(deocderlayers):
                 layer_outputs = decoder_layer(
                     hidden_states,
                     attention_mask=causal_mask,
@@ -908,6 +951,10 @@ def run_prefill(
 
                 hidden_states = layer_outputs[0]
                 next_decoder_cache = layer_outputs[1]
+                if idx == 0:
+                    hidden_states.to(torch.float16).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_output_0.bin")
+                    next_decoder_cache.key_cache[0].to(torch.float16).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_output_1.bin")
+                    next_decoder_cache.value_cache[0].to(torch.float16).numpy().tofile(rf"D:\ruonan\debug log\acc lib\prefill_output_2.bin")
             result_queue.put((hidden_states, next_decoder_cache))
 
 
@@ -1109,6 +1156,7 @@ def gen_qwen2_fused_model_forward(prefill_runner, decode_runner):
 
     return qwen2_fused_model_forward
 
+token = 0
 
 def qwen2_casullm_forward(
     self,
@@ -1152,6 +1200,10 @@ def qwen2_casullm_forward(
     # ipex-llm change end
     logits = self.lm_head(hidden_states)
     logits = logits.float()
+    global token
+    filename = rf"D:\ruonan\debug log\acc lib\decode_logits_{token}.bin"
+    logits.numpy().tofile(filename)
+    token += 1
 
     loss = None
     if labels is not None:
