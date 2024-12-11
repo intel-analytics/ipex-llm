@@ -110,7 +110,7 @@ std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_i
         printf("\nPrefill %d tokens cost %d ms.\n", embd_inp_size, duration.count());
     }
 
-    std::vector<int32_t> embd;  // output ids;
+    std::vector<int32_t> embd;  // output ids
     embd.push_back(token);
 
     int token_nums = 0;
