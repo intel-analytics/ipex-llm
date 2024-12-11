@@ -435,8 +435,10 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
 
     lm_head_low_bit = getattr(model.config, "bigdl_transformers_low_bit", "sym_int4_rtn")
-    if not isinstance(model.lm_head, SlicedLMHead):
+    if hasattr(model, "lm_head") and not isinstance(model.lm_head, SlicedLMHead):
         lm_head_low_bit = model.lm_head.qtype
+    elif hasattr(model, "lm_head_0") and not isinstance(model.lm_head_0, SlicedLMHead):
+        lm_head_low_bit = model.lm_head_0.qtype
     else:
         lm_head_low_bit = model.lm_head.lm_heads[0].qtype
 
