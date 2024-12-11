@@ -98,11 +98,11 @@ std::string add_chat_history(npu_model_params model_params,
     return prompt;
 }
 
-
 std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_inp_size,
-                         npu_model_params model_params, tokenizer_params tok_params, int32_t max_new_token, bool do_print){
+                         npu_model_params model_params, tokenizer_params tok_params, npu_generation_params generation_params, bool do_print){
     auto start = std::chrono::high_resolution_clock::now();
-    float* logits = run_prefill(void_model, embd_inp_ptr, embd_inp_size);
+    float* logits = run_prefill(void_model, embd_inp_ptr, embd_inp_size,
+                                generation_params.repetition_penalty);
     int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
@@ -110,13 +110,14 @@ std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_i
         printf("\nPrefill %d tokens cost %d ms.\n", embd_inp_size, duration.count());
     }
 
-    std::vector<int32_t> embd;  // output ids
+    std::vector<int32_t> embd(embd_inp_ptr, embd_inp_ptr + embd_inp_size);  // output ids, togather with input_ids
     embd.push_back(token);
 
     int token_nums = 0;
     start = std::chrono::high_resolution_clock::now();
-    for (int i = 1; i < max_new_token; i++){
-        auto logits = run_decode(void_model, embd[i-1]);
+    for (int i = 1; i < generation_params.max_new_token; i++){
+        auto logits = run_decode(void_model, embd[i+embd_inp_size-1],
+                                 generation_params.repetition_penalty);
         int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
         if (std::find(tok_params.eos_token_id.begin(), tok_params.eos_token_id.end(), token) == tok_params.eos_token_id.end()){
             embd.push_back(token);
@@ -207,6 +208,10 @@ int main(int argc, char ** argv) {
     tokenizer_params tok_params;
     load_tokenizer(tok_params, params.model);
 
+    npu_generation_params generation_params;
+    load_generation_config_from_file(generation_params, params.model);
+    generation_params.max_new_token = n_predict;
+
     if (cnv_mode){
         std::string prompt;
         std::string history = "";
@@ -228,9 +233,11 @@ int main(int argc, char ** argv) {
                     full_prompt = add_chat_history(model_params, prompt, "", true);
                     embd_inp = llm_tokenize(full_prompt, false);
                 }
+
+                generation_params.max_new_token = model_params.kv_len - embd_inp.size();
                 
                 response = run_generate(model, embd_inp.data(), embd_inp.size(),
-                                        model_params, tok_params, model_params.kv_len - embd_inp.size(), false);
+                                        model_params, tok_params, generation_params, false);
 
                 std::cout << "Assistant:";
                 std::cout << response << std::endl;
@@ -251,7 +258,7 @@ int main(int argc, char ** argv) {
 
         // single text generation
         std::string output = run_generate(model, embd_inp.data(), embd_inp.size(),
-                                          model_params, tok_params, params.n_predict, true);
+                                          model_params, tok_params, generation_params, true);
 
         std::cout << "Output: " << std::endl;
         std::cout << output << std::endl;
