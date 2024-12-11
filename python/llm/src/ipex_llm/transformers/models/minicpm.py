@@ -100,8 +100,15 @@ def minicpm_attention_forward(
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
 
     if should_use_fuse_rope(hidden_states, position_ids, self.training):
+        if self.rotary_emb.__class__.__name__ == "MiniCPMLongRoPE":
+            if kv_seq_len > self.rotary_emb.original_max_position_embeddings:
+                inv_freq = self.rotary_emb.long_inv_freq
+            else:
+                inv_freq = self.rotary_emb.short_inv_freq
+        else:
+            inv_freq = self.rotary_emb.inv_freq
         import xe_addons
-        xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+        xe_addons.rotary_half_inplaced(inv_freq, position_ids,
                                        query_states, key_states)
     else:
         cos, sin = self.rotary_emb(value_states.to(torch.float32), seq_len=kv_seq_len)
