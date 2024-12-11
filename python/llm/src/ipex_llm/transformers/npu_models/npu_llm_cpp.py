@@ -48,7 +48,8 @@ _lib = ctypes.cdll.LoadLibrary(_lib_path)
 _lib.load_model_from_file.argtypes = [ctypes.c_char_p]
 _lib.load_model_from_file.restype = ctypes.c_void_p
 
-_lib.run_prefill.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.c_int, ctypes.c_float]
+_lib.run_prefill.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.c_int,
+                             ctypes.c_float]
 _lib.run_prefill.restype = ctypes.POINTER(ctypes.c_float)
 
 _lib.run_decode.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_float]
