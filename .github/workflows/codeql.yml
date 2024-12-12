@@ -98,6 +98,8 @@ jobs:
       with:
         template: report
         token: ${{ secrets.SECURITY_TOKEN }}
+      env:
+        GITHUB_API_RATE_LIMIT: 5000
         
     - name: GitHub Upload Release Artifacts
       uses: actions/upload-artifact@v4
