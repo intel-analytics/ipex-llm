@@ -1504,6 +1504,17 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.GlmAttention, glm_attention_forward)
         glm_model_forward = glm_model_forward_wrapper(module.GlmModel.forward)
         convert_forward(model, module.GlmModel, glm_model_forward)
+
+        if hasattr(model.model, "vision"):
+            # glm-edge-v series
+            vision_module_name = model.model.vision.__class__.__module__
+            vision_module = importlib.import_module(vision_module_name)
+            from transformers.models.siglip.modeling_siglip import SiglipAttention
+            from ipex_llm.transformers.models.chatglm4v import vision_model_forward
+            from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
+            convert_forward(model, vision_module.VisionModel, vision_model_forward)
+            convert_forward(model, SiglipAttention, siglip_attention_forward)
+
     elif "mpt" in model.config.model_type:
         if model.config.architectures is not None:
             modeling_module_name = model.__class__.__module__
