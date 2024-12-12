@@ -38,49 +38,60 @@ from functools import partial
 from typing import Union
 
 
-def update_scale_grid_search(x: Tensor, scale: Tensor, min_max: list, N: int = 128 + 1):
+def update_scale_grid_search(x: Tensor, iscale: Tensor, min_max: list, N: int = 128 + 1):
+    iscale = iscale.unsqueeze(1)
     print(x.shape)
-    print(scale.shape)
+    print(iscale.shape)
 
     assert N % 2 == 1, "Please check whether N: odd number"
     rng_dump = 0.05  # 0.05 / 1.
     z_val = 2e-4
 
-    device = scale.device
-    dtype = scale.dtype
+    device = iscale.device
+    dtype = iscale.dtype
     ###############################
-    print("init scale shape is : ", scale.shape)
-    W_q = (x / scale).clamp(min_max[0], min_max[1])
+    print("init scale shape is : ", iscale.shape)
+    W_q = (x * iscale).clamp(min_max[0], min_max[1])
     n_clusters = W_q.shape[0]
-    rng = torch.abs(scale).mean() * rng_dump if (rng_dump < 1.0) else rng_dump
+    rng = torch.abs(iscale).mean() * rng_dump if (rng_dump < 1.0) else rng_dump
     print("rng is : ", rng)
 
-    scale_shifted = (
+    iscale_shifted = (
         torch.linspace(-rng, rng, N)[None, :]
         .to(dtype=dtype, device=device)
         .repeat(n_clusters, 1)
-    )
+    ) + iscale
 
-    scale_shifted += scale
+    print(iscale_shifted.shape)
 
     # Safe inverse
-    scale_shifted[
-        torch.logical_and(scale_shifted >= 0, torch.abs(scale_shifted) <= z_val)
+    iscale_shifted[
+        torch.logical_and(iscale_shifted >= 0, torch.abs(iscale_shifted) <= z_val)
     ] = z_val
-    scale_shifted[
-        torch.logical_and(scale_shifted < 0, torch.abs(scale_shifted) <= z_val)
+    iscale_shifted[
+        torch.logical_and(iscale_shifted < 0, torch.abs(iscale_shifted) <= z_val)
     ] = -z_val
 
     err = torch.empty([n_clusters, N], dtype=dtype, device=device)
     for i in range(N):
-        W_r = W_q  * scale_shifted[:, i][:, None]
+        W_r = W_q  * iscale_shifted[:, i][:, None]
         err[:, i] = torch.abs(x - W_r).mean(axis=1, keepdim=True).squeeze()
-        print(f"err [{i}] shape is ", err[i].shape)
-    
+
     ind_r = torch.argmin(err, axis=1).to(torch.int32)
     ind_c = torch.arange(len(ind_r), dtype=torch.int32, device=device)
-    scale_b = scale_shifted[ind_c, ind_r]
-
+    iscale_b = iscale_shifted[ind_c, ind_r]
+    scale_b = 1.0 / iscale_b
+    iscale_b = iscale_b.unsqueeze(1)
+    print(iscale_b.shape)
     # obtain qwights based on scale_b
+    qweights = (x * iscale_b).to(torch.int8) # m * n
+    qweights = qweights.reshape(x.shape[0], -1 , 2) # m * n/2 * 2
+    print(qweights.split(1, dim=-1))
+    high_bit, low_bit = qweights.split(1, dim=-1)
+    print(high_bit.shape)
+    high_bit = high_bit.squeeze().view(torch.int8)
+    low_bit = low_bit.squeeze().view(torch.int8)
+    high_bit = high_bit << 4
+    qweights = high_bit | low_bit
 
-    return scale_b, qweights
+    return qweights, scale_b.to(torch.float16)
