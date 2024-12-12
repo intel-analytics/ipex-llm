@@ -157,6 +157,7 @@ def glm_model_forward_wrapper(origin_forward):
     def glm_model_forward(
         self,
         input_ids: torch.LongTensor = None,
+        images: torch.Tensor = None,
         attention_mask: Optional[torch.Tensor] = None,
         position_ids: Optional[torch.LongTensor] = None,
         past_key_values: Optional[Cache] = None,
@@ -166,7 +167,7 @@ def glm_model_forward_wrapper(origin_forward):
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
         cache_position: Optional[torch.LongTensor] = None,
-        **flash_attn_kwargs,
+        **kwargs,
     ):
         # ipex-llm changes start
         # IPEX-LLM OPT: kv cache and quantize kv cache
@@ -187,6 +188,7 @@ def glm_model_forward_wrapper(origin_forward):
         return origin_forward(
             self=self,
             input_ids=input_ids,
+            images=images,
             attention_mask=attention_mask,
             position_ids=position_ids,
             past_key_values=past_key_values,
@@ -196,7 +198,7 @@ def glm_model_forward_wrapper(origin_forward):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
             cache_position=cache_position,
-            **flash_attn_kwargs,
+            **kwargs,
         )
 
     return glm_model_forward
