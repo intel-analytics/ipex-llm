@@ -1070,6 +1070,10 @@ def _optimize_pre(model, qtype=None):
                     model.apply(split_mlp)
             elif model.config.num_layers in [40, 28]:
                 model.apply(split_mlp)
+    elif model.config.model_type == "glm":
+        from ipex_llm.transformers.models.glm import merge_qkv, split_mlp
+        model.apply(merge_qkv)
+        model.apply(split_mlp)
 
     return model
 
@@ -1487,7 +1491,19 @@ def _optimize_post(model, lightweight_bmm=False):
                     # workaround glm4-9b fp16 overflow
                     from ipex_llm.transformers.models.chatglm4 import chatglm4_block_forward
                     convert_forward(model, module.GLMBlock, chatglm4_block_forward)
-
+    elif model.config.model_type == "glm":
+        # glm-edge series
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.glm import glm_attention_forward
+        from ipex_llm.transformers.models.glm import glm_model_forward_wrapper
+        convert_forward(model, module.GlmRMSNorm, rms_norm_forward)
+        convert_forward(model, module.GlmMLP, mlp_silu_forward)
+        convert_forward(model, module.GlmAttention, glm_attention_forward)
+        glm_model_forward = glm_model_forward_wrapper(module.GlmModel.forward)
+        convert_forward(model, module.GlmModel, glm_model_forward)
     elif "mpt" in model.config.model_type:
         if model.config.architectures is not None:
             modeling_module_name = model.__class__.__module__
