@@ -32,16 +32,11 @@
 # limitations under the License.
 
 import torch
-import numpy as np
-from torch import float32, float16, Tensor
-from functools import partial
-from typing import Union
+from torch import Tensor
 
 
 def update_scale_grid_search(x: Tensor, iscale: Tensor, min_max: list, N: int = 128 + 1):
     iscale = iscale.unsqueeze(1)
-    print(x.shape)
-    print(iscale.shape)
 
     assert N % 2 == 1, "Please check whether N: odd number"
     rng_dump = 0.05  # 0.05 / 1.
@@ -50,11 +45,9 @@ def update_scale_grid_search(x: Tensor, iscale: Tensor, min_max: list, N: int = 
     device = iscale.device
     dtype = iscale.dtype
     ###############################
-    print("init scale shape is : ", iscale.shape)
-    W_q = (x * iscale).clamp(min_max[0], min_max[1])
+    W_q = torch.round(x * iscale).clamp(min_max[0], min_max[1])
     n_clusters = W_q.shape[0]
     rng = torch.abs(iscale).mean() * rng_dump if (rng_dump < 1.0) else rng_dump
-    print("rng is : ", rng)
 
     iscale_shifted = (
         torch.linspace(-rng, rng, N)[None, :]
@@ -74,7 +67,7 @@ def update_scale_grid_search(x: Tensor, iscale: Tensor, min_max: list, N: int = 
 
     err = torch.empty([n_clusters, N], dtype=dtype, device=device)
     for i in range(N):
-        W_r = W_q  * iscale_shifted[:, i][:, None]
+        W_r = W_q * iscale_shifted[:, i][:, None]
         err[:, i] = torch.abs(x - W_r).mean(axis=1, keepdim=True).squeeze()
 
     ind_r = torch.argmin(err, axis=1).to(torch.int32)
@@ -82,16 +75,18 @@ def update_scale_grid_search(x: Tensor, iscale: Tensor, min_max: list, N: int = 
     iscale_b = iscale_shifted[ind_c, ind_r]
     scale_b = 1.0 / iscale_b
     iscale_b = iscale_b.unsqueeze(1)
-    print(iscale_b.shape)
+
     # obtain qwights based on scale_b
-    qweights = (x * iscale_b).to(torch.int8) # m * n
+    qweights = (torch.round(x * iscale_b)).clamp(min_max[0], min_max[1]).to(torch.int8) # m * n
+    # test with original
+    # scale_b = (1.0 / iscale).squeeze()
+    # qweights = (torch.round(x * iscale)).clamp(min_max[0], min_max[1]).to(torch.int8) # m * n
     qweights = qweights.reshape(x.shape[0], -1 , 2) # m * n/2 * 2
-    print(qweights.split(1, dim=-1))
-    high_bit, low_bit = qweights.split(1, dim=-1)
-    print(high_bit.shape)
+    low_bit, high_bit = qweights.split(1, dim=-1)
     high_bit = high_bit.squeeze().view(torch.int8)
     low_bit = low_bit.squeeze().view(torch.int8)
     high_bit = high_bit << 4
+    low_bit = low_bit & 0x0f
     qweights = high_bit | low_bit
 
-    return qweights, scale_b.to(torch.float16)
+    return qweights.view(torch.uint8), scale_b.to(torch.float16)
