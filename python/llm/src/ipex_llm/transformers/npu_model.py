@@ -301,29 +301,29 @@ class _BaseAutoModelClass:
         model.share_memory()
 
         if not pipeline:
-            # if (not hasattr(model, 'llm') and
-            #         model.config.model_type in ["qwen2", "llama", "minicpm"]):
-            #     from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
-            #     optimize_llm_single_process(
-            #         llm,
-            #         kv_len=max_context_len,
-            #         max_prompt_len=max_prompt_len,
-            #         transpose_value_cache=transpose_value_cache,
-            #         group_size=quantization_group_size,
-            #         qtype=qtype,
-            #         save_directory=save_directory,
-            #         fuse_layers=fuse_layers
-            #     )
-            # else:
-            optimize_llm(
-                llm,
-                max_context_len=max_context_len,
-                max_prompt_len=max_prompt_len,
-                inter_pp=inter_pp,
-                intra_pp=intra_pp,
-                transpose_value_cache=transpose_value_cache,
-                group_size=quantization_group_size
-            )
+            if (not hasattr(model, 'llm') and
+                    model.config.model_type in ["qwen2", "llama", "minicpm"]):
+                from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
+                optimize_llm_single_process(
+                    llm,
+                    kv_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    transpose_value_cache=transpose_value_cache,
+                    group_size=quantization_group_size,
+                    qtype=qtype,
+                    save_directory=save_directory,
+                    fuse_layers=fuse_layers
+                )
+            else:
+                optimize_llm(
+                    llm,
+                    max_context_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    inter_pp=inter_pp,
+                    intra_pp=intra_pp,
+                    transpose_value_cache=transpose_value_cache,
+                    group_size=quantization_group_size
+                )
         else:
             from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
                 import convert_llm
