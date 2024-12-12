@@ -94,3 +94,16 @@ jobs:
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
+
+    - name: Generate Security Report
+      uses: rsdmike/github-security-report-action@v3.0.4
+      with:
+        template: report
+        token: ${{ secrets.SECURITY_TOKEN }}
+        
+    - name: GitHub Upload Release Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: report
+        path: |
+         ./report.pdf
