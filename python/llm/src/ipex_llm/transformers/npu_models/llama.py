@@ -128,7 +128,7 @@ def llama_model_forward(
     all_self_attns = () if output_attentions else None
     next_decoder_cache = None
 
-    for idx, decoder_layer in enumerate(self.layers):
+    for decoder_layer in self.layers:
         if output_hidden_states:
             all_hidden_states += (hidden_states,)
 
@@ -144,9 +144,6 @@ def llama_model_forward(
                 cache_position,
             )
         else:
-            print(f'Before running {idx} decoder layer, hidden_states is {hidden_states}')
-            print(f'Before running {idx} decoder layer, causal_mask is {causal_mask}')
-            print(f'Before running {idx} decoder layer, position_ids is {position_ids}')
             layer_outputs = decoder_layer(
                 hidden_states,
                 attention_mask=causal_mask,
@@ -158,8 +155,6 @@ def llama_model_forward(
             )
 
         hidden_states = layer_outputs[0]
-        print(f'After running {idx} decoder layer, hidden_states is {hidden_states}')
-        print('===============')
 
         if use_cache:
             next_decoder_cache = layer_outputs[2 if output_attentions else 1]
@@ -167,7 +162,6 @@ def llama_model_forward(
         if output_attentions:
             all_self_attns += (layer_outputs[1],)
 
-    print(f'run_prefill result, hidden_states is {hidden_states}')
     hidden_states = self.norm(hidden_states)
 
     # add hidden states from the last decoder layer
