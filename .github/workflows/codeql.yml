@@ -9,7 +9,7 @@
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
 #
-name: "CodeQL"
+name: "CodeQL Advanced"
 
 permissions:
   contents: read
@@ -30,7 +30,6 @@ jobs:
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
-    timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
     permissions:
       # required for all workflows
       security-events: write
@@ -46,6 +45,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+        - language: c-cpp
+          build-mode: autobuild
         - language: python
           build-mode: none
         # CodeQL supports the following values keywords for 'language': 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift'
@@ -93,16 +94,3 @@ jobs:
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
-
-    - name: Generate Security Report
-      uses: rsdmike/github-security-report-action@v3.0.4
-      with:
-        template: report
-        token: ${{ secrets.SECURITY_TOKEN }}
-        
-    - name: GitHub Upload Release Artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: report
-        path: |
-         ./report.pdf
