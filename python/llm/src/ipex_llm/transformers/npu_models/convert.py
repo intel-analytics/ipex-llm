@@ -413,7 +413,7 @@ def simple_generate(
         if token in eos:
             break
         token = run_decode(self.model_ptr, token, self.vocab_size,
-                           input_list, repetition_penalty)
+                           repetition_penalty)
         if streamer is not None:
             # rest tokens
             streamer.put(torch.tensor([token]))
