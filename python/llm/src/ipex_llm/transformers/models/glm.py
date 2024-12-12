@@ -37,7 +37,6 @@ import torch
 
 from typing import Optional, Tuple
 from transformers.cache_utils import Cache
-from transformers.models.glm.modeling_glm import GlmAttention, GlmMLP
 from transformers.models.glm.modeling_glm import repeat_kv, apply_rotary_pos_emb
 from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache
 from ipex_llm.transformers.models.common import merge_qkv_base
@@ -46,11 +45,12 @@ from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp
 
 
 def merge_qkv(module: torch.nn.Module):
-    merge_qkv_base(module, GlmAttention)
+    merge_qkv_base(module, "GlmAttention")
+    merge_qkv_base(module, "SiglipAttention")
 
 
 def split_mlp(module: torch.nn.Module):
-    if isinstance(module, GlmMLP):
+    if module.__class__.__name__ == "GlmMLP":
         gate_weight, up_weight = module.gate_up_proj.weight.data.chunk(2, dim=0)
 
         gate_proj = torch.nn.Linear(0, 0, bias=False)
