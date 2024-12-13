@@ -60,6 +60,9 @@ For optimal performance, it is recommended to set several environment variables.
 
 ```cmd
 set BIGDL_USE_NPU=1
+
+:: [optional] for running models on MTL
+set IPEX_LLM_NPU_MTL=1
 ```
 
 ## 3. Run Models
