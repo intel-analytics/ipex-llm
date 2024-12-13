@@ -73,8 +73,8 @@ See demos of running local LLMs *on Intel Core Ultra iGPU, Intel Core Ultra NPU,
       </a>
     </td>
     <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/arc_llama3-8B_fp8_textwebui.gif" target="_blank">
-        <img src="https://llm-assets.readthedocs.io/en/latest/_images/arc_llama3-8B_fp8_textwebui.gif" width=100%; />
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/arc_qwen2.5-14B_q4_0_llamacpp.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/arc_qwen2.5-14B_q4_0_llamacpp.gif" width=100%; />
       </a>
     </td>
     <td>
@@ -91,7 +91,7 @@ See demos of running local LLMs *on Intel Core Ultra iGPU, Intel Core Ultra NPU,
       <a href="docs/mddocs/Quickstart/npu_quickstart.md">HuggingFace <br> (Llama3.2-3B SYM_INT4)</a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI <br> (Llama3-8B FP8) </a>
+      <a href="docs/mddocs/Quickstart/llama_cpp_quickstart.md">llama.cpp <br> (Qwen2.5-14B Q4_0) </a>
     </td>
     <td align="center" width="25%">
       <a href="docs/mddocs/Quickstart/fastchat_quickstart.md">FastChat <br> (QWen1.5-32B FP6)</a>
