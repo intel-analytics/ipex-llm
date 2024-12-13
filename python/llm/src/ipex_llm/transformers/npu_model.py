@@ -290,7 +290,8 @@ class _BaseAutoModelClass:
             model.config.update({"group_size": quantization_group_size})
             model.config.update({"asym": qtype == "asym_int4_rtn"})
             optimize_llm_pre(model, qtype, mixed_precision,
-                             quantization_group_size=quantization_group_size)
+                             quantization_group_size=quantization_group_size,
+                             max_prompt_len=max_prompt_len)
             cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
                              quantization_group_size, imatrix_data,
                              *args, **kwargs)
@@ -580,7 +581,7 @@ class _BaseAutoModelClass:
             with torch.no_grad():
                 optimize_llm_pre(model, qtype, mixed_precision,
                                  quantization_group_size=quantization_group_size,
-                                 load=bigdl_lcmu_enabled)
+                                 load=bigdl_lcmu_enabled, max_prompt_len=max_prompt_len)
                 cls.load_convert(qtype, model, quant_device, modules_to_not_convert,
                                  quantization_group_size, *model_args, **kwargs)
                 create_npu_kernels(llm)
@@ -804,7 +805,8 @@ class EmbeddingModel(_BaseAutoModelClass):
 
         with torch.no_grad():
             optimize_llm_pre(model, qtype, mixed_precision,
-                             quantization_group_size=quantization_group_size)
+                             quantization_group_size=quantization_group_size,
+                             max_prompt_len=max_prompt_len)
             cls.load_convert_fp16(qtype, model.encoder, "cpu", modules_to_not_convert,
                                   quantization_group_size)
             create_npu_kernels(model.encoder)
