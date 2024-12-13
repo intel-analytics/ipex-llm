@@ -17,7 +17,7 @@
 </table>
 
 > [!NOTE]
-> `ipex-llm[cpp]==2.2.0b20240826` 版本与官方 ollama 版本 [v0.1.39](https://github.com/ollama/ollama/releases/tag/v0.1.39) 一致。
+> `ipex-llm[cpp]==2.2.0b20241204` 版本与官方 ollama 版本 [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) 一致。
 >
 > `ipex-llm[cpp]` 的最新版本与官方 ollama 版本 [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) 一致。
 
