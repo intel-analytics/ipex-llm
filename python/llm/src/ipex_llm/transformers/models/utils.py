@@ -493,3 +493,11 @@ def get_q_proj_or_qkv_proj(self):
     elif hasattr(self, "qkv_proj"):
         proj = self.qkv_proj
     return proj
+
+
+def make_cache_contiguous_inplaced(cos: torch.Tensor, sin: torch.Tensor):
+    if not cos.is_contiguous():
+        new_cos = cos.contiguous()
+        new_sin = sin.contiguous()
+        cos.set_(new_cos)
+        sin.set_(new_sin)

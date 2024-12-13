@@ -41,6 +41,7 @@ from transformers.models.glm.modeling_glm import repeat_kv, apply_rotary_pos_emb
 from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache
 from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
+from ipex_llm.transformers.models.utils import make_cache_contiguous_inplaced
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
 
 
@@ -92,9 +93,13 @@ def glm_attention_forward(
     query_states, key_states, value_states = qkv.split([self.num_heads,
                                                         self.num_key_value_heads,
                                                         self.num_key_value_heads], dim=1)
-
     cos, sin = position_embeddings
-    query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
+    if query_states.device.type == "xpu":
+        import xe_addons
+        make_cache_contiguous_inplaced(cos, sin)
+        xe_addons.rotary_two_with_cache_inplaced(query_states, key_states, cos, sin, True)
+    else:
+        query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
 
     use_quantizekv = isinstance(past_key_value, DynamicFp8Cache)
     # sin and cos are specific to RoPE models; cache_position needed for the static cache
