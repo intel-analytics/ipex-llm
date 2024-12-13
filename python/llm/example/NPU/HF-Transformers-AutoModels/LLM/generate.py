@@ -52,7 +52,6 @@ if __name__ == '__main__':
             attn_implementation="eager"
         )
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        tokenizer.save_pretrained(args.lowbit_path)
     else:
         model = AutoModelForCausalLM.load_low_bit(
             args.lowbit_path,
@@ -66,6 +65,7 @@ if __name__ == '__main__':
 
     if args.lowbit_path and not os.path.exists(args.lowbit_path):
         model.save_low_bit(args.lowbit_path)
+        tokenizer.save_pretrained(args.lowbit_path)
 
     with torch.inference_mode():
         input_ids = tokenizer.encode(args.prompt, return_tensors="pt")
