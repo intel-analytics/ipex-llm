@@ -93,6 +93,7 @@ def glm_attention_forward(
     query_states, key_states, value_states = qkv.split([self.num_heads,
                                                         self.num_key_value_heads,
                                                         self.num_key_value_heads], dim=1)
+
     cos, sin = position_embeddings
     if query_states.device.type == "xpu":
         import xe_addons
