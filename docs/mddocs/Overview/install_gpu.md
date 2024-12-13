@@ -6,9 +6,6 @@
 
 IPEX-LLM on Windows supports Intel iGPU and dGPU.
 
-> [!IMPORTANT]
-> IPEX-LLM on Windows only supports PyTorch 2.1.
-
 To apply Intel GPU acceleration, please first verify your GPU driver version.
 
 > [!NOTE]
