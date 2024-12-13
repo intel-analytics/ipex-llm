@@ -51,8 +51,8 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
     # workaround for long input performance of llama3.2-3b and glm-edge-4b CW
     if os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT") is None:
         disable_compile_opt = model.config.model_type == "llama" and \
-            model.config.hidden_size == 3072 and max_prompt_len >= 1920 \
-                and quantization_group_size == 0
+            model.config.hidden_size == 3072 and max_prompt_len >= 1920 and \
+            quantization_group_size == 0
         os.environ["IPEX_LLM_NPU_DISABLE_COMPILE_OPT"] = "1" if disable_compile_opt else "0"
 
     # workaround for MiniCPM-2B
