@@ -25,15 +25,11 @@ model_path = args.model_path
 
 dtype=torch.bfloat16
 num_labels = 5
-
 model_name=model_path
-
 save_directory = model_name + "-classification"
 
-# Initialize the tokenizer
-# Need padding from the left and padding to 1024
+# Initialize the tokenizer 
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
-# tokenizer.padding_side = "left"
 tokenizer.pad_token = tokenizer.eos_token
 tokenizer.save_pretrained(save_directory)
 
