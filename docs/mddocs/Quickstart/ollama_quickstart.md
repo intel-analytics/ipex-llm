@@ -17,9 +17,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 </table>
 
 > [!NOTE]
-> `ipex-llm[cpp]==2.2.0b20240826` is consistent with [v0.1.39](https://github.com/ollama/ollama/releases/tag/v0.1.39) of ollama.
+> `ipex-llm[cpp]==2.2.0b20241204` is consistent with [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) of ollama.
 >
-> Our current version is consistent with [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) of ollama.
+> Our current version is consistent with [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) of ollama.
 
 > [!NOTE]
 > Starting from `ipex-llm[cpp]==2.2.0b20240912`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.0.0` to `2024.2.1` .
@@ -80,6 +80,7 @@ You may launch the Ollama service as below:
   export ZES_ENABLE_SYSMAN=1
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
+  export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
   # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   # [optional] if you want to run on single GPU, use below command to limit GPU may improve performance
@@ -177,6 +178,8 @@ Then you can create the model in Ollama by `ollama create example -f Modelfile` 
 - For **Linux users**:
   
   ```bash
+  source /opt/intel/oneapi/setvars.sh
+  export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
   export no_proxy=localhost,127.0.0.1
   ./ollama create example -f Modelfile
   ./ollama run example
