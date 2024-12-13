@@ -207,36 +207,6 @@ def apply_ipex_rotate_every_two(q, k, cos, sin):
         torch.ops.torch_ipex.apply_rotary_embedding(k, sin, cos, k)
 
 
-def apply_rotary_pos_emb_cache_freq_xpu(q, k, sin, cos, model_family, position_ids=None):
-    if q.device.type != "xpu":
-        invalidInputError(False,
-                          f"only xpu is supported in this function")
-    import xe_addons
-    q_embed = torch.empty(q.shape, dtype=q.dtype, device=q.device)
-    k_embed = torch.empty(k.shape, dtype=k.dtype, device=k.device)
-    if model_family in ["qwen", "mixtral"]:
-        xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos,
-                                                                 q_embed, k_embed)
-    elif model_family in ["qwen2", "yuan", "stablelm", "qwen2_moe", "internlm"]:
-        cos = cos.to(q.dtype)
-        sin = sin.to(q.dtype)
-        cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
-        sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
-        cos = cos[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-        sin = sin[position_ids].unsqueeze(1)  # [bs, 1, seq_len, dim]
-        xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos,
-                                                                 q_embed, k_embed)
-    elif model_family in ["gemma", "phi3"]:
-        cos = cos.unsqueeze(1)
-        sin = sin.unsqueeze(1)
-        xe_addons.apply_rotary_embedding_half_q_and_k_cache_freq(q, k, sin, cos,
-                                                                 q_embed, k_embed)
-    else:
-        invalidInputError(False,
-                          f"{model_family} is not supported.")
-    return q_embed, k_embed
-
-
 def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):
     # to determinate if is enough kv cache room in transformers==4.36
     # seq_len for current seq len
