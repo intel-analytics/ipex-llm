@@ -1,4 +1,4 @@
-FROM intel/oneapi-basekit:2024.0.1-devel-ubuntu22.04
+FROM intel/oneapi:2024.2.1-0-devel-ubuntu22.04
 
 ARG http_proxy
 ARG https_proxy
@@ -6,7 +6,7 @@ ARG https_proxy
 ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
 
-# When cache is enabled SYCL runtime will try to cache and reuse JIT-compiled binaries. 
+# When cache is enabled SYCL runtime will try to cache and reuse JIT-compiled binaries.
 ENV SYCL_CACHE_PERSISTENT=1
 
 COPY chat.py /llm/chat.py
@@ -29,6 +29,19 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     # add-apt-repository requires gnupg, gpg-agent, software-properties-common
     apt-get install -y --no-install-recommends gnupg gpg-agent software-properties-common && \
+    export PRE_DIR=$(pwd) && \
+    # Install Compute Runtime
+    mkdir -p /tmp/neo && \
+    cd /tmp/neo && \
+    wget https://github.com/oneapi-src/level-zero/releases/download/v1.18.5/level-zero_1.18.5+u22.04_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-core_1.0.17791.9_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-opencl_1.0.17791.9_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-level-zero-gpu_1.6.31294.12_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-opencl-icd_24.39.31294.12_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/libigdgmm12_22.5.2_amd64.deb && \
+    dpkg -i *.deb && \
+    rm -rf /tmp/neo && \
+    cd $PRE_DIR && \
     # Add Python 3.11 PPA repository
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y --no-install-recommends python3.11 git curl wget && \
@@ -41,13 +54,12 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install --pre --upgrade ipex-llm[xpu_arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install --pre pytorch-triton-xpu==3.0.0+1b2f15840e --index-url https://download.pytorch.org/whl/nightly/xpu && \
     # Fix Trivy CVE Issues
-    pip install transformers==4.36.2 && \
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
     apt-get update && \
-    apt-get install -y --no-install-recommends intel-opencl-icd=23.35.27191.42-775~22.04 intel-level-zero-gpu=1.3.27191.42-775~22.04 level-zero=1.14.0-744~22.04 && \
     # Install related libary of chat.py
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
@@ -71,7 +83,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Download Deepspeed-AutoTP
     cp -r ./ipex-llm/python/llm/example/GPU/Deepspeed-AutoTP/ ./Deepspeed-AutoTP && \
     # Install related library of Deepspeed-AutoTP
-    pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install oneccl_bind_pt==2.3.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
     pip install git+https://github.com/microsoft/DeepSpeed.git@ed8aed5 && \
     pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@0eb734b && \
     pip install mpi4py && \
@@ -82,3 +94,4 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
 
 
 WORKDIR /llm/
+ENV BIGDL_CHECK_DUPLICATE_IMPORT=0
