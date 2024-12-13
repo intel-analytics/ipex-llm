@@ -19,7 +19,7 @@
 > [!NOTE]
 > `ipex-llm[cpp]==2.2.0b20240826` 版本与官方 ollama 版本 [v0.1.39](https://github.com/ollama/ollama/releases/tag/v0.1.39) 一致。
 >
-> `ipex-llm[cpp]` 的最新版本与官方 ollama 版本 [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) 一致。
+> `ipex-llm[cpp]` 的最新版本与官方 ollama 版本 [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) 一致。
 
 > [!NOTE]
 > 从 `ipex-llm[cpp]==2.2.0b20240912` 版本开始，Windows 上 `ipex-llm[cpp]` 依赖的 oneAPI 版本已从 `2024.0.0` 更新到 `2024.2.1`。
@@ -80,6 +80,7 @@ IPEX-LLM 现在已支持在 Linux 和 Windows 系统上运行 `Ollama`。
   export ZES_ENABLE_SYSMAN=1
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
+  export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
   # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   # [optional] if you want to run on single GPU, use below command to limit GPU may improve performance
@@ -174,6 +175,8 @@ PARAMETER num_predict 64
   
   ```bash
   export no_proxy=localhost,127.0.0.1
+  source /opt/intel/oneapi/setvars.sh
+  export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
   ./ollama create example -f Modelfile
   ./ollama run example
   ```
