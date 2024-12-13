@@ -109,11 +109,11 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
                                              enable_scale_search=enable_scale_search,
                                              imatrix=imatrix)
         if qtype == "sym_int4_rtn" and os.environ.get("IPEX_LLM_NPU_QUANTIZATION_HQQ", "0") != "0":
-            from .quantize  import update_scale_grid_search
-            # scale grid search
-            qweights, scale = update_scale_grid_search(layer.weight.data.to(torch.float32),
-                                                       (1.0 / scale.to(torch.float32)),
-                                                       [-8, 7])
+            from .quantize  import update_scale_inverse_median
+            # scale search by hqq
+            qweights, scale = update_scale_inverse_median(layer.weight.data.to(torch.float32),
+                                                          (1.0 / scale.to(torch.float32)),
+                                                          [-8, 7])
         zero = None
         # split scale to scale & zero
         if qtype == "asym_int4_rtn":
