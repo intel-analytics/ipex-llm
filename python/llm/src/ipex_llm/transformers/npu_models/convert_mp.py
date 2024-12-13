@@ -32,6 +32,11 @@ def convert_forward(m, target_m, new_forward):
 
 def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                      quantization_group_size=0, load=False, max_prompt_len=512):
+    if os.environ.get("IPEX_LLM_NPU_MTL", "0") != "0":
+        # For MTL support
+        os.environ["IPEX_LLM_NPU_USE_LEVEL0"] = "0"
+        os.environ["IPEX_LLM_NPU_DISABLE_COMPILE_OPT"] = "1"
+
     if model.config.model_type == "baichuan":
         # process NormHead module in Baichuan2 7B
         if hasattr(model, 'lm_head') and model.lm_head is not None:

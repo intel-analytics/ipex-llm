@@ -90,6 +90,9 @@ For `ipex-llm` NPU support, set the following environment variable with active `
 
 ```cmd
 set BIGDL_USE_NPU=1
+
+:: [optional] for MTL support
+set IPEX_LLM_NPU_MTL=1
 ```
 
 ## Python API
