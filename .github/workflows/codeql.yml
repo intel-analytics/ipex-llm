@@ -9,7 +9,7 @@
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
 #
-name: "CodeQL"
+name: "CodeQL Advanced"
 
 permissions:
   contents: read
@@ -20,6 +20,7 @@ on:
   schedule:
     - cron: '24 14 * * 0'
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   analyze:
@@ -29,8 +30,7 @@ jobs:
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
-    timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
+    runs-on: [self-hosted, Shire]
     permissions:
       # required for all workflows
       security-events: write
@@ -99,9 +99,11 @@ jobs:
       with:
         template: report
         token: ${{ secrets.SECURITY_TOKEN }}
+      env:
+        GITHUB_API_RATE_LIMIT: 5000
         
     - name: GitHub Upload Release Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: report
         path: |
