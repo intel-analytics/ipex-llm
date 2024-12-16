@@ -296,7 +296,6 @@ def get_peft_model(*args, **kwargs):
 
     if model.device.type == "xpu":
         cast_lora_weight(model, torch.bfloat16)
-        _optimize_post(model)
         torch.xpu.synchronize()
 
     return model
@@ -390,18 +389,3 @@ def cast_lora_weight(model, dtype=torch.bfloat16):
             if hasattr(module, 'weight'):
                 if module.weight.dtype == torch.float32:
                     module = module.to(dtype)
-
-
-def _optimize_post(model):
-    import transformers
-    from packaging import version
-    from ipex_llm.transformers.convert import convert_forward
-    from ipex_llm.transformers.models.llama import llama_attention_fast_forward
-
-    trans_version = transformers.__version__
-    if version.parse(trans_version) >= version.parse("4.31.0"):
-        LOG.info("Optimizing Llama finetuning....")
-        convert_forward(
-            model,
-            transformers.models.llama.modeling_llama.LlamaAttention,
-            llama_attention_fast_forward,)
