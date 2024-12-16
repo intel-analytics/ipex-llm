@@ -2,7 +2,7 @@
 
 This guide demonstrates:
 
-- How to install IPEX-LLM for Intel NPU on Intel Core™ Ultra Processers (Series 2)
+- How to install IPEX-LLM for Intel NPU on Intel Core™ Ultra Processers
 - Python and C++ APIs for running IPEX-LLM on Intel NPU
 
 > [!IMPORTANT]
@@ -20,7 +20,7 @@ This guide demonstrates:
 ## Install Prerequisites
 
 > [!NOTE]
-> IPEX-LLM NPU support on Windows has been verified on Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake).
+> IPEX-LLM NPU support on Windows has been verified on Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake) and Intel Core™ Ultra Processers (Series 1) with processor number 1xxH (code name Meteor Lake).
 
 ### Update NPU Driver
 
@@ -82,18 +82,41 @@ With the `llm-npu` environment active, use `pip` to install `ipex-llm` for NPU:
 conda activate llm-npu
 
 pip install --pre --upgrade ipex-llm[npu]
+
+:: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
+pip install transformers==4.45.0 accelerate==0.33.0
+
+:: [optional] for glm-edge-1.5b-chat & glm-edge-4b-chat
+pip install transformers==4.47.0 accelerate==0.26.0
 ```
 
 ## Runtime Configurations
 
-For `ipex-llm` NPU support, set the following environment variable with active `llm-npu` environment:
+For `ipex-llm` NPU support, please set the following environment variable with active `llm-npu` environment based on your device:
 
-```cmd
+<details>
+
+<summary>For Intel Core™ Ultra Processers (Series 2) with processor number 2xxV</summary>
+
+```bash
 set BIGDL_USE_NPU=1
 
-:: [optional] for MTL support
+# [optional] for Intel Core™ Ultra 5 Processor 228V & 226V
+set IPEX_LLM_NPU_DISABLE_COMPILE_OPT=1
+```
+
+</details>
+
+<details>
+
+<summary>For Intel Core™ Ultra Processers (Series 1) with processor number 1xxH</summary>
+
+```bash
+set BIGDL_USE_NPU=1
 set IPEX_LLM_NPU_MTL=1
 ```
+
+</details>
 
 ## Python API
 
