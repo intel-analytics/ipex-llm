@@ -82,41 +82,27 @@ With the `llm-npu` environment active, use `pip` to install `ipex-llm` for NPU:
 conda activate llm-npu
 
 pip install --pre --upgrade ipex-llm[npu]
-
-:: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
-pip install transformers==4.45.0 accelerate==0.33.0
-
-:: [optional] for glm-edge-1.5b-chat & glm-edge-4b-chat
-pip install transformers==4.47.0 accelerate==0.26.0
 ```
 
 ## Runtime Configurations
 
 For `ipex-llm` NPU support, please set the following environment variable with active `llm-npu` environment based on your device:
 
-<details>
+- For **Intel Core™ Ultra Processers (Series 2) with processor number 2xxV**
 
-<summary>For Intel Core™ Ultra Processers (Series 2) with processor number 2xxV</summary>
-
-```bash
+```cmd
 set BIGDL_USE_NPU=1
 
-# [optional] for Intel Core™ Ultra 5 Processor 228V & 226V
+:: [optional] for Intel Core™ Ultra 5 Processor 228V & 226V
 set IPEX_LLM_NPU_DISABLE_COMPILE_OPT=1
 ```
 
-</details>
-
-<details>
-
-<summary>For Intel Core™ Ultra Processers (Series 1) with processor number 1xxH</summary>
+- For **Intel Core™ Ultra Processers (Series 1) with processor number 1xxH**
 
 ```bash
 set BIGDL_USE_NPU=1
 set IPEX_LLM_NPU_MTL=1
 ```
-
-</details>
 
 ## Python API
 
@@ -134,10 +120,10 @@ Refer to the following table for examples of verified models:
 | GLM-Edge | [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat), [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat)  | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
 | Baichuan 2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
-| MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
-| MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
-| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
-| Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
+| MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) |
+| MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) |
+| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) |
+| Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) |
 
 
 > [!TIP]

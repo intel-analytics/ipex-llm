@@ -12,12 +12,27 @@ In this directory, you will find a C++ example on how to run LLM models on Intel
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
 | Llama3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 
-## 0. Install Prerequisites
+## 0. Prerequisites
 For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
 
 ## 1. Install & Runtime Configurations
 ### 1.1 Installation on Windows
-Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for `ipex-llm` installation.
+We suggest using conda to manage environment:
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+:: install ipex-llm with 'npu' option
+pip install --pre --upgrade ipex-llm[npu]
+
+:: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
+pip install transformers==4.45.0 accelerate==0.33.0
+
+:: [optional] for glm-edge-1.5b-chat & glm-edge-4b-chat
+pip install transformers==4.47.0 accelerate==0.26.0
+```
+
+Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
 
 ### 1.2 Runtime Configurations
 Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.

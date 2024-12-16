@@ -19,13 +19,28 @@ For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../../d
 
 ## 1. Install & Runtime Configurations
 ### 1.1 Installation on Windows
-Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for `ipex-llm` installation.
+We suggest using conda to manage environment:
+```cmd
+conda create -n llm python=3.11
+conda activate llm
+
+:: install ipex-llm with 'npu' option
+pip install --pre --upgrade ipex-llm[npu]
+
+:: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
+pip install transformers==4.45.0 accelerate==0.33.0
+
+:: [optional] for glm-edge-1.5b-chat & glm-edge-4b-chat
+pip install transformers==4.47.0 accelerate==0.26.0
+```
+
+Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for more details about `ipex-llm` installation on Intel NPU.
 
 ### 1.2 Runtime Configurations
 Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
-## 2. Run Models
-In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
+## 2. Run Optimized Models
+The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU:
 
 ```cmd
 :: to run Llama-2-7b-chat-hf
