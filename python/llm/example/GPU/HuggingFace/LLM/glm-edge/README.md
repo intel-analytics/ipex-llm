@@ -1,5 +1,5 @@
 # GLM-Edge
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on GLM-Edge models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/glm-edge-1.5b-chat](https://hf-mirror.com/THUDM/glm-edge-1.5b-chat) and [THUDM/glm-edge-4b-chat](https://hf-mirror.com/THUDM/glm-edge-4b-chat) as reference GLM-Edge models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on GLM-Edge models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat) and [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat) as reference GLM-Edge models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -112,7 +112,7 @@ Arguments info:
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
-#### [THUDM/glm-edge-1.5b-chat](https://hf-mirror.com/THUDM/glm-edge-1.5b-chat)
+#### [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
@@ -129,7 +129,7 @@ What is AI?
 Artificial Intelligence, often abbreviated as AI, refers to the simulation of human intelligence in machines that are programmed to think like humans and mimic
 ```
 
-#### [THUDM/glm-edge-4b-chat](https://hf-mirror.com/THUDM/glm-edge-4b-chat)
+#### [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
