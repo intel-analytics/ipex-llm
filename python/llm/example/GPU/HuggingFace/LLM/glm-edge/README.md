@@ -129,7 +129,7 @@ What is AI?
 Artificial Intelligence, often abbreviated as AI, refers to the simulation of human intelligence in machines that are programmed to think like humans and mimic
 ```
 
-#### [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat)
+#### [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
