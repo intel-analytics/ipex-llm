@@ -17,18 +17,14 @@
 import torch
 import time
 import argparse
-import numpy as np
 
 from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-# you could tune the prompt based on your own model,
-# here the prompt tuning refers to https://hf-mirror.com/THUDM/glm-edge-1.5b-chat
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for GLM-Edge model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/glm-edge-1.5b-chat",
+    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/glm-edge-4b-chat",
                         help='The huggingface repo id for the GLM-Edge model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
@@ -44,11 +40,11 @@ if __name__ == '__main__':
     # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                      load_in_4bit=True,
-                                      optimize_model=True,
-                                      trust_remote_code=True,
-                                      use_cache=True)
-    model = model.to("xpu")
+                                                 load_in_4bit=True,
+                                                 optimize_model=True,
+                                                 trust_remote_code=True,
+                                                 use_cache=True)
+    model = model.half().to("xpu")
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -56,6 +52,7 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
+        # The following code for generation is adapted from https://huggingface.co/THUDM/glm-edge-1.5b-chat#inference
         message = [{"role": "user", "content": args.prompt}]
 
         inputs = tokenizer.apply_chat_template(
@@ -63,7 +60,7 @@ if __name__ == '__main__':
             return_tensors="pt",
             add_generation_prompt=True,
             return_dict=True,
-        ).to(model.device)
+        ).to("xpu")
         
         generate_kwargs = {
             "input_ids": inputs["input_ids"],
@@ -76,12 +73,11 @@ if __name__ == '__main__':
         output = model.generate(**generate_kwargs)
 
         st = time.time()
-
         output = model.generate(**generate_kwargs)
-        
         torch.xpu.synchronize()
         end = time.time()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+
+        output_str = tokenizer.decode(output[0][inputs.input_ids.shape[1]:], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
         print(args.prompt)
