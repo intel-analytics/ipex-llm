@@ -1,6 +1,6 @@
 # ChatGLM3
 
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on ChatGLM3 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) as a reference ChatGLM3 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on ChatGLM3 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) as a reference ChatGLM3 model when you choose **Hugging Face** as your model hub. And if you choose **ModelScope** as your model hub, we use [ZhipuAI/chatglm3-6b](https://www.modelscope.cn/models/ZhipuAI/chatglm3-6b) as a reference ChatGLM3 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -13,6 +13,9 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+# [optional] if you use modelscope as model hub, please make sure you are using 1.11.0 version
+pip install modelscope==1.11.0
 ```
 
 ### 1.2 Installation on Windows
@@ -101,10 +104,10 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the ChatGLM3 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/chatglm3-6b'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the ChatGLM3 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/chatglm3-6b'` for **Hugging Face** or `ZhipuAI/chatglm3-6b` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
-- `--modelscope`: using **Modelscope** as model hub instead of **huggingface**.
+- `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
 
 #### Sample Output
 #### [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b)
@@ -150,4 +153,4 @@ Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the ChatGLM3 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/chatglm3-6b'`.
 - `--question QUESTION`: argument defining the question to ask. It is default to be `"晚上睡不着应该怎么办"`.
 - `--disable-stream`: argument defining whether to stream chat. If include `--disable-stream` when running the script, the stream chat is disabled and `chat()` API is used.
-- `--modelscope`: using **Modelscope** as model hub instead of **huggingface**.
+- `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
