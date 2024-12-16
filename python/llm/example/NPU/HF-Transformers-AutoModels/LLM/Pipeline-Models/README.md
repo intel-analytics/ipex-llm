@@ -29,9 +29,6 @@ pip install --pre --upgrade ipex-llm[npu]
 
 :: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
 pip install transformers==4.45.0 accelerate==0.33.0
-
-:: [optional] for glm-edge-1.5b-chat & glm-edge-4b-chat
-pip install transformers==4.47.0 accelerate==0.26.0
 ```
 
 Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for more details about `ipex-llm` installation on Intel NPU.
