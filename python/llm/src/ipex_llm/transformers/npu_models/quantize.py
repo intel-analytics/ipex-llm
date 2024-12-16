@@ -119,10 +119,12 @@ def update_scale_hqq(x: Tensor, iscale: Tensor, min_max: list):
         W_ = (x - W_e).clone()
         W_mask = torch.abs(W_) < z_val
         W_[W_mask] = z_val
-        iscale, _ = torch.median(W_q / W_q, axis=1, keepdim=True)
+        iscale, _ = torch.median(W_q / W_, axis=1, keepdim=True)
         beta *= kappa
 
         current_error = float(torch.abs(x - W_r).mean())
+        print(i, current_error)
+        print(iscale, torch.isinf(iscale).any(), torch.isnan(iscale).any())
         if current_error < best_error:
             best_error = current_error
         else:
@@ -140,6 +142,49 @@ def update_scale_hqq(x: Tensor, iscale: Tensor, min_max: list):
 
     return qweights.view(torch.uint8), scale_b.to(torch.float16)
 
+
+def update_scale_hqq_v2(x: Tensor, scale: Tensor, min_max: list):
+    scale = scale.unsqueeze(1)
+    opt_params: dict = {"lp_norm": 0.7, "beta": 1e1, "kappa": 1.01, "iters": 20}
+    lp_norm, beta, kappa, iters = (
+        opt_params["lp_norm"],
+        opt_params["beta"],
+        opt_params["kappa"],
+        opt_params["iters"],
+    )
+
+    best_error = 1e4
+    for i in range(iters):
+        W_q = c_round(x / scale).clamp(min_max[0], min_max[1])
+        W_q_mask = W_q != 0  # m, n
+        sum_row = torch.sum(W_q_mask.int(), axis=1, keepdim=True) # m, 1
+        W_r = W_q * scale
+        W_e = shrink_lp_op(x - W_r, beta, lp_norm)
+        W_ = (x - W_e).clone()
+        tmp = W_ / W_q
+        tmp[W_q == 0] = 0
+        tmp = torch.sum(tmp, axis=1, keepdim=True) # m, 1
+        scale = tmp / sum_row # m, 1
+        beta *= kappa
+
+        current_error = float(torch.abs(x - W_r).mean())
+        print(i, current_error)
+        if current_error < best_error:
+            best_error = current_error
+        else:
+            break
+    
+    scale_b = scale
+    qweights = (c_round(x / scale)).clamp(min_max[0], min_max[1]).to(torch.int8) # m * n
+    qweights = qweights.reshape(x.shape[0], -1 , 2) # m * n/2 * 2
+    low_bit, high_bit = qweights.split(1, dim=-1)
+    high_bit = high_bit.squeeze().view(torch.int8)
+    low_bit = low_bit.squeeze().view(torch.int8)
+    high_bit = high_bit << 4
+    low_bit = low_bit & 0x0f
+    qweights = high_bit | low_bit
+
+    return qweights.view(torch.uint8), scale_b.to(torch.float16)
 
 
 # re-estimate the scale based on the inverse median: Only tested with axis==0
