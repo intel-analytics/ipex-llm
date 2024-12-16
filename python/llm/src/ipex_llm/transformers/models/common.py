@@ -181,6 +181,6 @@ def layer_norm_forward(self, hidden_states: torch.Tensor):
         return output.reshape(hidden_states.shape)
     else:
         return torch.nn.functional.layer_norm(
-            input, self.normalized_shape,
+            hidden_states, self.normalized_shape,
             self.weight, self.bias, self.eps
         )
