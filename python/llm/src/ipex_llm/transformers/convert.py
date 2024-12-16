@@ -1296,10 +1296,9 @@ def _optimize_post(model, lightweight_bmm=False):
     trans_version = transformers.__version__
 
     # convert all nn.LayerNorm
-    from ipex_llm.transformers.models.bloom import bloom_layer_norm_forward
-    convert_forward(model,
-                    nn.LayerNorm,
-                    bloom_layer_norm_forward)
+    from ipex_llm.transformers.models.common import layer_norm_forward
+    convert_forward(model, nn.LayerNorm, layer_norm_forward)
+
     from ipex_llm.transformers.models.llama import llama_rms_norm_forward
     from ipex_llm.transformers.models.llama import llama_mlp_forward
 
