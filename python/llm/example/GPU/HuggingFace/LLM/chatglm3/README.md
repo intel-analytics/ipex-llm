@@ -1,6 +1,6 @@
 # ChatGLM3
 
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on ChatGLM3 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) as a reference ChatGLM3 model when you choose **Hugging Face** as your model hub. And if you choose **ModelScope** as your model hub, we use [ZhipuAI/chatglm3-6b](https://www.modelscope.cn/models/ZhipuAI/chatglm3-6b) as a reference ChatGLM3 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on ChatGLM3 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b) (or [ZhipuAI/chatglm3-6b](https://www.modelscope.cn/models/ZhipuAI/chatglm3-6b) for ModelScope) as a reference ChatGLM3 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -14,7 +14,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-# [optional] if you use modelscope as model hub, please make sure you are using 1.11.0 version
+# [optional] only needed if you would like to use ModelScope as model hub
 pip install modelscope==1.11.0
 ```
 
@@ -27,7 +27,7 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
-# [optional] if you use modelscope as model hub, please make sure you are using 1.11.0 version
+# [optional] only needed if you would like to use ModelScope as model hub
 pip install modelscope==1.11.0
 ```
 
