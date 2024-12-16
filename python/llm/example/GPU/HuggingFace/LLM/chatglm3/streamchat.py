@@ -25,8 +25,8 @@ from ipex_llm.transformers import AutoModel
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Stream Chat for ChatGLM3 model')
     parser.add_argument('--repo-id-or-model-path', type=str,
-                        help='The huggingface repo id for the ChatGLM3 model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+                        help='The Hugging Face or ModelScope repo id for the ChatGLM3 model to be downloaded'
+                             ', or the path to the checkpoint folder')
     parser.add_argument('--question', type=str, default="晚上睡不着应该怎么办",
                         help='Qustion you want to ask')
     parser.add_argument('--disable-stream', action="store_true",
