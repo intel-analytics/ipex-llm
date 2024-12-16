@@ -20,7 +20,6 @@ import argparse
 import numpy as np
 
 from ipex_llm.transformers import AutoModel
-from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://github.com/THUDM/ChatGLM3/blob/main/PROMPT.md
@@ -28,16 +27,27 @@ CHATGLM_V3_PROMPT_FORMAT = "<|user|>\n{prompt}\n<|assistant|>"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for ChatGLM3 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm3-6b",
-                        help='The huggingface repo id for the ChatGLM3 model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--repo-id-or-model-path', type=str, 
+                        help='The Hugging Face or ModelScope repo id for the ChatGLM3 model to be downloaded'
+                             ', or the path to the checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--modelscope', action="store_true", default=False, 
+                        help="Use models from modelscope")
 
     args = parser.parse_args()
-    model_path = args.repo_id_or_model_path
+
+    if args.modelscope:
+        from modelscope import AutoTokenizer
+        model_hub = 'modelscope'
+    else:
+        from transformers import AutoTokenizer
+        model_hub = 'huggingface'
+    
+    model_path = args.repo_id_or_model_path if args.repo_id_or_model_path else \
+        ("ZhipuAI/chatglm3-6b" if args.modelscope else "THUDM/chatglm3-6b")
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -47,7 +57,8 @@ if __name__ == '__main__':
                                       load_in_4bit=True,
                                       optimize_model=True,
                                       trust_remote_code=True,
-                                      use_cache=True)
+                                      use_cache=True,
+                                      model_hub=model_hub)
     model = model.half().to('xpu')
 
     # Load tokenizer

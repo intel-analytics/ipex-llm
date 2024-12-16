@@ -20,21 +20,32 @@ import argparse
 import numpy as np
 
 from ipex_llm.transformers import AutoModel
-from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Stream Chat for ChatGLM3 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm3-6b",
-                        help='The huggingface repo id for the ChatGLM3 model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--repo-id-or-model-path', type=str,
+                        help='The Hugging Face or ModelScope repo id for the ChatGLM3 model to be downloaded'
+                             ', or the path to the checkpoint folder')
     parser.add_argument('--question', type=str, default="晚上睡不着应该怎么办",
                         help='Qustion you want to ask')
     parser.add_argument('--disable-stream', action="store_true",
                         help='Disable stream chat')
+    parser.add_argument('--modelscope', action="store_true", default=False, 
+                        help="Use models from modelscope")
 
     args = parser.parse_args()
-    model_path = args.repo_id_or_model_path
+    
+    if args.modelscope:
+        from modelscope import AutoTokenizer
+        model_hub = 'modelscope'
+    else:
+        from transformers import AutoTokenizer
+        model_hub = 'huggingface'
+    
+    model_path = args.repo_id_or_model_path if args.repo_id_or_model_path else \
+        ("ZhipuAI/chatglm3-6b" if args.modelscope else "THUDM/chatglm3-6b")
+
     disable_stream = args.disable_stream
 
     # Load model in 4 bit,
@@ -44,8 +55,9 @@ if __name__ == '__main__':
     model = AutoModel.from_pretrained(model_path,
                                       load_in_4bit=True,
                                       trust_remote_code=True,
-                                      optimize_model=True)
-    model.to('xpu')
+                                      optimize_model=True,
+                                      model_hub=model_hub)
+    model = model.half().to('xpu')
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
