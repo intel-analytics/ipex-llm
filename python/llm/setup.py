@@ -51,6 +51,7 @@ llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 
+COMMON_DEP = ["setuptools"]
 cpu_torch_version = ["torch==2.1.2+cpu;platform_system=='Linux'", "torch==2.1.2;platform_system=='Windows'"]
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
                'transformers == 4.37.0', 'sentencepiece', 'tokenizers == 0.15.2',
@@ -265,11 +266,13 @@ def setup_package():
                     'mpmath==1.3.0' # fix AttributeError: module 'mpmath' has no attribute 'rational'
                     ]
     all_requires += CONVERT_DEP
+    all_requires += COMMON_DEP
 
     # Add internal requires for llama-index
     llama_index_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
         llama_index_requires.remove(exclude_require)
+    llama_index_requires.remove("setuptools")
     llama_index_requires += ["setuptools<70.0.0"]
     llama_index_requires += ["torch<2.2.0",
                              "sentence-transformers~=2.6.1"]
@@ -283,6 +286,7 @@ def setup_package():
     xpu_21_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
         xpu_21_requires.remove(exclude_require)
+    xpu_21_requires.remove("setuptools")
     xpu_21_requires += ["setuptools<70.0.0"]
     xpu_21_requires += ["torch==2.1.0a0",
                         "torchvision==0.16.0a0",
@@ -311,13 +315,16 @@ def setup_package():
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
                     "onednn-devel==2024.2.1;platform_system=='Windows'"]
     cpp_requires += oneapi_2024_2_requires
+    cpp_requires += COMMON_DEP
 
     cpp_arl_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
                         "onednn-devel==2024.1.1;platform_system=='Windows'"]
     cpp_arl_requires += oneapi_2024_2_requires
+    cpp_arl_requires += COMMON_DEP
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
+    serving_requires += COMMON_DEP
 
     npu_requires = copy.deepcopy(all_requires)
     cpu_transformers_version = ['transformers == 4.37.0', 'tokenizers == 0.15.2']
