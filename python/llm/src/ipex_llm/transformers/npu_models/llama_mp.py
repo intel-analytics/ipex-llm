@@ -855,7 +855,8 @@ def run_prefill(
                         weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
                                         torch.stack(zeros, axis=0)))
                     else:
-                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+                        weights.append((torch.stack(l_weights, axis=0),
+                                        torch.stack(scales, axis=0)))
 
                 if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
                     cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
