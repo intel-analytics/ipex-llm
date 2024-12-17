@@ -54,7 +54,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade ipex-llm[xpu_arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install --pre --upgrade ipex-llm[xpu_arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     pip install --pre pytorch-triton-xpu==3.0.0+1b2f15840e --index-url https://download.pytorch.org/whl/nightly/xpu && \
     # Fix Trivy CVE Issues
     pip install transformers_stream_generator einops tiktoken && \
@@ -83,7 +83,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Download Deepspeed-AutoTP
     cp -r ./ipex-llm/python/llm/example/GPU/Deepspeed-AutoTP/ ./Deepspeed-AutoTP && \
     # Install related library of Deepspeed-AutoTP
-    pip install oneccl_bind_pt==2.3.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ && \
+    pip install oneccl_bind_pt==2.3.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     pip install git+https://github.com/microsoft/DeepSpeed.git@ed8aed5 && \
     pip install git+https://github.com/intel/intel-extension-for-deepspeed.git@0eb734b && \
     pip install mpi4py && \
