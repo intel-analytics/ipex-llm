@@ -14,6 +14,7 @@
 # limitations under the License.
 
 
+import math
 import torch
 from typing import List
 
@@ -159,7 +160,7 @@ def rms_norm_forward(self, hidden_states: torch.Tensor):
     else:
         eps = self.epsilon
 
-    if hidden_states.device.type == 'xpu':
+    if hidden_states.device.type == 'xpu' and hidden_states.dtype in [torch.float, torch.half]:
         import xe_addons
         x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
         output = xe_addons.rms_norm(weight, x_2d, eps)
@@ -169,3 +170,17 @@ def rms_norm_forward(self, hidden_states: torch.Tensor):
         variance = hidden_states.to(torch.float32).pow(2).mean(dim=-1, keepdim=True)
         hidden_states = hidden_states * torch.rsqrt(variance + eps)
         return weight * hidden_states.to(input_dtype)
+
+
+def layer_norm_forward(self, hidden_states: torch.Tensor):
+    if hidden_states.device.type == 'xpu' and hidden_states.dtype in [torch.float, torch.half]:
+        import xe_addons
+        hidden_size = math.prod(self.normalized_shape)
+        x_2d = hidden_states.reshape(-1, hidden_size).contiguous()
+        output = xe_addons.layer_norm(x_2d, self.weight, self.bias, self.eps)
+        return output.reshape(hidden_states.shape)
+    else:
+        return torch.nn.functional.layer_norm(
+            hidden_states, self.normalized_shape,
+            self.weight, self.bias, self.eps
+        )

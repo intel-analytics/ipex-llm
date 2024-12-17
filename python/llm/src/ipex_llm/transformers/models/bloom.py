@@ -64,23 +64,6 @@ def dropout_add(x: torch.Tensor, residual: torch.Tensor, prob: float, training: 
     return out
 
 
-def bloom_layer_norm_forward(self, hidden_states):
-    if use_fused_layer_norm(hidden_states, self.training):
-        import xe_addons
-        result = xe_addons.fused_layer_norm(hidden_states,
-                                            [self.weight.size(0)],
-                                            self.weight,
-                                            self.bias,
-                                            self.eps)
-        # if nelement == 0, means fused norm failed, go back to python implement.
-        if result.nelement != 0:
-            return result
-    input_dtype = hidden_states.dtype
-    result = F.layer_norm(hidden_states.to(self.weight.dtype),
-                          self.normalized_shape, self.weight, self.bias, self.eps)
-    return result.to(input_dtype)
-
-
 def bloom_attention_forward(
         self,
         hidden_states: torch.Tensor,
