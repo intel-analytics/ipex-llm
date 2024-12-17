@@ -361,20 +361,20 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                 st_idx = 8
         if not asym:
             for idx, (weight, scale) in enumerate(weights):
-                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*2}.bin")
+                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*2}.bin")
                 weight.numpy().tofile(bin_file)
                 bin_file = os.path.join(weight_dir,
-                                        f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
+                                        f"model_{layer_idx}_input_{st_idx+idx*2+1}.bin")
                 scale.numpy().tofile(bin_file)
         else:
             for idx, (weight, scale, zero) in enumerate(weights):
-                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+3+idx*3}.bin")
+                bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+idx*3}.bin")
                 weight.numpy().tofile(bin_file)
                 bin_file = os.path.join(weight_dir,
-                                        f"model_{layer_idx}_input_{st_idx+3+idx*3+1}.bin")
+                                        f"model_{layer_idx}_input_{st_idx+idx*3+1}.bin")
                 scale.numpy().tofile(bin_file)
                 bin_file = os.path.join(weight_dir,
-                                        f"model_{layer_idx}_input_{st_idx+3+idx*3+2}.bin")
+                                        f"model_{layer_idx}_input_{st_idx+idx*3+2}.bin")
                 zero.numpy().tofile(bin_file)
 
         del single_decoder
@@ -451,21 +451,21 @@ def convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_dow
             if not asym:
                 for idx, (weight, scale) in enumerate(weights):
                     bin_file = os.path.join(weight_dir,
-                                            f"model_{layer_idx}_input_{st_idx+3+idx*2}.bin")
+                                            f"model_{layer_idx}_input_{st_idx+idx*2}.bin")
                     weight.numpy().tofile(bin_file)
                     bin_file = os.path.join(weight_dir,
-                                            f"model_{layer_idx}_input_{st_idx+3+idx*2+1}.bin")
+                                            f"model_{layer_idx}_input_{st_idx+idx*2+1}.bin")
                     scale.numpy().tofile(bin_file)
             else:
                 for idx, (weight, scale, zero) in enumerate(weights):
                     bin_file = os.path.join(weight_dir,
-                                            f"model_{layer_idx}_input_{st_idx+3+idx*3}.bin")
+                                            f"model_{layer_idx}_input_{st_idx+idx*3}.bin")
                     weight.numpy().tofile(bin_file)
                     bin_file = os.path.join(weight_dir,
-                                            f"model_{layer_idx}_input_{st_idx+3+idx*3+1}.bin")
+                                            f"model_{layer_idx}_input_{st_idx+idx*3+1}.bin")
                     scale.numpy().tofile(bin_file)
                     bin_file = os.path.join(weight_dir,
-                                            f"model_{layer_idx}_input_{st_idx+3+idx*3+2}.bin")
+                                            f"model_{layer_idx}_input_{st_idx+idx*3+2}.bin")
                     zero.numpy().tofile(bin_file)
 
         if isinstance(weights[0], tuple):
