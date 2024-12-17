@@ -53,7 +53,7 @@ conda activate llm
 ## 安装 `ipex-llm`
 
 在 `llm` 环境处于激活状态下，使用 `pip` 安装适用于 GPU 的 `ipex-llm`。 
-- **对于处理器编号为 2xxV 的第二代 Intel Core™ Ultra Processers (代号 Lunar Lake)**：
+- **对于处理器编号为 2xxV 的第二代 Intel Core™ Ultra Processors (代号 Lunar Lake)**：
 
   可以根据区域选择不同的 `extra-index-url`，提供 US 和 CN 两个选项：
 
