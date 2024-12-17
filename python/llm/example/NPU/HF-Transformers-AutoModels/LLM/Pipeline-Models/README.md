@@ -14,17 +14,14 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 | Baichuan2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
 
-## 0. Requirements
-To run these examples with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
-Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
-Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
-Right click and select **Update Driver** -> **Browse my computer for drivers**. And then manually select the unzipped driver folder to install.
+## 0. Prerequisites
+For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
 
-## 1. Install
+## 1. Install & Runtime Configurations
 ### 1.1 Installation on Windows
 We suggest using conda to manage environment:
 ```cmd
-conda create -n llm python=3.10
+conda create -n llm python=3.11
 conda activate llm
 
 :: install ipex-llm with 'npu' option
@@ -34,16 +31,13 @@ pip install --pre --upgrade ipex-llm[npu]
 pip install transformers==4.45.0 accelerate==0.33.0
 ```
 
-## 2. Runtime Configurations
+Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for more details about `ipex-llm` installation on Intel NPU.
 
-**Following environment variables are required**:
+### 1.2 Runtime Configurations
+Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
-```cmd
-set BIGDL_USE_NPU=1
-```
-
-## 3. Run Models
-In the example [generate.py](./generate.py), we show a basic use case for a Llama2 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel NPUs.
+## 2. Run Optimized Models
+The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU:
 
 ```cmd
 :: to run Llama-2-7b-chat-hf

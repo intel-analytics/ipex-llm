@@ -12,17 +12,14 @@ In this directory, you will find a C++ example on how to run LLM models on Intel
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
 | Llama3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 
-## 0. Requirements
-To run this C++ example with IPEX-LLM on Intel NPUs, make sure to install the newest driver version of Intel NPU.
-Go to https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html to download and unzip the driver.
-Then go to **Device Manager**, find **Neural Processors** -> **Intel(R) AI Boost**.
-Right click and select **Update Driver** -> **Browse my computer for drivers**. And then manually select the unzipped driver folder to install.
+## 0. Prerequisites
+For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
 
-## 1. Install
+## 1. Install & Runtime Configurations
 ### 1.1 Installation on Windows
 We suggest using conda to manage environment:
 ```cmd
-conda create -n llm python=3.10
+conda create -n llm python=3.11
 conda activate llm
 
 :: install ipex-llm with 'npu' option
@@ -31,6 +28,11 @@ pip install --pre --upgrade ipex-llm[npu]
 :: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
 pip install transformers==4.45.0 accelerate==0.33.0
 ```
+
+Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
+
+### 1.2 Runtime Configurations
+Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
 ## 2. Convert Model
 We provide a [convert script](convert.py) under current directory, by running it, you can obtain the whole weights and configuration files which are required to run C++ example.

@@ -2,7 +2,7 @@
 
 This guide demonstrates:
 
-- How to install IPEX-LLM for Intel NPU on Intel Core™ Ultra Processers (Series 2)
+- How to install IPEX-LLM for Intel NPU on Intel Core™ Ultra Processors
 - Python and C++ APIs for running IPEX-LLM on Intel NPU
 
 > [!IMPORTANT]
@@ -18,9 +18,6 @@ This guide demonstrates:
 - [Accuracy Tuning](#accuracy-tuning)
 
 ## Install Prerequisites
-
-> [!NOTE]
-> IPEX-LLM NPU support on Windows has been verified on Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake).
 
 ### Update NPU Driver
 
@@ -86,14 +83,27 @@ pip install --pre --upgrade ipex-llm[npu]
 
 ## Runtime Configurations
 
-For `ipex-llm` NPU support, set the following environment variable with active `llm-npu` environment:
+For `ipex-llm` NPU support, please set the following environment variable with active `llm-npu` environment based on your device:
 
-```cmd
-set BIGDL_USE_NPU=1
+- For **Intel Core™ Ultra Processors (Series 2) with processor number 2xxV (code name Lunar Lake)**:
 
-:: [optional] for MTL support
-set IPEX_LLM_NPU_MTL=1
-```
+  - For Intel Core™ Ultra 7 Processor 258V:
+      ```cmd
+      set BIGDL_USE_NPU=1
+      ```
+
+  - For Intel Core™ Ultra 5 Processor 228V & 226V:
+      ```cmd
+      set BIGDL_USE_NPU=1
+      set IPEX_LLM_NPU_DISABLE_COMPILE_OPT=1
+      ```
+
+- For **Intel Core™ Ultra Processors (Series 1) with processor number 1xxH (code name Meteor Lake)**:
+
+   ```bash
+   set BIGDL_USE_NPU=1
+   set IPEX_LLM_NPU_MTL=1
+   ```
 
 ## Python API
 
@@ -103,18 +113,18 @@ Refer to the following table for examples of verified models:
 [](../../../python/llm/)
 | Model | Model link | Example link |
 |:--|:--|:--|
-| LLaMA 2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
-| LLaMA 3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
-| LLaMA 3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
-| Qwen 2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct), [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
-| Qwen 2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
-| GLM-Edge | [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat), [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat)  | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
-| MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
-| Baichuan 2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM#4-run-optimized-models-experimental) |
-| MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
-| MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
-| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
-| Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal#4-run-optimized-models-experimental) |
+| LLaMA 2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
+| LLaMA 3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
+| LLaMA 3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
+| Qwen 2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct), [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
+| Qwen 2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
+| GLM-Edge | [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat), [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat)  | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
+| MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
+| Baichuan 2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) |
+| MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) |
+| MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) |
+| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) |
+| Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) |
 
 
 > [!TIP]
