@@ -19,7 +19,6 @@ import time
 import argparse
 
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer
 
 # prompt format referred from https://github.com/baichuan-inc/Baichuan2/issues/227 
 # and https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat/blob/main/generation_utils.py#L7-L49
@@ -29,14 +28,24 @@ BAICHUAN_PROMPT_FORMAT = "<reserved_106> {prompt} <reserved_107>"
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Baichuan model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="baichuan-inc/Baichuan2-7B-Chat",
-                        help='The huggingface repo id for the Baichuan model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+                        help='The Hugging Face repo id for the Baichuan model to be downloaded'
+                             ', or the path to the checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--modelscope', action="store_true", default=False, 
+                        help="Use models from modelscope")
 
     args = parser.parse_args()
+
+    if args.modelscope:
+        from modelscope import AutoTokenizer
+        model_hub = 'modelscope'
+    else:
+        from transformers import AutoTokenizer
+        model_hub = 'huggingface'
+
     model_path = args.repo_id_or_model_path
 
     # Load model in 4 bit,
@@ -50,7 +59,8 @@ if __name__ == '__main__':
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  load_in_4bit=True,
                                                  trust_remote_code=True,
-                                                 use_cache=True)
+                                                 use_cache=True,
+                                                 model_hub=model_hub)
     model = model.half().to('xpu')
 
     # Load tokenizer

@@ -1,5 +1,5 @@
 # Baichuan
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Baichuan2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) as a reference Baichuan model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Baichuan2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan-7B-Chat) (or [baichuan-inc/Baichuan2-7B-Chat](https://www.modelscope.cn/models/[baichuan-inc/Baichuan2-7B-Chat]) for ModelScope) as a reference Baichuan model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -16,6 +16,9 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers_stream_generator  # additional package required for Baichuan-7B-Chat to conduct generation
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 #### 1.2 Installation on Windows
@@ -28,6 +31,9 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers_stream_generator  # additional package required for Baichuan-7B-Chat to conduct generation
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -95,14 +101,19 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ### 4. Running examples
 
-```
+```bash
+# for Hugging Face model hub
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+
+# for ModelScope model hub
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT --modelscope
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Baichuan model (e.g `baichuan-inc/Baichuan2-7B-Chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'baichuan-inc/Baichuan2-7B-Chat'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the Baichuan model (e.g `baichuan-inc/Baichuan2-7B-Chat`) to be downloaded, or the path to the checkpoint folder. It is default to be `'baichuan-inc/Baichuan2-7B-Chat'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
 
 #### Sample Output
 #### [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat)
