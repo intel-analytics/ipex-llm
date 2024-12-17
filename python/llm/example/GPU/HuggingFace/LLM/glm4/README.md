@@ -1,5 +1,5 @@
 # GLM-4
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on GLM-4 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat) as a reference InternLM model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on GLM-4 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat) (or [ZhipuAI/glm4-9b-chat](https://www.modelscope.cn/models/ZhipuAI/glm4-9b-chat) for ModelScope) as a reference InternLM model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -15,6 +15,9 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 # install packages required for GLM-4, it is recommended to use transformers>=4.44 for THUDM/glm-4-9b-chat updated after August 12, 2024
 pip install "tiktoken>=0.7.0" transformers==4.44 "trl<0.12.0"
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 ### 1.2 Installation on Windows
@@ -28,6 +31,9 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 
 # install packages required for GLM-4, it is recommended to use transformers>=4.44 for THUDM/glm-4-9b-chat updated after August 12, 2024
 pip install "tiktoken>=0.7.0" transformers==4.44 "trl<0.12.0"
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 ## 2. Configures OneAPI environment variables for Linux
@@ -98,14 +104,19 @@ set SYCL_CACHE_PERSISTENT=1
 ### Example 1: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a GLM-4 model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 
-```
+```bash
+# for Hugging Face model hub
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+
+# for ModelScope model hub
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT --modelscope
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the GLM-4 model (e.g. `THUDM/glm-4-9b-chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/glm-4-9b-chat'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the GLM-4 model (e.g. `THUDM/glm-4-9b-chat`) to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/glm-4-9b-chat'` for **Hugging Face** or `'ZhipuAI/glm-4-9b-chat'` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
 
 #### Sample Output
 #### [THUDM/glm-4-9b-chat](https://huggingface.co/THUDM/glm-4-9b-chat)
@@ -134,21 +145,3 @@ What is AI?
 
 Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think like humans and mimic their actions. The term "art
 ```
-
-### Example 2: Stream Chat using `stream_chat()` API
-In the example [streamchat.py](./streamchat.py), we show a basic use case for a GLM-4 model to stream chat, with IPEX-LLM INT4 optimizations.
-
-**Stream Chat using `stream_chat()` API**:
-```
-python ./streamchat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --question QUESTION
-```
-
-**Chat using `chat()` API**:
-```
-python ./streamchat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --question QUESTION --disable-stream
-```
-
-Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the GLM-4 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/glm-4-9b-chat'`.
-- `--question QUESTION`: argument defining the question to ask. It is default to be `"AI是什么？"`.
-- `--disable-stream`: argument defining whether to stream chat. If include `--disable-stream` when running the script, the stream chat is disabled and `chat()` API is used.

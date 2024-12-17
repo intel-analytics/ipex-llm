@@ -1,6 +1,6 @@
 # CodeGeeX2
 
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on CodeGeeX2 models which is implemented based on the ChatGLM2 architecture trained on more code data on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b) as a reference CodeGeeX2 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on CodeGeeX2 models which is implemented based on the ChatGLM2 architecture trained on more code data on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex2-6b) (or [ZhipuAI/codegeex2-6b](https://www.modelscope.cn/models/ZhipuAI/codegeex2-6b) for ModelScope) as a reference CodeGeeX2 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -16,6 +16,9 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 #### 1.2 Installation on Windows
@@ -26,6 +29,9 @@ conda activate llm
 
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 ### 2. Download Model and Replace File
@@ -104,14 +110,19 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 
 ### 5. Running examples
-```
+```bash
+# for Hugging Face model hub
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+
+# for ModelScope model hub
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT --modelscope
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the CodeGeeX2 model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/codegeex-6b'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the CodeGeeX2 model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/codegeex-6b'` for **Hugging Face** or `'ZhipuAI/codegeex-6b'` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'# language: Python\n# write a bubble sort function\n'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `128`.
+- `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
 
 #### Sample Output
 #### [THUDM/codegeex-6b](https://huggingface.co/THUDM/codegeex-6b)
