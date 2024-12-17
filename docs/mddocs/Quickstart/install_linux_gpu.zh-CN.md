@@ -13,7 +13,7 @@
 ## 目录
 - [系统环境安装](./install_linux_gpu.zh-CN.md#系统环境安装)
   - [安装 GPU 驱动程序](./install_linux_gpu.zh-CN.md#安装-GPU-驱动程序)
-    - [适用于处理器编号为 1xxH/U/HL/UL 的第一代 Intel Core™ Ultra Processers（代号 Meteor Lake）](./install_linux_gpu.zh-CN.md#适用于处理器编号为-1xxhuhlul-的第一代-intel-core-ultra-processers代号-meteor-lake)
+    - [适用于处理器编号为 1xxH/U/HL/UL 的第一代 Intel Core™ Ultra Processors（代号 Meteor Lake）](./install_linux_gpu.zh-CN.md#适用于处理器编号为-1xxhuhlul-的第一代-intel-core-ultra-processors代号-meteor-lake)
     - [适用于其他 Intel iGPU 和 dGPU](./install_linux_gpu.zh-CN.md#适用于其他-intel-igpu-和-dgpu)
   - [安装 oneAPI](./install_linux_gpu.zh-CN.md#安装-oneapi)
   - [设置 Python 环境](./install_linux_gpu.zh-CN.md#设置-python-环境)
@@ -26,7 +26,7 @@
 ## 系统环境安装
 
 ### 安装 GPU 驱动程序
-#### 适用于处理器编号为 1xxH/U/HL/UL 的第一代 Intel Core™ Ultra Processers（代号 Meteor Lake）
+#### 适用于处理器编号为 1xxH/U/HL/UL 的第一代 Intel Core™ Ultra Processors（代号 Meteor Lake）
 
 > [!NOTE]
 > 我们目前已在具有内核 `6.5.0-35-generic` 的 Ubuntu 22.04 系统中验证过 IPEX-LLM 在 Meteor Lake iGPU 上的运行和使用。

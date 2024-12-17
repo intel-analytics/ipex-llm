@@ -53,7 +53,7 @@ conda activate llm
 
 With the `llm` environment active, use `pip` to install `ipex-llm` for GPU:
 
-- For **Intel Core™ Ultra Processers (Series 2) with processor number 2xxV (code name Lunar Lake)**:
+- For **Intel Core™ Ultra Processors (Series 2) with processor number 2xxV (code name Lunar Lake)**:
 
    Choose either US or CN website for `extra-index-url`:
 

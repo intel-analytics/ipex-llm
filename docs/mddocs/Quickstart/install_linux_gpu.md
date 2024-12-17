@@ -14,7 +14,7 @@ IPEX-LLM recommends to use the Ubuntu 22.04 operating system with Linux kernel 6
 ## Table of Contents
 - [Install Prerequisites](./install_linux_gpu.md#install-prerequisites)
   - [Install GPU Driver](#install-gpu-driver)
-    - [For Intel Core™ Ultra Processers (Series 1) with processor number 1xxH/U/HL/UL (code name Meteor Lake)](#for-intel-core-ultra-processers-series-1-with-processor-number-1xxhuhlul-code-name-meteor-lake)
+    - [For Intel Core™ Ultra Processors (Series 1) with processor number 1xxH/U/HL/UL (code name Meteor Lake)](#for-intel-core-ultra-processors-series-1-with-processor-number-1xxhuhlul-code-name-meteor-lake)
     - [For other Intel iGPU and dGPU](#for-other-intel-igpu-and-dgpu)
   - [Install oneAPI](#install-oneapi)
   - [Setup Python Environment](#setup-python-environment)
@@ -28,7 +28,7 @@ IPEX-LLM recommends to use the Ubuntu 22.04 operating system with Linux kernel 6
 
 ### Install GPU Driver
 
-#### For Intel Core™ Ultra Processers (Series 1) with processor number 1xxH/U/HL/UL (code name Meteor Lake)
+#### For Intel Core™ Ultra Processors (Series 1) with processor number 1xxH/U/HL/UL (code name Meteor Lake)
 
 > [!NOTE]
 > For IPEX-LLM on Linux with Meteor Lake integrated GPU, we have currently verified on Ubuntu 22.04 with kernel `6.5.0-35-generic`.
