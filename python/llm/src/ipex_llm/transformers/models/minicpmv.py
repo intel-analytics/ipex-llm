@@ -62,7 +62,7 @@ def siglip_attention_forward(
         import xe_addons
         attn_weights = None
         attn_output = xe_addons.siglip_sdp_non_causal(query_states, key_states,
-                                                      value_states, attention_softmax)
+                                                      value_states, attention_mask)
     else:
         query_states, key_states, value_states = padding_qkv_hd(
             query_states, key_states, value_states,
