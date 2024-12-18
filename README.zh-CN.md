@@ -17,7 +17,7 @@
 ## 最新更新 🔥 
 - [2024/12] 新增在 Intel GPU 上运行 [Ollama 0.40.6](docs/mddocs/Quickstart/ollama_quickstart.md) 的支持。
 - [2024/12] 增加了对 Intel Core Ultra [NPU](docs/mddocs/Quickstart/npu_quickstart.md) （包括 100H，200V 和 200K 系列）的 Python 和 C++ 支持。
-- [2024/12] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.2](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 的支持。
+- [2024/11] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.2](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 的支持。
 
 <details><summary>项目更新</summary>
 <br/>
