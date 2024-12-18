@@ -27,7 +27,12 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
                                        npu_dpu_groups=None):
     xml_path = os.path.join(dir, model_name + ".xml")
     bin_path = os.path.join(dir, model_name + ".bin")
-    model.save(xml_path)
+    # model.save(xml_path)
+    if model_name != "decoder_layer_prefill":
+        model.save(xml_path)
+    else:
+        print("read D:\\ruonan\debug log\\acc lib\\prefill_layer.xml")
+        xml_path = r"D:\\ruonan\\debug log\\acc lib\\prefill_layer.xml"
     new_ir_path = os.path.join(dir, model_name + "_new.xml")
     new_bin_path = os.path.join(dir, model_name + "_new.bin")
     blob_path = os.path.join(dir, model_name + ".blob")
@@ -35,13 +40,13 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
     core = Core()
     core.set_property("NPU", {"NPU_COMPILATION_MODE_PARAMS":
                               "compute-layers-with-higher-precision=Sqrt,Power,ReduceMean,Add"})
-    core.set_property("NPU", {"PERFORMANCE_HINT": "LATENCY"})
+    # core.set_property("NPU", {"PERFORMANCE_HINT": "LATENCY"})
     if (
         npu_dpu_groups is not None
         and os.environ.get("IPEX_LLM_NPU_DISABLE_COMPILE_OPT", "0") != "1"
     ):
         core.set_property("NPU", {"NPU_DPU_GROUPS": str(npu_dpu_groups)})
-
+    print(xml_path)
     model = core.read_model(xml_path)
     inputs = model.inputs
     for idx, input in enumerate(inputs):
@@ -61,7 +66,7 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
         with open(blob_path, 'wb') as f:
             f.write(model_stream)
 
-    os.remove(xml_path)
+    # os.remove(xml_path)
 
     if not keep_ir:
         os.remove(new_ir_path)
