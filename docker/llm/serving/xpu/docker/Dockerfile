@@ -85,7 +85,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     rm -rf /tmp/neo && \
     mkdir -p /llm && \
     cd /llm && \
-    git clone -b add_prefix_caching https://github.com/hzjane/vllm.git /llm/vllm && \
+    git clone -b add_logits_attn_softcap https://github.com/hzjane/vllm.git /llm/vllm && \
     cd /llm/vllm && \
     pip install setuptools-scm && \
     pip install --upgrade cmake && \
