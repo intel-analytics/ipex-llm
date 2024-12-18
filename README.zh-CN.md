@@ -19,7 +19,7 @@
 - [2024/12] 增加了对 Intel Core Ultra [NPU](docs/mddocs/Quickstart/npu_quickstart.md) （包括 100H，200V 和 200K 系列）的 Python 和 C++ 支持。
 - [2024/11] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.2](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 的支持。
 
-<details><summary>项目更新</summary>
+<details><summary>更多更新</summary>
 <br/>
 
  - [2024/07] 新增 Microsoft **GraphRAG** 的支持（使用运行在本地 Intel GPU 上的 LLM），详情参考[快速入门指南](docs/mddocs/Quickstart/graphrag_quickstart.md)。
