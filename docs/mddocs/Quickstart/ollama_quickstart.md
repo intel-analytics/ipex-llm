@@ -80,7 +80,6 @@ You may launch the Ollama service as below:
   export ZES_ENABLE_SYSMAN=1
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
-  export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
   # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
   export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
   # [optional] if you want to run on single GPU, use below command to limit GPU may improve performance
@@ -179,7 +178,6 @@ Then you can create the model in Ollama by `ollama create example -f Modelfile` 
   
   ```bash
   source /opt/intel/oneapi/setvars.sh
-  export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
   export no_proxy=localhost,127.0.0.1
   ./ollama create example -f Modelfile
   ./ollama run example

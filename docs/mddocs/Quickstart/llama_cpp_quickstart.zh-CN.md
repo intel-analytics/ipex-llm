@@ -17,9 +17,9 @@
 </table>
 
 > [!NOTE]
-> `ipex-llm[cpp]==2.2.0b20240826` 版本与官方 llama.cpp 版本 [62bfef5](https://github.com/ggerganov/llama.cpp/commit/62bfef5194d5582486d62da3db59bf44981b7912) 一致。
+> `ipex-llm[cpp]==2.2.0b20241204` 版本与官方 llama.cpp 版本 [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) 一致。
 >
-> `ipex-llm[cpp]` 的最新版本与官方 llama.cpp 版本 [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) 一致。
+> `ipex-llm[cpp]` 的最新版本与官方 llama.cpp 版本 [3f1ae2e](https://github.com/ggerganov/llama.cpp/commit/3f1ae2e32cde00c39b96be6d01c2997c29bae555) 一致。
 
 > [!NOTE]
 > 从 `ipex-llm[cpp]==2.2.0b20240912` 版本开始，Windows 上 `ipex-llm[cpp]` 依赖的 oneAPI 版本已从 `2024.0.0` 更新到 `2024.2.1`。
