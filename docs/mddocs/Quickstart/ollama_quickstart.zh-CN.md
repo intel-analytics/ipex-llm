@@ -212,7 +212,7 @@ Ollama 默认每 5 分钟从 GPU 内存卸载一次模型。针对 ollama 的最
 在 Windows 中首次启动 `ollama serve` 时，可能会在模型加载阶段卡住。如果你在首次运行时发现程序长时间挂起，可以手动在服务器端输入空格或其他字符以确保程序正在运行。
 
 #### 5. 如何区分社区版 Ollama 和 IPEX-LLM 版 Ollama
-在社区版 Ollama 的服务器日志中，你可能会看到 `source=payload_common.go:139 msg="Dynamic LLM libraries [rocm_v60000 cpu_avx2 cuda_v11 cpu cpu_avx]"`。而在 IPEX-LLM 版 Ollama 的服务器日志中，你应该仅看到 `source=payload.go:44 msg="Dynamic LLM libraries [cpu cpu_avx cpu_avx2]"`。
+在社区版 Ollama 的服务器日志中，你可能会看到 `source=payload_common.go:139 msg="Dynamic LLM libraries [rocm_v60000 cpu_avx2 cuda_v11 cpu cpu_avx]"`。而在 IPEX-LLM 版 Ollama 的服务器日志中，你应该仅看到 `source=common.go:49 msg="Dynamic LLM libraries" runners=[ipex_llm]`。
 
 #### 6. 当询问多个不同的问题或上下文很长时，Ollama 会挂起
 如果你在询问多个不同问题或上下文很长时，发现 ollama 挂起，并且在服务器日志中看到 `update_slots : failed to free spaces in the KV cache`，这可能是因为 LLM 上下文大于默认 `n_ctx` 值导致的，你可以尝试增加 `n_ctx` 值后重试。
