@@ -5,7 +5,7 @@
 
 #  💫 Intel® LLM Library for PyTorch* 
 <p>
-  <b>< English</b> | <a href='./README.zh-CN.md'>中文</a> >
+  <b>< English</b> | <a href='./README.zh-CN.md'>中文</a> | <a href='./README.ja-JP.md'>日本語</a> >
 </p>
 
 **`IPEX-LLM`** is an LLM acceleration library for Intel [GPU](docs/mddocs/Quickstart/install_windows_gpu.md) *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*, [NPU](docs/mddocs/Quickstart/npu_quickstart.md) and CPU [^1].
