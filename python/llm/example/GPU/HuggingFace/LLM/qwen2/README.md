@@ -116,7 +116,7 @@ Arguments info:
 - `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
 
 #### Sample Output
-##### Qwen/Qwen2-7B-Instruct ([Hugging Face](https://huggingface.co/Qwen/Qwen2-7B-Instruct) or [ModelScope](https://www.modelscope.cn/models/Qwen/Qwen2-7B-Instruct))
+##### [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
@@ -133,7 +133,7 @@ What is AI?
 AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans and mimic their actions. The term may
 ```
 
-##### Qwen/Qwen2-1.5B-Instruct ([Hugging Face](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) or [ModelScope](https://www.modelscope.cn/models/Qwen/Qwen2-1.5B-Instruct))
+##### [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
