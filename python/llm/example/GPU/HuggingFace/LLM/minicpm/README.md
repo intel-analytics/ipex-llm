@@ -1,5 +1,5 @@
 # MiniCPM
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) (or [openbmb/MiniCPM-2B-sft-bf16](https://www.modelscope.cn/models/openbmb/MiniCPM-2B-sft-bf16) for ModelScope) as a reference MiniCPM model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) and [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16) (or [OpenBMB/MiniCPM-2B-sft-bf16](https://www.modelscope.cn/models/OpenBMB/MiniCPM-2B-sft-bf16) and [OpenBMB/MiniCPM-1B-sft-bf16](https://www.modelscope.cn/models/OpenBMB/MiniCPM-1B-sft-bf16) for ModelScope) as a reference MiniCPM model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -108,7 +108,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the MiniCPM model (e.g. `openbmb/MiniCPM-2B-sft-bf16`) to be downloaded, or the path to the checkpoint folder. It is default to be `'openbmb/MiniCPM-2B-sft-bf16'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the MiniCPM model (e.g. `openbmb/MiniCPM-2B-sft-bf16` or `openbmb/MiniCPM-1B-sft-bf16`) to be downloaded, or the path to the checkpoint folder. It is default to be `'openbmb/MiniCPM-2B-sft-bf16'` for **Hugging Face** and `'OpenBMB/MiniCPM-2B-sft-bf16'` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
@@ -122,4 +122,13 @@ Inference time: xxxx s
 <用户>what is AI?<AI>
 -------------------- Output --------------------
 <s> <用户>what is AI?<AI> AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. It is a field of computer science
+```
+
+#### [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16)
+
+```log
+-------------------- Prompt --------------------
+<用户>What is AI?<AI>
+-------------------- Output --------------------
+<s> <用户>What is AI?<AI> Artificial Intelligence (AI) refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. It involves the development of computer systems that
 ```

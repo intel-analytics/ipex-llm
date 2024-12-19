@@ -43,7 +43,7 @@ if __name__ == '__main__':
         model_hub = 'huggingface'
     
     model_path = args.repo_id_or_model_path if args.repo_id_or_model_path else \
-        ("openbmb/MiniCPM-2B-sft-bf16" if args.modelscope else "openbmb/MiniCPM-2B-sft-bf16")
+        ("OpenBMB/MiniCPM-2B-sft-bf16" if args.modelscope else "openbmb/MiniCPM-2B-sft-bf16")
     
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
