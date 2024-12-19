@@ -108,7 +108,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the ChatGLM3 model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/chatglm3-6b'` for **Hugging Face** or `ZhipuAI/chatglm3-6b` for **ModelScope**.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the ChatGLM3 model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/chatglm3-6b'` for **Hugging Face** or `'ZhipuAI/chatglm3-6b'` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
@@ -162,7 +162,7 @@ python ./streamchat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --question 
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the ChatGLM3 model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/chatglm3-6b'` for **Hugging Face** or `ZhipuAI/chatglm3-6b` for **ModelScope**.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the ChatGLM3 model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/chatglm3-6b'` for **Hugging Face** or `'ZhipuAI/chatglm3-6b'` for **ModelScope**.
 - `--question QUESTION`: argument defining the question to ask. It is default to be `"晚上睡不着应该怎么办"`.
 - `--disable-stream`: argument defining whether to stream chat. If include `--disable-stream` when running the script, the stream chat is disabled and `chat()` API is used.
 - `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.

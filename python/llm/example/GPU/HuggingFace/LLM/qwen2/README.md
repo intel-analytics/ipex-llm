@@ -1,5 +1,5 @@
 # Qwen2
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) as reference Qwen2 models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Qwen2 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) and [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) (or [Qwen/Qwen2-7B-Instruct](https://www.modelscope.cn/models/Qwen/Qwen2-7B-Instruct) and [Qwen/Qwen2-1.5B-Instruct](https://www.modelscope.cn/models/Qwen/Qwen2-1.5B-Instruct) for ModelScope) as reference Qwen2 models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -16,6 +16,9 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers==4.37.0 # install transformers which supports Qwen2
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 #### 1.2 Installation on Windows
@@ -28,6 +31,9 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers==4.37.0 # install transformers which supports Qwen2
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -95,14 +101,19 @@ set SYCL_CACHE_PERSISTENT=1
 > For the first time that each model runs on Intel iGPU/Intel Arc™ A300-Series or Pro A60, it may take several minutes to compile.
 ### 4. Running examples
 
-```
+```bash
+# for Hugging Face model hub
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+
+# for ModelScope model hub
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT --modelscope
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Qwen2 model (e.g. `Qwen/Qwen2-7B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'Qwen/Qwen2-7B-Instruct'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the  **Hugging Face** or **ModelScope** repo id for the Qwen2 model (e.g. `Qwen/Qwen2-7B-Instruct`) to be downloaded, or the path to the checkpoint folder. It is default to be `'Qwen/Qwen2-7B-Instruct'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
 
 #### Sample Output
 ##### [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct)
