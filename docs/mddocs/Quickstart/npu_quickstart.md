@@ -88,6 +88,7 @@ For `ipex-llm` NPU support, please set the following environment variable with a
 - For **Intel Core™ Ultra Processors (Series 2) with processor number 2xxV (code name Lunar Lake)**:
 
   - For Intel Core™ Ultra 7 Processor 258V:
+
       No runtime configuration required.
 
   - For Intel Core™ Ultra 5 Processor 228V & 226V:
@@ -97,7 +98,7 @@ For `ipex-llm` NPU support, please set the following environment variable with a
 
 - For **Intel Core™ Ultra Processors (Series 2) with processor number 2xxK (code name Arrow Lake)**:
    ```cmd
-   set IPEX_LLM_NPU_DISABLE_COMPILE_OPT=1
+   set IPEX_LLM_NPU_ARL=1
    ```
 
 - For **Intel Core™ Ultra Processors (Series 1) with processor number 1xxH (code name Meteor Lake)**:
