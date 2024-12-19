@@ -134,27 +134,42 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     mlp_layer = curr_layer.mlp
 
     weights = []
-    for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                       attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                       mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                       mlp_layer.down_proj_dq_list]:
-        l_weights = []
-        scales = []
-        zeros = []
-        for l in layer_list:
-            l_weights.append(l.weight)
-            scales.append(l.scale)
-            if l.zero is not None:
-                zeros.append(l.zero)
-        if len(zeros):
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                            torch.stack(zeros, axis=0)))
-        else:
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+    if hasattr(attn_layer, "q_proj_dq_list"):
+        for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                           attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                           mlp_layer.down_proj_dq_list]:
+            l_weights = []
+            scales = []
+            zeros = []
+            for l in layer_list:
+                l_weights.append(l.weight)
+                scales.append(l.scale)
+                if l.zero is not None:
+                    zeros.append(l.zero)
+            if len(zeros):
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
+                                torch.stack(zeros, axis=0)))
+            else:
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+    else:
+        for layer in [attn_layer.q_proj, attn_layer.k_proj,
+                      attn_layer.v_proj, attn_layer.o_proj,
+                      mlp_layer.gate_proj, mlp_layer.up_proj,
+                      mlp_layer.down_proj]:
+            if layer.zero is not None:
+                weights.append((layer.weight, layer.scale, layer.zero))
+            else:
+                weights.append((layer.weight, layer.scale))
 
-    q_bias = attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16)
-    k_bias = attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16)
-    v_bias = attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16)
+    if hasattr(attn_layer, "q_proj_dq_list"):
+        q_bias = attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16)
+        k_bias = attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16)
+        v_bias = attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16)
+    else:
+        q_bias = attn_layer.q_proj.bias.to(torch.float16)
+        k_bias = attn_layer.k_proj.bias.to(torch.float16)
+        v_bias = attn_layer.v_proj.bias.to(torch.float16)
     cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
     cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
     layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
@@ -263,31 +278,46 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
         k_biases = []
         v_biases = []
         layer_indexs = range(layer_start, layer_end)
-        n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
-        n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
+        if hasattr(model.model.layers[0].mlp, "gate_proj_dq_list"):
+            n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
+            n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
+        else:
+            n_splits_linear = 1
+            n_splits_down_proj = 1
+
         for layer_idx in layer_indexs:
             curr_layer = model.model.layers[layer_idx]
             attn_layer = curr_layer.self_attn
             mlp_layer = curr_layer.mlp
 
             weights = []
-            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                               mlp_layer.down_proj_dq_list]:
-                l_weights = []
-                scales = []
-                zeros = []
-                for l in layer_list:
-                    l_weights.append(l.weight)
-                    scales.append(l.scale)
-                    if l.zero is not None:
-                        zeros.append(l.zero)
-                if len(zeros):
-                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                                    torch.stack(zeros, axis=0)))
-                else:
-                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+            if hasattr(attn_layer, "q_proj_dq_list"):
+                for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                                   attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                                   mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                                   mlp_layer.down_proj_dq_list]:
+                    l_weights = []
+                    scales = []
+                    zeros = []
+                    for l in layer_list:
+                        l_weights.append(l.weight)
+                        scales.append(l.scale)
+                        if l.zero is not None:
+                            zeros.append(l.zero)
+                    if len(zeros):
+                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
+                                        torch.stack(zeros, axis=0)))
+                    else:
+                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+            else:
+                for layer in [attn_layer.q_proj, attn_layer.k_proj,
+                              attn_layer.v_proj, attn_layer.o_proj,
+                              mlp_layer.gate_proj, mlp_layer.up_proj,
+                              mlp_layer.down_proj]:
+                    if layer.zero is not None:
+                        weights.append((layer.weight, layer.scale, layer.zero))
+                    else:
+                        weights.append((layer.weight, layer.scale))
 
             cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
             cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -297,9 +327,14 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             layer_weights.extend(weights)
             input_layer_norm_weights.append(layer_norm_0)
             post_attn_layernorm_weights.append(layer_norm_1)
-            q_biases.append(attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16))
-            k_biases.append(attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16))
-            v_biases.append(attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16))
+            if hasattr(attn_layer, "q_proj_dq_list"):
+                q_biases.append(attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16))
+                k_biases.append(attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16))
+                v_biases.append(attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16))
+            else:
+                q_biases.append(attn_layer.q_proj.bias.to(torch.float16))
+                k_biases.append(attn_layer.k_proj.bias.to(torch.float16))
+                v_biases.append(attn_layer.v_proj.bias.to(torch.float16))
 
             # save weight
             input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
