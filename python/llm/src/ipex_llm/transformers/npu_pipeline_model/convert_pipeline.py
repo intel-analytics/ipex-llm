@@ -205,7 +205,8 @@ def convert_llm(model: torch.nn.Module,
             # do not split mlp down_proj for Qwen2-7B & sym_int8
             n_splits_down_proj = 1
         else:
-            n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
+            # n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
+            n_splits_down_proj = 1 # for auto-round test
     else:
         n_splits_linear = model.config.hidden_size // group_size
         n_splits_down_proj = model.config.intermediate_size // group_size
