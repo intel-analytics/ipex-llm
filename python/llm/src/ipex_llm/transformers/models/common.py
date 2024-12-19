@@ -217,8 +217,8 @@ def prepare_mask(mask, bsz, n_heads, seq_length, kv_length, is_causal, dtype, de
     return mask
 
 
-def scaled_dot_product_attention(query: torch.Tensor, key: torch.Tensor, value: torch.Tensor,
-                                 mask: torch.Tensor = None,
+def scaled_dot_product_attention(query: torch.Tensor, key: torch.Tensor,
+                                 value: torch.Tensor, mask: torch.Tensor = None,
                                  is_causal: bool = False, scale: float = None) -> torch.Tensor:
     bsz, n_heads, seq_length, head_dim = query.shape
     _, n_kv_heads, kv_length, _ = key.shape
@@ -268,7 +268,7 @@ def scaled_dot_product_attention(query: torch.Tensor, key: torch.Tensor, value: 
                 attn_output = xe_addons.sdp(query, key, value, mask)
         else:
             if key.dtype == torch.uint8:
-                attn_output = xe_addons.sdp_fp8(query, key, value, mask)
+                attn_output = xe_addons.sdp_fp8_non_causal(query, key, value, mask)
             else:
                 attn_output = xe_addons.sdp_non_causal(query, key, value, mask)
 
@@ -281,6 +281,8 @@ def scaled_dot_product_attention(query: torch.Tensor, key: torch.Tensor, value: 
             key = repeat_kv(key, n_heads // n_kv_heads)
             value = repeat_kv(value, n_heads // n_kv_heads)
 
-        return torch.nn.functional.scaled_dot_product_attention(
+        attn_output = torch.nn.functional.scaled_dot_product_attention(
             query, key, value, mask, is_causal=is_causal, scale=scale
         )
+        attn_output = attn_output.to(dtype)    # workaround ipex 2.1's bug
+        return attn_output
