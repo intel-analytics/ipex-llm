@@ -37,6 +37,10 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
         os.environ["IPEX_LLM_NPU_USE_LEVEL0"] = "0"
         os.environ["IPEX_LLM_NPU_DISABLE_COMPILE_OPT"] = "1"
 
+    if os.environ.get("IPEX_LLM_NPU_ARL", "0") == "1":
+        # For ARL support
+        os.environ["IPEX_LLM_NPU_DISABLE_COMPILE_OPT"] = "1"
+
     if model.config.model_type == "baichuan":
         # process NormHead module in Baichuan2 7B
         if hasattr(model, 'lm_head') and model.lm_head is not None:
@@ -144,7 +148,9 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                 # do not split mlp down_proj for Qwen2-7B & sym_int8
                 n_splits_down_proj = 1
             else:
-                n_splits_down_proj = 2 if model.config.intermediate_size == 18944 else 1
+                n_splits_down_proj = 2 if (model.config.intermediate_size == 18944 or
+                                           os.environ.get("IPEX_LLM_NPU_MTL", "0") == "1" or
+                                           os.environ.get("IPEX_LLM_NPU_ARL", "0") == "1") else 1
         else:
             invalidInputError(
                 model.config.hidden_size % quantization_group_size == 0 and
