@@ -59,6 +59,10 @@ def siglip_attention_forward(
         and get_xpu_device_type(query_states) in ["arc", "flex"] and
         query_states.dtype in [torch.float, torch.half]
     ):
+        n_heads, kv_length = query_states.size(1), key_states.size(2)
+        from ipex_llm.transformers.models.common import prepare_mask
+        attention_mask = prepare_mask(attention_mask, bsz, n_heads, q_len, kv_length,
+                                      False, query_states.dtype, query_states.device)
         import xe_addons
         attn_weights = None
         attn_output = xe_addons.siglip_sdp_non_causal(query_states, key_states,

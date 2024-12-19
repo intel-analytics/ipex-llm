@@ -388,6 +388,15 @@ def fp16_fusion_check(proj, x, training):
     return True
 
 
+def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
+    batch, num_key_value_heads, slen, head_dim = hidden_states.shape
+    if n_rep == 1:
+        return hidden_states
+    hidden_states = hidden_states[:, :, None, :, :].expand(batch, num_key_value_heads,
+                                                           n_rep, slen, head_dim)
+    return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
+
+
 def update_past_key_value(past_key_value, key_states, value_states,
                           kv_seq_len, use_quantize_kv, device):
     bsz, num_heads, _, head_dim = key_states.shape
