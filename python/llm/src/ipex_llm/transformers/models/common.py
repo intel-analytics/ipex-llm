@@ -237,27 +237,50 @@ def scaled_dot_product_attention(query: torch.Tensor, key: torch.Tensor, value: 
         mask = prepare_mask(mask, bsz, n_heads, seq_length, kv_length, is_causal, dtype, device)
 
         # compute
+        # import xe_addons
+        # if is_causal:
+        #     if key.dtype == torch.uint8:
+        #         attn_output = xe_addons.sdp_fp8_causal(query, key, value, mask, scale)
+        #     else:
+        #         attn_output = xe_addons.sdp_causal(query, key, value, mask, scale)
+        # elif seq_length != kv_length and seq_length <= 32:
+        #     # todo: add scale support
+        #     if key.dtype == torch.uint8:
+        #         attn_output = xe_addons.sdp_fp8(query, key, value, mask)
+        #     else:
+        #         attn_output = xe_addons.sdp(query, key, value, mask)
+        # else:
+        #     if key.dtype == torch.uint8:
+        #         attn_output = xe_addons.sdp_fp8(query, key, value, mask, scale)
+        #     else:
+        #         attn_output = xe_addons.sdp_non_causal(query, key, value, mask, scale)
+
         import xe_addons
         if is_causal:
             if key.dtype == torch.uint8:
-                attn_output = xe_addons.sdp_fp8_causal(query, key, value, mask, scale)
+                attn_output = xe_addons.sdp_fp8_causal(query, key, value, mask)
             else:
-                attn_output = xe_addons.sdp_causal(query, key, value, mask, scale)
+                attn_output = xe_addons.sdp_causal(query, key, value, mask)
         elif seq_length != kv_length and seq_length <= 32:
-            # todo: add scale support
             if key.dtype == torch.uint8:
                 attn_output = xe_addons.sdp_fp8(query, key, value, mask)
             else:
                 attn_output = xe_addons.sdp(query, key, value, mask)
         else:
             if key.dtype == torch.uint8:
-                attn_output = xe_addons.sdp_fp8(query, key, value, mask, scale)
+                attn_output = xe_addons.sdp_fp8(query, key, value, mask)
             else:
-                attn_output = xe_addons.sdp_non_causal(query, key, value, mask, scale)
+                attn_output = xe_addons.sdp_non_causal(query, key, value, mask)
 
         return attn_output
     else:
         mask = mask[..., :seq_length, :kv_length] if mask is not None else None
+
+        from ipex_llm.transformers.models.utils import repeat_kv
+        if n_heads != n_kv_heads:
+            key = repeat_kv(key, n_heads // n_kv_heads)
+            value = repeat_kv(value, n_heads // n_kv_heads)
+
         return torch.nn.functional.scaled_dot_product_attention(
             query, key, value, mask, is_causal=is_causal, scale=scale
         )
