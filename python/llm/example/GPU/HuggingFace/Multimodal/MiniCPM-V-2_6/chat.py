@@ -22,14 +22,13 @@ import requests
 import torch
 from PIL import Image
 from ipex_llm.transformers import AutoModel
-from transformers import AutoTokenizer, AutoProcessor
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for openbmb/MiniCPM-V-2_6 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6",
-                        help='The huggingface repo id for the openbmb/MiniCPM-V-2_6 model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--repo-id-or-model-path', type=str,
+                        help='The Hugging Face or ModelScope repo id for the MiniCPM-V-2_6 model to be downloaded'
+                             ', or the path to the checkpoint folder')
     parser.add_argument("--lowbit-path", type=str,
         default="",
         help="The path to the saved model folder with IPEX-LLM low-bit optimization. "
@@ -44,9 +43,20 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--stream', action='store_true',
                         help='Whether to chat in streaming mode')
+    parser.add_argument('--modelscope', action="store_true", default=False, 
+                        help="Use models from modelscope")
 
     args = parser.parse_args()
-    model_path = args.repo_id_or_model_path
+
+    if args.modelscope:
+        from modelscope import AutoTokenizer, AutoProcessor
+        model_hub = 'modelscope'
+    else:
+        from transformers import AutoTokenizer, AutoProcessor
+        model_hub = 'huggingface'
+    
+    model_path = args.repo_id_or_model_path if args.repo_id_or_model_path else \
+        ("OpenBMB/MiniCPM-V-2_6" if args.modelscope else "openbmb/MiniCPM-V-2_6")
     image_path = args.image_url_or_path
 
     lowbit_path = args.lowbit_path
@@ -61,7 +71,8 @@ if __name__ == '__main__':
                                         optimize_model=True,
                                         trust_remote_code=True,
                                         use_cache=True,
-                                        modules_to_not_convert=["vpm", "resampler"])
+                                        modules_to_not_convert=["vpm", "resampler"],
+                                        model_hub=model_hub)
 
         tokenizer = AutoTokenizer.from_pretrained(model_path,
                                                   trust_remote_code=True)
@@ -70,7 +81,8 @@ if __name__ == '__main__':
                                        optimize_model=True,
                                        trust_remote_code=True,
                                        use_cache=True,
-                                       modules_to_not_convert=["vpm", "resampler"])
+                                       modules_to_not_convert=["vpm", "resampler"],
+                                       model_hub=model_hub)
         tokenizer = AutoTokenizer.from_pretrained(lowbit_path,
                                                   trust_remote_code=True)
     

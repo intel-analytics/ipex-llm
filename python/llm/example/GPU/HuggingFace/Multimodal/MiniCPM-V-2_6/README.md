@@ -1,5 +1,5 @@
 # MiniCPM-V-2_6
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V-2_6 model on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) as reference MiniCPM-V-2_6 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on MiniCPM-V-2_6 model on [Intel GPUs](../../../README.md). For illustration purposes, we utilize [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) (or [OpenBMB/MiniCPM-V-2_6](https://www.modelscope.cn/models/OpenBMB/MiniCPM-V-2_6) for ModelScope) as reference MiniCPM-V-2_6 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -16,6 +16,9 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers==4.40.0 "trl<0.12.0"
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 #### 1.2 Installation on Windows
@@ -28,6 +31,9 @@ conda activate llm
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 
 pip install transformers==4.40.0 "trl<0.12.0"
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -96,31 +102,48 @@ set SYCL_CACHE_PERSISTENT=1
 ### 4. Running examples
 
 - chat without streaming mode:
-  ```
+  ```bash
+  # for Hugging Face model hub
   python ./chat.py --prompt 'What is in the image?'
+
+  # for ModelScope model hub
+  python ./chat.py --prompt 'What is in the image?' --modelscope
   ```
 - chat in streaming mode:
-  ```
+  ```bash
+  # for Hugging Face model hub
   python ./chat.py --prompt 'What is in the image?' --stream
+
+  # for ModelScope model hub
+  python ./chat.py --prompt 'What is in the image?' --stream --modelscope
   ```
 - save model with low-bit optimization (if `LOWBIT_MODEL_PATH` does not exist)
-  ```
+  ```bash
+  # for Hugging Face model hub
   python ./chat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --lowbit-path LOWBIT_MODEL_PATH --prompt 'What is in the image?'
+
+  # for ModelScope model hub
+  python ./chat.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --lowbit-path LOWBIT_MODEL_PATH --prompt 'What is in the image?' --modelscope
   ```
 - chat with saved model with low-bit optimization (if `LOWBIT_MODEL_PATH` exists):
-  ```
+  ```bash
+  # for Hugging Face model hub
   python ./chat.py --lowbit-path LOWBIT_MODEL_PATH --prompt 'What is in the image?'
+
+  # for ModelScope model hub
+  python ./chat.py --lowbit-path LOWBIT_MODEL_PATH --prompt 'What is in the image?' --modelscope
   ```
 
 > [!TIP]
 > For chatting in streaming mode, it is recommended to set the environment variable `PYTHONUNBUFFERED=1`.
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MiniCPM-V-2_6 (e.g. `openbmb/MiniCPM-V-2_6`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2_6'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the MiniCPM-V-2_6 (e.g. `openbmb/MiniCPM-V-2_6`) to be downloaded, or the path to the checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2_6'` for **Hugging Face** or `'OpenBMB/MiniCPM-V-2_6'` for **ModelScope**.
 - `--lowbit-path LOWBIT_MODEL_PATH`: argument defining the path to save/load the model with IPEX-LLM low-bit optimization. If it is an empty string, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded. If it is an existing path, the saved model with low-bit optimization in `LOWBIT_MODEL_PATH` will be loaded. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the optimized low-bit model will be saved into `LOWBIT_MODEL_PATH`. It is default to be `''`, i.e. an empty string.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
 - `--stream`: flag to chat in streaming mode
+- `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
 
 #### Sample Output
 
