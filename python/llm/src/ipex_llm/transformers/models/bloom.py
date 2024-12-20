@@ -37,7 +37,6 @@ from typing import Optional, Tuple
 import torch
 import torch.utils.checkpoint
 from torch.nn import functional as F
-from ipex_llm.transformers.models.utils import use_fused_layer_norm
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 
 import os
