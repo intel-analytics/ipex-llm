@@ -1,5 +1,5 @@
 # GLM-Edge
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on GLM-Edge models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat) and [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat) as reference GLM-Edge models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on GLM-Edge models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat) and [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat) (or [ZhipuAI/glm-edge-1.5b-chat](https://www.modelscope.cn/models/ZhipuAI/glm-edge-1.5b-chat) and [ZhipuAI/glm-edge-4b-chat](https://www.modelscope.cn/models/ZhipuAI/glm-edge-4b-chat) for ModelScope) as reference GLM-Edge models.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -17,6 +17,9 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install transformers==4.47.0
 pip install accelerate==0.33.0
 pip install "trl<0.12.0" 
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 ### 1.2 Installation on Windows
@@ -32,6 +35,9 @@ pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-exte
 pip install transformers==4.47.0
 pip install accelerate==0.33.0
 pip install "trl<0.12.0"
+
+# [optional] only needed if you would like to use ModelScope as model hub
+pip install modelscope==1.11.0
 ```
 
 ## 2. Configures OneAPI environment variables for Linux
@@ -102,14 +108,19 @@ set SYCL_CACHE_PERSISTENT=1
 ### Example 1: Predict Tokens using `generate()` API
 In the example [generate.py](./generate.py), we show a basic use case for a GLM-Edge model to predict the next N tokens using `generate()` API, with IPEX-LLM INT4 optimizations on Intel GPUs.
 
-```
+```bash
+# for Hugging Face model hub
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+
+# for ModelScope model hub
+python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT --modelscope
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the GLM-Edge model (e.g. `THUDM/glm-edge-1.5b-chat` or `THUDM/glm-edge-4b-chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/glm-edge-4b-chat'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the GLM-Edge model (e.g. `THUDM/glm-edge-1.5b-chat` or `THUDM/glm-edge-4b-chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'THUDM/glm-edge-4b-chat'` for **Hugging Face** or `'ZhipuAI/glm-edge-4b-chat'` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
+- `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
 
 #### Sample Output
 #### [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat)

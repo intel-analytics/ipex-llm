@@ -19,21 +19,32 @@ import time
 import argparse
 
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for GLM-Edge model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/glm-edge-4b-chat",
-                        help='The huggingface repo id for the GLM-Edge model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--repo-id-or-model-path', type=str,
+                        help='The  Hugging Face or ModelScope repo id for the GLM-Edge model to be downloaded'
+                             ', or the path to the checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--modelscope', action="store_true", default=False, 
+                        help="Use models from modelscope")
+
 
     args = parser.parse_args()
-    model_path = args.repo_id_or_model_path
+
+    if args.modelscope:
+        from modelscope import AutoTokenizer
+        model_hub = 'modelscope'
+    else:
+        from transformers import AutoTokenizer
+        model_hub = 'huggingface'
+    
+    model_path = args.repo_id_or_model_path if args.repo_id_or_model_path else \
+        ("ZhipuAI/glm-edge-4b-chat" if args.modelscope else "THUDM/glm-edge-4b-chat")
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
@@ -43,7 +54,8 @@ if __name__ == '__main__':
                                                  load_in_4bit=True,
                                                  optimize_model=True,
                                                  trust_remote_code=True,
-                                                 use_cache=True)
+                                                 use_cache=True,
+                                                 model_hub=model_hub)
     model = model.half().to("xpu")
 
     # Load tokenizer
