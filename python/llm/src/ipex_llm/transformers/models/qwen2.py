@@ -595,7 +595,7 @@ def qwen2_attention_forward(
     else:
         attn_output = scaled_dot_product_attention(
             query_states, key_states, value_states,
-            attention_mask, q_len == kv_seq_len, math.sqrt(self.head_dim)
+            attention_mask, q_len == kv_seq_len
         )
 
     attn_output = attn_output.transpose(1, 2).contiguous()

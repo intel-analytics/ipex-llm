@@ -26,12 +26,12 @@ from typing import Optional, Tuple
 import torch
 
 from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers.models.common import attention_softmax
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, \
     mlp_fusion_check, fp16_fusion_check
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import SILU, update_past_key_value
-from ipex_llm.transformers.models.utils import should_use_fuse_rope, use_sdp, use_sdp_causal
+from ipex_llm.transformers.models.utils import should_use_fuse_rope
 
 
 def merge_qk(module: torch.nn.Module):
@@ -214,34 +214,12 @@ def yuan_attention_forward(
     )
     past_key_value = (key_states, value_states, before_hidden_states) if use_cache else None
 
-    # IPEX-LLM OPT: sdp
-    if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-        import xe_addons
-        if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                            attention_mask)
-        else:
-            attn_output = xe_addons.sdp(query_states, key_states, value_states,
-                                        attention_mask)
-    elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import xe_addons
-        if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
-                                                   value_states, attention_mask)
-        else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states,
-                                               value_states, attention_mask)
-    else:
-        if use_quantize_kv:
-            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                            query_states.dtype)
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-        if attention_mask is not None:
-            attn_weights = attn_weights + attention_mask
-        # upcast attention to fp32
-        attn_weights = attention_softmax(attn_weights)
-        attn_output = torch.matmul(attn_weights, value_states)
+    # IPEX-LLM OPT: sdpa
+    attn_weights = None
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len
+    )
 
     attn_output = attn_output.transpose(1, 2)
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

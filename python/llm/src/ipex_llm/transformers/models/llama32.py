@@ -234,7 +234,7 @@ def llama_attention_forward(
     attn_weights = None
     attn_output = scaled_dot_product_attention(
         query_states, key_states, value_states,
-        attention_mask, q_len == key_states.size(2), math.sqrt(self.head_dim)
+        attention_mask, q_len == key_states.size(2)
     )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
