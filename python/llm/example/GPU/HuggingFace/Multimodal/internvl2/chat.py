@@ -22,22 +22,32 @@ import requests
 import torch
 from PIL import Image
 from ipex_llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer, CLIPImageProcessor
+from transformers import CLIPImageProcessor
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for OpenGVLab/InternVL2-4B model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="OpenGVLab/InternVL2-4B",
-                        help='The huggingface repo id for the OpenGVLab/InternVL2-4B model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+                        help='The Hugging Face or ModelScope repo id for the InternVL2 model to be downloaded'
+                             ', or the path to the checkpoint folder')
     parser.add_argument('--image-url-or-path', type=str,
                         default='https://raw.githubusercontent.com/open-mmlab/mmdeploy/main/tests/data/tiger.jpeg',
                         help='The URL or path to the image to infer')
     parser.add_argument('--prompt', type=str, default="What is in the image?",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=64, help='Max tokens to predict')
+    parser.add_argument('--modelscope', action="store_true", default=False, 
+                        help="Use models from modelscope")
 
     args = parser.parse_args()
+
+    if args.modelscope:
+        from modelscope import AutoTokenizer
+        model_hub = 'modelscope'
+    else:
+        from transformers import AutoTokenizer
+        model_hub = 'huggingface'
+    
     model_path = args.repo_id_or_model_path
     image_path = args.image_url_or_path
     n_predict = args.n_predict
@@ -48,7 +58,8 @@ if __name__ == '__main__':
     # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
     model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True,
                                                  load_in_low_bit="sym_int4",
-                                                 modules_to_not_convert=["vision_model"])
+                                                 modules_to_not_convert=["vision_model"],
+                                                 model_hub=model_hub)
     model = model.half().to('xpu')
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)

@@ -22,6 +22,7 @@ import requests
 import torch
 from PIL import Image
 from ipex_llm.transformers import AutoModel
+from transformers import AutoProcessor
 
 
 if __name__ == '__main__':
@@ -49,10 +50,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.modelscope:
-        from modelscope import AutoTokenizer, AutoProcessor
+        from modelscope import AutoTokenizer
         model_hub = 'modelscope'
     else:
-        from transformers import AutoTokenizer, AutoProcessor
+        from transformers import AutoTokenizer
         model_hub = 'huggingface'
     
     model_path = args.repo_id_or_model_path if args.repo_id_or_model_path else \
@@ -81,8 +82,7 @@ if __name__ == '__main__':
                                        optimize_model=True,
                                        trust_remote_code=True,
                                        use_cache=True,
-                                       modules_to_not_convert=["vpm", "resampler"],
-                                       model_hub=model_hub)
+                                       modules_to_not_convert=["vpm", "resampler"])
         tokenizer = AutoTokenizer.from_pretrained(lowbit_path,
                                                   trust_remote_code=True)
     
