@@ -28,6 +28,7 @@ from typing import Optional, List
 from torch.nn.functional import linear
 from ipex_llm.transformers.models.common import merge_qkv_base, padding_qkv_hd
 from ipex_llm.transformers.models.common import attention_softmax
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from transformers import AutoProcessor, TextIteratorStreamer
 from transformers.generation.logits_process import RepetitionPenaltyLogitsProcessor
 
@@ -72,10 +73,11 @@ def siglip_attention_forward(
             72, 80
         )
 
-        from ipex_llm.transformers.models.common import scaled_dot_product_attention
         attn_weights = None
-        attn_output = scaled_dot_product_attention(query_states, key_states, value_states,
-                                                   attention_mask, False, math.sqrt(self.head_dim))
+        attn_output = scaled_dot_product_attention(
+            query_states, key_states, value_states,
+            attention_mask, False, 1 / math.sqrt(self.head_dim)
+        )
 
         attn_output = attn_output[:, :, :, :self.head_dim]
 

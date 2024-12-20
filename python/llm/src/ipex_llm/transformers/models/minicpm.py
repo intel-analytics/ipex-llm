@@ -38,15 +38,13 @@
 
 import torch
 import warnings
-import torch.nn as nn
 from typing import Optional, Tuple, Union, List
 import math
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal, use_quantize_kv_cache
-from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, get_compresskv_attn_mask
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import should_use_compresskv, should_use_fuse_rope
-from ipex_llm.transformers.models.llama import repeat_kv
 from ipex_llm.transformers.models.common import merge_qkv_base
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache, \
     DynamicCompressCache, DynamicCompressFp8Cache
 from transformers.cache_utils import Cache
@@ -127,11 +125,10 @@ def minicpm_attention_forward(
             key_states, value_states = past_key_value.update(key_states, value_states,
                                                              self.layer_idx, None)
 
-    from ipex_llm.transformers.models.common import scaled_dot_product_attention
     attn_weights = None
     attn_output = scaled_dot_product_attention(
         query_states, key_states, value_states,
-        attention_mask, q_len == kv_seq_len, math.sqrt(self.head_dim)
+        attention_mask, q_len == kv_seq_len
     )
 
     attn_output = attn_output.transpose(1, 2).contiguous()

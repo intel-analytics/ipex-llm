@@ -40,17 +40,15 @@ import math
 import torch
 import warnings
 
-from ipex_llm.transformers.models.common import merge_qkv_base, attention_softmax
-from ipex_llm.transformers.models.utils import (
-    use_quantize_kv_cache, restore_fp8_kv_cache,
-    should_use_fuse_rope, use_sdp, use_sdp_causal
-)
+from ipex_llm.transformers.models.common import merge_qkv_base
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache, should_use_fuse_rope
 from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
 from ipex_llm.utils.common.log4Error import invalidInputError
 
 from typing import Optional, Tuple, List
 from transformers.cache_utils import Cache
-from transformers.models.starcoder2.modeling_starcoder2 import repeat_kv, apply_rotary_pos_emb
+from transformers.models.starcoder2.modeling_starcoder2 import apply_rotary_pos_emb
 from transformers.models.starcoder2.modeling_starcoder2 import Starcoder2Model, Starcoder2Attention
 
 
@@ -103,41 +101,11 @@ def attention_forward(
                                                      self.layer_idx, None)
 
     # IPEX-LLM OPT: sdp
-    if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-        import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                            attention_mask)
-        else:
-            attn_output = xe_addons.sdp(query_states, key_states, value_states,
-                                        attention_mask)
-    elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
-                                                   value_states, attention_mask)
-        else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states,
-                                               value_states, attention_mask)
-    else:
-        if isinstance(past_key_value, DynamicFp8Cache):
-            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                            query_states.dtype)
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, self.num_key_value_groups)
-        value_states = repeat_kv(value_states, self.num_key_value_groups)
-
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-
-        if attention_mask is not None:
-            attn_weights = attn_weights + attention_mask
-
-        # upcast attention to fp32
-        attn_weights = attention_softmax(attn_weights)
-        attn_weights = torch.nn.functional.dropout(attn_weights, p=self.attention_dropout,
-                                                   training=self.training)
-        attn_output = torch.matmul(attn_weights, value_states)
+    attn_weights = None
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len
+    )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
