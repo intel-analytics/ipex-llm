@@ -75,7 +75,7 @@ def siglip_attention_forward(
 
         attn_weights = None
         attn_output = scaled_dot_product_attention(
-            query_states, key_states, value_states,
+            query_states, key_states.contiguous(), value_states.contiguous(),
             attention_mask, False, 1 / math.sqrt(self.head_dim)
         )
 

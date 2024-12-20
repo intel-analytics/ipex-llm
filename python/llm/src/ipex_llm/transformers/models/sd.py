@@ -37,8 +37,8 @@ import torch
 from typing import Optional
 
 from ipex_llm.transformers.utils import get_xpu_device_type
-from ipex_llm.transformers.models.common import padding_qkv_hd, attention_softmax
-from ipex_llm.transformers.models.utils import use_sdp_non_causal
+from ipex_llm.transformers.models.common import padding_qkv_hd
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from diffusers.models.attention_processor import Attention
 
 
@@ -110,19 +110,10 @@ class AttnProcessor2_0:
         if query.device.type == "xpu" and query.dtype in [torch.half, torch.float]:
             # padding head_dim 40 to 64
             query, key, value = padding_qkv_hd(query, key, value, 40, 64)
-
-            if use_sdp_non_causal(query.size(-1), query.device, query.dtype):
-                import xe_addons
-                hidden_states = xe_addons.sdp_non_causal(query, key.contiguous(),
-                                                         value.contiguous(), attention_mask)
-            else:
-                scale = 1 / math.sqrt(head_dim)
-                attn_weights = torch.matmul(query * scale, key.transpose(-1, -2))
-                if attention_mask is not None:
-                    attn_weights = attn_weights + attention_mask
-                attn_weights = attention_softmax(attn_weights)
-                hidden_states = torch.matmul(attn_weights, value)
-
+            hidden_states = scaled_dot_product_attention(
+                query, key.contiguous(), value.contiguous(),
+                attention_mask, False, 1 / math.sqrt(head_dim)
+            )
             hidden_states = hidden_states[:, :, :, :head_dim]
         else:
             hidden_states = torch.nn.functional.scaled_dot_product_attention(
