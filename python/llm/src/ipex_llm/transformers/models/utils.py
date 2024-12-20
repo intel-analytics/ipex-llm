@@ -358,16 +358,6 @@ def use_xmx(x: torch.Tensor, qtype: int):
     )
 
 
-def use_fused_layer_norm(x: torch.Tensor, training: bool):
-    device = get_xpu_device_type(x)
-    return (
-        not training
-        and not x.requires_grad
-        and device in ["arc", "flex", "pvc", "mtl", "lnl"]  # fused layer norm cannot run on UHD
-        and x.numel() // x.size(-1) == 1  # fused layer norm is slower in first token
-    )
-
-
 def fp16_fusion_check(proj, x, training):
     # only use fp16 fusion on PVC inference
     if proj is None:
