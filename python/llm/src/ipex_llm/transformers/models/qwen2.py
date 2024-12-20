@@ -583,8 +583,7 @@ def qwen2_attention_forward(
                                                              self.layer_idx, None)
 
     attn_weights = None
-    if query_states.device.type == 'xpu' \
-            and use_flash_attention(query_states, key_states, attention_mask):
+    if use_flash_attention(query_states, key_states, attention_mask):
         # repeat k/v heads if n_kv_heads < n_heads
         key_states = repeat_kv(key_states, self.num_key_value_groups)
         value_states = repeat_kv(value_states, self.num_key_value_groups)
