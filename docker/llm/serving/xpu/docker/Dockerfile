@@ -1,4 +1,4 @@
-FROM intel/oneapi-basekit:2024.1.1-devel-ubuntu22.04
+FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04
 
 ARG http_proxy
 ARG https_proxy
@@ -62,7 +62,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     rm -rf ./ipex-llm && \
     # Install torch-ccl
     cd /tmp/ && \
-    pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
+    pip install torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi torchaudio==2.5.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     # Internal oneccl
     wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.6.2-release/oneccl_wks_installer_2024.0.0.6.2.sh && \
     bash oneccl_wks_installer_2024.0.0.6.2.sh && \
