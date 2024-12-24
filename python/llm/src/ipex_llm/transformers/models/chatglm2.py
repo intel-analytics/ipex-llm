@@ -26,7 +26,7 @@ from ipex_llm.transformers.models.utils import update_past_key_value
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache,
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import should_use_compresskv, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.kv import DynamicCompressCache, DynamicCompressFp8Cache
 
