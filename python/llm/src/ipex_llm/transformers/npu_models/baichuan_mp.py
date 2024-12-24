@@ -236,7 +236,7 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             n_splits=self.n_splits_linear,
             scale_factor=(self.group_size == 0),
             is_prefill=(mode == "prefill"),
-            asym = self.asym
+            asym=self.asym
         )
 
         proj = self.reshape(proj, [-1, 3, hidden_size])  # b*s, 3, h
@@ -305,7 +305,7 @@ class LowBitBaichuanMultiDecoderlayer(LLMBaseNNFactory):
             n_splits=self.n_splits_linear,
             scale_factor=(self.group_size == 0),
             is_prefill=(mode == "prefill"),
-            asym = self.asym
+            asym=self.asym
         )
         return attn_output, new_key_states, new_value_states
 
