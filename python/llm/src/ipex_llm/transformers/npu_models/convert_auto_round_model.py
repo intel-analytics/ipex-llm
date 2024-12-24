@@ -28,7 +28,7 @@ def unpack_auto_round_layer(layer, qtype="sym_int4_rtn"):
     n, m = layer.infeatures, layer.outfeatures
     weight = layer.qweight.to("cpu")
     scale = layer.scales.to("cpu")
-    zeros = layer.qzeros.to("cpu") # np.int32, 1 x m // 4
+    zeros = layer.qzeros.to("cpu")  # np.int32, 1 x m // 4
     bits = layer.bits
 
     scale = scale.t().contiguous()
@@ -38,13 +38,13 @@ def unpack_auto_round_layer(layer, qtype="sym_int4_rtn"):
 
     for i in range(0, n // num):
         for j in range(0, num):
-            int_weight[i * num + j, :] = (( weight[i, :] >> (j * bits) )  & 0x0000000F ).to(torch.uint8)
+            int_weight[i*num + j, :] = ((weight[i, :] >> (j*bits)) & 0x0000000F).to(torch.uint8)
 
-    int_weight = (int_weight - 8).to(torch.int8) # n, m
-    qweights = int_weight.t().contiguous() # m, n
+    int_weight = (int_weight - 8).to(torch.int8)  # n, m
+    qweights = int_weight.t().contiguous()  # m, n
 
     # if we want to transform it to our NPU format, uncomment below code
-    qweights = qweights.reshape(m, -1 , 2) # m * n/2 * 2
+    qweights = qweights.reshape(m, -1, 2)  # m * n/2 * 2
     low_bit, high_bit = qweights.split(1, dim=-1)
     high_bit = high_bit.squeeze().view(torch.int8)
     low_bit = low_bit.squeeze().view(torch.int8)
@@ -61,16 +61,16 @@ def unpack_auto_round_layer(layer, qtype="sym_int4_rtn"):
 
         for i in range(0, m // num):
             for j in range(0, num):
-                int_zero[:, i * num + j] = (( zero[:, i] >> (j * bits) )  & 0x0000000F ).to(torch.uint8)
+                int_zero[:, i*num + j] = ((zero[:, i] >> (j*bits)) & 0x0000000F).to(torch.uint8)
 
         zero = int_zero.to(torch.int8)
-        zero = zero.t().contiguous() # m, 1
+        zero = zero.t().contiguous()  # m, 1
         zero = zero.to(torch.float32) * -1 * scale
         zero += 8 * scale
     else:
         invalidInputError(False,
                           f"unpack_auto_round_layer does not support qtype {qtype}.")
-    return  qweights.view(torch.uint8), scale.to(torch.float16), zero.to(torch.float16)
+    return qweights.view(torch.uint8), scale.to(torch.float16), zero.to(torch.float16)
 
 
 @module_optimization
@@ -85,7 +85,7 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
             # auto-round's QuantLinear
             qweights, scale, zero = unpack_auto_round_layer(layer, qtype=qtype)
             return QuantizedLinear(qweights, scale, zero, layer.bias,
-                                group_size=group_size, qtype=qtype)
+                                   group_size=group_size, qtype=qtype)
     elif isinstance(layer, torch.nn.Linear) and not hasattr(layer, "qtype"):
         enable_scale_search = (os.environ.get("IPEX_LLM_NPU_QUANTIZATION_OPT", "0") != "0" or
                                os.environ.get("IPEX_LLM_NPU_QUANTIZATION_HQQ", "0") != "0")
@@ -101,9 +101,10 @@ def replace_with_QuantizedLinear(layer, qtype, device, modules_to_not_convert,
                                group_size=group_size, qtype=qtype)
 
 
-def convert_auto_round_model_to_npu_model(model, save_directory, max_context_len =  1024, max_prompt_len = 960,
-                                          transpose_value_cache = True, fuse_layers = None, mixed_precision = False,
-                                          inter_pp = None, intra_pp = None, optimize_model=True):
+def convert_auto_round_model_to_npu_model(model, save_directory, max_context_len=1024,
+                                          max_prompt_len=960, transpose_value_cache=True,
+                                          fuse_layers=None, mixed_precision=False,
+                                          inter_pp=None, intra_pp=None, optimize_model=True):
     quant_config = getattr(model.config, "quantization_config", None)
     if quant_config is None and quant_config.quant_method != "intel/auto-round":
         exit(-1)
@@ -112,16 +113,16 @@ def convert_auto_round_model_to_npu_model(model, save_directory, max_context_len
     group_size = quant_config.group_size
     sym = quant_config.sym
 
-    if sym and bits == 4 :
+    if sym and bits == 4:
         qtype = "sym_int4_rtn"
     elif not sym and bits == 4:
         qtype = "asym_int4_rtn"
-    elif sym and  bits == 4:
+    elif sym and bits == 4:
         qtype = "sym_int8_rtn"
     else:
         invalidInputError(False,
-                            "Invalid dtype.")
-    
+                          "Invalid dtype.")
+
     if group_size == -1:
         quantization_group_size = 0
     else:

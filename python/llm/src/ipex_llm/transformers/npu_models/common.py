@@ -111,5 +111,5 @@ def is_auto_round_model(model: torch.nn.Module):
     if hasattr(model, "quantization_config"):
         quant_config = getattr(model.config, "quantization_config", None)
         if quant_config is not None and quant_config.quant_method == "intel/auto-round":
-            return  True
+            return True
     return False

@@ -207,7 +207,7 @@ def convert_llm(model: torch.nn.Module,
             n_splits_down_proj = 1
         else:
             if is_auto_round_model(model):
-                n_splits_down_proj = 1 # for auto-round
+                n_splits_down_proj = 1  # for auto-round
             else:
                 n_splits_down_proj = 2 if (model.config.intermediate_size == 18944 or
                                            os.environ.get("IPEX_LLM_NPU_MTL", "0") == "1" or
