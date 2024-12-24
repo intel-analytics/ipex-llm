@@ -79,7 +79,7 @@ if __name__ == '__main__':
     pixel_values = pixel_values.to('xpu')
 
     with torch.inference_mode():
-        # The following code for generation is adapted from https://huggingface.co/THUDM/glm-edge-v-2b#inference
+        # The following code for generation is adapted from https://huggingface.co/THUDM/glm-edge-v-5b#inference
         messages = [{
             "role": "user", 
             "content": [{"type": "image"}, 
@@ -92,8 +92,8 @@ if __name__ == '__main__':
                                 add_generation_prompt=True, 
                                 return_dict=True, 
                                 tokenize=True, 
-                                return_tensors="pt"
-                            ).to('xpu')
+                                return_tensors="pt")
+        inputs = inputs.to('xpu')
         
         generate_kwargs = {
                             **inputs,
