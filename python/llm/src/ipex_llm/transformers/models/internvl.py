@@ -26,6 +26,7 @@
 
 import torch
 from ipex_llm.utils.common.log4Error import invalidInputError
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.utils import use_sdp_non_causal
 
 
@@ -177,8 +178,10 @@ def intern_attention_forward(self, x: torch.Tensor) -> torch.Tensor:
         k = self.k_norm(k.transpose(1, 2).flatten(-2, -1)).view(B_, N_, H_, D_).transpose(1, 2)
 
     if use_sdp_non_causal(self.head_dim, q.device, q.dtype):
-        import xe_addons
-        x = xe_addons.sdp_non_causal(q, k.contiguous(), v.contiguous(), None)
+        x = scaled_dot_product_attention(
+            q, k.contiguous(), v.contiguous(),
+            None, False, self.scale
+        )
     else:
         attn = ((q * self.scale) @ k.transpose(-2, -1))
         attn = attn.softmax(dim=-1)
