@@ -41,13 +41,15 @@ from transformers.utils.versions import require_version
 from transformers.pytorch_utils import Conv1D
 from logging import getLogger
 from typing import Union
+from ipex_llm.utils.common import invalidInputError
 
 logger = getLogger(__name__)
 
 import auto_round
 
-def check_compatible(backend_name, device, bits, group_size, sym, packing_format, in_features, out_features,
-                     check_requirements=True):
+
+def check_compatible(backend_name, device, bits, group_size, sym, packing_format,
+                     in_features, out_features, check_requirements=True):
     """Checks if the given configuration is compatible with the specified backend.
 
     Args:
@@ -79,7 +81,7 @@ def check_compatible(backend_name, device, bits, group_size, sym, packing_format
     backend = auto_round.backend.BackendInfos[backend_name]
 
     # Check if device is supported by the backend
-    if not device in backend.device:
+    if device not in backend.device:
         return False
 
     # Check if bit-width is supported
@@ -101,7 +103,8 @@ def check_compatible(backend_name, device, bits, group_size, sym, packing_format
                 return False
 
     # Check if the format is convertible when packing formats differ
-    if packing_format != backend.packing_format and packing_format not in backend.convertable_format:
+    if packing_format != backend.packing_format and \
+            packing_format not in backend.convertable_format:
         return False
 
     if check_requirements and backend.requirements is not None:
@@ -118,11 +121,12 @@ def check_compatible(backend_name, device, bits, group_size, sym, packing_format
     return True
 
 
-def get_layer_backend(device, backend, orig_backend, bits, group_size, sym, in_features, out_features):
+def get_layer_backend(device, backend, orig_backend, bits, group_size, sym,
+                      in_features, out_features):
     """Selects the most suitable backend for the layer based on compatibility and priority.
 
-    This function first checks if the specified backend supports the layer with the provided configuration.
-    If not, it iterates through other available backends,
+    This function first checks if the specified backend supports the layer with the
+    provided configuration. If not, it iterates through other available backends,
     checking compatibility and returning the one with the highest priority.
 
     Args:
@@ -154,13 +158,15 @@ def get_layer_backend(device, backend, orig_backend, bits, group_size, sym, in_f
             If no compatible backend is found for the given layer configuration.
     """
     # Check if the provided backend is in BackendInfos
-    assert backend in auto_round.backend.BackendInfos.keys(), \
-        f"Unsupported backend {backend}, please set it to `auto` to try automatic selection"
+    invalidInputError(backend in auto_round.backend.BackendInfos.keys(),
+                      f"Unsupported backend {backend}, "
+                      "please set it to `auto` to try automatic selection")
 
     packing_format = auto_round.backend.BackendInfos[orig_backend].packing_format
 
     # Check if the provided backend supports the layer configuration
-    if check_compatible(backend, device, bits, group_size, sym, packing_format, in_features, out_features):
+    if check_compatible(backend, device, bits, group_size, sym, packing_format,
+                        in_features, out_features):
         return backend
 
     # Find and store other compatible backends
@@ -168,26 +174,30 @@ def get_layer_backend(device, backend, orig_backend, bits, group_size, sym, in_f
     for key in auto_round.backend.BackendInfos.keys():
         if key == backend:
             continue
-        if check_compatible(key, device, bits, group_size, sym, packing_format, in_features, out_features):
+        if check_compatible(key, device, bits, group_size, sym, packing_format,
+                            in_features, out_features):
             supported_backends.append(key)
 
     # Raise an error if no compatible backends are found
     if len(supported_backends) == 0:
         supported_backends_need_package = []
         for key in auto_round.backend.BackendInfos.keys():
-            if check_compatible(key, device, bits, group_size, sym, packing_format, in_features, out_features,
+            if check_compatible(key, device, bits, group_size, sym, packing_format,
+                                in_features, out_features,
                                 check_requirements=False):
                 supported_backends_need_package.append(key)
 
         if len(supported_backends_need_package) > 0:
-            supported_backends_need_package = sorted(supported_backends_need_package,
-                                                     key=lambda support_backend: auto_round.backend.BackendInfos[support_backend].priority,
-                                                     reverse=True)
+            supported_backends_need_package = sorted(
+                supported_backends_need_package,
+                key=lambda support_backend:
+                    auto_round.backend.BackendInfos[support_backend].priority,
+                reverse=True)
             backend_info = auto_round.backend.BackendInfos[supported_backends_need_package[0]]
             # ipex-llm change start
-            # logger.error("please install all the following packages to support inference")
             for requirement in backend_info.requirements:
-                if isinstance(requirement, str) and not requirement.startswith("intel-extension-for-"):
+                if isinstance(requirement, str) and \
+                        not requirement.startswith("intel-extension-for-"):
                     try:
                         require_version(requirement)
                     except ImportError:
@@ -196,13 +206,14 @@ def get_layer_backend(device, backend, orig_backend, bits, group_size, sym, in_f
                     str_info = requirement()[1]
                     logger.error(str_info)
             if not requirement.startswith("intel-extension-for-"):
-                exit(-1)
-
-        # raise ValueError(f"None of the backends support this layer")
-        # ipex-llm change end
+                invalidInputError(False,
+                                  f"exit for missing requirement {requirement}")
+            # ipex-llm change end
 
     # Sort the compatible backends by priority and return the one with the highest priority
-    supported_backends = sorted(supported_backends, key=lambda support_backend: auto_round.backend.BackendInfos[support_backend].priority,
+    supported_backends = sorted(supported_backends,
+                                key=lambda support_backend:
+                                    auto_round.backend.BackendInfos[support_backend].priority,
                                 reverse=True)
 
     # ipex-llm change start
@@ -214,12 +225,13 @@ def get_layer_backend(device, backend, orig_backend, bits, group_size, sym, in_f
 
 import auto_round.backend
 auto_round.backend.get_layer_backend = get_layer_backend
-auto_round.backend.check_compatible =  check_compatible
+auto_round.backend.check_compatible = check_compatible
 
 importlib.reload(auto_round.backend)
 
 from auto_round.utils import (get_block_names, get_module, set_module,
                               get_multimodal_block_names, find_matching_blocks)
+
 
 def cpu_post_init(self, model):
     return model
@@ -251,7 +263,8 @@ def convert_model(self, model: nn.Module):
     if not hasattr(quantization_config, "target_backend"):
         quantization_config.target_backend = quantization_config.backend
 
-    target_device = self.detect_device(quantization_config.target_backend, quantization_config.backend)
+    target_device = self.detect_device(quantization_config.target_backend,
+                                       quantization_config.backend)
     self.target_device = target_device
 
     if hasattr(quantization_config, "backend"):  # pragma: no cover
@@ -267,13 +280,15 @@ def convert_model(self, model: nn.Module):
     bits = quantization_config.bits
     group_size = quantization_config.group_size
     data_type = quantization_config.data_type if hasattr(quantization_config,
-                                                            "data_type") else "int"  # pragma: no cover
+                                                         "data_type") else "int"  # pragma: no cover
     sym = quantization_config.sym
-    to_quant_block_names = quantization_config.to_quant_block_names if hasattr(quantization_config,
-                                                                                "to_quant_block_names") else None
+    if hasattr(quantization_config, "to_quant_block_names"):
+        to_quant_block_names = quantization_config.to_quant_block_names
+    else:
+        to_quant_block_names = None
     quant_block_list = quantization_config.quant_block_list if hasattr(quantization_config,
-                                                                                "quant_block_list") else None
-    if to_quant_block_names is None: # TODO check compatibility
+                                                                       "quant_block_list") else None
+    if to_quant_block_names is None:  # TODO check compatibility
         all_blocks = get_block_names(model)
     else:
         all_blocks = get_multimodal_block_names(model, quant_vision=True)
@@ -299,8 +314,10 @@ def convert_model(self, model: nn.Module):
             layer_configs[layer_name]["clip"] = False
         else:
             layer_configs[layer_name]["bits"] = extra_config[layer_name].get("bits", bits)
-            layer_configs[layer_name]["group_size"] = extra_config[layer_name].get("group_size", group_size)
-            layer_configs[layer_name]["data_type"] = extra_config[layer_name].get("data_type", data_type)
+            layer_configs[layer_name]["group_size"] = extra_config[layer_name].get("group_size",
+                                                                                   group_size)
+            layer_configs[layer_name]["data_type"] = extra_config[layer_name].get("data_type",
+                                                                                  data_type)
             layer_configs[layer_name]["sym"] = extra_config[layer_name].get("sym", sym)
             layer_configs[layer_name]["clip"] = extra_config[layer_name].get("clip", False)
 
@@ -309,9 +326,10 @@ def convert_model(self, model: nn.Module):
     elif 'gptq' in quantization_config.quant_method:  # pragma: no cover
         backend = 'gptq'
     else:  # pragma: no cover
-        raise ValueError("Quantization backend must be specified.")
+        invalidInputError(False, "Quantization backend must be specified.")
 
-    self._replace_by_quant_layers(model, layer_configs, quantization_config.target_backend, target_device, backend)
+    self._replace_by_quant_layers(model, layer_configs, quantization_config.target_backend,
+                                  target_device, backend)
     return model
 
 
@@ -321,7 +339,8 @@ def get_device(obj: Union[torch.Tensor, nn.Module]):
     return next(obj.parameters()).device
 
 
-def _replace_by_quant_layers(self, module: nn.Module, layer_configs, target_backend, target_device, orig_backend):
+def _replace_by_quant_layers(self, module: nn.Module, layer_configs, target_backend,
+                             target_device, orig_backend):
     """Replaces linear layers in the given module with quantized layers.
 
     This method iterates over the specified layer configurations and replaces
@@ -395,20 +414,24 @@ def _replace_by_quant_layers(self, module: nn.Module, layer_configs, target_back
 
         if "marlin" in target_backend and "marlin" not in orig_backend:
             # Need to repack
-            assert sym == True, "Marlin only supports symmetric quantization"
-            assert target_device == "cuda", "Marlin only supports CUDA device"
-            assert not "awq" in orig_backend, "Marlin does not support repacking from AWQ format"
+            invalidInputError(sym,
+                              "Marlin only supports symmetric quantization")
+            invalidInputError(target_device == "cuda",
+                              "Marlin only supports CUDA device")
+            invalidInputError("awq" not in orig_backend,
+                              "Marlin does not support repacking from AWQ format")
             self.need_marlin_repacking = True
             # Using original backend to load the layer then replace
             layer_backend = orig_backend
         else:
-            target_backend = self.find_backend(target_backend)  # TODO: Move out if have supported marlin
+            target_backend = self.find_backend(target_backend)
             layer_backend = get_layer_backend(
-                target_device, target_backend, orig_backend, bits, group_size, sym, in_features, out_features
+                target_device, target_backend, orig_backend, bits, group_size,
+                sym, in_features, out_features
             )
         if "gptq" in layer_backend and "exllamav2" in layer_backend:
             try:
-                from exllamav2_kernels import gemm_half_q_half, make_q_matrix  # pylint: disable=E0611
+                from exllamav2_kernels import gemm_half_q_half, make_q_matrix
             except:
                 logger.warning_once(
                     "For better inference performance, please install exllamav2 kernel "
