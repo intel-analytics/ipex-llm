@@ -105,3 +105,11 @@ def split_linears(module: torch.nn.Module, n_splits_hidden_size=2, n_splits_down
                                                             n_splits=n_splits_hidden_size,
                                                             load=load))
             delattr(module, name)
+
+
+def is_auto_round_model(model: torch.nn.Module):
+    if hasattr(model, "quantization_config"):
+        quant_config = getattr(model.config, "quantization_config", None)
+        if quant_config is not None and quant_config.quant_method == "intel/auto-round":
+            return  True
+    return False
