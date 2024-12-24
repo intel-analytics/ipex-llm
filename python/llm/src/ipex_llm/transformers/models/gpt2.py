@@ -15,6 +15,7 @@
 #
 
 import torch
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.utils import use_sdp_non_causal
 
 
@@ -44,10 +45,11 @@ def gpt2_attention_attn(
         else:
             attention_mask = attention_mask.expand(-1, -1, seq_len, seq_len)
 
-        import xe_addons
         attn_weights = None
-        attn_output = xe_addons.sdp_non_causal(query, key.contiguous(),
-                                               value.contiguous(), attention_mask)
+        attn_output = scaled_dot_product_attention(
+            query, key.contiguous(), value.contiguous(),
+            attention_mask, False
+        )
         return attn_output, attn_weights
     # ipex-llm changes end
 
