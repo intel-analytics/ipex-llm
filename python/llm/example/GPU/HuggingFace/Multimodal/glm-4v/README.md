@@ -110,7 +110,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** (e.g. `THUDM/glm-4v-9b`) or **ModelScope** (e.g. `ZhipuAI/glm-4v-9b`) repo id for the GLM-4V model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/glm-4v-9b'` for **Hugging Face** or `'ZhipuAI/glm-4v-9b'` for **ModelScope**.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the GLM-4V model (e.g. `THUDM/glm-4v-9b`) to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/glm-4v-9b'` for **Hugging Face** or `'ZhipuAI/glm-4v-9b'` for **ModelScope**.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
