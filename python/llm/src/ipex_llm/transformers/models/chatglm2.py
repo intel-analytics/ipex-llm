@@ -18,17 +18,16 @@
 #
 
 import os
-import math
 import torch
 from typing import Optional, Tuple
 from transformers.modeling_outputs import BaseModelOutputWithPast
-from ipex_llm.utils.common.log4Error import invalidInputError
-from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past_key_value
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, use_sdp_causal
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
+from ipex_llm.transformers.models.utils import update_past_key_value
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, \
-    use_sdp_causal, should_use_compresskv, is_enough_kv_cache_room_4_36
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache,
+from ipex_llm.transformers.models.utils import should_use_compresskv, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.kv import DynamicCompressCache, DynamicCompressFp8Cache
 
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
@@ -310,50 +309,10 @@ def chatglm2_attention_forward(
                           value_states.permute(2, 0, 1, 3)) if use_cache else None
 
     # IPEX-LLM OPT: sdp
-    attn_weights = None
-    if use_sdp(q_len, kv_seq_len, head_dim, query_states):
-        import xe_addons
-        if use_compresskv and attention_mask is not None:
-            attention_mask = None
-        if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, attention_mask)
-        else:
-            attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
-    elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_states, self.training):
-        import xe_addons
-        if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states,
-                                                   attention_mask)
-        else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states,
-                                               attention_mask)
-    elif query_states.device.type == "cpu":
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, n_head // n_kv_head)
-        value_states = repeat_kv(value_states, n_head // n_kv_head)
-        if q_len == kv_seq_len:
-            attn_output = torch.nn.functional.scaled_dot_product_attention(
-                query_states, key_states, value_states, is_causal=True
-            )
-        else:
-            attn_output = torch.nn.functional.scaled_dot_product_attention(
-                query_states, key_states, value_states, attention_mask
-            )
-    else:
-        if use_quantize_kv:
-            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                            query_states.dtype)
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, n_head // n_kv_head)
-        value_states = repeat_kv(value_states, n_head // n_kv_head)
-
-        attn_weights = torch.matmul(query_states,
-                                    key_states.transpose(2, 3)) / math.sqrt(head_dim)
-        if attention_mask is not None:
-            attn_weights = attn_weights + attention_mask
-        attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                   dtype=torch.float32).to(value_states.dtype)
-        attn_output = torch.matmul(attn_weights, value_states)
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len
+    )
 
     # context_layer's shape: [bsz, n_head, seq_len, head_dim] -> [seq_len, bsz, n_head * head_dim]
     attn_output = attn_output.permute(2, 0, 1, 3).contiguous().view(q_len, bsz, n_head * head_dim)
@@ -541,29 +500,10 @@ def codegeex_attention_forward(
     # =================
     # Output. [sq, b, h]
     # =================
-    context_layer = None
-    if use_sdp(q_len, kv_seq_len, head_dim, query_layer):
-        import xe_addons
-        context_layer = xe_addons.sdp(query_layer, key_layer, value_layer, attention_mask)
-    elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_layer, self.training):
-        import xe_addons
-        context_layer = xe_addons.sdp_causal(query_layer, key_layer, value_layer, attention_mask)
-    else:
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_layer = repeat_kv(key_layer, n_head // n_kv_head)
-        value_layer = repeat_kv(value_layer, n_head // n_kv_head)
-        if attention_mask is None and query_layer.shape[2] == key_layer.shape[2]:
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             is_causal=True)
-        else:
-            if attention_mask is not None:
-                attention_mask = ~attention_mask
-            context_layer = torch.nn.functional.scaled_dot_product_attention(query_layer,
-                                                                             key_layer,
-                                                                             value_layer,
-                                                                             attention_mask)
+    context_layer = scaled_dot_product_attention(
+        query_layer, key_layer, value_layer,
+        attention_mask, q_len == kv_seq_len
+    )
 
     context_layer = context_layer.permute(2, 0, 1, 3).contiguous().view(q_len,
                                                                         bsz,
