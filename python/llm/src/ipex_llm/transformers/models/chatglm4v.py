@@ -20,10 +20,10 @@
 import torch
 from typing import Optional, Tuple, Union
 from ipex_llm.transformers.models.common import merge_qkv_base
-from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, update_past_key_value
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp, use_sdp_causal
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
+from ipex_llm.transformers.models.utils import update_past_key_value
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
-from ipex_llm.transformers.models.chatglm2 import repeat_kv
 from ipex_llm.utils.common import invalidInputError
 from transformers.modeling_outputs import BaseModelOutputWithPast
 import math
@@ -246,53 +246,10 @@ def chatglm4v_attention_forward(
         past_key_value = None
 
     # IPEX-LLM OPT: sdp
-    attn_weights = None
-    if use_sdp(q_len, kv_seq_len, head_dim, query_states):
-        import xe_addons
-        if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states, attention_mask)
-        else:
-            attn_output = xe_addons.sdp(query_states, key_states, value_states, attention_mask)
-    elif use_sdp_causal(q_len, kv_seq_len, head_dim, query_states, self.training):
-        import xe_addons
-        if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states,
-                                                   attention_mask)
-        else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states,
-                                               attention_mask)
-    elif query_states.device.type == "cpu":
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, n_head // n_kv_head)
-        value_states = repeat_kv(value_states, n_head // n_kv_head)
-        if q_len == kv_seq_len:
-            attn_output = torch.nn.functional.scaled_dot_product_attention(
-                query_states, key_states, value_states, is_causal=True
-            )
-        else:
-            attn_output = torch.nn.functional.scaled_dot_product_attention(
-                query_states, key_states, value_states, attention_mask
-            )
-    else:
-        if use_quantize_kv:
-            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                            query_states.dtype)
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, n_head // n_kv_head)
-        value_states = repeat_kv(value_states, n_head // n_kv_head)
-        attn_weights = torch.matmul(query_states / math.sqrt(head_dim),
-                                    key_states.transpose(2, 3))
-        if attention_mask is not None:
-            attn_weights = attn_weights + attention_mask
-        if kv_seq_len >= 2048 or bsz >= 64:
-            # for memory considerations, do not upcast attention to fp32
-            # for long sequences or large batches
-            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-        else:
-            # upcast attention to fp32
-            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                       dtype=torch.float32).to(value_states.dtype)
-        attn_output = torch.matmul(attn_weights, value_states)
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len
+    )
 
     # context_layer's shape: [bsz, n_head, seq_len, head_dim] -> [seq_len, bsz, n_head * head_dim]
     attn_output = attn_output.transpose(1, 2).contiguous().view(bsz, q_len, n_head * head_dim)
