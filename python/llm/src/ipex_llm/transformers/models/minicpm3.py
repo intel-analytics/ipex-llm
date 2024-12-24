@@ -6,10 +6,10 @@ from typing import Optional, Tuple, List
 from transformers.cache_utils import Cache
 
 from ipex_llm.utils.common.log4Error import invalidInputError
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import rotate_half
-from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
-from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
 from ipex_llm.transformers.kv import DynamicNormalCache, DynamicFp8Cache
 
 
@@ -25,7 +25,7 @@ def pre_compute_inv_freq(module: torch.nn.Module):
 
 def padding_v_head_dim(module: torch.nn.Module):
     if module.__class__.__name__ == "MiniCPMAttention":
-        k_head_dim = module.qk_rope_head_dim + module.qk_nope_head_dim
+        k_head_dim = module.q_head_dim
         v_head_dim = module.v_head_dim
         invalidInputError(k_head_dim >= v_head_dim,
                           f"unsupported k_head_dim and v_head_dim: {k_head_dim} {v_head_dim}")
@@ -183,37 +183,11 @@ def minicpm3_attention_forward(
                                                          self.layer_idx, None)
 
     attn_weights = None
-    if use_sdp(q_len, kv_seq_len, self.q_head_dim, query_states):
-        import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                            attention_mask)
-        else:
-            attn_output = xe_addons.sdp(query_states, key_states, value_states,
-                                        attention_mask)
-        attn_output = attn_output[:, :, :, :self.v_head_dim]
-    elif use_sdp_causal(q_len, kv_seq_len, self.q_head_dim, query_states, False):
-        import xe_addons
-        if isinstance(past_key_value, DynamicFp8Cache):
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states,
-                                                   value_states, attention_mask)
-        else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states,
-                                               value_states, attention_mask)
-        attn_output = attn_output[:, :, :, :self.v_head_dim]
-    else:
-        if isinstance(past_key_value, DynamicFp8Cache):
-            key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                            query_states.dtype)
-        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) * self.softmax_scale
-
-        if attention_mask is not None:
-            attn_weights = attn_weights + attention_mask
-
-        # upcast attention to fp32
-        attn_weights = nn.functional.softmax(attn_weights,
-                                             dim=-1, dtype=torch.float32).to(query_states.dtype)
-        attn_output = torch.matmul(attn_weights, value_states[:, :, :, :self.v_head_dim])
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len, self.softmax_scale
+    )
+    attn_output = attn_output[:, :, :, :self.v_head_dim]
 
     attn_output = attn_output.transpose(1, 2).contiguous()
 
