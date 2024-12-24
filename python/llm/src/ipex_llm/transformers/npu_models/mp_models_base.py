@@ -494,7 +494,7 @@ class LLMBaseNNFactory(NNFactory):
                              num_heads, seq_len, head_dim):
         if position_ids is not None:
             if os.environ.get("IPEX_LLM_NPU_MTL", "0") == "1" or\
-              os.environ.get("IPEX_LLM_NPU_ARL", "0") == "1":
+               os.environ.get("IPEX_LLM_NPU_ARL", "0") == "1":
                 position_ids = self.reshape(position_ids, [-1])
             else:
                 position_ids = self.squeeze(position_ids)
