@@ -22,19 +22,19 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-import math
 from typing import Optional, Tuple, Union, Callable, List
 
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
 from transformers.utils import logging
+from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.utils import update_past_key_value, should_use_fuse_rope
-from ipex_llm.transformers.models.utils import restore_fp8_kv_cache, use_quantize_kv_cache
+from ipex_llm.transformers.models.utils import use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import rotate_half, SILU
 from ipex_llm.transformers.models.utils import mlp_fusion_check
-from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp, use_sdp_causal
-from ipex_llm.utils.common import invalidInputError, invalidOperationError
+from ipex_llm.transformers.models.utils import use_flash_attention
+from ipex_llm.utils.common import invalidInputError
 from transformers.modeling_outputs import BaseModelOutputWithPast
 
 
@@ -118,20 +118,13 @@ def qwen_attention_forward(
 
     # IPEX-LLM OPT: sdp
     attn_weights = None
-    if not self.training and not hidden_states.requires_grad and \
-            use_flash_attention(query_states, key_states, attention_mask):
+    if use_flash_attention(query_states, key_states, attention_mask):
         attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
                                                      key_states.to(dtype=torch.float16),
                                                      value_states.to(dtype=torch.float16),
                                                      is_causal=True).to(hidden_states.dtype)
-    elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import xe_addons
-        if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states, None)
-        else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states, None)
     else:
-        if q_len > 1:
+        if q_len > 1 and q_len != kv_seq_len:
             causal_mask = torch.tril(
                 torch.ones((kv_seq_len, kv_seq_len), dtype=torch.bool, device=query_states.device)
             ).view(1, 1, kv_seq_len, kv_seq_len)
@@ -146,29 +139,10 @@ def qwen_attention_forward(
         else:
             attention_mask = None
 
-        if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-            import xe_addons
-            if use_quantize_kv:
-                attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                                attention_mask)
-            else:
-                attn_output = xe_addons.sdp(query_states, key_states, value_states,
-                                            attention_mask)
-        else:
-            if use_quantize_kv:
-                key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                                query_states.dtype)
-            attn_weights = torch.matmul(query_states,
-                                        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-            if attention_mask is not None:
-                attn_weights = attn_weights + attention_mask
-            if self.softmax_in_fp32:
-                attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                           dtype=torch.float32).to(
-                                                               value_states.dtype)
-            else:
-                attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-            attn_output = torch.matmul(attn_weights, value_states)
+        attn_output = scaled_dot_product_attention(
+            query_states, key_states, value_states,
+            attention_mask, q_len == kv_seq_len
+        )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.view(bsz, q_len, self.hidden_size)
@@ -247,20 +221,14 @@ def qwen_attention_forward_registered(
 
     # IPEX-LLM OPT: sdp
     attn_weights = None
-    if not self.training and not hidden_states.requires_grad and \
-            use_flash_attention(query_states, key_states, attention_mask):
+
+    if use_flash_attention(query_states, key_states, attention_mask):
         attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
                                                      key_states.to(dtype=torch.float16),
                                                      value_states.to(dtype=torch.float16),
                                                      is_causal=True).to(hidden_states.dtype)
-    elif use_sdp_causal(q_len, kv_seq_len, self.head_dim, query_states, self.training):
-        import xe_addons
-        if use_quantize_kv:
-            attn_output = xe_addons.sdp_fp8_causal(query_states, key_states, value_states, None)
-        else:
-            attn_output = xe_addons.sdp_causal(query_states, key_states, value_states, None)
     else:
-        if q_len > 1:
+        if q_len > 1 and q_len != kv_seq_len:
             causal_mask = registered_causal_mask[
                 :, :, kv_seq_len - q_len:kv_seq_len, :kv_seq_len
             ]
@@ -272,29 +240,10 @@ def qwen_attention_forward_registered(
         else:
             attention_mask = None
 
-        if use_sdp(q_len, kv_seq_len, self.head_dim, query_states):
-            import xe_addons
-            if use_quantize_kv:
-                attn_output = xe_addons.sdp_fp8(query_states, key_states, value_states,
-                                                attention_mask)
-            else:
-                attn_output = xe_addons.sdp(query_states, key_states, value_states,
-                                            attention_mask)
-        else:
-            if use_quantize_kv:
-                key_states, value_states = restore_fp8_kv_cache(key_states, value_states,
-                                                                query_states.dtype)
-            attn_weights = torch.matmul(query_states,
-                                        key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
-            if attention_mask is not None:
-                attn_weights = attn_weights + attention_mask
-            if self.softmax_in_fp32:
-                attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                           dtype=torch.float32).to(
-                                                               value_states.dtype)
-            else:
-                attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-            attn_output = torch.matmul(attn_weights, value_states)
+        attn_output = scaled_dot_product_attention(
+            query_states, key_states, value_states,
+            attention_mask, q_len == kv_seq_len
+        )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.view(bsz, q_len, self.hidden_size)
