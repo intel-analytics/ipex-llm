@@ -138,7 +138,7 @@ set SYCL_CACHE_PERSISTENT=1
 > For chatting in streaming mode, it is recommended to set the environment variable `PYTHONUNBUFFERED=1`.
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the MiniCPM-V-2_6 (e.g. `openbmb/MiniCPM-V-2_6`) to be downloaded, or the path to the checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2_6'` for **Hugging Face** or `'OpenBMB/MiniCPM-V-2_6'` for **ModelScope**.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** (e.g. `openbmb/MiniCPM-V-2_6`) or **ModelScope** (e.g. `OpenBMB/MiniCPM-V-2_6`) repo id for the MiniCPM-V-2_6 to be downloaded, or the path to the checkpoint folder. It is default to be `'openbmb/MiniCPM-V-2_6'` for **Hugging Face** or `'OpenBMB/MiniCPM-V-2_6'` for **ModelScope**.
 - `--lowbit-path LOWBIT_MODEL_PATH`: argument defining the path to save/load the model with IPEX-LLM low-bit optimization. If it is an empty string, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded. If it is an existing path, the saved model with low-bit optimization in `LOWBIT_MODEL_PATH` will be loaded. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the optimized low-bit model will be saved into `LOWBIT_MODEL_PATH`. It is default to be `''`, i.e. an empty string.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.

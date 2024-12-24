@@ -108,7 +108,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the MiniCPM model (e.g. `openbmb/MiniCPM-2B-sft-bf16` or `openbmb/MiniCPM-1B-sft-bf16`) to be downloaded, or the path to the checkpoint folder. It is default to be `'openbmb/MiniCPM-2B-sft-bf16'` for **Hugging Face** and `'OpenBMB/MiniCPM-2B-sft-bf16'` for **ModelScope**.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** (e.g. `openbmb/MiniCPM-2B-sft-bf16` or `openbmb/MiniCPM-1B-sft-bf16`) or **ModelScope** (e.g. `OpenBMB/MiniCPM-2B-sft-bf16` or `OpenBMB/MiniCPM-1B-sft-bf16`) repo id for the MiniCPM model to be downloaded, or the path to the checkpoint folder. It is default to be `'openbmb/MiniCPM-2B-sft-bf16'` for **Hugging Face** and `'OpenBMB/MiniCPM-2B-sft-bf16'` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
