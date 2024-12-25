@@ -48,7 +48,8 @@ from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import should_use_compresskv, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache
-from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicCompressCache, DynamicNormalCache
+from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache
+from ipex_llm.transformers.kv import DynamicCompressCache, DynamicCompressFp8Cache
 KV_CACHE_ALLOC_BLOCK_LENGTH = int(os.environ.get("KV_CACHE_ALLOC_BLOCK_LENGTH", 256))
 
 
@@ -77,12 +78,17 @@ def mistral_model_forward(
 
     if use_cache:
         if use_compress_kv and not isinstance(past_key_values, DynamicCompressCache):
-            past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-        elif use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                        DynamicFp8Cache):
+            if use_quantize_kv:
+                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
+            else:
+                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
+        elif use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        elif not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                            DynamicNormalCache):
+        elif (
+            not use_quantize_kv
+            and not use_compress_kv
+            and not isinstance(past_key_values, DynamicNormalCache)
+        ):
             past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
     # ipex-llm changes end
 
