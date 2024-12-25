@@ -72,7 +72,7 @@ def mistral_model_forward(
     use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs,
                                             self.config.num_attention_heads //
                                             self.config.num_key_value_heads)
-    use_compress_kv = should_use_compresskv(inputs, inputs.size(-2)) or \
+    use_compress_kv = should_use_compresskv(inputs, inputs.size(1)) or \
         isinstance(past_key_values, DynamicCompressCache)
 
     if use_cache:
