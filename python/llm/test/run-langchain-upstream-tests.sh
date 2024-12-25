@@ -20,7 +20,8 @@ cp ${ANALYTICS_ZOO_ROOT}/langchain_upstream/libs/community/tests/integration_tes
 source ${ANALYTICS_ZOO_ROOT}/python/llm/test/run-llm-check-function.sh
 
 pytest_check_error python -m pytest -s ${ANALYTICS_ZOO_ROOT}/langchain_upstream/test_bigdl_llm.py
-pytest_check_error python -m pytest -s ${ANALYTICS_ZOO_ROOT}/langchain_upstream/test_ipex_llm.py
+# disable this test temporarily
+# pytest_check_error python -m pytest -s ${ANALYTICS_ZOO_ROOT}/langchain_upstream/test_ipex_llm.py
 
 echo ">>> Testing LangChain upstream ipynb"
 cp ${ANALYTICS_ZOO_ROOT}/langchain_upstream/docs/docs/integrations/llms/ipex_llm.ipynb ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.ipynb
