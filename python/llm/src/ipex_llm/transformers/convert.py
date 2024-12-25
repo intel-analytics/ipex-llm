@@ -1304,26 +1304,28 @@ def _optimize_post(model, lightweight_bmm=False):
     from packaging import version
     trans_version = transformers.__version__
 
-    # convert all nn.LayerNorm
     from ipex_llm.transformers.models.common import layer_norm_forward
+    from ipex_llm.transformers.models.common import rms_norm_forward
+    from ipex_llm.transformers.models.common import mlp_silu_forward
+    from ipex_llm.transformers.models.common import mlp_gelu_forward
+
+    # convert all nn.LayerNorm
     convert_forward(model, nn.LayerNorm, layer_norm_forward)
 
-    from ipex_llm.transformers.models.llama import llama_rms_norm_forward
-    from ipex_llm.transformers.models.llama import llama_mlp_forward
-
-    if model.config.model_type == "llama" and model.config.rope_scaling is not None:
-        # llama 3.2 & llama 3.1
+    if model.config.model_type == "llama":
+        # llama 2 & llama 3 & llama 3.1 & llama 3.2
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.common import rms_norm_forward
         from ipex_llm.transformers.models.common import mlp_silu_forward
-        from ipex_llm.transformers.models.llama32 import llama_model_forward
-        from ipex_llm.transformers.models.llama32 import llama_attention_forward
+        from ipex_llm.transformers.models.llama import llama_model_forward
+        from ipex_llm.transformers.models.llama import llama_attention_forward
         convert_forward(model, module.LlamaRMSNorm, rms_norm_forward)
         convert_forward(model, module.LlamaMLP, mlp_silu_forward)
         convert_forward(model, module.LlamaModel, llama_model_forward)
         convert_forward(model, module.LlamaAttention, llama_attention_forward)
-        convert_forward(model, module.LlamaSdpaAttention, llama_attention_forward)
+        if hasattr(module, "LlamaSdpaAttention"):
+            convert_forward(model, module.LlamaSdpaAttention, llama_attention_forward)
     elif model.config.model_type == "mllama":
         # llama 3.2 vision
         modeling_module_name = model.__class__.__module__
@@ -1334,7 +1336,7 @@ def _optimize_post(model, lightweight_bmm=False):
 
         from ipex_llm.transformers.models.common import rms_norm_forward
         from ipex_llm.transformers.models.common import mlp_silu_forward
-        from ipex_llm.transformers.models.llama32 import llama_attention_forward
+        from ipex_llm.transformers.models.llama import llama_attention_forward
         from ipex_llm.transformers.models.mllama import mllama_text_model_forward
         from ipex_llm.transformers.models.mllama import mllama_cross_attention_forward
         convert_forward(model, module.MllamaTextRMSNorm, rms_norm_forward)
@@ -1344,58 +1346,6 @@ def _optimize_post(model, lightweight_bmm=False):
         convert_forward(model, module.MllamaTextSelfSdpaAttention, llama_attention_forward)
         convert_forward(model, module.MllamaTextCrossAttention, mllama_cross_attention_forward)
         convert_forward(model, module.MllamaTextCrossSdpaAttention, mllama_cross_attention_forward)
-    elif model.config.model_type == "llama":
-        from transformers.models.llama.modeling_llama import LlamaRMSNorm
-        from transformers.models.llama.modeling_llama import LlamaMLP
-        from transformers.models.llama.modeling_llama import LlamaAttention
-        from transformers.models.llama.modeling_llama import LlamaDecoderLayer
-        from transformers.models.llama.modeling_llama import LlamaModel
-        if version.parse(trans_version) >= version.parse("4.36.0"):
-            from transformers.models.llama.modeling_llama import LlamaSdpaAttention
-
-        from ipex_llm.transformers.models.llama import llama_rms_norm_forward
-        from ipex_llm.transformers.models.llama import llama_mlp_forward
-        from ipex_llm.transformers.models.llama import llama_decoder_forward
-
-        convert_forward(model, LlamaRMSNorm, llama_rms_norm_forward)
-        convert_forward(model, LlamaMLP, llama_mlp_forward)
-        convert_forward(model, LlamaDecoderLayer, llama_decoder_forward)
-
-        if version.parse(trans_version) >= version.parse("4.41.0"):
-            from ipex_llm.transformers.models.llama import llama_model_forward_4_41
-            from ipex_llm.transformers.models.llama import llama_attention_forward_4_41
-            convert_forward(model, LlamaModel, llama_model_forward_4_41)
-            convert_forward(model, LlamaAttention, llama_attention_forward_4_41)
-            convert_forward(model, LlamaSdpaAttention, llama_attention_forward_4_41)
-        elif version.parse(trans_version) >= version.parse("4.38.0"):
-            from ipex_llm.transformers.models.llama import llama_model_forward_4_38
-            from ipex_llm.transformers.models.llama import llama_attention_forward_4_38
-            convert_forward(model, LlamaModel, llama_model_forward_4_38)
-            convert_forward(model, LlamaAttention, llama_attention_forward_4_38)
-            convert_forward(model, LlamaSdpaAttention, llama_attention_forward_4_38)
-        elif version.parse(trans_version) >= version.parse("4.36.0"):
-            from ipex_llm.transformers.models.llama import llama_model_forward_4_36
-            from ipex_llm.transformers.models.llama import llama_attention_forward_4_38
-            convert_forward(model, LlamaModel, llama_model_forward_4_36)
-            convert_forward(model, LlamaAttention, llama_attention_forward_4_38)
-            convert_forward(model, LlamaSdpaAttention, llama_attention_forward_4_38)
-        else:
-            vllm_se_batching = os.getenv("VLLM_ENABLE_SELECTIVE_BATCHING", "").lower() == "true"
-            if vllm_se_batching:
-                from ipex_llm.transformers.models.llama import (
-                    llama_model_selective_batching_forward_4_31,
-                    llama_attention_selective_batching_forward_4_31,
-                )
-                convert_forward(model, LlamaModel,
-                                llama_model_selective_batching_forward_4_31)
-                convert_forward(model, LlamaAttention,
-                                llama_attention_selective_batching_forward_4_31)
-            else:
-                from ipex_llm.transformers.models.llama import llama_model_forward
-                from ipex_llm.transformers.models.llama import llama_attention_forward_4_31
-                convert_forward(model, LlamaModel, llama_model_forward)
-                convert_forward(model, LlamaAttention, llama_attention_forward_4_31)
-
     elif (
         model.config.architectures is not None
         and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]
@@ -1607,7 +1557,7 @@ def _optimize_post(model, lightweight_bmm=False):
             for i in range(len(model.model.layers)):
                 setattr(model.model.layers[i].self_attn, "layer_idx", i)
             convert_forward(model, module.Attention, baichuan_attention_forward_7b)
-            convert_forward(model, module.RMSNorm, llama_rms_norm_forward)
+            convert_forward(model, module.RMSNorm, rms_norm_forward)
             if model.config.vocab_size == 125696:
                 # baichuan2-7B
                 convert_forward(model, module.BaichuanModel, baichuan_model_7b_forward)
@@ -1652,13 +1602,13 @@ def _optimize_post(model, lightweight_bmm=False):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.internlm import internlm_attention_forward
         convert_forward(model, module.InternLMAttention, internlm_attention_forward)
-        convert_forward(model, module.InternLMRMSNorm, llama_rms_norm_forward)
+        convert_forward(model, module.InternLMRMSNorm, rms_norm_forward)
     elif model.config.model_type == "internlm2":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.internlm import internlm2_attention_forward
         convert_forward(model, module.InternLM2Attention, internlm2_attention_forward)
-        convert_forward(model, module.InternLM2RMSNorm, llama_rms_norm_forward)
+        convert_forward(model, module.InternLM2RMSNorm, rms_norm_forward)
     elif model.config.model_type == "internlmxcomposer2":
         modeling_module_name = model.model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1670,7 +1620,7 @@ def _optimize_post(model, lightweight_bmm=False):
         )
         convert_forward(model, module.InternLM2Attention, internlm_xcomposser2_attention_forward)
         convert_forward(model, module.InternLM2MLP, internlm_xcomposser2_mlp_forward)
-        convert_forward(model, module.InternLM2RMSNorm, llama_rms_norm_forward)
+        convert_forward(model, module.InternLM2RMSNorm, rms_norm_forward)
         internlm_xcomposser2_model_forward = internlm_xcomposser2_model_forward_wrapper(
             module.InternLM2Model.forward
         )
@@ -1749,7 +1699,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         qwen2_causal_lm_forward)
         convert_forward(model,
                         module.Qwen2RMSNorm,
-                        llama_rms_norm_forward)
+                        rms_norm_forward)
         convert_forward(model,
                         module.Qwen2MLP,
                         qwen2_mlp_forward)
@@ -1782,7 +1732,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         qwen2_moe_causal_lm_forward)
         convert_forward(model,
                         module.Qwen2MoeRMSNorm,
-                        llama_rms_norm_forward)
+                        rms_norm_forward)
         convert_forward(model,
                         module.Qwen2MoeSparseMoeBlock,
                         qwen2moe_moeblock_forward)
@@ -1836,10 +1786,10 @@ def _optimize_post(model, lightweight_bmm=False):
                         cohere_attention_forward)
         convert_forward(model,
                         module.CohereLayerNorm,
-                        llama_rms_norm_forward)
+                        rms_norm_forward)
         convert_forward(model,
                         module.CohereMLP,
-                        llama_mlp_forward)
+                        mlp_silu_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1850,7 +1800,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         )
         convert_forward(model,
                         module.AquilaRMSNorm,
-                        llama_rms_norm_forward)
+                        rms_norm_forward)
     elif model.config.model_type == "mixtral":
         # For mistralai/Mixtral-8x7B-v0.1
         invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
@@ -1865,7 +1815,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         mixtral_attention_forward)
         convert_forward(model,
                         module.MixtralRMSNorm,
-                        llama_rms_norm_forward)
+                        rms_norm_forward)
         convert_forward(model,
                         module.MixtralSparseMoeBlock,
                         mixtral_moeblock_forward)
@@ -1898,9 +1848,7 @@ def _optimize_post(model, lightweight_bmm=False):
                               "to run Mixtral models.")
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            convert_forward(model,
-                            module.MistralRMSNorm,
-                            llama_rms_norm_forward)
+            convert_forward(model, module.MistralRMSNorm, rms_norm_forward)
         else:
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
@@ -1944,9 +1892,7 @@ def _optimize_post(model, lightweight_bmm=False):
     elif model.config.model_type == "Yi":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        convert_forward(model,
-                        module.YiRMSNorm,
-                        llama_rms_norm_forward)
+        convert_forward(model, module.YiRMSNorm, rms_norm_forward)
     elif model.config.model_type == "whisper" and lightweight_bmm:
         if platform.system().lower() == 'windows':
             from ipex_llm.transformers.bmm import SafeBMM
@@ -1997,10 +1943,10 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.decilm import decilm_attention_forward_4_35_2
         convert_forward(model,
                         module.LlamaRMSNorm,
-                        llama_rms_norm_forward)
+                        rms_norm_forward)
         convert_forward(model,
                         module.LlamaMLP,
-                        llama_mlp_forward)
+                        mlp_silu_forward)
         convert_forward(model,
                         module.DeciLMAttention,
                         decilm_attention_forward_4_35_2, )
@@ -2105,7 +2051,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         )
         convert_forward(model,
                         module.StableLmMLP,
-                        llama_mlp_forward)
+                        mlp_silu_forward)
         convert_forward(model,
                         module.StableLmModel,
                         stablelm_model_forward
@@ -2117,8 +2063,8 @@ def _optimize_post(model, lightweight_bmm=False):
         from ipex_llm.transformers.models.minicpm import minicpm_model_forward_wrapper
         from ipex_llm.transformers.models.minicpm import minicpm_decoder_layer_forward
         convert_forward(model, module.MiniCPMAttention, minicpm_attention_forward)
-        convert_forward(model, module.MiniCPMMLP, llama_mlp_forward)
-        convert_forward(model, module.MiniCPMRMSNorm, llama_rms_norm_forward)
+        convert_forward(model, module.MiniCPMMLP, mlp_silu_forward)
+        convert_forward(model, module.MiniCPMRMSNorm, rms_norm_forward)
         convert_forward(model, module.MiniCPMDecoderLayer, minicpm_decoder_layer_forward)
         minicpm_model_forward = minicpm_model_forward_wrapper(module.MiniCPMModel.forward)
         convert_forward(model, module.MiniCPMModel, minicpm_model_forward)
