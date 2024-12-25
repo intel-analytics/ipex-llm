@@ -52,7 +52,7 @@ from ipex_llm.ggml.quantize import ggml_tensor_qtype
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.models.mistral import should_use_fuse_rope
+from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import use_decoding_fast_path
 from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
 from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
@@ -171,7 +171,7 @@ def mixtral_attention_forward(
     # for flash attention
     original_dtype = hidden_states.dtype
 
-    use_fuse_rope = should_use_fuse_rope(self, hidden_states, position_ids)
+    use_fuse_rope = should_use_fuse_rope(hidden_states, position_ids, self.training)
     enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value, self.layer_idx)
     decoding_fast_path = use_decoding_fast_path(self.q_proj,
                                                 use_fuse_rope,
