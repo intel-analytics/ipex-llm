@@ -27,7 +27,7 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
                                        npu_dpu_groups=None):
     xml_path = os.path.join(dir, model_name + ".xml")
     bin_path = os.path.join(dir, model_name + ".bin")
-    model.save(xml_path, False)
+    model.serialize(xml_path, bin_path)
     new_ir_path = os.path.join(dir, model_name + "_new.xml")
     new_bin_path = os.path.join(dir, model_name + "_new.bin")
     blob_path = os.path.join(dir, model_name + ".blob")
