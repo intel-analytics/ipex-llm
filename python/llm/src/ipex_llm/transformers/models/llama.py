@@ -142,11 +142,11 @@ def llama_attention_forward(
     if query_states.device.type == "xpu":
         import xe_addons
         if position_embeddings is None:
-            # transformers < 4.45
+            # transformers < 4.43
             xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
                                            query_states, key_states)
         else:
-            # transformers >= 4.45
+            # transformers >= 4.43
             cos, sin = position_embeddings
             make_cache_contiguous_inplaced(cos, sin)
             xe_addons.rotary_half_with_cache_inplaced(query_states, key_states, cos, sin)
