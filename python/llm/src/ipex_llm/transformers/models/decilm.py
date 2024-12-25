@@ -34,8 +34,8 @@
 import torch
 from typing import Optional, Tuple
 import torch.nn.functional as F
+from ipex_llm.transformers.models.utils import repeat_kv
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
-from ipex_llm.transformers.models.llama import repeat_kv
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import update_past_key_value
 from ipex_llm.utils.common import invalidInputError
