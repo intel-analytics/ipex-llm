@@ -45,7 +45,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import torch.utils.checkpoint
 from typing import Optional, Tuple, List
-from ipex_llm.transformers.models.llama import repeat_kv
+from ipex_llm.transformers.models.utils import repeat_kv
 from ipex_llm.transformers.models.utils import extend_kv_cache, append_kv_cache
 from transformers.models.cohere.modeling_cohere import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36

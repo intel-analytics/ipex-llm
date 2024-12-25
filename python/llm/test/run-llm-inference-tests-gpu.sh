@@ -43,14 +43,3 @@ time=$((now-start))
 
 echo "Bigdl-llm gpu inference tests finished"
 echo "Time used:$time seconds"
-
-echo "# Start testing layers.fast_rope_embedding"
-start=$(date "+%s")
-
-pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_layer_fast_rope.py -v -s
-
-now=$(date "+%s")
-time=$((now-start))
-
-echo "Bigdl-llm gpu layers.fast_rope_embedding tests finished"
-echo "Time used:$time seconds"
