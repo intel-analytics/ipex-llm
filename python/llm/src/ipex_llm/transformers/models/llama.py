@@ -139,6 +139,9 @@ def llama_attention_forward(
                                                         self.num_key_value_heads,
                                                         self.num_key_value_heads], dim=1)
 
+    kv_seq_len = key_states.shape[-2]
+    kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
+
     if query_states.device.type == "xpu":
         import xe_addons
         if position_embeddings is None:
@@ -152,7 +155,12 @@ def llama_attention_forward(
             xe_addons.rotary_half_with_cache_inplaced(query_states, key_states, cos, sin)
     else:
         if position_embeddings is None:
-            cos, sin = self.rotary_emb(value_states, position_ids)
+            if isinstance(getattr(self.rotary_emb, "cos_cached", None), torch.Tensor):
+                # transformers < 4.38
+                cos, sin = self.rotary_emb(value_states, kv_seq_len)
+            else:
+                # transformers >= 4.38
+                cos, sin = self.rotary_emb(value_states, position_ids)
         else:
             cos, sin = position_embeddings
         query_states, key_states = apply_rotary_pos_emb(query_states, key_states, cos, sin)
