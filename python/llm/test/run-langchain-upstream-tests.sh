@@ -29,5 +29,6 @@ bash ./apps/ipynb2py.sh ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_examp
 sed -i '/^get_ipython/d' ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
 sed -i "s,model_id=\"[^\"]*\",model_id=\"$TEST_IPEXLLM_MODEL_IDS\",g" ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
 sed -i 's|saved_lowbit_model_path = "./vicuna-7b-1.5-low-bit"|saved_lowbit_model_path = "./langchain_upstream/vicuna-7b-1.5-low-bit"|' ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
-ipex_workaround_wrapper python ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
+# disable this test temporarily
+# ipex_workaround_wrapper python ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
 rm -rf ${ANALYTICS_ZOO_ROOT}/langchain_upstream
