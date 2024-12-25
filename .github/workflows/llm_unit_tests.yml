@@ -212,39 +212,39 @@ jobs:
           fi
 
       - name: Run LLM cli test (Linux)
-        if: runner.os == 'Linux' 
+        if: runner.os == 'Linux'
         uses: ./.github/actions/llm/cli-test-linux
 
       - name: Setup Python Path
-        if: runner.os == 'Windows' 
+        if: runner.os == 'Windows'
         shell: bash
         run: |
           # Get Python interpreter path
           python_path=$(python -c 'import sys; print(sys.executable)')
           python_dir=$(dirname "$python_path")
           scripts_dir="$python_dir/Scripts"
-          
+
           # Set environment variables
           echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
           echo "SCRIPTS_DIR=$scripts_dir" >> $GITHUB_ENV
 
       - name: Run LLM cli test (Windows)
-        if: runner.os == 'Windows' 
+        if: runner.os == 'Windows'
         shell: powershell
         run: |
           # Retrieve environment variables
           $pythonDir = $env:PYTHON_DIR
           $scriptsDir = $env:SCRIPTS_DIR
-          
+
           # Update PATH
           $env:PATH = "$pythonDir;$scriptsDir;$env:PATH"
-          
+
           # Run tests
           llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x llama -m $env:LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
           llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x gptneox -m $env:GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
           llm-cli.ps1 -t $env:THREAD_NUM -n 256 -x bloom -m $env:BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
           # llm-cli.ps1 -t $env:THREAD_NUM -x starcoder -m $env:STARCODER_INT4_CKPT_PATH -p 'def check_odd('
-          
+
       - name: Run LLM inference test
         shell: bash
         run: |
@@ -399,7 +399,7 @@ jobs:
             echo "Directory $VICUNA_7B_1_3_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/vicuna-7b-v1.3 -P $ORIGIN_DIR
           fi
-          
+
       - name: Run LLM inference test
         shell: bash
         run: |
@@ -412,7 +412,7 @@ jobs:
             fi
           fi
           python -m pip install datasets librosa soundfile einops tiktoken transformers_stream_generator
-          
+
           bash python/llm/test/run-llm-inference-tests-gpu.sh
 
       - name: Run LLM example tests
@@ -430,7 +430,7 @@ jobs:
             fi
           fi
           bash python/llm/test/run-llm-example-tests-gpu.sh
-          
+
       - name: Get Langchain version
         shell: bash
         id: get_langchain_version
@@ -446,7 +446,7 @@ jobs:
           repository: "langchain-ai/langchain"
           ref: ${{ join(steps.get_langchain_version.outputs.*, '\n') }}
           path: langchain_upstream
-            
+
       - name: Run LLM langchain GPU test
         shell: bash
         run: |
@@ -462,10 +462,9 @@ jobs:
             fi
           fi
           bash python/llm/test/run-llm-langchain-tests-gpu.sh
-          
+
           pip install -U langchain
           pip install -U langchain-community
-          pip install --pre --upgrade bigdl-llm[all]
           bash python/llm/test/run-langchain-upstream-tests.sh
 
       - name: Run LLM llamaindex GPU test

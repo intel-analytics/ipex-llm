@@ -19,9 +19,7 @@ cp ${ANALYTICS_ZOO_ROOT}/langchain_upstream/libs/community/tests/integration_tes
 
 source ${ANALYTICS_ZOO_ROOT}/python/llm/test/run-llm-check-function.sh
 
-pytest_check_error python -m pytest -s ${ANALYTICS_ZOO_ROOT}/langchain_upstream/test_bigdl_llm.py
-# disable this test temporarily
-# pytest_check_error python -m pytest -s ${ANALYTICS_ZOO_ROOT}/langchain_upstream/test_ipex_llm.py
+pytest_check_error python -m pytest -s ${ANALYTICS_ZOO_ROOT}/langchain_upstream/test_ipex_llm.py
 
 echo ">>> Testing LangChain upstream ipynb"
 cp ${ANALYTICS_ZOO_ROOT}/langchain_upstream/docs/docs/integrations/llms/ipex_llm.ipynb ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.ipynb
@@ -29,6 +27,5 @@ bash ./apps/ipynb2py.sh ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_examp
 sed -i '/^get_ipython/d' ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
 sed -i "s,model_id=\"[^\"]*\",model_id=\"$TEST_IPEXLLM_MODEL_IDS\",g" ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
 sed -i 's|saved_lowbit_model_path = "./vicuna-7b-1.5-low-bit"|saved_lowbit_model_path = "./langchain_upstream/vicuna-7b-1.5-low-bit"|' ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
-# disable this test temporarily
-# ipex_workaround_wrapper python ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
+ipex_workaround_wrapper python ${ANALYTICS_ZOO_ROOT}/langchain_upstream/langchain_example.py
 rm -rf ${ANALYTICS_ZOO_ROOT}/langchain_upstream
