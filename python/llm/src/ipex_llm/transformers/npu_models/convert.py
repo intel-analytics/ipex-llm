@@ -496,6 +496,7 @@ def prepare_input_ids(
     }
     return model_inputs
 
+token = 0
 
 def causal_lm_forward(
     self,
@@ -516,12 +517,19 @@ def causal_lm_forward(
     else:
         input_list = input_ids[0]
     input_length = len(input_list)
+    global token
     if input_length > 1:
         logits = run_prefill_with_logits(self.model_ptr, input_list,
                                          self.logits_buffer, self.vocab_size)
+        filename = rf"D:\ruonan\debug log\python cpp\decode_logits_{token}.bin"
+        logits.numpy().tofile(filename)
+        token += 1
     else:
         logits = run_decode_with_logits(self.model_ptr, input_list[0],
                                         self.logits_buffer, self.vocab_size)
+        filename = rf"D:\ruonan\debug log\python cpp\decode_logits_{token}.bin"
+        logits.numpy().tofile(filename)
+        token += 1
 
     return CausalLMOutputWithPast(
         loss=None,

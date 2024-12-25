@@ -227,6 +227,7 @@ class LLMBaseNNFactory(NNFactory):
             head_dim=head_dim,
         )
         new_key_states = key_states
+        new_value_states = value_states
 
         if mode == "decode":
             key_states = self.concat(past_key, key_states, axis=-2)
