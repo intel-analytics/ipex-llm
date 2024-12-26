@@ -1785,9 +1785,6 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.CohereAttention,
                         cohere_attention_forward)
         convert_forward(model,
-                        module.CohereLayerNorm,
-                        rms_norm_forward)
-        convert_forward(model,
                         module.CohereMLP,
                         mlp_silu_forward)
     elif model.config.model_type == "aquila":
