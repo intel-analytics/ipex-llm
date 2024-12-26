@@ -265,6 +265,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 | GLM-4      | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/glm4)      | [link](python/llm/example/GPU/HuggingFace/LLM/glm4)       |
 | GLM-4V     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/glm-4v)    | [link](python/llm/example/GPU/HuggingFace/Multimodal/glm-4v)     |
 | GLM-Edge   |  | [link](python/llm/example/GPU/HuggingFace/LLM/glm-edge) | [Python link](python/llm/example/NPU/HF-Transformers-AutoModels/LLM) |
+| GLM-Edge-V   |  | [link](python/llm/example/GPU/HuggingFace/Multimodal/glm-edge-v) |
 | Mistral    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mistral)   | [link](python/llm/example/GPU/HuggingFace/LLM/mistral)    |
 | Mixtral    | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/mixtral)   | [link](python/llm/example/GPU/HuggingFace/LLM/mixtral)    |
 | Falcon     | [link](python/llm/example/CPU/HF-Transformers-AutoModels/Model/falcon)    | [link](python/llm/example/GPU/HuggingFace/LLM/falcon)     |
