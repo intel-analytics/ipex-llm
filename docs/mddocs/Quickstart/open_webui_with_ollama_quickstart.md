@@ -163,10 +163,16 @@ Go to **Settings -> Models** in the menu, choose a model under **Pull a model fr
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/open_webui_pull_models.png" width="100%" />
 </a>
 
+> [!NOTE]
+> On the latest version of Open WebUI, the relative settings have been moved to **Admin Settings -> Connections -> Manage Ollama API Connections -> Manage**.
+
 
 #### Chat with the Model
 
-Start new conversations with **New chat** in the left-side menu. 
+Start new conversations with **New chat** in the left-side menu.
+> [!NOTE]
+> You may disable the auto-completion feature by Open WebUI for an improved chat experience. Goto **Admin Settings -> Interface -> Autocomplete Generation** and disable it.
+
 
 On the right-side, choose a downloaded model from the **Select a model** drop-down menu at the top, input your questions into the **Send a Message** textbox at the bottom, and click the button on the right to get responses.
 
