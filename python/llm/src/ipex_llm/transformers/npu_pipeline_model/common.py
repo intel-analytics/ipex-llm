@@ -29,7 +29,6 @@ def update_names_of_IR_and_export_blob(model, model_name, dir, compile_blob=True
     xml_path = os.path.join(dir, model_name + ".xml")
     bin_path = os.path.join(dir, model_name + ".bin")
     model.serialize(xml_path, bin_path)
-    # model.save(xml_path)
     new_ir_path = os.path.join(dir, model_name + "_new.xml")
     new_bin_path = os.path.join(dir, model_name + "_new.bin")
     blob_path = os.path.join(dir, model_name + ".blob")
@@ -178,9 +177,9 @@ def obtain_weight_from_single_layer(attn_layer, mlp_layer):
     weights = []
     if hasattr(attn_layer, "q_proj_dq_list"):
         for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                            attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                            mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                            mlp_layer.down_proj_dq_list]:
+                           attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                           mlp_layer.down_proj_dq_list]:
             l_weights = []
             scales = []
             zeros = []
@@ -197,9 +196,9 @@ def obtain_weight_from_single_layer(attn_layer, mlp_layer):
                                 torch.stack(scales, axis=0)))
     else:
         for layer in [attn_layer.q_proj, attn_layer.k_proj,
-                        attn_layer.v_proj, attn_layer.o_proj,
-                        mlp_layer.gate_proj, mlp_layer.up_proj,
-                        mlp_layer.down_proj]:
+                      attn_layer.v_proj, attn_layer.o_proj,
+                      mlp_layer.gate_proj, mlp_layer.up_proj,
+                      mlp_layer.down_proj]:
             if layer.zero is not None:
                 weights.append((layer.weight, layer.scale, layer.zero))
             else:

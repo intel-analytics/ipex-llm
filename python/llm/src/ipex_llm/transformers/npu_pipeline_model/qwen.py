@@ -134,7 +134,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     attn_layer = curr_layer.self_attn
     mlp_layer = curr_layer.mlp
     weights = obtain_weight_from_single_layer(attn_layer, mlp_layer)
-    q_bias, k_bias, v_bias = obtain_qkv_bias_from_single_layer
+    q_bias, k_bias, v_bias = obtain_qkv_bias_from_single_layer(attn_layer)
     cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
     cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
     layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
@@ -256,7 +256,7 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             layer_weights.extend(weights)
             input_layer_norm_weights.append(layer_norm_0)
             post_attn_layernorm_weights.append(layer_norm_1)
-            q_bias, k_bias, v_bias = obtain_qkv_bias_from_single_layer
+            q_bias, k_bias, v_bias = obtain_qkv_bias_from_single_layer(attn_layer)
             q_biases.append(q_bias)
             k_biases.append(k_bias)
             v_biases.append(v_bias)
