@@ -113,7 +113,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the GLM-4 model (e.g. `THUDM/glm-4-9b-chat`) to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/glm-4-9b-chat'` for **Hugging Face** or `'ZhipuAI/glm-4-9b-chat'` for **ModelScope**.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** (e.g. `THUDM/glm-4-9b-chat`) or **ModelScope** (e.g. `ZhipuAI/glm-4-9b-chat`) repo id for the GLM-4 model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/glm-4-9b-chat'` for **Hugging Face** or `'ZhipuAI/glm-4-9b-chat'` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'AI是什么？'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 - `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.

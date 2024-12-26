@@ -119,7 +119,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** or **ModelScope** repo id for the CodeGeeX2 model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/codegeex2-6b'` for **Hugging Face** or `'ZhipuAI/codegeex-6b'` for **ModelScope**.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** (e.g. `THUDM/codegeex2-6b`) or **ModelScope** (e.g. `ZhipuAI/codegeex-6b`) repo id for the CodeGeeX2 model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/codegeex2-6b'` for **Hugging Face** or `'ZhipuAI/codegeex-6b'` for **ModelScope**.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'# language: Python\n# write a bubble sort function\n'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `128`.
 - `--modelscope`: using **ModelScope** as model hub instead of **Hugging Face**.
