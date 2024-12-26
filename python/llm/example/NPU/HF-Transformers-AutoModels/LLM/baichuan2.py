@@ -96,10 +96,10 @@ if __name__ == "__main__":
         print("finish to load")
         for i in range(5):
             messages = [{"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": args.prompt}]
+                        {"role": "user", "content": args.prompt}]
             text = tokenizer.apply_chat_template(messages,
-                                                tokenize=False,
-                                                add_generation_prompt=True)
+                                                 tokenize=False,
+                                                 add_generation_prompt=True)
             _input_ids = tokenizer([text], return_tensors="pt").input_ids
             print("-" * 20, "Input", "-" * 20)
             print("input length:", len(_input_ids[0]))
