@@ -435,8 +435,6 @@ def convert_fused_minicpm_layer(model, fused_layers, n_splits_linear, n_splits_d
         input_layer_norm_weights = []
         post_attn_layernorm_weights = []
         layer_indexs = range(layer_start, layer_end)
-        n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
-        n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
         for layer_idx in layer_indexs:
             curr_layer = model.model.layers[layer_idx]
             attn_layer = curr_layer.self_attn
