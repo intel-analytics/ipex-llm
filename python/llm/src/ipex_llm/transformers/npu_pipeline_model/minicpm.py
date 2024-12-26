@@ -458,7 +458,8 @@ def convert_fused_minicpm_layer(model, fused_layers, n_splits_linear, n_splits_d
                         weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
                                         torch.stack(zeros, axis=0)))
                     else:
-                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+                        weights.append((torch.stack(l_weights, axis=0),
+                                        torch.stack(scales, axis=0)))
             else:
                 for layer in [attn_layer.q_proj, attn_layer.k_proj,
                               attn_layer.v_proj, attn_layer.o_proj,

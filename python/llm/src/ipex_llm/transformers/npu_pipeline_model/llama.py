@@ -433,12 +433,13 @@ def convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_dow
                         weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
                                         torch.stack(zeros, axis=0)))
                     else:
-                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+                        weights.append((torch.stack(l_weights, axis=0),
+                                        torch.stack(scales, axis=0)))
             else:
                 for layer in [attn_layer.q_proj, attn_layer.k_proj,
-                            attn_layer.v_proj, attn_layer.o_proj,
-                            mlp_layer.gate_proj, mlp_layer.up_proj,
-                            mlp_layer.down_proj]:
+                              attn_layer.v_proj, attn_layer.o_proj,
+                              mlp_layer.gate_proj, mlp_layer.up_proj,
+                              mlp_layer.down_proj]:
                     if layer.zero is not None:
                         weights.append((layer.weight, layer.scale, layer.zero))
                     else:
