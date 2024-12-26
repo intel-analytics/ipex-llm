@@ -18,7 +18,8 @@
 import torch
 import numpy as np
 import os
-from .common import update_names_of_IR_and_export_blob, LLMEmbedding, LowBitLLMLMHead
+from .common import update_names_of_IR_and_export_blob, LLMEmbedding, LowBitLLMLMHead, \
+    obtain_weight_from_single_layer, obtain_qkv_bias_from_single_layer
 from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 
 
@@ -132,29 +133,8 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     curr_layer = model.model.layers[layer_idx]
     attn_layer = curr_layer.self_attn
     mlp_layer = curr_layer.mlp
-
-    weights = []
-    for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                       attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                       mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                       mlp_layer.down_proj_dq_list]:
-        l_weights = []
-        scales = []
-        zeros = []
-        for l in layer_list:
-            l_weights.append(l.weight)
-            scales.append(l.scale)
-            if l.zero is not None:
-                zeros.append(l.zero)
-        if len(zeros):
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                            torch.stack(zeros, axis=0)))
-        else:
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
-    q_bias = attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16)
-    k_bias = attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16)
-    v_bias = attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16)
+    weights = obtain_weight_from_single_layer(attn_layer, mlp_layer)
+    q_bias, k_bias, v_bias = obtain_qkv_bias_from_single_layer(attn_layer)
     cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
     cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
     layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
@@ -263,32 +243,11 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
         k_biases = []
         v_biases = []
         layer_indexs = range(layer_start, layer_end)
-        n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
-        n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
         for layer_idx in layer_indexs:
             curr_layer = model.model.layers[layer_idx]
             attn_layer = curr_layer.self_attn
             mlp_layer = curr_layer.mlp
-
-            weights = []
-            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                               mlp_layer.down_proj_dq_list]:
-                l_weights = []
-                scales = []
-                zeros = []
-                for l in layer_list:
-                    l_weights.append(l.weight)
-                    scales.append(l.scale)
-                    if l.zero is not None:
-                        zeros.append(l.zero)
-                if len(zeros):
-                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                                    torch.stack(zeros, axis=0)))
-                else:
-                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
-
+            weights = obtain_weight_from_single_layer(attn_layer, mlp_layer)
             cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
             cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
             layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
@@ -297,9 +256,10 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             layer_weights.extend(weights)
             input_layer_norm_weights.append(layer_norm_0)
             post_attn_layernorm_weights.append(layer_norm_1)
-            q_biases.append(attn_layer.q_proj_dq_list.q_proj_dq_0.bias.to(torch.float16))
-            k_biases.append(attn_layer.k_proj_dq_list.k_proj_dq_0.bias.to(torch.float16))
-            v_biases.append(attn_layer.v_proj_dq_list.v_proj_dq_0.bias.to(torch.float16))
+            q_bias, k_bias, v_bias = obtain_qkv_bias_from_single_layer(attn_layer)
+            q_biases.append(q_bias)
+            k_biases.append(k_bias)
+            v_biases.append(v_bias)
 
             # save weight
             input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
