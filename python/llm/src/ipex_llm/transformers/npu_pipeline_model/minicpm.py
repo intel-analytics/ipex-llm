@@ -311,23 +311,33 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     mlp_layer = curr_layer.mlp
 
     weights = []
-    for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                       attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                       mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                       mlp_layer.down_proj_dq_list]:
-        l_weights = []
-        scales = []
-        zeros = []
-        for l in layer_list:
-            l_weights.append(l.weight)
-            scales.append(l.scale)
-            if l.zero is not None:
-                zeros.append(l.zero)
-        if len(zeros):
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                            torch.stack(zeros, axis=0)))
-        else:
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+    if hasattr(attn_layer, "q_proj_dq_list"):
+        for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                           attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                           mlp_layer.down_proj_dq_list]:
+            l_weights = []
+            scales = []
+            zeros = []
+            for l in layer_list:
+                l_weights.append(l.weight)
+                scales.append(l.scale)
+                if l.zero is not None:
+                    zeros.append(l.zero)
+            if len(zeros):
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
+                                torch.stack(zeros, axis=0)))
+            else:
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+    else:
+        for layer in [attn_layer.q_proj, attn_layer.k_proj,
+                      attn_layer.v_proj, attn_layer.o_proj,
+                      mlp_layer.gate_proj, mlp_layer.up_proj,
+                      mlp_layer.down_proj]:
+            if layer.zero is not None:
+                weights.append((layer.weight, layer.scale, layer.zero))
+            else:
+                weights.append((layer.weight, layer.scale))
 
     cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
     cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
@@ -433,23 +443,33 @@ def convert_fused_minicpm_layer(model, fused_layers, n_splits_linear, n_splits_d
             mlp_layer = curr_layer.mlp
 
             weights = []
-            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                               mlp_layer.down_proj_dq_list]:
-                l_weights = []
-                scales = []
-                zeros = []
-                for l in layer_list:
-                    l_weights.append(l.weight)
-                    scales.append(l.scale)
-                    if l.zero is not None:
-                        zeros.append(l.zero)
-                if len(zeros):
-                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                                    torch.stack(zeros, axis=0)))
-                else:
-                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+            if hasattr(attn_layer, "q_proj_dq_list"):
+                for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                                   attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                                   mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                                   mlp_layer.down_proj_dq_list]:
+                    l_weights = []
+                    scales = []
+                    zeros = []
+                    for l in layer_list:
+                        l_weights.append(l.weight)
+                        scales.append(l.scale)
+                        if l.zero is not None:
+                            zeros.append(l.zero)
+                    if len(zeros):
+                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
+                                        torch.stack(zeros, axis=0)))
+                    else:
+                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+            else:
+                for layer in [attn_layer.q_proj, attn_layer.k_proj,
+                              attn_layer.v_proj, attn_layer.o_proj,
+                              mlp_layer.gate_proj, mlp_layer.up_proj,
+                              mlp_layer.down_proj]:
+                    if layer.zero is not None:
+                        weights.append((layer.weight, layer.scale, layer.zero))
+                    else:
+                        weights.append((layer.weight, layer.scale))
 
             cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
             cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)

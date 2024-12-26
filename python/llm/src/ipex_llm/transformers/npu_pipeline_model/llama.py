@@ -263,23 +263,33 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     mlp_layer = curr_layer.mlp
 
     weights = []
-    for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                       attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                       mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                       mlp_layer.down_proj_dq_list]:
-        l_weights = []
-        scales = []
-        zeros = []
-        for l in layer_list:
-            l_weights.append(l.weight)
-            scales.append(l.scale)
-            if l.zero is not None:
-                zeros.append(l.zero)
-        if len(zeros):
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                            torch.stack(zeros, axis=0)))
-        else:
-            weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+    if hasattr(attn_layer, "q_proj_dq_list"):
+        for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                           attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                           mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                           mlp_layer.down_proj_dq_list]:
+            l_weights = []
+            scales = []
+            zeros = []
+            for l in layer_list:
+                l_weights.append(l.weight)
+                scales.append(l.scale)
+                if l.zero is not None:
+                    zeros.append(l.zero)
+            if len(zeros):
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
+                                torch.stack(zeros, axis=0)))
+            else:
+                weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+    else:
+        for layer in [attn_layer.q_proj, attn_layer.k_proj,
+                      attn_layer.v_proj, attn_layer.o_proj,
+                      mlp_layer.gate_proj, mlp_layer.up_proj,
+                      mlp_layer.down_proj]:
+            if layer.zero is not None:
+                weights.append((layer.weight, layer.scale, layer.zero))
+            else:
+                weights.append((layer.weight, layer.scale))
 
     if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
         # llama-2-7B & llama-3-8B
@@ -400,31 +410,46 @@ def convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_dow
         input_layer_norm_weights = []
         post_attn_layernorm_weights = []
         layer_indexs = range(layer_start, layer_end)
-        n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
-        n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
+        if hasattr(model.model.layers[0].mlp, "gate_proj_dq_list"):
+            n_splits_linear = len(model.model.layers[0].mlp.gate_proj_dq_list)
+            n_splits_down_proj = len(model.model.layers[0].mlp.down_proj_dq_list)
+        else:
+            # TODO: may need update
+            n_splits_linear = 1
+            n_splits_down_proj = 1
         for layer_idx in layer_indexs:
             curr_layer = model.model.layers[layer_idx]
             attn_layer = curr_layer.self_attn
             mlp_layer = curr_layer.mlp
 
             weights = []
-            for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
-                               attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
-                               mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
-                               mlp_layer.down_proj_dq_list]:
-                l_weights = []
-                scales = []
-                zeros = []
-                for l in layer_list:
-                    l_weights.append(l.weight)
-                    scales.append(l.scale)
-                    if l.zero is not None:
-                        zeros.append(l.zero)
-                if len(zeros):
-                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
-                                    torch.stack(zeros, axis=0)))
-                else:
-                    weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+            if hasattr(attn_layer, "q_proj_dq_list"):
+                for layer_list in [attn_layer.q_proj_dq_list, attn_layer.k_proj_dq_list,
+                                   attn_layer.v_proj_dq_list, attn_layer.o_proj_dq_list,
+                                   mlp_layer.gate_proj_dq_list, mlp_layer.up_proj_dq_list,
+                                   mlp_layer.down_proj_dq_list]:
+                    l_weights = []
+                    scales = []
+                    zeros = []
+                    for l in layer_list:
+                        l_weights.append(l.weight)
+                        scales.append(l.scale)
+                        if l.zero is not None:
+                            zeros.append(l.zero)
+                    if len(zeros):
+                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0),
+                                        torch.stack(zeros, axis=0)))
+                    else:
+                        weights.append((torch.stack(l_weights, axis=0), torch.stack(scales, axis=0)))
+            else:
+                for layer in [attn_layer.q_proj, attn_layer.k_proj,
+                            attn_layer.v_proj, attn_layer.o_proj,
+                            mlp_layer.gate_proj, mlp_layer.up_proj,
+                            mlp_layer.down_proj]:
+                    if layer.zero is not None:
+                        weights.append((layer.weight, layer.scale, layer.zero))
+                    else:
+                        weights.append((layer.weight, layer.scale))
 
             if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
                 # llama-2-7B & llama-3-8B
