@@ -60,7 +60,6 @@ if __name__ == "__main__":
     t0 = time.perf_counter()
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
-                                                 pipeline=True,
                                                  load_in_low_bit=args.low_bit,
                                                  max_context_len=args.max_context_len,
                                                  max_prompt_len=args.max_prompt_len,
@@ -69,7 +68,6 @@ if __name__ == "__main__":
                                                  attn_implementation="eager",
                                                  transpose_value_cache=not args.disable_transpose_value_cache,
                                                  trust_remote_code=True,
-                                                 convert_model=True,
                                                  save_directory=save_dir)
     t1 = time.perf_counter()
 
