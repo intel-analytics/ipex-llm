@@ -75,10 +75,10 @@ if __name__ == '__main__':
 
     image_processor = AutoImageProcessor.from_pretrained(model_path, trust_remote_code=True)
 
-    pixel_values = image_processor(images=[image], return_tensors='pt').pixel_values
-    pixel_values = pixel_values.to('xpu')
-
     with torch.inference_mode():
+        pixel_values = image_processor(images=[image], return_tensors='pt').pixel_values
+        pixel_values = pixel_values.to('xpu')
+
         # The following code for generation is adapted from https://huggingface.co/THUDM/glm-edge-v-5b#inference
         messages = [{
             "role": "user", 
@@ -88,18 +88,19 @@ if __name__ == '__main__':
         }]
 
         inputs = tokenizer.apply_chat_template(
-                                messages, 
-                                add_generation_prompt=True, 
-                                return_dict=True, 
-                                tokenize=True, 
-                                return_tensors="pt")
+            messages, 
+            add_generation_prompt=True, 
+            return_dict=True, 
+            tokenize=True, 
+            return_tensors="pt"
+        )
         inputs = inputs.to('xpu')
         
         generate_kwargs = {
-                            **inputs,
-                            "pixel_values": torch.tensor(pixel_values).to('xpu'),
-                            "max_new_tokens": args.n_predict,
-                        }
+            **inputs,
+            "pixel_values": pixel_values,
+            "max_new_tokens": args.n_predict,
+        }
         
         # ipex_llm model needs a warmup, then inference time can be accurate
         output = model.generate(**generate_kwargs)
@@ -110,9 +111,9 @@ if __name__ == '__main__':
         end = time.time()
 
         output_str = tokenizer.decode(
-                output[0][len(inputs["input_ids"][0]):], 
-                skip_special_tokens=True
-            )
+            output[0][len(inputs["input_ids"][0]):], 
+            skip_special_tokens=True
+        )
         
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)

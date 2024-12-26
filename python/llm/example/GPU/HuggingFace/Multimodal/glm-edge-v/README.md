@@ -116,7 +116,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** (e.g. `THUDM/glm-edge-v-5b` and `THUDM/glm-edge-v-2b`) or **ModelScope** (e.g. `ZhipuAI/glm-edge-v-5b` and `ZhipuAI/glm-edge-v-2b`) repo id for the GLM-Edge-V model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/glm-edge-v-5b'` for **Hugging Face** or `'ZhipuAI/glm-edge-v-5b'` for **ModelScope**.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the **Hugging Face** (e.g. `THUDM/glm-edge-v-5b` or `THUDM/glm-edge-v-2b`) or **ModelScope** (e.g. `ZhipuAI/glm-edge-v-5b` or `ZhipuAI/glm-edge-v-2b`) repo id for the GLM-Edge-V model to be downloaded, or the path to the checkpoint folder. It is default to be `'THUDM/glm-edge-v-5b'` for **Hugging Face** or `'ZhipuAI/glm-edge-v-5b'` for **ModelScope**.
 - `--image-url-or-path IMAGE_URL_OR_PATH`: argument defining the image to be infered. It is default to be `'http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is in the image?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
@@ -128,12 +128,28 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
+图片里有什么？
+-------------------- Output --------------------
+这张图片中，一个穿着粉色和白色条纹衣服的小女孩举着一只穿着粉色裙子的白色小熊玩偶。背景是砖墙
+```
+
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
 What is in the image?
 -------------------- Output --------------------
 A white teddy bear with pink accents is being held up by a person wearing a pink and white striped shirt. The bear is dressed in a
 ```
 
 #### [THUDM/glm-edge-v-5b](https://huggingface.co/THUDM/glm-edge-v-5b)
+
+```log
+Inference time: xxxx s
+-------------------- Prompt --------------------
+图片里有什么？
+-------------------- Output --------------------
+这张图片展示了一个穿着红白条纹衣服的小女孩，她正在展示她手中的一个粉红色的白熊玩偶。背景是砖墙和一丛
+```
 
 ```log
 Inference time: xxxx s
