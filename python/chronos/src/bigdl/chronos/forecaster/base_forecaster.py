@@ -310,6 +310,8 @@ class BasePytorchForecaster(Forecaster):
                in multi-objective search.
         :return: Validation loss if 'validation_data' is not None.
         """
+        # auto adjust batch_size
+        batch_size = max(batch_size // self.num_processes, 1)
         # input transform
         if isinstance(data, TSDataset):
             data = tsdataset_to_dataloader(data, batch_size=batch_size,
