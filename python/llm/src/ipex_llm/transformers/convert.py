@@ -1078,7 +1078,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None,
                          cpu_embedding=False,
-                         lightweight_bmm=False, torch_dtype="auto",
+                         torch_dtype="auto",
                          imatrix_data=None,
                          embedding_qtype=None,
                          mixed_precision=False):
@@ -1146,7 +1146,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
             pass
 
     if optimize_model:
-        model = _optimize_post(model, lightweight_bmm)
+        model = _optimize_post(model)
 
     if hasattr(model, "config") and hasattr(model.config, "model_type") and \
             model.config.model_type == "qwen" and hasattr(model.config, "visual"):
@@ -1247,7 +1247,7 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
     return _ipex_jit(model)
 
 
-def _optimize_post(model, lightweight_bmm=False):
+def _optimize_post(model):
     try:
         from diffusers import DiffusionPipeline, StableDiffusionXLPipeline
         if isinstance(model, DiffusionPipeline):
@@ -1627,7 +1627,7 @@ def _optimize_post(model, lightweight_bmm=False):
             vision_embedding._get_pos_embed = MethodType(_get_pos_embed, vision_embedding)
             vision_module = importlib.import_module(vision_model.__class__.__module__)
             convert_forward(vision_model, vision_module.InternAttention, intern_attention_forward)
-        _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
+        _optimize_post(model.language_model)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
@@ -1731,7 +1731,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.Qwen2MoeSdpaAttention,
                         qwen2_attention_forward)
     elif model.config.model_type == "qwen2_audio":
-        _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
+        _optimize_post(model.language_model)
     elif model.config.model_type == "qwen2_vl":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1875,20 +1875,6 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model, module.YiRMSNorm, rms_norm_forward)
-    elif model.config.model_type == "whisper" and lightweight_bmm:
-        if platform.system().lower() == 'windows':
-            from ipex_llm.transformers.bmm import SafeBMM
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            old_fwd = module.WhisperAttention.forward
-
-            def safe_bmm_fwd(*args, **kwargs):
-                with SafeBMM():
-                    return old_fwd(*args, **kwargs)
-
-            convert_forward(model,
-                            module.WhisperAttention,
-                            safe_bmm_fwd)
     elif model.config.model_type == "rwkv":
         # rwkv v4
         modeling_module_name = model.__class__.__module__
@@ -2081,7 +2067,7 @@ def _optimize_post(model, lightweight_bmm=False):
         elif model.config.hidden_size == 1536 and model.config.vocab_size == 73464:
             # MiniCPM-V ?
             model.llm.config.model_type = "minicpm"
-        _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+        _optimize_post(model.llm)
         model.llm.config.model_type = "minicpmv"
 
         vpm_modeling_module_name = model.vpm.__class__.__module__
@@ -2135,7 +2121,7 @@ def _optimize_post(model, lightweight_bmm=False):
         # llm
         model.llm.config.model_type = "llama"
         model.llm.config.rope_scaling = {"rope_type": "default"}
-        _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+        _optimize_post(model.llm)
         model.llm.config.model_type = "megrezo"
 
     return model

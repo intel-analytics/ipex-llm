@@ -116,7 +116,6 @@ class _BaseAutoModelClass:
 
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
-        ignore_argument(kwargs, "lightweight_bmm")
         ignore_argument(kwargs, "load_in_4bit")
         ignore_argument(kwargs, "load_in_8bit")
         ignore_argument(kwargs, "imatrix")
@@ -365,7 +364,6 @@ class _BaseAutoModelClass:
     def load_low_bit(cls, pretrained_model_name_or_path: str, *model_args, **kwargs):
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
-        ignore_argument(kwargs, "lightweight_bmm")
         ignore_argument(kwargs, "cpu_embedding")
         ignore_argument(kwargs, "embedding_qtype")
         ignore_argument(kwargs, "speculative")

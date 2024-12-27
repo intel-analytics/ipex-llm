@@ -29,8 +29,6 @@ Three new arguments are added to extend Hugging Face’s from_pretrained method 
 
   - **cpu_embedding**: Whether to replace the Embedding layer, may need to set it to `True` when running IPEX-LLM on GPU. Default to be `False`.
 
-  - **lightweight_bmm**: Whether to replace the torch.bmm ops, may need to set it to `True` when running IPEX-LLM on GPU on Windows. Default to be `False`.
-
   - **imatrix**: `str` value, represent filename of importance matrix pretrained on specific datasets for use with the improved quantization methods recently added to llama.cpp.
 
   - **model_hub**: `str` value, options are `'huggingface'` and `'modelscope'`, specify the model hub. Default to be `'huggingface'`.
@@ -48,7 +46,7 @@ Three new arguments are added to extend Hugging Face’s from_pretrained method 
 Load gguf model and tokenizer and convert it to bigdl-llm model and huggingface tokenzier
 
 - **Parameters**:
-  
+
   - **fpath**: Path to gguf model file
 
   - **optimize_model**: Whether to further optimize llm model, defaults to `True`
@@ -64,7 +62,7 @@ Load gguf model and tokenizer and convert it to bigdl-llm model and huggingface 
 Load a low bit optimized model (including INT4, INT5 and INT8) from a saved ckpt.
 
 - **Parameters**:
-  
+
   - **pretrained_model_name_or_path**: `str` value, Path to load the optimized model ckpt.
 
   - **optimize_model**: `boolean` value, Whether to further optimize the low_bit llm model.
