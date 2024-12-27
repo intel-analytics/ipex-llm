@@ -68,6 +68,7 @@ def llama_model_forward(
 ) -> Union[Tuple, BaseModelOutputWithPast]:
     # IPEX-LLM OPT start: kv cache and quantize kv cache
     inputs = input_ids if input_ids is not None else inputs_embeds
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
     use_cache = True if inputs.device.type == "xpu" else use_cache
     use_quantize_kv = use_quantize_kv_cache(
         self.layers[0].mlp.down_proj, inputs,
