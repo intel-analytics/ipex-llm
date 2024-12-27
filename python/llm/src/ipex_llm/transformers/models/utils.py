@@ -337,8 +337,7 @@ def use_decoding_fast_path(proj,
         return False
     if bs != 1:
         return False
-    if proj.enable_xetla:
-        return False
+
     if device in ["uhd"]:
         return False
     return True
