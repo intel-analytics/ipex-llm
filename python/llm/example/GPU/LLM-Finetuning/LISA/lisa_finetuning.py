@@ -92,8 +92,7 @@ def train(
         load_in_low_bit="bf16",
         optimize_model=True,
         torch_dtype=torch.bfloat16,
-        trust_remote_code=True,
-        enable_xetla=False
+        trust_remote_code=True
     )
 
     model = model.to("xpu")
@@ -156,7 +155,7 @@ def train(
         callbacks=trainer_callbacks
     )
     model.config.use_cache = False
-    
+
     trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
     # model.save_pretrained(output_dir)

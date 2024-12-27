@@ -448,7 +448,6 @@ class _BaseAutoModelClass:
         mixed_precision = kwargs.pop("mixed_precision", False)
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
-        enable_xetla = kwargs.pop("enable_xetla", False)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -518,7 +517,6 @@ class _BaseAutoModelClass:
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
                                      imatrix_data=imatrix_data,
                                      embedding_qtype=embedding_qtype,
-                                     enable_xetla=enable_xetla,
                                      mixed_precision=mixed_precision)
 
         if disk_embedding:

@@ -612,7 +612,7 @@ def qwen2_mlp_forward(
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
     qtype = getattr(self.gate_proj, "qtype", None)
-    if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
+    if mlp_fusion_check(x_2d, qtype, self.training):
         import xe_linear
         return self.down_proj(xe_linear.mlp_forward_xpu(
             x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
