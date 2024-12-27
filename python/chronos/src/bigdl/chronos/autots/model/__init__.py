@@ -17,7 +17,7 @@
 import bigdl.orca.automl.hp as hp
 
 
-AUTO_MODEL_SUPPORT_LIST = ["lstm", "tcn", "seq2seq"]
+AUTO_MODEL_SUPPORT_LIST = ["lstm", "tcn", "seq2seq", "nbeats"]
 
 AUTO_MODEL_DEFAULT_SEARCH_SPACE = {
     "lstm": {"minimal": {"hidden_dim": hp.grid_search([16, 32]),
@@ -63,7 +63,34 @@ AUTO_MODEL_DEFAULT_SEARCH_SPACE = {
                           "lstm_hidden_dim": hp.grid_search([16, 32, 64, 128]),
                           "lstm_layer_num": hp.grid_search([1, 2, 4]),
                           "dropout": hp.uniform(0, 0.3),
-                          "teacher_forcing": hp.grid_search([True, False])}}
+                          "teacher_forcing": hp.grid_search([True, False])}},
+    "nbeats": {"minimal": {"lr": hp.loguniform(0.001, 0.005),
+                           "dropout": hp.uniform(0, 0.3),
+                           "stack_types": hp.grid_search([("generic", "generic"),
+                                                          ("generic", "seasonality")]),
+                           "nb_blocks_per_stack": hp.grid_search([3, 6]),
+                           "thetas_dim": (4, 8),
+                           "share_weights_in_stack": False,
+                           "hidden_layer_units": hp.grid_search([64, 128]),
+                           "nb_harmonics": None},
+               "normal": {"lr": hp.loguniform(0.001, 0.005),
+                          "dropout": hp.uniform(0, 0.3),
+                          "stack_types": hp.grid_search([("generic", "generic"),
+                                                         ("generic", "seasonality")]),
+                          "nb_blocks_per_stack": hp.grid_search([3, 6]),
+                          "thetas_dim": (4, 8),
+                          "share_weights_in_stack": hp.grid_search([False, True]),
+                          "hidden_layer_units": hp.grid_search([64, 128, 256]),
+                          "nb_harmonics": None},
+               "large": {"lr": hp.loguniform(0.001, 0.005),
+                         "dropout": hp.uniform(0, 0.3),
+                         "stack_types": hp.grid_search([("generic", "generic"),
+                                                        ("generic", "seasonality")]),
+                         "nb_blocks_per_stack": hp.grid_search([3, 6, 9]),
+                         "thetas_dim": (4, 8),
+                         "share_weights_in_stack": hp.grid_search([False, True]),
+                         "hidden_layer_units": hp.grid_search([64, 128, 256, 512]),
+                         "nb_harmonics": None}}
 }
 
 
@@ -84,6 +111,12 @@ class AutoModelFactory:
         if name == "seq2seq":
             from .auto_seq2seq import AutoSeq2Seq
             return AutoSeq2Seq(**search_space)
+        if name == "nbeats":
+            from .auto_nbeats import AutoNBeats
+            nbeats_search_space = search_space.copy()
+            del (nbeats_search_space['input_feature_num'],
+                 nbeats_search_space['output_target_num'])  # nbeat only support single input.
+            return AutoNBeats(**nbeats_search_space)
         return NotImplementedError(f"{AUTO_MODEL_SUPPORT_LIST} are supported for auto model,\
                                     but get {name}.")
 

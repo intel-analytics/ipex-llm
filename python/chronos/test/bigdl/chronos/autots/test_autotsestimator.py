@@ -27,29 +27,39 @@ from bigdl.orca.automl import hp
 import pandas as pd
 
 
-def get_ts_df():
+def get_ts_df(mode):
     sample_num = np.random.randint(100, 200)
-    train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
-                             "value 1": np.random.randn(sample_num),
-                             "value 2": np.random.randn(sample_num),
-                             "id": np.array(['00'] * sample_num),
-                             "extra feature 1": np.random.randn(sample_num),
-                             "extra feature 2": np.random.randn(sample_num)})
+    if mode == 'multi':
+        train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
+                                 "value 1": np.random.randn(sample_num),
+                                 "value 2": np.random.randn(sample_num),
+                                 "id": np.array(['00'] * sample_num),
+                                 "extra feature 1": np.random.randn(sample_num),
+                                 "extra feature 2": np.random.randn(sample_num)})
+    else:
+        train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
+                                 "value 1": np.random.randn(sample_num),
+                                 "id": np.array(['00'] * sample_num)})
     return train_df
 
 
-def get_tsdataset():
-    df = get_ts_df()
+def get_tsdataset(mode='multi'):
+    df = get_ts_df(mode)
+    if mode == 'multi':
+        return TSDataset.from_pandas(df,
+                                     dt_col="datetime",
+                                     target_col=["value 1", "value 2"],
+                                     extra_feature_col=["extra feature 1", "extra feature 2"],
+                                     id_col="id")
     return TSDataset.from_pandas(df,
                                  dt_col="datetime",
-                                 target_col=["value 1", "value 2"],
-                                 extra_feature_col=["extra feature 1", "extra feature 2"],
-                                 id_col="id")
+                                 target_col=["value 1"],
+                                 id_col='id')
 
 
-def get_data_creator():
+def get_data_creator(mode='multi'):
     def data_creator(config):
-        tsdata = get_tsdataset()
+        tsdata = get_tsdataset(mode)
         x, y = tsdata.roll(lookback=7, horizon=1).to_numpy()
         return DataLoader(TensorDataset(torch.from_numpy(x).float(),
                                         torch.from_numpy(y).float()),
@@ -391,6 +401,95 @@ class TestAutoTrainer(TestCase):
 
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
+
+    def test_fit_nbeats_feature(self):
+        from sklearn.preprocessing import StandardScaler
+        scaler = StandardScaler()
+        tsdata_train = get_tsdataset(mode='single').scale(scaler, fit=True)
+        tsdata_valid = get_tsdataset(mode='single').scale(scaler, fit=False)
+
+        auto_estimator = AutoTSEstimator(model='nbeats',
+                                         search_space="minimal",
+                                         past_seq_len='auto',
+                                         future_seq_len=1,
+                                         selected_features="auto",
+                                         metric="mse",
+                                         optimizer="Adam",
+                                         loss=torch.nn.MSELoss(),
+                                         logs_dir="/tmp/auto_trainer",
+                                         cpus_per_trial=2,
+                                         name="auto_trainer")
+
+        ts_pipeline = auto_estimator.fit(data=tsdata_train,
+                                         epochs=1,
+                                         batch_size=hp.choice([32, 64]),
+                                         validation_data=tsdata_valid,
+                                         n_sampling=1)
+
+        best_config = auto_estimator.get_best_config()
+        best_model = auto_estimator._get_best_automl_model()
+
+        assert isinstance(ts_pipeline, TSPipeline)
+
+        # use raw base model to predic and evaluate
+        tsdata_valid.roll(lookback=best_config["past_seq_len"],
+                          horizon=0)
+        x_valid, y_valid = tsdata_valid.to_numpy()
+        y_pred_raw = best_model.predict(x_valid)
+        y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
+
+        # use tspipeline to predic and evaluate
+        eval_result = ts_pipeline.evaluate(tsdata_valid)
+        y_pred = ts_pipeline.predict(tsdata_valid)
+
+        # check if they are the same
+        np.testing.assert_almost_equal(y_pred, y_pred_raw)
+
+        # save and load
+        ts_pipeline.save("/tmp/auto_trainer/autots_tmp_model_nbeats")
+        new_ts_pipeline = TSPipeline.load("/tmp/auto_trainer/autots_tmp_model_nbeats")
+
+        # check if load ppl is the same as previous
+        eval_result_new = new_ts_pipeline.evaluate(tsdata_valid)
+        y_pred_new = new_ts_pipeline.predict(tsdata_valid)
+        np.testing.assert_almost_equal(eval_result[0], eval_result_new[0])
+        np.testing.assert_almost_equal(y_pred, y_pred_new)
+
+        # check if load ppl is the same as previous with onnx
+        try:
+            import onnx
+            import onnxruntime
+            eval_result_new_onnx = new_ts_pipeline.evaluate_with_onnx(tsdata_valid)
+            y_pred_new_onnx = new_ts_pipeline.predict_with_onnx(tsdata_valid)
+            np.testing.assert_almost_equal(eval_result[0], eval_result_new_onnx[0], decimal=5)
+            np.testing.assert_almost_equal(y_pred, y_pred_new_onnx, decimal=5)
+        except ImportError:
+            pass
+
+        # use tspipeline to incrementally train
+        new_ts_pipeline.fit(tsdata_valid)
+
+        with pytest.raises(ValueError):
+            tsdata_train = get_tsdataset().scale(scaler, fit=True)
+            tsdata_valid = get_tsdataset().scale(scaler, fit=False)
+            auto_estimator = AutoTSEstimator(model='nbeats',
+                                             search_space="minimal",
+                                             past_seq_len='auto',
+                                             future_seq_len=1,
+                                             input_feature_num=2,
+                                             output_target_num=2,
+                                             selected_features="auto",
+                                             metric="mse",
+                                             optimizer="Adam",
+                                             loss=torch.nn.MSELoss(),
+                                             logs_dir="/tmp/auto_trainer",
+                                             cpus_per_trial=2,
+                                             name="auto_trainer")
+            auto_estimator.fit(data=tsdata_train,
+                               epochs=1,
+                               batch_size=hp.choice([32, 64]),
+                               validation_data=tsdata_valid,
+                               n_sampling=1)
 
     def test_fit_lstm_data_creator(self):
         input_feature_dim = 4

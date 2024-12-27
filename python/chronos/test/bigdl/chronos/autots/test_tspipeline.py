@@ -137,5 +137,25 @@ class TestTSPipeline(TestCase):
         assert tsppl_lstm._best_config['batch_size'] == 64
         assert smape < 2.0
 
+    def test_nbeats_tsppl_support_dataloader(self):
+        tsppl_nbeats = TSPipeline.load(
+        os.path.join(self.resource_path, "tsppl_ckpt/lstm_tsppl_ckpt"))
+        tsppl_nbeats.fit(data=train_data_creator,
+                         validation_data=valid_data_creator,
+                         epochs=2,
+                         batch_size=128)
+        assert tsppl_nbeats._best_config['batch_size'] == 128
+        config = tsppl_nbeats._best_config
+        yhat = tsppl_nbeats.predict(data=valid_data_creator, batch_size=16)
+        assert tsppl_nbeats._best_config['batch_size'] == 16
+        assert yhat.shape == (1000,
+                              config['future_seq_len'],
+                              config['output_feature_num'])
+        _, smape = tsppl_nbeats.evaluate(data=valid_data_creator,
+                                         metrics=['mse', 'smape'],
+                                         batch_size=64)
+        assert tsppl_nbeats._best_config['batch_size'] == 64
+        assert smape < 2.0
+
 if __name__ == "__main__":
     pytest.main([__file__])

@@ -68,7 +68,7 @@ class AutoTSEstimator:
         for tuning using AutoML.
 
         :param model: a string or a model creation function.
-               A string indicates a built-in model, currently "lstm", "tcn", "seq2seq" are
+               A string indicates a built-in model, currently "lstm", "tcn", "seq2seq", "nbeats" are
                supported.
                A model creation function indicates a 3rd party model, the function should take a
                config param and return a torch.nn.Module (backend="torch") / tf model
@@ -282,11 +282,13 @@ class AutoTSEstimator:
         """
         import torch
         from torch.utils.data import TensorDataset, DataLoader
+        from bigdl.chronos.autots.utils import data_check
         import ray
 
         # automatically inference output_feature_num
         # input_feature_num will be set by base pytorch model according to selected features.
         search_space['output_feature_num'] = len(train_data.target_col)
+        data_check(search_space, self.model)  # nbeats only supports univariate prediction.
         if search_space['past_seq_len'] == 'auto':
             cycle_length = train_data.get_cycle_length(aggregate='mode', top_k=3)
             cycle_length = 2 if cycle_length < 2 else cycle_length

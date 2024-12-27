@@ -35,6 +35,17 @@ Other API follows its base class(BasePytorchAutomodel).
     :undoc-members:
     :show-inheritance:
 
+AutoNBeats
+----------------------------------------
+
+AutoNBeats is an NBeats forecaster model with Auto tuning.
+Other API follows its base class(BasePytorchAutomodel).
+
+.. automodule:: bigdl.chronos.autots.model.auto_nbeats
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 AutoARIMA
 ----------------------------------------
 
@@ -57,7 +68,7 @@ AutoProphet is a Prophet forecasting model with Auto tuning.
 
 BasePytorchAutomodel
 ------------------------------------------------------------
-AutoLSTM, AutoSeq2Seq and AutoTCN all follow the same API as stated below.
+AutoNBeats, AutoLSTM, AutoSeq2Seq and AutoTCN all follow the same API as stated below.
 
 .. autoclass:: bigdl.chronos.autots.model.base_automodel.BasePytorchAutomodel
     :members:
