@@ -444,6 +444,11 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     else:
         lm_head_low_bit = model.lm_head.lm_heads[0].qtype
 
+    if model._auto_class is not None:
+        # For a custom model, copy the file defining it in the folder
+        from transformers.dynamic_module_utils import custom_object_save
+        custom_object_save(model, save_directory, config=model.config)
+
     if model.config.model_type == "qwen2":
         if group_size == 0:
             if model.config.hidden_size == 1536:

@@ -445,12 +445,9 @@ class _BaseAutoModelClass:
             from .npu_models.npu_llm_cpp import load_model_from_file
             from .npu_models.convert import generate, general_convert
             from .npu_models.convert import prepare_input_ids, causal_lm_forward
-            config = AutoConfig.from_pretrained(
-                os.path.join(pretrained_model_name_or_path, "config.json"),
-                trust_remote_code=trust_remote_code)
             with torch.device('meta'):
-                model = cls.HF_Model.from_config(
-                    config, trust_remote_code=trust_remote_code)
+                model = cls.HF_Model.from_config(config,
+                                                 trust_remote_code=trust_remote_code)
             try:
                 model_ptr = load_model_from_file(pretrained_model_name_or_path)
                 model.model_ptr = model_ptr
