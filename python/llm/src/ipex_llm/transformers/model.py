@@ -147,8 +147,6 @@ class _BaseAutoModelClass:
             to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param disk_embedding: Whether to put the Embedding layer on disk to save memory.
             Default to be ``False``.
-        :param lightweight_bmm: Whether to replace the torch.bmm ops, may need to set it
-            to ``True`` when running BigDL-LLM on GPU on Windows. Default to be ``False``.
         :param imatrix: str value, represent filename of importance matrix pretrained on
             specific datasets for use with the improved quantization methods recently
             added to llama.cpp.
@@ -441,7 +439,6 @@ class _BaseAutoModelClass:
                           " please use cpu_embedding instead.", FutureWarning)
             cpu_embedding = True
         disk_embedding = kwargs.pop("disk_embedding", False)
-        lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         quant_config = kwargs.pop("quantization_config", None)
         imatrix_data = kwargs.pop("imatrix_data", None)
         embedding_qtype = kwargs.pop("embedding_qtype", None)
@@ -513,7 +510,6 @@ class _BaseAutoModelClass:
         model = ggml_convert_low_bit(model, qtype, optimize_model,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding,
-                                     lightweight_bmm=lightweight_bmm,
                                      torch_dtype=kwargs.get("torch_dtype", 'auto'),
                                      imatrix_data=imatrix_data,
                                      embedding_qtype=embedding_qtype,
@@ -576,7 +572,6 @@ class _BaseAutoModelClass:
                           " please use cpu_embedding instead.", FutureWarning)
             cpu_embedding = True
         disk_embedding = kwargs.pop("disk_embedding", False)
-        lightweight_bmm = kwargs.pop("lightweight_bmm", False)
         # Autofactory
         trust_remote_code = kwargs.pop("trust_remote_code", None)
         kwargs_orig = copy.deepcopy(kwargs)
@@ -713,7 +708,6 @@ class _BaseAutoModelClass:
         model = ggml_convert_low_bit(model, qtype, optimize_model, device=quant_device,
                                      modules_to_not_convert=modules_to_not_convert,
                                      cpu_embedding=cpu_embedding,
-                                     lightweight_bmm=lightweight_bmm,
                                      embedding_qtype=embedding_qtype, torch_dtype=torch_dtype)
 
         if is_sharded:

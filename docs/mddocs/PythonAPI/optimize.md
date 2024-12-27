@@ -3,7 +3,7 @@
 ## Optimize Model
 You can run any PyTorch model with `optimize_model` through only one-line code change to benefit from IPEX-LLM optimization, regardless of the library or API you are using.
 
-### `ipex_llm.optimize_model`_`(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None, cpu_embedding=False, lightweight_bmm=False, **kwargs)`_
+### `ipex_llm.optimize_model`_`(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_convert=None, cpu_embedding=False, **kwargs)`_
 
 A method to optimize any pytorch model.
     
@@ -18,8 +18,6 @@ A method to optimize any pytorch model.
   - **modules_to_not_convert**: list of str value, modules (`nn.Module`) that are skipped when conducting model optimizations. Default to be `None`.
   
   - **cpu_embedding**: Whether to replace the Embedding layer, may need to set it to `True` when running IPEX-LLM on GPU. Default to be `False`.
-  
-  - **lightweight_bmm**: Whether to replace the `torch.bmm` ops, may need to set it to `True` when running IPEX-LLM on GPU on Windows. Default to be `False`.
   
 - **Returns**: The optimized model.
 
