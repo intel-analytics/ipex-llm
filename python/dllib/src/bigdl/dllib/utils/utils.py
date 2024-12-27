@@ -20,6 +20,7 @@ import numpy as np
 from pyspark.ml.linalg import DenseVector, SparseVector, VectorUDT
 import sys
 import os
+import re
 
 if sys.version >= '3':
     long = int
@@ -158,6 +159,17 @@ def get_zoo_bigdl_classpath_on_driver():
 def set_python_home():
     if "PYTHONHOME" not in os.environ:
         os.environ['PYTHONHOME'] = "/".join(detect_python_location().split("/")[:-2])
+
+
+def get_bigdl_class_version():
+    from bigdl.dllib.utils.engine import get_bigdl_jars
+    bigdl_jars = get_bigdl_jars()
+    try:
+        bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[0]).group(1)[6:]
+    except AttributeError:
+        # not found
+        bigdl_class_version = 'Cannot find BigDL classpath, please check your installation'
+    return bigdl_class_version
 
 
 def _is_scalar_type(dtype, accept_str_col=False):
