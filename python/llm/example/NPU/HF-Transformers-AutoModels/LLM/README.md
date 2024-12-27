@@ -48,7 +48,7 @@ Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quick
 ### 1.2 Runtime Configurations
 Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
-## 2. Run Optimized Models (Experimental)
+## 2. Run Optimized Models
 The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU, including
 - [Llama2-7B](./llama2.py)
 - [Llama3-8B](./llama3.py)
