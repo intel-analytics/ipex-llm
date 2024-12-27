@@ -33,15 +33,15 @@ class FLClient(object):
     creds = None
 
     @staticmethod
-    def set_client_id(client_id):
+    def set_client_id(client_id: int) -> None:
         FLClient.client_id = client_id
     
     @staticmethod
-    def set_target(target):
+    def set_target(target: str) -> None:
         FLClient.target = target
 
     @staticmethod
-    def ensure_initialized():
+    def ensure_initialized() -> None:
         with FLClient._lock:
             if FLClient.channel == None:
                 if FLClient.secure:
@@ -50,7 +50,7 @@ class FLClient(object):
                     FLClient.channel = grpc.insecure_channel(FLClient.target)
     
     @staticmethod
-    def load_config():
+    def load_config() -> None:
         try:
             with open('ppml-conf.yaml', 'r') as stream:
                 conf = yaml.safe_load(stream)

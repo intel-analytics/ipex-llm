@@ -24,11 +24,14 @@ import threading
 from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
 
 from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
+from numpy import ndarray
+from typing import Dict, Type, Union
+from nn_service_pb2 import PredictResponse, TrainResponse, UploadMetaResponse
 
 class NNClient(object):
     _lock = threading.Lock()
 
-    def __init__(self, aggregator) -> None:        
+    def __init__(self, aggregator: str) -> None:        
         if FLClient.channel is None:
             invalidOperationError(False, "No channel found, please make sure you called \
                 init_fl_context()")
@@ -39,7 +42,7 @@ class NNClient(object):
         self.client_uuid = FLClient.client_id
         self.aggregator = aggregator
     
-    def train(self, x):
+    def train(self, x: Dict[str, ndarray]) -> TrainResponse:
         tensor_map = ndarray_map_to_tensor_map(x)
         train_request = TrainRequest(clientuuid=self.client_uuid,
                                      data=tensor_map,
@@ -51,7 +54,7 @@ class NNClient(object):
                               response.response)
         return response
 
-    def predict(self, x):
+    def predict(self, x: Dict[str, ndarray]) -> PredictResponse:
         tensor_map = ndarray_map_to_tensor_map(x)
         predict_request = PredictRequest(clientuuid=self.client_uuid,
                                      data=tensor_map,
@@ -63,7 +66,12 @@ class NNClient(object):
                               response.response)
         return response
 
-    def upload_meta(self, loss_fn, optimizer_cls, optimizer_args):
+    def upload_meta(
+        self,
+        loss_fn,
+        optimizer_cls,
+        optimizer_args: Dict[str, float]
+    ) -> UploadMetaResponse:
         # upload model to server
         loss_fn = SafePickle.dumps(loss_fn)
         optimizer = ClassAndArgsWrapper(optimizer_cls, optimizer_args).to_protobuf()
