@@ -48,7 +48,7 @@ _lib = ctypes.cdll.LoadLibrary(_lib_path)
 _lib.load_model_from_file.argtypes = [ctypes.c_char_p]
 _lib.load_model_from_file.restype = ctypes.c_void_p
 
-_lib.run_prefill.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.c_int,
+_lib.run_prefill.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int,
                              ctypes.c_float]
 _lib.run_prefill.restype = ctypes.POINTER(ctypes.c_float)
 
@@ -61,7 +61,7 @@ _lib.llm_sample_token.restype = ctypes.c_int
 _lib.reset.argtypes = [ctypes.c_void_p]
 _lib.reset.restype = None
 
-_lib.run_prefill_with_logits.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int),
+_lib.run_prefill_with_logits.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
                                          ctypes.c_int, ctypes.POINTER(ctypes.c_float), ctypes.c_int]
 _lib.run_prefill_with_logits.restype = None
 
@@ -88,9 +88,16 @@ def run_decode(model_ptr, input_id, vocab_size, repetition_penalty=1.0):
     return new_token
 
 
-def run_prefill_with_logits(model_ptr, input_ids, logits, vocab_size):
-    input_ptr = (ctypes.c_int32 * len(input_ids))(*input_ids)
-    input_len = len(input_ids)
+def run_prefill_with_logits(model_ptr, input_ids, logits, vocab_size, inputs_embeds=None):
+    if input_ids is not None:
+        input_ptr = (ctypes.c_int32 * len(input_ids))(*input_ids)
+        input_len = len(input_ids)
+    else:
+        input_ptr = inputs_embeds.contiguous().data.data_ptr()
+        input_ptr = ctypes.cast(input_ptr, ctypes.c_void_p)
+        uint16_ptr = ctypes.cast(input_ptr, ctypes.POINTER(ctypes.c_uint16))
+        print("[DEBUG INFO] Value pointed to by the pointer:", uint16_ptr.contents.value)
+        input_len = 0
     logits_ptr = logits.data.data_ptr()
     logits_ptr = ctypes.cast(logits_ptr, ctypes.POINTER(ctypes.c_float))
     _lib.run_prefill_with_logits(model_ptr, input_ptr, input_len, logits_ptr, vocab_size)

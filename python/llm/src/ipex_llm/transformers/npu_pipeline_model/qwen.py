@@ -34,6 +34,10 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
     lm_head_n_splits = 1
     asym = getattr(model.config, "asym", False)
 
+    if vocab_size == 151666:
+        # for MiniCPM-V 2.6 lm_head on NPU
+        vocab_size = 152064
+
     if not isinstance(lm_head, SlicedLMHead):
         asym = lm_head.qtype == "asym_int4_rtn"
         if asym:

@@ -449,7 +449,8 @@ def optimize_llm_single_process(
     group_size: int,
     qtype: str,
     save_directory: str,
-    fuse_layers: int=None
+    fuse_layers: int=None,
+    has_llm: bool=False
 ):
     from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm
     from .npu_llm_cpp import load_model_from_file
@@ -468,7 +469,11 @@ def optimize_llm_single_process(
         model.kv_len = kv_len
         model.model_ptr = model_ptr
         model.save_directory = save_directory
-        model.vocab_size = model.config.vocab_size
+        if model.config.vocab_size == 151666:
+            # for MiniCPM-V 2.6, 152064 is vocab_size of Qwen2-7B
+            model.vocab_size = 152064
+        else:
+            model.vocab_size = model.config.vocab_size
         model.logits_buffer = torch.empty(1, 1, model.vocab_size, dtype=torch.float32)
     except:
         invalidInputError(False,
@@ -478,9 +483,10 @@ def optimize_llm_single_process(
     general_convert(model, PreTrainedModel, prepare_input_ids, "prepare_inputs_for_generation")
     general_convert(model, PreTrainedModel, causal_lm_forward)
     # patch generate function
-    import types
-    model.original_generate = model.generate
-    model.generate = types.MethodType(generate, model)
+    if not has_llm:
+        import types
+        model.original_generate = model.generate
+        model.generate = types.MethodType(generate, model)
     return model
 
 
@@ -491,9 +497,10 @@ def prepare_input_ids(
     else:  # prefill, reset the model here
         from .npu_llm_cpp import reset
         reset(self.model_ptr)
-    model_inputs = {
-        "input_ids": input_ids
-    }
+    if inputs_embeds is not None and past_key_values is None:
+        model_inputs = {"inputs_embeds": inputs_embeds}
+    else:
+        model_inputs = {"input_ids": input_ids}
     return model_inputs
 
 
@@ -510,18 +517,31 @@ def causal_lm_forward(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, CausalLMOutputWithPast]:
+    print('[DEBUG INFO] input_ids:', input_ids)
+    print('[DEBUG INFO] inputs_embeds:', inputs_embeds)
     from .npu_llm_cpp import run_prefill_with_logits, run_decode_with_logits
-    if isinstance(input_ids[0], torch.Tensor):
-        input_list = input_ids[0].flatten().tolist()
+    if input_ids is not None:
+        if isinstance(input_ids[0], torch.Tensor):
+            input_list = input_ids[0].flatten().tolist()
+        else:
+            input_list = input_ids[0]
+        input_length = len(input_list)
+        if input_length > 1:
+            logits = run_prefill_with_logits(self.model_ptr, input_list,
+                                            self.logits_buffer, self.vocab_size)
+            logits = logits[:, :, :151666]
+        else:
+            logits = run_decode_with_logits(self.model_ptr, input_list[0],
+                                            self.logits_buffer, self.vocab_size)
+            logits = logits[:, :, :151666]
+    elif inputs_embeds is not None:
+        inputs_embeds = inputs_embeds.to(torch.float16)
+        logits = run_prefill_with_logits(self.model_ptr, None, self.logits_buffer,
+                                         self.vocab_size, inputs_embeds)
+        logits = logits[:, :, :151666]
     else:
-        input_list = input_ids[0]
-    input_length = len(input_list)
-    if input_length > 1:
-        logits = run_prefill_with_logits(self.model_ptr, input_list,
-                                         self.logits_buffer, self.vocab_size)
-    else:
-        logits = run_decode_with_logits(self.model_ptr, input_list[0],
-                                        self.logits_buffer, self.vocab_size)
+        invalidInputError(False, "Only need input_ids or inputs_embeds.")
+
 
     return CausalLMOutputWithPast(
         loss=None,
