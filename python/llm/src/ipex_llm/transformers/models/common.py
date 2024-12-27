@@ -199,7 +199,7 @@ def prepare_mask(mask, bsz, n_heads, seq_length, kv_length, is_causal, dtype, de
             mask = None
         else:
             mask = torch.zeros([1, 1, 1, padding_kv_length], dtype=dtype, device=device)
-            mask[:, :, kv_length:padding_kv_length] = torch.finfo(dtype).min
+            mask[..., kv_length:padding_kv_length] = torch.finfo(dtype).min
             mask = mask.expand([bsz, n_heads, seq_length, padding_kv_length])
     else:
         if seq_length != kv_length and seq_length <= 32:
