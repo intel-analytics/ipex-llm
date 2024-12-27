@@ -17,6 +17,7 @@
 from bigdl.chronos.detector.anomaly.abstract import AnomalyDetector
 from bigdl.chronos.detector.anomaly.util import roll_arr, scale_arr
 import numpy as np
+from bigdl.chronos.pytorch import TSTrainer as Trainer
 
 
 def create_tf_model(compress_rate,
@@ -160,19 +161,17 @@ class AEDetector(AnomalyDetector):
             ae_model = create_torch_model(self.compress_rate, len(y[0]))
             optimizer = optim.Adadelta(ae_model.parameters(), lr=self.lr)
             criterion = nn.BCELoss()
+            internal_model = Trainer.compile(model=ae_model, loss=criterion,
+                                             optimizer=optimizer)
+            trainer = Trainer(logger=False, max_epochs=self.epochs)
+
             y = torch.from_numpy(y).float()
             if y.ndim == 1:
                 y = y.reshape(-1, 1)
             train_loader = DataLoader(TensorDataset(y, y),
                                       batch_size=int(self.batch_size),
                                       shuffle=True)
-            for epochs in range(self.epochs):
-                for x_batch, y_batch in train_loader:
-                    optimizer.zero_grad()
-                    yhat = ae_model(x_batch)
-                    loss = criterion(yhat, y_batch)
-                    loss.backward()
-                    optimizer.step()
+            trainer.fit(internal_model, train_loader)
             y_pred_list = []
             for x_batch, y_batch in train_loader:
                 y_pred_list.append(ae_model(x_batch).detach().numpy())
