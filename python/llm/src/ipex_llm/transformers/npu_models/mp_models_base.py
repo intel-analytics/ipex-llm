@@ -472,6 +472,11 @@ class LLMBaseNNFactory(NNFactory):
         )
         eps = self.constant(self.rms_norm_eps)
         hidden_states = self.eltwise_div(hidden_states, self.sqrt(self.eltwise_add(variance, eps)))
+        if os.environ.get("IPEX_LLM_NPU_DRIVER_VERSION", "0") == "1":
+            # to support special drivers
+            hidden_states = self.convert_to_fp16(hidden_states)
+        else:
+            layernorm_weight = self.convert_to_fp32(layernorm_weight)
         hidden_states = self.convert_to_fp16(hidden_states)
         hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
