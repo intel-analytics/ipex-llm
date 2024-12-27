@@ -477,7 +477,6 @@ class LLMBaseNNFactory(NNFactory):
             hidden_states = self.convert_to_fp16(hidden_states)
         else:
             layernorm_weight = self.convert_to_fp32(layernorm_weight)
-        hidden_states = self.convert_to_fp16(hidden_states)
         hidden_states = self.eltwise_mul(layernorm_weight, hidden_states)
         hidden_states = self.convert_to_fp16(hidden_states)
         return hidden_states
