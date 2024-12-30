@@ -644,7 +644,6 @@ class LowBitLinear(nn.Linear):
         if x0.device.type == "xpu":
             # GPU logic
             try:
-                import intel_extension_for_pytorch
                 import xe_linear
                 from ipex_llm.transformers.models.utils import use_xmx
             except ModuleNotFoundError:
