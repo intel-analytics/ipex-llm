@@ -19,10 +19,8 @@ import time
 import argparse
 import numpy as np
 
-from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 from ipex_llm.transformers import Qwen2VLForConditionalGeneration
 from qwen_vl_utils import process_vision_info
-from ipex_llm import optimize_model
 
 
 if __name__ == '__main__':
@@ -42,16 +40,23 @@ if __name__ == '__main__':
                         help="Use models from modelscope")
 
     args = parser.parse_args()
+    if args.modelscope:
+        from modelscope import AutoProcessor
+        model_hub = 'modelscope'
+    else:
+        from transformers import AutoProcessor
+        model_hub = 'huggingface'
+        
     model_path = args.repo_id_or_model_path
 
     model = Qwen2VLForConditionalGeneration.from_pretrained(model_path,
-                                                 load_in_4bit=True,
                                                  trust_remote_code=True,
                                                  torch_dtype='auto',
+                                                 modules_to_not_convert=["visual"],
+                                                 load_in_4bit=True,
                                                  low_cpu_mem_usage=True,
-                                                 use_cache=True,)
-
-    model = optimize_model(model, low_bit='sym_int4', modules_to_not_convert=["visual"])
+                                                 use_cache=True,
+                                                 model_hub=model_hub)
 
     # Use .float() for better output, and use .half() for better speed
     model = model.half().to("xpu")
