@@ -840,6 +840,7 @@ class AutoModelForMultipleChoice(_BaseAutoModelClass):
 class AutoModelForTokenClassification(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForTokenClassification
 
+
 if transformers.__version__ >= '4.45.0':
     class Qwen2VLForConditionalGeneration(_BaseAutoModelClass):
         HF_Model = transformers.Qwen2VLForConditionalGeneration
