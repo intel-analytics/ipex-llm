@@ -38,12 +38,10 @@
 #
 
 import os
-import math
 from typing import Optional, Tuple, Union, List
 
 import torch
 from torch.nn import CrossEntropyLoss
-from torch.nn.functional import scaled_dot_product_attention as sdpa
 
 from ipex_llm.transformers.models.common import merge_qkv_base
 from ipex_llm.transformers.models.common import scaled_dot_product_attention
@@ -51,13 +49,12 @@ from ipex_llm.transformers.models.utils import SILU, mlp_fusion_check
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, \
     should_use_compresskv, is_enough_kv_cache_room_4_36
-from ipex_llm.transformers.models.utils import use_flash_attention
 from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache, \
     DynamicCompressCache, DynamicCompressFp8Cache
 from ipex_llm.utils.common import invalidInputError
 
 from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2MLP
-from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb, repeat_kv
+from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 from transformers.cache_utils import Cache
 from transformers import logging
@@ -580,21 +577,10 @@ def qwen2_attention_forward(
                                                              self.layer_idx, None)
 
     attn_weights = None
-    if use_flash_attention(query_states, key_states, attention_mask):
-        if attention_mask is not None:
-            attention_mask = attention_mask[:, :, :, :kv_seq_len]
-        # repeat k/v heads if n_kv_heads < n_heads
-        key_states = repeat_kv(key_states, self.num_key_value_groups)
-        value_states = repeat_kv(value_states, self.num_key_value_groups)
-        attn_output = sdpa(query_states.to(device, dtype=torch.float16),
-                           key_states.to(device, dtype=torch.float16),
-                           value_states.to(device, dtype=torch.float16),
-                           is_causal=True).to(hidden_states.dtype)
-    else:
-        attn_output = scaled_dot_product_attention(
-            query_states, key_states, value_states,
-            attention_mask, q_len == kv_seq_len
-        )
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len
+    )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

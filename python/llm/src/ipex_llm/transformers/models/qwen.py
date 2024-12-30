@@ -33,7 +33,6 @@ from ipex_llm.transformers.models.utils import update_past_key_value, should_use
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache
 from ipex_llm.transformers.models.utils import rotate_half, SILU
 from ipex_llm.transformers.models.utils import mlp_fusion_check
-from ipex_llm.transformers.models.utils import use_flash_attention
 from ipex_llm.utils.common import invalidInputError
 from transformers.modeling_outputs import BaseModelOutputWithPast
 
@@ -116,33 +115,28 @@ def qwen_attention_forward(
     past_key_value = (key_states.transpose(1, 2),
                       value_states.transpose(1, 2)) if use_cache else None
 
-    # IPEX-LLM OPT: sdp
+    # IPEX-LLM OPT: sdpa
     attn_weights = None
-    if use_flash_attention(query_states, key_states, attention_mask):
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
-                                                     key_states.to(dtype=torch.float16),
-                                                     value_states.to(dtype=torch.float16),
-                                                     is_causal=True).to(hidden_states.dtype)
-    else:
-        if q_len > 1 and q_len != kv_seq_len:
-            causal_mask = torch.tril(
-                torch.ones((kv_seq_len, kv_seq_len), dtype=torch.bool, device=query_states.device)
-            ).view(1, 1, kv_seq_len, kv_seq_len)
-            causal_mask = causal_mask[
-                :, :, kv_seq_len - q_len:kv_seq_len, :kv_seq_len
-            ]
-            attention_mask = torch.zeros(causal_mask.shape, dtype=query_states.dtype,
-                                         device=query_states.device)
-            attention_mask.masked_fill_(causal_mask.logical_not(),
-                                        torch.finfo(attention_mask.dtype).min)
-            attention_mask = attention_mask.expand([bsz, -1, -1, -1])
-        else:
-            attention_mask = None
 
-        attn_output = scaled_dot_product_attention(
-            query_states, key_states, value_states,
-            attention_mask, q_len == kv_seq_len
-        )
+    if q_len > 1 and q_len != kv_seq_len:
+        causal_mask = torch.tril(
+            torch.ones((kv_seq_len, kv_seq_len), dtype=torch.bool, device=query_states.device)
+        ).view(1, 1, kv_seq_len, kv_seq_len)
+        causal_mask = causal_mask[
+            :, :, kv_seq_len - q_len:kv_seq_len, :kv_seq_len
+        ]
+        attention_mask = torch.zeros(causal_mask.shape, dtype=query_states.dtype,
+                                     device=query_states.device)
+        attention_mask.masked_fill_(causal_mask.logical_not(),
+                                    torch.finfo(attention_mask.dtype).min)
+        attention_mask = attention_mask.expand([bsz, -1, -1, -1])
+    else:
+        attention_mask = None
+
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len
+    )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.view(bsz, q_len, self.hidden_size)
@@ -219,31 +213,25 @@ def qwen_attention_forward_registered(
     past_key_value = (key_states.transpose(1, 2),
                       value_states.transpose(1, 2)) if use_cache else None
 
-    # IPEX-LLM OPT: sdp
+    # IPEX-LLM OPT: sdpa
     attn_weights = None
 
-    if use_flash_attention(query_states, key_states, attention_mask):
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
-                                                     key_states.to(dtype=torch.float16),
-                                                     value_states.to(dtype=torch.float16),
-                                                     is_causal=True).to(hidden_states.dtype)
+    if q_len > 1 and q_len != kv_seq_len:
+        causal_mask = registered_causal_mask[
+            :, :, kv_seq_len - q_len:kv_seq_len, :kv_seq_len
+        ]
+        attention_mask = torch.zeros(causal_mask.shape, dtype=query_states.dtype,
+                                     device=query_states.device)
+        attention_mask.masked_fill_(causal_mask.logical_not(),
+                                    torch.finfo(attention_mask.dtype).min)
+        attention_mask = attention_mask.expand([bsz, -1, -1, -1])
     else:
-        if q_len > 1 and q_len != kv_seq_len:
-            causal_mask = registered_causal_mask[
-                :, :, kv_seq_len - q_len:kv_seq_len, :kv_seq_len
-            ]
-            attention_mask = torch.zeros(causal_mask.shape, dtype=query_states.dtype,
-                                         device=query_states.device)
-            attention_mask.masked_fill_(causal_mask.logical_not(),
-                                        torch.finfo(attention_mask.dtype).min)
-            attention_mask = attention_mask.expand([bsz, -1, -1, -1])
-        else:
-            attention_mask = None
+        attention_mask = None
 
-        attn_output = scaled_dot_product_attention(
-            query_states, key_states, value_states,
-            attention_mask, q_len == kv_seq_len
-        )
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len
+    )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.view(bsz, q_len, self.hidden_size)
