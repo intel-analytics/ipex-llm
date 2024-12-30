@@ -1,4 +1,4 @@
-FROM intel/oneapi:2024.2.1-0-devel-ubuntu22.04
+FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04
 
 ARG http_proxy
 ARG https_proxy
@@ -56,6 +56,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     pip install --upgrade requests argparse urllib3 && \
     pip install --pre --upgrade ipex-llm[xpu_arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     pip install --pre pytorch-triton-xpu==3.0.0+1b2f15840e --index-url https://download.pytorch.org/whl/nightly/xpu && \
+    pip install torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi torchaudio==2.5.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     # Fix Trivy CVE Issues
     pip install transformers_stream_generator einops tiktoken && \
     # Install opencl-related repos
