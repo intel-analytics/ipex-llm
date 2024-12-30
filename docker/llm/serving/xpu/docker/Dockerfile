@@ -73,23 +73,23 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
     # apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
-    mkdir -p /tmp/neo && \
-    cd /tmp/neo && \
-    wget https://github.com/oneapi-src/level-zero/releases/download/v1.18.5/level-zero_1.18.5+u22.04_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-core_1.0.17791.9_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-opencl_1.0.17791.9_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-level-zero-gpu_1.6.31294.12_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-opencl-icd_24.39.31294.12_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/libigdgmm12_22.5.2_amd64.deb && \
-    dpkg -i *.deb && \
-    rm -rf /tmp/neo && \
-    mkdir -p /llm && \
-    cd /llm && \
-    git clone -b add_logits_attn_softcap https://github.com/hzjane/vllm.git /llm/vllm && \
-    cd /llm/vllm && \
-    pip install setuptools-scm && \
-    pip install --upgrade cmake && \
-    VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v /llm/vllm && \
+    # mkdir -p /tmp/neo && \
+    # cd /tmp/neo && \
+    # wget https://github.com/oneapi-src/level-zero/releases/download/v1.18.5/level-zero_1.18.5+u22.04_amd64.deb && \
+    # wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-core_1.0.17791.9_amd64.deb && \
+    # wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-opencl_1.0.17791.9_amd64.deb && \
+    # wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-level-zero-gpu_1.6.31294.12_amd64.deb && \
+    # wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-opencl-icd_24.39.31294.12_amd64.deb && \
+    # wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/libigdgmm12_22.5.2_amd64.deb && \
+    # dpkg -i *.deb && \
+    # rm -rf /tmp/neo && \
+    # mkdir -p /llm && \
+    # cd /llm && \
+    # git clone -b add_logits_attn_softcap https://github.com/hzjane/vllm.git /llm/vllm && \
+    # cd /llm/vllm && \
+    # pip install setuptools-scm && \
+    # pip install --upgrade cmake && \
+    # VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v /llm/vllm && \
     # pip install -r /llm/vllm/requirements-xpu.txt && \
     # VLLM_TARGET_DEVICE=xpu python setup.py install && \
     pip install mpi4py fastapi uvicorn openai && \
@@ -109,6 +109,6 @@ COPY ./start-fastchat-service.sh       /llm/
 COPY ./start-pp_serving-service.sh       /llm/
 COPY ./start-lightweight_serving-service.sh       /llm/
 
-ENV LD_LIBRARY_PATH /usr/local/lib/python3.11/dist-packages/intel_extension_for_pytorch/lib/:/opt/intel/oneapi/tbb/2021.12/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.12/opt/mpi/libfabric/lib:/opt/intel/oneapi/mpi/2021.12/lib:/opt/intel/oneapi/mkl/2024.1/lib:/opt/intel/oneapi/ippcp/2021.11/lib/:/opt/intel/oneapi/ipp/2021.11/lib:/opt/intel/oneapi/dpl/2022.5/lib:/opt/intel/oneapi/dnnl/2024.1/lib:/opt/intel/oneapi/debugger/2024.1/opt/debugger/lib:/opt/intel/oneapi/dal/2024.2/lib:/opt/intel/oneapi/compiler/2024.1/opt/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2024.1/opt/compiler/lib:/opt/intel/oneapi/compiler/2024.1/lib:/opt/intel/oneapi/ccl/2021.12/lib/
+ENV LD_LIBRARY_PATH /usr/local/lib/python3.11/dist-packages/intel_extension_for_pytorch/lib/:/opt/intel/oneapi/tbb/2021.12/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.12/opt/mpi/libfabric/lib:/opt/intel/oneapi/mpi/2021.12/lib:/opt/intel/oneapi/mkl/2024.2/lib:/opt/intel/oneapi/ippcp/2021.11/lib/:/opt/intel/oneapi/ipp/2021.11/lib:/opt/intel/oneapi/dpl/2022.5/lib:/opt/intel/oneapi/dnnl/2024.2/lib:/opt/intel/oneapi/debugger/2024.2/opt/debugger/lib:/opt/intel/oneapi/dal/2024.2/lib:/opt/intel/oneapi/compiler/2024.2/opt/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2024.2/opt/compiler/lib:/opt/intel/oneapi/compiler/2024.2/lib:/opt/intel/oneapi/ccl/2021.12/lib/
 
 WORKDIR /llm/
