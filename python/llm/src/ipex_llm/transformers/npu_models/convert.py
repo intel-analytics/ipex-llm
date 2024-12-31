@@ -528,21 +528,22 @@ def causal_lm_forward(
         if input_length > 1:
             logits = run_prefill_with_logits(self.model_ptr, input_list,
                                             self.logits_buffer, self.vocab_size)
-            logits = logits[:, :, :151666]
         else:
             logits = run_decode_with_logits(self.model_ptr, input_list[0],
                                             self.logits_buffer, self.vocab_size)
-            logits = logits[:, :, :151666]
     elif inputs_embeds is not None:
         seq_len = inputs_embeds.shape[1]
         pad_len = self.max_prompt_len - seq_len
-        inputs_embeds = torch.nn.functional.pad(inputs_embeds.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
+        inputs_embeds = torch.nn.functional.pad(inputs_embeds.to(torch.float16),
+                                                (0, 0, 0, pad_len), value=0.0)
         logits = run_prefill_with_logits(self.model_ptr, None, self.logits_buffer,
                                          self.vocab_size, inputs_embeds, seq_len)
-        logits = logits[:, :, :151666]
     else:
-        invalidInputError(False, "Only need input_ids or inputs_embeds.")
+        invalidInputError(False, "Please specify either input_ids or inputs_embeds.")
 
+    if self.config.vocab_size == 151666:
+        # for MiniCPM-V 2.6
+        logits = logits[:, :, :151666]
 
     return CausalLMOutputWithPast(
         loss=None,

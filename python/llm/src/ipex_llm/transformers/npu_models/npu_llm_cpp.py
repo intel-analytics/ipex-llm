@@ -90,7 +90,8 @@ def run_decode(model_ptr, input_id, vocab_size, repetition_penalty=1.0):
     return new_token
 
 
-def run_prefill_with_logits(model_ptr, input_ids, logits, vocab_size, inputs_embeds=None, seq_len=None):
+def run_prefill_with_logits(model_ptr, input_ids, logits, vocab_size,
+                            inputs_embeds=None, seq_len=None):
     if input_ids is not None:
         input_ptr = (ctypes.c_int32 * len(input_ids))(*input_ids)
         input_len = len(input_ids)
@@ -100,7 +101,8 @@ def run_prefill_with_logits(model_ptr, input_ids, logits, vocab_size, inputs_emb
         input_len = seq_len
     logits_ptr = logits.data.data_ptr()
     logits_ptr = ctypes.cast(logits_ptr, ctypes.POINTER(ctypes.c_float))
-    _lib.run_prefill_with_logits(model_ptr, input_ptr, input_len, logits_ptr, vocab_size, (input_ids is None))
+    _lib.run_prefill_with_logits(model_ptr, input_ptr, input_len, logits_ptr, 
+                                 vocab_size, (input_ids is None))
     return logits
 
 
