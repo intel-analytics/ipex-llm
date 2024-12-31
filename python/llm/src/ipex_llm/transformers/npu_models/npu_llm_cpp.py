@@ -101,7 +101,7 @@ def run_prefill_with_logits(model_ptr, input_ids, logits, vocab_size,
         input_len = seq_len
     logits_ptr = logits.data.data_ptr()
     logits_ptr = ctypes.cast(logits_ptr, ctypes.POINTER(ctypes.c_float))
-    _lib.run_prefill_with_logits(model_ptr, input_ptr, input_len, logits_ptr, 
+    _lib.run_prefill_with_logits(model_ptr, input_ptr, input_len, logits_ptr,
                                  vocab_size, (input_ids is None))
     return logits
 

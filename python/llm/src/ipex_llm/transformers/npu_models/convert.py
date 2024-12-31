@@ -527,7 +527,7 @@ def causal_lm_forward(
         input_length = len(input_list)
         if input_length > 1:
             logits = run_prefill_with_logits(self.model_ptr, input_list,
-                                            self.logits_buffer, self.vocab_size)
+                                             self.logits_buffer, self.vocab_size)
         else:
             logits = run_decode_with_logits(self.model_ptr, input_list[0],
                                             self.logits_buffer, self.vocab_size)
