@@ -475,6 +475,7 @@ def optimize_llm_single_process(
         else:
             model.vocab_size = model.config.vocab_size
         model.logits_buffer = torch.empty(1, 1, model.vocab_size, dtype=torch.float32)
+        model.max_prompt_len = max_prompt_len
     except:
         invalidInputError(False,
                           "False to InitLLMPipeline.")
@@ -517,8 +518,6 @@ def causal_lm_forward(
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
 ) -> Union[Tuple, CausalLMOutputWithPast]:
-    print('[DEBUG INFO] input_ids:', input_ids)
-    print('[DEBUG INFO] inputs_embeds:', inputs_embeds)
     from .npu_llm_cpp import run_prefill_with_logits, run_decode_with_logits
     if input_ids is not None:
         if isinstance(input_ids[0], torch.Tensor):
@@ -535,9 +534,11 @@ def causal_lm_forward(
                                             self.logits_buffer, self.vocab_size)
             logits = logits[:, :, :151666]
     elif inputs_embeds is not None:
-        inputs_embeds = inputs_embeds.to(torch.float16)
+        seq_len = inputs_embeds.shape[1]
+        pad_len = self.max_prompt_len - seq_len
+        inputs_embeds = torch.nn.functional.pad(inputs_embeds.to(torch.float16), (0, 0, 0, pad_len), value=0.0)
         logits = run_prefill_with_logits(self.model_ptr, None, self.logits_buffer,
-                                         self.vocab_size, inputs_embeds)
+                                         self.vocab_size, inputs_embeds, seq_len)
         logits = logits[:, :, :151666]
     else:
         invalidInputError(False, "Only need input_ids or inputs_embeds.")
