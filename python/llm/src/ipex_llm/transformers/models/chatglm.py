@@ -23,7 +23,7 @@ import torch.utils.checkpoint
 import torch.nn.functional as F
 from typing import Optional, Tuple
 from ipex_llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
-from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
+from ipex_llm.transformers.models.utils import use_sdp
 
 
 def rotate_half(x):
@@ -41,7 +41,7 @@ def apply_rotary_pos_emb_index(q, k, cos, sin, position_id):
 
 
 def glm_sdpa(query, key, value, attention_mask=None, is_causal=False):
-    if use_flash_attention(query, key, attention_mask) or query.device.type == 'cpu':
+    if query.device.type == 'cpu':
         context_layer = F.scaled_dot_product_attention(query.to(key.dtype),
                                                        key,
                                                        value,

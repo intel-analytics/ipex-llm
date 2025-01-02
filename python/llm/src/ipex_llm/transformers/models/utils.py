@@ -337,8 +337,7 @@ def use_decoding_fast_path(proj,
         return False
     if bs != 1:
         return False
-    if proj.enable_xetla:
-        return False
+
     if device in ["uhd"]:
         return False
     return True
@@ -347,8 +346,7 @@ def use_decoding_fast_path(proj,
 def use_xmx(x: torch.Tensor, qtype: int):
     device = get_xpu_device_type(x)
     return (
-        os.environ.get("BIGDL_LLM_XMX_DISABLED", "0") != "1"
-        and device in ["arc", "flex", "pvc"]
+        device in ["arc", "flex", "pvc"]
         and qtype in [SYM_INT4, SYM_INT8, FP8E4, FP8E5]
         and (
             (device == "pvc" and 1 < x.size(0) <= 16)

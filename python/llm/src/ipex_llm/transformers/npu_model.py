@@ -116,7 +116,6 @@ class _BaseAutoModelClass:
 
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
-        ignore_argument(kwargs, "lightweight_bmm")
         ignore_argument(kwargs, "load_in_4bit")
         ignore_argument(kwargs, "load_in_8bit")
         ignore_argument(kwargs, "imatrix")
@@ -302,8 +301,7 @@ class _BaseAutoModelClass:
         model.share_memory()
 
         if not pipeline:
-            if (not hasattr(model, 'llm') and
-                    model.config.model_type in ["qwen2", "llama", "minicpm"]):
+            if model.config.model_type in ["qwen2", "llama", "minicpm"]:
                 from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
                 optimize_llm_single_process(
                     llm,
@@ -313,7 +311,8 @@ class _BaseAutoModelClass:
                     group_size=quantization_group_size,
                     qtype=qtype,
                     save_directory=save_directory,
-                    fuse_layers=fuse_layers
+                    fuse_layers=fuse_layers,
+                    has_llm=hasattr(model, "llm")
                 )
             else:
                 optimize_llm(
@@ -365,7 +364,6 @@ class _BaseAutoModelClass:
     def load_low_bit(cls, pretrained_model_name_or_path: str, *model_args, **kwargs):
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
-        ignore_argument(kwargs, "lightweight_bmm")
         ignore_argument(kwargs, "cpu_embedding")
         ignore_argument(kwargs, "embedding_qtype")
         ignore_argument(kwargs, "speculative")
@@ -445,12 +443,9 @@ class _BaseAutoModelClass:
             from .npu_models.npu_llm_cpp import load_model_from_file
             from .npu_models.convert import generate, general_convert
             from .npu_models.convert import prepare_input_ids, causal_lm_forward
-            config = AutoConfig.from_pretrained(
-                os.path.join(pretrained_model_name_or_path, "config.json"),
-                trust_remote_code=trust_remote_code)
             with torch.device('meta'):
-                model = cls.HF_Model.from_config(
-                    config, trust_remote_code=trust_remote_code)
+                model = cls.HF_Model.from_config(config,
+                                                 trust_remote_code=trust_remote_code)
             try:
                 model_ptr = load_model_from_file(pretrained_model_name_or_path)
                 model.model_ptr = model_ptr

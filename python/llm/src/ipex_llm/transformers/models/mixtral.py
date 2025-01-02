@@ -380,7 +380,7 @@ def mixtral_mlp_forward(
     routing_weights
 ) -> torch.Tensor:
     qtype = getattr(self.w1, "qtype", None)
-    if mlp_fusion_check(x, qtype, self.training) and not self.w1.enable_xetla:
+    if mlp_fusion_check(x, qtype, self.training):
         import xe_linear
         return self.w2(xe_linear.mlp_forward_xpu(
             x, self.w1.weight.data, self.w3.weight.data,

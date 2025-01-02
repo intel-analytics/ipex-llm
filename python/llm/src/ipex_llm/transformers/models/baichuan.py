@@ -29,7 +29,7 @@ from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp
     should_use_compresskv
 from ipex_llm.transformers.models.utils import update_past_key_value
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
-from ipex_llm.transformers.models.utils import use_flash_attention, use_sdp
+from ipex_llm.transformers.models.utils import use_sdp
 from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, SILU
 from ipex_llm.transformers.models.utils import mlp_fusion_check
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
@@ -67,7 +67,7 @@ def baichuan_mlp_forward(
 ) -> torch.Tensor:
     x_2d = x.view(-1, x.shape[-1])
     qtype = getattr(self.gate_proj, "qtype", None)
-    if mlp_fusion_check(x_2d, qtype, self.training) and not self.down_proj.enable_xetla:
+    if mlp_fusion_check(x_2d, qtype, self.training):
         import xe_linear
         if not x_2d.is_contiguous():
             x_2d = x_2d.contiguous()
@@ -301,16 +301,10 @@ def baichuan_attention_forward_7b(
 
     # IPEX-LLM OPT: sdp
     attn_weights = None
-    if use_flash_attention(query_states, key_states, attention_mask):
-        attn_output = F.scaled_dot_product_attention(query_states.to(dtype=torch.float16),
-                                                     key_states.to(dtype=torch.float16),
-                                                     value_states.to(dtype=torch.float16),
-                                                     is_causal=True).to(hidden_states.dtype)
-    else:
-        attn_output = scaled_dot_product_attention(
-            query_states, key_states, value_states,
-            attention_mask, q_len == kv_seq_len
-        )
+    attn_output = scaled_dot_product_attention(
+        query_states, key_states, value_states,
+        attention_mask, q_len == kv_seq_len
+    )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)

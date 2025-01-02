@@ -232,7 +232,7 @@ def is_linear_module(module):
 
 
 def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
-                 enable_xetla, optimize_lm_head, enable_scale_search):
+                 optimize_lm_head, enable_scale_search):
     from vllm.model_executor.layers.vocab_parallel_embedding import ParallelLMHead
     from ipex_llm.transformers.low_bit_linear import LowBitLinear, \
         FP16Linear, BF16Linear, vLLMLowBitLinear, vLLMFP16Linear, vLLMBF16Linear
@@ -261,7 +261,6 @@ def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
                 cur_qtype,
                 module.bias is not None,
                 mp_group=mp_group,
-                enable_xetla=enable_xetla,
                 optimize_lm_head=optimize_lm_head,
                 enable_scale_search=enable_scale_search,
             )
@@ -289,7 +288,6 @@ def convert_vllm(module, qtype, in_features, out_features, mp_group, cur_qtype,
                 cur_qtype,
                 module.bias is not None,
                 mp_group=mp_group,
-                enable_xetla=enable_xetla,
                 optimize_lm_head=optimize_lm_head,
                 enable_scale_search=enable_scale_search,
             )
@@ -473,7 +471,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                  prefix_name='',
                                  imatrix_data=None, embedding_qtype=None,
                                  model_config=None, torch_dtype=torch.float32,
-                                 enable_xetla=False,
                                  mixed_precision=False,
                                  act_order=False,
                                  enable_scale_search=False,
@@ -523,7 +520,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                         qtype=qtype,
                         bias=has_bias,
                         mp_group=mp_group,
-                        enable_xetla=enable_xetla,
                         optimize_lm_head=optimize_lm_head,
                         act_order=act_order,
                         enable_scale_search=enable_scale_search,
@@ -544,7 +540,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                              _shape=(out_features, in_features),
                                              convert_shape_only=convert_shape_only,
                                              qtype=qtype,
-                                             enable_xetla=enable_xetla,
                                              enable_scale_search=enable_scale_search).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if has_bias:
@@ -562,7 +557,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             qtype=qtype,
                             bias=has_bias,
                             mp_group=mp_group,
-                            enable_xetla=enable_xetla,
                             optimize_lm_head=False,
                             act_order=act_order,
                             enable_scale_search=enable_scale_search,
@@ -581,7 +575,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  qtype=cur_qtype,
                                                  imatrix=cur_imatrix,
                                                  in_features=in_features,
-                                                 enable_xetla=enable_xetla,
                                                  enable_scale_search=enable_scale_search).to(device)
                     else:
                         new_linear = vLLMLowBitLinear(
@@ -590,7 +583,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             qtype=qtype,
                             bias=has_bias,
                             mp_group=mp_group,
-                            enable_xetla=enable_xetla,
                             optimize_lm_head=False,
                             act_order=act_order,
                             enable_scale_search=enable_scale_search,
@@ -609,7 +601,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                  _shape=(out_features, in_features),
                                                  convert_shape_only=convert_shape_only,
                                                  qtype=qtype,
-                                                 enable_xetla=enable_xetla,
                                                  enable_scale_search=enable_scale_search).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if has_bias:
@@ -639,7 +630,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                                   out_features,
                                                   mp_group,
                                                   cur_qtype,
-                                                  enable_xetla,
                                                   optimize_lm_head,
                                                   enable_scale_search)
                     else:
@@ -649,7 +639,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             cur_qtype,
                             module.bias is not None,
                             mp_group=mp_group,
-                            enable_xetla=enable_xetla,
                             optimize_lm_head=optimize_lm_head,
                             enable_scale_search=enable_scale_search,
                         )
@@ -663,7 +652,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                                              qtype=cur_qtype,
                                              imatrix=cur_imatrix,
                                              in_features=in_features,
-                                             enable_xetla=enable_xetla,
                                              enable_scale_search=enable_scale_search).to(device)
                     new_linear._parameters['weight'] = paramsLowBit
                     if module.bias is not None:
@@ -762,7 +750,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                 embedding_qtype=embedding_qtype,
                 model_config=model_config,
                 torch_dtype=torch_dtype,
-                enable_xetla=enable_xetla,
                 mixed_precision=mixed_precision,
                 act_order=act_order,
                 enable_scale_search=enable_scale_search,
@@ -1091,10 +1078,9 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          convert_shape_only=False, device="cpu",
                          modules_to_not_convert=None,
                          cpu_embedding=False,
-                         lightweight_bmm=False, torch_dtype="auto",
+                         torch_dtype="auto",
                          imatrix_data=None,
                          embedding_qtype=None,
-                         enable_xetla=False,
                          mixed_precision=False,
                          disable_optimize_pre=False):
     if qtype in ggml_tensor_qtype.values():
@@ -1139,7 +1125,6 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
             embedding_qtype=embedding_qtype,
             model_config=model_config,
             torch_dtype=torch_dtype,
-            enable_xetla=enable_xetla,
             mixed_precision=mixed_precision,
             act_order=act_order,
             enable_scale_search=enable_scale_search,
@@ -1162,7 +1147,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
             pass
 
     if optimize_model:
-        model = _optimize_post(model, lightweight_bmm)
+        model = _optimize_post(model)
 
     if hasattr(model, "config") and hasattr(model.config, "model_type") and \
             model.config.model_type == "qwen" and hasattr(model.config, "visual"):
@@ -1263,7 +1248,7 @@ def _optimize_ipex(model, qtype=ggml_tensor_qtype["bf16"]):
     return _ipex_jit(model)
 
 
-def _optimize_post(model, lightweight_bmm=False):
+def _optimize_post(model):
     try:
         from diffusers import DiffusionPipeline, StableDiffusionXLPipeline
         if isinstance(model, DiffusionPipeline):
@@ -1643,7 +1628,7 @@ def _optimize_post(model, lightweight_bmm=False):
             vision_embedding._get_pos_embed = MethodType(_get_pos_embed, vision_embedding)
             vision_module = importlib.import_module(vision_model.__class__.__module__)
             convert_forward(vision_model, vision_module.InternAttention, intern_attention_forward)
-        _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
+        _optimize_post(model.language_model)
     elif model.config.model_type == "qwen":
         if hasattr(model.config, "visual"):
             # for Qwen-VL-Chat
@@ -1747,7 +1732,7 @@ def _optimize_post(model, lightweight_bmm=False):
                         module.Qwen2MoeSdpaAttention,
                         qwen2_attention_forward)
     elif model.config.model_type == "qwen2_audio":
-        _optimize_post(model.language_model, lightweight_bmm=lightweight_bmm)
+        _optimize_post(model.language_model)
     elif model.config.model_type == "qwen2_vl":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1891,20 +1876,6 @@ def _optimize_post(model, lightweight_bmm=False):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         convert_forward(model, module.YiRMSNorm, rms_norm_forward)
-    elif model.config.model_type == "whisper" and lightweight_bmm:
-        if platform.system().lower() == 'windows':
-            from ipex_llm.transformers.bmm import SafeBMM
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            old_fwd = module.WhisperAttention.forward
-
-            def safe_bmm_fwd(*args, **kwargs):
-                with SafeBMM():
-                    return old_fwd(*args, **kwargs)
-
-            convert_forward(model,
-                            module.WhisperAttention,
-                            safe_bmm_fwd)
     elif model.config.model_type == "rwkv":
         # rwkv v4
         modeling_module_name = model.__class__.__module__
@@ -2097,7 +2068,7 @@ def _optimize_post(model, lightweight_bmm=False):
         elif model.config.hidden_size == 1536 and model.config.vocab_size == 73464:
             # MiniCPM-V ?
             model.llm.config.model_type = "minicpm"
-        _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+        _optimize_post(model.llm)
         model.llm.config.model_type = "minicpmv"
 
         vpm_modeling_module_name = model.vpm.__class__.__module__
@@ -2151,7 +2122,7 @@ def _optimize_post(model, lightweight_bmm=False):
         # llm
         model.llm.config.model_type = "llama"
         model.llm.config.rope_scaling = {"rope_type": "default"}
-        _optimize_post(model.llm, lightweight_bmm=lightweight_bmm)
+        _optimize_post(model.llm)
         model.llm.config.model_type = "megrezo"
 
     return model
