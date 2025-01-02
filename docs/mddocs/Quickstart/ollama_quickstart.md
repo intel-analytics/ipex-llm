@@ -233,4 +233,4 @@ If you have a limited GPU memory, use `set OLLAMA_NUM_PARALLEL=1` on Windows or 
 When executing `ollama serve` and `ollama run <model_name>`, if you meet `./ollama: error while loading shared libraries: libsvml.so: cannot open shared object file: No such file or directory` on Linux, or if executing `ollama serve` and `ollama run <model_name>` shows no response on Windows, this is most likely caused by the lack of sycl dependency. Please check:
 
 1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
-2. if you have have executed `source /opt/intel/oneapi/setvars.sh` before running both `ollama serve` and `ollama run <model_name>` on Linux
+2. if you have have executed `source /opt/intel/oneapi/setvars.sh` before running both `./ollama serve` and `./ollama run <model_name>` on Linux
