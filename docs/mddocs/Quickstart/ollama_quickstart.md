@@ -78,6 +78,7 @@ You may launch the Ollama service as below:
   export OLLAMA_NUM_GPU=999
   export no_proxy=localhost,127.0.0.1
   export ZES_ENABLE_SYSMAN=1
+  
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
   # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
@@ -227,3 +228,9 @@ If you meet this error, please check your Linux kernel version first. You may en
 
 #### 8. Save GPU memory by specify `OLLAMA_NUM_PARALLEL=1`
 If you have a limited GPU memory, use `set OLLAMA_NUM_PARALLEL=1` on Windows or `export OLLAMA_NUM_PARALLEL=1` on Linux before `ollama serve` to reduce GPU usage. The default `OLLAMA_NUM_PARALLEL` in ollama upstream is set to 4.
+
+#### 9. `cannot open shared object file` error when executing  `ollama serve`
+When executing `ollama serve` and `ollama run <model_name>`, if you meet `./ollama: error while loading shared libraries: libsvml.so: cannot open shared object file: No such file or directory` on Linux, or if executing `ollama serve` and `ollama run <model_name>` shows no response on Windows, this is most likely caused by the lack of sycl dependency. Please check:
+
+1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
+2. if you have have executed `source /opt/intel/oneapi/setvars.sh` before running both `./ollama serve` and `./ollama run <model_name>` on Linux
