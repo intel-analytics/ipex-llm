@@ -78,6 +78,7 @@ IPEX-LLM 现在已支持在 Linux 和 Windows 系统上运行 `Ollama`。
   export OLLAMA_NUM_GPU=999
   export no_proxy=localhost,127.0.0.1
   export ZES_ENABLE_SYSMAN=1
+  
   source /opt/intel/oneapi/setvars.sh
   export SYCL_CACHE_PERSISTENT=1
   # [optional] under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
@@ -222,3 +223,9 @@ Ollama 默认每 5 分钟从 GPU 内存卸载一次模型。针对 ollama 的最
 
 #### 8. 通过设置`OLLAMA_NUM_PARALLEL=1`节省GPU内存
 如果你的GPU内存较小，可以通过在运行`ollama serve`前运行`set OLLAMA_NUM_PARALLEL=1`（Windows）或`export OLLAMA_NUM_PARALLEL=1`（Linux）来减少内存使用。Ollama默认使用的`OLLAMA_NUM_PARALLEL`为4。
+
+#### 9. 执行 `ollama serve`时报 `cannot open shared object file` 错误
+执行 `ollama serve` 或 `ollama run <model_name>` 时，如果你在 Linux 上遇到 `./ollama: error while loading shared libraries: libsvml.so: cannot open shared object file: No such file or directory`，或者在 Windows 上执行 `ollama serve` 和 `ollama run <model_name>` 时没有反应，这很可能是由于缺少 sycl 依赖导致的。请检查：
+
+1. Windows：是否已经安装了 conda 并激活了正确的 conda 环境，环境中是否已经使用 pip 安装了 oneAPI 依赖项
+2. Linux：是否已经在运行 `./ollama serve` 和 `./ollama run <model_name>` 命令前都执行了 `source /opt/intel/oneapi/setvars.sh`。执行此 source 命令只在当前会话有效。
