@@ -1,5 +1,5 @@
 # Llama3.1
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3.1 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Meta-Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) as a reference Llama3.1 model.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Llama3.1 models on [Intel GPUs](../../../README.md). For illustration purposes, we utilize the [meta-llama/Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct) as a reference Llama3.1 model.
 
 ## 0. Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../../../README.md#requirements) for more information.
@@ -104,12 +104,12 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama3.1 model (e.g. `meta-llama/Meta-Llama-3.1-8B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Meta-Llama-3.1-8B-Instruct'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama3.1 model (e.g. `meta-llama/Llama-3.1-8B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-3.1-8B-Instruct'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 #### Sample Output
-#### [meta-llama/Meta-Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct)
+#### [meta-llama/Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
