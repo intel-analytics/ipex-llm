@@ -650,7 +650,7 @@ def transformers_int4_npu_win(repo_id,
     load_time = end - st
     print(">> loading of model costs {}s".format(load_time))
 
-    if not hasattr(model, "model_ptr"):
+    if not hasattr(model, "model_ptr") or repo_id in MINICPM_V_IDS:
         model = BenchmarkWrapper(model)
 
     result = {}

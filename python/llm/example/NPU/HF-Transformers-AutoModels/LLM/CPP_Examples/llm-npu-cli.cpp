@@ -102,7 +102,7 @@ std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_i
                          npu_model_params model_params, tokenizer_params tok_params, npu_generation_params generation_params, bool do_print){
     auto start = std::chrono::high_resolution_clock::now();
     float* logits = run_prefill(void_model, embd_inp_ptr, embd_inp_size,
-                                generation_params.repetition_penalty, false);
+                                generation_params.repetition_penalty);
     int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
