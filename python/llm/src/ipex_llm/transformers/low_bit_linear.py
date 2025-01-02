@@ -895,6 +895,7 @@ class FP16Linear(nn.Linear):
         self.weight_type = 1
         self.optimize_lm_head = optimize_lm_head
         self.enable_xetla = enable_xetla
+        self.disable_fp16_opt = False
 
     def forward(self, x: torch.Tensor):
         # only work for GPU
@@ -910,8 +911,11 @@ class FP16Linear(nn.Linear):
             self.weight.data = self.weight.data.to(x.dtype)
 
         if not self.use_esimd_kernel(x):
-            if get_ipex_version() < "2.1.10+xpu" \
-                    or get_xpu_device_type(x) not in ["arc", "flex", "pvc"]:
+            if (
+                get_ipex_version() < "2.1.10+xpu"
+                or get_xpu_device_type(x) not in ["arc", "flex", "pvc"]
+                or self.disable_fp16_opt
+            ):
                 if self.weight_type == 2:
                     self.weight = torch.nn.Parameter(self.weight.transpose(0, 1).contiguous(),
                                                      requires_grad=False)
@@ -976,6 +980,8 @@ class FP16Linear(nn.Linear):
 
     def use_esimd_kernel(self, x):
         gpu_type = get_xpu_device_type(x)
+        if self.disable_fp16_opt:
+            return False
         # esimd kernel can only be used for Arc and Flex
         if gpu_type not in ["arc", "flex"]:
             return False

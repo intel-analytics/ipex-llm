@@ -258,7 +258,9 @@ def optimize_model(model, low_bit='sym_int4', optimize_llm=True, modules_to_not_
                                  modules_to_not_convert=modules_to_not_convert,
                                  cpu_embedding=cpu_embedding,
                                  lightweight_bmm=lightweight_bmm,
-                                 enable_xetla=kwargs.pop("enable_xetla", False))
+                                 enable_xetla=kwargs.pop("enable_xetla", False),
+                                 disable_optimize_pre=kwargs.pop("disable_optimize_pre",
+                                                                 False))
     # add save_low_bit to pretrained model dynamically
     import types
     model._bigdl_config = dict()

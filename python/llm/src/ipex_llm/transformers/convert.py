@@ -1095,7 +1095,8 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
                          imatrix_data=None,
                          embedding_qtype=None,
                          enable_xetla=False,
-                         mixed_precision=False):
+                         mixed_precision=False,
+                         disable_optimize_pre=False):
     if qtype in ggml_tensor_qtype.values():
         index = list(ggml_tensor_qtype.values()).index(qtype)
         logger.info(f"Converting the current model to "
@@ -1118,7 +1119,7 @@ def ggml_convert_low_bit(model, qtype, optimize_model=True,
         model = _optimize_ipex(model, qtype)
         return model
 
-    if optimize_model:
+    if optimize_model and not disable_optimize_pre:
         model = _optimize_pre(model, qtype)
 
     act_order = False

@@ -449,6 +449,7 @@ class _BaseAutoModelClass:
         if embedding_qtype is not None:
             embedding_qtype = ggml_tensor_qtype[embedding_qtype]
         enable_xetla = kwargs.pop("enable_xetla", False)
+        disable_optimize_pre = kwargs.pop("disable_optimize_pre", False)
         _args = copy.deepcopy(args)
         _kwargs = copy.deepcopy(kwargs)
         awq_config = None
@@ -519,7 +520,8 @@ class _BaseAutoModelClass:
                                      imatrix_data=imatrix_data,
                                      embedding_qtype=embedding_qtype,
                                      enable_xetla=enable_xetla,
-                                     mixed_precision=mixed_precision)
+                                     mixed_precision=mixed_precision,
+                                     disable_optimize_pre=disable_optimize_pre)
 
         if disk_embedding:
             from ipex_llm.transformers.embedding import DiskEmbedding
