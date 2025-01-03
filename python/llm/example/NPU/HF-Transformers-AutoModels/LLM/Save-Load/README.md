@@ -2,17 +2,17 @@
 
 In this directory, you will find example on how you could save/load models with IPEX-LLM optimizations on Intel NPU.
 
-## 0. Requirements
-To run this example with IPEX-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#0-requirements) for more information.
-
 ## Example: Save/Load Optimized Models
-In the example [generate.py](./generate.py), we show a basic use case of saving/loading model in low-bit optimizations to predict the next N tokens using `generate()` API. Also, saving and loading operations are platform-independent, so you could run it on different platforms.
+In the example [generate.py](./generate.py), we show a basic use case of saving/loading model in low-bit optimizations to predict the next N tokens using `generate()` API.
 
-## 1. Install
+## 0. Prerequisites
+For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
+
+## 1. Install & Runtime Configurations
 ### 1.1 Installation on Windows
 We suggest using conda to manage environment:
 ```cmd
-conda create -n llm python=3.10
+conda create -n llm python=3.11
 conda activate llm
 
 :: install ipex-llm with 'npu' option
@@ -21,13 +21,10 @@ pip install --pre --upgrade ipex-llm[npu]
 :: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
 pip install transformers==4.45.0 accelerate==0.33.0
 ```
+Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
 
-## 2. Runtime Configurations
-**Following envrionment variables are required**:
-
-```cmd
-set BIGDL_USE_NPU=1
-```
+### 1.2 Runtime Configurations
+Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
 ## 3. Running examples
 
