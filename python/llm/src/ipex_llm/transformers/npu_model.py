@@ -346,7 +346,7 @@ class _BaseAutoModelClass:
             model.save_low_bit = types.MethodType(save_low_bit, model)
             model.save_low_bit(save_directory)
             logger.info(f"Converted model has already saved to {save_directory}.")
-        
+
         return model
 
     @classmethod
