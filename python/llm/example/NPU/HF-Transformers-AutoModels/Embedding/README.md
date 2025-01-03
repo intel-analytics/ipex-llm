@@ -7,10 +7,10 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 |------------|----------------------------------------------------------------|
 | Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) |
 
-Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#python-api) for details about verified platforms.
+Please refer to [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#python-api) for details about verified platforms.
 
 ## 0. Prerequisites
-For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
+For `ipex-llm` NPU support, please refer to [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
 
 ## 1. Install
 ### 1.1 Installation on Windows
@@ -26,10 +26,10 @@ pip install torchvision
 # [optional] for Bce-Embedding-Base-V1
 pip install BCEmbedding==0.1.5 transformers==4.40.0
 ```
-Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for more details about `ipex-llm` installation on Intel NPU.
+Please refer to [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for more details about `ipex-llm` installation on Intel NPU.
 
 ### 1.2 Runtime Configurations
-Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
+Please refer to [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
 ## 2. Run Optimized Models
 The examples below show how to run the **_optimized HuggingFace model implementations_** on Intel NPU, including

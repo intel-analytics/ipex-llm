@@ -12,10 +12,10 @@ In this directory, you will find a C++ example on how to run LLM models on Intel
 | Qwen2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
 
-Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#c-api) for details about verified platforms.
+Please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#c-api) for details about verified platforms.
 
 ## 0. Prerequisites
-For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
+For `ipex-llm` NPU support, please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
 
 ## 1. Install & Runtime Configurations
 ### 1.1 Installation on Windows
@@ -31,10 +31,10 @@ pip install --pre --upgrade ipex-llm[npu]
 pip install transformers==4.45.0 accelerate==0.33.0
 ```
 
-Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
+Please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
 
 ### 1.2 Runtime Configurations
-Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
+Please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
 ## 2. Convert Model
 We provide a [convert script](convert.py) under current directory, by running it, you can obtain the whole weights and configuration files which are required to run C++ example.

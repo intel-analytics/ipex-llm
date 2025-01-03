@@ -6,7 +6,7 @@ In this directory, you will find example on how you could save/load models with 
 In the example [generate.py](./generate.py), we show a basic use case of saving/loading model in low-bit optimizations to predict the next N tokens using `generate()` API.
 
 ## 0. Prerequisites
-For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
+For `ipex-llm` NPU support, please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
 
 ## 1. Install & Runtime Configurations
 ### 1.1 Installation on Windows
@@ -21,10 +21,10 @@ pip install --pre --upgrade ipex-llm[npu]
 :: [optional] for Llama-3.2-1B-Instruct & Llama-3.2-3B-Instruct
 pip install transformers==4.45.0 accelerate==0.33.0
 ```
-Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
+Please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
 
 ### 1.2 Runtime Configurations
-Please refer to [Quick Start](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
+Please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
 ## 3. Running examples
 

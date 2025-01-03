@@ -9,10 +9,10 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 | MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) |
 | Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) |
 
-Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#python-api) for details about verified platforms.
+Please refer to [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#python-api) for details about verified platforms.
 
 ## 0. Prerequisites
-For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
+For `ipex-llm` NPU support, please refer to [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
 
 ## 1. Install
 ### 1.1 Installation on Windows
@@ -32,10 +32,10 @@ pip install timm torch==2.1.2 torchvision==0.16.2
 pip install funasr==1.1.14
 pip install modelscope==1.20.1 torch==2.1.2 torchaudio==2.1.2
 ```
-Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for more details about `ipex-llm` installation on Intel NPU.
+Please refer to [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-ipex-llm-with-npu-support) for more details about `ipex-llm` installation on Intel NPU.
 
 ### 1.2 Runtime Configurations
-Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
+Please refer to [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
 ## 2. Run Optimized Models
 The examples below show how to run the **_optimized HuggingFace & FunASR model implementations_** on Intel NPU, including

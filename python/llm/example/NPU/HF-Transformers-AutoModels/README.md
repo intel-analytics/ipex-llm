@@ -6,6 +6,9 @@ This folder contains examples of running IPEX-LLM on Intel NPU:
 - [Multimodal](Multimodal): examples of running large multimodal models using IPEX-LLM optimizations
 - [Embedding](Embedding): examples of running embedding models using IPEX-LLM optimizations
 
+> [!TIP]
+> Please refer to [IPEX-LLM NPU Quickstart](../../../../../docs/mddocs/Quickstart/npu_quickstart.md) regarding more information about running `ipex-llm` on Intel NPU.
+
 ## Verified Models on Intel NPU
 | Model      | Model Link                                                    |
 |------------|----------------------------------------------------------------|
