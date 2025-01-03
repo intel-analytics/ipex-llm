@@ -387,6 +387,7 @@ class _BaseAutoModelClass:
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        save_directory = kwargs.pop('save_directory', None)
 
         from transformers.models.auto.configuration_auto import AutoConfig
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
@@ -658,16 +659,30 @@ class _BaseAutoModelClass:
             param.requires_grad_(False)
 
         if optimize_model and not pipeline:
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
-            optimize_llm(
-                llm,
-                max_context_len=max_context_len,
-                max_prompt_len=max_prompt_len,
-                inter_pp=inter_pp,
-                intra_pp=intra_pp,
-                transpose_value_cache=transpose_value_cache,
-                group_size=quantization_group_size
-            )
+            if model.config.model_type in ["qwen2", "llama", "minicpm"]:
+                from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
+                optimize_llm_single_process(
+                    llm,
+                    kv_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    transpose_value_cache=transpose_value_cache,
+                    group_size=quantization_group_size,
+                    qtype=qtype,
+                    save_directory=save_directory,
+                    fuse_layers=None,
+                    has_llm=hasattr(model, "llm")
+                )
+            else:
+                from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
+                optimize_llm(
+                    llm,
+                    max_context_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    inter_pp=inter_pp,
+                    intra_pp=intra_pp,
+                    transpose_value_cache=transpose_value_cache,
+                    group_size=quantization_group_size
+                )
         elif optimize_model and pipeline:
             from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
                 import convert_llm
