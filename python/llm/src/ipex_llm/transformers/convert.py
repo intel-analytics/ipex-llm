@@ -1984,16 +1984,9 @@ def _optimize_post(model):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.yuan import yuan_attention_forward
-        # from ipex_llm.transformers.models.yuan import yuan_mlp_forward
-        convert_forward(model,
-                        module.YuanAttention,
-                        yuan_attention_forward
-                        )
-        # disable able mlp_forward for quantize_kv on mtl.
-        # convert_forward(model,
-        #                 module.YuanMLP,
-        #                 yuan_mlp_forward
-        #                 )
+        convert_forward(model, module.YuanAttention, yuan_attention_forward)
+        # from ipex_llm.transformers.models.common import mlp_silu_forward
+        # convert_forward(model, module.YuanMLP, mlp_silu_forward)
     elif model.config.model_type == 'bert' and (
         not model.config.is_decoder and
         model.config.position_embedding_type == "absolute"
