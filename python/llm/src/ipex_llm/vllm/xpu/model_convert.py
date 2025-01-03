@@ -105,6 +105,8 @@ def get_load_function(low_bit):
             if "minicpm-v" in self.model_config.model.lower():
                 from ipex_llm.transformers.models.minicpmv import merge_qkv
                 self.model.vpm.apply(merge_qkv)
+            if "internvl2" in self.model_config.model.lower():
+                modules = ["vision_model", "mlp1"]
             optimize_model(self.model, low_bit=low_bit, torch_dtype=self.model_config.dtype,
                            modules_to_not_convert=modules)
             self.model = self.model.to(device=self.device_config.device,
