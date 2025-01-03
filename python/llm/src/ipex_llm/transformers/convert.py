@@ -1986,7 +1986,6 @@ def _optimize_post(model):
         from ipex_llm.transformers.models.yuan import yuan_attention_forward
         convert_forward(model, module.YuanAttention, yuan_attention_forward)
         # from ipex_llm.transformers.models.common import mlp_silu_forward
-
         # convert_forward(model, module.YuanMLP, mlp_silu_forward)
     elif model.config.model_type == 'bert' and (
         not model.config.is_decoder and
