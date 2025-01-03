@@ -41,7 +41,7 @@ Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quick
 ### 1.2 Runtime Configurations
 Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
-## 2. Run Optimized Models (Experimental)
+## 2. Run Optimized Models
 The examples below show how to run the **_optimized HuggingFace & FunASR model implementations_** on Intel NPU, including
 - [MiniCPM-Llama3-V-2_5](./minicpm-llama3-v2.5.py)
 - [MiniCPM-V-2_6](./minicpm_v_2_6.py)
