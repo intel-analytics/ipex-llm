@@ -21,14 +21,12 @@
 # SPDX-License-Identifier: Apache 2.0
 #
 
-from intel_npu_acceleration_library.quantization import quantize_tensor, compress_to_i4
-from intel_npu_acceleration_library.dtypes import NPUDtype
+
 import os
 import torch
 from torch.nn import Parameter
 import uuid
 import math
-from intel_npu_acceleration_library.backend import run_matmul
 from typing import Optional, Union
 from ipex_llm.utils.common import invalidInputError
 
@@ -63,6 +61,7 @@ class Linear(torch.nn.Module):
         if self.training:
             out = self._mm(x, self.weight, None)
         else:
+            from intel_npu_acceleration_library.backend import run_matmul
             out = run_matmul(x, self.weight, None, self.op_id)
 
         if self.bias is None:
@@ -105,6 +104,8 @@ class Linear(torch.nn.Module):
         Returns:
             Union[Linear, QuantizedLinear]: A NPU linear layer
         """
+        from intel_npu_acceleration_library.quantization import quantize_tensor, compress_to_i4
+        from intel_npu_acceleration_library.dtypes import NPUDtype
         if dtype.is_floating_point:
             if bias is None:
                 return Linear(weight.to(dtype), None)
