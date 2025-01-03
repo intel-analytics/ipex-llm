@@ -7,7 +7,6 @@ In this directory, you will find examples on how you could apply IPEX-LLM INT4 o
 |------------|----------------------------------------------------------------|
 | MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) |
 | MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) |
-| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) |
 | Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) |
 
 Please refer to [Quick Start](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#python-api) for details about verified platforms.
@@ -19,7 +18,7 @@ For `ipex-llm` NPU support, please refer to [Quick Start](../../../../../../docs
 ### 1.1 Installation on Windows
 We suggest using conda to manage environment:
 ```bash
-conda create -n llm python=3.10 libuv
+conda create -n llm python=3.11
 conda activate llm
 
 # install ipex-llm with 'npu' option
@@ -28,9 +27,6 @@ pip install torchvision
 
 # [optional] for MiniCPM-V-2_6
 pip install timm torch==2.1.2 torchvision==0.16.2
-
-# [optional] for Bce-Embedding-Base-V1
-pip install BCEmbedding==0.1.5 transformers==4.40.0
 
 # [optional] for Speech_Paraformer-Large
 pip install funasr==1.1.14
@@ -46,7 +42,6 @@ The examples below show how to run the **_optimized HuggingFace & FunASR model i
 - [MiniCPM-Llama3-V-2_5](./minicpm-llama3-v2.5.py)
 - [MiniCPM-V-2_6](./minicpm_v_2_6.py)
 - [Speech_Paraformer-Large](./speech_paraformer-large.py)
-- [Bce-Embedding-Base-V1 ](./bce-embedding.py)
 
 ### 2.1 Run MiniCPM-Llama3-V-2_5 & MiniCPM-V-2_6
 ```bash
@@ -102,25 +97,4 @@ rtf_avg: 0.090: 100%|███████████████████�
 # https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ASR/test_audio/asr_example_zh.wav
 rtf_avg: 0.232: 100%|███████████████████████████████████| 1/1 [00:01<00:00,  1.29s/it]
 [{'key': 'asr_example_zh', 'text': '欢 迎 大 家 来 体 验 达 摩 院 推 出 的 语 音 识 别 模 型'}]
-```
-
-### 2.3 Run Bce-Embedding-Base-V1
-```bash
-# to run Bce-Embedding-Base-V1
-python bce-embedding.py --save-directory <converted_model_path>
-```
-
-Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the asr repo id for the model (i.e. `maidalun1020/bce-embedding-base_v1`) to be downloaded, or the path to the asr checkpoint folder.
-- `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, otherwise the lowbit model in `SAVE_DIRECTORY` will be loaded.
-
-#### Sample Output
-##### [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) |
-
-```log
-Inference time: xxx s
-[[-0.00674987 -0.01700369 -0.0028928  ... -0.05296675 -0.00352772
-   0.00827096]
- [-0.04398304  0.00023038  0.00643183 ... -0.02717186  0.00483789
-   0.02298774]]
 ```

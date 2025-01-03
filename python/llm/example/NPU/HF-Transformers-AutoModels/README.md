@@ -4,6 +4,7 @@ This folder contains examples of running IPEX-LLM on Intel NPU:
 
 - [LLM](LLM): examples of running large language models using IPEX-LLM optimizations
 - [Multimodal](Multimodal): examples of running large multimodal models using IPEX-LLM optimizations
+- [Embedding](Embedding): examples of running embedding models using IPEX-LLM optimizations
 
 ## Verified Models on Intel NPU
 | Model      | Model Link                                                    |
@@ -18,5 +19,5 @@ This folder contains examples of running IPEX-LLM on Intel NPU:
 | Baichuan2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) |
 | MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) |
 | MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) |
-| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) |
 | Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) |
+| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) |
