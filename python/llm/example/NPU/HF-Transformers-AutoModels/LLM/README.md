@@ -7,11 +7,10 @@ In this directory, you will find examples on how to directly run HuggingFace `tr
 |------------|----------------------------------------------------------------|
 | Llama2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) |
 | Llama3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) |
-| Llama3.2-1B | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct) |
-| Llama3.2-3B | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
+| Llama3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) |
 | GLM-Edge | [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat), [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat) |
-| Qwen2 | [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct), [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct) |
-| Qwen2.5 | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
+| Qwen2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct), [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) |
+| Qwen2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
 | Baichuan2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) |
 
@@ -48,13 +47,14 @@ The examples below show how to run the **_optimized HuggingFace model implementa
 - [Llama3-8B](./llama3.py)
 - [Llama3.2-1B](./llama3.py)
 - [Llama3.2-3B](./llama3.py)
+- [GLM-Edge-1.5B](./glm.py)
+- [GLM-Edge-4B](./glm.py)
 - [Qwen2-1.5B](./qwen.py)
+- [Qwen2-7B](./qwen.py)
 - [Qwen2.5-3B](./qwen.py)
 - [Qwen2.5-7B](./qwen.py)
 - [MiniCPM-1B](./minicpm.py)
 - [MiniCPM-2B](./minicpm.py)
-- [GLM-Edge-1.5B-Chat](./glm.py)
-- [GLM-Edge-4B-Chat](./glm.py)
 - [Baichuan2-7B](./baichuan2.py)
 
 ### Run
@@ -71,8 +71,17 @@ python llama3.py --repo-id-or-model-path "meta-llama/Llama-3.2-1B-Instruct" --s
 :: to run Llama-3.2-3B-Instruct
 python llama3.py --repo-id-or-model-path "meta-llama/Llama-3.2-3B-Instruct" --save-directory <converted_model_path>
 
+:: to run glm-edge-1.5b-chat
+python glm.py --repo-id-or-model-path "THUDM/glm-edge-1.5b-chat" --save-directory <converted_model_path>
+
+:: to run glm-edge-4b-chat
+python glm.py --repo-id-or-model-path "THUDM/glm-edge-4b-chat" --save-directory <converted_model_path>
+
 :: to run Qwen2-1.5B-Instruct
 python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct" --low-bit sym_int8 --save-directory <converted_model_path>
+
+:: to run Qwen2-7B-Instruct
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2-7B-Instruct" --save-directory <converted_model_path>
 
 :: to run Qwen2.5-3B-Instruct
 python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-3B-Instruct" --low-bit sym_int8 --save-directory <converted_model_path>
@@ -85,12 +94,6 @@ python minicpm.py --repo-id-or-model-path "openbmb/MiniCPM-1B-sft-bf16" --save-d
 
 :: to run MiniCPM-2B-sft-bf16
 python minicpm.py --repo-id-or-model-path "openbmb/MiniCPM-2B-sft-bf16" --save-directory <converted_model_path>
-
-:: to run glm-edge-1.5b-chat
-python glm.py --repo-id-or-model-path "THUDM/glm-edge-1.5b-chat" --save-directory <converted_model_path>
-
-:: to run glm-edge-4b-chat
-python glm.py --repo-id-or-model-path "THUDM/glm-edge-4b-chat" --save-directory <converted_model_path>
 
 :: to run Baichuan2-7B-Chat
 python baichuan2.py --repo-id-or-model-path "baichuan-inc/Baichuan2-7B-Chat" --save-directory <converted_model_path>
