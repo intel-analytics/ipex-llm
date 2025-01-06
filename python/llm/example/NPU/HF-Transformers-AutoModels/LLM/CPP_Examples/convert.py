@@ -50,7 +50,7 @@ if __name__ == "__main__":
     parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument("--quantization-group-size", type=int, default=0)
     parser.add_argument('--low-bit', type=str, default="sym_int4",
-                        help='Low bit precision to quantize the model.')
+                        help='Low bit optimizations that will be applied to the model.')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path

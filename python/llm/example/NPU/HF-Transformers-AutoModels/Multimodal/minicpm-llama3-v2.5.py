@@ -55,6 +55,7 @@ if __name__ == "__main__":
              "If path not exists, lowbit model will be saved there. "
              "Else, lowbit model will be loaded.",
     )
+
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
