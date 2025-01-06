@@ -160,11 +160,17 @@ IPEX-LLM provides several optimization methods for enhancing the accuracy of mod
 
 You could set environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` before loading & optimizing the model with `from_pretrained` function from `ipex_llm.transformers.npu_model` Auto Model class to further enhance model accuracy of low-bit models.
 
-### 2. Mixed Precision
+### 2. Low-Bit Optimizations
+
+IPEX-LLM on Intel NPU currently supports `sym_int4`/`asym_int4`/`sym_int8` low-bit optimizations. You could adjust the low-bit value to tune the accuracy. 
+
+For example, you could try to set `load_in_low_bit='asym_int4'` instead of `load_in_low_bit='sym_int4'` when loading & optimizing the model with `from_pretrained` function from `ipex_llm.transformers.npu_model` Auto Model class, to switch from `sym_int4` low-bit optimizations to `asym_int4`.
+
+### 3. Mixed Precision
 
 When loading & optimizing the model with `from_pretrained` function of `ipex_llm.transformers.npu_model` Auto Model class, you could try to set parameter `mixed_precision=True` to enable mixed precision optimization when encountering output problems.
 
-### 3. Group Size
+### 4. Group Size
 
 IPEX-LLM low-bit optimizations support both channel-wise and group-wise quantization on Intel NPU. When loading & optimizing the model with `from_pretrained` function of Auto Model class from `ipex_llm.transformers.npu_model`, parameter `quantization_group_size` will control whether to use channel-wise or group-wise quantization.
 
