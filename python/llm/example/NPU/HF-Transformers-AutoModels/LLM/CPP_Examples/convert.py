@@ -49,9 +49,8 @@ if __name__ == "__main__":
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument("--quantization-group-size", type=int, default=0)
-    parser.add_argument('--low_bit', type=str, default="sym_int4",
+    parser.add_argument('--low-bit', type=str, default="sym_int4",
                         help='Low bit precision to quantize the model')
-    parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -66,7 +65,6 @@ if __name__ == "__main__":
                                                  quantization_group_size=args.quantization_group_size,
                                                  torch_dtype=torch.float16,
                                                  attn_implementation="eager",
-                                                 transpose_value_cache=not args.disable_transpose_value_cache,
                                                  trust_remote_code=True,
                                                  save_directory=save_dir)
     t1 = time.perf_counter()

@@ -59,7 +59,7 @@ python convert.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --save-direc
 python convert.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --save-directory <converted_model_path>
 
 :: to convert Qwen2.5-3B-Instruct
-python convert.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --save-directory <converted_model_path> --low_bit "sym_int8"
+python convert.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --save-directory <converted_model_path> --low-bit "sym_int8"
 
 :: to convert Qwen2.5-7B-Instruct
 python convert.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --save-directory <converted_model_path>
@@ -72,12 +72,11 @@ python convert.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --save-di
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the model (e.g. `Qwen/Qwen2.5-7B-Instruct`) to be downloaded, or the path to the huggingface checkpoint folder.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the model (e.g.`Meta-llama/Llama-2-7b-chat-hf` for Llama2-7B) to be downloaded, or the path to the huggingface checkpoint folder.
 - `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, and the converted model will be saved into `SAVE_DIRECTORY`.
-- `--max-context-len MAX_CONTEXT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
-- `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `960`.
-- `--low_bit LOW_BIT`: Defines the low bit precision to quantize the model. It is default to be `sym_int4`.
-- `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
+- `--max-context-len MAX_CONTEXT_LEN`: argument defining the maximum sequence length for both input and output tokens. It is default to be `1024`.
+- `--max-prompt-len MAX_PROMPT_LEN`: argument defining the maximum number of tokens that the input prompt can contain. It is default to be `960`.
+- `--low-bit` LOW_BIT: argument defining the low bit optimizations that will be applied to the model. Available options are `"sym_int4"`, `"asym_int4"` and `"sym_int8"`, with `"sym_int4"` as the default.
 
 ## 3. Build C++ Example `llm-npu-cli`
 
