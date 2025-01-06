@@ -160,7 +160,7 @@ If you enconter output issues when running the CPP examples, you could try the f
 
 1. Before converting the model, consider setting an additional environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` to enhance output quality.
 
-2. If you are using the default `LOW_BIT` value (i.e. `sym_int4` optimizations), you could try to use `--low-bit "asym_int4"` instead to tune the output.
+2. If you are using the default `LOW_BIT` value (i.e. `sym_int4` optimizations), you could try to use `--low-bit "asym_int4"` instead to tune the output quality.
 
 3. You could refer to the [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#accuracy-tuning) for more accuracy tuning strategies.
 
