@@ -71,6 +71,19 @@ conda activate llm-npu
 > [!TIP]
 > `ipex-llm` for NPU supports Python 3.10 and 3.11.
 
+### (Optional) Install CMake
+
+> [!NOTE]
+>  If you plan to use the IPEX-LLM **Python API**, skip this step.
+
+With the `llm-npu` environment active, install CMake:
+
+```cmd
+conda activate llm-npu
+
+pip install cmake
+```
+
 ## Install `ipex-llm` with NPU Support
 
 With the `llm-npu` environment active, use `pip` to install `ipex-llm` for NPU:

@@ -24,6 +24,9 @@ We suggest using conda to manage environment:
 conda create -n llm python=3.11
 conda activate llm
 
+:: for building the example
+pip install cmake
+
 :: install ipex-llm with 'npu' option
 pip install --pre --upgrade ipex-llm[npu]
 
