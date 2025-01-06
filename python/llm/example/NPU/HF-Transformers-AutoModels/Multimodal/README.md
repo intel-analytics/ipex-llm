@@ -66,7 +66,7 @@ Arguments info:
 ##### [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6)
 
 ```log
-Inference time: xx.xx s
+Inference time: xxxx s
 -------------------- Input --------------------
 http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 -------------------- Prompt --------------------
