@@ -112,34 +112,31 @@ Arguments info:
 - Last argument is your input prompt.
 
 ### 5. Sample Output
-#### [`Qwen/Qwen2.5-7B-Instruct`](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct)
+#### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
 ##### Text Completion
 ```cmd
 Input:
-<|im_start|>system
-You are a helpful assistant.<|im_end|>
-<|im_start|>user
-AI是什么?<|im_end|>
-<|im_start|>assistant
+<s>[INST] <<SYS>>
 
+<</SYS>>
 
-Prefill 22 tokens cost xxxx ms.
+What is AI? [/INST]
 
-Decode 63 tokens cost xxxx ms (avg xx.xx ms each token).
+Prefill 26 tokens cost xxxx ms.
+
+Decode 63 tokens cost xxxx ms (avg xxxx ms each token).
 Output:
-AI是"人工智能"的缩写，它是一门研究计算机如何能够完成与人类智能相关任务的学科，包括学习、推理、自我修正等能力。简而言之，人工智能就是让计算机模拟或执行人类智能行为的理论、技术和方法。
-
-它涵盖了机器学习、深度学习、自然
+ AI stands for Artificial Intelligence, which is the field of study focused on creating and developing intelligent machines that can perform tasks that typically require human intelligence, such as visual and auditory recognition, speech recognition, and decision-making. AI is a broad and diverse field that includes a wide range
 ```
 
 ##### Conversation
 ```cmd
-User:你好
-Assistant:你好！很高兴能为你提供帮助。有什么问题或需要聊天可以找我哦。
-User:AI是什么?
-Assistant: AI代表的是"Artificial Intelligence"，中文翻译为人工智能。它是指由计算机或信息技术实现的智能行为。广义的人工智能可以指任何表现出智能行为的计算机或软件系统。狭义的人工智能则指的是模拟、学习、推理、理解自然语言以及自我生成的人工智能系统。
+User:Hi
+Assistant: Hello! It's nice to meet you. How can I help you today?
+User:What is AI in one sentence?
+Assistant:Sure, here's a one-sentence definition of AI:
 
-简而言之，人工智能是一种利用计算机和机器来模仿、模拟或扩展人类智能的技术或系统。它包括机器学习、深度学习、自然语言处理等多个子领域。
+Artificial Intelligence (AI) refers to the development and use of computer systems and algorithms that can perform tasks that typically require human intelligence, such as visual and speech recognition, decision-making and problem-solving, and natural language processing.
 User:exit
 ```
 
