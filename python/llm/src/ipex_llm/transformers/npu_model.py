@@ -663,7 +663,10 @@ class _BaseAutoModelClass:
                 from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
                 if save_directory is None:
                     invalidInputError(False,
-                                      "Please specify the save_directory.")
+                                      "Please specify the save_directory, the path of folder " +
+                                      "to save the compiled NPU model. If path not exists, " +
+                                      "the compiled NPU model will be saved there. " + 
+                                      "Else, program will raise an error.")
 
                 optimize_llm_single_process(
                     llm,
