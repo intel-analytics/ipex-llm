@@ -153,3 +153,16 @@ called `Result::unwrap()` on an `Err` value: Utf8Error { valid_up_to: 77, error_
 ```
 
 For detailed instructions on how to do this, see [this issue](https://github.com/intel-analytics/ipex-llm/issues/10989#issuecomment-2105598660).
+
+#### Accuracy Tuning
+
+If you enconter output issues when running the CPP examples, you could try the following methods [**when converting the model**](#2-convert-model) to tune the accuracy:
+
+1. Before converting the model, consider setting an additional environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` to enhance output quality.
+
+2. If you are using the default `LOW_BIT` value (i.e. `sym_int4` optimizations), you could try to use `--low-bit "asym_int4"` instead for better output.
+
+3. You could refer to the [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#accuracy-tuning) for more accuracy tuning strategies.
+
+> [!IMPORTANT]
+> Please note that to make the above methods taking effect, you must specify a new folder for `SAVE_DIRECTORY`. Reusing the same `SAVE_DIRECTORY` will load the previously saved low-bit model, and thus making the above accuracy tuning strategies ineffective.

@@ -111,8 +111,17 @@ Arguments info:
 
 ### Troubleshooting
 
-#### `TypeError: can't convert meta device type tensor to numpy.` Error
-If you encounter `TypeError: can't convert meta device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.` error when loading lowbit model, please try re-saving the lowbit model with the example script you are currently using. Please note that lowbit models saved by `qwen.py`, `llama.py`, etc. cannot be loaded by `generate.py`.
+#### Accuracy Tuning
+If you enconter output issues when running the examples, you could try the following methods to tune the accuracy:
+
+1. Before running the example, consider setting an additional environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` to enhance output quality.
+
+2. If you are using the default `LOW_BIT` value (i.e. `sym_int4` optimizations), you could try to use `--low-bit "asym_int4"` instead for better output.
+
+3. You could refer to the [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#accuracy-tuning) for more accuracy tuning strategies.
+
+> [!IMPORTANT]
+> Please note that to make the above methods taking effect, you must specify a new folder for `SAVE_DIRECTORY`. Reusing the same `SAVE_DIRECTORY` will load the previously saved low-bit model, and thus making the above accuracy tuning strategies ineffective.
 
 #### Better Performance with High CPU Utilization
 You could enable optimization by setting the environment variable with `set IPEX_LLM_CPU_LM_HEAD=1` for better performance. But this will cause high CPU utilization.

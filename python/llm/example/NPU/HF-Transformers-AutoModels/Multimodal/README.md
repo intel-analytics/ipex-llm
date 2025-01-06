@@ -62,6 +62,21 @@ Arguments info:
 - `--low-bit` LOW_BIT: argument defining the low bit optimizations that will be applied to the model. Available options are `"sym_int4"`, `"asym_int4"` and `"sym_int8"`, with `"sym_int4"` as the default.
 - `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, otherwise the lowbit model in `SAVE_DIRECTORY` will be loaded.
 
+#### Troubleshooting
+
+##### Accuracy Tuning
+If you enconter output issues when running the examples, you could try the following methods to tune the accuracy:
+
+1. Before running the example, consider setting an additional environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` to enhance output quality.
+
+2. If you are using the default `LOW_BIT` value (i.e. `sym_int4` optimizations), you could try to use `--low-bit "asym_int4"` instead for better output.
+
+3. You could refer to the [Quickstart](../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#accuracy-tuning) for more accuracy tuning strategies.
+
+> [!IMPORTANT]
+> Please note that to make the above methods taking effect, you must specify a new folder for `SAVE_DIRECTORY`. Reusing the same `SAVE_DIRECTORY` will load the previously saved low-bit model, and thus making the above accuracy tuning strategies ineffective.
+
+
 #### Sample Output
 ##### [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6)
 
