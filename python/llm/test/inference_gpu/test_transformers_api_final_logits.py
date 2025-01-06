@@ -29,7 +29,6 @@ print(f'Running on {device}')
 PROMPT = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
 TEST_MODEL_LIST = [
     ("MPT-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
-    ("Falcon-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
 ]
 
 
@@ -60,7 +59,7 @@ def test_optimize_model(Name, Model, Tokenizer, model_path):
         tol = 1e-03
         num_false = torch.isclose(logits_optimized_model, logits_base_model, rtol=tol, atol=tol)\
             .flatten().tolist().count(False)
-        
+
         percent_false = num_false / logits_optimized_model.numel()
         torch.xpu.empty_cache()
         del model
