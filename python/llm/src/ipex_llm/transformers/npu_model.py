@@ -661,6 +661,10 @@ class _BaseAutoModelClass:
         if optimize_model and not pipeline:
             if model.config.model_type in ["qwen2", "llama", "minicpm"]:
                 from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
+                if save_directory is None:
+                    invalidInputError(False,
+                                      "Please specify the save_directory.")
+
                 optimize_llm_single_process(
                     llm,
                     kv_len=max_context_len,
