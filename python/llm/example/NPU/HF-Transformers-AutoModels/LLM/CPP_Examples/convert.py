@@ -48,7 +48,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=960)
-    parser.add_argument("--quantization_group_size", type=int, default=0)
+    parser.add_argument("--quantization-group-size", type=int, default=0)
     parser.add_argument('--low_bit', type=str, default="sym_int4",
                         help='Low bit precision to quantize the model')
     parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)

@@ -34,15 +34,16 @@ if __name__ == "__main__":
         "--repo-id-or-model-path",
         type=str,
         default="openbmb/MiniCPM-1B-sft-bf16",
-        help="The huggingface repo id for the Llama2 model to be downloaded"
+        help="The huggingface repo id for the MiniCPM model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
-    parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
+    parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict.")
     parser.add_argument("--max-context-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=512)
-    parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
+    parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument('--low-bit', type=str, default="sym_int4",
+                        help='Low bit optimizations that will be applied to the model.')
     parser.add_argument("--disable-streaming", action="store_true", default=False)
     parser.add_argument("--save-directory", type=str,
         required=True,
@@ -59,11 +60,10 @@ if __name__ == "__main__":
             torch_dtype=torch.float16,
             trust_remote_code=True,
             attn_implementation="eager",
-            load_in_low_bit="sym_int4",
+            load_in_low_bit=args.low_bit,
             optimize_model=True,
             max_context_len=args.max_context_len,
             max_prompt_len=args.max_prompt_len,
-            transpose_value_cache=not args.disable_transpose_value_cache,
             save_directory=args.save_directory
         )
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -76,8 +76,7 @@ if __name__ == "__main__":
             optimize_model=True,
             max_context_len=args.max_context_len,
             max_prompt_len=args.max_prompt_len,
-            transpose_value_cache=not args.disable_transpose_value_cache,
-            trust_remote_code=True,
+            trust_remote_code=True
         )
         tokenizer = AutoTokenizer.from_pretrained(args.save_directory, trust_remote_code=True)        
 

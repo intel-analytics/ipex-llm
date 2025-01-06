@@ -78,7 +78,7 @@ python glm.py --repo-id-or-model-path "THUDM/glm-edge-1.5b-chat" --save-director
 python glm.py --repo-id-or-model-path "THUDM/glm-edge-4b-chat" --save-directory <converted_model_path>
 
 :: to run Qwen2-1.5B-Instruct
-python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct" --low-bit sym_int8 --save-directory <converted_model_path>
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct"  --save-directory <converted_model_path>
 
 :: to run Qwen2-7B-Instruct
 python qwen.py --repo-id-or-model-path "Qwen/Qwen2-7B-Instruct" --save-directory <converted_model_path>
@@ -100,26 +100,19 @@ python baichuan2.py --repo-id-or-model-path "baichuan-inc/Baichuan2-7B-Chat" --s
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the Llama2 model (i.e. `meta-llama/Llama-2-7b-chat-hf`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'meta-llama/Llama-2-7b-chat-hf'`.
-- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `What is AI?`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the model (e.g.`Meta-llama/Llama-2-7b-chat-hf` for Llama2-7B) to be downloaded, or the path to the huggingface checkpoint folder.
+- `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `"What is AI?"` or `"AI是什么？"`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
-- `--max-context-len MAX_CONTEXT_LEN`: Defines the maximum sequence length for both input and output tokens. It is default to be `1024`.
-- `--max-prompt-len MAX_PROMPT_LEN`: Defines the maximum number of tokens that the input prompt can contain. It is default to be `512`.
-- `--disable-transpose-value-cache`: Disable the optimization of transposing value cache.
-- `--disable-streaming`: Disable streaming mode of generation.
+- `--max-context-len MAX_CONTEXT_LEN`: argument defining the maximum sequence length for both input and output tokens. It is default to be `1024`.
+- `--max-prompt-len MAX_PROMPT_LEN`: argument defining the maximum number of tokens that the input prompt can contain. It is default to be `960`.
+- `--low-bit` LOW_BIT: argument defining the low bit optimizations that will be applied to the model. Available options are `"sym_int4"`, `"asym_int4"` and `"sym_int8"`, with `"sym_int4"` as the default.
+- `--disable-streaming`: argument defining whether to disable the streaming mode for generation.
 - `--save-directory SAVE_DIRECTORY`: argument defining the path to save converted model. If it is a non-existing path, the original pretrained model specified by `REPO_ID_OR_MODEL_PATH` will be loaded, otherwise the lowbit model in `SAVE_DIRECTORY` will be loaded.
 
 ### Troubleshooting
 
 #### `TypeError: can't convert meta device type tensor to numpy.` Error
 If you encounter `TypeError: can't convert meta device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.` error when loading lowbit model, please try re-saving the lowbit model with the example script you are currently using. Please note that lowbit models saved by `qwen.py`, `llama.py`, etc. cannot be loaded by `generate.py`.
-
-#### Output Problem
-If you encounter output problem, please try to disable the optimization of transposing value cache such as the following command:
-```cmd
-:: to run Llama-2-7b-chat-hf
-python llama2.py --save-directory <converted_model_path> --disable-transpose-value-cache
-``` 
 
 #### Better Performance with High CPU Utilization
 You could enable optimization by setting the environment variable with `set IPEX_LLM_CPU_LM_HEAD=1` for better performance. But this will cause high CPU utilization.

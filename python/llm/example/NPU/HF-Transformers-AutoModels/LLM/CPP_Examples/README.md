@@ -53,7 +53,7 @@ python convert.py --repo-id-or-model-path meta-llama/Llama-3.2-1B-Instruct --sa
 python convert.py --repo-id-or-model-path meta-llama/Llama-3.2-3B-Instruct --save-directory <converted_model_path>
 
 :: to convert Qwen2-1.5B-Instruct
-python convert.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --save-directory <converted_model_path> --low_bit "sym_int8"
+python convert.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --save-directory <converted_model_path>
 
 :: to convert Qwen2-7B-Instruct
 python convert.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --save-directory <converted_model_path>

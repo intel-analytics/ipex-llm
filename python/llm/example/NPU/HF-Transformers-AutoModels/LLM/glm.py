@@ -34,18 +34,17 @@ if __name__ == "__main__":
         "--repo-id-or-model-path",
         type=str,
         default="THUDM/glm-edge-1.5b-chat",
-        help="The huggingface repo id for the glm-edge model to be downloaded"
+        help="The huggingface repo id for the GLM-Edge model to be downloaded"
         ", or the path to the huggingface checkpoint folder",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
-    parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
+    parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict.")
     parser.add_argument("--max-context-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=512)
+    parser.add_argument("--max-prompt-len", type=int, default=960)
     parser.add_argument('--low-bit', type=str, default="sym_int4",
-                        help='Load in low bit to use')
+                        help='Low bit optimizations that will be applied to the model.')
     parser.add_argument("--disable-streaming", action="store_true", default=False)
-    parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--save-directory", type=str,
         required=True,
         help="The path of folder to save converted model, "
@@ -66,7 +65,6 @@ if __name__ == "__main__":
             optimize_model=True,
             max_context_len=args.max_context_len,
             max_prompt_len=args.max_prompt_len,
-            transpose_value_cache=not args.disable_transpose_value_cache,
             save_directory=args.save_directory
         )
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -79,7 +77,6 @@ if __name__ == "__main__":
             optimize_model=True,
             max_context_len=args.max_context_len,
             max_prompt_len=args.max_prompt_len,
-            transpose_value_cache=not args.disable_transpose_value_cache,
         )
         tokenizer = AutoTokenizer.from_pretrained(args.save_directory, trust_remote_code=True)
 
