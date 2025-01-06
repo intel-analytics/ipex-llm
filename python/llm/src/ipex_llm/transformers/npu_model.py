@@ -27,7 +27,7 @@ from transformers.configuration_utils import PretrainedConfig
 
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.transformers.utils import logger, load_imatrix_data
-from ipex_llm.transformers.npu_models.convert import optimize_llm, optimize_llm_post
+from ipex_llm.transformers.npu_models.convert import optimize_llm
 
 
 def patch_flash_attn_import(filename: str) -> List[str]:
@@ -207,8 +207,6 @@ class _BaseAutoModelClass:
             model = model.eval()
             logger.info(f"Finish to convert model")
         else:
-            from intel_npu_acceleration_library.compiler import create_npu_kernels
-
             if optimize_model:
                 invalidInputError(
                     max_prompt_len < max_context_len,
@@ -232,11 +230,14 @@ class _BaseAutoModelClass:
                     "convert_model": convert_model,
                     "save_directory": save_directory,
                     "fuse_layers": fuse_layers,
-                    "imatrix_data": imatrix_data
+                    "imatrix_data": imatrix_data,
+                    "skip_npu_logic": mock_device == "dummy",
                 }
+                # Dummy will skip npu related logic and save the quantized model
+                if mock_device == "dummy":
+                    model.save_low_bit = types.MethodType(save_low_bit, model)
                 model = cls.optimize_npu_model(*args, **optimize_kwargs)
             else:
-                from ipex_llm.transformers.npu_models.convert import optimize_llm
                 optimize_llm(model)
                 with torch.no_grad():
                     cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
@@ -258,7 +259,6 @@ class _BaseAutoModelClass:
     def optimize_npu_model(cls, *args, **kwargs):
 
         from ipex_llm.transformers.npu_models.convert_mp import optimize_llm_pre, optimize_llm
-        from intel_npu_acceleration_library.compiler import create_npu_kernels
 
         model = kwargs.pop("model")
         qtype = kwargs.pop("qtype", "sym_int4_rtn")
@@ -275,6 +275,7 @@ class _BaseAutoModelClass:
         save_directory = kwargs.pop('save_directory', None)
         fuse_layers = kwargs.pop('fuse_layers', None)
         imatrix_data = kwargs.pop('imatrix_data', None)
+        skip_npu_logic = kwargs.pop("skip_npu_logic", False)
         invalidInputError(save_directory is not None,
                           "Please provide the path to save converted model "
                           "through `save_directory`.")
@@ -294,51 +295,58 @@ class _BaseAutoModelClass:
             cls.load_convert(qtype, model, "cpu", modules_to_not_convert,
                              quantization_group_size, imatrix_data,
                              *args, **kwargs)
-            create_npu_kernels(llm)
+            if not skip_npu_logic:
+                from intel_npu_acceleration_library.compiler import create_npu_kernels
+                create_npu_kernels(llm)
         model = model.eval()
         logger.info(f"Finish to convert model")
         model.config.update({"bigdl_transformers_low_bit": qtype})
-        model.share_memory()
 
-        if not pipeline:
-            if model.config.model_type in ["qwen2", "llama", "minicpm"]:
-                from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
-                optimize_llm_single_process(
-                    llm,
-                    kv_len=max_context_len,
-                    max_prompt_len=max_prompt_len,
-                    transpose_value_cache=transpose_value_cache,
-                    group_size=quantization_group_size,
-                    qtype=qtype,
-                    save_directory=save_directory,
-                    fuse_layers=fuse_layers,
-                    has_llm=hasattr(model, "llm")
-                )
-            else:
-                optimize_llm(
-                    llm,
-                    max_context_len=max_context_len,
-                    max_prompt_len=max_prompt_len,
-                    inter_pp=inter_pp,
-                    intra_pp=intra_pp,
-                    transpose_value_cache=transpose_value_cache,
-                    group_size=quantization_group_size
-                )
+        if skip_npu_logic:
+            model.save_low_bit(model_dir=save_directory)
         else:
-            from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
-                import convert_llm
-            convert_llm(llm,
+            model.share_memory()
+
+            if not pipeline:
+                if model.config.model_type in ["qwen2", "llama", "minicpm"]:
+                    from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
+                    optimize_llm_single_process(
+                        llm,
                         kv_len=max_context_len,
                         max_prompt_len=max_prompt_len,
                         transpose_value_cache=transpose_value_cache,
                         group_size=quantization_group_size,
                         qtype=qtype,
-                        convert_model=convert_model,
                         save_directory=save_directory,
-                        fuse_layers=fuse_layers)
-        model.save_low_bit = types.MethodType(save_low_bit, model)
-        model.save_low_bit(save_directory)
-        logger.info(f"Converted model has already saved to {save_directory}.")
+                        fuse_layers=fuse_layers,
+                        has_llm=hasattr(model, "llm")
+                    )
+                else:
+                    optimize_llm(
+                        llm,
+                        max_context_len=max_context_len,
+                        max_prompt_len=max_prompt_len,
+                        inter_pp=inter_pp,
+                        intra_pp=intra_pp,
+                        transpose_value_cache=transpose_value_cache,
+                        group_size=quantization_group_size
+                    )
+            else:
+                from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
+                    import convert_llm
+                convert_llm(llm,
+                            kv_len=max_context_len,
+                            max_prompt_len=max_prompt_len,
+                            transpose_value_cache=transpose_value_cache,
+                            group_size=quantization_group_size,
+                            qtype=qtype,
+                            convert_model=convert_model,
+                            save_directory=save_directory,
+                            fuse_layers=fuse_layers)
+            model.save_low_bit = types.MethodType(save_low_bit, model)
+            model.save_low_bit(save_directory)
+            logger.info(f"Converted model has already saved to {save_directory}.")
+
         return model
 
     @classmethod
@@ -379,6 +387,7 @@ class _BaseAutoModelClass:
         intra_pp = kwargs.pop("intra_pp", None)
         transpose_value_cache = kwargs.pop("transpose_value_cache", True)
         modules_to_not_convert = kwargs.pop("modules_to_not_convert", [])
+        save_directory = kwargs.pop('save_directory', None)
 
         from transformers.models.auto.configuration_auto import AutoConfig
         from transformers.modeling_utils import no_init_weights, get_state_dict_dtype
@@ -650,16 +659,37 @@ class _BaseAutoModelClass:
             param.requires_grad_(False)
 
         if optimize_model and not pipeline:
-            from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
-            optimize_llm(
-                llm,
-                max_context_len=max_context_len,
-                max_prompt_len=max_prompt_len,
-                inter_pp=inter_pp,
-                intra_pp=intra_pp,
-                transpose_value_cache=transpose_value_cache,
-                group_size=quantization_group_size
-            )
+            if model.config.model_type in ["qwen2", "llama", "minicpm"]:
+                from ipex_llm.transformers.npu_models.convert import optimize_llm_single_process
+                if save_directory is None:
+                    invalidInputError(False,
+                                      "Please specify the save_directory, the path of folder " +
+                                      "to save the compiled NPU model. If path not exists, " +
+                                      "the compiled NPU model will be saved there. " +
+                                      "Else, program will exit.")
+
+                optimize_llm_single_process(
+                    llm,
+                    kv_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    transpose_value_cache=transpose_value_cache,
+                    group_size=quantization_group_size,
+                    qtype=qtype,
+                    save_directory=save_directory,
+                    fuse_layers=None,
+                    has_llm=hasattr(model, "llm")
+                )
+            else:
+                from ipex_llm.transformers.npu_models.convert_mp import optimize_llm
+                optimize_llm(
+                    llm,
+                    max_context_len=max_context_len,
+                    max_prompt_len=max_prompt_len,
+                    inter_pp=inter_pp,
+                    intra_pp=intra_pp,
+                    transpose_value_cache=transpose_value_cache,
+                    group_size=quantization_group_size
+                )
         elif optimize_model and pipeline:
             from ipex_llm.transformers.npu_pipeline_model.convert_pipeline \
                 import convert_llm

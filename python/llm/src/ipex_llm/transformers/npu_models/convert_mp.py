@@ -18,7 +18,7 @@ import torch
 import importlib
 import numpy as np
 from ipex_llm.transformers.low_bit_linear import LowBitLinear, FP4Params
-from ipex_llm.transformers.npu_models.lm_head import LMHeadLinear, SlicedLMHead
+from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 from ipex_llm.utils.common.log4Error import invalidInputError
 
 
