@@ -665,8 +665,8 @@ class _BaseAutoModelClass:
                     invalidInputError(False,
                                       "Please specify the save_directory, the path of folder " +
                                       "to save the compiled NPU model. If path not exists, " +
-                                      "the compiled NPU model will be saved there. " + 
-                                      "Else, program will raise an error.")
+                                      "the compiled NPU model will be saved there. " +
+                                      "Else, program will exit.")
 
                 optimize_llm_single_process(
                     llm,
