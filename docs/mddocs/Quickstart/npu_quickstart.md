@@ -133,6 +133,10 @@ Refer to the following table for examples of verified models:
 > [!TIP]
 > You could refer to [here](../../../python/llm/example/NPU/HF-Transformers-AutoModels) for full IPEX-LLM examples on Intel NPU.
 
+### Save & Load Low-Bit Models
+
+IPEX-LLM also provides Python API for saving/loading models with low-bit optimizations on Intel NPU, to avoid repeated loading & optimizing of the original models. Refer to the [Save-Load example](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Save-Load) for usage in details.
+
 ## C++ API
 
 IPEX-LLM also provides C++ API for running Hugging Face `transformers` models.
