@@ -28,7 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="Qwen/Qwen2-VL-7B-Instruct",
                         help='The huggingface repo id for the Qwen2-VL model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="Describe this image.",
+    parser.add_argument('--prompt', type=str, default="图片里有什么？",
                         help='Prompt to infer') 
     parser.add_argument('--image-url-or-path', type=str,
                         default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg' ,
@@ -50,11 +50,10 @@ if __name__ == '__main__':
     model_path = args.repo_id_or_model_path
 
     model = Qwen2VLForConditionalGeneration.from_pretrained(model_path,
-                                                 trust_remote_code=True,
-                                                 torch_dtype='auto',
-                                                 modules_to_not_convert=["visual"],
                                                  load_in_4bit=True,
-                                                 low_cpu_mem_usage=True,
+                                                 optimize_model=True,
+                                                 trust_remote_code=True,
+                                                 modules_to_not_convert=["vision"],
                                                  use_cache=True,
                                                  model_hub=model_hub)
 

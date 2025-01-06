@@ -21,8 +21,7 @@ pip install qwen_vl_utils
 pip install "trl<0.12.0"
 
 # [optional] only needed if you would like to use ModelScope as model hub
-pip install modelscope==1.21.0
-pip install addict simplejson python-dateutil sortedcontainers
+pip install modelscope[datasets]==1.21.1
 ```
 
 #### 1.2 Installation on Windows
@@ -40,8 +39,7 @@ pip install qwen_vl_utils
 pip install "trl<0.12.0"
 
 # [optional] only needed if you would like to use ModelScope as model hub
-pip install modelscope==1.21.0
-pip install addict simplejson python-dateutil sortedcontainers
+pip install modelscope[datasets]==1.21.1
 ```
 
 ### 2. Configures OneAPI environment variables for Linux
@@ -131,9 +129,9 @@ Inference time: xxxx s
 -------------------- Input Image --------------------
 http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 -------------------- Prompt --------------------
-Describe this image.
+图片里有什么？
 -------------------- Output --------------------
-The image depicts a young child holding a small white teddy bear. The teddy bear is dressed in a pink outfit, which includes a pink skirt and a
+图片里有一个小女孩，她穿着粉红色的条纹连衣裙，手里拿着一个白色的毛绒玩具。背景中有一堵石墙和一些
 ```
 
 ```log
@@ -141,9 +139,9 @@ Inference time: xxxx s
 -------------------- Input Image --------------------
 http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg
 -------------------- Prompt --------------------
-请描述这幅图片
+What is in the image?
 -------------------- Output --------------------
-这是一张小女孩抱着一个白色的小熊玩偶的图片。小女孩穿着一件粉红色的条纹连衣裙，手里抱着的小熊玩偶
+The image shows a young child holding a small white teddy bear dressed in a pink outfit. The child is standing in front of a stone wall with red flowers
 ```
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
