@@ -27,6 +27,7 @@ from transformers.configuration_utils import PretrainedConfig
 
 from ipex_llm.utils.common.log4Error import invalidInputError
 from ipex_llm.transformers.utils import logger, load_imatrix_data
+from ipex_llm.transformers.npu_models.convert import optimize_llm
 
 
 def patch_flash_attn_import(filename: str) -> List[str]:
@@ -237,7 +238,6 @@ class _BaseAutoModelClass:
                     model.save_low_bit = types.MethodType(save_low_bit, model)
                 model = cls.optimize_npu_model(*args, **optimize_kwargs)
             else:
-                from ipex_llm.transformers.npu_models.convert import optimize_llm
                 optimize_llm(model)
                 with torch.no_grad():
                     cls.load_convert(qtype, model, "cpu", modules_to_not_convert,

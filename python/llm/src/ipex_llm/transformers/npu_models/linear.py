@@ -29,6 +29,17 @@ import uuid
 import math
 from typing import Optional, Union
 from ipex_llm.utils.common import invalidInputError
+import importlib
+
+
+def is_acclib_available():
+    return importlib.util.find_spec("intel_npu_acceleration_library") is not None
+
+
+if is_acclib_available():
+    from intel_npu_acceleration_library.quantization import quantize_tensor, compress_to_i4
+    from intel_npu_acceleration_library.dtypes import NPUDtype
+    from intel_npu_acceleration_library.backend import run_matmul
 
 
 class Linear(torch.nn.Module):
