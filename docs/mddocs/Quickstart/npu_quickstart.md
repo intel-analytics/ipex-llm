@@ -74,7 +74,7 @@ conda activate llm-npu
 ### (Optional) Install CMake
 
 > [!NOTE]
->  If you plan to use the IPEX-LLM **Python API**, skip this step.
+>  Cmake installation is for IPEX-LLM **C++ API** on Intel NPU. If you plan to use the **Python API**, skip this step.
 
 With the `llm-npu` environment active, install CMake:
 
