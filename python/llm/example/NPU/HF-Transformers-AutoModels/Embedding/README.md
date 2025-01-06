@@ -21,7 +21,6 @@ conda activate llm
 
 # install ipex-llm with 'npu' option
 pip install --pre --upgrade ipex-llm[npu]
-pip install torchvision
 
 # [optional] for Bce-Embedding-Base-V1
 pip install BCEmbedding==0.1.5 transformers==4.40.0
