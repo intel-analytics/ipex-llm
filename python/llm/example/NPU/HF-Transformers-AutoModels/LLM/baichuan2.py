@@ -35,7 +35,7 @@ if __name__ == "__main__":
         type=str,
         default="baichuan-inc/Baichuan2-7B-Chat",
         help="The huggingface repo id for the Baichuan2 model to be downloaded"
-        ", or the path to the huggingface checkpoint folder",
+        ", or the path to the huggingface checkpoint folder.",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')

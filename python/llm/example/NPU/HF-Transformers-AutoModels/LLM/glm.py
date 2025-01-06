@@ -35,7 +35,7 @@ if __name__ == "__main__":
         type=str,
         default="THUDM/glm-edge-1.5b-chat",
         help="The huggingface repo id for the GLM-Edge model to be downloaded"
-        ", or the path to the huggingface checkpoint folder",
+        ", or the path to the huggingface checkpoint folder.",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')

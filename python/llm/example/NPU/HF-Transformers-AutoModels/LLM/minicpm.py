@@ -35,7 +35,7 @@ if __name__ == "__main__":
         type=str,
         default="openbmb/MiniCPM-1B-sft-bf16",
         help="The huggingface repo id for the MiniCPM model to be downloaded"
-        ", or the path to the huggingface checkpoint folder",
+        ", or the path to the huggingface checkpoint folder.",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')

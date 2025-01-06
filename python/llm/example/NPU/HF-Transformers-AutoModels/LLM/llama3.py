@@ -49,7 +49,7 @@ if __name__ == "__main__":
         type=str,
         default="meta-llama/Meta-Llama-3-8B-Instruct",
         help="The huggingface repo id for the Llama3 model to be downloaded"
-        ", or the path to the huggingface checkpoint folder",
+        ", or the path to the huggingface checkpoint folder.",
     )
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
