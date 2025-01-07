@@ -312,6 +312,15 @@ def setup_package():
                          "bigdl-core-xe-addons-23==" + CORE_XE_VERSION,
                          "onednn-devel==2024.1.1;platform_system=='Windows'",
                          "onednn==2024.1.1;platform_system=='Windows'"]
+    
+    # Add for testing purposes for now
+    xpu_26_requires = copy.deepcopy(all_requires)
+    for exclude_require in cpu_torch_version:
+        xpu_26_requires.remove(exclude_require)
+    xpu_26_requires += ["torch==2.6.0+xpu",
+                        "torchvision==0.21.0+xpu",
+                        "torchaudio==2.6.0+xpu",
+                        "bigdl-core-xe-all==" + CORE_XE_VERSION]
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
                     "onednn-devel==2024.2.1;platform_system=='Windows'",
@@ -363,6 +372,7 @@ def setup_package():
                         "xpu-lnl": xpu_lnl_requires,
                         "xpu-arl": xpu_lnl_requires,
                         "xpu-arc": xpu_lnl_requires,
+                        "xpu-2-6": xpu_26_requires,
                         "serving": serving_requires,
                         "cpp": cpp_requires,
                         "cpp-arl": cpp_arl_requires,
