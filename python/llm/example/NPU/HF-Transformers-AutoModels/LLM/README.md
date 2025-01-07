@@ -84,7 +84,7 @@ python qwen.py --repo-id-or-model-path "Qwen/Qwen2-1.5B-Instruct"  --save-direct
 python qwen.py --repo-id-or-model-path "Qwen/Qwen2-7B-Instruct" --save-directory <converted_model_path>
 
 :: to run Qwen2.5-3B-Instruct
-python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-3B-Instruct" --low-bit sym_int8 --save-directory <converted_model_path>
+python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-3B-Instruct" --low-bit asym_int4 --save-directory <converted_model_path>
 
 :: to run Qwen2.5-7B-Instruct
 python qwen.py --repo-id-or-model-path "Qwen/Qwen2.5-7B-Instruct" --save-directory <converted_model_path>

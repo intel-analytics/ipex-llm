@@ -62,7 +62,7 @@ python convert.py --repo-id-or-model-path Qwen/Qwen2-1.5B-Instruct --save-direc
 python convert.py --repo-id-or-model-path Qwen/Qwen2-7B-Instruct --save-directory <converted_model_path>
 
 :: to convert Qwen2.5-3B-Instruct
-python convert.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --save-directory <converted_model_path> --low-bit "sym_int8"
+python convert.py --repo-id-or-model-path Qwen/Qwen2.5-3B-Instruct --save-directory <converted_model_path> --low-bit "asym_int4"
 
 :: to convert Qwen2.5-7B-Instruct
 python convert.py --repo-id-or-model-path Qwen/Qwen2.5-7B-Instruct --save-directory <converted_model_path>
