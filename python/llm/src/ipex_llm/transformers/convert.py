@@ -1492,44 +1492,6 @@ def _optimize_post(model):
                         module.BloomAttention,
                         bloom_attention_forward
                         )
-    elif "falcon" in model.config.model_type or "RefinedWeb" in model.config.model_type:
-        if model.config.architectures is not None:
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            if "RWForCausalLM" in model.config.architectures:
-                if model.config.hidden_size == 4544:
-                    # falcon-7b need to check performance drop after kv cache support.
-                    # from ipex_llm.transformers.models.falcon import rw_attention_forward_7b
-                    # convert_forward(model,
-                    #                 module.Attention,
-                    #                 rw_attention_forward_7b
-                    #                 )
-                    pass
-                else:
-                    # falcon-40b
-                    from ipex_llm.transformers.models.falcon import rw_attention_forward_40b
-                    convert_forward(model,
-                                    module.Attention,
-                                    rw_attention_forward_40b
-                                    )
-            elif "FalconForCausalLM" in model.config.architectures:
-                if model.config.hidden_size != 4544:
-                    # falcon-180b and new falcon-40b
-                    if version.parse(trans_version) >= version.parse("4.36.0"):
-                        # transformers version >= 4.36.0
-                        from ipex_llm.transformers.models.falcon import \
-                            falcon_attention_forward_4_36
-
-                        convert_forward(model,
-                                        module.FalconAttention,
-                                        falcon_attention_forward_4_36
-                                        )
-                    else:
-                        from ipex_llm.transformers.models.falcon import falcon_attention_forward
-                        convert_forward(model,
-                                        module.FalconAttention,
-                                        falcon_attention_forward
-                                        )
     elif model.config.model_type == "baichuan":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

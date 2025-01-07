@@ -30,7 +30,6 @@ PROMPT = "Once upon a time, there existed a little girl who liked to have advent
 TEST_MODEL_LIST = [
     ("MPT-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
     ("Llama2-7B", AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
-    ("Falcon-7B", AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
     ("ChatGLM2-6B", AutoModel, AutoTokenizer, os.environ.get('CHATGLM2_6B_ORIGIN_PATH')),
     ("Mistral-7B-Instruct-v0.1", AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH')),
     ("Baichuan2-7B-Chat", AutoModelForCausalLM, AutoTokenizer, os.environ.get('BAICHUAN2_7B_ORIGIN_PATH')),
@@ -128,8 +127,6 @@ class Test_Optimize_Gpu_Model:
             self.MPT_7B_gpu_model(Name, Model, Tokenizer, model_path)
         elif Name == "Llama2-7B":
             self.Llama2_7B_gpu_model(Name, Model, Tokenizer, model_path)
-        elif Name == "Falcon-7B":
-            self.Falcon_7B_gpu_model(Name, Model, Tokenizer, model_path)
         elif Name == "ChatGLM2-6B":
             self.Chatglm2_gpu_model(Name, Model, Tokenizer, model_path)
         elif Name == "Mistral-7B-Instruct-v0.1":
@@ -152,13 +149,6 @@ class Test_Optimize_Gpu_Model:
         layer_norm = "model.layers.31.input_layernorm"
         self_attn = "model.layers.31.self_attn"
         lower_bound = 2e-1
-        self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
-
-    def Falcon_7B_gpu_model(self, Name, Model, Tokenizer, model_path):
-        # currently only compare the output of the last self-attention layer.
-        layer_norm = "transformer.h.31.input_layernorm"
-        self_attn = "transformer.h.31.self_attention"
-        lower_bound = 0
         self.run_optimize_gpu_model(Name, Model, Tokenizer, model_path, self_attn, layer_norm, lower_bound)
 
     def Chatglm2_gpu_model(self, Name, Model, Tokenizer, model_path):

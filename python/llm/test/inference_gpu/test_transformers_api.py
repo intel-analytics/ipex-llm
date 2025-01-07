@@ -32,7 +32,6 @@ print(f'Running on {device}')
 @pytest.mark.parametrize('Model, Tokenizer, model_path',[
     (AutoModelForCausalLM, LlamaTokenizer, os.environ.get('LLAMA2_7B_ORIGIN_PATH')),
     (AutoModel, AutoTokenizer, os.environ.get('CHATGLM2_6B_ORIGIN_PATH')),
-    (AutoModelForCausalLM, AutoTokenizer, os.environ.get('FALCON_7B_ORIGIN_PATH')),
     (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MPT_7B_ORIGIN_PATH')),
     # (AutoModelForCausalLM, AutoTokenizer, os.environ.get('MISTRAL_7B_INSTRUCT_V0_1_ORIGIN_PATH')),
     # (AutoModelForCausalLM, AutoTokenizer, os.environ.get('BAICHUAN2_7B_ORIGIN_PATH')),
@@ -67,7 +66,7 @@ def test_load_low_bit_completion(Model, Tokenizer, model_path, prompt, answer):
                                   load_in_4bit=True,
                                   optimize_model=True,
                                   trust_remote_code=True)
-    
+
     with tempfile.TemporaryDirectory() as tempdir:
         model.save_low_bit(tempdir)
         loaded_model = Model.load_low_bit(tempdir,
