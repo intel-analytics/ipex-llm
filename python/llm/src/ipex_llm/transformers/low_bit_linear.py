@@ -838,7 +838,7 @@ class FP16Linear(nn.Linear):
         if self.disable_fp16_opt:
             return False
         # esimd kernel can only be used for Arc and Flex
-        if gpu_type not in ["arc", "flex"]:
+        if gpu_type not in ["arc"]:
             return False
         # now esimd kernel can only be used for specific cases (llama2-7b shape)
         if self.in_len == 11008 and self.out_features == 4096:
