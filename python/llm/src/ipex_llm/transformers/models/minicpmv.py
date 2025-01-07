@@ -53,10 +53,10 @@ def siglip_attention_forward(
     qkv = qkv.transpose(1, 2)
     query_states, key_states, value_states = qkv.chunk(3, dim=1)
 
-    from ipex_llm.transformers.utils import get_xpu_device_type
+    from ipex_llm.transformers.utils import get_xpu_device_name
     if (
         self.head_dim == 72
-        and get_xpu_device_type(query_states) in ["arc", "flex"] and
+        and get_xpu_device_name(query_states.device) == "arc" and
         query_states.dtype in [torch.float, torch.half]
     ):
         n_heads, kv_length = query_states.size(1), key_states.size(2)

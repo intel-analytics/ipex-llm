@@ -51,7 +51,7 @@ from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
 from ipex_llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
-from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_type, \
+from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_name, \
     get_ipex_version
 from ipex_llm.transformers.convert import is_deepspeed_available, get_use_vllm
 
@@ -266,7 +266,7 @@ def reshape_lm_head_input(x):
 
 
 def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
-    device = get_xpu_device_type(x)
+    device_name = get_xpu_device_name(x.device)
     batch_size = x.shape[0]
     hard_condition = (
         x.dtype in [torch.float, torch.half]
@@ -286,7 +286,7 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
             or (
                 qtype in [SYM_INT8, FP4, FP6, Q4_K, Q6_K]
                 and batch_size <= 48
-                and device in ["arc", "flex", "pvc", "mtl"]
+                and device_name in ["arc", "pvc", "mtl", "lnl", "arl"]
                 and x.shape[1] % 256 == 0
                 and output_len % 32 == 0
             )
@@ -295,8 +295,8 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
     if hard_condition:
         return (
             batch_size > 1
-            or (device in ["arc", "flex"] and qtype in [SYM_INT8, FP4])
-            or (device in ["arc", "flex", "mtl"] and qtype in [FP8E4])
+            or (device in ["arc"] and qtype in [SYM_INT8, FP4])
+            or (device in ["arc", "mtl"] and qtype in [FP8E4])
             or (device in ["lnl"] and qtype in [SYM_INT4] and x.shape[1] % 512 == 0)
             or (device in ["bmg"] and qtype in [SYM_INT4, FP8E5])
         )
@@ -603,7 +603,7 @@ class LowBitLinear(nn.Linear):
         # empty cache before and after lm_head at first token when input > 1024
         # on arc or IPEX_LLM_LOW_MEM is set to 1 at inference time.
         if self.device is None:
-            self.device = get_xpu_device_type(self.weight.data)
+            self.device = get_xpu_device_name(self.weight.data.device)
             self.low_memory_mode = \
                 self.low_memory_mode and \
                 (self.device == "arc" or os.environ.get("IPEX_LLM_LOW_MEM", None) == "1")
@@ -782,7 +782,7 @@ class FP16Linear(nn.Linear):
         if not self.use_esimd_kernel(x):
             if (
                 get_ipex_version() < "2.1.10+xpu"
-                or get_xpu_device_type(x) not in ["arc", "flex", "pvc"]
+                or get_xpu_device_name(x.device) not in ["arc", "pvc"]
                 or self.disable_fp16_opt
             ):
                 if self.weight_type == 2:
@@ -848,7 +848,7 @@ class FP16Linear(nn.Linear):
             return result.to(x.dtype)
 
     def use_esimd_kernel(self, x):
-        gpu_type = get_xpu_device_type(x)
+        gpu_type = get_xpu_device_name(x.device)
         if self.disable_fp16_opt:
             return False
         # esimd kernel can only be used for Arc and Flex
