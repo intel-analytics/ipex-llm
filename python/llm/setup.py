@@ -310,15 +310,18 @@ def setup_package():
                          "bigdl-core-xe-23==" + CORE_XE_VERSION,
                          "bigdl-core-xe-batch-23==" + CORE_XE_VERSION,
                          "bigdl-core-xe-addons-23==" + CORE_XE_VERSION,
-                         "onednn-devel==2024.1.1;platform_system=='Windows'"]
+                         "onednn-devel==2024.1.1;platform_system=='Windows'",
+                         "onednn==2024.1.1;platform_system=='Windows'"]
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
-                    "onednn-devel==2024.2.1;platform_system=='Windows'"]
+                    "onednn-devel==2024.2.1;platform_system=='Windows'",
+                    "onednn==2024.2.1;platform_system=='Windows'"]
     cpp_requires += oneapi_2024_2_requires
     cpp_requires += COMMON_DEP
 
     cpp_arl_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
-                        "onednn-devel==2024.1.1;platform_system=='Windows'"]
+                        "onednn-devel==2024.1.1;platform_system=='Windows'",
+                        "onednn==2024.1.1;platform_system=='Windows'"]
     cpp_arl_requires += oneapi_2024_2_requires
     cpp_arl_requires += COMMON_DEP
 
