@@ -33,7 +33,7 @@ from ipex_llm.transformers.speculative import greedy, deepmind_sample, logits_to
     _crop_past_key_values, _prepare_generate_args, _non_cpu_ipex_verify, clear_benchmarks,\
     _prepare_generate_args_4_45
 from ipex_llm.utils.common import invalidInputError
-from ipex_llm.transformers.utils import get_xpu_device_type
+from ipex_llm.transformers.utils import get_xpu_device_name
 
 logger = logging.getLogger("ipex_llm.lookup")
 
@@ -295,7 +295,7 @@ def lookup_generate(self,
     invalidInputError(input_ids.shape[0] == 1,
                       "Prompt lookup is currently not supported with batch inference.")
 
-    device_name = get_xpu_device_type(input_ids)
+    device_name = get_xpu_device_name(input_ids.device)
 
     candidates_generator = PromptLookupCandidateGenerator(
         num_output_tokens=num_output_tokens,

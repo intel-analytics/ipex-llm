@@ -168,27 +168,12 @@ def get_ipex_version():
     return _ipex_version
 
 
-def get_xpu_device_type(x):
-    if x.device.type != "xpu":
-        return x.device.type
-    name = torch.xpu.get_device_name(x.device.index)
-    if name.startswith("Intel(R) Arc(TM) A"):
-        return "arc"
-    elif name.startswith("Intel(R) Graphics [0xe20b]"):
-        return "bmg"
-    elif name.startswith("Intel(R) Arc(TM)"):
-        if 'V' in name:
-            return "lnl"
-        else:
-            return "mtl"
-    elif name.startswith("Intel(R) Data Center GPU Flex"):
-        return "flex"
-    elif name.startswith("Intel(R) Data Center GPU Max"):
-        return "pvc"
-    elif name.startswith("Intel(R) UHD"):
-        return "uhd"
+def get_xpu_device_name(device: torch.device):
+    if device.type != "xpu":
+        return device.type
     else:
-        return "others"
+        import xe_linear
+        return xe_linear.get_xpu_device_name(device)
 
 
 def load_imatrix_data(imatrix_file):

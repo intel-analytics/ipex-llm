@@ -1710,31 +1710,6 @@ def _optimize_post(model):
         convert_forward(model, module.VisionAttention, qwen2_vision_attention_forward)
         convert_forward(model, module.Qwen2VLModel, qwen2_vl_model_forward)
         convert_forward(model, module.Qwen2VLAttention, qwen2_vl_attention_forward)
-    elif model.config.model_type == "cohere":
-        # for CohereForAI/c4ai-command-r-v01
-        invalidInputError(version.parse(trans_version) >= version.parse("4.40.0"),
-                          "Please upgrade transformers to 4.40.0 or higher version "
-                          "to run Mixtral models.")
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        if version.parse(trans_version) >= version.parse("4.41.0"):
-            from ipex_llm.transformers.models.cohere import cohere_model_forward_4_41
-            convert_forward(model,
-                            module.CohereModel,
-                            cohere_model_forward_4_41)
-        else:
-            from ipex_llm.transformers.models.cohere import cohere_model_forward
-            convert_forward(model,
-                            module.CohereModel,
-                            cohere_model_forward)
-
-        from ipex_llm.transformers.models.cohere import cohere_attention_forward
-        convert_forward(model,
-                        module.CohereAttention,
-                        cohere_attention_forward)
-        convert_forward(model,
-                        module.CohereMLP,
-                        mlp_silu_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1746,31 +1721,6 @@ def _optimize_post(model):
         convert_forward(model,
                         module.AquilaRMSNorm,
                         rms_norm_forward)
-    elif model.config.model_type == "mixtral":
-        # For mistralai/Mixtral-8x7B-v0.1
-        invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
-                          "Please upgrade transformers to 4.36.0 or higher version "
-                          "to run Mixtral models.")
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.mixtral import mixtral_moeblock_forward, \
-            mixtral_attention_forward, mixtral_mlp_forward, mixtral_model_forward
-        convert_forward(model,
-                        module.MixtralAttention,
-                        mixtral_attention_forward)
-        convert_forward(model,
-                        module.MixtralRMSNorm,
-                        rms_norm_forward)
-        convert_forward(model,
-                        module.MixtralSparseMoeBlock,
-                        mixtral_moeblock_forward)
-        convert_forward(model,
-                        module.MixtralBLockSparseTop2MLP,
-                        mixtral_mlp_forward)
-        convert_forward(model,
-                        module.MixtralModel,
-                        mixtral_model_forward)
-
     elif model.config.model_type == "phi-msft" and \
             hasattr(model.config, "num_local_experts"):
         # For phixtral, limit the condition to avoid applying on phi-2 hosted by ModelScope
@@ -1785,29 +1735,19 @@ def _optimize_post(model):
                         module.MLP,
                         phixtral_mlp_forward)
     elif model.config.model_type == "mistral":
-        if model.config.architectures is not None and \
-                model.config.architectures[0] == "MixtralForCausalLM":
-            # For DiscoResearch/mixtral-7b-8expert
-            invalidInputError(version.parse(trans_version) >= version.parse("4.36.0"),
-                              "Please upgrade transformers to 4.36.0 or higher version "
-                              "to run Mixtral models.")
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            convert_forward(model, module.MistralRMSNorm, rms_norm_forward)
-        else:
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
 
-            from ipex_llm.transformers.models.mistral import mistral_model_forward
-            from ipex_llm.transformers.models.mistral import mistral_attention_forward
-            from ipex_llm.transformers.models.common import rms_norm_forward
-            from ipex_llm.transformers.models.common import mlp_silu_forward
+        from ipex_llm.transformers.models.mistral import mistral_model_forward
+        from ipex_llm.transformers.models.mistral import mistral_attention_forward
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.common import mlp_silu_forward
 
-            convert_forward(model, module.MistralModel, mistral_model_forward)
-            convert_forward(model, module.MistralAttention, mistral_attention_forward)
-            convert_forward(model, module.MistralSdpaAttention, mistral_attention_forward)
-            convert_forward(model, module.MistralRMSNorm, rms_norm_forward)
-            convert_forward(model, module.MistralMLP, mlp_silu_forward)
+        convert_forward(model, module.MistralModel, mistral_model_forward)
+        convert_forward(model, module.MistralAttention, mistral_attention_forward)
+        convert_forward(model, module.MistralSdpaAttention, mistral_attention_forward)
+        convert_forward(model, module.MistralRMSNorm, rms_norm_forward)
+        convert_forward(model, module.MistralMLP, mlp_silu_forward)
     elif model.config.model_type == "gemma":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

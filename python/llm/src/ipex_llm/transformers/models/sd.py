@@ -36,7 +36,7 @@ import math
 import torch
 from typing import Optional
 
-from ipex_llm.transformers.utils import get_xpu_device_type
+from ipex_llm.transformers.utils import get_xpu_device_name
 from ipex_llm.transformers.models.common import padding_qkv_hd
 from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from diffusers.models.attention_processor import Attention
@@ -144,7 +144,7 @@ class AttnProcessor2_0:
 
 def upcast_vae(self):
     # workaround overflow and ipex's bugs
-    if get_xpu_device_type(self.vae.post_quant_conv.weight) in ["arc", "flex", "pvc"]:
+    if get_xpu_device_name(self.vae.post_quant_conv.weight.device) == "arc":
         self.vae.to(torch.bfloat16)
     else:
         self.vae.decoder.up_blocks.to(torch.bfloat16)

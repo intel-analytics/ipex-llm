@@ -19,7 +19,7 @@ import torch
 import warnings
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
-from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_type
+from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_name
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4,\
     FP6, ASYM_INT4
 
@@ -85,16 +85,14 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor, kv_group: in
         return os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] == "1"
     elif os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
         return os.environ["IPEX_LLM_LOW_MEM"] == "1"
+    elif linear.qtype in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
+        return False
     else:
-        return x.device.type == 'xpu' and kv_cache_device_check(x, kv_group) \
-            and hasattr(linear, "qtype") and \
-            linear.qtype != ggml_tensor_qtype["fp16"] and linear.qtype != ggml_tensor_qtype["bf16"]
-
-
-def kv_cache_device_check(x: torch.Tensor, kv_group: int) -> bool:
-    return (get_xpu_device_type(x) in ["mtl", "lnl"] and kv_group <= 1) or \
-        ((get_xpu_device_type(x) == "arc" or get_xpu_device_type(x) == "flex") and
-            1 < x.size(0) and x.size(0) <= 8)
+        device_name = get_xpu_device_name(x.device)
+        return (
+            device_name in ["mtl", "lnl", "arl"] and kv_group == 1
+            or device_name in ["arc", "bmg"] and x.size(0) > 1
+        )
 
 
 def init_fp8_kv_cache(batch_size, num_heads, current_length, head_dim, device):
@@ -226,57 +224,6 @@ def is_enough_kv_cache_room_4_31(past_key_value, seq_len=1):
         (past_key_value[0].size(2) + seq_len) * past_key_value[0].size(3)
 
 
-def use_flash_attention(query, key, attention_mask=None):
-    # here we support query's shape is always [batch_size, head_num, q_len, head_dim],
-    # key's shape is always [batch_size, head_num, k_len, head_dim]
-    invalidInputError(query.dim() == 4,
-                      "Here query input of use_flash_attention should be [batch_size, "
-                      "head_num, q_len, head_dim]")
-    invalidInputError(key.dim() == 4,
-                      "Here key input of use_flash_attention should be [batch_size, "
-                      "head_num, k_len, head_dim]")
-    bsz, _, q_len, _ = query.size()
-    k_len = key.size()[2]
-    # check whether ipex flash attention can be used
-    if q_len != k_len:
-        # now only use flash attention for first token
-        # as it seems have no performance benifit for rest token now
-        return False
-    if query.device.type != "xpu":
-        # ipex flash attention only support for xpu
-        return False
-    ipex_version = get_ipex_version()
-    if ipex_version <= "2.0.110+xpu":
-        # ipex flash attention is supported from ipex 2.1
-        return False
-    if not torch.xpu.has_xetla():
-        # ipex flash attention is only supported for xetla
-        # may update this later
-        return False
-    elif get_xpu_device_type(query) != "pvc":
-        return False
-    if query.dtype not in [torch.float32, torch.float16]:
-        # only use flash attention for fp32/fp16 input
-        return False
-    if bsz > 1:
-        # as flash attention doesn't support attn_mask in ipex 2.1,
-        # so it will cause output error for padded batch input
-        if attention_mask is None:
-            return True
-        else:
-            # TODO: below logic may change for different model
-            # attention mask shape : [bsz, 1, q_len, k_len]
-            if attention_mask[0].squeeze()[0, 0].item() != 0:
-                # first batch contains padding
-                # otherwise we suppose it should be a upper triangular matrix
-                # at the same time, the diagonal is also 0
-                return False
-            elif not attention_mask.equal(attention_mask[0].repeat(bsz, 1, 1, 1)):
-                # check whether mask of every batch is the same
-                return False
-    return True
-
-
 def use_sdp(q_len, kv_len, head_dim, query_states):
     return (
         query_states.device.type == "xpu"
@@ -315,38 +262,16 @@ def mlp_fusion_check(x, qtype, training):
     if training or x.requires_grad:
         return False
     if qtype == FP6:
-        device = get_xpu_device_type(x)
-        if device in ["mtl", "lnl"]:
+        device = get_xpu_device_name(x.device)
+        if device in ["mtl", "lnl", "arl"]:
             return False
     return True
 
 
-def use_decoding_fast_path(proj,
-                           use_fuse_rope,
-                           enough_kv_room,
-                           bs,
-                           qtype_check=decoding_fast_path_qtype_check):
-    if proj is None:
-        return False
-    device = get_xpu_device_type(proj.weight)
-    if not qtype_check(proj):
-        return False
-    if not use_fuse_rope:
-        return False
-    if not enough_kv_room:
-        return False
-    if bs != 1:
-        return False
-
-    if device in ["uhd"]:
-        return False
-    return True
-
-
 def use_xmx(x: torch.Tensor, qtype: int):
-    device = get_xpu_device_type(x)
+    device = get_xpu_device_name(x.device)
     return (
-        device in ["arc", "flex", "pvc"]
+        device in ["arc", "pvc"]
         and qtype in [SYM_INT4, SYM_INT8, FP8E4, FP8E5]
         and (
             (device == "pvc" and 1 < x.size(0) <= 16)
@@ -370,7 +295,7 @@ def fp16_fusion_check(proj, x, training):
         return False
     if x.requires_grad:
         return False
-    device_type = get_xpu_device_type(x)
+    device_type = get_xpu_device_name(x.device)
     if device_type != "pvc":
         return False
     return True
@@ -439,7 +364,7 @@ def should_use_compresskv(x: torch.Tensor, prompt_len: int):
     else:
         if use_compress_kv is None:
             return (
-                get_xpu_device_type(x) in ["mtl", "lnl"]
+                get_xpu_device_name(x.device) in ["mtl", "lnl", "arl"]
                 and prompt_len >= 1800
                 and prompt_len <= 4500
             )
