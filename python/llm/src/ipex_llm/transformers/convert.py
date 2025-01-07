@@ -1452,21 +1452,6 @@ def _optimize_post(model):
                             module.MultiheadAttention,
                             mpt_multihead_attention_forward
                             )
-    elif "gptj" in model.config.model_type:
-        # dolly-v1-6b
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.gptj import gptj_attention_forward, gptj_model_forward,\
-            gptj_block_forward
-        convert_forward(model,
-                        module.GPTJAttention,
-                        gptj_attention_forward)
-        convert_forward(model,
-                        module.GPTJModel,
-                        gptj_model_forward)
-        convert_forward(model,
-                        module.GPTJBlock,
-                        gptj_block_forward)
     elif "bloom" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

@@ -22,7 +22,7 @@ import time
 from datetime import date
 import argparse
 from ipex_llm.utils.common import invalidInputError
-from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
+from transformers import AutoTokenizer, LlamaTokenizer
 
 LLAMA_IDS = ['llama', 'vicuna', 'merged-baize']
 

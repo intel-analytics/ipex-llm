@@ -148,7 +148,7 @@ def run_transformer_int4_gpu(repo_id,
                              num_beams,
                              low_bit):
     from ipex_llm.transformers import AutoModel, AutoModelForCausalLM
-    from transformers import AutoTokenizer, GPTJForCausalLM, LlamaTokenizer
+    from transformers import AutoTokenizer, LlamaTokenizer
     import intel_extension_for_pytorch as ipex
     reserved_mem_list = []
     model_path = get_model_path(repo_id, local_model_hub)
@@ -170,9 +170,6 @@ def run_transformer_int4_gpu(repo_id,
                                                      trust_remote_code=True, use_cache=True).eval()
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         model = model.to('xpu')
-        if isinstance(model, GPTJForCausalLM):
-            # For gpt-j model family, this optimization can provide a better performance.
-            model = ipex.optimize(model.eval(), inplace=True)
     end = time.perf_counter()
     print(">> loading of model costs {}s".format(end - st))
     reserved_mem_list.append(torch.xpu.memory.memory_reserved()/(1024**3))
@@ -227,7 +224,7 @@ if __name__ == '__main__':
     today = date.today()
     if 'exclude' in conf:
         excludes = conf['exclude']
-    
+
     import pandas as pd
     for api in conf.test_api:
         for model in conf.repo_id:
@@ -240,7 +237,7 @@ if __name__ == '__main__':
             run_model(model, api, in_out_pairs, conf['local_model_hub'], conf['warm_up'], conf['num_trials'], conf['num_beams'],
                       conf['low_bit'], conf['cpu_embedding'])
         df = pd.DataFrame(results, columns=['model', '1st token avg latency (ms)', '2+ avg latency (ms/token)', 'encoder time (ms)',
-                                            'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding', 
+                                            'input/output tokens', 'actual input/output tokens', 'num_beams', 'low_bit', 'cpu_embedding',
                                             'peak mem (GB)'])
 
         df.to_csv(f'{current_dir}/{api}-results-{today}.csv')
