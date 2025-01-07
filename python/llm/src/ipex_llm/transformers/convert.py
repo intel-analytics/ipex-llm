@@ -1052,7 +1052,8 @@ def _optimize_pre(model, qtype=None):
         _optimize_pre(model.llm, qtype=qtype)
         model.llm.config.model_type = "megrezo"
     elif model.config.model_type == "chatglm":
-        if hasattr(model.config, 'padded_vocab_size') and model.config.padded_vocab_size == 65024:
+        if hasattr(model.config, 'padded_vocab_size') and \
+                model.config.padded_vocab_size in [65024, 64896]:
             # chatglm2 and chatglm3
             from ipex_llm.transformers.models.chatglm2 import split_mlp
             model.apply(split_mlp)
@@ -1337,7 +1338,7 @@ def _optimize_post(model):
         and model.config.architectures[0] in ["ChatGLMModel", "ChatGLMForConditionalGeneration"]
     ):
         if hasattr(model.config, 'padded_vocab_size') and \
-                model.config.padded_vocab_size == 65024:
+                model.config.padded_vocab_size in [65024, 64896]:
             # chatglm2-6b, chatglm2-6b-32k, chatglm3-6b, chatglm3-6b-32k, chatglm3-6b-128k
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
@@ -1359,27 +1360,9 @@ def _optimize_post(model):
                             module.RMSNorm,
                             chatglm_rms_norm_forward)
             convert_forward(model, module.MLP, mlp_forward)
-        elif hasattr(model.config, 'padded_vocab_size') and \
-                model.config.padded_vocab_size == 64896:
-            # codegeex-nano
-            modeling_module_name = model.__class__.__module__
-            module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.chatglm2 import codegeex_attention_forward
-            from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
-            from ipex_llm.transformers.models.chatglm2 import chatglm2_encoder_forward
-            from ipex_llm.transformers.models.chatglm2 import codegeex_model_forward
-            convert_forward(model,
-                            module.SelfAttention,
-                            codegeex_attention_forward)
-            convert_forward(model,
-                            module.GLMTransformer,
-                            chatglm2_encoder_forward)
-            convert_forward(model,
-                            module.ChatGLMModel,
-                            codegeex_model_forward)
-            convert_forward(model,
-                            module.RMSNorm,
-                            chatglm_rms_norm_forward)
+            # for codegeex-nano
+            if hasattr(model.config, "rope_ratio"):
+                model.transformer.rotary_pos_emb.rope_ratio = model.config.rope_ratio
         elif hasattr(model.config, 'vocab_size') and model.config.vocab_size == 130528:
             # chatglm-6b
             modeling_module_name = model.__class__.__module__
