@@ -168,7 +168,7 @@ def get_ipex_version():
     return _ipex_version
 
 
-def get_xpu_device_name(device: torch.Device):
+def get_xpu_device_name(device: torch.device):
     if device.type != "xpu":
         return device.type
     else:
