@@ -167,7 +167,7 @@ class QuantizedLinear(torch.nn.Module):
                 False,
                 (
                     f"Quantized weight must be in torch.(u)int8"
-                    " dtype instead of {self.weight.dtype}"
+                    f" dtype instead of {self.weight.dtype}"
                 )
             )
         self.outC, self.inC = self.weight.shape
