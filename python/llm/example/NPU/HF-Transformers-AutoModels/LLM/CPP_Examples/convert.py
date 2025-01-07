@@ -36,9 +36,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--repo-id-or-model-path",
         type=str,
-        default="Qwen/Qwen2.5-7B-Instruct",  # Or Qwen2-7B-Instruct, Qwen2-1.5B-Instruct
-        help="The huggingface repo id for the Qwen model to be downloaded"
-        ", or the path to the huggingface checkpoint folder",
+        default="meta-llama/Llama-2-7b-chat-hf",
+        help="The huggingface repo id for the model to be downloaded"
+        ", or the path to the huggingface checkpoint folder.",
     )
     parser.add_argument("--save-directory", type=str,
         required=True,
@@ -47,11 +47,10 @@ if __name__ == "__main__":
             "Else, program will raise error.",
     )
     parser.add_argument("--max-context-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=960)
-    parser.add_argument("--quantization_group_size", type=int, default=0)
-    parser.add_argument('--low_bit', type=str, default="sym_int4",
-                        help='Low bit precision to quantize the model')
-    parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
+    parser.add_argument("--max-prompt-len", type=int, default=512)
+    parser.add_argument("--quantization-group-size", type=int, default=0)
+    parser.add_argument('--low-bit', type=str, default="sym_int4",
+                        help='Low bit optimizations that will be applied to the model.')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -66,7 +65,6 @@ if __name__ == "__main__":
                                                  quantization_group_size=args.quantization_group_size,
                                                  torch_dtype=torch.float16,
                                                  attn_implementation="eager",
-                                                 transpose_value_cache=not args.disable_transpose_value_cache,
                                                  trust_remote_code=True,
                                                  save_directory=save_dir)
     t1 = time.perf_counter()

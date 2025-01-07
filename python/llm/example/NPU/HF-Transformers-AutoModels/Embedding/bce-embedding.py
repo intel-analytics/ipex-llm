@@ -33,13 +33,12 @@ if __name__ == "__main__":
         type=str,
         default="maidalun1020/bce-embedding-base_v1",
         help="The huggingface repo id for the bce-embedding model to be downloaded"
-        ", or the path to the huggingface checkpoint folder",
+        ", or the path to the huggingface checkpoint folder.",
     )
     parser.add_argument('--prompt', type=str, default="'sentence_0', 'sentence_1'",
                         help='Prompt to infer')
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=512)
-    parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
     parser.add_argument("--save-directory", type=str,
         required=True,
         help="The path of folder to save converted model, "
@@ -58,7 +57,6 @@ if __name__ == "__main__":
         optimize_model=True,
         max_context_len=args.max_context_len,
         max_prompt_len=args.max_prompt_len,
-        transpose_value_cache=not args.disable_transpose_value_cache,
         save_directory=args.save_directory
     )
 

@@ -71,6 +71,19 @@ conda activate llm-npu
 > [!TIP]
 > `ipex-llm` for NPU supports Python 3.10 and 3.11.
 
+### (Optional) Install CMake
+
+> [!NOTE]
+>  Cmake installation is for IPEX-LLM **C++ API** on Intel NPU. If you plan to use the **Python API**, skip this step.
+
+With the `llm-npu` environment active, install CMake:
+
+```cmd
+conda activate llm-npu
+
+pip install cmake
+```
+
 ## Install `ipex-llm` with NPU Support
 
 With the `llm-npu` environment active, use `pip` to install `ipex-llm` for NPU:
@@ -115,23 +128,27 @@ Refer to the following table for examples of verified models:
 [](../../../python/llm/)
 | Model | Model link | Example link | Verified Platforms |
 |:--|:--|:--|:--|
-| LLaMA 2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Meteor Lake, Lunar Lake, Arrow Lake |
-| LLaMA 3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Meteor Lake, Lunar Lake, Arrow Lake |
-| LLaMA 3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Meteor Lake, Lunar Lake, Arrow Lake |
-| Qwen 2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct), [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Meteor Lake, Lunar Lake, Arrow Lake |
-| Qwen 2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Lunar Lake |
-|  | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Meteor Lake, Lunar Lake, Arrow Lake |
-| GLM-Edge | [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat), [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat)  | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Meteor Lake, Lunar Lake, Arrow Lake |
-| MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Meteor Lake, Lunar Lake, Arrow Lake |
-| Baichuan 2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/README.md#2-run-optimized-models-experimental) | Lunar Lake |
-| MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) | Lunar Lake |
-| MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) | Lunar Lake |
-| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) | Lunar Lake |
-| Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/README.md#2-run-optimized-models-experimental) | Lunar Lake |
+| LLaMA 2 | [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Meteor Lake, Lunar Lake, Arrow Lake |
+| LLaMA 3 | [meta-llama/Meta-Llama-3-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Meteor Lake, Lunar Lake, Arrow Lake |
+| LLaMA 3.2 | [meta-llama/Llama-3.2-1B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Meteor Lake, Lunar Lake, Arrow Lake |
+| GLM-Edge | [THUDM/glm-edge-1.5b-chat](https://huggingface.co/THUDM/glm-edge-1.5b-chat), [THUDM/glm-edge-4b-chat](https://huggingface.co/THUDM/glm-edge-4b-chat)  | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Meteor Lake, Lunar Lake, Arrow Lake |
+| Qwen 2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct), [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Meteor Lake, Lunar Lake, Arrow Lake |
+| Qwen 2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Lunar Lake |
+|  | [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Meteor Lake, Lunar Lake, Arrow Lake |
+| MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Meteor Lake, Lunar Lake, Arrow Lake |
+| Baichuan 2 | [baichuan-inc/Baichuan2-7B-Chat](https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/LLM/) | Lunar Lake |
+| MiniCPM-Llama3-V-2_5 | [openbmb/MiniCPM-Llama3-V-2_5](https://huggingface.co/openbmb/MiniCPM-Llama3-V-2_5) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/) | Lunar Lake |
+| MiniCPM-V-2_6 | [openbmb/MiniCPM-V-2_6](https://huggingface.co/openbmb/MiniCPM-V-2_6) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/) | Lunar Lake |
+| Speech_Paraformer-Large | [iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch](https://www.modelscope.cn/models/iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Multimodal/) | Lunar Lake |
+| Bce-Embedding-Base-V1 | [maidalun1020/bce-embedding-base_v1](https://huggingface.co/maidalun1020/bce-embedding-base_v1) | [link](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Embedding/) | Lunar Lake |
 
 
 > [!TIP]
 > You could refer to [here](../../../python/llm/example/NPU/HF-Transformers-AutoModels) for full IPEX-LLM examples on Intel NPU.
+
+### Save & Load Low-Bit Models
+
+IPEX-LLM also provides Python API for saving/loading models with low-bit optimizations on Intel NPU, to avoid repeated loading & optimizing of the original models. Refer to the [Save-Load example](../../../python/llm/example/NPU/HF-Transformers-AutoModels/Save-Load) for usage in details.
 
 ## C++ API
 
@@ -160,11 +177,17 @@ IPEX-LLM provides several optimization methods for enhancing the accuracy of mod
 
 You could set environment variable `IPEX_LLM_NPU_QUANTIZATION_OPT=1` before loading & optimizing the model with `from_pretrained` function from `ipex_llm.transformers.npu_model` Auto Model class to further enhance model accuracy of low-bit models.
 
-### 2. Mixed Precision
+### 2. Low-Bit Optimizations
+
+IPEX-LLM on Intel NPU currently supports `sym_int4`/`asym_int4`/`sym_int8` low-bit optimizations. You could adjust the low-bit value to tune the accuracy. 
+
+For example, you could try to set `load_in_low_bit='asym_int4'` instead of `load_in_low_bit='sym_int4'` when loading & optimizing the model with `from_pretrained` function from `ipex_llm.transformers.npu_model` Auto Model class, to switch from `sym_int4` low-bit optimizations to `asym_int4`.
+
+### 3. Mixed Precision
 
 When loading & optimizing the model with `from_pretrained` function of `ipex_llm.transformers.npu_model` Auto Model class, you could try to set parameter `mixed_precision=True` to enable mixed precision optimization when encountering output problems.
 
-### 3. Group Size
+### 4. Group Size
 
 IPEX-LLM low-bit optimizations support both channel-wise and group-wise quantization on Intel NPU. When loading & optimizing the model with `from_pretrained` function of Auto Model class from `ipex_llm.transformers.npu_model`, parameter `quantization_group_size` will control whether to use channel-wise or group-wise quantization.
 

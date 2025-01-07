@@ -45,6 +45,8 @@ if __name__ == '__main__':
                         help='Max tokens to predict')
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=512)
+    parser.add_argument('--low-bit', type=str, default="sym_int4",
+                        help='Low bit optimizations that will be applied to the model.')
     
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -58,7 +60,7 @@ if __name__ == '__main__':
             torch_dtype=torch.float16,
             trust_remote_code=True,
             attn_implementation="eager",
-            load_in_low_bit="sym_int4",
+            load_in_low_bit=args.low_bit,
             optimize_model=True,
             max_context_len=args.max_context_len,
             max_prompt_len=args.max_prompt_len,

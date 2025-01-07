@@ -33,8 +33,8 @@ if __name__ == "__main__":
         type=str,
         default="iic/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
     )
-    parser.add_argument('--load_in_low_bit', type=str, default="sym_int8",
-                        help='Load in low bit to use')
+    parser.add_argument('--low-bit', type=str, default="sym_int8",
+                        help='Low bit optimizations that will be applied to the model.')
     parser.add_argument("--save-directory", type=str,
         required=True,
         help="The path of folder to save converted model, "
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     model = AutoModel(
         model=model_path,
         attn_implementation="eager",
-        load_in_low_bit=args.load_in_low_bit,
+        load_in_low_bit=args.low_bit,
         low_cpu_mem_usage=True,
         optimize_model=True,
         save_directory=args.save_directory

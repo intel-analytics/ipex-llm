@@ -26,19 +26,20 @@ from transformers import AutoTokenizer
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for openbmb/MiniCPM-V-2_6 model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `chat()` API for npu model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-V-2_6",
-                        help='The huggingface repo id for the openbmb/MiniCPM-V-2_6 model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+                        help='The huggingface repo id for the MiniCPM-V-2_6 model to be downloaded'
+                             ', or the path to the huggingface checkpoint folder.')
     parser.add_argument('--image-url-or-path', type=str,
                         default='http://farm6.staticflickr.com/5268/5602445367_3504763978_z.jpg',
                         help='The URL or path to the image to infer')
     parser.add_argument('--prompt', type=str, default="What is in this image?",
                         help='Prompt to infer')
-    parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict")
+    parser.add_argument("--n-predict", type=int, default=32, help="Max tokens to predict.")
     parser.add_argument("--max-context-len", type=int, default=1024)
     parser.add_argument("--max-prompt-len", type=int, default=512)
-    parser.add_argument("--disable-transpose-value-cache", action="store_true", default=False)
+    parser.add_argument('--low-bit', type=str, default="sym_int4",
+                        help='Low bit optimizations that will be applied to the model.')
     parser.add_argument("--save-directory", type=str,
         required=True,
         help="The path of folder to save converted model, "
@@ -54,11 +55,10 @@ if __name__ == '__main__':
                                       torch_dtype=torch.float16,
                                       trust_remote_code=True,
                                       attn_implementation="eager",
-                                      load_in_low_bit="sym_int4",
+                                      load_in_low_bit=args.low_bit,
                                       optimize_model=True,
                                       max_context_len=args.max_context_len,
                                       max_prompt_len=args.max_prompt_len,
-                                      transpose_value_cache=not args.disable_transpose_value_cache,
                                       save_directory=args.save_directory
                                       )
     tokenizer = AutoTokenizer.from_pretrained(model_path,
