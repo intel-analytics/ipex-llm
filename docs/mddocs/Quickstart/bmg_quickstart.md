@@ -61,10 +61,22 @@ conda activate llm
 
 ### 1.2 Install IPEX-LLM
 
-Install IPEX-LLM for Intel Battlemage B580:
-```bash
-pip install --pre --upgrade ipex-llm[xpu_arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-```
+With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
+
+- For **US**:
+
+  ```cmd
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  ```
+
+- For **CN**:
+
+  ```cmd
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  ```
+
+> [!NOTE]  
+> If you encounter network issues while installing IPEX, refer to [this guide](../Overview/install_gpu.md#install-ipex-llm-from-wheel) for troubleshooting advice.
 
 ---
 
@@ -108,10 +120,22 @@ conda activate llm
 
 ### 2.2 Install IPEX-LLM
 
-Install IPEX-LLM for Intel Battlemage B580:
-```cmd
-pip install --pre --upgrade ipex-llm[xpu_arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-```
+With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
+
+- For **US**:
+
+  ```cmd
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  ```
+
+- For **CN**:
+
+  ```cmd
+  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  ```
+
+> [!NOTE]  
+> If you encounter network issues while installing IPEX, refer to [this guide](../Overview/install_gpu.md#install-ipex-llm-from-wheel) for troubleshooting advice.
 
 ---
 
