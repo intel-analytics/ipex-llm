@@ -269,7 +269,7 @@ def chatglm2_attention_forward(
     # IPEX-LLM OPT: fuse rope
     inv_freq, position_ids = rotary_pos_emb
     rot_dim = inv_freq.size(-1) * 2
-    if should_use_fuse_rope(hidden_states, rotary_pos_emb[1], self.training):
+    if should_use_fuse_rope(hidden_states, position_ids, self.training):
         import xe_addons
         xe_addons.rotary_two_inplaced(inv_freq, position_ids,
                                       query_states[..., :rot_dim], key_states[..., :rot_dim])
