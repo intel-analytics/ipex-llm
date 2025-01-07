@@ -47,7 +47,7 @@ if __name__ == "__main__":
             "Else, program will raise error.",
     )
     parser.add_argument("--max-context-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument("--max-prompt-len", type=int, default=512)
     parser.add_argument("--quantization-group-size", type=int, default=0)
     parser.add_argument('--low-bit', type=str, default="sym_int4",
                         help='Low bit optimizations that will be applied to the model.')

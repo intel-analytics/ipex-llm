@@ -44,7 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
     parser.add_argument("--max-context-len", type=int, default=1024)
-    parser.add_argument("--max-prompt-len", type=int, default=960)
+    parser.add_argument("--max-prompt-len", type=int, default=512)
     parser.add_argument('--low-bit', type=str, default="sym_int4",
                         help='Low bit optimizations that will be applied to the model.')
     
