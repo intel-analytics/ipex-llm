@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from vllm.logger import init_logger
 from typing import Dict, Optional
 from vllm.engine.llm_engine import LLMEngine
 from vllm.engine.async_llm_engine import AsyncLLMEngine
@@ -26,6 +27,7 @@ from vllm.engine.metrics import StatLoggerBase
 from vllm.engine.multiprocessing.engine import MQLLMEngine
 import signal
 
+logger = init_logger(__name__)
 
 class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     def __init__(self, *args, **kwargs):
@@ -133,16 +135,21 @@ class IPEXLLMMQLLMEngine(MQLLMEngine):
 
 
 def run_mp_engine(engine_args: AsyncEngineArgs, usage_context: UsageContext,
-                  ipc_path: str, load_in_low_bit: str):
+                  ipc_path: str, load_in_low_bit: str, engine_alive):
 
     def signal_handler(*_) -> None:
         # Interrupt server on sigterm
         raise KeyboardInterrupt("MQLLMEngine terminated")  # noqa
 
-    signal.signal(signal.SIGTERM, signal_handler)
+    try:
+        signal.signal(signal.SIGTERM, signal_handler)
 
-    engine = IPEXLLMMQLLMEngine.from_engine_args(engine_args=engine_args,
-                                                 usage_context=usage_context,
-                                                 ipc_path=ipc_path,
-                                                 load_in_low_bit=load_in_low_bit)
-    engine.start()
+        engine = IPEXLLMMQLLMEngine.from_engine_args(engine_args=engine_args,
+                                                    usage_context=usage_context,
+                                                    ipc_path=ipc_path,
+                                                    load_in_low_bit=load_in_low_bit)
+        engine.start()
+    except BaseException as e:
+        logger.exception(e)
+        engine_alive.value = False
+        raise e
