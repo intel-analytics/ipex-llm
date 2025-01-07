@@ -17,7 +17,7 @@ This folder contains examples of running IPEX-LLM on Intel NPU:
 | Llama2 | [Python link](./LLM), [C++ link](./LLM/CPP_Examples/) |
 | Llama3 | [Python link](./LLM), [C++ link](./LLM/CPP_Examples/) |
 | Llama3.2 | [Python link](./LLM), [C++ link](./LLM/CPP_Examples/) |
-| GLM-Edge | [Python link](./LLM), [C++ link](./LLM/CPP_Examples/) |
+| GLM-Edge | [Python link](./LLM) |
 | Qwen2 | [Python link](./LLM), [C++ link](./LLM/CPP_Examples/) |
 | Qwen2.5 | [Python link](./LLM), [C++ link](./LLM/CPP_Examples/) |
 | MiniCPM | [Python link](./LLM), [C++ link](./LLM/CPP_Examples/) |
