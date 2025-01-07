@@ -313,6 +313,7 @@ def setup_package():
                          "onednn-devel==2024.1.1;platform_system=='Windows'",
                          "onednn==2024.1.1;platform_system=='Windows'"]
     
+    # Add for testing purposes for now
     xpu_26_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
         xpu_26_requires.remove(exclude_require)
