@@ -1420,6 +1420,7 @@ def _optimize_post(model):
         convert_forward(model, module.GlmRMSNorm, rms_norm_forward)
         convert_forward(model, module.GlmMLP, mlp_silu_forward)
         convert_forward(model, module.GlmAttention, glm_attention_forward)
+        convert_forward(model, module.GlmSdpaAttention, glm_attention_forward)
         glm_model_forward = glm_model_forward_wrapper(module.GlmModel.forward)
         convert_forward(model, module.GlmModel, glm_model_forward)
 
@@ -1428,10 +1429,12 @@ def _optimize_post(model):
             vision_module_name = model.model.vision.__class__.__module__
             vision_module = importlib.import_module(vision_module_name)
             from transformers.models.siglip.modeling_siglip import SiglipAttention
+            from transformers.models.siglip.modeling_siglip import SiglipSdpaAttention
             from ipex_llm.transformers.models.chatglm4v import vision_model_forward
             from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
             convert_forward(model, vision_module.VisionModel, vision_model_forward)
             convert_forward(model, SiglipAttention, siglip_attention_forward)
+            convert_forward(model, SiglipSdpaAttention, siglip_attention_forward)
 
     elif "mpt" in model.config.model_type:
         if model.config.architectures is not None:
@@ -1667,8 +1670,10 @@ def _optimize_post(model):
         convert_forward(model, module.Qwen2MLP, qwen2_mlp_forward)
         model.visual.get_dtype = MethodType(qwen2_vision_get_dtype, model.visual)
         convert_forward(model, module.VisionAttention, qwen2_vision_attention_forward)
+        convert_forward(model, module.VisionSdpaAttention, qwen2_vision_attention_forward)
         convert_forward(model, module.Qwen2VLModel, qwen2_vl_model_forward)
         convert_forward(model, module.Qwen2VLAttention, qwen2_vl_attention_forward)
+        convert_forward(model, module.Qwen2VLSdpaAttention, qwen2_vl_attention_forward)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
@@ -1814,6 +1819,7 @@ def _optimize_post(model):
         from ipex_llm.transformers.models.starcoder2 import attention_forward
         from ipex_llm.transformers.models.starcoder2 import model_forward
         convert_forward(model, module.Starcoder2Attention, attention_forward)
+        convert_forward(model, module.Starcoder2SdpaAttention, attention_forward)
         convert_forward(model, module.Starcoder2Model, model_forward)
     elif model.config.model_type == "phi":
         # for phi-2
@@ -1829,6 +1835,7 @@ def _optimize_post(model):
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.phi3 import attention_forward
         convert_forward(model, module.Phi3Attention, attention_forward)
+        convert_forward(model, module.Phi3SdpaAttention, attention_forward)
         from ipex_llm.transformers.models.phi3 import mlp_forward
         convert_forward(model, module.Phi3MLP, mlp_forward)
         from ipex_llm.transformers.models.common import rms_norm_forward
@@ -1872,6 +1879,8 @@ def _optimize_post(model):
                         module.StableLmAttention,
                         stablelm_attention_forward
                         )
+        if hasattr(module, "StableLmSdpaAttention"):
+            convert_forward(model, module.StableLmSdpaAttention, stablelm_attention_forward)
         convert_forward(model,
                         module.StableLmMLP,
                         mlp_silu_forward)
