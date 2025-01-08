@@ -1895,6 +1895,7 @@ def _optimize_post(model):
         from ipex_llm.transformers.models.minicpm import minicpm_model_forward_wrapper
         from ipex_llm.transformers.models.minicpm import minicpm_decoder_layer_forward
         convert_forward(model, module.MiniCPMAttention, minicpm_attention_forward)
+        convert_forward(model, module.MiniCPMSdpaAttention, minicpm_attention_forward)
         convert_forward(model, module.MiniCPMMLP, mlp_silu_forward)
         convert_forward(model, module.MiniCPMRMSNorm, rms_norm_forward)
         convert_forward(model, module.MiniCPMDecoderLayer, minicpm_decoder_layer_forward)
@@ -1910,6 +1911,7 @@ def _optimize_post(model):
         convert_forward(model, module.MiniCPMRMSNorm, rms_norm_forward)
         convert_forward(model, module.MiniCPMMLP, mlp_silu_forward)
         convert_forward(model, module.MiniCPMAttention, minicpm3_attention_forward)
+        convert_forward(model, module.MiniCPMSdpaAttention, minicpm3_attention_forward)
         minicpm3_model_forward = minicpm3_model_forward_wrapper(module.MiniCPM3Model.forward)
         convert_forward(model, module.MiniCPM3Model, minicpm3_model_forward)
     elif model.config.model_type == "minicpmv":

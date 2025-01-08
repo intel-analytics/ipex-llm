@@ -51,7 +51,8 @@ from transformers.cache_utils import Cache
 
 
 def merge_qkv(module: torch.nn.Module):
-    return merge_qkv_base(module, "MiniCPMAttention")
+    merge_qkv_base(module, "MiniCPMAttention")
+    merge_qkv_base(module, "MiniCPMSdpaAttention")
 
 
 def apply_residual_scale(module: torch.nn.Module):

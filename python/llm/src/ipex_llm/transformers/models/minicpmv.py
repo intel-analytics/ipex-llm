@@ -36,6 +36,7 @@ from transformers.generation.logits_process import RepetitionPenaltyLogitsProces
 # MiniCPM-V-2_5 and MiniCPM-V-2_6
 def merge_qkv(module: torch.nn.Module):
     merge_qkv_base(module, "SiglipAttention")
+    merge_qkv_base(module, "SiglipSdpaAttention")
     merge_qkv_base(module, "Idefics2VisionAttention")
 
 
