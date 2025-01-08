@@ -1,6 +1,6 @@
 # Quickstart: Install and Use IPEX-LLM on Intel Arc B-Series GPU (code-named Battlemage)
 
-This guide demonstrates how to install and use IPEX-LLM on the Intel Battlemage B580 GPU. It covers both **Linux** and **Windows** operating systems.
+This guide demonstrates how to install and use IPEX-LLM on the Intel Arc B-Series GPU (code-named Battlemage). It covers both **Linux** and **Windows** operating systems.
 
 > [!NOTE]  
 > Ensure your GPU driver and software environment meet the prerequisites before proceeding.
