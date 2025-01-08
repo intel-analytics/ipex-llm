@@ -1,4 +1,4 @@
-# Quickstart: Install and Use IPEX-LLM on Intel Battlemage B580 GPU
+# Quickstart: Install and Use IPEX-LLM on Intel Arc B-Series GPU (code-named Battlemage)
 
 This guide demonstrates how to install and use IPEX-LLM on the Intel Battlemage B580 GPU. It covers both **Linux** and **Windows** operating systems.
 
@@ -9,21 +9,17 @@ This guide demonstrates how to install and use IPEX-LLM on the Intel Battlemage 
 
 ## Table of Contents
 
-1. [Linux](#linux)  
-   1.1 [Install Prerequisites](#1-install-prerequisites)  
-   1.2 [Install IPEX-LLM](#2-install-ipex-llm)  
-   1.3 [Verify Installation](#3-verify-installation)  
-2. [Windows](#windows)  
-   2.1 [Install Prerequisites](#1-install-prerequisites-1)  
-   2.2 [Install IPEX-LLM](#2-install-ipex-llm-1)  
-   2.3 [Verify Installation](#3-verify-installation-1)  
-3. [Run a Quick Example](#run-a-quick-example)  
-4. [Additional Use Cases](#additional-use-cases)  
-   4.1 [Benchmark](#4-1-benchmark)  
-   4.2 [Ollama](#4-2-ollama)  
-   4.3 [llama.cpp](#4-3-llama-cpp)  
-   4.4 [vLLM](#4-4-vllm)  
-
+1. [Linux](#1-linux)  
+   1.1 [Install Prerequisites](#11-install-prerequisites)  
+   1.2 [Install IPEX-LLM](#12-install-ipex-llm)  
+2. [Windows](#2-windows)  
+   2.1 [Install Prerequisites](#21-install-prerequisites)  
+   2.2 [Install IPEX-LLM](#22-install-ipex-llm)  
+3. [Use Cases](#3-use-cases)  
+   3.1 [PyTorch](#31-pytorch)  
+   3.2 [Ollama](#32-ollama)  
+   3.3 [llama.cpp](#33-llamacpp)  
+   3.4 [vLLM](#34-vllm)  
 ---
 
 ## 1. Linux
@@ -77,37 +73,14 @@ Install the `ipex-llm[xpu-arc]` package. Choose either the US or CN website for 
   ```
 
 #### For llama.cpp and Ollama:
-Install the `ipex-llm[cpp]` package. Choose either the US or CN website for `extra-index-url`:
+Install the `ipex-llm[cpp]` package.
 
-- For **US**:
   ```bash
-  pip install --pre --upgrade ipex-llm[cpp] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-  ```
-
-- For **CN**:
-  ```bash
-  pip install --pre --upgrade ipex-llm[cpp] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  pip install --pre --upgrade ipex-llm[cpp] 
   ```
 
 > [!NOTE]  
 > If you encounter network issues during installation, refer to the [troubleshooting guide](../Overview/install_gpu.md#install-ipex-llm-from-wheel-1) for alternative steps.
-
----
-
-### 1.3 Verify Installation
-
-1. Activate the environment:  
-   ```bash
-   conda activate llm
-   ```
-2. Set runtime configurations:  
-   ```bash
-   export SYCL_CACHE_PERSISTENT=1
-   ```
-3. Test the installation:  
-   ```python
-   python -c "import torch; from ipex_llm.transformers import AutoModel; print(torch.__version__)"
-   ```
 
 ---
 
@@ -150,16 +123,10 @@ Install the `ipex-llm[xpu-arc]` package. Choose either the US or CN website for 
   ```
 
 #### For llama.cpp and Ollama:
-Install the `ipex-llm[cpp]` package. Choose either the US or CN website for `extra-index-url`:
+Install the `ipex-llm[cpp]` package. 
 
-- For **US**:
   ```cmd
-  pip install --pre --upgrade ipex-llm[cpp] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-  ```
-
-- For **CN**:
-  ```cmd
-  pip install --pre --upgrade ipex-llm[cpp] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  pip install --pre --upgrade ipex-llm[cpp] 
   ```
 
 > [!NOTE]  
@@ -167,26 +134,12 @@ Install the `ipex-llm[cpp]` package. Choose either the US or CN website for `ext
 
 ---
 
-### 2.3 Verify Installation
 
-1. Activate the environment:  
-   ```cmd
-   conda activate llm
-   ```
-2. Set runtime configurations:  
-   ```cmd
-   set SYCL_CACHE_PERSISTENT=1
-   ```
-3. Test the installation:  
-   ```cmd
-   python -c "import torch; from ipex_llm.transformers import AutoModel; print(torch.__version__)"
-   ```
+## 3. Use Cases
 
----
+### 3.1 PyTorch
 
-## 3. Run a Quick Example
-
-The following example demonstrates how to verify IPEX-LLM functionality on both Linux and Windows:
+Run a Quick PyTorch Example:
 
 1. Activate the environment:  
    ```bash
@@ -206,25 +159,19 @@ The following example demonstrates how to verify IPEX-LLM functionality on both 
    torch.Size([1, 1, 40, 40])
    ```
 
+For benchmarks and performance measurement, refer to the [Benchmark Quickstart guide](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/Quickstart/benchmark_quickstart.md).
+
 ---
 
-## 4. Additional Use Cases
-
-In this step, we explore additional ways to use IPEX-LLM for benchmarking, running with **Ollama**, **llama.cpp**, and **vLLM**. You can follow the guides below for more detailed instructions.
-
-### 4.1 Benchmark
-
-To run benchmarks and measure performance, follow the [Benchmark Quickstart guide](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/Quickstart/benchmark_quickstart.md).
-
-### 4.2 Ollama
+### 3.2 Ollama
 
 To integrate and run with **Ollama**, follow the [Ollama Quickstart guide](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/Quickstart/ollama_quickstart.md).
 
-### 4.3 llama.cpp
+### 3.3 llama.cpp
 
 For instructions on how to run **llama.cpp** with IPEX-LLM, refer to the [llama.cpp Quickstart guide](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/Quickstart/llama_cpp_quickstart.md).
 
-### 4.4 vLLM
+### 3.4 vLLM
 
 To set up and run **vLLM**, follow the [vLLM Quickstart guide](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/Quickstart/vLLM_quickstart.md).
 
