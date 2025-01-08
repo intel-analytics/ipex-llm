@@ -172,6 +172,8 @@ def get_xpu_device_name(device: torch.device):
     if device.type != "xpu":
         return device.type
     else:
+        # possiable device name:
+        # ["arc", "pvc", "mtl", "lnl", "bmg", "arl", "legacy", "unknown"]
         import xe_linear
         return xe_linear.get_xpu_device_name(device)
 
