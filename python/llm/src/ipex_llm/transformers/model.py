@@ -103,12 +103,6 @@ def save_low_bit(self, *args, **kwargs):
         self.to(origin_device)
 
 
-def _load_pre():
-    from transformers import GPTJModel
-    from ipex_llm.transformers.models.gptj import gptj_model_new_init
-    GPTJModel.__init__ = gptj_model_new_init
-
-
 class _BaseAutoModelClass:
     HF_MODEL = None
 
@@ -495,7 +489,6 @@ class _BaseAutoModelClass:
         else:
             if quant_config is not None:
                 kwargs["quantization_config"] = quant_config
-            _load_pre()
             try:
                 # To handle the input CUDA setting (such as 'device_map={"":0}'), ignore it
                 kwargs.pop('device_map', None)

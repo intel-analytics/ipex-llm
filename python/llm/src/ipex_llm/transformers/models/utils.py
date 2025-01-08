@@ -168,7 +168,7 @@ def should_use_fuse_rope(hidden_states, position_ids, training):
 
 def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
     if model_family in ["llama", "baichuan", "internlm", "aquila", "gpt_neox", "mistral",
-                        "mixtral", "qwen2", "yuan", "stablelm", "qwen2_moe"]:
+                        "qwen2", "yuan", "stablelm", "qwen2_moe"]:
         # The first two dimensions of cos and sin are always 1, so we can `squeeze` them.
         cos = cos.squeeze(1).squeeze(0)  # [seq_len, dim]
         sin = sin.squeeze(1).squeeze(0)  # [seq_len, dim]
@@ -183,26 +183,13 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, model_family):
         q_embed = (q * cos) + (rotate_half(q) * sin)
         k_embed = (k * cos) + (rotate_half(k) * sin)
         return q_embed, k_embed
-    elif model_family in ["gptj", "chatglm"]:
+    elif model_family in ["chatglm"]:
         q_embed = (q * cos) + (rotate_every_two(q) * sin)
         k_embed = (k * cos) + (rotate_every_two(k) * sin)
         return q_embed, k_embed
     else:
         invalidInputError(False,
                           f"{model_family} is not supported.")
-
-
-def apply_ipex_rotate_every_two(q, k, cos, sin):
-    # ipex's apply_rotary_embedding_two_qk can change the origin storage,
-    # so q/k will get the result directly.
-    from ipex_llm.transformers.utils import get_ipex_version
-    if get_ipex_version() >= "2.1.10+xpu":
-        torch.ops.torch_ipex.apply_rotary_embedding_two_qk(
-            q, k, sin, cos, q, k
-        )
-    else:
-        torch.ops.torch_ipex.apply_rotary_embedding(q, sin, cos, q)
-        torch.ops.torch_ipex.apply_rotary_embedding(k, sin, cos, k)
 
 
 def is_enough_kv_cache_room_4_36(past_key_value, idx, seq_len=1):

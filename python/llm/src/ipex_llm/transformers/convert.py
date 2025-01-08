@@ -680,18 +680,9 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             optimize_lm_head=optimize_lm_head
                         )
                     device = module.weight.data.device
-                    from ipex_llm.transformers.utils import get_ipex_version
-                    if get_ipex_version() < "2.1.10+xpu":
-                        new_linear._parameters['weight'] = nn.Parameter(module.weight)
-                    else:
-                        # only from 2.1, ipex provides matmul_bias_out
-                        # so we need to transpose weight
-                        new_weight = module.weight.transpose(0, 1).contiguous()
-                        new_linear._parameters['weight'] = nn.Parameter(new_weight)
-                        new_linear.weight_type = 2
+                    new_linear._parameters['weight'] = nn.Parameter(module.weight)
                     if module.bias is not None:
-                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data)\
-                            .to(device)
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to(device)
                 elif qtype == ggml_tensor_qtype["bf16"]:
                     module.to(torch.bfloat16)
                     if _USE_VLLM:
@@ -1452,21 +1443,6 @@ def _optimize_post(model):
                             module.MultiheadAttention,
                             mpt_multihead_attention_forward
                             )
-    elif "gptj" in model.config.model_type:
-        # dolly-v1-6b
-        modeling_module_name = model.__class__.__module__
-        module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.gptj import gptj_attention_forward, gptj_model_forward,\
-            gptj_block_forward
-        convert_forward(model,
-                        module.GPTJAttention,
-                        gptj_attention_forward)
-        convert_forward(model,
-                        module.GPTJModel,
-                        gptj_model_forward)
-        convert_forward(model,
-                        module.GPTJBlock,
-                        gptj_block_forward)
     elif "bloom" in model.config.model_type:
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)

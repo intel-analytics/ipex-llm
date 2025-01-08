@@ -759,9 +759,9 @@ class FP16Linear(nn.Linear):
         self.weight_length = self.out_len * self.in_len
         self.qtype = ggml_tensor_qtype["fp16"]
         self.mp_group = mp_group
-        # weigh_type = 1 means original weight
-        # weigh_type = 2 means weight has been transposed
-        # weigh_type = 3 means weight has been transposed by esimd method
+        # weight_type = 1 means original weight
+        # weight_type = 2 means weight has been transposed
+        # weight_type = 3 means weight has been transposed by esimd method
         self.weight_type = 1
         self.optimize_lm_head = optimize_lm_head
         self.disable_fp16_opt = False
@@ -775,28 +775,14 @@ class FP16Linear(nn.Linear):
 
         x = x.to(torch.float16)
         if self.bias is not None and self.bias.dtype != x.dtype:
-                self.bias.data = self.bias.data.to(x.dtype)
+            self.bias.data = self.bias.data.to(x.dtype)
         if self.weight is not None and self.weight.dtype != x.dtype:
             self.weight.data = self.weight.data.to(x.dtype)
 
         if not self.use_esimd_kernel(x):
-            if (
-                get_ipex_version() < "2.1.10+xpu"
-                or get_xpu_device_name(x.device) not in ["arc", "pvc"]
-                or self.disable_fp16_opt
-            ):
-                if self.weight_type == 2:
-                    self.weight = torch.nn.Parameter(self.weight.transpose(0, 1).contiguous(),
-                                                     requires_grad=False)
-                    self.weight_type = 1
-                result = F.linear(x, self.weight, self.bias)
-            else:
-                if self.weight_type == 1:
-                    self.weight = torch.nn.Parameter(self.weight.transpose(0, 1).contiguous(),
-                                                     requires_grad=False)
-                    self.weight_type = 2
-                result = torch.ops.torch_ipex.matmul_bias_out(x.contiguous(),
-                                                              self.weight, self.bias)
+            invalidInputError(self.weight_type == 1, "weight_type should be 1")
+            result = F.linear(x, self.weight, self.bias)
+
             if self.mp_group is not None:
                 if get_use_vllm():
                     result = self.mp_group.all_reduce(result)
@@ -852,7 +838,7 @@ class FP16Linear(nn.Linear):
         if self.disable_fp16_opt:
             return False
         # esimd kernel can only be used for Arc and Flex
-        if gpu_type not in ["arc", "flex"]:
+        if gpu_type not in ["arc"]:
             return False
         # now esimd kernel can only be used for specific cases (llama2-7b shape)
         if self.in_len == 11008 and self.out_features == 4096:

@@ -432,8 +432,7 @@ def _check_and_extend_kv_cache(past_key_values, max_step_draft, kv_alloc_block_l
     from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_31, \
         extend_kv_cache
     enough_kv_room = True
-    if model_type not in ["chatglm", "qwen", "baichuan", "llama", "mistral",
-                          "gptj", "opt"]:
+    if model_type not in ["chatglm", "qwen", "baichuan", "llama", "mistral", "opt"]:
         return past_key_values, False
     cache_k = past_key_values[0][0]
     if model_type == "chatglm":
@@ -527,7 +526,7 @@ def _crop_past_key_values(self, past_key_values, new_cache_size, _enable_ipex=Fa
                         v[:-(new_cache_size), :, :, :])
                     for k, v in past_key_values
                 ]
-        elif self.config.model_type in ["baichuan", "gptj"]:
+        elif self.config.model_type in ["baichuan"]:
             past_key_values = [
                 (k[:, :, :-(new_cache_size), :],
                     v[:, :, :-(new_cache_size), :])
@@ -796,13 +795,6 @@ def _non_cpu_ipex_verify(self, verify_input_ids, past_key_values, cur_attention_
                                     device=verify_input_ids.device)
         position_ids = position_ids.unsqueeze(0).repeat(1, 1) + past_key_value_len
         forward_args["position_ids"] = position_ids
-    elif self.config.model_type == "gptj":
-        past_length = past_key_values[0][0].size(2)
-        input_len = verify_input_ids.shape[1]
-        position_ids = torch.arange(past_length, input_len + past_length,
-                                    dtype=torch.long, device=verify_input_ids.device)
-        position_ids = position_ids.unsqueeze(0).view(-1, input_len)
-        forward_args["position_ids"] = position_ids
 
     return self(**forward_args)
 
@@ -970,10 +962,6 @@ def speculative_generate(self,
                     else:
                         past_key_value_len = past_key_values[0][0].shape[0]
                     position_ids = torch.Tensor([[past_key_value_len + step_draft]]).long()
-                    forward_args["position_ids"] = position_ids
-                elif self.config.model_type == "gptj":
-                    past_length = draft_past_key_values[0][0].size(2)
-                    position_ids = torch.Tensor([[past_length]]).long().to(self.device)
                     forward_args["position_ids"] = position_ids
 
                 if _enable_ipex:
