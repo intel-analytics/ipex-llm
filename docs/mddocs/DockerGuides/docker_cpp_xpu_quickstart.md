@@ -131,7 +131,7 @@ Please refer to this [documentation](../Quickstart/llama_cpp_quickstart.md) for 
 Running the ollama on the background, you can see the ollama.log in `/root/ollama/ollama.log`
 ```bash
 cd /llm/scripts/
-# set the recommended Env
+# (optional) set the recommended Env , it might cause err. When meet err, you can directly start ollama without set the env. 
 source ipex-llm-init --gpu --device $DEVICE
 bash start-ollama.sh # ctrl+c to exit, and the ollama serve will run on the background
 ```
