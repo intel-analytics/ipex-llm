@@ -154,20 +154,6 @@ def get_autocast_dtype(x):
                           f"Device {x.device} is not supported.")
 
 
-_ipex_version = None
-
-
-def get_ipex_version():
-
-    global _ipex_version
-    if _ipex_version is not None:
-        return _ipex_version
-
-    import intel_extension_for_pytorch as ipex
-    _ipex_version = ipex.__version__
-    return _ipex_version
-
-
 def get_xpu_device_name(device: torch.device):
     if device.type != "xpu":
         return device.type

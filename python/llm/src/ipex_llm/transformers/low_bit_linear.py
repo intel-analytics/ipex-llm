@@ -51,8 +51,7 @@ from torch import Tensor, device, dtype, nn
 from operator import mul
 from functools import reduce
 from ipex_llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
-from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_name, \
-    get_ipex_version
+from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_name
 from ipex_llm.transformers.convert import is_deepspeed_available, get_use_vllm
 
 T = TypeVar("T", bound="torch.nn.Module")
