@@ -19,7 +19,7 @@ import torch
 import warnings
 from ipex_llm.utils.common import invalidInputError
 from ipex_llm.ggml.quantize import ggml_tensor_qtype
-from ipex_llm.transformers.utils import get_ipex_version, get_xpu_device_name
+from ipex_llm.transformers.utils import get_xpu_device_name
 from ipex_llm.transformers.low_bit_linear import SYM_INT4, SYM_INT8, FP8E5, IQ2_XXS, FP4, FP8E4,\
     FP6, ASYM_INT4
 
