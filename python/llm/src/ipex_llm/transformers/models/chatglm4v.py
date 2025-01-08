@@ -301,6 +301,7 @@ def patch_embedding_forward(self, images: "tensor(B, C, H, W)") -> "tensor(B, L,
 
 def merge_qkv(module: torch.nn.Module):
     merge_qkv_base(module, "SiglipAttention")
+    merge_qkv_base(module, "SiglipSdpaAttention")
 
 
 def vision_model_forward(self: torch.nn.Module, image: torch.Tensor):

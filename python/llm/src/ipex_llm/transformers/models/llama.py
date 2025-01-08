@@ -116,7 +116,7 @@ def llama_model_forward(
 
 
 def merge_qkv(module: torch.nn.Module):
-    return merge_qkv_base(module, LlamaAttention)
+    merge_qkv_base(module, LlamaAttention)
 
 
 def llama_attention_forward(
