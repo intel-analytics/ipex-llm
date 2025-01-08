@@ -61,22 +61,36 @@ conda activate llm
 
 ### 1.2 Install IPEX-LLM
 
-With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
+With the `llm` environment active, install the appropriate `ipex-llm` package based on your use case:
+
+#### For PyTorch:
+Install the `ipex-llm[xpu-arc]` package. Choose either the US or CN website for `extra-index-url`:
 
 - For **US**:
-
-  ```cmd
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  ```bash
+  pip install --pre --upgrade ipex-llm[xpu-arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
   ```
 
 - For **CN**:
+  ```bash
+  pip install --pre --upgrade ipex-llm[xpu-arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  ```
 
-  ```cmd
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+#### For llama.cpp and Ollama:
+Install the `ipex-llm[cpp]` package. Choose either the US or CN website for `extra-index-url`:
+
+- For **US**:
+  ```bash
+  pip install --pre --upgrade ipex-llm[cpp] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  ```
+
+- For **CN**:
+  ```bash
+  pip install --pre --upgrade ipex-llm[cpp] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
   ```
 
 > [!NOTE]  
-> If you encounter network issues while installing IPEX, refer to [this guide](../Overview/install_gpu.md#install-ipex-llm-from-wheel) for troubleshooting advice.
+> If you encounter network issues during installation, refer to the [troubleshooting guide](../Overview/install_gpu.md#install-ipex-llm-from-wheel-1) for alternative steps.
 
 ---
 
@@ -120,18 +134,32 @@ conda activate llm
 
 ### 2.2 Install IPEX-LLM
 
-With the `llm` environment active, use `pip` to install `ipex-llm` for GPU. Choose either US or CN website for `extra-index-url`:
+With the `llm` environment active, install the appropriate `ipex-llm` package based on your use case:
+
+#### For PyTorch:
+Install the `ipex-llm[xpu-arc]` package. Choose either the US or CN website for `extra-index-url`:
 
 - For **US**:
-
   ```cmd
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  pip install --pre --upgrade ipex-llm[xpu-arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
   ```
 
 - For **CN**:
-
   ```cmd
-  pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  pip install --pre --upgrade ipex-llm[xpu-arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+  ```
+
+#### For llama.cpp and Ollama:
+Install the `ipex-llm[cpp]` package. Choose either the US or CN website for `extra-index-url`:
+
+- For **US**:
+  ```cmd
+  pip install --pre --upgrade ipex-llm[cpp] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  ```
+
+- For **CN**:
+  ```cmd
+  pip install --pre --upgrade ipex-llm[cpp] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
   ```
 
 > [!NOTE]  
