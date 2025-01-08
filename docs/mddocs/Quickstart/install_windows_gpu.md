@@ -6,7 +6,10 @@
 This guide demonstrates how to install IPEX-LLM on Windows with Intel GPUs. 
 
 > [!NOTE]
-> For Linux installation, please refer to this [guide](./install_linux_gpu.md).
+> For installation on Intel Arc B-Series GPU (such as **B580**), please refer to this [guide](./bmg_quickstart.md).
+
+> [!NOTE]
+> For **Linux** installation, please refer to this [guide](./install_linux_gpu.md).
 
 It applies to Intel Core Ultra and Core 11 - 14 gen integrated GPUs (iGPUs), as well as Intel Arc Series GPU.
 
