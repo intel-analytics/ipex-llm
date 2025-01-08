@@ -6,7 +6,10 @@
 This guide demonstrates how to install IPEX-LLM on Linux with Intel GPUs. It applies to Intel Data Center GPU Flex Series and Max Series, as well as Intel Arc Series GPU and Intel iGPU. 
 
 > [!NOTE]
-> For Windows installation, please refer to this [guide](./install_windows_gpu.md).
+> For installation on Intel Arc B-Series GPU (such as **B580**), please refer to this [guide](./bmg_quickstart.md).
+
+> [!NOTE]
+> For **Windows** installation, please refer to this [guide](./install_windows_gpu.md).
 
 IPEX-LLM recommends to use the Ubuntu 22.04 operating system with Linux kernel 6.2 or 6.5. This page demonstrates IPEX-LLM with PyTorch 2.1. Check the [Installation](../Overview/install_gpu.md#linux) page for more details.
 
