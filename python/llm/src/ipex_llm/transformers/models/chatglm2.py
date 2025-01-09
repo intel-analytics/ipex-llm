@@ -63,8 +63,13 @@ def chatglm2_model_forward(
 
     if use_cache:
         use_compress_kv = should_use_compresskv(input_ids, input_ids.shape[1])
+        n_heads = self.config.num_attention_heads
+        if self.config.multi_query_attention:
+            n_kv_heads = self.config.multi_query_group_num
+        else:
+            n_kv_heads = n_heads
         use_quantize_kv = use_quantize_kv_cache(self.encoder.layers[0].mlp.gate_proj,
-                                                input_ids)
+                                                input_ids, n_heads, n_kv_heads)
         if use_compress_kv and not isinstance(past_key_values,
                                               DynamicCompressCache):
             if use_quantize_kv:
@@ -257,8 +262,6 @@ def chatglm2_attention_forward(
         key_states[..., :rot_dim] = k_rot[...]
 
     # IPEX-LLM OPT: kv cache and quantize kv
-    use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states)
-
     # [CompressKV]
     if use_compresskv:
         from transformers.configuration_utils import PretrainedConfig
@@ -272,6 +275,8 @@ def chatglm2_attention_forward(
             self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH
         )
     else:
+        use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states,
+                                                n_head, n_kv_head)
         key_states, value_states = update_past_key_value(
             past_key_value, key_states, value_states,
             kv_seq_len, use_quantize_kv, hidden_states.device

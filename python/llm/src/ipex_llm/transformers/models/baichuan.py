@@ -73,7 +73,9 @@ def baichuan_model_7b_forward(
     if use_cache:
         inputs = input_ids if input_ids is not None else inputs_embeds
         use_compress_kv = should_use_compresskv(inputs, inputs.shape[1])
-        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs)
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs,
+                                                self.config.num_attention_heads,
+                                                self.config.num_attention_heads)
         if use_compress_kv and not isinstance(past_key_values,
                                               DynamicCompressCache):
             if use_quantize_kv:
@@ -246,8 +248,6 @@ def baichuan_attention_forward_7b(
         key_states = key_states.to(hidden_states.dtype)
 
     # IPEX-LLM OPT: kv cache and quantize kv
-    use_quantize_kv = use_quantize_kv_cache(self.W_pack, hidden_states)
-
     # [CompressKV]
     if use_compresskv:
         enough_kv_room = is_enough_kv_cache_room_4_36(past_key_value,
@@ -258,6 +258,8 @@ def baichuan_attention_forward_7b(
             query_states, attention_mask, 1,
             self.config, enough_kv_room, KV_CACHE_ALLOC_BLOCK_LENGTH)
     else:
+        use_quantize_kv = use_quantize_kv_cache(self.W_pack, hidden_states,
+                                                self.num_heads, self.num_heads)
         key_states, value_states = update_past_key_value(
             past_key_value, key_states, value_states,
             kv_seq_len, use_quantize_kv, device
@@ -308,7 +310,8 @@ def baichuan_attention_forward_13b(
         kv_seq_len += past_key_value[0].shape[2]
 
     # IPEX-LLM OPT: kv cache and quantize kv
-    use_quantize_kv = use_quantize_kv_cache(self.W_pack, hidden_states)
+    use_quantize_kv = use_quantize_kv_cache(self.W_pack, hidden_states,
+                                            self.num_heads, self.num_heads)
     key_states, value_states = update_past_key_value(
         past_key_value, key_states, value_states,
         kv_seq_len, use_quantize_kv, device

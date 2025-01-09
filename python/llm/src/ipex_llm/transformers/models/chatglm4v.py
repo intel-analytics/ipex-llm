@@ -230,7 +230,7 @@ def chatglm4v_attention_forward(
         key_states[..., :rot_dim] = k_rot[...]
 
     # IPEX-LLM OPT: kv cache and quantize kv
-    use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states)
+    use_quantize_kv = use_quantize_kv_cache(self.query_key_value, query_states, n_head, n_kv_head)
     key_states, value_states = update_past_key_value(
         past_key_value, key_states, value_states,
         kv_seq_len, use_quantize_kv, hidden_states.device

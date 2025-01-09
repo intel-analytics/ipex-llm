@@ -107,7 +107,8 @@ def qwen_attention_forward(
         query_states = query_states * logn_tensor.type_as(query_states).expand_as(query_states)
 
     # IPEX-LLM OPT: kv cache and quantzie kv cache
-    use_quantize_kv = use_quantize_kv_cache(self.c_attn, hidden_states)
+    use_quantize_kv = use_quantize_kv_cache(self.c_attn, hidden_states,
+                                            self.num_heads, self.num_heads)
     key_states, value_states = update_past_key_value(
         past_key_value, key_states, value_states,
         kv_seq_len, use_quantize_kv, device
@@ -205,7 +206,8 @@ def qwen_attention_forward_registered(
         query_states = query_states * logn_tensor.type_as(query_states).expand_as(query_states)
 
     # IPEX-LLM OPT: kv cache and quantzie kv cache
-    use_quantize_kv = use_quantize_kv_cache(self.c_attn, hidden_states)
+    use_quantize_kv = use_quantize_kv_cache(self.c_attn, hidden_states,
+                                            self.num_heads, self.num_heads)
     key_states, value_states = update_past_key_value(
         past_key_value, key_states, value_states,
         kv_seq_len, use_quantize_kv, device

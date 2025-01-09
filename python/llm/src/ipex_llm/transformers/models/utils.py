@@ -74,7 +74,8 @@ def append_kv_cache(cache_k, cache_v, key_states, value_states):
     return new_cache_k, new_cache_v
 
 
-def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor, kv_group: int = 1) -> bool:
+def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor,
+                          num_heads: int, num_kv_heads: int) -> bool:
     if os.environ.get("BIGDL_QUANTIZE_KV_CACHE", None) is not None:
         warnings.warn(
             "`BIGDL_QUANTIZE_KV_CACHE` is deprecated and will be removed in future releases. "
@@ -90,8 +91,11 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor, kv_group: in
     else:
         device_name = get_xpu_device_name(x.device)
         return (
-            device_name in ["mtl", "lnl", "arl"] and kv_group == 1
-            or device_name in ["arc", "bmg"] and x.size(0) > 1
+            num_kv_heads >= 4
+            and (
+                device_name in ["mtl", "lnl", "arl"] and num_heads // num_kv_heads <= 4
+                or device_name in ["arc", "bmg"] and x.size(0) > 1
+            )
         )
 
 

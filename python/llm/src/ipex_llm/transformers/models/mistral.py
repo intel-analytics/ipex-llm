@@ -71,7 +71,7 @@ def mistral_model_forward(
     use_cache = use_cache if use_cache is not None else self.config.use_cache
     use_cache = use_cache or inputs.device.type == 'xpu'
     use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs,
-                                            self.config.num_attention_heads //
+                                            self.config.num_attention_heads,
                                             self.config.num_key_value_heads)
     use_compress_kv = should_use_compresskv(inputs, inputs.size(1)) or \
         isinstance(past_key_values, DynamicCompressCache)
