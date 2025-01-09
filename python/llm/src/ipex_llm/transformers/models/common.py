@@ -157,8 +157,10 @@ def rms_norm_forward(self, hidden_states: torch.Tensor):
     weight = self.weight
     if hasattr(self, "variance_epsilon"):
         eps = self.variance_epsilon
-    else:
+    elif hasattr(self, "epsilon"):
         eps = self.epsilon
+    else:
+        eps = self.eps
 
     if hidden_states.device.type == 'xpu' and hidden_states.dtype in [torch.float, torch.half]:
         import xe_addons

@@ -1325,7 +1325,6 @@ def _optimize_post(model):
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
             from ipex_llm.transformers.models.chatglm2 import chatglm2_attention_forward
-            from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm2_encoder_forward
             from ipex_llm.transformers.models.chatglm2 import chatglm2_model_forward
             from ipex_llm.transformers.models.chatglm2 import mlp_forward
@@ -1338,9 +1337,7 @@ def _optimize_post(model):
             convert_forward(model,
                             module.ChatGLMModel,
                             chatglm2_model_forward)
-            convert_forward(model,
-                            module.RMSNorm,
-                            chatglm_rms_norm_forward)
+            convert_forward(model, module.RMSNorm, rms_norm_forward)
             convert_forward(model, module.MLP, mlp_forward)
             # for codegeex-nano
             if hasattr(model.config, "rope_ratio"):
@@ -1358,8 +1355,7 @@ def _optimize_post(model):
             # glm4 family
             modeling_module_name = model.__class__.__module__
             module = importlib.import_module(modeling_module_name)
-            from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
-            convert_forward(model, module.RMSNorm, chatglm_rms_norm_forward)
+            convert_forward(model, module.RMSNorm, rms_norm_forward)
 
             if hasattr(model.transformer, "vision"):
                 # glm4 vision family
@@ -1448,8 +1444,8 @@ def _optimize_post(model):
     elif model.config.model_type == "baichuan":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
-        from ipex_llm.transformers.models.baichuan import baichuan_mlp_forward
-        convert_forward(model, module.MLP, baichuan_mlp_forward)
+        convert_forward(model, module.RMSNorm, rms_norm_forward)
+        convert_forward(model, module.MLP, mlp_silu_forward)
 
         if model.config.hidden_size in [4096, 2048]:
             # baichuan-7B and baichuan2-7B
@@ -1458,7 +1454,6 @@ def _optimize_post(model):
             for i in range(len(model.model.layers)):
                 setattr(model.model.layers[i].self_attn, "layer_idx", i)
             convert_forward(model, module.Attention, baichuan_attention_forward_7b)
-            convert_forward(model, module.RMSNorm, rms_norm_forward)
             if model.config.vocab_size == 125696:
                 # baichuan2-7B
                 convert_forward(model, module.BaichuanModel, baichuan_model_7b_forward)
@@ -1468,9 +1463,7 @@ def _optimize_post(model):
         elif model.config.hidden_size == 5120:
             # baichuan-13B and baichuan2-13B
             from ipex_llm.transformers.models.baichuan import baichuan_attention_forward_13b
-            from ipex_llm.transformers.models.baichuan import baichuan_13b_rms_norm_forward
             convert_forward(model, module.BaichuanAttention, baichuan_attention_forward_13b)
-            convert_forward(model, module.RMSNorm, baichuan_13b_rms_norm_forward)
 
             if model.config.vocab_size == 125696:
                 # baichaun2-13B
@@ -1565,7 +1558,6 @@ def _optimize_post(model):
             from ipex_llm.transformers.models.qwen import qwen_attention_forward
             from ipex_llm.transformers.models.qwen import qwen_attention_forward_registered
             from ipex_llm.transformers.models.qwen import qwen_mlp_forward
-            from ipex_llm.transformers.models.chatglm2 import chatglm_rms_norm_forward
             from ipex_llm.transformers.models.qwen import qwen_model_forward
             if model.config.max_position_embeddings == 8192 \
                and model.config.hidden_size == 4096:
@@ -1580,7 +1572,7 @@ def _optimize_post(model):
                                 )
             convert_forward(model,
                             module.RMSNorm,
-                            chatglm_rms_norm_forward)
+                            rms_norm_forward)
             convert_forward(model,
                             module.QWenMLP,
                             qwen_mlp_forward)

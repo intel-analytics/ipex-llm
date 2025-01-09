@@ -36,24 +36,13 @@ import math
 import torch
 from typing import Optional, Tuple
 from transformers.models.bert.modeling_bert import BertSelfAttention, BertEncoder
+from ipex_llm.transformers.models.common import merge_linear
 from ipex_llm.utils.common import invalidInputError
 
 
 def merge_qkv(module: torch.nn.Module):
     if isinstance(module, BertSelfAttention):
-        q_w = module.query.weight.data
-        k_w = module.key.weight.data
-        v_w = module.value.weight.data
-        q_b = module.query.bias.data
-        k_b = module.key.bias.data
-        v_b = module.value.bias.data
-        new_w = torch.cat([q_w, k_w, v_w], dim=0)
-        new_b = torch.cat([q_b, k_b, v_b], dim=-1)
-        qkv = torch.nn.Linear(0, 0, bias=True)
-        qkv.weight = torch.nn.Parameter(new_w, requires_grad=False)
-        qkv.bias = torch.nn.Parameter(new_b, requires_grad=False)
-        qkv.in_features = module.query.in_features
-        qkv.out_features = module.query.out_features * 3
+        qkv = merge_linear([module.query, module.key, module.value])
         module.qkv = qkv
         del module.query
         del module.key
