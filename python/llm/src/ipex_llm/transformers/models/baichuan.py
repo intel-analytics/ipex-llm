@@ -47,38 +47,6 @@ def pre_compute_inv_freq(module: torch.nn.Module):
         module.register_buffer("inv_freq", inv_freq, persistent=False)
 
 
-def baichuan_13b_rms_norm_forward(self, hidden_states):
-    if hidden_states.device.type == "xpu" and not (self.training or hidden_states.requires_grad):
-        import xe_addons
-        x_2d = hidden_states.reshape(-1, hidden_states.size(-1)).contiguous()
-        output = xe_addons.rms_norm(self.weight, x_2d, self.epsilon)
-        return output.reshape(hidden_states.shape)
-
-    input_dtype = hidden_states.dtype
-    hidden_states = hidden_states.to(torch.float32)
-    variance = hidden_states.pow(2).mean(-1, keepdim=True)
-    hidden_states = hidden_states * torch.rsqrt(variance + self.epsilon)
-    return self.weight * hidden_states.to(input_dtype)
-
-
-def baichuan_mlp_forward(
-    self,
-    x: torch.Tensor,
-) -> torch.Tensor:
-    x_2d = x.view(-1, x.shape[-1])
-    qtype = getattr(self.gate_proj, "qtype", None)
-    if mlp_fusion_check(x_2d, qtype, self.training):
-        import xe_linear
-        if not x_2d.is_contiguous():
-            x_2d = x_2d.contiguous()
-        return self.down_proj(xe_linear.mlp_forward_xpu(
-            x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
-            x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_len,
-            SILU, qtype
-        ))
-    return self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
-
-
 def baichuan_model_7b_forward(
         self,
         input_ids: torch.LongTensor = None,
