@@ -39,7 +39,6 @@ import warnings
 from ipex_llm.transformers.models.common import attention_softmax
 from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.utils import should_use_fuse_rope, rotate_half
-from ipex_llm.transformers.models.utils import mlp_fusion_check, SILU
 from ipex_llm.transformers.models.utils import use_sdp, use_sdp_causal
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp8_kv_cache
 from ipex_llm.transformers.models.utils import should_use_compresskv, is_enough_kv_cache_room_4_36
@@ -213,24 +212,8 @@ def split_mlp(module: torch.nn.Module):
 
         del module.gate_up_proj
 
-
-def mlp_forward(
-    self,
-    hidden_states: torch.FloatTensor
-) -> torch.FloatTensor:
-    x_2d = hidden_states.view(-1, hidden_states.shape[-1])
-    qtype = getattr(self.gate_proj, "qtype", None)
-    if mlp_fusion_check(x_2d, qtype, self.training):
-        x_2d = x_2d.contiguous()
-        import xe_linear
-        return self.down_proj(xe_linear.mlp_forward_xpu(
-            x_2d, self.gate_proj.weight.data, self.up_proj.weight.data,
-            x_2d.shape[0], x_2d.shape[1], self.gate_proj.out_features,
-            SILU, qtype
-        ))
-    return self.down_proj(
-        self.activation_fn(self.gate_proj(hidden_states)) * self.up_proj(hidden_states)
-    )
+        # rename activation function
+        module.act_fn = module.activation_fn
 
 
 def phi3_model_forward_wrapper(origin_model_forward):

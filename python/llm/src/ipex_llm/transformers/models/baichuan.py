@@ -30,8 +30,7 @@ from ipex_llm.transformers.models.utils import use_quantize_kv_cache, restore_fp
 from ipex_llm.transformers.models.utils import update_past_key_value
 from ipex_llm.transformers.models.utils import should_use_fuse_rope
 from ipex_llm.transformers.models.utils import use_sdp
-from ipex_llm.transformers.models.utils import apply_rotary_pos_emb, SILU
-from ipex_llm.transformers.models.utils import mlp_fusion_check
+from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
 from ipex_llm.transformers.models.utils import is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.kv import DynamicCompressFp8Cache, DynamicCompressCache
 import warnings

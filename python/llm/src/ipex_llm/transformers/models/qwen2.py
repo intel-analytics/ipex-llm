@@ -51,16 +51,11 @@ from ipex_llm.transformers.models.utils import use_quantize_kv_cache, \
     should_use_compresskv, is_enough_kv_cache_room_4_36
 from ipex_llm.transformers.kv import DynamicFp8Cache, DynamicNormalCache, \
     DynamicCompressCache, DynamicCompressFp8Cache
-from ipex_llm.utils.common import invalidInputError
 
-from transformers.models.qwen2.modeling_qwen2 import Qwen2Attention, Qwen2MLP
+from transformers.models.qwen2.modeling_qwen2 import Qwen2Model, Qwen2Attention, Qwen2MLP
 from transformers.models.qwen2.modeling_qwen2 import apply_rotary_pos_emb
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 from transformers.cache_utils import Cache
-from transformers import logging
-
-
-logger = logging.get_logger(__name__)
 
 
 def qwen2_model_forward(
@@ -74,50 +69,18 @@ def qwen2_model_forward(
     output_attentions: Optional[bool] = None,
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
-    cache_position: Optional[torch.LongTensor] = None,  # for transformers >= 4.42
+    cache_position: Optional[torch.LongTensor] = None,
 ) -> Union[Tuple, BaseModelOutputWithPast]:
-    output_attentions = (
-        output_attentions if output_attentions is not None
-        else self.config.output_attentions
-    )
-    output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None
-        else self.config.output_hidden_states
-    )
-    use_cache = use_cache if use_cache is not None else self.config.use_cache
-
-    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-
-    # retrieve input_ids and inputs_embeds
-    if input_ids is not None and inputs_embeds is not None:
-        invalidInputError(False,
-                          "You cannot specify both input_ids and inputs_embeds at the same time")
-    elif input_ids is not None:
-        batch_size, seq_length = input_ids.shape
-    elif inputs_embeds is not None:
-        batch_size, seq_length, _ = inputs_embeds.shape
-    else:
-        invalidInputError(False,
-                          "You have to specify either decoder_input_ids or decoder_inputs_embeds")
-
-    if self.gradient_checkpointing and self.training:
-        if use_cache:
-            logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. "
-                "Setting `use_cache=False`..."
-            )
-            use_cache = False
-
-    past_key_values_length = 0
-
-    # ipex-llm changes start
-    # IPEX-LLM OPT: kv cache and quantize kv cache
+    # IPEX-LLM OPT start: kv cache and quantize kv cache
     inputs = input_ids if input_ids is not None else inputs_embeds
-    num_heads, num_kv_heads = self.config.num_attention_heads, self.config.num_key_value_heads
-    use_quantize_kv = (
-        self.config.hidden_size != 3584     # disable quantize kv in specific model
-        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs, num_heads, num_kv_heads)
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
+    use_cache = True if inputs.device.type == "xpu" else use_cache
+
+    use_quantize_kv = self.config.hidden_size != 3584 and use_quantize_kv_cache(
+        self.layers[0].mlp.down_proj, inputs,
+        self.config.num_attention_heads, self.config.num_key_value_heads
     )
+
     use_compress_kv = should_use_compresskv(inputs, inputs.shape[1]) or \
         isinstance(past_key_values, DynamicCompressCache)
 
@@ -133,274 +96,26 @@ def qwen2_model_forward(
         if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
                                                                           DynamicNormalCache):
             past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
-        past_key_values_length = past_key_values.get_usable_length(seq_length)
     # ipex-llm changes end
 
-    if position_ids is None:
-        device = input_ids.device if input_ids is not None else inputs_embeds.device
-        position_ids = torch.arange(
-            past_key_values_length, seq_length + past_key_values_length,
-            dtype=torch.long, device=device
-        )
-        position_ids = position_ids.unsqueeze(0).view(-1, seq_length)
+    # `cache_position` is required after transformers 4.42
+    if cache_position is not None:
+        kwargs = {"cache_position": cache_position}
     else:
-        position_ids = position_ids.view(-1, seq_length).long()
+        kwargs = {}
 
-    if inputs_embeds is None:
-        inputs_embeds = self.embed_tokens(input_ids)
-
-    flash_attn_2 = self._attn_implementation == "flash_attention_2"
-    if attention_mask is not None and flash_attn_2 and use_cache:
-
-        is_padding_right = attention_mask[:, -1].sum().item() != batch_size
-        if is_padding_right:
-            invalidInputError(
-                False,
-                "You are attempting to perform batched generation with padding_side='right'"
-                " this may lead to unexpected behaviour for Flash Attention version of Qwen2."
-                " Make sure to  call `tokenizer.padding_side  = 'left'` before tokenizing "
-                "the input. "
-            )
-
-    from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask_for_sdpa
-    from transformers.models.qwen2.modeling_qwen2 import _prepare_4d_causal_attention_mask
-
-    # ipex-llm changes start: don't generate `attention_mask` in decode phase
-    if seq_length == 1:
-        attention_mask = None
-    # ipex-llm changes end
-    elif self._attn_implementation == "flash_attention_2":
-        # 2d mask is passed through the layers
-        attention_mask = attention_mask if (attention_mask is not None and
-                                            0 in attention_mask) else None
-    elif self._attn_implementation == "sdpa" and not output_attentions:
-        # output_attentions=True can not be supported when using SDPA, and we fall back on
-        # the manual implementation that requires a 4D causal mask in all cases.
-        attention_mask = _prepare_4d_causal_attention_mask_for_sdpa(
-            attention_mask,
-            (batch_size, seq_length),
-            inputs_embeds,
-            past_key_values_length,
-        )
-    else:
-        # 4d mask is passed through the layers
-        attention_mask = _prepare_4d_causal_attention_mask(
-            attention_mask,
-            (batch_size, seq_length),
-            inputs_embeds,
-            past_key_values_length,
-            sliding_window=self.config.sliding_window,
-        )
-
-    hidden_states = inputs_embeds
-
-    # decoder layers
-    all_hidden_states = () if output_hidden_states else None
-    all_self_attns = () if output_attentions else None
-    next_decoder_cache = None
-
-    for decoder_layer in self.layers:
-        if output_hidden_states:
-            all_hidden_states += (hidden_states,)
-
-        if self.gradient_checkpointing and self.training:
-            layer_outputs = self._gradient_checkpointing_func(
-                decoder_layer.__call__,
-                hidden_states,
-                attention_mask,
-                position_ids,
-                past_key_values,
-                output_attentions,
-                use_cache,
-            )
-        else:
-            # ipex-llm changes
-            curr_device = decoder_layer.input_layernorm.weight.device
-            if attention_mask is not None:
-                attention_mask = attention_mask.to(curr_device)
-            if position_ids is not None:
-                position_ids = position_ids.to(curr_device)
-            # ipex-llm changes end
-            layer_outputs = decoder_layer(
-                hidden_states,
-                attention_mask=attention_mask,
-                position_ids=position_ids,
-                past_key_value=past_key_values,
-                output_attentions=output_attentions,
-                use_cache=use_cache,
-            )
-
-        hidden_states = layer_outputs[0]
-
-        if use_cache:
-            next_decoder_cache = layer_outputs[2 if output_attentions else 1]
-
-        if output_attentions:
-            all_self_attns += (layer_outputs[1],)
-
-    hidden_states = self.norm(hidden_states)
-
-    # add hidden states from the last decoder layer
-    if output_hidden_states:
-        all_hidden_states += (hidden_states,)
-
-    # ipex-llm changes start: remove `to_legacy_cache`
-    next_cache = None
-    if use_cache:
-        next_cache = next_decoder_cache
-    # ipex-llm changes end
-
-    if not return_dict:
-        return tuple(v for v in [hidden_states, next_cache,
-                                 all_hidden_states, all_self_attns] if v is not None)
-    return BaseModelOutputWithPast(
-        last_hidden_state=hidden_states,
-        past_key_values=next_cache,
-        hidden_states=all_hidden_states,
-        attentions=all_self_attns,
-    )
-
-
-def qwen2_model_forward_4_42(
-    self,
-    input_ids: torch.LongTensor = None,
-    attention_mask: Optional[torch.Tensor] = None,
-    position_ids: Optional[torch.LongTensor] = None,
-    past_key_values: Optional[List[torch.FloatTensor]] = None,
-    inputs_embeds: Optional[torch.FloatTensor] = None,
-    use_cache: Optional[bool] = None,
-    output_attentions: Optional[bool] = None,
-    output_hidden_states: Optional[bool] = None,
-    return_dict: Optional[bool] = None,
-    cache_position: Optional[torch.LongTensor] = None,
-) -> Union[Tuple, BaseModelOutputWithPast]:
-    output_attentions = (
-        output_attentions if output_attentions is not None
-        else self.config.output_attentions
-    )
-    output_hidden_states = (
-        output_hidden_states if output_hidden_states is not None
-        else self.config.output_hidden_states
-    )
-    use_cache = use_cache if use_cache is not None else self.config.use_cache
-
-    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
-
-    invalidInputError(
-        (input_ids is None) ^ (inputs_embeds is None),
-        "You cannot specify both input_ids and inputs_embeds at the same time, "
-        "and must specify either one"
-    )
-
-    if self.gradient_checkpointing and self.training:
-        if use_cache:
-            logger.warning_once(
-                "`use_cache=True` is incompatible with gradient checkpointing. "
-                "Setting `use_cache=False`..."
-            )
-            use_cache = False
-
-    if inputs_embeds is None:
-        inputs_embeds = self.embed_tokens(input_ids)
-
-    # ipex-llm changes start
-    # IPEX-LLM OPT: kv cache and quantize kv cache
-    num_heads, num_kv_heads = self.config.num_attention_heads, self.config.num_key_value_heads
-    use_quantize_kv = (
-        self.config.hidden_size != 3584     # disable quantize kv in specific model
-        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs_embeds,
-                                  num_heads, num_kv_heads)
-    )
-    use_compress_kv = should_use_compresskv(inputs_embeds, inputs_embeds.shape[1]) or \
-        isinstance(past_key_values, DynamicCompressCache)
-
-    if use_cache:
-        if use_compress_kv and not isinstance(past_key_values, DynamicCompressCache):
-            if use_quantize_kv:
-                past_key_values = DynamicCompressFp8Cache.from_legacy_cache(past_key_values)
-            else:
-                past_key_values = DynamicCompressCache.from_legacy_cache(past_key_values)
-        elif use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                        DynamicFp8Cache):
-            past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)
-        if not use_quantize_kv and not use_compress_kv and not isinstance(past_key_values,
-                                                                          DynamicNormalCache):
-            past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
-    # ipex-llm changes end
-
-    if cache_position is None:
-        past_seen_tokens = past_key_values.get_seq_length() if past_key_values is not None else 0
-        cache_position = torch.arange(
-            past_seen_tokens, past_seen_tokens + inputs_embeds.shape[1], device=inputs_embeds.device
-        )
-    if position_ids is None:
-        position_ids = cache_position.unsqueeze(0)
-
-    causal_mask = self._update_causal_mask(
-        attention_mask, inputs_embeds, cache_position, past_key_values, output_attentions
-    )
-
-    hidden_states = inputs_embeds
-
-    # decoder layers
-    all_hidden_states = () if output_hidden_states else None
-    all_self_attns = () if output_attentions else None
-    next_decoder_cache = None
-
-    for decoder_layer in self.layers:
-        if output_hidden_states:
-            all_hidden_states += (hidden_states,)
-
-        if self.gradient_checkpointing and self.training:
-            layer_outputs = self._gradient_checkpointing_func(
-                decoder_layer.__call__,
-                hidden_states,
-                causal_mask,
-                position_ids,
-                past_key_values,
-                output_attentions,
-                use_cache,
-                cache_position,
-            )
-        else:
-            layer_outputs = decoder_layer(
-                hidden_states,
-                attention_mask=causal_mask,
-                position_ids=position_ids,
-                past_key_value=past_key_values,
-                output_attentions=output_attentions,
-                use_cache=use_cache,
-                cache_position=cache_position,
-            )
-
-        hidden_states = layer_outputs[0]
-
-        if use_cache:
-            next_decoder_cache = layer_outputs[2 if output_attentions else 1]
-
-        if output_attentions:
-            all_self_attns += (layer_outputs[1],)
-
-    hidden_states = self.norm(hidden_states)
-
-    # add hidden states from the last decoder layer
-    if output_hidden_states:
-        all_hidden_states += (hidden_states,)
-
-    # ipex-llm changes start: remove `to_legacy_cache`
-    next_cache = None
-    if use_cache:
-        next_cache = next_decoder_cache
-    # ipex-llm changes end
-
-    if not return_dict:
-        return tuple(v for v in [hidden_states, next_cache,
-                                 all_hidden_states, all_self_attns] if v is not None)
-    return BaseModelOutputWithPast(
-        last_hidden_state=hidden_states,
-        past_key_values=next_cache,
-        hidden_states=all_hidden_states,
-        attentions=all_self_attns,
+    return Qwen2Model.forward(
+        self=self,
+        input_ids=input_ids,
+        attention_mask=attention_mask,
+        position_ids=position_ids,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_attentions=output_attentions,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+        **kwargs
     )
 
 

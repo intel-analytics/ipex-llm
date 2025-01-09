@@ -1591,6 +1591,9 @@ def _optimize_post(model):
                         module.Qwen2ForCausalLM,
                         qwen2_causal_lm_forward)
         convert_forward(model,
+                        module.Qwen2Model,
+                        qwen2_model_forward)
+        convert_forward(model,
                         module.Qwen2RMSNorm,
                         rms_norm_forward)
         convert_forward(model,
@@ -1602,12 +1605,6 @@ def _optimize_post(model):
         convert_forward(model,
                         module.Qwen2SdpaAttention,
                         qwen2_attention_forward)
-        if version.parse(trans_version) >= version.parse("4.42"):
-            from ipex_llm.transformers.models.qwen2 import qwen2_model_forward_4_42
-            convert_forward(model, module.Qwen2Model, qwen2_model_forward_4_42)
-        else:
-            from ipex_llm.transformers.models.qwen2 import qwen2_model_forward
-            convert_forward(model, module.Qwen2Model, qwen2_model_forward)
     elif model.config.model_type == "qwen2_moe":
         # for Qwen1.5-MOE-A2.7B
         modeling_module_name = model.__class__.__module__
@@ -1819,9 +1816,7 @@ def _optimize_post(model):
         from ipex_llm.transformers.models.phi3 import attention_forward
         convert_forward(model, module.Phi3Attention, attention_forward)
         convert_forward(model, module.Phi3SdpaAttention, attention_forward)
-        from ipex_llm.transformers.models.phi3 import mlp_forward
-        convert_forward(model, module.Phi3MLP, mlp_forward)
-        from ipex_llm.transformers.models.common import rms_norm_forward
+        convert_forward(model, module.Phi3MLP, mlp_silu_forward)
         convert_forward(model, module.Phi3RMSNorm, rms_norm_forward)
         if model.config.model_type == "phi3":
             from ipex_llm.transformers.models.phi3 import phi3_model_forward_wrapper
