@@ -113,10 +113,10 @@ def qwen2_model_forward(
     # ipex-llm changes start
     # IPEX-LLM OPT: kv cache and quantize kv cache
     inputs = input_ids if input_ids is not None else inputs_embeds
+    num_heads, num_kv_heads = self.config.num_attention_heads, self.config.num_key_value_heads
     use_quantize_kv = (
         self.config.hidden_size != 3584     # disable quantize kv in specific model
-        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs,
-                                  self.config.num_attention_heads//self.config.num_key_value_heads)
+        and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs, num_heads, num_kv_heads)
     )
     use_compress_kv = should_use_compresskv(inputs, inputs.shape[1]) or \
         isinstance(past_key_values, DynamicCompressCache)
@@ -305,10 +305,11 @@ def qwen2_model_forward_4_42(
 
     # ipex-llm changes start
     # IPEX-LLM OPT: kv cache and quantize kv cache
+    num_heads, num_kv_heads = self.config.num_attention_heads, self.config.num_key_value_heads
     use_quantize_kv = (
         self.config.hidden_size != 3584     # disable quantize kv in specific model
         and use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs_embeds,
-                                  self.config.num_attention_heads//self.config.num_key_value_heads)
+                                  num_heads, num_kv_heads)
     )
     use_compress_kv = should_use_compresskv(inputs_embeds, inputs_embeds.shape[1]) or \
         isinstance(past_key_values, DynamicCompressCache)

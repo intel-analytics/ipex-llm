@@ -158,7 +158,8 @@ def yuan_attention_forward(
                                                         "yuan")
 
     # IPEX-LLM OPT: kv cache and quantzie kv cache
-    use_quantize_kv = use_quantize_kv_cache(self.qk_proj, hidden_states)
+    use_quantize_kv = use_quantize_kv_cache(self.qk_proj, hidden_states,
+                                            self.num_heads, self.num_heads)
     key_states, value_states = update_past_key_value(
         None if past_key_value is None else (past_key_value[0], past_key_value[1]),
         key_states, value_states,

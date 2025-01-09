@@ -132,7 +132,9 @@ def model_forward(
     return_dict: Optional[bool] = None,
 ):
     use_cache = use_cache if use_cache is not None else self.config.use_cache
-    use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.c_fc, input_ids)
+    num_heads, num_kv_heads = self.config.num_attention_heads, self.config.num_key_value_heads
+    use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.c_fc, input_ids,
+                                            num_heads, num_kv_heads)
     if use_cache:
         if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
             past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)

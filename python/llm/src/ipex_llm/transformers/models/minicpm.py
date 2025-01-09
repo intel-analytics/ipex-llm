@@ -159,7 +159,7 @@ def minicpm_model_forward_wrapper(origin_forward):
         # IPEX-LLM OPT: kv cache and quantize kv cache
         inputs = input_ids if input_ids is not None else inputs_embeds
         use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.up_proj, inputs,
-                                                self.config.num_attention_heads //
+                                                self.config.num_attention_heads,
                                                 self.config.num_key_value_heads)
         use_compress_kv = should_use_compresskv(inputs, inputs.shape[1]) or \
             isinstance(past_key_values, DynamicCompressCache)

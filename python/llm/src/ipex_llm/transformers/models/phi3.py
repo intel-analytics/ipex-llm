@@ -249,7 +249,9 @@ def phi3_model_forward_wrapper(origin_model_forward):
         # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         inputs = input_ids if input_ids is not None else inputs_embeds
-        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs)
+        num_heads, num_kv_heads = self.config.num_attention_heads, self.config.num_key_value_heads
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, inputs,
+                                                num_heads, num_kv_heads)
         use_compress_kv = should_use_compresskv(inputs, inputs.shape[1]) or \
             isinstance(past_key_values, DynamicCompressCache)
         if use_cache:
@@ -305,7 +307,9 @@ def phi3v_model_forward_wrapper(origin_model_forward):
     ):
         # IPEX-LLM OPT: kv cache and quantize kv cache and sdp
         use_cache = use_cache if use_cache is not None else self.config.use_cache
-        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids)
+        num_heads, num_kv_heads = self.config.num_attention_heads, self.config.num_key_value_heads
+        use_quantize_kv = use_quantize_kv_cache(self.layers[0].mlp.down_proj, input_ids,
+                                                num_heads, num_kv_heads)
         if use_cache:
             if use_quantize_kv and not isinstance(past_key_values, DynamicFp8Cache):
                 past_key_values = DynamicFp8Cache.from_legacy_cache(past_key_values)

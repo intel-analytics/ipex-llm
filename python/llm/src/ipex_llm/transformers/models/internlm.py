@@ -87,7 +87,8 @@ def internlm_attention_forward(
         )
 
     # IPEX-LLM OPT: kv cache and quantzie kv cache
-    use_quantize_kv = use_quantize_kv_cache(self.qkv_proj, hidden_states)
+    use_quantize_kv = use_quantize_kv_cache(self.qkv_proj, hidden_states,
+                                            self.num_heads, self.num_heads)
     key_states, value_states = update_past_key_value(
         past_key_value, key_states, value_states,
         kv_seq_len, use_quantize_kv, hidden_states.device
@@ -171,7 +172,8 @@ def internlm2_attention_forward(
         )
 
     # IPEX-LLM OPT: kv cache and quantzie kv cache
-    use_quantize_kv = use_quantize_kv_cache(self.wqkv, hidden_states)
+    use_quantize_kv = use_quantize_kv_cache(self.wqkv, hidden_states,
+                                            self.num_heads, self.num_key_value_heads)
     key_states, value_states = update_past_key_value(
         past_key_value, key_states, value_states,
         kv_seq_len, use_quantize_kv, hidden_states.device
@@ -346,7 +348,8 @@ def internlm_xcomposser2_attention_forward(
             query_states, key_states, cos, sin, position_ids, "internlm")
 
     # IPEX-LLM OPT: kv cache and quantzie kv cache
-    use_quantize_kv = use_quantize_kv_cache(self.wqkv, hidden_states)
+    use_quantize_kv = use_quantize_kv_cache(self.wqkv, hidden_states,
+                                            self.num_heads, self.num_key_value_heads)
     key_states, value_states = update_past_key_value(
         past_key_value, key_states, value_states,
         kv_seq_len, use_quantize_kv, device
