@@ -77,6 +77,10 @@ on:
         required: false
         type: boolean
         default: true
+      gpu-pytorch-version:
+        description: 'PyTorch version used for GPU perf tests'
+        required: false
+        type: string
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -649,15 +653,19 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && (inputs.checkout-ref != 'main') }}
         shell: bash
         run: |
-          if [ ${{ matrix.platform }} == "perf-mtl" ]; then
-            sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
-            sed -i 's/"bigdl-core-xe-batch-21==" + CORE_XE_VERSION/"bigdl-core-xe-batch-21"/g' python/llm/setup.py
-            sed -i 's/"bigdl-core-xe-addons-21==" + CORE_XE_VERSION/"bigdl-core-xe-addons-21"/g' python/llm/setup.py
-          fi
-          if [ ${{ matrix.platform }} == "perf-lnl" ] || [ ${{ matrix.platform }} == "perf-dgpu" ]; then
-            sed -i 's/"bigdl-core-xe-23==" + CORE_XE_VERSION/"bigdl-core-xe-23"/g' python/llm/setup.py
-            sed -i 's/"bigdl-core-xe-batch-23==" + CORE_XE_VERSION/"bigdl-core-xe-batch-23"/g' python/llm/setup.py
-            sed -i 's/"bigdl-core-xe-addons-23==" + CORE_XE_VERSION/"bigdl-core-xe-addons-23"/g' python/llm/setup.py
+          if [ ${{ inputs.gpu-pytorch-version }} == "2.6" ]; then
+            sed -i 's/"bigdl-core-xe-all==" + CORE_XE_VERSION/"bigdl-core-xe-all"/g' python/llm/setup.py
+          else
+            if [ ${{ matrix.platform }} == "perf-mtl" ]; then
+              sed -i 's/"bigdl-core-xe-21==" + CORE_XE_VERSION/"bigdl-core-xe-21"/g' python/llm/setup.py
+              sed -i 's/"bigdl-core-xe-batch-21==" + CORE_XE_VERSION/"bigdl-core-xe-batch-21"/g' python/llm/setup.py
+              sed -i 's/"bigdl-core-xe-addons-21==" + CORE_XE_VERSION/"bigdl-core-xe-addons-21"/g' python/llm/setup.py
+            fi
+            if [ ${{ matrix.platform }} == "perf-lnl" ] || [ ${{ matrix.platform }} == "perf-dgpu" ]; then
+              sed -i 's/"bigdl-core-xe-23==" + CORE_XE_VERSION/"bigdl-core-xe-23"/g' python/llm/setup.py
+              sed -i 's/"bigdl-core-xe-batch-23==" + CORE_XE_VERSION/"bigdl-core-xe-batch-23"/g' python/llm/setup.py
+              sed -i 's/"bigdl-core-xe-addons-23==" + CORE_XE_VERSION/"bigdl-core-xe-addons-23"/g' python/llm/setup.py
+            fi
           fi
 
       - name: Install ipex-llm and other related packages (install from source)
@@ -677,14 +685,18 @@ jobs:
           if not exist dist\ipex_llm*.whl (exit /b 1)
           for %%i in (dist\ipex_llm*.whl) do set whl_name=%%i
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            pip install --pre --upgrade %whl_name%[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            pip install --pre --upgrade %whl_name%[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+          if "${{ inputs.gpu-pytorch-version }}"=="2.6" (
+            pip install --pre --upgrade %whl_name%[xpu_2.6] --extra-index-url https://download.pytorch.org/whl/test/xpu
+          ) else (
+            if "${{ matrix.platform }}"=="perf-mtl" (
+              pip install --pre --upgrade %whl_name%[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+            )
+            if "${{ matrix.platform }}"=="perf-lnl" (
+              pip install --pre --upgrade %whl_name%[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+            )
+            if "${{ matrix.platform }}"=="perf-dgpu" (
+              pip install --pre --upgrade %whl_name%[xpu_lnl] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+            )
           )
           if %ERRORLEVEL% neq 0 (exit /b 1)
           pip list
@@ -711,14 +723,18 @@ jobs:
           pip install --upgrade omegaconf pandas
           pip install --upgrade tiktoken einops transformers_stream_generator matplotlib
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            pip install --pre --upgrade ipex-llm[xpu]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            pip install --pre --upgrade ipex-llm[xpu_lnl]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            pip install --pre --upgrade ipex-llm[xpu_lnl]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+          if "${{ inputs.gpu-pytorch-version }}"=="2.6" (
+            pip install --pre --upgrade ipex-llm[xpu_2.6] --extra-index-url https://download.pytorch.org/whl/test/xpu
+          ) else (
+            if "${{ matrix.platform }}"=="perf-mtl" (
+              pip install --pre --upgrade ipex-llm[xpu]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
+            )
+            if "${{ matrix.platform }}"=="perf-lnl" (
+              pip install --pre --upgrade ipex-llm[xpu_lnl]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+            )
+            if "${{ matrix.platform }}"=="perf-dgpu" (
+              pip install --pre --upgrade ipex-llm[xpu_lnl]==%TEST_VERSION% --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/lnl/cn/
+            )
           )
           pip show ipex-llm | findstr %TEST_VERSION%
           if %ERRORLEVEL% neq 0 (
