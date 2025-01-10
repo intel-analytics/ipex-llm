@@ -182,13 +182,17 @@ class _BaseAutoModelClass:
         if hasattr(model, "config") and model.config.model_type == "glm":
             # convert to llama structure
             from .npu_models.glm_edge import convert_config, load_weights, convert_state_dict
-            import json
             original_path = model.config._name_or_path
             del model
 
-            with open(os.path.join(original_path, "config.json")) as f:
-                original_config = json.load(f)
+            original_config, _ = PretrainedConfig.get_config_dict(original_path)
             config = convert_config(original_config)
+
+            if not os.path.isdir(original_path):
+                # all model files are already cached
+                from transformers.utils.hub import cached_file
+                resolved_file = cached_file(original_path, "config.json")
+                original_path = os.path.dirname(resolved_file)
             original_state_dict = load_weights(original_path)
             new_dict, _ = convert_state_dict(original_state_dict, config,
                                              original_config.get("partial_rotary_factor", 1.0),
