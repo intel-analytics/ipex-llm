@@ -239,7 +239,7 @@ When executing `ollama serve` and `ollama run <model_name>`, if you meet `./olla
 2. if you have have executed `source /opt/intel/oneapi/setvars.sh` before running both `./ollama serve` and `./ollama run <model_name>` on Linux
 
 #### 10. `ollama serve` has no output or response
-When you start `ollama serve` and run `ollama run <model_name>`, `ollama serve` has no response. This may be due to multiple ollama processes running on your device. Please run commands as below:
+When you start `ollama serve` and execute `ollama run <model_name>`, but `ollama serve` has no response. This may be due to multiple ollama processes running on your device. Please run commands as below:
 
 1. On Linux, you may run `systemctl stop ollama` to stop all ollama processes, and then rerun `ollama serve` in your current directory.
 2. On Windows, you may `set OLLAMA_HOST=0.0.0.0` to ensure that the ollama commands run on the current `ollama serve`.
