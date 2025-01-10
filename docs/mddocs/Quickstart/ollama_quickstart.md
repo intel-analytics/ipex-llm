@@ -9,9 +9,9 @@
 > For installation on Intel Arc B-Series GPU (such as **B580**), please refer to this [guide](./bmg_quickstart.md).
 
 > [!NOTE]
-> Our current version is consistent with [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) of ollama.
+> Our current version is consistent with [v0.5.1](https://github.com/ollama/ollama/releases/tag/v0.5.1) of ollama.
 >
-> `ipex-llm[cpp]==2.2.0b20241204` is consistent with [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) of ollama.
+> `ipex-llm[cpp]==2.2.0b20250105` is consistent with [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) of ollama.
 
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
@@ -237,3 +237,9 @@ When executing `ollama serve` and `ollama run <model_name>`, if you meet `./olla
 
 1. if you have installed conda and if you are in the right conda environment which has pip installed oneapi dependencies on Windows
 2. if you have have executed `source /opt/intel/oneapi/setvars.sh` before running both `./ollama serve` and `./ollama run <model_name>` on Linux
+
+#### 10. `ollama serve` has no output or response
+When you start `ollama serve` and execute `ollama run <model_name>`, but `ollama serve` has no response. This may be due to multiple ollama processes running on your device. Please run commands as below:
+
+1. On Linux, you may run `systemctl stop ollama` to stop all ollama processes, and then rerun `ollama serve` in your current directory.
+2. On Windows, you may `set OLLAMA_HOST=0.0.0.0` to ensure that the ollama commands run on the current `ollama serve`.

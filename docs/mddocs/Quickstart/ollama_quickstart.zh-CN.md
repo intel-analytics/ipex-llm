@@ -9,9 +9,9 @@
 > 如果是在 Intel Arc B 系列 GPU 上安装(例，**B580**)，请参阅本[指南](./bmg_quickstart.md)。
 
 > [!NOTE]
->  `ipex-llm[cpp]` 的最新版本与官方 ollama 的 [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) 版本保持一致。
+>  `ipex-llm[cpp]` 的最新版本与官方 ollama 的 [v0.5.1](https://github.com/ollama/ollama/releases/tag/v0.5.1) 版本保持一致。
 >
-> `ipex-llm[cpp]==2.2.0b20241204` 与官方 ollama 的 [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) 版本保持一致。
+> `ipex-llm[cpp]==2.2.0b20250105` 与官方 ollama 的 [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) 版本保持一致。
 
 以下是在 Intel Arc GPU 上运行 LLaMA2-7B 的 DEMO 演示。
 
@@ -232,3 +232,9 @@ Ollama 默认每 5 分钟从 GPU 内存卸载一次模型。针对 ollama 的最
 
 1. Windows：是否已经安装了 conda 并激活了正确的 conda 环境，环境中是否已经使用 pip 安装了 oneAPI 依赖项
 2. Linux：是否已经在运行 `./ollama serve` 和 `./ollama run <model_name>` 命令前都执行了 `source /opt/intel/oneapi/setvars.sh`。执行此 source 命令只在当前会话有效。
+
+#### 10. ollama serve 没有输出或响应
+当你启动 `ollama serve` 并运行 `ollama run <model_name>` 时，`ollama serve` 没有响应。这可能是由于你的设备上存在多个 ollama 进程导致的。请按照以下命令操作：
+
+在 Linux 上，你可以运行 `systemctl stop ollama` 来停止所有的 ollama 进程，然后在当前目录重新执行 `ollama serve`。
+在 Windows 上，你可以运行 `set OLLAMA_HOST=0.0.0.0` 以确保 ollama 命令通过当前的 `ollama serve` 上运行。
