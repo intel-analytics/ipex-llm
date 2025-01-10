@@ -24,7 +24,7 @@
 <br/>
 
 - [2024/07] 新增 Microsoft **GraphRAG** 的支持（使用运行在本地 Intel GPU 上的 LLM），详情参考[快速入门指南](docs/mddocs/Quickstart/graphrag_quickstart.md)。
-- [2024/07] 全面增强了对多模态大模型的支持，包括 [StableDiffusion](https://github.com/jason-dai/ipex-llm/tree/main/python/llm/example/GPU/HuggingFace/Multimodal/StableDiffusion), [Phi-3-Vision](python/llm/example/GPU/HuggingFace/Multimodal/phi-3-vision), [Qwen-VL](python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl)，更多详情请点击[这里](python/llm/example/GPU/HuggingFace/Multimodal)。
+- [2024/07] 全面增强了对多模态大模型的支持，包括 [StableDiffusion](python/llm/example/GPU/HuggingFace/Multimodal/StableDiffusion), [Phi-3-Vision](python/llm/example/GPU/HuggingFace/Multimodal/phi-3-vision), [Qwen-VL](python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl)，更多详情请点击[这里](python/llm/example/GPU/HuggingFace/Multimodal)。
 - [2024/07] 新增 Intel GPU 上 **FP6** 的支持，详情参考[更多数据类型样例](python/llm/example/GPU/HuggingFace/More-Data-Types)。 
 - [2024/06] 新增对 Intel Core Ultra 处理器中 **NPU** 的实验性支持，详情参考[相关示例](python/llm/example/NPU/HF-Transformers-AutoModels)。 
 - [2024/06] 增加了对[流水线并行推理](python/llm/example/GPU/Pipeline-Parallel-Inference)的全面支持，使得用两块或更多 Intel GPU（如 Arc）上运行 LLM 变得更容易。
