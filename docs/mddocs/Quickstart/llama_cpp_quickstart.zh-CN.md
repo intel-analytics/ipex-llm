@@ -5,6 +5,14 @@
 
 [ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) 是一个使用纯C++实现的、支持多种硬件平台的高效大语言模型推理库。现在，借助 [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) 的 C++ 接口作为其加速后端，你可以在 Intel **GPU**  *(如配有集成显卡，以及 Arc，Flex 和 Max 等独立显卡的本地 PC)* 上，轻松部署并运行 `llama.cpp` 。
 
+> [!NOTE]
+> 如果是在 Intel Arc B 系列 GPU 上安装(例，**B580**)，请参阅本[指南](./bmg_quickstart.md)。
+
+> [!NOTE]
+> `ipex-llm[cpp]` 的最新版本与官方 llama.cpp 的 [3f1ae2e](https://github.com/ggerganov/llama.cpp/commit/3f1ae2e32cde00c39b96be6d01c2997c29bae555) 版本保持一致。 
+>
+> `ipex-llm[cpp]==2.2.0b20241204` 与官方 llama.cpp 的 [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) 版本保持一致。
+
 以下是在 Intel Arc GPU 上运行 LLaMA2-7B 的 DEMO 演示。
 
 <table width="100%">
@@ -15,16 +23,6 @@
     <td align="center">你也可以点击<a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4">这里</a>观看 DEMO 视频。</td>
   </tr>
 </table>
-
-> [!NOTE]
-> `ipex-llm[cpp]==2.2.0b20241204` 版本与官方 llama.cpp 版本 [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) 一致。
->
-> `ipex-llm[cpp]` 的最新版本与官方 llama.cpp 版本 [3f1ae2e](https://github.com/ggerganov/llama.cpp/commit/3f1ae2e32cde00c39b96be6d01c2997c29bae555) 一致。
-
-> [!NOTE]
-> 从 `ipex-llm[cpp]==2.2.0b20240912` 版本开始，Windows 上 `ipex-llm[cpp]` 依赖的 oneAPI 版本已从 `2024.0.0` 更新到 `2024.2.1`。
-> 
-> 如果要将 `ipex-llm[cpp]` 升级到 `2.2.0b20240912` 或更高版本，在Windows环境下，你需要新建一个干净的 conda 环境来安装新版本。如果直接在旧的 conda 环境中卸载旧版本并升级，可能会遇到 `找不到 sycl7.dll` 的错误。
 
 ## 目录
 - [系统环境准备](./llama_cpp_quickstart.zh-CN.md#0-系统环境准备)
