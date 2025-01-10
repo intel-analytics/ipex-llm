@@ -5,6 +5,14 @@
 
 [ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) prvoides fast LLM inference in pure C++ across a variety of hardware; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `llama.cpp` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
+> [!NOTE]
+> For installation on Intel Arc B-Series GPU (such as **B580**), please refer to this [guide](./bmg_quickstart.md).
+
+> [!NOTE]
+> Our latest version is consistent with [3f1ae2e](https://github.com/ggerganov/llama.cpp/commit/3f1ae2e32cde00c39b96be6d01c2997c29bae555) of llama.cpp.
+>
+> `ipex-llm[cpp]==2.2.0b20241204` is consistent with [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) of llama.cpp.
+
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <table width="100%">
@@ -15,16 +23,6 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
     <td align="center">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/llama-cpp-arc.mp4">here</a> to watch the demo video.</td>
   </tr>
 </table>
-
-> [!NOTE]
-> `ipex-llm[cpp]==2.2.0b20241204` is consistent with [a1631e5](https://github.com/ggerganov/llama.cpp/commit/a1631e53f6763e17da522ba219b030d8932900bd) of llama.cpp.
->
-> Our latest version is consistent with [3f1ae2e](https://github.com/ggerganov/llama.cpp/commit/3f1ae2e32cde00c39b96be6d01c2997c29bae555) of llama.cpp.
-
-> [!NOTE]
-> Starting from `ipex-llm[cpp]==2.2.0b20240912`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.0.0` to `2024.2.1` .
-> 
-> For this update, it's necessary to create a new conda environment to install the latest version on Windows. If you directly upgrade to `ipex-llm[cpp]>=2.2.0b20240912` in the previous cpp conda environment, you may encounter the error `Can't find sycl7.dll`.
 
 ## Table of Contents
 - [Prerequisites](./llama_cpp_quickstart.md#0-prerequisites)

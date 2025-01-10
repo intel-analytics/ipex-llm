@@ -11,11 +11,13 @@ This guide demonstrates how to install and use IPEX-LLM on the Intel Arc B-Serie
 
 1. [Linux](#1-linux)  
    1.1 [Install Prerequisites](#11-install-prerequisites)  
-   1.2 [Install IPEX-LLM](#12-install-ipex-llm)  
-2. [Windows](#2-windows)  
+   1.2 [Install IPEX-LLM](#for-pytorch-and-huggingface) (for PyTorch and HuggingFace)  
+   1.3 [Install IPEX-LLM](#for-llamacpp-and-ollama) (for llama.cpp and Ollama)  
+3. [Windows](#2-windows)   
    2.1 [Install Prerequisites](#21-install-prerequisites)  
-   2.2 [Install IPEX-LLM](#22-install-ipex-llm)  
-3. [Use Cases](#3-use-cases)  
+   2.2 [Install IPEX-LLM](#for-pytorch-and-huggingface-1) (for PyTorch and HuggingFace)  
+   2.3 [Install IPEX-LLM](#for-llamacpp-and-ollama-1) (for llama.cpp and Ollama)  
+5. [Use Cases](#3-use-cases)  
    3.1 [PyTorch](#31-pytorch)  
    3.2 [Ollama](#32-ollama)  
    3.3 [llama.cpp](#33-llamacpp)  
@@ -59,7 +61,7 @@ conda activate llm
 
 With the `llm` environment active, install the appropriate `ipex-llm` package based on your use case:
 
-#### For PyTorch:
+#### For PyTorch and HuggingFace:
 Install the `ipex-llm[xpu-arc]` package. Choose either the US or CN website for `extra-index-url`:
 
 - For **US**:
@@ -109,7 +111,7 @@ conda activate llm
 
 With the `llm` environment active, install the appropriate `ipex-llm` package based on your use case:
 
-#### For PyTorch:
+#### For PyTorch and HuggingFace:
 Install the `ipex-llm[xpu-arc]` package. Choose either the US or CN website for `extra-index-url`:
 
 - For **US**:
