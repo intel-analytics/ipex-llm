@@ -1,4 +1,4 @@
-# Intel® LLM Library for PyTorch*
+#  💫 Intel® LLM Library for PyTorch* 
 <p>
   < <a href='./README.md'>English</a> | <b>中文 ></b> 
 </p>
