@@ -5,6 +5,14 @@
 
 [ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `ollama` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
+> [!NOTE]
+> For installation on Intel Arc B-Series GPU (such as **B580**), please refer to this [guide](./bmg_quickstart.md).
+
+> [!NOTE]
+> Our current version is consistent with [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) of ollama.
+>
+> `ipex-llm[cpp]==2.2.0b20241204` is consistent with [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) of ollama.
+
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
 <table width="100%">
@@ -15,11 +23,6 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
     <td align="center">You could also click <a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama-linux-arc.mp4">here</a> to watch the demo video.</td>
   </tr>
 </table>
-
-> [!NOTE]
-> `ipex-llm[cpp]==2.2.0b20241204` is consistent with [v0.3.6](https://github.com/ollama/ollama/releases/tag/v0.3.6) of ollama.
->
-> Our current version is consistent with [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) of ollama.
 
 > [!NOTE]
 > Starting from `ipex-llm[cpp]==2.2.0b20240912`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.0.0` to `2024.2.1` .
