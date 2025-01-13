@@ -395,7 +395,7 @@ class FP4Params(torch.nn.Parameter):
         return self._shape
 
     @overload
-    def to(self: T, device: Optional[Union[int, device]]=...,
+    def to(self: T, device: Optional[Union[int, torch.device]]=...,
            dtype: Optional[Union[dtype, str]]=..., non_blocking: bool=...,) -> T:
         ...
 
