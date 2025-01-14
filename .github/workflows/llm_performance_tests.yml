@@ -819,16 +819,11 @@ jobs:
         shell: cmd
         run: |
           call conda activate igpu-perf
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+
+          :: TODO: specific configurations on perf-arc
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
@@ -854,16 +849,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32_int4_fp16_436.yaml config.yaml
@@ -887,16 +874,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32_int4_fp16_438.yaml config.yaml
@@ -921,16 +900,8 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32_int4_fp16_443.yaml config.yaml
@@ -957,16 +928,8 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\32-32_int4_fp16_445.yaml config.yaml
@@ -1012,16 +975,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
@@ -1047,16 +1002,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_436.yaml config.yaml
@@ -1080,16 +1027,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_438.yaml config.yaml
@@ -1114,16 +1053,8 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_443.yaml config.yaml
@@ -1150,16 +1081,8 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_445.yaml config.yaml
@@ -1204,16 +1127,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
@@ -1239,16 +1154,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\2048-256_int4_fp16_436.yaml config.yaml
@@ -1272,16 +1179,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\2048-256_int4_fp16_438.yaml config.yaml
@@ -1306,16 +1205,8 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\2048-256_int4_fp16_443.yaml config.yaml
@@ -1342,16 +1233,8 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\2048-256_int4_fp16_445.yaml config.yaml
@@ -1396,16 +1279,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
@@ -1433,16 +1308,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\3072-384_int4_fp16_436.yaml config.yaml
@@ -1471,16 +1338,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\3072-384_int4_fp16_438.yaml config.yaml
@@ -1518,16 +1377,8 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\3072-384_int4_fp16_443.yaml config.yaml
@@ -1567,16 +1418,8 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\3072-384_int4_fp16_445.yaml config.yaml
@@ -1636,16 +1479,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
@@ -1673,16 +1508,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\4096-512_int4_fp16_438.yaml config.yaml
@@ -1709,16 +1536,8 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\4096-512_int4_fp16_443.yaml config.yaml
@@ -1747,16 +1566,8 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\4096-512_int4_fp16_445.yaml config.yaml
@@ -1804,16 +1615,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
@@ -1841,16 +1644,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_loadlowbit_436.yaml config.yaml
@@ -1876,16 +1671,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_loadlowbit_438.yaml config.yaml
@@ -1912,16 +1699,8 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_loadlowbit_443.yaml config.yaml
@@ -1950,16 +1729,8 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_int4_fp16_loadlowbit_445.yaml config.yaml
@@ -2006,16 +1777,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.37.0
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
           REM for llava
           set TRANSFORMERS_OFFLINE=1
 
@@ -2043,16 +1806,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.36.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_436.yaml config.yaml
@@ -2078,16 +1833,8 @@ jobs:
           call conda activate igpu-perf
           pip install transformers==4.38.2
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_438.yaml config.yaml
@@ -2114,16 +1861,8 @@ jobs:
           pip install transformers==4.43.1
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_443.yaml config.yaml
@@ -2152,16 +1891,8 @@ jobs:
           pip install accelerate==0.33.0
           pip install "trl<0.12.0"
 
-          if "${{ matrix.platform }}"=="perf-mtl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-lnl" (
-            set SYCL_CACHE_PERSISTENT=1
-          )
-          if "${{ matrix.platform }}"=="perf-dgpu" (
-            set SYCL_CACHE_PERSISTENT=1
-            set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
-          )
+          set SYCL_CACHE_PERSISTENT=1
+          set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
           cd python\llm\dev\benchmark\all-in-one
           move ..\..\..\test\benchmark\igpu-perf\1024-128_445.yaml config.yaml
