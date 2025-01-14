@@ -34,8 +34,10 @@ from vllm.engine.protocol import EngineClient
 from vllm.entrypoints.chat_utils import load_chat_template
 from vllm.entrypoints.launcher import serve_http
 from vllm.entrypoints.logger import RequestLogger
-from vllm.entrypoints.openai.cli_args import validate_parsed_serve_args
-from ipex_llm.vllm.xpu.entrypoints.openai.cli_args import make_arg_parser
+from vllm.entrypoints.openai.cli_args import (make_arg_parser,
+                                              validate_parsed_serve_args)
+
+# from ipex_llm.vllm.xpu.entrypoints.openai.cli_args import make_arg_parser
 # yapf conflicts with isort for this block
 # yapf: disable
 from vllm.entrypoints.openai.protocol import (ChatCompletionRequest,
@@ -58,7 +60,10 @@ from vllm.entrypoints.openai.protocol import (ChatCompletionRequest,
 from vllm.entrypoints.openai.serving_chat import OpenAIServingChat
 from vllm.entrypoints.openai.serving_completion import OpenAIServingCompletion
 from vllm.entrypoints.openai.serving_embedding import OpenAIServingEmbedding
-from vllm.entrypoints.openai.serving_engine import BaseModelPath, OpenAIServing
+from vllm.entrypoints.openai.serving_models import (BaseModelPath,
+                                                    OpenAIServingModels)
+
+from vllm.entrypoints.openai.serving_engine import OpenAIServing
 from vllm.entrypoints.openai.serving_pooling import OpenAIServingPooling
 from vllm.entrypoints.openai.serving_score import OpenAIServingScores
 from vllm.entrypoints.openai.serving_tokenization import (
@@ -116,7 +121,7 @@ async def build_async_engine_client(
     engine_args = AsyncEngineArgs.from_cli_args(args)
 
     async with build_async_engine_client_from_engine_args(
-            engine_args, args.disable_frontend_multiprocessing) as engine:
+            engine_args, args.disable_frontend_multiprocessing, args.load_in_low_bit) as engine:
         yield engine
 
 
@@ -641,13 +646,18 @@ def init_app_state(
     resolved_chat_template = load_chat_template(args.chat_template)
     logger.info("Using supplied chat template:\n%s", resolved_chat_template)
 
+    state.openai_serving_models = OpenAIServingModels(
+        model_config=model_config,
+        base_model_paths=base_model_paths,
+        lora_modules=args.lora_modules,
+        prompt_adapters=args.prompt_adapters,
+    )
+    # TODO: The chat template is now broken for lora adapters :(
     state.openai_serving_chat = OpenAIServingChat(
         engine_client,
         model_config,
-        base_model_paths,
+        state.openai_serving_models,
         args.response_role,
-        lora_modules=args.lora_modules,
-        prompt_adapters=args.prompt_adapters,
         request_logger=request_logger,
         chat_template=resolved_chat_template,
         chat_template_content_format=args.chat_template_content_format,
@@ -659,16 +669,14 @@ def init_app_state(
     state.openai_serving_completion = OpenAIServingCompletion(
         engine_client,
         model_config,
-        base_model_paths,
-        lora_modules=args.lora_modules,
-        prompt_adapters=args.prompt_adapters,
+        state.openai_serving_models,
         request_logger=request_logger,
         return_tokens_as_token_ids=args.return_tokens_as_token_ids,
     ) if model_config.runner_type == "generate" else None
     state.openai_serving_pooling = OpenAIServingPooling(
         engine_client,
         model_config,
-        base_model_paths,
+        state.openai_serving_models,
         request_logger=request_logger,
         chat_template=resolved_chat_template,
         chat_template_content_format=args.chat_template_content_format,
@@ -676,7 +684,7 @@ def init_app_state(
     state.openai_serving_embedding = OpenAIServingEmbedding(
         engine_client,
         model_config,
-        base_model_paths,
+        state.openai_serving_models,
         request_logger=request_logger,
         chat_template=resolved_chat_template,
         chat_template_content_format=args.chat_template_content_format,
@@ -684,18 +692,94 @@ def init_app_state(
     state.openai_serving_scores = OpenAIServingScores(
         engine_client,
         model_config,
-        base_model_paths,
+        state.openai_serving_models,
         request_logger=request_logger
     ) if model_config.task == "score" else None
     state.openai_serving_tokenization = OpenAIServingTokenization(
         engine_client,
         model_config,
-        base_model_paths,
-        lora_modules=args.lora_modules,
+        state.openai_serving_models,
         request_logger=request_logger,
         chat_template=resolved_chat_template,
         chat_template_content_format=args.chat_template_content_format,
     )
+    state.task = model_config.task
+    # if args.served_model_name is not None:
+    #     served_model_names = args.served_model_name
+    # else:
+    #     served_model_names = [args.model]
+
+    # if args.disable_log_requests:
+    #     request_logger = None
+    # else:
+    #     request_logger = RequestLogger(max_log_len=args.max_log_len)
+
+    # base_model_paths = [
+    #     BaseModelPath(name=name, model_path=args.model)
+    #     for name in served_model_names
+    # ]
+
+    # state.engine_client = engine_client
+    # state.log_stats = not args.disable_log_stats
+
+    # resolved_chat_template = load_chat_template(args.chat_template)
+    # logger.info("Using supplied chat template:\n%s", resolved_chat_template)
+
+    # state.openai_serving_chat = OpenAIServingChat(
+    #     engine_client,
+    #     model_config,
+    #     base_model_paths,
+    #     args.response_role,
+    #     lora_modules=args.lora_modules,
+    #     prompt_adapters=args.prompt_adapters,
+    #     request_logger=request_logger,
+    #     chat_template=resolved_chat_template,
+    #     chat_template_content_format=args.chat_template_content_format,
+    #     return_tokens_as_token_ids=args.return_tokens_as_token_ids,
+    #     enable_auto_tools=args.enable_auto_tool_choice,
+    #     tool_parser=args.tool_call_parser,
+    #     enable_prompt_tokens_details=args.enable_prompt_tokens_details,
+    # ) if model_config.runner_type == "generate" else None
+    # state.openai_serving_completion = OpenAIServingCompletion(
+    #     engine_client,
+    #     model_config,
+    #     base_model_paths,
+    #     lora_modules=args.lora_modules,
+    #     prompt_adapters=args.prompt_adapters,
+    #     request_logger=request_logger,
+    #     return_tokens_as_token_ids=args.return_tokens_as_token_ids,
+    # ) if model_config.runner_type == "generate" else None
+    # state.openai_serving_pooling = OpenAIServingPooling(
+    #     engine_client,
+    #     model_config,
+    #     base_model_paths,
+    #     request_logger=request_logger,
+    #     chat_template=resolved_chat_template,
+    #     chat_template_content_format=args.chat_template_content_format,
+    # ) if model_config.runner_type == "pooling" else None
+    # state.openai_serving_embedding = OpenAIServingEmbedding(
+    #     engine_client,
+    #     model_config,
+    #     base_model_paths,
+    #     request_logger=request_logger,
+    #     chat_template=resolved_chat_template,
+    #     chat_template_content_format=args.chat_template_content_format,
+    # ) if model_config.task == "embed" else None
+    # state.openai_serving_scores = OpenAIServingScores(
+    #     engine_client,
+    #     model_config,
+    #     base_model_paths,
+    #     request_logger=request_logger
+    # ) if model_config.task == "score" else None
+    # state.openai_serving_tokenization = OpenAIServingTokenization(
+    #     engine_client,
+    #     model_config,
+    #     base_model_paths,
+    #     lora_modules=args.lora_modules,
+    #     request_logger=request_logger,
+    #     chat_template=resolved_chat_template,
+    #     chat_template_content_format=args.chat_template_content_format,
+    # )
 
 
 def create_server_socket(addr: Tuple[str, int]) -> socket.socket:
@@ -772,6 +856,11 @@ if __name__ == "__main__":
     parser = FlexibleArgumentParser(
         description="vLLM OpenAI-Compatible RESTful API server.")
     parser = make_arg_parser(parser)
+    parser.add_argument(
+        "--load-in-low-bit",
+        type=str,
+        default="sym_int4",
+        help="Low-bit quantization for IPEX-LLM models")
     args = parser.parse_args()
     validate_parsed_serve_args(args)
 
