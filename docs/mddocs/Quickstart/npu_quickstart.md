@@ -109,7 +109,7 @@ For `ipex-llm` NPU support, please set the following environment variable with a
       set IPEX_LLM_NPU_DISABLE_COMPILE_OPT=1
       ```
 
-- For **Intel Core™ Ultra Processors (Series 2) with processor number 2xxK (code name Arrow Lake)**:
+- For **Intel Core™ Ultra Processors (Series 2) with processor number 2xxK or 2xxH (code name Arrow Lake)**:
    ```cmd
    set IPEX_LLM_NPU_ARL=1
    ```
