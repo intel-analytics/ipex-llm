@@ -156,7 +156,7 @@ def llama_attention_forward(
 
     if query_states.device.type == "xpu":
         import xe_addons
-        if getattr(self, "rotary_emb"):
+        if hasattr(self, "rotary_emb"):
             # transformers < 4.46
             xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
                                            query_states, key_states)
