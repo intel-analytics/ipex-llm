@@ -53,6 +53,7 @@ ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
                      "sym_int4_rtn": 31,
                      "sym_int8_rtn": 32,
                      "asym_int4_rtn": 33,
+                     "woq_int4": 34,
                      }
 
 # mixed precison from llama.cpp

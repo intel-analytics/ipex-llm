@@ -84,6 +84,7 @@ FP6_K = ggml_tensor_qtype["fp6_k"]
 SYM_INT4_RTN = ggml_tensor_qtype["sym_int4_rtn"]
 SYM_INT8_RTN = ggml_tensor_qtype["sym_int8_rtn"]
 ASYM_INT4_RTN = ggml_tensor_qtype["asym_int4_rtn"]
+WOQ_INT4 = ggml_tensor_qtype["woq_int4"]
 RTN_DTYPE = {
     SYM_INT4_RTN: torch.uint8,
     ASYM_INT4_RTN: torch.uint8,
@@ -187,7 +188,7 @@ def ggml_q_format_convet_cpu2xpu(tensor: torch.Tensor, num_elem: int, qtype: int
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
     if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5,
-                 Q4_K, Q6_K, FP6_K]:
+                 Q4_K, Q6_K, FP6_K, WOQ_INT4]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(qtype)
@@ -213,7 +214,7 @@ def ggml_q_format_convet_xpu2cpu(tensor: torch.Tensor, num_elem: int, qtype: int
     src = ctypes.c_void_p(tensor.data.data_ptr())
 
     if qtype in [SYM_INT4, ASYM_INT4, SYM_INT8, NF4, NF3, FP4, FP6, FP8E4, FP8E5,
-                 Q4_K, Q6_K, FP6_K]:
+                 Q4_K, Q6_K, FP6_K, WOQ_INT4]:
         dst_tensor = torch.empty_like(tensor)
     elif qtype == ggml_tensor_qtype["sym_int5"]:
         QK = ggml.ggml_qk_size(ggml_tensor_qtype["asym_int5"])
