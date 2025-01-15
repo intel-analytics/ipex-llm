@@ -126,7 +126,6 @@ def pre_compute_inv_freq(module: torch.nn.Module):
             module.inv_freq_scaled = module.inv_freq / module.scaling_factor
 
 
-
 def llama_attention_forward(
     self,
     hidden_states: torch.Tensor,
