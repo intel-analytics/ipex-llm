@@ -119,6 +119,13 @@ def merge_qkv(module: torch.nn.Module):
     merge_qkv_base(module, LlamaAttention)
 
 
+def pre_compute_inv_freq(module: torch.nn.Module):
+    if module.__class__.__name__ == "LlamaLinearScalingRotaryEmbedding":
+        if hasattr(module, "scaling_factor"):
+            module.register_buffer("inv_freq_scaled", None, persistent=False)
+            module.inv_freq_scaled = module.inv_freq / module.scaling_factor
+
+
 def llama_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -147,8 +154,12 @@ def llama_attention_forward(
         import xe_addons
         if hasattr(self, "rotary_emb"):
             # transformers < 4.46
-            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
-                                           query_states, key_states)
+            if hasattr(self.rotary_emb, "inv_freq_scaled"):
+                xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq_scaled, position_ids,
+                                               query_states, key_states)
+            else:
+                xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                               query_states, key_states)
         else:
             # transformers >= 4.46
             cos, sin = position_embeddings

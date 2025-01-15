@@ -995,8 +995,9 @@ def _optimize_pre(model, qtype=None):
         from ipex_llm.transformers.models.gemma2 import merge_qkv
         model.apply(merge_qkv)
     elif model.config.model_type == "llama":
-        from ipex_llm.transformers.models.llama import merge_qkv
+        from ipex_llm.transformers.models.llama import merge_qkv, pre_compute_inv_freq
         model.apply(merge_qkv)
+        model.apply(pre_compute_inv_freq)
     elif model.config.model_type == "mllama":
         from ipex_llm.transformers.models.mllama import merge_qkv
         model.apply(merge_qkv)
