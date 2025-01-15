@@ -145,10 +145,15 @@ def llama_attention_forward(
 
     if query_states.device.type == "xpu":
         import xe_addons
-        if hasattr(self, "rotary_emb"):
+        # TODO: add support for more rope scaling type, e.g. dynamic
+        if getattr(self, "rotary_emb"):
             # transformers < 4.46
-            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
-                                           query_states, key_states)
+            if hasattr(self.rotary_emb, "scaling_factor"):
+                xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq / self.rotary_emb.scaling_factor,
+                                               position_ids, query_states, key_states)
+            else:
+                xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+                                               query_states, key_states)
         else:
             # transformers >= 4.46
             cos, sin = position_embeddings
