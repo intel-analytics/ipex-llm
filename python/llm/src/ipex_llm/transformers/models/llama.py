@@ -119,6 +119,17 @@ def merge_qkv(module: torch.nn.Module):
     merge_qkv_base(module, LlamaAttention)
 
 
+def scale_rope(module: torch.nn.Module):
+    if module.__class__.__name__ == "LlamaLinearScalingRotaryEmbedding":
+        if hasattr(module, "scaling_factor"):
+            module.inv_freq /= module.scaling_factor
+        elif hasattr(module, "rope_kwargs"):
+            module.inv_freq /= module.rope_kwargs.factor
+    elif module.__class__.__name__ == "LlamaRotaryEmbedding":
+        if hasattr(module, "rope_kwargs") and module.rope_kwargs.rope_type == "linear":
+            module.inv_freq /= module.rope_kwargs.factor
+
+
 def llama_attention_forward(
     self,
     hidden_states: torch.Tensor,
@@ -145,18 +156,9 @@ def llama_attention_forward(
 
     if query_states.device.type == "xpu":
         import xe_addons
-        # TODO: add support for more rope scaling type, e.g. dynamic
         if getattr(self, "rotary_emb"):
             # transformers < 4.46
-            if hasattr(self.rotary_emb, "scaling_factor"):
-                xe_addons.rotary_half_inplaced(
-                    self.rotary_emb.inv_freq / self.rotary_emb.scaling_factor,
-                    position_ids,
-                    query_states,
-                    key_states,
-                )
-            else:
-                xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
+            xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
                                                query_states, key_states)
         else:
             # transformers >= 4.46
