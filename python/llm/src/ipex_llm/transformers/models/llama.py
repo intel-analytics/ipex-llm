@@ -149,8 +149,12 @@ def llama_attention_forward(
         if getattr(self, "rotary_emb"):
             # transformers < 4.46
             if hasattr(self.rotary_emb, "scaling_factor"):
-                xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq / self.rotary_emb.scaling_factor,
-                                               position_ids, query_states, key_states)
+                xe_addons.rotary_half_inplaced(
+                    self.rotary_emb.inv_freq / self.rotary_emb.scaling_factor,
+                    position_ids,
+                    query_states,
+                    key_states,
+                )
             else:
                 xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
                                                query_states, key_states)
