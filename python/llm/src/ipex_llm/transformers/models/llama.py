@@ -126,7 +126,7 @@ def pre_compute_inv_freq(module: torch.nn.Module):
             module.inv_freq_scaled = module.inv_freq / module.scaling_factor
         elif hasattr(module, "rope_type"):
             if hasattr(module.rope_kwargs, "factor"):
-                module.inv_freq_scaled = module.inv_freq / module.rope_kwargs.factor
+                module.inv_freq_scaled = module.inv_freq / module.rope_kwargs["factor"]
             elif module.config is not None:
                 module.inv_freq_scaled = module.inv_freq / module.config.rope_scaling["factor"]
             
@@ -134,7 +134,7 @@ def pre_compute_inv_freq(module: torch.nn.Module):
         if hasattr(module, "rope_type") and module.rope_type == "linear":
             module.register_buffer("inv_freq_scaled", None, persistent=False)
             if hasattr(module.rope_kwargs, "factor"):
-                module.inv_freq_scaled = module.inv_freq / module.rope_kwargs.factor
+                module.inv_freq_scaled = module.inv_freq / module.rope_kwargs["factor"]
             elif module.config is not None:
                 module.inv_freq_scaled = module.inv_freq / module.config.rope_scaling["factor"]
 
