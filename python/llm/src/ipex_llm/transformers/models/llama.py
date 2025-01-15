@@ -165,7 +165,7 @@ def llama_attention_forward(
                                                query_states, key_states)
             else:
                 xe_addons.rotary_half_inplaced(self.rotary_emb.inv_freq, position_ids,
-                                            query_states, key_states)
+                                               query_states, key_states)
         else:
             # transformers >= 4.46
             cos, sin = position_embeddings
