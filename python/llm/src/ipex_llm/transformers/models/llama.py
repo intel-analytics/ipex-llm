@@ -119,7 +119,7 @@ def merge_qkv(module: torch.nn.Module):
     merge_qkv_base(module, LlamaAttention)
 
 
-def scale_rope(module: torch.nn.Module):
+def pre_compute_inv_freq(module: torch.nn.Module):
     if module.__class__.__name__ == "LlamaLinearScalingRotaryEmbedding":
         module.register_buffer("inv_freq_scaled", None, persistent=False)
         if hasattr(module, "scaling_factor"):
