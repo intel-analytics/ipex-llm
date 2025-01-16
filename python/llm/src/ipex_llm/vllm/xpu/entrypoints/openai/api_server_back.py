@@ -143,27 +143,18 @@ async def build_async_engine_client_from_engine_args(
     # TODO: fill out feature matrix.
     if (MQLLMEngineClient.is_unsupported_config(engine_args)
             or envs.VLLM_USE_V1 or disable_frontend_multiprocessing):
-        engine_config = engine_args.create_engine_config(
-            UsageContext.OPENAI_API_SERVER)
-        uses_ray = getattr(AsyncLLMEngine._get_executor_cls(engine_config),
-                           "uses_ray", False)
-
-        build_engine = partial(AsyncLLMEngine.from_engine_args,
-                               load_in_low_bit=load_in_low_bit,
-                               engine_args=engine_args,
-                               engine_config=engine_config,
-                               usage_context=UsageContext.OPENAI_API_SERVER)
-        if uses_ray:
-            # Must run in main thread with ray for its signal handlers to work
-            engine_client = build_engine()
-        else:
-            engine_client = await asyncio.get_running_loop().run_in_executor(
-                None, build_engine)
-
-        yield engine_client
-        if hasattr(engine_client, "shutdown"):
-            engine_client.shutdown()
-        return
+        engine_client: Optional[EngineClient] = None
+        try:
+            # When starting this, we are actually starting with the V1Engine
+            # Here we are doing a classification, we will need to do this in IPEX-LLM
+            engine_client = AsyncLLMEngine.from_engine_args(
+                engine_args=engine_args,
+                usage_context=UsageContext.OPENAI_API_SERVER,
+                load_in_low_bit=load_in_low_bit)
+            yield engine_client
+        finally:
+            if engine_client and hasattr(engine_client, "shutdown"):
+                engine_client.shutdown()
 
     # Otherwise, use the multiprocessing AsyncLLMEngine.
     else:
