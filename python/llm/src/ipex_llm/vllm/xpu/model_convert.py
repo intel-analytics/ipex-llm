@@ -65,10 +65,61 @@ def _model_sample_convert():
 def _ipex_llm_convert(load_in_low_bit):
     from vllm.worker.xpu_model_runner import XPUModelRunner
     from ipex_llm.vllm.xpu.ipex_llm_wrapper import get_ipex_llm_wrapper
-    import vllm.executor.ray_utils as ray_utils
+    from ipex_llm.vllm.xpu.ipex_llm_v1_wrapper import get_ipex_llm_v1_wrapper
+    import vllm.executor.ray_utils as ray_utils_v0
+    import vllm.v1.executor.ray_utils as ray_utils_v1
+    from vllm.v1.worker.gpu_model_runner import GPUModelRunner
     setattr(XPUModelRunner, "load_model", get_load_function(load_in_low_bit))
-    setattr(ray_utils, "RayWorkerWrapper", get_ipex_llm_wrapper(load_in_low_bit))
+    setattr(GPUModelRunner, "load_model", get_load_function(load_in_low_bit))
+    setattr(ray_utils_v0, "RayWorkerWrapper", get_ipex_llm_wrapper(load_in_low_bit))
+    setattr(ray_utils_v1, "RayWorkerWrapper", get_ipex_llm_v1_wrapper(load_in_low_bit))
 
+# def get_load_function_v1(low_bit):
+#     def _ipex_llm_load_model(self) -> None:
+#         _model_sample_convert()
+
+#         # from vllm.utils import measure_device_memory
+#         logger.info("Starting to load model %s...", self.model_config.model)
+#         from vllm.utils import DeviceMemoryProfiler
+#         with DeviceMemoryProfiler() as m:
+#             from dataclasses import replace
+#             new_device_config = DeviceConfig("cpu")
+#             new_vllm_config = replace(self.vllm_config, device_config=new_device_config)
+#             self.model = get_model(
+#                 vllm_config=new_vllm_config
+#             )
+#             if "qwen" in self.vllm_config.model_config.model.lower() or \
+#                     "baichuan" in self.vllm_config.model_config.model.lower() or \
+#                     "codegeex4-all" in self.vllm_config.model_config.model.lower() or \
+#                     "chatglm" in self.vllm_config.model_config.model.lower():
+#                 self.model.apply(padding_mlp)
+#             from ipex_llm import optimize_model
+#             import os
+#             not_convert_last_mlp = os.getenv("IPEX_LLM_NOT_CONVERT_LAST_MLP", None)
+#             if not_convert_last_mlp is not None:
+#                 # only use to avoid nan value in last mlp forward running glm4-9b-chat
+#                 modules = ["35.mlp", "36.mlp", "37.mlp", "38.mlp", "39.mlp"]
+#             else:
+#                 modules = None
+#             if "minicpm" in self.vllm_config.model_config.model.lower():
+#                 modules = ["vpm", "resampler"]
+#             # only for minicpm_2_6
+#             if "minicpm-v" in self.vllm_config.model_config.model.lower():
+#                 from ipex_llm.transformers.models.minicpmv import merge_qkv
+#                 self.model.vpm.apply(merge_qkv)
+#             if "internvl2" in self.vllm_config.model_config.model.lower():
+#                 modules = ["vision_model", "mlp1"]
+#             optimize_model(self.model, low_bit=low_bit, torch_dtype=self.vllm_config.model_config.dtype,
+#                            modules_to_not_convert=modules)
+#             self.model = self.model.to(device=self.vllm_config.device_config.device,
+#                                        dtype=self.vllm_config.model_config.dtype)
+
+#         self.model_memory_usage = m.consumed_memory
+#         logger = init_logger(__name__)
+#         logger.info("Loading model weights took %.4f GB",
+#                     self.model_memory_usage / float(2**30))
+
+#     return _ipex_llm_load_model
 
 def get_load_function(low_bit):
     def _ipex_llm_load_model(self) -> None:
