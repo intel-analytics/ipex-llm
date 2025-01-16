@@ -475,12 +475,10 @@ jobs:
           pip install "llama-index-embeddings-huggingface<0.3.0"
           # Specific oneapi position on arc ut test machines
           if [[ '${{ matrix.pytorch-version }}' == '2.1' ]]; then
-            pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             if [[ "$RUNNER_OS" == "Linux" ]]; then
               source /opt/intel/oneapi/setvars.sh
             fi
           elif [[ '${{ matrix.pytorch-version }}' == '2.0' ]]; then
-            pip install --pre --upgrade ipex-llm[xpu_2.0] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
             if [[ "$RUNNER_OS" == "Linux" ]]; then
               source /home/arda/intel/oneapi/setvars.sh
             fi
