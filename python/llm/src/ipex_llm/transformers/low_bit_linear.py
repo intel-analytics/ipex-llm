@@ -273,7 +273,7 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
         and x.shape[1] % 128 == 0
         and (
             (
-                qtype in [SYM_INT4, ASYM_INT4, FP8E5, FP8E4]
+                qtype in [SYM_INT4, ASYM_INT4, FP8E5, FP8E4, WOQ_INT4]
                 and (
                     batch_size <= 48
                     or (
@@ -284,7 +284,7 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
                 )
             )
             or (
-                qtype in [SYM_INT8, FP4, FP6, Q4_K, Q6_K]
+                qtype in [SYM_INT8, FP4, FP6, Q4_K, Q6_K, WOQ_INT4]
                 and batch_size <= 48
                 and device_name in ["arc", "pvc", "mtl", "arl"]
                 and x.shape[1] % 256 == 0
@@ -297,8 +297,8 @@ def use_batch_forward(x: torch.Tensor, qtype: int, output_len: int):
             batch_size > 1
             or (device_name in ["arc"] and qtype in [SYM_INT8, FP4])
             or (device_name in ["arc", "mtl"] and qtype in [FP8E4])
-            or (device_name in ["lnl"] and qtype in [SYM_INT4] and x.shape[1] % 512 == 0)
-            or (device_name in ["bmg"] and qtype in [SYM_INT4, FP8E5])
+            or (device_name in ["lnl"] and qtype in [SYM_INT4, WOQ_INT4] and x.shape[1] % 512 == 0)
+            or (device_name in ["bmg"] and qtype in [SYM_INT4, WOQ_INT4, FP8E5])
         )
     return False
 
