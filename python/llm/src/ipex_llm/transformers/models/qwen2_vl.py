@@ -41,6 +41,7 @@ import math
 from typing import Optional, Tuple, Union, List
 
 import torch
+import torch.nn.functional as F
 
 from ipex_llm.transformers.models.common import merge_qkv_base, attention_softmax
 from ipex_llm.transformers.models.common import scaled_dot_product_attention
@@ -187,7 +188,8 @@ def qwen2_vision_attention_forward(
     self,
     hidden_states: torch.Tensor,
     cu_seqlens: torch.Tensor,
-    rotary_pos_emb: torch.Tensor = None
+    rotary_pos_emb: torch.Tensor = None,
+    output_attentions: bool = False,
 ) -> torch.Tensor:
     seq_length = hidden_states.shape[0]
     q, k, v = self.qkv(hidden_states).reshape(seq_length, 3, self.num_heads, -1
@@ -195,12 +197,16 @@ def qwen2_vision_attention_forward(
     q = apply_rotary_pos_emb_vision(q.unsqueeze(0), rotary_pos_emb).squeeze(0)
     k = apply_rotary_pos_emb_vision(k.unsqueeze(0), rotary_pos_emb).squeeze(0)
     # q, k, v: [seq_length, num_heads, head_dim]
+    
+    # TODO: before rope?
+    # raw_key_states = k.clone()
 
     seq_lens = cu_seqlens.tolist()
     invalidInputError(seq_lens[0] == 0 and seq_lens[-1] == seq_length,
                       "unexpected input")
 
-    if use_sdp_non_causal(self.head_dim, q.device, q.dtype):
+    if use_sdp_non_causal(self.head_dim, q.device, q.dtype) and not output_attentions:
+        # TODO: return attn_weights & attn_output
         image_num = len(seq_lens) - 1
         image_size = seq_lens[1] - seq_lens[0]
         guessed_seq_lens = torch.arange(0, (image_num + 1) * image_size, image_size,
@@ -261,7 +267,88 @@ def qwen2_vision_attention_forward(
 
     attn_output = attn_output.reshape(seq_length, -1)
     attn_output = self.proj(attn_output)
-    return attn_output
+
+    if not output_attentions:
+        attn_weights = None
+
+    return attn_output, attn_weights#, raw_key_states.mean(1)
+
+
+def qwen2_vl_vision_block_forward(
+    self,
+    hidden_states,
+    cu_seqlens,
+    rotary_pos_emb,
+    output_attentions: Optional[bool] = False,
+) -> torch.Tensor:
+    residual = hidden_states
+    hidden_states, attn_weights = self.attn(
+        self.norm1(hidden_states), cu_seqlens=cu_seqlens, rotary_pos_emb=rotary_pos_emb,
+        output_attentions=output_attentions
+    )
+    hidden_states = residual + hidden_states
+
+    # TODO: uncomment & test
+    # r = self._info["r"].pop(0)
+    # if r > 0:
+    #     self.metric = metric
+
+    hidden_states = hidden_states + self.mlp(self.norm2(hidden_states))
+    
+    outputs = (hidden_states,)
+
+    if output_attentions:
+        outputs += (attn_weights,)
+    
+    return outputs
+
+
+def qwen2_vit_pretrained_model_forward(
+    self,
+    hidden_states: torch.Tensor,
+    grid_thw: torch.Tensor
+) -> torch.Tensor:
+    hidden_states = self.patch_embed(hidden_states)
+    rotary_pos_emb = self.rot_pos_emb(grid_thw)
+
+    cu_seqlens = torch.repeat_interleave(grid_thw[:, 1] * grid_thw[:, 2], grid_thw[:, 0]).cumsum(
+        dim=0, dtype=torch.int32
+    )
+    cu_seqlens = F.pad(cu_seqlens, (1, 0), value=0)
+
+    use_visionzip = True
+    last_layer_attention = None
+
+    total_blk_num = len(self.blocks)
+    for idx in range(total_blk_num):
+        output_attentions = idx == (total_blk_num - 1) and use_visionzip
+        layer_outputs = self.blocks[idx](hidden_states, cu_seqlens=cu_seqlens, rotary_pos_emb=rotary_pos_emb,
+                            output_attentions=output_attentions)
+        hidden_states = layer_outputs[0]        # 1564, 1280
+
+        if output_attentions:
+            last_layer_attention = layer_outputs[1]     # 16, 1564, 1564
+
+    # TODO: select visionzip hidden states
+    dominant_num = 512
+    contextual_num = 10
+
+    # Dominant Visual Tokens
+    # TODO: batch dim
+    attention_mean = last_layer_attention.mean(0)       # 1564, 1564
+    attention_mean = attention_mean.mean(0)             # 1564
+    top_k_indices = attention_mean.topk(dominant_num, dim=0).indices
+
+    mask = torch.ones_like(
+        hidden_states[:, 0],
+        dtype=torch.bool,
+        device=hidden_states.device).scatter_(0, top_k_indices, False)
+    
+    dominant_tokens = hidden_states.masked_select(~mask.unsqueeze(-1)).view(dominant_num, hidden_states.shape[1])
+
+    hidden_ststes_save = dominant_tokens.to(hidden_states.dtype)
+
+    return self.merger(hidden_ststes_save)
 
 
 def qwen2_vl_attention_forward(
