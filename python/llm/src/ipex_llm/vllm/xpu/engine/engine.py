@@ -31,6 +31,8 @@ from vllm.engine.arg_utils import (EngineArgs, HfOverrides, PoolerConfig,
 from vllm.config import CompilationConfig
 from vllm.v1.engine.llm_engine import LLMEngine as V1LLMEngine
 from vllm import envs
+from vllm.v1.engine.async_llm import AsyncLLM
+import os
 
 logger = init_logger(__name__)
 
@@ -54,6 +56,29 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
         return super().from_engine_args(engine_args=engine_args, engine_config=engine_config,
                                         start_engine_loop=start_engine_loop,
                                         usage_context=usage_context, stat_loggers=stat_loggers)
+
+
+class IPEXLLMAsyncV1Engine(AsyncLLM):
+
+    def __init__(self, *args, **kwargs):
+        print("IPEX-LLM V1 engine get started...")
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def from_engine_args(
+        cls,
+        engine_args: AsyncEngineArgs,
+        engine_config: Optional[VllmConfig] = None,
+        start_engine_loop: bool = True,
+        usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
+        load_in_low_bit: str = "sym_int4",
+        stat_loggers: Optional[Dict[str, StatLoggerBase]] = None,
+    ) -> "AsyncLLM":
+        _ipex_llm_convert(load_in_low_bit)
+        return super().from_engine_args(engine_args=engine_args, engine_config=engine_config,
+                                        start_engine_loop=start_engine_loop,
+                                        usage_context=usage_context, stat_loggers=stat_loggers)
+
 
 
 class IPEXLLMClass(LLM):
@@ -223,3 +248,6 @@ def run_mp_engine(engine_args: AsyncEngineArgs, usage_context: UsageContext,
         logger.exception(e)
         engine_alive.value = False
         raise e
+
+if os.getenv("VLLM_USE_V1"):
+    IPEXLLMAsyncLLMEngine = IPEXLLMAsyncV1Engine

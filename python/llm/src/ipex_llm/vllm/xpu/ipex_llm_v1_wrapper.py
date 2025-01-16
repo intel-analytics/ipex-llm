@@ -18,6 +18,7 @@ def get_ipex_llm_v1_wrapper(load_in_low_bit):
     # ray seems not work well with it.
     class WrapperWithLoadBit(IPEXLLMV1Wrapper):
         def __init__(self, *args, **kwargs) -> None:
+            print("WrapperWithLoadBit get executed....!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             super().__init__(load_in_low_bit=load_in_low_bit, *args, **kwargs)
 
     # a = functools.partial(IPEXLLMWrapper, load_in_low_bit=load_in_low_bit)
