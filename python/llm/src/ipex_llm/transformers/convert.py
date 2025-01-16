@@ -1030,9 +1030,9 @@ def _optimize_pre(model, qtype=None):
         model.llm.config.model_type = "minicpmv"
     elif model.config.model_type == "minicpmo":
         # vpm opt
-        from ipex_llm.transformers.models.minicpmv import merge_qkv
-        model.vpm.apply(merge_qkv)
-
+        if hasattr(model, "vpm"):
+            from ipex_llm.transformers.models.minicpmv import merge_qkv
+            model.vpm.apply(merge_qkv)
         # llm opt
         model.llm.config.model_type = "qwen2"
         _optimize_pre(model.llm, qtype=qtype)
@@ -1955,12 +1955,18 @@ def _optimize_post(model):
             model.chat = MethodType(minicpmv_chat, model)
     elif model.config.model_type == "minicpmo":
         # vpm opt
-        vpm_modeling_module_name = model.vpm.__class__.__module__
-        vpm_module = importlib.import_module(vpm_modeling_module_name)
-
-        from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
-        convert_forward(model.vpm, vpm_module.SiglipAttention, siglip_attention_forward)
-
+        if hasattr(model, "vpm"):
+            vpm_modeling_module_name = model.vpm.__class__.__module__
+            vpm_module = importlib.import_module(vpm_modeling_module_name)
+            from ipex_llm.transformers.models.minicpmv import siglip_attention_forward
+            convert_forward(model.vpm, vpm_module.SiglipAttention, siglip_attention_forward)
+        # apm opt
+        if hasattr(model, "apm"):
+            apm_modeling_module_name = model.apm.__class__.__module__
+            apm_module = importlib.import_module(apm_modeling_module_name)
+            from transformers.models.whisper.modeling_whisper import WhisperSdpaAttention
+            from ipex_llm.transformers.models.whisper import whisper_attention_forward
+            convert_forward(model.apm, WhisperSdpaAttention, whisper_attention_forward)
         # llm opt
         model.llm.config.model_type = "qwen2"
         _optimize_post(model.llm)
