@@ -1,5 +1,5 @@
 # Deepseek
-In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Deepseek models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [deepseek-ai/deepseek-coder-6.7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct) and [deepseek-ai/deepseek-coder-1.3b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-1.3b-instruct) as a reference Deepseek models.
+In this directory, you will find examples on how you could apply IPEX-LLM INT4 optimizations on Deepseek models on [Intel GPUs](../README.md). For illustration purposes, we utilize the [deepseek-ai/deepseek-coder-6.7b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-instruct) and [deepseek-ai/deepseek-coder-1.3b-instruct](https://huggingface.co/deepseek-ai/deepseek-coder-1.3b-instruct) as reference Deepseek models.
 
 ## Requirements
 To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
