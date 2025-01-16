@@ -320,7 +320,10 @@ def setup_package():
     xpu_26_requires += ["torch==2.6.0+xpu",
                         "torchvision==0.21.0+xpu",
                         "torchaudio==2.6.0+xpu",
-                        "bigdl-core-xe-all==" + CORE_XE_VERSION]
+                        "bigdl-core-xe-all==" + CORE_XE_VERSION,
+                        "onednn-devel==2025.0.1",
+                        "onednn==2025.0.1",
+                        "dpcpp-cpp-rt==2025.0.2"]
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
                     "onednn-devel==2024.2.1;platform_system=='Windows'",
