@@ -38,7 +38,7 @@
 #
 
 import math
-from typing import Optional, Tuple, Union, List
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.nn.functional as F
@@ -55,12 +55,38 @@ from transformers.models.qwen2_vl.modeling_qwen2_vl import Qwen2VLAttention
 from transformers.models.qwen2_vl.modeling_qwen2_vl import apply_multimodal_rotary_pos_emb
 from transformers.models.qwen2_vl.modeling_qwen2_vl import apply_rotary_pos_emb_vision
 from transformers.models.qwen2_vl.modeling_qwen2_vl import Qwen2VLCausalLMOutputWithPast
-from transformers.modeling_outputs import BaseModelOutputWithPast
+from transformers.modeling_outputs import BaseModelOutputWithPast, ModelOutput
 from transformers.cache_utils import Cache
+from transformers import GenerationMixin
 
 
 def merge_qkv(module: torch.nn.Module):
     merge_qkv_base(module, Qwen2VLAttention)
+
+
+def _update_model_kwargs_for_generation(
+    self,
+    outputs: ModelOutput,
+    model_kwargs: Dict[str, Any] = None,
+    is_encoder_decoder: bool = False,
+    num_new_tokens: int = 1,
+) -> Dict[str, Any]:
+    model_kwargs = GenerationMixin._update_model_kwargs_for_generation(
+        self,
+        outputs=outputs,
+        model_kwargs=model_kwargs,
+        is_encoder_decoder=is_encoder_decoder,
+        num_new_tokens=num_new_tokens,
+    )
+
+    if model_kwargs.get("use_cache", True):
+        cache_num = outputs.past_key_values.seen_tokens
+        model_kwargs['cache_position'] = torch.tensor([cache_num])
+
+    if getattr(outputs, "rope_deltas", None) is not None:
+        model_kwargs["rope_deltas"] = outputs.rope_deltas
+
+    return model_kwargs
 
 
 def qwen2_vl_model_forward(
@@ -381,12 +407,47 @@ def qwen2_vl_conditional_generation_forward(
     if inputs_embeds is None:
         inputs_embeds = self.model.embed_tokens(input_ids)
         if pixel_values is not None:
+            t1 = time.perf_counter()
             pixel_values = pixel_values.type(self.visual.get_dtype())
             image_embeds = self.visual(pixel_values, grid_thw=image_grid_thw)
             image_mask = (input_ids == self.config.image_token_id).unsqueeze(-1).expand_as(inputs_embeds)
             image_embeds = image_embeds.to(inputs_embeds.device, inputs_embeds.dtype)
             inputs_embeds = inputs_embeds.masked_scatter(image_mask, image_embeds)
 
+            position_ids, rope_deltas = self.get_rope_index(
+                input_ids, image_grid_thw,
+                attention_mask=attention_mask)
+            
+            # # # # TODO: remove redundant image_pad
+            # new_image_pad_num = image_embeds.shape[0]
+            # image_pad_indices = torch.where(input_ids == self.config.image_token_id)[1]
+            # image_pad_start_idx = image_pad_indices[0]
+            # image_pad_end_idx = image_pad_indices[-1]
+            # new_image_pad_end_idx = image_pad_start_idx + new_image_pad_num
+            # input_ids = torch.cat([input_ids[:, : new_image_pad_end_idx],
+            #                       input_ids[:, image_pad_end_idx + 1:]], dim=1)
+            # # # inputs_embeds = torch.cat([inputs_embeds[:, :new_image_pad_end_idx, :],
+            # # #                            inputs_embeds[:, image_pad_end_idx + 1:, :]], dim=1)
+            # inputs_embeds = self.model.embed_tokens(input_ids)
+            # image_mask = (input_ids == self.config.image_token_id).unsqueeze(-1).expand_as(inputs_embeds)
+            # image_embeds = image_embeds.to(inputs_embeds.device, inputs_embeds.dtype)
+            # inputs_embeds = inputs_embeds.masked_scatter(image_mask, image_embeds)
+            
+            # new_grid_thw = torch.tensor([[1, 16, 32]])
+            # attention_mask = attention_mask[:, :inputs_embeds.shape[1]]
+            # position_ids, rope_deltas = self.get_rope_index(
+            #     input_ids, new_grid_thw,
+            #     attention_mask=attention_mask)
+
+            torch.xpu.synchronize()
+            t2 = time.perf_counter()
+            # # image_token_num = image_embeds.shape[0]
+            # # dominant = 128
+            # # contexual = 10
+            # # diff = image_token_num - dominant - contexual
+            # # inputs_embeds_token = inputs_embeds.shape[1]
+            # # inputs_embeds = inputs_embeds[:, : inputs_embeds_token - diff, :]
+            print(inputs_embeds.shape, "time1: ", (t2 - t1) * 1000, " ms")
         if pixel_values_videos is not None:
             pixel_values_videos = pixel_values_videos.type(self.visual.get_dtype())
             video_embeds = self.visual(pixel_values_videos, grid_thw=video_grid_thw)

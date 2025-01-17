@@ -1182,9 +1182,6 @@ def replace_RotaryEmbed(m, target_m,  replace_embed):
 
 def replace_func(m, target_m, func_name, new_func):
     for _, sub_m in m.named_children():
-        if sub_m.__class__ == target_m:
-            bound_method = new_func.__get__(sub_m, sub_m.__class__)
-            setattr(sub_m, func_name, bound_method)
         replace_func(sub_m, target_m, func_name, new_func)
 
 
@@ -1649,6 +1646,7 @@ def _optimize_post(model):
         from ipex_llm.transformers.models.qwen2_vl import qwen2_vit_pretrained_model_forward
         from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_vision_block_forward
         from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_conditional_generation_forward
+        from ipex_llm.transformers.models.qwen2_vl import _update_model_kwargs_for_generation
         convert_forward(model, module.Qwen2RMSNorm, rms_norm_forward)
         convert_forward(model, module.Qwen2MLP, qwen2_mlp_forward)
         model.visual.get_dtype = MethodType(qwen2_vision_get_dtype, model.visual)
@@ -1662,6 +1660,10 @@ def _optimize_post(model):
         convert_forward(model, module.Qwen2VLVisionBlock, qwen2_vl_vision_block_forward)
         convert_forward(model, module.Qwen2VLForConditionalGeneration,
                         qwen2_vl_conditional_generation_forward)
+        import types
+        model._update_model_kwargs_for_generation = types.MethodType(_update_model_kwargs_for_generation, model)
+        # replace_func(model, module.Qwen2VLForConditionalGeneration,
+        #              "_update_model_kwargs_for_generation", _update_model_kwargs_for_generation)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
