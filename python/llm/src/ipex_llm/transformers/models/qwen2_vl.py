@@ -54,7 +54,7 @@ from ipex_llm.utils.common import invalidInputError
 from transformers.models.qwen2_vl.modeling_qwen2_vl import Qwen2VLAttention
 from transformers.models.qwen2_vl.modeling_qwen2_vl import apply_multimodal_rotary_pos_emb
 from transformers.models.qwen2_vl.modeling_qwen2_vl import apply_rotary_pos_emb_vision
-from transformers.models.qwen2_vl.modeling_qwen2_vl import repeat_kv
+from transformers.models.qwen2_vl.modeling_qwen2_vl import Qwen2VLCausalLMOutputWithPast
 from transformers.modeling_outputs import BaseModelOutputWithPast
 from transformers.cache_utils import Cache
 
@@ -329,26 +329,123 @@ def qwen2_vit_pretrained_model_forward(
         if output_attentions:
             last_layer_attention = layer_outputs[1]     # 16, 1564, 1564
 
-    # TODO: select visionzip hidden states
-    dominant_num = 512
-    contextual_num = 10
+    # # TODO: select visionzip hidden states
+    # dominant_num = 512
+    # contextual_num = 10
 
-    # Dominant Visual Tokens
-    # TODO: batch dim
-    attention_mean = last_layer_attention.mean(0)       # 1564, 1564
-    attention_mean = attention_mean.mean(0)             # 1564
-    top_k_indices = attention_mean.topk(dominant_num, dim=0).indices
+    # # Dominant Visual Tokens
+    # # TODO: batch dim
+    # attention_mean = last_layer_attention.mean(0)       # 1564, 1564
+    # attention_mean = attention_mean.mean(0)             # 1564
+    # top_k_indices = attention_mean.topk(dominant_num, dim=0).indices
 
-    mask = torch.ones_like(
-        hidden_states[:, 0],
-        dtype=torch.bool,
-        device=hidden_states.device).scatter_(0, top_k_indices, False)
+    # mask = torch.ones_like(
+    #     hidden_states[:, 0],
+    #     dtype=torch.bool,
+    #     device=hidden_states.device).scatter_(0, top_k_indices, False)
     
-    dominant_tokens = hidden_states.masked_select(~mask.unsqueeze(-1)).view(dominant_num, hidden_states.shape[1])
+    # dominant_tokens = hidden_states.masked_select(~mask.unsqueeze(-1)).view(dominant_num, hidden_states.shape[1])
 
-    hidden_ststes_save = dominant_tokens.to(hidden_states.dtype)
+    # hidden_ststes_save = dominant_tokens.to(hidden_states.dtype)
+
+    hidden_ststes_save = hidden_states
 
     return self.merger(hidden_ststes_save)
+
+
+def qwen2_vl_conditional_generation_forward(
+    self,
+    input_ids: torch.LongTensor = None,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_values: Optional[List[torch.FloatTensor]] = None,
+    inputs_embeds: Optional[torch.FloatTensor] = None,
+    labels: Optional[torch.LongTensor] = None,
+    use_cache: Optional[bool] = None,
+    output_attentions: Optional[bool] = None,
+    output_hidden_states: Optional[bool] = None,
+    return_dict: Optional[bool] = None,
+    pixel_values: Optional[torch.Tensor] = None,
+    pixel_values_videos: Optional[torch.FloatTensor] = None,
+    image_grid_thw: Optional[torch.LongTensor] = None,
+    video_grid_thw: Optional[torch.LongTensor] = None,
+    rope_deltas: Optional[torch.LongTensor] = None,
+) -> Union[Tuple, Qwen2VLCausalLMOutputWithPast]:
+    output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+    output_hidden_states = (
+        output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+    )
+    return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+    import time
+    
+    if inputs_embeds is None:
+        inputs_embeds = self.model.embed_tokens(input_ids)
+        if pixel_values is not None:
+            pixel_values = pixel_values.type(self.visual.get_dtype())
+            image_embeds = self.visual(pixel_values, grid_thw=image_grid_thw)
+            image_mask = (input_ids == self.config.image_token_id).unsqueeze(-1).expand_as(inputs_embeds)
+            image_embeds = image_embeds.to(inputs_embeds.device, inputs_embeds.dtype)
+            inputs_embeds = inputs_embeds.masked_scatter(image_mask, image_embeds)
+
+        if pixel_values_videos is not None:
+            pixel_values_videos = pixel_values_videos.type(self.visual.get_dtype())
+            video_embeds = self.visual(pixel_values_videos, grid_thw=video_grid_thw)
+            video_mask = (input_ids == self.config.video_token_id).unsqueeze(-1).expand_as(inputs_embeds)
+            video_embeds = video_embeds.to(inputs_embeds.device, inputs_embeds.dtype)
+            inputs_embeds = inputs_embeds.masked_scatter(video_mask, video_embeds)
+            # t3 = time.perf_counter()
+            # print(inputs_embeds.shape, "pixel_values_videos time2: ", (t3 - t2) * 1000, " ms")
+
+        # if inputs_embeds is None:
+        #     inputs_embeds = self.model.embed_tokens(input_ids)
+
+        if attention_mask is not None:
+            attention_mask = attention_mask.to(inputs_embeds.device)
+
+
+    # position_ids = position_ids[:, :, : inputs_embeds.shape[1]]
+    # attention_mask = attention_mask[:, : inputs_embeds.shape[1]]
+    outputs = self.model(
+        input_ids=None,
+        position_ids=position_ids,
+        attention_mask=attention_mask,
+        past_key_values=past_key_values,
+        inputs_embeds=inputs_embeds,
+        use_cache=use_cache,
+        output_attentions=output_attentions,
+        output_hidden_states=output_hidden_states,
+        return_dict=return_dict,
+    )
+
+    hidden_states = outputs[0]
+    logits = self.lm_head(hidden_states)
+    logits = logits.float()
+
+    loss = None
+    # if labels is not None:
+    #     # Shift so that tokens < n predict n
+    #     shift_logits = logits[..., :-1, :].contiguous()
+    #     shift_labels = labels[..., 1:].contiguous()
+    #     # Flatten the tokens
+    #     loss_fct = CrossEntropyLoss()
+    #     shift_logits = shift_logits.view(-1, self.config.vocab_size)
+    #     shift_labels = shift_labels.view(-1)
+    #     # Enable model parallelism
+    #     shift_labels = shift_labels.to(shift_logits.device)
+    #     loss = loss_fct(shift_logits, shift_labels)
+
+    if not return_dict:
+        output = (logits,) + outputs[1:]
+        return (loss,) + output if loss is not None else output
+
+    return Qwen2VLCausalLMOutputWithPast(
+        loss=loss,
+        logits=logits,
+        past_key_values=outputs.past_key_values,
+        hidden_states=outputs.hidden_states,
+        attentions=outputs.attentions,
+        rope_deltas=rope_deltas,
+    )
 
 
 def qwen2_vl_attention_forward(
