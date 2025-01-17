@@ -278,7 +278,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: ['arc-ut', 'arc-ut-win']
-        pytorch-version: ['2.1']
+        pytorch-version: ['2.1', '2.6']
         python-version: ${{ fromJson(needs.setup-python-version.outputs.python-version) }}
     runs-on: [self-hosted, llm, "${{ matrix.runner }}"]
     env:
@@ -486,8 +486,12 @@ jobs:
           pip install transformers==4.36.2
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests-gpu.sh
-      - name: Run sentence-transformers uninstallation
+
+      # TODO: find better way to separate env for different job strategy
+      - name: Run package uninstallation
         if: ${{ always() }}
         shell: bash
         run: |
-          pip uninstall sentence-transformers -y || true
+          pip freeze > dependency.txt
+          pip uninstall -r dependency.txt -y
+          rm dependency.txt
