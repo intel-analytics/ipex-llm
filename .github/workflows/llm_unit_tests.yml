@@ -428,7 +428,13 @@ jobs:
         shell: bash
         run: |
           python -m pip uninstall datasets -y
-          python -m pip install transformers==4.36.0 datasets peft==0.10.0
+          # TODO: Remove this workaround
+          if [[ '${{ matrix.pytorch-version }}' == '2.6' ]]; then
+            python -m pip install transformers==4.42.0 datasets peft==0.10.0
+          else
+            python -m pip install transformers==4.36.0 datasets peft==0.10.0
+          fi
+
           python -m pip install bitsandbytes scipy
           # Specific oneapi position on arc ut test machines
           if [[ "$RUNNER_OS" == "Linux" ]]; then
@@ -439,6 +445,11 @@ jobs:
             fi
           fi
           bash python/llm/test/run-llm-example-tests-gpu.sh
+
+          # TODO: Remove this workaround
+          if [[ '${{ matrix.pytorch-version }}' == '2.6' ]]; then
+            python -m pip uninstall
+          fi
 
       - name: Get Langchain version
         shell: bash
