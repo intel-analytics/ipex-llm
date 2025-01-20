@@ -148,6 +148,7 @@ We have included multiple example files in `/llm/`:
 2. `benchmark_vllm_throughput.py`: Used for benchmarking throughput
 3. `payload-1024.lua`: Used for testing request per second using 1k-128 request
 4. `start-vllm-service.sh`: Used for template for starting vLLM service
+5. `vllm_offline_inference_vision_language.py`: Used for vLLM offline inference vision example
 
 ##### Online benchmark throurgh api_server
 
