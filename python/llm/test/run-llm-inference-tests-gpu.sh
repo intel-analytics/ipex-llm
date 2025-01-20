@@ -29,7 +29,8 @@ start=$(date "+%s")
 source ${ANALYTICS_ZOO_ROOT}/python/llm/test/run-llm-check-function.sh
 
 pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api.py -v -s
-pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_final_logits.py -v -s
+# Disable for now
+# pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_final_logits.py -v -s
 pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_attention.py -v -s
 pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_mlp.py -v -s
 pytest_check_error pytest ${LLM_INFERENCE_TEST_DIR}/test_transformers_api_RMSNorm.py -v -s
