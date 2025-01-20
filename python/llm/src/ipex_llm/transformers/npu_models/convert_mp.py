@@ -34,7 +34,6 @@ def optimize_llm_pre(model: torch.nn.Module, qtype, mixed_precision,
                      quantization_group_size=0, load=False, max_prompt_len=512):
     if os.environ.get("IPEX_LLM_NPU_MTL", "0") == "1":
         # For MTL support
-        os.environ["IPEX_LLM_NPU_USE_LEVEL0"] = "0"
         os.environ["IPEX_LLM_NPU_DISABLE_COMPILE_OPT"] = "1"
 
     if os.environ.get("IPEX_LLM_NPU_ARL", "0") == "1":
