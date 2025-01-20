@@ -317,7 +317,7 @@ jobs:
         shell: bash
         run: |
           pip freeze > dependency.txt
-          pip uninstall -r dependency.txt -y
+          pip uninstall -r dependency.txt -y || true
           rm dependency.txt
 
       - name: Install dependencies
