@@ -448,7 +448,7 @@ jobs:
 
           # TODO: Remove this workaround
           if [[ '${{ matrix.pytorch-version }}' == '2.6' ]]; then
-            python -m pip uninstall
+            python -m pip install transformers==4.37.0
           fi
 
       - name: Get Langchain version
