@@ -312,6 +312,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # TODO: find better way to separate env for different job strategy
+      - name: Make environment clear
+        shell: bash
+        run: |
+          pip freeze > dependency.txt
+          pip uninstall -r dependency.txt -y
+          rm dependency.txt
+
       - name: Install dependencies
         shell: bash
         run: |
@@ -487,12 +495,3 @@ jobs:
           pip install transformers==4.36.2
           pip install "pydantic>=2.0.0"
           bash python/llm/test/run-llm-llamaindex-tests-gpu.sh
-
-      # TODO: find better way to separate env for different job strategy
-      - name: Run package uninstallation
-        if: ${{ always() }}
-        shell: bash
-        run: |
-          pip freeze > dependency.txt
-          pip uninstall -r dependency.txt -y
-          rm dependency.txt
