@@ -749,7 +749,7 @@ class LowBitLinear(nn.Linear):
                 dist.inference_all_reduce(result, group=self.mp_group)
             if self.bias is not None:
                 result += self.bias
-        return result
+        return result.to(x.dtype)
 
 
 class FP16Linear(nn.Linear):
