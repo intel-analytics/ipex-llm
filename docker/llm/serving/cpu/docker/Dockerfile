@@ -16,6 +16,8 @@ RUN wget -qO /sbin/tini https://github.com/krallin/tini/releases/download/${TINI
     apt-get update && \
     apt-get install -y --no-install-recommends wrk patch g++ && \
     pip install --pre --upgrade ipex-llm[serving] && \
+    apt-get install -y gcc-12 g++-12 libnuma-dev && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 10 --slave /usr/bin/g++ g++ /usr/bin/g++-12 && \
     # Fix Trivy CVE Issues
     pip install Jinja2==3.1.3 transformers==4.36.2 gradio==4.19.2 cryptography==42.0.4 && \
     # Fix Qwen model adapter in fastchat
@@ -24,10 +26,11 @@ RUN wget -qO /sbin/tini https://github.com/krallin/tini/releases/download/${TINI
     # Install vllm
     git clone https://github.com/vllm-project/vllm.git && \
     cd ./vllm && \
-    git checkout v0.4.2 && \
-    pip install wheel packaging ninja setuptools>=49.4.0 numpy && \
+    git checkout v0.6.6.post1 && \
+    pip install cmake>=3.26 wheel packaging ninja "setuptools-scm>=8" numpy && \
     pip install -v -r requirements-cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu && \
-    VLLM_TARGET_DEVICE=cpu python3 setup.py install
+    VLLM_TARGET_DEVICE=cpu python3 setup.py install && \
+    pip install ray
 
 
 COPY ./vllm_offline_inference.py       /llm/
