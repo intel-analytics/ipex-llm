@@ -101,6 +101,7 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
 
 COPY ./vllm_online_benchmark.py        /llm/
 COPY ./vllm_offline_inference.py       /llm/
+COPY ./vllm_offline_inference_vision_language.py  /llm/
 COPY ./payload-1024.lua                /llm/
 COPY ./start-vllm-service.sh           /llm/
 COPY ./benchmark_vllm_throughput.py   /llm/
