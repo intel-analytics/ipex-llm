@@ -65,31 +65,6 @@ def merge_qkv(module: torch.nn.Module):
     merge_qkv_base(module, Qwen2VLAttention)
 
 
-def _update_model_kwargs_for_generation(
-    self,
-    outputs: ModelOutput,
-    model_kwargs: Dict[str, Any] = None,
-    is_encoder_decoder: bool = False,
-    num_new_tokens: int = 1,
-) -> Dict[str, Any]:
-    model_kwargs = GenerationMixin._update_model_kwargs_for_generation(
-        self,
-        outputs=outputs,
-        model_kwargs=model_kwargs,
-        is_encoder_decoder=is_encoder_decoder,
-        num_new_tokens=num_new_tokens,
-    )
-
-    # if model_kwargs.get("use_cache", True):
-    #     cache_num = outputs.past_key_values.seen_tokens
-    #     model_kwargs['cache_position'] = torch.tensor([cache_num])
-
-    if getattr(outputs, "rope_deltas", None) is not None:
-        model_kwargs["rope_deltas"] = outputs.rope_deltas
-
-    return model_kwargs
-
-
 def prepare_inputs_for_generation(
     self,
     input_ids,
@@ -464,7 +439,7 @@ def qwen2_vit_pretrained_model_forward(
         attention_mean = last_layer_attention.mean(0)       # 1564, 1564
         attention_mean = attention_mean.reshape(attention_mean.shape[0] * self.spatial_merge_size ** 2, -1)
         attention_mean = attention_mean.mean(0)             # 391
-        top_k_indices = attention_mean.topk(dominant_num // 4, dim=0).indices
+        top_k_indices = attention_mean.topk(dominant_num, dim=0).indices
         # TODO: get height & width
         # interval_size = 22
         # ranges = [(start, start + interval_size - 1) for start in range(0, 391, interval_size)]
@@ -492,7 +467,9 @@ def qwen2_vit_pretrained_model_forward(
             dtype=torch.bool,
             device=hidden_states.device).scatter_(0, top_k_indices, False)
         
-        dominant_tokens = hidden_states.masked_select(~mask.unsqueeze(-1)).view(dominant_num, hidden_states.shape[1])
+        dominant_tokens = hidden_states.masked_select(
+            ~mask.unsqueeze(-1)
+        ).view(dominant_num * self.spatial_merge_size ** 2, hidden_states.shape[1])
 
         hidden_ststes_save = dominant_tokens.to(hidden_states.dtype)
     else:

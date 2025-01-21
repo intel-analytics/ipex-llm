@@ -1649,7 +1649,6 @@ def _optimize_post(model):
         from ipex_llm.transformers.models.qwen2_vl import qwen2_vit_pretrained_model_forward
         from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_vision_block_forward
         from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_conditional_generation_forward
-        from ipex_llm.transformers.models.qwen2_vl import _update_model_kwargs_for_generation
         from ipex_llm.transformers.models.qwen2_vl import get_rope_index
         from ipex_llm.transformers.models.qwen2_vl import prepare_inputs_for_generation
         convert_forward(model, module.Qwen2RMSNorm, rms_norm_forward)
@@ -1665,8 +1664,6 @@ def _optimize_post(model):
         convert_forward(model, module.Qwen2VLVisionBlock, qwen2_vl_vision_block_forward)
         convert_forward(model, module.Qwen2VLForConditionalGeneration,
                         qwen2_vl_conditional_generation_forward)
-        replace_func(model, module.Qwen2VLForConditionalGeneration,
-                     "_update_model_kwargs_for_generation", _update_model_kwargs_for_generation)
         replace_func(model, module.Qwen2VLForConditionalGeneration,
                      "get_rope_index", get_rope_index)
         replace_func(model, module.Qwen2VLForConditionalGeneration,
