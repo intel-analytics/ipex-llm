@@ -13,19 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from vllm.logger import init_logger
 from typing import Dict, Optional
 from vllm.engine.llm_engine import LLMEngine
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.engine.arg_utils import AsyncEngineArgs, EngineArgs
 from vllm.entrypoints.llm import LLM
 from vllm.utils import Counter
-from vllm.config import EngineConfig
+from vllm.config import VllmConfig
 from ipex_llm.vllm.xpu.model_convert import _ipex_llm_convert
 from vllm.usage.usage_lib import UsageContext
 from vllm.engine.metrics import StatLoggerBase
 from vllm.engine.multiprocessing.engine import MQLLMEngine
 import signal
 
+logger = init_logger(__name__)
 
 class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     def __init__(self, *args, **kwargs):
@@ -35,7 +37,7 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     def from_engine_args(
         cls,
         engine_args: AsyncEngineArgs,
-        engine_config: Optional[EngineConfig] = None,
+        engine_config: Optional[VllmConfig] = None,
         start_engine_loop: bool = True,
         usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
         load_in_low_bit: str = "sym_int4",
@@ -67,7 +69,6 @@ class IPEXLLMClass(LLM):
         swap_space: int = 4,
         cpu_offload_gb: float = 0,
         enforce_eager: bool = False,
-        max_context_len_to_capture: Optional[int] = None,
         max_seq_len_to_capture: int = 8192,
         disable_custom_all_reduce: bool = False,
         load_in_low_bit: str = "sym_int4",
@@ -96,11 +97,11 @@ class IPEXLLMClass(LLM):
             swap_space=swap_space,
             cpu_offload_gb=cpu_offload_gb,
             enforce_eager=enforce_eager,
-            max_context_len_to_capture=max_context_len_to_capture,
             max_seq_len_to_capture=max_seq_len_to_capture,
             disable_custom_all_reduce=disable_custom_all_reduce,
             **kwargs,
         )
+        self.engine_class = self.get_engine_class()
         self.llm_engine = IPEXLLMLLMEngine.from_engine_args(
             engine_args, usage_context=UsageContext.LLM_CLASS,
             load_in_low_bit=load_in_low_bit)
@@ -134,16 +135,21 @@ class IPEXLLMMQLLMEngine(MQLLMEngine):
 
 
 def run_mp_engine(engine_args: AsyncEngineArgs, usage_context: UsageContext,
-                  ipc_path: str, load_in_low_bit: str):
+                  ipc_path: str, load_in_low_bit: str, engine_alive):
 
     def signal_handler(*_) -> None:
         # Interrupt server on sigterm
         raise KeyboardInterrupt("MQLLMEngine terminated")  # noqa
 
-    signal.signal(signal.SIGTERM, signal_handler)
+    try:
+        signal.signal(signal.SIGTERM, signal_handler)
 
-    engine = IPEXLLMMQLLMEngine.from_engine_args(engine_args=engine_args,
-                                                 usage_context=usage_context,
-                                                 ipc_path=ipc_path,
-                                                 load_in_low_bit=load_in_low_bit)
-    engine.start()
+        engine = IPEXLLMMQLLMEngine.from_engine_args(engine_args=engine_args,
+                                                    usage_context=usage_context,
+                                                    ipc_path=ipc_path,
+                                                    load_in_low_bit=load_in_low_bit)
+        engine.start()
+    except BaseException as e:
+        logger.exception(e)
+        engine_alive.value = False
+        raise e
