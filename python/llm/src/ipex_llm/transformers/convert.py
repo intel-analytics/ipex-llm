@@ -1181,6 +1181,9 @@ def replace_RotaryEmbed(m, target_m,  replace_embed):
 
 
 def replace_func(m, target_m, func_name, new_func):
+    if m.__class__ == target_m:
+        bound_method = new_func.__get__(m, m.__class__)
+        setattr(m, func_name, bound_method)
     for _, sub_m in m.named_children():
         replace_func(sub_m, target_m, func_name, new_func)
 
@@ -1662,12 +1665,12 @@ def _optimize_post(model):
         convert_forward(model, module.Qwen2VLVisionBlock, qwen2_vl_vision_block_forward)
         convert_forward(model, module.Qwen2VLForConditionalGeneration,
                         qwen2_vl_conditional_generation_forward)
-        import types
-        model._update_model_kwargs_for_generation = types.MethodType(_update_model_kwargs_for_generation, model)
-        model.get_rope_index = types.MethodType(get_rope_index, model)
-        model.prepare_inputs_for_generation = types.MethodType(prepare_inputs_for_generation, model)
-        # replace_func(model, module.Qwen2VLForConditionalGeneration,
-        #              "_update_model_kwargs_for_generation", _update_model_kwargs_for_generation)
+        replace_func(model, module.Qwen2VLForConditionalGeneration,
+                     "_update_model_kwargs_for_generation", _update_model_kwargs_for_generation)
+        replace_func(model, module.Qwen2VLForConditionalGeneration,
+                     "get_rope_index", get_rope_index)
+        replace_func(model, module.Qwen2VLForConditionalGeneration,
+                     "prepare_inputs_for_generation", prepare_inputs_for_generation)
     elif model.config.model_type == "aquila":
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
