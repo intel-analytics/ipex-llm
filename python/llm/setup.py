@@ -211,6 +211,30 @@ def download_libs(url: str, change_permission=False):
     if change_permission:
         os.chmod(libso_file, 0o775)
 
+from setuptools.command.install import install
+
+class IPEXLLMInstallCommand(install):
+    def run(self):
+        install.run(self)
+        self.copy_activate_script()
+
+    def copy_activate_script(self):
+        conda_prefix = os.environ.get('CONDA_PREFIX')
+        if conda_prefix:
+            activate_d_dir = os.path.join(conda_prefix, 'etc', 'conda', 'activate.d')
+            if not os.path.exists(activate_d_dir):
+                os.makedirs(activate_d_dir)
+            script_src = os.path.join(os.path.dirname(__file__), 'scripts', 'activate-unset-ocl.sh')
+            script_dst = os.path.join(activate_d_dir, 'activate-unset-ocl.sh')
+            self.copy_file(script_src, script_dst)
+        else:
+            print("CONDA_PREFIX environment variable is not set. Are you sure you're in a conda environment?")
+
+    def copy_file(self, src, dst):
+        import shutil
+        shutil.copy(src, dst)
+        print(f"Copied {src} to {dst}")
+
 
 def setup_package():
     package_data = {}
@@ -389,6 +413,9 @@ def setup_package():
             'Linux': ['src/ipex_llm/cli/llm-cli', 'src/ipex_llm/cli/llm-chat', 'scripts/ipex-llm-init'],
             'Windows': ['src/ipex_llm/cli/llm-cli.ps1', 'src/ipex_llm/cli/llm-chat.ps1', 'scripts/ipex-llm-init.bat'],
         }[platform_name],
+        cmdclass={
+        'install': IPEXLLMInstallCommand,
+        },
         platforms=['windows']
     )
 
