@@ -1,19 +1,3 @@
-//
-// Copyright 2016 The BigDL Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -99,22 +83,15 @@ std::string add_chat_history(npu_model_params model_params,
 }
 
 std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_inp_size,
-                         npu_model_params model_params, tokenizer_params tok_params, npu_generation_params generation_params, bool do_print){
-    auto start = std::chrono::high_resolution_clock::now();
+                         npu_model_params model_params, tokenizer_params tok_params, npu_generation_params generation_params){
     float* logits = run_prefill(void_model, embd_inp_ptr, embd_inp_size,
                                 generation_params.repetition_penalty);
     int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    if (do_print){
-        printf("\nPrefill %d tokens cost %d ms.\n", embd_inp_size, duration.count());
-    }
 
     std::vector<int32_t> embd;  // output ids
     embd.push_back(token);
 
     int token_nums = 0;
-    start = std::chrono::high_resolution_clock::now();
     for (int i = 1; i < generation_params.max_new_token; i++){
         auto logits = run_decode(void_model, embd[i-1],
                                  generation_params.repetition_penalty);
@@ -126,14 +103,8 @@ std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_i
             break;
         }
     }
-    end = std::chrono::high_resolution_clock::now();
-    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
     std::string output = llm_decode(embd);
-
-    if (do_print){
-        printf("\nDecode %d tokens cost %d ms (avg %f ms each token).\n", token_nums, duration.count(), (float)duration.count() / token_nums);
-    }
 
     return output;
 }
@@ -237,7 +208,7 @@ int main(int argc, char ** argv) {
                 generation_params.max_new_token = model_params.kv_len - embd_inp.size();
                 
                 response = run_generate(model, embd_inp.data(), embd_inp.size(),
-                                        model_params, tok_params, generation_params, false);
+                                        model_params, tok_params, generation_params);
 
                 std::cout << "Assistant:";
                 std::cout << response << std::endl;
@@ -250,18 +221,16 @@ int main(int argc, char ** argv) {
     }
     else{
         std::string full_prompt = add_chat_template(model_params, params.prompt);
-        std::cout << "Input: " << std::endl;
-        std::cout << full_prompt << std::endl;
 
         // tokenize input
         std::vector<int32_t> embd_inp = llm_tokenize(full_prompt, false);
 
         // single text generation
         std::string output = run_generate(model, embd_inp.data(), embd_inp.size(),
-                                          model_params, tok_params, generation_params, true);
+                                          model_params, tok_params, generation_params);
 
-        std::cout << "Output: " << std::endl;
-        std::cout << output << std::endl;
+        std::cout << output << std::endl << std::endl;
+        llm_perf_print(model);
     }
     return 0;
 }
