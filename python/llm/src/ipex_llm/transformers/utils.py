@@ -157,7 +157,7 @@ def get_autocast_dtype(x):
                 return None
         else:
             invalidInputError(False,
-                            f"Device {x.device} is not supported.")
+                              f"Device {x.device} is not supported.")
 
 
 def get_xpu_device_name(device: torch.device):
