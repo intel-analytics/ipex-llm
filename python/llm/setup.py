@@ -216,7 +216,8 @@ from setuptools.command.install import install
 class IPEXLLMInstallCommand(install):
     def run(self):
         install.run(self)
-        self.copy_activate_script()
+        if not platform.platform().startswith('Windows'):
+            self.copy_activate_script()
 
     def copy_activate_script(self):
         conda_prefix = os.environ.get('CONDA_PREFIX')
