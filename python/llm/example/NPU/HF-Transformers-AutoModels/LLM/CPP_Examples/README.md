@@ -81,9 +81,9 @@ Arguments info:
 - `--max-prompt-len MAX_PROMPT_LEN`: argument defining the maximum number of tokens that the input prompt can contain. It is default to be `512`.
 - `--low-bit LOW_BIT`: argument defining the low bit optimizations that will be applied to the model. Current available options are `"sym_int4"`, `"asym_int4"` and `"sym_int8"`, with `"sym_int4"` as the default.
 
-## 3. Build C++ Example `llm-npu-cli`
+## 3. Build C++ Example `llm-npu-cli`(Optional)
 
-You can run below cmake script in cmd to build `llm-npu-cli`, don't forget to replace below conda env dir with your own path.
+- You can run below cmake script in cmd to build `llm-npu-cli` by yourself, don't forget to replace below <CONDA_ENV_DIR> with your own path.
 
 ```cmd
 :: under current directory
@@ -95,6 +95,12 @@ cmake ..
 cmake --build . --config Release -j
 cd Release
 ```
+
+- You can also directly use our released `llm-npu-cli.exe` which has the same usage as this example `llm-npu-cli.cpp`
+
+> [!NOTE]
+> Our released `llm-npu-cli.exe` can be found at <CONDA_ENV_DIR>\bigdl-core-npu
+> `llm-npu-cli.exe` rely on some OpenViNO dependency. To run it, you need to copy all files from <CONDA_ENV_DIR>\intel_npu_acceleration_library\lib\Release to the same directory of `llm-npu-cli.exe`.
 
 ## 4. Run `llm-npu-cli`
 
