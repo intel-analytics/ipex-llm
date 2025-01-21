@@ -425,7 +425,7 @@ jobs:
           bash python/llm/test/run-llm-inference-tests-gpu.sh
 
       - name: Run LLM example tests
-        if: ${{ matrix.pytorch-version != '2.6' }} # TODO: remove this workaround
+        if: ${{ matrix.pytorch-version != '2.6' }} # TODO: Enable this test for pytorch 2.6
         shell: bash
         run: |
           python -m pip uninstall datasets -y
