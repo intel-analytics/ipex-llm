@@ -1647,6 +1647,8 @@ def _optimize_post(model):
         from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_vision_block_forward
         from ipex_llm.transformers.models.qwen2_vl import qwen2_vl_conditional_generation_forward
         from ipex_llm.transformers.models.qwen2_vl import _update_model_kwargs_for_generation
+        from ipex_llm.transformers.models.qwen2_vl import get_rope_index
+        from ipex_llm.transformers.models.qwen2_vl import prepare_inputs_for_generation
         convert_forward(model, module.Qwen2RMSNorm, rms_norm_forward)
         convert_forward(model, module.Qwen2MLP, qwen2_mlp_forward)
         model.visual.get_dtype = MethodType(qwen2_vision_get_dtype, model.visual)
@@ -1662,6 +1664,8 @@ def _optimize_post(model):
                         qwen2_vl_conditional_generation_forward)
         import types
         model._update_model_kwargs_for_generation = types.MethodType(_update_model_kwargs_for_generation, model)
+        model.get_rope_index = types.MethodType(get_rope_index, model)
+        model.prepare_inputs_for_generation = types.MethodType(prepare_inputs_for_generation, model)
         # replace_func(model, module.Qwen2VLForConditionalGeneration,
         #              "_update_model_kwargs_for_generation", _update_model_kwargs_for_generation)
     elif model.config.model_type == "aquila":
