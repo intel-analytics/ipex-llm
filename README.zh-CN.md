@@ -11,12 +11,12 @@
 **`ipex-llm`** 是一个将大语言模型高效地运行于 Intel [GPU](docs/mddocs/Quickstart/install_windows_gpu.md) *(如搭载集成显卡的个人电脑，Arc 独立显卡、Flex 及 Max 数据中心 GPU 等)*、[NPU](docs/mddocs/Quickstart/npu_quickstart.md) 和 CPU 上的大模型 XPU 加速库[^1]。 
 > [!NOTE]
 > - *`ipex-llm`可以与  [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.zh-CN.md), [Ollama](docs/mddocs/Quickstart/ollama_quickstart.zh-CN.md), [HuggingFace transformers](python/llm/example/GPU/HuggingFace), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models) 等无缝衔接。* 
-> - ***70+** 模型已经在 `ipex-llm` 上得到优化和验证（如 Llama, Phi, Mistral, Mixtral, Whisper, Qwen, MiniCPM, Qwen-VL, MiniCPM-V 等), 以获得先进的 **大模型算法优化**, **XPU 加速** 以及 **低比特（FP8FP8/FP6/FP4/INT4) 支持**；更多模型信息请参阅[这里](#模型验证)。*
+> - ***70+** 模型已经在 `ipex-llm` 上得到优化和验证（如 Llama, Phi, Mistral, Mixtral, Whisper, Qwen, ChatGLM, MiniCPM, Qwen-VL, MiniCPM-V 等), 以获得先进的 **大模型算法优化**, **XPU 加速** 以及 **低比特（FP8FP8/FP6/FP4/INT4) 支持**；更多模型信息请参阅[这里](#模型验证)。*
 
 ## 最新更新 🔥 
 - [2025/01] 新增在 Intel Arc [B580](docs/mddocs/Quickstart/bmg_quickstart.md) GPU 上运行 `ipex-llm` 的指南。
-- [2024/12] 新增在 Intel GPU 上运行 [Ollama 0.4.6](docs/mddocs/Quickstart/ollama_quickstart.zh-CN.md) 的支持。
-- [2024/12] 增加了对 Intel Core Ultra [NPU](docs/mddocs/Quickstart/npu_quickstart.md)（包括 100H，200V 和 200K 系列）的 **Python** 和 **C++** 支持。
+- [2025/01] 新增在 Intel GPU 上运行 [Ollama 0.5.1](docs/mddocs/Quickstart/ollama_quickstart.zh-CN.md) 的支持。
+- [2024/12] 增加了对 Intel Core Ultra [NPU](docs/mddocs/Quickstart/npu_quickstart.md)（包括 100H，200V，200K 和 200H 系列）的 **Python** 和 **C++** 支持。
 - [2024/11] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.2](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 的支持。
 
 <details><summary>更多更新</summary>
