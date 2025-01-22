@@ -51,7 +51,7 @@ from ipex_llm.transformers.gguf.api import load_gguf_model
 
 from .utils import logger, load_state_dict
 from .utils import extract_local_archive_file, get_local_shard_files, load_imatrix_data
-from .patches import patch_flash_attn_import, patch_sdpa_available
+from .patches import patch_flash_attn_import
 
 patched_training_mode = None
 
@@ -108,7 +108,6 @@ class _BaseAutoModelClass:
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
-    @patch("transformers.modeling_utils.is_torch_sdpa_available", patch_sdpa_available, create=True)
     def from_pretrained(cls,
                         *args,
                         **kwargs):
@@ -531,7 +530,6 @@ class _BaseAutoModelClass:
 
     @classmethod
     @patch("transformers.dynamic_module_utils.get_imports", patch_flash_attn_import)
-    @patch("transformers.modeling_utils.is_torch_sdpa_available", patch_sdpa_available, create=True)
     def load_low_bit(cls,
                      pretrained_model_name_or_path,
                      *model_args,
