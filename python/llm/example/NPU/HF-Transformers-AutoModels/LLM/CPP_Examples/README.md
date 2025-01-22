@@ -81,9 +81,9 @@ Arguments info:
 - `--max-prompt-len MAX_PROMPT_LEN`: argument defining the maximum number of tokens that the input prompt can contain. It is default to be `512`.
 - `--low-bit LOW_BIT`: argument defining the low bit optimizations that will be applied to the model. Current available options are `"sym_int4"`, `"asym_int4"` and `"sym_int8"`, with `"sym_int4"` as the default.
 
-## 3. Build C++ Example `llm-npu-cli`
+## 3. Build C++ Example `llama-cli-npu`(Optional)
 
-You can run below cmake script in cmd to build `llm-npu-cli`, don't forget to replace below conda env dir with your own path.
+- You can run below cmake script in cmd to build `llama-cli-npu` by yourself, don't forget to replace below <CONDA_ENV_DIR> with your own path.
 
 ```cmd
 :: under current directory
@@ -96,16 +96,21 @@ cmake --build . --config Release -j
 cd Release
 ```
 
-## 4. Run `llm-npu-cli`
+- You can also directly use our released `llama-cli-npu.exe` which has the same usage as this example `llama-cli-npu.cpp`
 
-With built `llm-npu-cli`, you can run the example with specified paramaters. For example,
+> [!NOTE]
+> Our released `llama-cli-npu.exe` can be found at <CONDA_ENV_DIR>\bigdl-core-npu
+
+## 4. Run `llama-cli-npu`
+
+With built `llama-cli-npu`, you can run the example with specified paramaters. For example,
 
 ```cmd
 # Run simple text completion
-llm-npu-cli.exe -m <converted_model_path> -n 64 "AI是什么?"
+llama-cli-npu.exe -m <converted_model_path> -n 64 "AI是什么?"
 
 # Run in conversation mode
-llm-npu-cli.exe -m <converted_model_path> -cnv
+llama-cli-npu.exe -m <converted_model_path> -cnv
 ```
 
 Arguments info:
@@ -118,18 +123,12 @@ Arguments info:
 #### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
 ##### Text Completion
 ```cmd
-Input:
-<s>[INST] <<SYS>>
+AI stands for Artificial Intelligence, which is the field of study focused on creating and developing intelligent machines that can perform tasks that typically require human intelligence, such as visual and auditory recognition, speech recognition, and decision-making. AI is a broad and diverse field that includes a wide range
 
-<</SYS>>
-
-What is AI? [/INST]
-
-Prefill 26 tokens cost xxxx ms.
-
-Decode 63 tokens cost xxxx ms (avg xxxx ms each token).
-Output:
- AI stands for Artificial Intelligence, which is the field of study focused on creating and developing intelligent machines that can perform tasks that typically require human intelligence, such as visual and auditory recognition, speech recognition, and decision-making. AI is a broad and diverse field that includes a wide range
+llm_perf_print:        load time =    xxxx.xx ms
+llm_perf_print: prompt eval time =    xxxx.xx ms /    26 tokens (   xx.xx ms per token,    xx.xx tokens per second)
+llm_perf_print:        eval time =    xxxx.xx ms /    63 runs   (   xx.xx ms per token,    xx.xx tokens per second)
+llm_perf_print:       total time =    xxxx.xx ms /    89 tokens
 ```
 
 ##### Conversation
