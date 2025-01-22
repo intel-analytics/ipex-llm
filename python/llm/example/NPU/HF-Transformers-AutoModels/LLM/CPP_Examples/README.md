@@ -123,18 +123,12 @@ Arguments info:
 #### [meta-llama/Llama-2-7b-chat-hf](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf)
 ##### Text Completion
 ```cmd
-Input:
-<s>[INST] <<SYS>>
+AI stands for Artificial Intelligence, which is the field of study focused on creating and developing intelligent machines that can perform tasks that typically require human intelligence, such as visual and auditory recognition, speech recognition, and decision-making. AI is a broad and diverse field that includes a wide range
 
-<</SYS>>
-
-What is AI? [/INST]
-
-Prefill 26 tokens cost xxxx ms.
-
-Decode 63 tokens cost xxxx ms (avg xxxx ms each token).
-Output:
- AI stands for Artificial Intelligence, which is the field of study focused on creating and developing intelligent machines that can perform tasks that typically require human intelligence, such as visual and auditory recognition, speech recognition, and decision-making. AI is a broad and diverse field that includes a wide range
+llm_perf_print:        load time =    xxxx.xx ms
+llm_perf_print: prompt eval time =    xxxx.xx ms /    26 tokens (   xx.xx ms per token,    xx.xx tokens per second)
+llm_perf_print:        eval time =    xxxx.xx ms /    63 runs   (   xx.xx ms per token,    xx.xx tokens per second)
+llm_perf_print:       total time =    xxxx.xx ms /    89 tokens
 ```
 
 ##### Conversation
