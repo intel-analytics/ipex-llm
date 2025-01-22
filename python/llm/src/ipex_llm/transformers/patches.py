@@ -26,14 +26,3 @@ def patch_flash_attn_import(filename: str) -> List[str]:
     if "flash_attn" in imports:
         imports.remove("flash_attn")
     return imports
-
-
-def patch_sdpa_available() -> bool:
-    if IPEXImporter.is_xpu_version_installed():
-        return False
-    else:
-        try:
-            from transformers.utils import is_torch_sdpa_available
-            return is_torch_sdpa_available()
-        except ImportError:
-            return False
