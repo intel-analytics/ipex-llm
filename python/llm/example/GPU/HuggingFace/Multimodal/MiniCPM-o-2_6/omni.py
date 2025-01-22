@@ -79,7 +79,7 @@ if __name__ == '__main__':
                                       init_vision=True,
                                       init_audio=True,
                                       init_tts=False,
-                                      modules_to_not_convert=["vpm", "resampler"])
+                                      modules_to_not_convert=["apm", "vpm", "resampler"])
     
     model = model.half().to('xpu')
 
