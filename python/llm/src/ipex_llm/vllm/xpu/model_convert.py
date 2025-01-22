@@ -155,6 +155,8 @@ def get_load_function(low_bit):
                 self.model.vpm.apply(merge_qkv)
             if "internvl2" in self.vllm_config.model_config.model.lower():
                 modules = ["vision_model", "mlp1"]
+            if "deepseek" in self.vllm_config.model_config.model.lower():
+                modules = ["down_proj"]
             optimize_model(self.model, low_bit=low_bit, torch_dtype=self.vllm_config.model_config.dtype,
                            modules_to_not_convert=modules)
             self.model = self.model.to(device=self.vllm_config.device_config.device,

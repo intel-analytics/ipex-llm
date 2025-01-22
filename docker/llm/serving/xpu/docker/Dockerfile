@@ -94,15 +94,15 @@ RUN apt-get update && \
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
     # TODO: remove this code segment...
-    git clone https://github.com/intel-analytics/ipex-llm && \
+    git clone -b upgrade-vllm-0.6.6 https://github.com/gc-fu/BigDL.git ./ipex-llm && \
     # The following comment segment is used when building from source...
-    # cd ipex-llm && \
+    cd ipex-llm && \
     # git fetch origin pull/12338/head:local_pr && \
     # git checkout local_pr && \
-    # pip uninstall -y ipex-llm && \
-    # cd python/llm && \
-    # python setup.py install && \
-    # cd ../../../ && \
+    pip uninstall -y ipex-llm && \
+    cd python/llm && \
+    python setup.py install && \
+    cd ../../../ && \
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     cp -r ./ipex-llm/python/llm/example/GPU/HuggingFace/LLM ./examples && \
     # Install vllm dependencies
@@ -110,32 +110,35 @@ RUN apt-get update && \
     pip install --upgrade "uvicorn[standard]" && \
     # Download vLLM-Serving
     cp -r ./ipex-llm/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
-    rm -rf ./ipex-llm && \
+    # TODO: uncomment this...
+    # rm -rf ./ipex-llm && \
     # Install torch-ccl
     cd /tmp/ && \
-    pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
-    # Internal oneccl
-    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.6.5-release/oneccl_wks_installer_2024.0.0.6.5.sh && \
-    bash oneccl_wks_installer_2024.0.0.6.5.sh && \
-    git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
-    cd torch-ccl && \
-    patch -p1 < /tmp/oneccl-binding.patch && \
-    USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install && \
+    # pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
+    # TODO: install Internal oneccl
+    # wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.6.5-release/oneccl_wks_installer_2024.0.0.6.5.sh && \
+    # bash oneccl_wks_installer_2024.0.0.6.5.sh && \
+    # git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
+    # cd torch-ccl && \
+    # patch -p1 < /tmp/oneccl-binding.patch && \
+    # USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install && \
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
     # apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
     mkdir -p /tmp/neo && \
     cd /tmp/neo && \
-    wget https://github.com/oneapi-src/level-zero/releases/download/v1.18.5/level-zero_1.18.5+u22.04_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-core_1.0.17791.9_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17791.9/intel-igc-opencl_1.0.17791.9_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-level-zero-gpu_1.6.31294.12_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/intel-opencl-icd_24.39.31294.12_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.39.31294.12/libigdgmm12_22.5.2_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.5.6/intel-igc-core-2_2.5.6+18417_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.5.6/intel-igc-opencl-2_2.5.6+18417_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-level-zero-gpu-dbgsym_1.6.32224.5_amd64.ddeb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-level-zero-gpu_1.6.32224.5_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-opencl-icd-dbgsym_24.52.32224.5_amd64.ddeb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-opencl-icd_24.52.32224.5_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/libigdgmm12_22.5.5_amd64.deb && \
     dpkg -i *.deb && \
-    rm -rf /tmp/neo && \
     mkdir -p /llm && \
     cd /llm && \
+    rm -rf /tmp/neo && \
+    # Install vllm
     git clone -b 0.6.2 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
     cd /llm/vllm && \
     pip install setuptools-scm && \
