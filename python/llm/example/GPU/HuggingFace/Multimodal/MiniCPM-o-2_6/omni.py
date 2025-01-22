@@ -27,7 +27,6 @@ from transformers import AutoTokenizer
 from ipex_llm.transformers import AutoModel
 
 
-
 # The video chunk function is adpated from https://huggingface.co/openbmb/MiniCPM-o-2_6#chat-inference
 def get_video_chunk_content(video_path, temp_audio_name, flatten=True):
     video = VideoFileClip(video_path)
