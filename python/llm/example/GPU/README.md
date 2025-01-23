@@ -36,4 +36,4 @@ This folder contains examples of running IPEX-LLM on Intel GPU:
 - Windows 10/11, with or without WSL 
 
 ## Requirements
-To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the GPU installation guide for [Linux](../../../../docs/mddocs/Quickstart/install_linux_gpu.md) or [Windows](../../../../docs/mddocs/Quickstart/install_windows_gpu.md) for mode details.
+To apply Intel GPU acceleration, there’re several steps for tools installation and environment preparation. See the GPU installation guide on [Linux](../../../../docs/mddocs/Quickstart/install_linux_gpu.md) or [Windows](../../../../docs/mddocs/Quickstart/install_windows_gpu.md) for mode details.
