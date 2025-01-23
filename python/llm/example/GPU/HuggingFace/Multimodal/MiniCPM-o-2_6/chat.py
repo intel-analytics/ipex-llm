@@ -16,13 +16,10 @@
 
 import os
 import time
-import math
 import torch
 import librosa
 import argparse
-import numpy as np
 from PIL import Image
-from moviepy import VideoFileClip
 from transformers import AutoTokenizer
 from ipex_llm.transformers import AutoModel
 
