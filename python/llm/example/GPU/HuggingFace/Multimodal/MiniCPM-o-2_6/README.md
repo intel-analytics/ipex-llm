@@ -75,6 +75,9 @@ Arguments info:
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 > [!TIP]
+> In Omni mode, please make sure that the video input contains sound.
+
+> [!TIP]
 > You could just ignore the warning regarding `Some weights of the model checkpoint at xxx were not used when initializing MiniCPMO`.
 
 ### 2. Example: Chat with text/audio/image input
