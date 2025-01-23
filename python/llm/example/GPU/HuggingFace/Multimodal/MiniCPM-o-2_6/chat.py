@@ -28,8 +28,8 @@ from ipex_llm.transformers import AutoModel
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Chat with MiniCPM-o-2_6 in Omni mode')
-    parser.add_argument('--repo-id-or-model-path', type=str,
+    parser = argparse.ArgumentParser(description='Chat with MiniCPM-o-2_6 with text/audio/image')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="openbmb/MiniCPM-o-2_6",
                         help='The Hugging Face or ModelScope repo id for the MiniCPM-o-2_6 model to be downloaded'
                              ', or the path to the checkpoint folder')
     parser.add_argument('--image-path', type=str,
