@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-export HF_TOKEN=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
+export HF_TOKEN=${HF_TOKEN}
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
 export BLOOM_ORIGIN_PATH=${ANALYTICS_ZOO_ROOT}/models/bloom-560m
