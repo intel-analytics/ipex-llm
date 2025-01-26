@@ -22,6 +22,20 @@
 #include "common.h"
 #include "npu_llm.h"
 
+#include "llamacpp/arg.h"
+#include "llamacpp/common.h"
+#include "llamacpp/log.h"
+#include "llamacpp/llama.h"
+#include <filesystem>
+#include <vector>
+#include<iostream>
+
+#ifdef _WIN32
+#define PATH_SEP '\\'
+#else
+#define PATH_SEP '/'
+#endif
+
 
 static void print_usage(int, char ** argv) {
     printf("\nexample usage:\n");
@@ -127,79 +141,106 @@ std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_i
 
 
 int main(int argc, char ** argv) {
-    common_params params;
+    gpt_params params;
 
-    // path to the npu model directory
-    char* model_dir;
-    // prompt to generate text from
-    std::string prompt = "AI是什么?";
-    // number of tokens to predict
-    int n_predict = 32;
-    bool cnv_mode = false;
-
-    // parse command line arguments
-
-    {
-        int i = 1;
-        for (; i < argc; i++) {
-            if (strcmp(argv[i], "-m") == 0) {
-                if (i + 1 < argc) {
-                    model_dir = argv[++i];
-                } else {
-                    print_usage(argc, argv);
-                    return 1;
-                }
-            } else if (strcmp(argv[i], "-cnv") == 0){
-                // multi-round conversation mode
-                cnv_mode = true;
-                break;
-            }else if (strcmp(argv[i], "-n") == 0) {
-                if (i + 1 < argc) {
-                    try {
-                        n_predict = std::stoi(argv[++i]);
-                    } catch (...) {
-                        print_usage(argc, argv);
-                        return 1;
-                    }
-                } else {
-                    print_usage(argc, argv);
-                    return 1;
-                }
-            } else {
-                // prompt starts here
-                break;
-            }
-        }
-        if (model_dir == nullptr || model_dir[0] == '\0') {
-            print_usage(argc, argv);
-            return 1;
-        }
-        if (i < argc) {
-            prompt = argv[i++];
-            for (; i < argc; i++) {
-                prompt += " ";
-                prompt += argv[i];
-            }
-        }
+    if (!gpt_params_parse(argc, argv, params, LLAMA_EXAMPLE_NPU, print_usage)) {
+        return 1;
     }
 
-    params.n_predict = n_predict;
-    params.model = model_dir;
-    params.prompt = prompt;
+    gpt_init();
 
+    // init LLM
+
+    llama_backend_init();
+    llama_numa_init(params.numa);
+
+    enum gguf_npu_qtype type;
+
+    if (params.low_bit == "sym_int4") {
+        type = GGUF_TYPE_NPU_CW_Q4_0;
+    } else if (params.low_bit == "asym_int4") {
+        type = GGUF_TYPE_NPU_CW_Q4_1;
+    } else {
+        std::cerr << "\033[31m" << __func__ << ": error: Only support sym_int4 and asym_int4 but got " << params.low_bit << "\033[0m\n" << std::endl;
+        exit(1);
+    }
+
+    if (params.npu_outfile == "NPU_MODEL") {
+        fprintf(stderr , "\033[31m%s: error: Please provide npu model output dir with -o <output_dir>\033[0m\n" , __func__);
+        exit(1);
+    }
+
+    // initialize the model
+
+    llama_model_params model_params = llama_model_params_from_gpt_params(params);
+
+    llama_model * model = llama_load_model_from_file(params.model.c_str(), model_params);
+
+    if (model == NULL) {
+        fprintf(stderr , "%s: error: unable to load model\n" , __func__);
+        return 1;
+    }
+
+    // initialize the context
+
+    llama_context_params ctx_params = llama_context_params_from_gpt_params(params);
+
+    llama_context * ctx = llama_new_context_with_model(model, ctx_params);
+
+    if (ctx == NULL) {
+        fprintf(stderr , "%s: error: failed to create the llama_context\n" , __func__);
+        return 1;
+    }
+
+    const std::string output_dir = params.npu_outfile;
+    std::filesystem::path dirPath = output_dir;
+
+    // handle weight first
+    if(std::filesystem::create_directory(dirPath)) {
+        std::cout << "Directory created: " << dirPath << std::endl;
+    } else {
+        std::cout << "Failed to create directory or already exists: " << dirPath << "\n";
+    }
+
+    std::string weight_path = output_dir + PATH_SEP + "model_weights"; // TODO: optimize /
+    dirPath = weight_path;
+    if(std::filesystem::create_directory(dirPath)) {
+        std::cout << "Directory created: " << dirPath << std::endl;
+    } else {
+        std::cout << "Failed to create directory or already exists: " << dirPath << "\n";
+    }
+
+    if (params.quantization_group_size != 0) {
+        std::cerr << "\033[31mOnly support quantization group_size=0, fall back to channel wise quantization.\033[0m\n" << std::endl;
+    }
+
+    std::cout << "\033[32mConverting GGUF model to " <<  params.low_bit << " NPU model...\033[0m" << std::endl;
+    convert_gguf_to_npu_weight(model, weight_path.c_str(), type);
+
+    std::cout << "\033[32mModel weights saved to " << weight_path << "\033[0m"<< std::endl;
+
+    llama_free(ctx);
+    llama_free_model(model);
+
+    llama_backend_free();
+
+    common_params npu_common_params;
+    npu_common_params.n_predict = params.n_predict;
+    npu_common_params.model = const_cast<char*>(output_dir.c_str());
+    npu_common_params.prompt = params.prompt;
     // npu_model_params model_params;
-    void* model = load_model_from_file(params.model);
-    npu_model_params model_params;
-    load_config_from_file(model_params, params.model);
+    void* npu_model = load_model_from_file(npu_common_params.model);
+    npu_model_params model_params_npu;
+    load_config_from_file(model_params_npu, npu_common_params.model);
 
     tokenizer_params tok_params;
-    load_tokenizer(tok_params, params.model);
+    load_tokenizer(tok_params, npu_common_params.model);
 
     npu_generation_params generation_params;
-    load_generation_config_from_file(generation_params, params.model);
-    generation_params.max_new_token = n_predict;
+    load_generation_config_from_file(generation_params, npu_common_params.model);
+    generation_params.max_new_token = npu_common_params.n_predict;
 
-    if (cnv_mode){
+    if (params.interactive){
         std::string prompt;
         std::string history = "";
         std::string response;
@@ -211,42 +252,42 @@ int main(int argc, char ** argv) {
             }
             else{
                 // process prompt with chat history
-                std::string full_prompt = add_chat_history(model_params, prompt, history, true);
+                std::string full_prompt = add_chat_history(model_params_npu, prompt, history, true);
 
                 // tokenize input
                 std::vector<int32_t> embd_inp = llm_tokenize(full_prompt, false);
-                if (embd_inp.size() > model_params.max_prompt_len){
+                if (embd_inp.size() > model_params_npu.max_prompt_len){
                     // empty chat history
-                    full_prompt = add_chat_history(model_params, prompt, "", true);
+                    full_prompt = add_chat_history(model_params_npu, prompt, "", true);
                     embd_inp = llm_tokenize(full_prompt, false);
                 }
 
-                generation_params.max_new_token = model_params.kv_len - embd_inp.size();
+                generation_params.max_new_token = model_params_npu.kv_len - embd_inp.size();
                 
-                response = run_generate(model, embd_inp.data(), embd_inp.size(),
-                                        model_params, tok_params, generation_params);
+                response = run_generate(npu_model, embd_inp.data(), embd_inp.size(),
+                                        model_params_npu, tok_params, generation_params);
 
                 std::cout << "Assistant:";
                 std::cout << response << std::endl;
 
-                history = add_chat_history(model_params, response, full_prompt, false);
+                history = add_chat_history(model_params_npu, response, full_prompt, false);
 
-                reset(model);
+                reset(npu_model);
             }
         }
     }
     else{
-        std::string full_prompt = add_chat_template(model_params, params.prompt);
+        std::string full_prompt = add_chat_template(model_params_npu, params.prompt);
 
         // tokenize input
         std::vector<int32_t> embd_inp = llm_tokenize(full_prompt, false);
 
         // single text generation
-        std::string output = run_generate(model, embd_inp.data(), embd_inp.size(),
-                                          model_params, tok_params, generation_params);
+        std::string output = run_generate(npu_model, embd_inp.data(), embd_inp.size(),
+                                          model_params_npu, tok_params, generation_params);
 
         std::cout << output << std::endl << std::endl;
-        llm_perf_print(model);
+        llm_perf_print(npu_model);
     }
     return 0;
 }
