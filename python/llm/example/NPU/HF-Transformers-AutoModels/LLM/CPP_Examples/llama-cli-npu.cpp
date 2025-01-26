@@ -31,10 +31,33 @@
 #include<iostream>
 
 
+struct gguf_tokenizer_params {
+    llama_context * ctx;
+    int32_t bos_token_id;
+    int32_t eos_token_id;
+    bool add_bos;
+    bool parse_special;
+};
+
+
 static void print_usage(int, char ** argv) {
     printf("\nexample usage:\n");
     printf("\n    %s -m npu_model_dir [-cnv] [-n n_predict] [prompt]\n", argv[0]);
     printf("\n");
+}
+
+
+vector<int32_t> gguf_tokenize(std::string prompt,
+                              gguf_tokenizer_params tok_params) {
+  int n_tokens = prompt.length() + 2 * tok_params.add_bos;
+  std::vector<int32_t> ids = llama_tokenize(tok_params.ctx, prompt,
+                                            tok_params.add_bos, tok_params.parse_special);
+  return ids;
+}
+
+std::string gguf_decode(vector<int32_t> tokens, gguf_tokenizer_params tok_params) {
+  std::string output = llama_detokenize(tok_params.ctx, tokens, tok_params.parse_special);
+  return output;
 }
 
 
@@ -107,7 +130,7 @@ std::string add_chat_history(npu_model_params model_params,
 }
 
 std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_inp_size,
-                         npu_model_params model_params, tokenizer_params tok_params, npu_generation_params generation_params){
+                         npu_model_params model_params, gguf_tokenizer_params tok_params, npu_generation_params generation_params){
     float* logits = run_prefill(void_model, embd_inp_ptr, embd_inp_size,
                                 generation_params.repetition_penalty);
     int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
@@ -120,7 +143,7 @@ std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_i
         auto logits = run_decode(void_model, embd[i-1],
                                  generation_params.repetition_penalty);
         int32_t token = llm_sample_token(logits, true, model_params.vocab_size);
-        if (std::find(tok_params.eos_token_id.begin(), tok_params.eos_token_id.end(), token) == tok_params.eos_token_id.end()){
+        if (tok_params.eos_token_id != token){
             embd.push_back(token);
             token_nums ++;
         } else {
@@ -128,7 +151,7 @@ std::string run_generate(void* void_model, int32_t* embd_inp_ptr, int32_t embd_i
         }
     }
 
-    std::string output = llm_decode(embd);
+    std::string output = gguf_decode(embd, tok_params);
 
     return output;
 }
@@ -139,6 +162,10 @@ int main(int argc, char ** argv) {
 
     // path to the npu model directory
     char* model_dir;
+    // path to gguf model
+    // TODO: rm hard code
+    std::string path = "D:\\binbin\\Llama-3.2-3B-Instruct-Q4_1.gguf";
+    const char * gguf_path = path.c_str();
     // prompt to generate text from
     std::string prompt = "AI是什么?";
     // number of tokens to predict
@@ -195,13 +222,32 @@ int main(int argc, char ** argv) {
     params.model = model_dir;
     params.prompt = prompt;
 
+    // gguf
+    llama_backend_init();
+    llama_model_params gguf_model_params = llama_model_default_params();
+    gguf_model_params.vocab_only = true;
+    llama_model * gguf_model = llama_load_model_from_file(gguf_path, gguf_model_params);
+    auto cparams = llama_context_default_params();
+    llama_context * ctx = llama_new_context_with_model(gguf_model, cparams);
+    if (!gguf_model) {
+        fprintf(stderr, "Error: could not load model from file '%s'.\n", gguf_path);
+        return 1;
+    }
+
+    gguf_tokenizer_params tok_params;
+    tok_params.ctx = ctx;
+    tok_params.bos_token_id =  llama_token_bos(gguf_model);
+    tok_params.eos_token_id =  llama_token_eos(gguf_model);
+    tok_params.add_bos = llama_add_bos_token(gguf_model);
+    tok_params.parse_special = true;
+
     // npu_model_params model_params;
     void* model = load_model_from_file(params.model);
     npu_model_params model_params;
     load_config_from_file(model_params, params.model);
 
-    tokenizer_params tok_params;
-    load_tokenizer(tok_params, params.model);
+    // tokenizer_params tok_params;
+    // load_tokenizer(tok_params, params.model);
 
     npu_generation_params generation_params;
     load_generation_config_from_file(generation_params, params.model);
@@ -222,11 +268,11 @@ int main(int argc, char ** argv) {
                 std::string full_prompt = add_chat_history(model_params, prompt, history, true);
 
                 // tokenize input
-                std::vector<int32_t> embd_inp = llm_tokenize(full_prompt, false);
+                std::vector<int32_t> embd_inp = gguf_tokenize(full_prompt, tok_params);
                 if (embd_inp.size() > model_params.max_prompt_len){
                     // empty chat history
                     full_prompt = add_chat_history(model_params, prompt, "", true);
-                    embd_inp = llm_tokenize(full_prompt, false);
+                    embd_inp = gguf_tokenize(full_prompt, tok_params);
                 }
 
                 generation_params.max_new_token = model_params.kv_len - embd_inp.size();
@@ -247,14 +293,14 @@ int main(int argc, char ** argv) {
         std::string full_prompt = add_chat_template(model_params, params.prompt);
 
         // tokenize input
-        std::vector<int32_t> embd_inp = llm_tokenize(full_prompt, false);
+        std::vector<int32_t> embd_inp = gguf_tokenize(full_prompt, tok_params);
 
         // single text generation
         std::string output = run_generate(model, embd_inp.data(), embd_inp.size(),
                                           model_params, tok_params, generation_params);
 
         std::cout << output << std::endl << std::endl;
-        // llm_perf_print(model);
+        llm_perf_print(model);
     }
     return 0;
 }
