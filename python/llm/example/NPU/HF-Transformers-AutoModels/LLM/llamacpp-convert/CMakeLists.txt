@@ -11,17 +11,17 @@ project(LLM_GGUF_TO_NPU VERSION 1.0.0 LANGUAGES CXX)
 set (CMAKE_CXX_STANDARD 17)
 SET (CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(LIBRARY_DIR "D:\\yina\\llamacpplibs")
-include_directories(${LIBRARY_DIR}/include)
+set(LLAMA_CPP_LIBRARY_DIR "D:\\yina\\llamacpplibs")
+include_directories(${LLAMA_CPP_LIBRARY_DIR}/include)
 
 add_library(llama STATIC IMPORTED)
-set_target_properties(llama PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIR}/llama.lib)
+set_target_properties(llama PROPERTIES IMPORTED_LOCATION ${LLAMA_CPP_LIBRARY_DIR}/llama.lib)
 
 add_library(common STATIC IMPORTED)
-set_target_properties(common PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIR}/common.lib)
+set_target_properties(common PROPERTIES IMPORTED_LOCATION ${LLAMA_CPP_LIBRARY_DIR}/common.lib)
 
 add_library(ggml STATIC IMPORTED)
-set_target_properties(ggml PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIR}/ggml.lib)
+set_target_properties(ggml PROPERTIES IMPORTED_LOCATION ${LLAMA_CPP_LIBRARY_DIR}/ggml.lib)
 
 
 set(TARGET convert-gguf-to-npu)
@@ -31,8 +31,8 @@ target_compile_features(${TARGET} PRIVATE cxx_std_17)
 
 add_custom_command(TARGET convert-gguf-to-npu POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${LIBRARY_DIR}/llama.dll
-        ${LIBRARY_DIR}/ggml.dll
+        ${LLAMA_CPP_LIBRARY_DIR}/llama.dll
+        ${LLAMA_CPP_LIBRARY_DIR}/ggml.dll
         ${CMAKE_BINARY_DIR}/Release/
     COMMENT "Copying npu_llm.dll to build/Release\n"
 )

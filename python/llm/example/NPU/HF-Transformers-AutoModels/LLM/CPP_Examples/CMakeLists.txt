@@ -10,23 +10,39 @@ if(DEFINED ENV{CONDA_ENV_DIR})
     set(LIBRARY_DIR ${ENV_DIR}/bigdl-core-npu)
     include_directories(${LIBRARY_DIR}/include)
     set(DLL_DIR ${ENV_DIR}/intel_npu_acceleration_library/lib/Release)
+    set(LLAMA_CPP_LIBRARY_DIR "D:\\yina\\llamacpplibs")
+    include_directories(${LLAMA_CPP_LIBRARY_DIR}/include)
 else()
     set(LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR})
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+    set(LLAMA_CPP_LIBRARY_DIR "D:\\yina\\llamacpplibs")
+    include_directories(${LLAMA_CPP_LIBRARY_DIR}/include)
 endif()
 
 add_library(npu_llm STATIC IMPORTED)
 set_target_properties(npu_llm PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIR}/npu_llm.lib)
 
+add_library(llama STATIC IMPORTED)
+set_target_properties(llama PROPERTIES IMPORTED_LOCATION ${LLAMA_CPP_LIBRARY_DIR}/llama.lib)
+
+add_library(common STATIC IMPORTED)
+set_target_properties(common PROPERTIES IMPORTED_LOCATION ${LLAMA_CPP_LIBRARY_DIR}/common.lib)
+
+add_library(ggml STATIC IMPORTED)
+set_target_properties(ggml PROPERTIES IMPORTED_LOCATION ${LLAMA_CPP_LIBRARY_DIR}/ggml.lib)
+
 set(TARGET llama-cli-npu)
 add_executable(${TARGET} llama-cli-npu.cpp)
 install(TARGETS ${TARGET} RUNTIME)
-target_link_libraries(${TARGET} PRIVATE npu_llm)
+# target_link_libraries(${TARGET} PRIVATE npu_llm)
+target_link_libraries(${TARGET} PRIVATE npu_llm common llama ggml ${CMAKE_THREAD_LIBS_INIT})
 target_compile_features(${TARGET} PRIVATE cxx_std_17)
 
 add_custom_command(TARGET llama-cli-npu POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${LIBRARY_DIR}/npu_llm.dll
+        ${LLAMA_CPP_LIBRARY_DIR}/llama.dll
+        ${LLAMA_CPP_LIBRARY_DIR}/ggml.dll
         ${CMAKE_BINARY_DIR}/Release/
     COMMENT "Copying npu_llm.dll to build/Release\n"
 )

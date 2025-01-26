@@ -22,6 +22,14 @@
 #include "common.h"
 #include "npu_llm.h"
 
+#include "llamacpp/arg.h"
+#include "llamacpp/common.h"
+#include "llamacpp/log.h"
+#include "llamacpp/llama.h"
+#include <filesystem>
+#include <vector>
+#include<iostream>
+
 
 static void print_usage(int, char ** argv) {
     printf("\nexample usage:\n");
@@ -246,7 +254,7 @@ int main(int argc, char ** argv) {
                                           model_params, tok_params, generation_params);
 
         std::cout << output << std::endl << std::endl;
-        llm_perf_print(model);
+        // llm_perf_print(model);
     }
     return 0;
 }
