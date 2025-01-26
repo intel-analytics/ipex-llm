@@ -254,7 +254,7 @@ int main(int argc, char ** argv) {
                                           model_params, tok_params, generation_params);
 
         std::cout << output << std::endl << std::endl;
-        // llm_perf_print(model);
+        llm_perf_print(model);
     }
     return 0;
 }
