@@ -19,6 +19,7 @@ from pathlib import Path
 from bigdl.llm.ggml.convert import _convert_to_ggml, _convert_chatglm
 from bigdl.llm.ggml.quantize import quantize
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.utils import is_valid_path
 import argparse
 import tempfile
 
@@ -124,5 +125,7 @@ def main():
                         help="Which path to store the intermediate model during the"
                         "conversion process.")
     args = parser.parse_args()
+    invalidInputError(is_valid_path(args.output_path),
+                      "The output_path {} is not a valid path.".format(args.output_path))
     params = vars(args)
     convert_model(**params)
