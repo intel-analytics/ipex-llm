@@ -13,15 +13,17 @@ This guide demonstrates how to install and use IPEX-LLM on the Intel Arc B-Serie
    1.1 [Install Prerequisites](#11-install-prerequisites)  
    1.2 [Install IPEX-LLM](#for-pytorch-and-huggingface) (for PyTorch and HuggingFace)  
    1.3 [Install IPEX-LLM](#for-llamacpp-and-ollama) (for llama.cpp and Ollama)  
-3. [Windows](#2-windows)   
+2. [Windows](#2-windows)   
    2.1 [Install Prerequisites](#21-install-prerequisites)  
    2.2 [Install IPEX-LLM](#for-pytorch-and-huggingface-1) (for PyTorch and HuggingFace)  
    2.3 [Install IPEX-LLM](#for-llamacpp-and-ollama-1) (for llama.cpp and Ollama)  
-5. [Use Cases](#3-use-cases)  
+3. [Use Cases](#3-use-cases)  
    3.1 [PyTorch](#31-pytorch)  
    3.2 [Ollama](#32-ollama)  
    3.3 [llama.cpp](#33-llamacpp)  
-   3.4 [vLLM](#34-vllm)  
+   3.4 [vLLM](#34-vllm)
+4. [Troubleshooting](#4-troubleshooting)  
+   4.1 [RuntimeError: could not create an engine](#41-runtimeerror-could-not-create-an-engine)
 ---
 
 ## 1. Linux
@@ -179,4 +181,22 @@ For instructions on how to run **llama.cpp** with IPEX-LLM, refer to the [llama.
 ### 3.4 vLLM
 
 To set up and run **vLLM**, follow the [vLLM Quickstart guide](https://github.com/intel-analytics/ipex-llm/blob/main/docs/mddocs/Quickstart/vLLM_quickstart.md).
+
+## 4. Troubleshooting
+
+### 4.1 RuntimeError: could not create an engine
+
+![image](https://github.com/user-attachments/assets/757f0704-9240-46d0-bceb-661fecc96182)
+
+If you encounter a `RuntimeError` like the output shown above while working on Linux after running `conda deactivate` and then reactivating your environment using `conda activate env`, the issue is likely caused by the `OCL_ICD_VENDORS` environment variable. 
+
+To fix this on Linux, run the following command:
+
+```bash
+unset OCL_ICD_VENDORS
+```
+
+This will remove the conflicting environment variable and allow your program to function correctly.
+
+**Note:** This issue only occurs on Linux systems. It does not affect Windows environments.
 
