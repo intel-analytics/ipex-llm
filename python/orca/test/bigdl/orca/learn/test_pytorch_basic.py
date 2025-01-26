@@ -676,6 +676,61 @@ class TestPyTorchEstimatorBasic(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_step_ckpt(self):
+        save_steps = 20
+        max_steps = 30
+        class EarlyStopCallback(Callback):
+            def __init__(self, ckpt_path, max_step=max_steps, save_step=save_steps) -> None:
+                super().__init__()
+                self.ckpt_path = ckpt_path
+                self.max_step = max_step
+                self.save_step = save_step
+
+            def after_train_iter(self, runner):
+                if runner.global_step >= self.max_step:
+                    runner.stop = True
+                if runner.epoch_step == self.save_step:
+                    runner.save_checkpoint(self.ckpt_path, False)
+        
+        class EvalStepCallback(Callback):
+            def before_run(self, runner):
+                assert runner.epoch_step == save_steps
+
+        sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.range(0, 100)
+        epochs = 2
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
+        df = df.cache()
+
+        estimator = get_estimator(workers_per_node=2)
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            ckpt_file = os.path.join(temp_dir, "manual.ckpt")
+            estimator.fit(df, batch_size=4, epochs=epochs,
+                          feature_cols=["feature"],
+                          label_cols=["label"],
+                          callbacks=[EarlyStopCallback(ckpt_file)])
+
+            estimator.shutdown()
+            new_estimator = get_estimator(workers_per_node=2)
+            new_estimator.load_checkpoint(ckpt_file)
+            new_estimator.fit(df, batch_size=4, epochs=epochs,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              callbacks=[EvalStepCallback()])
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_custom_callback(self):
         estimator = get_estimator(workers_per_node=2)
         callbacks = [CustomCallback()]

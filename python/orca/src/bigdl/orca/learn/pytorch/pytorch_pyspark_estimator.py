@@ -287,7 +287,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
-        if self.state_dict["epoch"] == 0:
+        if self.state_dict.get("global_step", 0) == 0:
             self.state_dict = None
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
