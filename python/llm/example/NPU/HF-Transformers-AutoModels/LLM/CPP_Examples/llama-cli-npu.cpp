@@ -55,7 +55,6 @@ static void print_usage(int, char ** argv) {
 
 vector<int32_t> gguf_tokenize(std::string prompt,
                               gguf_tokenizer_params tok_params) {
-  int n_tokens = prompt.length() + 2 * tok_params.add_bos;   // TODO: no need
   std::vector<int32_t> ids = llama_tokenize(tok_params.ctx, prompt,
                                             tok_params.add_bos, tok_params.parse_special);
   return ids;
@@ -189,7 +188,7 @@ int main(int argc, char ** argv) {
         exit(1);
     }
 
-    // TODO: rename npu_outfile, it can be a default place where IRs are placed
+    // TODO: rename npu_outfile, it may be a cache folder together with config and blobs
     if (params.npu_outfile == "NPU_MODEL") {
         fprintf(stderr , "\033[31m%s: error: Please provide npu model output dir with -o <output_dir>\033[0m\n" , __func__);
         exit(1);
