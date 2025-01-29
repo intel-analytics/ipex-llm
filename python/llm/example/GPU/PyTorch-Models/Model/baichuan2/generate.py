@@ -24,7 +24,7 @@ from bigdl.llm import optimize_model
 # prompt format referred from https://github.com/baichuan-inc/Baichuan2/issues/227 
 # and https://huggingface.co/baichuan-inc/Baichuan2-7B-Chat/blob/main/generation_utils.py#L7-L49
 # For English prompt, you are recommended to change the prompt format.
-BAICHUAN_PROMPT_FORMAT = "<reserved_106> {prompt} <reserved_107>"
+BAICHUAN2_PROMPT_FORMAT = "<reserved_106> {prompt} <reserved_107>"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Baichuan2 model')
