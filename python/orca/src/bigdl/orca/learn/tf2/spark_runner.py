@@ -337,7 +337,7 @@ class SparkRunner:
         ips = set([node.split(":")[0] for node in worker_cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
-        self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
+        self.strategy = tf.distribute.MultiWorkerMirroredStrategy()
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
                                callbacks=None, initial_epoch=0, validation_data_creator=None,

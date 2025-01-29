@@ -65,9 +65,9 @@ class TestTF2Estimator(TestCase):
 
         spark = OrcaContext.get_spark_session()
         from pyspark.ml.linalg import DenseVector
-        df = rdd_with_empty.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                           int(np.random.randint(0, 2, size=())))) \
-            .toDF(["feature", "label"])
+        data = rdd_with_empty.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -91,6 +91,7 @@ class TestTF2Estimator(TestCase):
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            df = spark.createDataFrame(data=data, schema=["feature", "label"])
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             print("validation result: ", res)
@@ -205,8 +206,9 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -254,8 +256,9 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         config = {
             "lr": 0.2
@@ -328,8 +331,9 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
         config = {"lr": 0.2}
 
         try:
@@ -383,6 +387,7 @@ class TestTF2Estimator(TestCase):
                 assert np.array_equal(pre_opt_weights[i], after_opt_weights[i])
 
             # test continuous training
+            df = spark.createDataFrame(data=data, schema=["feature", "label"])
             est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                     feature_cols=["feature"],
                     label_cols=["label"],
@@ -409,8 +414,9 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
         config = {"lr": 0.2}
 
         try:
@@ -448,6 +454,7 @@ class TestTF2Estimator(TestCase):
             assert np.array_equal(expect_res, pred_res)
 
             # test continuous training
+            df = spark.createDataFrame(data=data, schema=["feature", "label"])
             est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                     feature_cols=["feature"],
                     label_cols=["label"],
@@ -466,8 +473,9 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                  int(np.random.randint(0, 2, size=())))).collect()
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
 
         config = {"lr": 0.2}
 
