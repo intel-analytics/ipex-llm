@@ -154,6 +154,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         self.lr = lr
         self.seed = seed
         self.metrics = metrics
+        self.has_bn = False
 
         # nano settings
         current_num_threads = torch.get_num_threads()
