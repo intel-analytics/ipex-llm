@@ -24,6 +24,9 @@ sgx.file_check_policy = "allow_all_but_log"
 sgx.static_address = 1
 sgx.isvprodid = 1
 sgx.isvsvn = 3
+sgx.max_threads = 1024
+sgx.edmm_enable = {{ g_edmm_enable }}
+sgx.require_exinfo = true
 
 loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}:/usr/lib/python3.9/lib:/usr/lib:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/lib"
 loader.env.PATH = "{{ execdir }}:/usr/lib/python3.9/bin:/:/usr/sbin:/usr/bin:/sbin:/bin:{{ jdk_home }}/bin"
