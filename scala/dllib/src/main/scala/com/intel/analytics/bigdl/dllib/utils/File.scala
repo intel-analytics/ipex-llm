@@ -180,12 +180,12 @@ object File {
   def load[T: ClassTag](fileName: String): T = {
     var fr: FileReader = null
     var in: InputStream = null
-    var objFile: ObjectInputStream = null
+    var objFile: ValidatingObjectInputStream = null
     try {
       fr = FileReader(fileName)
       in = fr.open()
-      val bis = new BufferedInputStream(in)
-      objFile = new CheckedObjectInputStream(classTag[T].runtimeClass, bis)
+      objFile = new ValidatingObjectInputStream(in)
+      objFile.accept(classTag[T].runtimeClass)
       objFile.readObject().asInstanceOf[T]
     } finally {
       if (null != in) in.close()
