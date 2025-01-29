@@ -35,9 +35,12 @@ from typing import Optional, Tuple
 
 import torch
 from torch import nn
+import torch.nn.functional as F
+
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.transformers.models.utils import init_kv_cache, extend_kv_cache, append_kv_cache
 from bigdl.llm.transformers.models.utils import apply_rotary_pos_emb_cache_freq_xpu
+from bigdl.llm.transformers.models.utils import use_flash_attention, use_esimd_sdp
 from bigdl.llm.transformers.models.utils import mlp_fusion_check, GELU
 from bigdl.llm.transformers.models.utils import is_enough_kv_cache_room_4_36, rotate_half
 from bigdl.llm.transformers.low_bit_linear import SYM_INT4, FP8E5
@@ -239,28 +242,45 @@ def gemma_attention_forward(
     # repeat k/v heads if n_kv_heads < n_heads
     key_states = repeat_kv(key_states, self.num_key_value_groups)
     value_states = repeat_kv(value_states, self.num_key_value_groups)
-    attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    if attention_mask is not None:  # no matter the length, we just slice it
-        if cache_position is not None:
-            causal_mask = attention_mask[:, :, cache_position, : key_states.shape[-2]]
-        else:
-            causal_mask = attention_mask
-        attn_weights = attn_weights + causal_mask
+    if not self.training and not hidden_states.requires_grad and \
+            use_flash_attention(query_states, key_states, attention_mask):
+        attn_output = F.scaled_dot_product_attention(query_states.to(device, dtype=torch.float16),
+                                                     key_states.to(device, dtype=torch.float16),
+                                                     value_states.to(device, dtype=torch.float16),
+                                                     is_causal=True)
+        attn_weights = None
+    elif not self.training and not hidden_states.requires_grad and \
+            use_esimd_sdp(q_len, key_states.shape[2], self.head_dim, query_states):
+        import linear_fp16_esimd
+        attn_output = linear_fp16_esimd.sdp_forward(query_states,
+                                                    key_states,
+                                                    value_states)
+        attn_output = attn_output.view(query_states.shape)
+        attn_weights = None
+    else:
+        attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(self.head_dim)
 
-    # upcast attention to fp32
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1,
-                                         dtype=torch.float32).to(query_states.dtype)
-    attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout,
-                                         training=self.training)
-    attn_output = torch.matmul(attn_weights, value_states)
+        if attention_mask is not None:  # no matter the length, we just slice it
+            if cache_position is not None:
+                causal_mask = attention_mask[:, :, cache_position, : key_states.shape[-2]]
+            else:
+                causal_mask = attention_mask
+            attn_weights = attn_weights + causal_mask
 
-    if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
-        invalidInputError(
-            False,
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
-            f" {attn_output.size()}"
-        )
+        # upcast attention to fp32
+        attn_weights = nn.functional.softmax(attn_weights, dim=-1,
+                                             dtype=torch.float32).to(query_states.dtype)
+        attn_weights = nn.functional.dropout(attn_weights, p=self.attention_dropout,
+                                             training=self.training)
+        attn_output = torch.matmul(attn_weights, value_states)
+
+        if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
+            invalidInputError(
+                False,
+                f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)}, but is"
+                f" {attn_output.size()}"
+            )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
 
