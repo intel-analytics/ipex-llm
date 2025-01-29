@@ -717,13 +717,18 @@ class TorchRunner(BaseRunner):
             else:
                 checkpoint = self.get_state_dict()
             byte_obj = TorchRunner._state_dict2stream(checkpoint)
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            with open(temp_path, "wb") as f:
-                f.write(byte_obj)
-            from bigdl.orca.data.file import put_local_file_to_remote
-            put_local_file_to_remote(temp_path, filepath)
+            from bigdl.dllib.utils.file_utils import is_local_path
+            if is_local_path(filepath):
+                with open(filepath, "wb") as f:
+                    f.write(byte_obj)
+            else:
+                file_name = os.path.basename(filepath)
+                temp_dir = tempfile.mkdtemp()
+                temp_path = os.path.join(temp_dir, file_name)
+                with open(temp_path, "wb") as f:
+                    f.write(byte_obj)
+                from bigdl.orca.data.file import put_local_file_to_remote
+                put_local_file_to_remote(temp_path, filepath)
             self.logger.debug(f"Saved checkpoint: {filepath}")
         return filepath
 
