@@ -24,12 +24,13 @@ import click
 from bigdl.ppml.fl.psi.psi_service import PSIServiceImpl
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.generated.psi_service_pb2_grpc import *
+from typing import Optional
 
 # fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
 # logging.basicConfig(format=fmt, level=logging.DEBUG)
 
 class FLServer(object):    
-    def __init__(self, client_num=None):
+    def __init__(self, client_num: Optional[int]=None) -> None:
         self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
         self.port = 8980
         self.client_num = client_num
@@ -39,10 +40,10 @@ class FLServer(object):
         if client_num is not None:
             self.conf['clientNum'] = client_num
 
-    def set_port(self, port):
+    def set_port(self, port: int) -> None:
         self.port = port
         
-    def build(self):
+    def build(self) -> None:
         add_NNServiceServicer_to_server(NNServiceImpl(conf=self.conf), self.server)
         add_PSIServiceServicer_to_server(PSIServiceImpl(conf=self.conf), self.server)
         if self.secure:
@@ -51,14 +52,14 @@ class FLServer(object):
             self.server.add_insecure_port(f'[::]:{self.port}')
         logging.info(f'gRPC server starts listening port: {self.port}')
 
-    def start(self):
+    def start(self) -> None:
         self.server.start()
         # self.server.wait_for_termination()
 
-    def stop(self):
+    def stop(self) -> None:
         self.server.stop(None)
 
-    def load_config(self):        
+    def load_config(self) -> None:        
         try:
             with open('ppml-conf.yaml', 'r') as stream:
                 conf = yaml.safe_load(stream)
@@ -78,7 +79,7 @@ class FLServer(object):
             logging.warn('Failed to load config file "ppml-conf.yaml", using default config')
             self.generate_conf({})
 
-    def generate_conf(self, conf: dict):
+    def generate_conf(self, conf: dict) -> None:
         self.conf = conf
         # set default parameters if not specified in config
         if 'clientNum' not in conf.keys():
