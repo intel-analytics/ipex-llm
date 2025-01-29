@@ -84,4 +84,17 @@ class DropoutSpec extends TorchSpec {
 
     println("Test case : Dropout, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
-}
+
+  "Dropout performance" should "work" in {
+    val module = new Dropout[Float](0.5, true, false)
+    val input = Tensor[Float](1, 12, 512, 512)
+    val seed = 100
+    val start = System.nanoTime()
+    input.bernoulli(0.5)
+    println((System.nanoTime() - start) / 1e9)
+    input.randn()
+    val start2 = System.nanoTime()
+    val output = module.forward(input)
+    println((System.nanoTime() - start2) / 1e9)
+  }
+  }
