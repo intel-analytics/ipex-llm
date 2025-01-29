@@ -120,6 +120,9 @@ spec:
                   export SPARK_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                   ray start --head --port=6379;
                   tensorboard --logdir \"/data/jupyter/train\" --port 6006 &
+                  loki -config.file=/opt/loki-config.yaml > loki.log 2>&1 &
+                  cd /opt/grafana-9.2.3/bin/ && ./grafana-server &
+                  promtail -config.file=/opt/promtail-config.yaml &
                   bash /opt/work/start-notebook-k8s.sh
                 "]
       volumes:
@@ -145,12 +148,22 @@ metadata:
     app: bigdl-notebook
 spec:
   ports:
-    - port: 12345
-      protocol: TCP
-      name: jupyter-address
-    - port: 6006
-      protocol: TCP
-      name: tensorboard
+    - name: jupyter-address
+      port: 31004
+      nodePort: 31004
+      targetPort: 12345
+    - name: tensorboard
+      port: 31001
+      nodePort: 31001
+      targetPort: 6006
+    - name: spark-ui
+      port: 31002
+      nodePort: 31002
+      targetPort: 4040
+    - name: grafana
+      port: 31003
+      nodePort: 31003
+      targetPort: 3000
   type: NodePort
   selector:
     app: bigdl-notebook
