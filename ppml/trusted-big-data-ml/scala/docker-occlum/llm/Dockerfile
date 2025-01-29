@@ -20,7 +20,7 @@ RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-i
 ADD install_llm_with_conda.sh /opt
 RUN cd /opt && bash ./install_llm_with_conda.sh
 
-FROM occlum/occlum:0.29.7-ubuntu20.04 as ppml
+FROM occlum/occlum:0.30.0-test-ubuntu20.04 as ppml
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 ARG BIGDL_VERSION=2.5.0-SNAPSHOT
