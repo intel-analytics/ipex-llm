@@ -87,6 +87,10 @@ TensorFlow
 * `How to save and load optimized ONNXRuntime model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_onnx.html>`_
 * `How to save and load optimized OpenVINO model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_openvino.html>`_
 
+AutoML
+-------------------------
+* `How to search the best hyper-parameters for TensorFlow models via Nano HPO <hpo/use_hpo_tune_hyperparameters_tensorflow.html>`_
+
 Install
 -------------------------
 * `How to install BigDL-Nano in Google Colab <Install/install_in_colab.html>`_
