@@ -1,0 +1,81 @@
+name: Scanner-BDBA
+# This is a re-usable workflow for running BDBA scans.
+# Please follow process/flow on workflow usages/examples in docs/README_BDBA.md.
+# Docs url: https://github.com/intel-innersource/frameworks.ai.infrastructure.code-scan-tools/blob/one-ci-cd/docs/README_BDBA.md.
+on:
+  workflow_call:
+    inputs:
+      repos:
+        description: 'Enter Project repo for which you want to run BDBA scan:'
+        required: true
+        type: string
+      refs:
+        description: 'Enter Project branch, tag:'
+        required: true
+        type: string
+      group:
+        description: 'Enter BDBA group:'
+        required: true
+        type: string
+    secrets:
+      BDBA_TOKEN:
+        description: 'Enter BDBA Token:'
+        required: true
+      token:
+        description: 'GITHUB_TOKEN or a repo scoped PAT.'
+        required: true
+
+jobs:
+  bdba_scan:
+    runs-on: [self-hosted, SDL]
+    container:
+      image: cache-registry.caas.intel.com/cache/library/python:slim
+    steps:
+      - name: Checkout Project Repo
+        uses: actions/checkout@v3
+        with:
+          repository: intel-innersource/${{inputs.repos}}
+          token: ${{ secrets.token }}
+          path: code
+          ref: ${{inputs.refs}}
+      - name: Pack Additional Resources
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install zip unzip wget -y
+          apt-get install curl jq -y
+          zip -r ${{inputs.repos}}-bdba.zip ${GITHUB_WORKSPACE}/code/.*
+      - name: get intel certs
+        shell: bash
+        run: |
+          mkdir -p ${{ github.workspace }}/certs
+          wget http://certificates.intel.com/repository/certificates/IntelSHA256RootCA-Base64.crt -O- >> ${{ github.workspace }}/certs/ca-certificates.crt
+          
+      - name: Run BDBA Scan
+        id: bdba
+        env:
+          BDBA_TOKEN: "${{ secrets.BDBA_TOKEN }}"
+        uses: intel-innersource/frameworks.actions.bdba@v1
+        with:
+          bdba_group: ${{inputs.group}}
+          bdba_binary: ${{inputs.repos}}-bdba.zip
+      - name: Fetch BDBA projects
+        id: data
+        shell: bash
+        run: |
+          export CURL_CA_BUNDLE="${{ github.workspace }}/certs/ca-certificates.crt"
+          curl -H "Authorization: Bearer ${{ secrets.BDBA_TOKEN }}" "https://bdba001.icloud.intel.com/api/apps/?q=file:${{inputs.repos}}-bdba.zip" -o /tmp/scan.txt
+          da="$(jq -r '.products[].product_id' /tmp/scan.txt)"
+          echo "::set-output name=PRODUCT::$da"
+          
+      - name: Download BDBA project Scan data
+        shell: bash
+        run: |
+          export CURL_CA_BUNDLE="${{ github.workspace }}/certs/ca-certificates.crt"
+          echo ${{ steps.data.outputs.PRODUCT }}
+          curl -H "Authorization: Bearer ${{ secrets.BDBA_TOKEN }}" "https://bdba001.icloud.intel.com/api/product/${{ steps.data.outputs.PRODUCT }}/pdf-report" -o /tmp/${{inputs.repos}}-bdba_scan.pdf
+      - name: Upload Scan artifact to Github
+        uses: actions/upload-artifact@v3
+        with:
+          name: BDBA-log
+          path: /tmp/${{inputs.repos}}-bdba_scan.pdf
