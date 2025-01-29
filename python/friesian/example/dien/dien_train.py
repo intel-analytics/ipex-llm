@@ -26,7 +26,7 @@ from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.data.file import exists, makedirs
 from bigdl.orca.learn.tf.estimator import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
-from model import *
+from friesian.example.dien.model import *
 from bigdl.dllib.utils.log4Error import *
 
 
