@@ -1,0 +1,75 @@
+{
+  "name": "test-check",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Presents test results from popular testing frameworks as Github check run",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write **/*.ts",
+    "format-check": "prettier --check **/*.ts",
+    "lint": "eslint src/**/*.ts",
+    "package": "ncc build --source-map --license licenses.txt",
+    "test": "jest --ci --reporters=default --reporters=jest-junit",
+    "all": "npm run build && npm run format && npm run lint && npm run package && npm test",
+    "dart-fixture": "cd \"reports/dart\" && dart test --file-reporter=\"json:../../__tests__/fixtures/dart-json.json\"",
+    "dotnet-fixture": "dotnet test reports/dotnet/DotnetTests.XUnitTests --logger \"trx;LogFileName=../../../../__tests__/fixtures/dotnet-trx.trx\"",
+    "jest-fixture": "cd \"reports/jest\" && npm test",
+    "mocha-fixture": "cd \"reports/mocha\" && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dorny/test-check.git"
+  },
+  "keywords": [
+    "actions",
+    "node",
+    "test",
+    "report"
+  ],
+  "author": "Michal Dorner <dorner.michal@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/exec": "^1.0.4",
+    "@actions/github": "^4.0.0",
+    "adm-zip": "^0.5.3",
+    "fast-glob": "^3.2.5",
+    "got": "^11.8.2",
+    "picomatch": "^2.2.2",
+    "xml2js": "^0.4.23"
+  },
+  "devDependencies": {
+    "@octokit/types": "^6.12.0",
+    "@octokit/webhooks": "^7.21.0",
+    "@types/adm-zip": "^0.4.33",
+    "@types/github-slugger": "^1.3.0",
+    "@types/jest": "^26.0.20",
+    "@types/node": "^14.14.20",
+    "@types/picomatch": "^2.2.1",
+    "@types/xml2js": "^0.4.8",
+    "@typescript-eslint/eslint-plugin": "^4.16.1",
+    "@typescript-eslint/parser": "^4.16.1",
+    "@vercel/ncc": "^0.27.0",
+    "eslint": "^7.21.0",
+    "eslint-plugin-github": "^4.1.2",
+    "eslint-plugin-jest": "^24.1.7",
+    "jest": "^26.6.3",
+    "jest-circus": "^26.6.3",
+    "jest-junit": "^12.0.0",
+    "js-yaml": "^4.0.0",
+    "prettier": "2.2.1",
+    "ts-jest": "^26.5.3",
+    "typescript": "^4.2.3"
+  },
+  "jest-junit": {
+    "suiteName": "jest tests",
+    "outputDirectory": "__tests__/__results__",
+    "outputName": "jest-junit.xml",
+    "ancestorSeparator": " › ",
+    "uniqueOutputName": "false",
+    "suiteNameTemplate": "{filepath}",
+    "classNameTemplate": "{classname}",
+    "titleTemplate": "{title}"
+  }
+}
