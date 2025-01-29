@@ -27,6 +27,7 @@ from torch.utils.data.dataloader import DataLoader
 import os
 import tempfile
 import pytest
+from typing import Dict, Tuple, List
 
 
 class TupleInputModel(nn.Module):
@@ -58,6 +59,44 @@ class MultipleInputNet(nn.Module):
 
     def forward(self, x1, x2):
         return self.dense1(x1) + 2 * self.dense2(x2)
+    
+class MultipleInputNet_multi_input_type(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(12, 1)
+        self.dense2 = nn.Linear(11, 1)
+        self.dense3 = nn.Linear(10, 1)
+        self.dense4 = nn.Linear(9, 1)
+        self.dense5 = nn.Linear(8, 1)
+        self.dense6 = nn.Linear(7, 1)
+        self.dense7 = nn.Linear(6, 1)
+
+    def forward(self, x_1: Dict, x_2: Tuple, x_3: List, bbox):
+        return self.dense1(x_1['x1']) + self.dense2(x_1['x2']) + self.dense3(x_2[0]) + self.dense4(x_2[1]) + \
+            self.dense5(x_3[0]) + self.dense6(x_3[1]) + self.dense7(bbox)
+
+
+class MultipleInputNet_single_dict(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(12, 1)
+        self.dense2 = nn.Linear(11, 1)
+        self.dense3 = nn.Linear(10, 1)
+
+    def forward(self, x: Dict):
+        return self.dense1(x['x1']) + self.dense2(x['x2']) + self.dense3(x['x3'])
+    
+
+class MultipleInputNet_non_list_dict(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(12, 1)
+        self.dense2 = nn.Linear(11, 1)
+        self.dense3 = nn.Linear(10, 1)
+        self.dense4 = nn.Linear(9, 1)
+
+    def forward(self, bbox: torch.Tensor, x: Dict):
+        return self.dense1(x['x1']) + self.dense2(x['x2']) + self.dense3(x['x3']) + self.dense4(bbox)
 
 
 class DictOutputModel(nn.Module):
@@ -1030,3 +1069,89 @@ class TestOpenVINO(TestCase):
             else:
                 for i in range(2):
                     np.testing.assert_almost_equal(output["intermediate"][i].detach().numpy(), output1["intermediate"][i].detach().numpy(), decimal=5)
+
+    def test_openvino_multi_input_type(self):
+        x1_t = torch.randn(32, 12)
+        x2_t = torch.randn(32, 11)
+        x3_t = torch.randn(32, 10)
+        x4_t = torch.randn(32, 9)
+        x5_t = torch.randn(32, 8)
+        x6_t = torch.randn(32, 7)
+        bbox = torch.randn(32, 6)
+        model_ft = MultipleInputNet_multi_input_type()
+
+        with torch.no_grad():
+            output0 = model_ft({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
+
+        sample = ({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
+        ov_model = InferenceOptimizer.trace(model_ft,
+                                            accelerator='openvino',
+                                            input_sample=sample)
+
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2 = load_model({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
+
+        np.testing.assert_almost_equal(output0.numpy(), output1.numpy(), decimal=5)
+        np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+
+    def test_openvino_single_dict_input(self):
+        x1_t = torch.randn(32, 12)
+        x2_t = torch.randn(32, 11)
+        x3_t = torch.randn(32, 10)
+        model_ft = MultipleInputNet_single_dict()
+
+        with torch.no_grad():
+            output0 = model_ft({'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+
+        sample = {'x1':x1_t, 'x2':x2_t, 'x3':x3_t}
+        ov_model = InferenceOptimizer.trace(model_ft,
+                                            accelerator='openvino',
+                                            input_sample=sample)
+
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model({'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2 = load_model({'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+
+        np.testing.assert_almost_equal(output0.numpy(), output1.numpy(), decimal=5)
+        np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+    
+    def test_openvino_non_list_dict_input(self):
+        x1_t = torch.randn(32, 12)
+        x2_t = torch.randn(32, 11)
+        x3_t = torch.randn(32, 10)
+        bbox = torch.randn(32, 9)
+        model_ft = MultipleInputNet_non_list_dict()
+
+        with torch.no_grad():
+            output0 = model_ft(bbox, {'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+
+        sample = (bbox, {'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+        ov_model = InferenceOptimizer.trace(model_ft,
+                                            accelerator='openvino',
+                                            input_sample=sample)
+
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model(bbox, {'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2 = load_model(bbox, {'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+
+        np.testing.assert_almost_equal(output0.numpy(), output1.numpy(), decimal=5)
+        np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)

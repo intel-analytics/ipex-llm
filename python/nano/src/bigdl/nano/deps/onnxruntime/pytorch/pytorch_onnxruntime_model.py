@@ -16,6 +16,7 @@
 import torch
 import os
 from pathlib import Path
+from typing import List, Dict, Tuple
 from tempfile import TemporaryDirectory
 from ..core.onnxruntime_model import ONNXRuntimeModel
 import onnxruntime  # should be put behind core's import
@@ -119,6 +120,17 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         if self.ortsess is None:
             invalidInputError(False,
                               "Please create an instance by PytorchONNXRuntimeModel()")
+        tmp = []
+        for elem in inputs:
+            if isinstance(elem, Dict):
+                for _, value in elem.items():
+                    tmp.append(value)
+            elif isinstance(elem, List) or isinstance(elem, Tuple):
+                tmp += elem
+            else:
+                tmp.append(elem)
+        inputs = tmp
+
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
