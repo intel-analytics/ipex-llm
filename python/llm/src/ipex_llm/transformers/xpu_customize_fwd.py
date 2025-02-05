@@ -107,6 +107,8 @@ except ModuleNotFoundError:
     np = None  # type: ignore[assignment]
 from typing import Any
 
+from ipex_llm.transformers.utils import is_autocast_enabled, get_autocast_dtype
+
 
 def _cast(value, dtype):
     if isinstance(value, torch.Tensor):
@@ -155,12 +157,12 @@ def custom_fwd(fwd=None, *, cast_inputs=None):
 
     @functools.wraps(fwd)
     def decorate_fwd(*args, **kwargs):
-        args[0]._dtype = torch.xpu.get_autocast_xpu_dtype()
+        args[0]._dtype = get_autocast_dtype("xpu")
         if cast_inputs is None:
-            args[0]._fwd_used_autocast = torch.xpu.is_autocast_xpu_enabled()
+            args[0]._fwd_used_autocast = is_autocast_enabled("xpu")
             return fwd(*args, **kwargs)
         else:
-            autocast_context = torch.xpu.is_autocast_xpu_enabled()
+            autocast_context = is_autocast_enabled("xpu")
             args[0]._fwd_used_autocast = False
             if autocast_context:
                 with torch.xpu.autocast(enabled=False):
@@ -184,7 +186,7 @@ def custom_bwd(bwd):
 
     @functools.wraps(bwd)
     def decorate_bwd(*args, **kwargs):
-        with torch.xpu.autocast(enabled=args[0]._fwd_used_autocast, dtype=args[0]._dtype):
+        with torch.autocast("xpu", enabled=args[0]._fwd_used_autocast, dtype=args[0]._dtype):
             return bwd(*args, **kwargs)
 
     return decorate_bwd

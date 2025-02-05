@@ -51,7 +51,8 @@ from torch import Tensor, dtype, nn
 from operator import mul
 from functools import reduce
 from ipex_llm.transformers.xpu_customize_fwd import custom_fwd, custom_bwd
-from ipex_llm.transformers.utils import get_autocast_dtype, get_xpu_device_name
+from ipex_llm.transformers.utils import is_autocast_enabled, get_autocast_dtype
+from ipex_llm.transformers.utils import get_xpu_device_name
 from ipex_llm.transformers.convert import is_deepspeed_available, get_use_vllm
 
 T = TypeVar("T", bound="torch.nn.Module")
@@ -527,8 +528,8 @@ class MatMulLowBit(torch.autograd.Function):
         A, weight = ctx.tensors
         grad_A, grad_weight = None, None
         if req_gradA:
-            if torch.xpu.is_autocast_xpu_enabled():
-                grad_output = grad_output.to(torch.xpu.get_autocast_xpu_dtype())
+            if is_autocast_enabled("xpu"):
+                grad_output = grad_output.to(get_autocast_dtype("xpu"))
             if weight.qtype == NF4:
                 dequant_weight = xe_linear.dequant(A,
                                                    weight.data.view(torch.uint8),
@@ -615,7 +616,7 @@ class LowBitLinear(nn.Linear):
         is_training = self.training and not torch.is_inference_mode_enabled()
         if is_training:
             # below logic is only for training
-            autocast_dtype = get_autocast_dtype(x)
+            autocast_dtype = get_autocast_dtype(x.device.type)
             if self.compute_dtype is not None and x.device.type == "xpu":
                 x = x.to(self.compute_dtype)  # solve GC issue for unlora module
             elif autocast_dtype is not None:

@@ -109,7 +109,7 @@ class LoraLowBitLinear(Module, LoraLayer):
             self.qa_pool = torch.nn.Identity()
 
     def forward(self, x: torch.Tensor):
-        autocast_dtype = get_autocast_dtype(x)
+        autocast_dtype = get_autocast_dtype(x.device.type)
         if x.device.type == "xpu":
             # force to use bf16 on gpu
             x = x.to(torch.bfloat16)
@@ -177,7 +177,7 @@ class LoraBF16Linear(Module, LoraLayer):
         self.is_target_conv_1d_layer = is_target_conv_1d_layer
 
     def forward(self, x: torch.Tensor):
-        autocast_dtype = get_autocast_dtype(x)
+        autocast_dtype = get_autocast_dtype(x.device.type)
         if x.device.type == "xpu":
             # force to use bf16 on gpu
             x = x.to(torch.bfloat16)
