@@ -656,7 +656,8 @@ class LowBitLinear(nn.Linear):
                 if use_batch_forward(x_2d, self.weight.qtype, self.out_len):
                     import xe_batch
                     result = xe_batch.batch_forward(x_2d, w, self.qtype)
-                elif self.conver_to_half and x_2d.shape[0] > 1 and x_2d.dtype == torch.float32:
+                elif not is_training and self.conver_to_half \
+                        and x_2d.shape[0] > 1 and x_2d.dtype == torch.float:
                     import xe_linear
                     x_2d = x_2d.half()
                     result = xe_linear.forward_new(x_2d, w, self.qtype, self.out_len)
