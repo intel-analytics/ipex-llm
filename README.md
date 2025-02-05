@@ -1,8 +1,3 @@
-> [!IMPORTANT]
-> ***`ipex-llm` will soon move to https://github.com/intel/ipex-llm***
- 
----
-
 #  💫 Intel® LLM Library for PyTorch* 
 <p>
   <b>< English</b> | <a href='./README.zh-CN.md'>中文</a> >
@@ -11,7 +6,7 @@
 **`IPEX-LLM`** is an LLM acceleration library for Intel [GPU](docs/mddocs/Quickstart/install_windows_gpu.md) *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*, [NPU](docs/mddocs/Quickstart/npu_quickstart.md) and CPU [^1].
 > [!NOTE]
 > - *`IPEX-LLM` provides seamless integration with [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md), [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md), [HuggingFace transformers](python/llm/example/GPU/HuggingFace), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models), etc.* 
-> - ***70+ models** have been optimized/verified on `ipex-llm` (e.g., Llama, Phi, Mistral, Mixtral, Whisper, Qwen, ChatGLM, MiniCPM, Qwen-VL, MiniCPM-V and more), with state-of-art **LLM optimizations**, **XPU acceleration** and **low-bit (FP8/FP6/FP4/INT4) support**; see the complete list [here](#verified-models).*
+> - ***70+ models** have been optimized/verified on `ipex-llm` (e.g., Llama, Phi, Mistral, Mixtral, Whisper, DeepSeek, Qwen, ChatGLM, MiniCPM, Qwen-VL, MiniCPM-V and more), with state-of-art **LLM optimizations**, **XPU acceleration** and **low-bit (FP8/FP6/FP4/INT4) support**; see the complete list [here](#verified-models).*
 
 ## Latest Update 🔥 
 - [2025/01] We added the guide for running `ipex-llm` on Intel Arc [B580](docs/mddocs/Quickstart/bmg_quickstart.md) GPU
@@ -61,8 +56,8 @@ See demos of running local LLMs *on Intel Core Ultra iGPU, Intel Core Ultra NPU,
 
 <table width="100%">
   <tr>
-    <td align="center" colspan="1"><strong>Intel Core Ultra (Series 1) iGPU</strong></td>
-    <td align="center" colspan="1"><strong>Intel Core Ultra (Series 2) NPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra NPU</strong></td>
     <td align="center" colspan="1"><strong>Intel Arc dGPU</strong></td>
     <td align="center" colspan="1"><strong>2-Card Intel Arc dGPUs</strong></td>
   </tr>
@@ -83,23 +78,23 @@ See demos of running local LLMs *on Intel Core Ultra iGPU, Intel Core Ultra NPU,
       </a>
     </td>
     <td>
-      <a href="https://llm-assets.readthedocs.io/en/latest/_images/2arc_qwen1.5-32B_fp6_fastchat.gif" target="_blank">
-        <img src="https://llm-assets.readthedocs.io/en/latest/_images/2arc_qwen1.5-32B_fp6_fastchat.gif" width=100%; />
+      <a href="https://llm-assets.readthedocs.io/en/latest/_images/2arc_DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gif" target="_blank">
+        <img src="https://llm-assets.readthedocs.io/en/latest/_images/2arc_DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gif" width=100%; />
       </a>
     </td>
   </tr>
   <tr>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama <br> (Mistral-7B Q4_K) </a>
+      <a href="docs/mddocs/Quickstart/ollama_quickstart.md">Ollama <br> (Mistral-7B, Q4_K) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/npu_quickstart.md">HuggingFace <br> (Llama3.2-3B SYM_INT4)</a>
+      <a href="docs/mddocs/Quickstart/npu_quickstart.md">HuggingFace <br> (Llama3.2-3B, SYM_INT4)</a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI <br> (Llama3-8B FP8) </a>
+      <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI <br> (Llama3-8B, FP8) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/fastchat_quickstart.md">FastChat <br> (QWen1.5-32B FP6)</a>
+      <a href="docs/mddocs/Quickstart/fastchat_quickstart.md">llama.cpp <br> (DeepSeek-R1-Distill-Qwen-32B, Q4_K)</a>
     </td>  </tr>
 </table>
 
