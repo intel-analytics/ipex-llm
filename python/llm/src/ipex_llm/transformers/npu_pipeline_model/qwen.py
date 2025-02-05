@@ -85,7 +85,8 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
     )
 
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head",
-                                                        temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
+                                                        temp_dir, keep_ir=keep_ir,
+                                                        compile_blob=compile_blob)
 
     # save weights bins files
     if not isinstance(lm_head, SlicedLMHead):
@@ -120,7 +121,8 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
         first_blob_path = True
     else:
         first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
-                                                             temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
+                                                             temp_dir, keep_ir=keep_ir,
+                                                             compile_blob=compile_blob)
     return first_blob_path, last_blob_path
 
 
@@ -185,7 +187,8 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         decoder_name,
-                                                        temp_dir, keep_ir=keep_ir, compile_blob=compile_blob,
+                                                        temp_dir, keep_ir=keep_ir,
+                                                        compile_blob=compile_blob,
                                                         npu_dpu_groups=npu_dpu_groups)
 
     # 0, 1, 2 are input_embed/attention_mask/position_id

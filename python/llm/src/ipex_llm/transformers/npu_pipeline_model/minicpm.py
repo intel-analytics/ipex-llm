@@ -290,7 +290,8 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
                                            temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
     else:
         first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
-                                                             temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
+                                                             temp_dir, keep_ir=keep_ir,
+                                                             compile_blob=compile_blob)
     return first_blob_path, last_blob_path
 
 
