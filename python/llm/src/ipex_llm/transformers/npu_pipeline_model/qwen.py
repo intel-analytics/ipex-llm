@@ -87,6 +87,7 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head",
                                                         temp_dir, keep_ir=keep_ir,
                                                         compile_blob=compile_blob)
+    os.remove(os.path.join(temp_dir, "lm_head.bin"))
 
     # save weights bins files
     if not isinstance(lm_head, SlicedLMHead):
@@ -123,6 +124,7 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
         first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
                                                              temp_dir, keep_ir=keep_ir,
                                                              compile_blob=compile_blob)
+        os.remove(os.path.join(temp_dir, "embedding.bin"))
     return first_blob_path, last_blob_path
 
 
@@ -190,6 +192,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                                                         temp_dir, keep_ir=keep_ir,
                                                         compile_blob=compile_blob,
                                                         npu_dpu_groups=npu_dpu_groups)
+    os.remove(os.path.join(temp_dir, decoder_name + ".bin"))
 
     # 0, 1, 2 are input_embed/attention_mask/position_id
     if mode == "decode":
@@ -337,4 +340,5 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
                                            f"decoder_layer_{i}",
                                            save_dir,
                                            keep_ir=keep_ir, compile_blob=compile_blob)
+        os.remove(os.path.join(save_dir, f"decoder_layer_{i}" + ".bin"))
     return 0

@@ -232,6 +232,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
     )
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir,
                                                         keep_ir=keep_ir, compile_blob=compile_blob)
+    os.remove(os.path.join(temp_dir, "lm_head.bin"))
 
     # save weights bins files
     if n_splits_linear == 1:
@@ -288,10 +289,13 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
         update_names_of_IR_and_export_blob(embedding_post_prefill,
                                            "embedding_post_prefill",
                                            temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
+        os.remove(os.path.join(temp_dir, "embedding_post.bin"))
+        os.remove(os.path.join(temp_dir, "embedding_post_prefill.bin"))
     else:
         first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
                                                              temp_dir, keep_ir=keep_ir,
                                                              compile_blob=compile_blob)
+        os.remove(os.path.join(temp_dir, "embedding.bin"))
     return first_blob_path, last_blob_path
 
 
@@ -357,6 +361,7 @@ def convert_minicpm_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                                                         decoder_name,
                                                         temp_dir,
                                                         keep_ir=keep_ir, compile_blob=compile_blob)
+    os.remove(os.path.join(temp_dir, decoder_name + ".bin"))
 
     if mode == "decode":
         if layernorm_const:
@@ -482,4 +487,5 @@ def convert_fused_minicpm_layer(model, fused_layers, n_splits_linear, n_splits_d
                                            f"decoder_layer_{i}",
                                            save_dir,
                                            keep_ir=keep_ir, compile_blob=compile_blob)
+        os.remove(os.path.join(save_dir, f"decoder_layer_{i}" + ".bin"))
     return 0
