@@ -43,13 +43,6 @@ def check_torch_version():
     except:
         print("PyTorch is not installed.")
 
-def check_torch_version():
-    try:
-        import torch
-        print(f"torch={torch.__version__}")
-    except:
-        print("PyTorch is not installed.")
-
 def check_ipex_llm_version():
     import os
     if os.system("pip show ipex-llm")!=0:
