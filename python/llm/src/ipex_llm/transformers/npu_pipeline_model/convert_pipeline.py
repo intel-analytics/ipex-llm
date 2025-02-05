@@ -196,7 +196,9 @@ def convert_llm(model: torch.nn.Module,
                 qtype: str,
                 convert_model: bool=False,
                 save_directory: str=None,
-                fuse_layers: int=None):
+                fuse_layers: int=None,
+                keep_ir: bool=False,
+                compile_blob: bool=True):
     # whether to set layernorm weight as const
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
     if group_size == 0:
@@ -220,7 +222,9 @@ def convert_llm(model: torch.nn.Module,
                                n_splits_down_proj,
                                group_size,
                                save_directory,
-                               fuse_layers=fuse_layers)
+                               fuse_layers=fuse_layers,
+                               keep_ir=keep_ir,
+                               compile_blob=compile_blob)
         return 0
     if model.config.model_type == "llama":
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -428,7 +432,9 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            n_splits_down_proj: int,
                            group_size: int,
                            save_directory: str=None,
-                           fuse_layers: int=None):
+                           fuse_layers: int=None,
+                           keep_ir: bool=False,
+                           compile_blob: bool=True):
     if not os.path.exists(save_directory):
         os.mkdir(save_directory)
     weight_dir = os.path.join(save_directory, "model_weights")
@@ -479,14 +485,17 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         # save fused_layers blobs of fused decoder layers
         convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                                  save_directory, weight_dir, transpose_value_cache, kv_len,
-                                 group_size, layernorm_const, "decode")
+                                 group_size, layernorm_const, "decode",
+                                 keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of single prefill layer
         convert_qwen_layer(model, 0, n_splits_linear, n_splits_down_proj,
                            save_directory, weight_dir, transpose_value_cache, max_prompt_len,
-                           group_size, layernorm_const, "prefill")
+                           group_size, layernorm_const, "prefill",
+                           keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of lmhead and bin of embedding
         convert_lm_head_and_embedding(model, save_directory, weight_dir,
-                                      convert_model=True, group_size=group_size)
+                                      convert_model=True, group_size=group_size,
+                                      keep_ir=keep_ir, compile_blob=compile_blob)
     elif model.config.model_type == "llama":
         embedding_post = False
         cos_sin_input = False
@@ -540,15 +549,18 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         convert_lm_head_and_embedding(model, n_splits_linear,
                                       save_directory, weight_dir,
                                       convert_model=True,
-                                      max_prompt_len=max_prompt_len)
+                                      max_prompt_len=max_prompt_len,
+                                      keep_ir=keep_ir, compile_blob=compile_blob)
         # save fused_layers blobs of fused decoder layers
         convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                                   save_directory, weight_dir, transpose_value_cache, kv_len,
-                                  group_size, layernorm_const, "decode")
+                                  group_size, layernorm_const, "decode",
+                                  keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of single prefill layer
         convert_llama_layer(model, 0, n_splits_linear, n_splits_down_proj,
                             save_directory, weight_dir, transpose_value_cache, max_prompt_len,
-                            group_size, layernorm_const, "prefill")
+                            group_size, layernorm_const, "prefill",
+                            keep_ir=keep_ir, compile_blob=compile_blob)
     elif model.config.model_type == "minicpm":
         if group_size == 0:
             fused_layers = 4 if fuse_layers is None else fuse_layers
@@ -577,16 +589,19 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         # save fused_layers blobs of fused decoder layers
         convert_fused_minicpm_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                                     save_directory, weight_dir, transpose_value_cache, kv_len,
-                                    group_size, layernorm_const, "decode")
+                                    group_size, layernorm_const, "decode",
+                                    keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of single prefill layer
         convert_minicpm_layer(model, 0, n_splits_linear, n_splits_down_proj,
                               save_directory, weight_dir, transpose_value_cache, max_prompt_len,
-                              group_size, layernorm_const, "prefill")
+                              group_size, layernorm_const, "prefill",
+                              keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of lmhead and bin of embedding and embedding_post
         convert_lm_head_and_embedding(model, n_splits_linear,
                                       save_directory, weight_dir,
                                       convert_model=True,
-                                      max_prompt_len=max_prompt_len)
+                                      max_prompt_len=max_prompt_len,
+                                      keep_ir=keep_ir, compile_blob=compile_blob)
 
     model.config.update(update_dict)
     model.config.save_pretrained(save_directory)

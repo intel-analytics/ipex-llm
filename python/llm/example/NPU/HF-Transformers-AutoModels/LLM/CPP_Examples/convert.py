@@ -51,6 +51,8 @@ if __name__ == "__main__":
     parser.add_argument("--quantization-group-size", type=int, default=0)
     parser.add_argument('--low-bit', type=str, default="sym_int4",
                         help='Low bit optimizations that will be applied to the model.')
+    parser.add_argument("--keep-ir", type=bool, default=False)
+    parser.add_argument("--compile-blob", type=bool, default=True)
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -66,7 +68,9 @@ if __name__ == "__main__":
                                                  torch_dtype=torch.float16,
                                                  attn_implementation="eager",
                                                  trust_remote_code=True,
-                                                 save_directory=save_dir)
+                                                 save_directory=save_dir,
+                                                 keep_ir=args.keep_ir,
+                                                 compile_blob=args.compile_blob)
     t1 = time.perf_counter()
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
