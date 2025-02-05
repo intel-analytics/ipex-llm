@@ -51,8 +51,8 @@ if __name__ == "__main__":
     parser.add_argument("--quantization-group-size", type=int, default=0)
     parser.add_argument('--low-bit', type=str, default="sym_int4",
                         help='Low bit optimizations that will be applied to the model.')
-    parser.add_argument("--keep-ir", type=bool, default=False)
-    parser.add_argument("--compile-blob", type=bool, default=True)
+    parser.add_argument("--keep-ir", action="store_true")
+    parser.add_argument("--disable-compile-blob", action="store_true") 
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -70,7 +70,7 @@ if __name__ == "__main__":
                                                  trust_remote_code=True,
                                                  save_directory=save_dir,
                                                  keep_ir=args.keep_ir,
-                                                 compile_blob=args.compile_blob)
+                                                 compile_blob=not args.disable_compile_blob)
     t1 = time.perf_counter()
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
