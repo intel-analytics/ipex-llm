@@ -259,19 +259,6 @@ def mlp_fusion_check(x, qtype, training):
     return True
 
 
-def use_xmx(x: torch.Tensor, qtype: int):
-    device = get_xpu_device_name(x.device)
-    return (
-        device in ["arc", "pvc"]
-        and qtype in [SYM_INT4, SYM_INT8, FP8E4, FP8E5, WOQ_INT4]
-        and (
-            (device == "pvc" and 1 < x.size(0) <= 16)
-            or
-            (device != "pvc" and 1 < x.size(0) <= 64)
-        )
-    )
-
-
 def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
     batch, num_key_value_heads, slen, head_dim = hidden_states.shape
     if n_rep == 1:

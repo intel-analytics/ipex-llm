@@ -20,9 +20,10 @@ import xe_batch
 import xe_addons
 
 
-# @torch.library.register_fake("ipex_llm::forward_new")
-# def _(x, weight, qtype, input_size):
-#     return ???
+@torch.library.register_fake("ipex_llm::forward_new")
+def _(x, weight, qtype, output_size):
+    return torch.empty([x.size(0), output_size],
+                       dtype=x.dtype, device=x.device)
 
 
 # @torch.library.register_fake("ipex_llm::dequant")
