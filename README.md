@@ -1,8 +1,3 @@
-> [!IMPORTANT]
-> ***`ipex-llm` will soon move to https://github.com/intel/ipex-llm***
- 
----
-
 #  💫 Intel® LLM Library for PyTorch* 
 <p>
   <b>< English</b> | <a href='./README.zh-CN.md'>中文</a> >
@@ -61,8 +56,8 @@ See demos of running local LLMs *on Intel Core Ultra iGPU, Intel Core Ultra NPU,
 
 <table width="100%">
   <tr>
-    <td align="center" colspan="1"><strong>Intel Core Ultra (Series 1) iGPU</strong></td>
-    <td align="center" colspan="1"><strong>Intel Core Ultra (Series 2) NPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra iGPU</strong></td>
+    <td align="center" colspan="1"><strong>Intel Core Ultra NPU</strong></td>
     <td align="center" colspan="1"><strong>Intel Arc dGPU</strong></td>
     <td align="center" colspan="1"><strong>2-Card Intel Arc dGPUs</strong></td>
   </tr>
