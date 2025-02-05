@@ -25,7 +25,7 @@ To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requ
 
   # or --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/
   pip install --pre --upgrade ipex-llm[xpu-arc] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-  pip install torchaudio==2.3.1.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+  pip install torchaudio==2.3.1+cxx11.abi --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
   ``` 
 
 > [!NOTE]
@@ -74,7 +74,7 @@ Arguments info:
 - `--video-path VIDEO_PATH`: argument defining the video input.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
-> [!TIP]
+> [!NOTE]
 > In Omni mode, please make sure that the video input contains sound.
 
 > [!TIP]
