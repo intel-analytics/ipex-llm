@@ -1,5 +1,5 @@
 # We will need to build the oneccl from ONEAPI 2025 environment...
-FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04 as build
+FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04 AS build
 
 ARG http_proxy
 ARG https_proxy
@@ -32,6 +32,18 @@ RUN apt-get update && \
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
+    apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
+    # apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
+    mkdir -p /tmp/neo && \
+    cd /tmp/neo && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.5.6/intel-igc-core-2_2.5.6+18417_amd64.deb && \
+    wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.5.6/intel-igc-opencl-2_2.5.6+18417_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-level-zero-gpu-dbgsym_1.6.32224.5_amd64.ddeb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-level-zero-gpu_1.6.32224.5_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-opencl-icd-dbgsym_24.52.32224.5_amd64.ddeb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-opencl-icd_24.52.32224.5_amd64.deb && \
+    wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/libigdgmm12_22.5.5_amd64.deb && \
+    dpkg -i *.deb && \
     # Install ipex-llm for xpu
     # TODO: later change this...
     pip install --pre --upgrade ipex-llm[xpu_2.6] --extra-index-url https://download.pytorch.org/whl/test/xpu && \
@@ -44,11 +56,14 @@ RUN apt-get update && \
     git submodule update --init --recursive && \
     git apply /tmp/ccl_torch.patch && \
     # This will fail for no reasons...
-    USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py bdist_wheel && \
+    # Ok... Now this works..., of course no...
+    USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py bdist_wheel
+    # File path: /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl
 
 FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04
 
 # TODO: copy from build for oneccl build
+COPY --from=build /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl /opt/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl
 
 ARG http_proxy
 ARG https_proxy
@@ -61,7 +76,7 @@ ENV VLLM_RPC_TIMEOUT=100000
 
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
-ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
+# ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
 # ADD ./oneccl-binding.patch /tmp/oneccl-binding.patch
 
 # RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
@@ -76,7 +91,7 @@ RUN apt-get update && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     # add-apt-repository requires gnupg, gpg-agent, software-properties-common
-    apt-get install -y --no-install-recommends gnupg gpg-agent software-properties-common && \
+    apt-get install -y --no-install-recommends gnupg gpg-agent software-properties-common kmod && \
     # Add Python 3.11 PPA repository
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y --no-install-recommends python3.11 git curl wget && \
@@ -113,7 +128,7 @@ RUN apt-get update && \
     # TODO: uncomment this...
     # rm -rf ./ipex-llm && \
     # Install torch-ccl
-    cd /tmp/ && \
+    pip install /opt/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl && \
     # pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     # TODO: install Internal oneccl
     # wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.6.5-release/oneccl_wks_installer_2024.0.0.6.5.sh && \
@@ -139,7 +154,7 @@ RUN apt-get update && \
     cd /llm && \
     rm -rf /tmp/neo && \
     # Install vllm
-    git clone -b 0.6.2 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    git clone -b 0.6.6-pre https://github.com/analytics-zoo/vllm.git /llm/vllm && \
     cd /llm/vllm && \
     pip install setuptools-scm && \
     pip install --upgrade cmake && \
@@ -150,8 +165,8 @@ RUN apt-get update && \
     pip install gradio==4.43.0 && \
     # pip install transformers==4.44.2 && \
     # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
-    pip install ray && \
-    patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
+    pip install ray
+    # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
 
 COPY ./vllm_online_benchmark.py        /llm/
 COPY ./vllm_offline_inference.py       /llm/
@@ -164,6 +179,6 @@ COPY ./start-fastchat-service.sh       /llm/
 COPY ./start-pp_serving-service.sh       /llm/
 COPY ./start-lightweight_serving-service.sh       /llm/
 
-ENV LD_LIBRARY_PATH /usr/local/lib/python3.11/dist-packages/intel_extension_for_pytorch/lib/:/opt/intel/oneapi/tbb/2021.12/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.12/opt/mpi/libfabric/lib:/opt/intel/oneapi/mpi/2021.12/lib:/opt/intel/oneapi/mkl/2024.1/lib:/opt/intel/oneapi/ippcp/2021.11/lib/:/opt/intel/oneapi/ipp/2021.11/lib:/opt/intel/oneapi/dpl/2022.5/lib:/opt/intel/oneapi/dnnl/2024.1/lib:/opt/intel/oneapi/debugger/2024.1/opt/debugger/lib:/opt/intel/oneapi/dal/2024.2/lib:/opt/intel/oneapi/compiler/2024.1/opt/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2024.1/opt/compiler/lib:/opt/intel/oneapi/compiler/2024.1/lib:/opt/intel/oneapi/ccl/2021.12/lib/
+# ENV LD_LIBRARY_PATH /usr/local/lib/python3.11/dist-packages/intel_extension_for_pytorch/lib/:/opt/intel/oneapi/tbb/2021.12/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.12/opt/mpi/libfabric/lib:/opt/intel/oneapi/mpi/2021.12/lib:/opt/intel/oneapi/mkl/2024.1/lib:/opt/intel/oneapi/ippcp/2021.11/lib/:/opt/intel/oneapi/ipp/2021.11/lib:/opt/intel/oneapi/dpl/2022.5/lib:/opt/intel/oneapi/dnnl/2024.1/lib:/opt/intel/oneapi/debugger/2024.1/opt/debugger/lib:/opt/intel/oneapi/dal/2024.2/lib:/opt/intel/oneapi/compiler/2024.1/opt/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2024.1/opt/compiler/lib:/opt/intel/oneapi/compiler/2024.1/lib:/opt/intel/oneapi/ccl/2021.12/lib/
 
 WORKDIR /llm/
