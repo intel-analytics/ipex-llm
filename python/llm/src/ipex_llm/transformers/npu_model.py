@@ -117,7 +117,6 @@ class _BaseAutoModelClass:
         # ignore following arguments
         ignore_argument(kwargs, "model_hub")
         ignore_argument(kwargs, "load_in_4bit")
-        ignore_argument(kwargs, "load_in_8bit")
         ignore_argument(kwargs, "imatrix")
         ignore_argument(kwargs, "cpu_embedding")
         ignore_argument(kwargs, "embedding_qtype")

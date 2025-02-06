@@ -312,7 +312,6 @@ def get_model_answers(
             torch_dtype=torch.float16,
             # torch_dtype=torch.float32,
             low_cpu_mem_usage=True,
-            # load_in_8bit=True,
             total_token=args.total_token,
             depth=args.depth,
             top_k=args.top_k,
@@ -384,7 +383,7 @@ def get_model_answers(
                 ]
                 if len(stop_token_ids_index) > 0:
                     output_ids = output_ids[: stop_token_ids_index[0]]
-    
+
             output = tokenizer.decode(
                 output_ids,
                 spaces_between_special_tokens=False,
@@ -572,8 +571,8 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--enable-ipex-llm", 
-        action='store_true', 
+        "--enable-ipex-llm",
+        action='store_true',
         help="Enable ipex-llm optimization"
     )
     args = parser.parse_args()

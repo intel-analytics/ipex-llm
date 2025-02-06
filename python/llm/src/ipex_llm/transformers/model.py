@@ -233,7 +233,6 @@ class _BaseAutoModelClass:
             optimize_model = False
             kwargs["modules_to_not_convert"] = ["lm_head"]
 
-        load_in_8bit = kwargs.pop("load_in_8bit", False)
         from ipex_llm.llm_patching import bigdl_patched
         if bigdl_patched == 'Train':
             global patched_training_mode
