@@ -450,7 +450,9 @@ def optimize_llm_single_process(
     qtype: str,
     save_directory: str,
     fuse_layers: int=None,
-    has_llm: bool=False
+    has_llm: bool=False,
+    keep_ir: bool=False,
+    compile_blob: bool=True
 ):
     from ipex_llm.transformers.npu_pipeline_model.convert_pipeline import convert_llm
     from .npu_llm_cpp import load_model_from_file
@@ -463,7 +465,9 @@ def optimize_llm_single_process(
                 qtype=qtype,
                 convert_model=True,
                 save_directory=save_directory,
-                fuse_layers=fuse_layers)
+                fuse_layers=fuse_layers,
+                keep_ir=keep_ir,
+                compile_blob=compile_blob)
     try:
         model_ptr = load_model_from_file(save_directory)
         model.kv_len = kv_len

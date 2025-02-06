@@ -139,8 +139,10 @@ class _BaseAutoModelClass:
         mock_device = kwargs.pop('device', None)  # For mock on CPU
         convert_model = kwargs.pop('convert_model', False)
         save_directory = kwargs.pop('save_directory', None)
-        fuse_layers = kwargs.pop('fuse_layers', None)
-        imatrix_file = kwargs.pop('imatrix_file', None)
+        fuse_layers = kwargs.pop("fuse_layers", None)
+        imatrix_file = kwargs.pop("imatrix_file", None)
+        keep_ir = kwargs.pop("keep_ir", False)
+        compile_blob = kwargs.pop("compile_blob", True)
 
         if imatrix_file is not None:
             imatrix_data = load_imatrix_data(imatrix_file)
@@ -236,6 +238,8 @@ class _BaseAutoModelClass:
                     "fuse_layers": fuse_layers,
                     "imatrix_data": imatrix_data,
                     "skip_npu_logic": mock_device == "dummy",
+                    "keep_ir": keep_ir,
+                    "compile_blob": compile_blob,
                 }
                 # Dummy will skip npu related logic and save the quantized model
                 if mock_device == "dummy":
@@ -280,9 +284,14 @@ class _BaseAutoModelClass:
         fuse_layers = kwargs.pop('fuse_layers', None)
         imatrix_data = kwargs.pop('imatrix_data', None)
         skip_npu_logic = kwargs.pop("skip_npu_logic", False)
+        keep_ir = kwargs.pop("keep_ir", False)
+        compile_blob = kwargs.pop("compile_blob", True)
+
         invalidInputError(save_directory is not None,
                           "Please provide the path to save converted model "
                           "through `save_directory`.")
+        invalidInputError(keep_ir or compile_blob,
+                          "Please save blob or save IR either.")
 
         if hasattr(model, "llm"):
             llm = model.llm
@@ -323,7 +332,9 @@ class _BaseAutoModelClass:
                         qtype=qtype,
                         save_directory=save_directory,
                         fuse_layers=fuse_layers,
-                        has_llm=hasattr(model, "llm")
+                        has_llm=hasattr(model, "llm"),
+                        keep_ir=keep_ir,
+                        compile_blob=compile_blob
                     )
                 else:
                     optimize_llm(
@@ -346,7 +357,9 @@ class _BaseAutoModelClass:
                             qtype=qtype,
                             convert_model=convert_model,
                             save_directory=save_directory,
-                            fuse_layers=fuse_layers)
+                            fuse_layers=fuse_layers,
+                            keep_ir=keep_ir,
+                            compile_blob=compile_blob)
             model.save_low_bit = types.MethodType(save_low_bit, model)
             model.save_low_bit(save_directory)
             logger.info(f"Converted model has already saved to {save_directory}.")

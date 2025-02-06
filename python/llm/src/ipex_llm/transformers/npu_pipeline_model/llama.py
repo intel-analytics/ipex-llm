@@ -123,7 +123,8 @@ class Llama32PostEmbedding(NNFactory):
 
 
 def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
-                                  convert_model=False, max_prompt_len=1):
+                                  convert_model=False, max_prompt_len=1,
+                                  keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -175,7 +176,8 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
         asym=asym
     )
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, "lm_head", temp_dir,
-                                                        True, False)
+                                                        keep_ir=keep_ir, compile_blob=compile_blob)
+    os.remove(os.path.join(temp_dir, "lm_head.bin"))
 
     # save weights bins files
     if n_splits_linear == 1:
@@ -211,7 +213,9 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
             first_blob_path = None
         else:
             first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
-                                                                 temp_dir, True, False)
+                                                                 temp_dir, keep_ir=keep_ir,
+                                                                 compile_blob=compile_blob)
+            os.remove(os.path.join(temp_dir, "embedding.bin"))
     else:
         # llama-3.2-3B & llama-3.2-1B
         embedding_layer = model.model.embed_tokens
@@ -235,22 +239,28 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
                                                   attention_scaling=attention_scaling,
                                                   input_len=1)
             update_names_of_IR_and_export_blob(embedding_post, "embedding_post",
-                                               temp_dir, True, False)
+                                               temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
             embedding_post_prefill = Llama32PostEmbedding(inv_freq=inv_freq,
                                                           attention_scaling=attention_scaling,
                                                           input_len=max_prompt_len)
             update_names_of_IR_and_export_blob(embedding_post_prefill,
                                                "embedding_post_prefill",
-                                               temp_dir, True, False)
+                                               temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
+            os.remove(os.path.join(temp_dir, "embedding_post.bin"))
+            os.remove(os.path.join(temp_dir, "embedding_post_prefill.bin"))
         else:
             first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
-                                                                 temp_dir)
+                                                                 temp_dir, keep_ir=keep_ir,
+                                                                 compile_blob=compile_blob)
+            os.remove(os.path.join(temp_dir, "embedding.bin"))
+
     return first_blob_path, last_blob_path
 
 
 def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                         temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                        layernorm_const, mode="decode"):
+                        layernorm_const, mode="decode",
+                        keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -317,8 +327,9 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         decoder_name,
                                                         temp_dir,
-                                                        True, False,
+                                                        keep_ir=keep_ir, compile_blob=compile_blob,
                                                         npu_dpu_groups=npu_dpu_groups)
+    os.remove(os.path.join(temp_dir, decoder_name + ".bin"))
 
     if mode == "decode":
         if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
@@ -364,7 +375,8 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
 
 def convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                               save_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                              layernorm_const, mode="decode"):
+                              layernorm_const, mode="decode",
+                              keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -457,6 +469,7 @@ def convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_dow
         update_names_of_IR_and_export_blob(fused_decoder,
                                            f"decoder_layer_{i}",
                                            save_dir,
-                                           compile_blob=True,
-                                           keep_ir=False)
+                                           keep_ir=keep_ir,
+                                           compile_blob=compile_blob)
+        os.remove(os.path.join(save_dir, f"decoder_layer_{i}" + ".bin"))
     return 0

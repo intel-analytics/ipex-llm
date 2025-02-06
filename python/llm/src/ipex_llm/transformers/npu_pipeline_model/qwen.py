@@ -24,7 +24,8 @@ from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 
 
 def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
-                                  convert_model=False, group_size=0):
+                                  convert_model=False, group_size=0,
+                                  keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     head_dim = model.model.layers[0].self_attn.head_dim
     rms_norm_eps = model.config.rms_norm_eps
@@ -84,7 +85,9 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
     )
 
     last_blob_path = update_names_of_IR_and_export_blob(new_lm_head, f"lm_head",
-                                                        temp_dir, True, False)
+                                                        temp_dir, keep_ir=keep_ir,
+                                                        compile_blob=compile_blob)
+    os.remove(os.path.join(temp_dir, "lm_head.bin"))
 
     # save weights bins files
     if not isinstance(lm_head, SlicedLMHead):
@@ -119,13 +122,16 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
         first_blob_path = True
     else:
         first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
-                                                             temp_dir, True, keep_ir=True)
+                                                             temp_dir, keep_ir=keep_ir,
+                                                             compile_blob=compile_blob)
+        os.remove(os.path.join(temp_dir, "embedding.bin"))
     return first_blob_path, last_blob_path
 
 
 def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                        temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                       layernorm_const, mode="decode"):
+                       layernorm_const, mode="decode",
+                       keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -183,8 +189,10 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
                                                         decoder_name,
-                                                        temp_dir, True, False,
+                                                        temp_dir, keep_ir=keep_ir,
+                                                        compile_blob=compile_blob,
                                                         npu_dpu_groups=npu_dpu_groups)
+    os.remove(os.path.join(temp_dir, decoder_name + ".bin"))
 
     # 0, 1, 2 are input_embed/attention_mask/position_id
     if mode == "decode":
@@ -226,7 +234,8 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
 
 def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                              save_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                             layernorm_const, mode="decode"):
+                             layernorm_const, mode="decode",
+                             keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -330,6 +339,6 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
         update_names_of_IR_and_export_blob(fused_decoder,
                                            f"decoder_layer_{i}",
                                            save_dir,
-                                           compile_blob=True,
-                                           keep_ir=False)
+                                           keep_ir=keep_ir, compile_blob=compile_blob)
+        os.remove(os.path.join(save_dir, f"decoder_layer_{i}" + ".bin"))
     return 0
