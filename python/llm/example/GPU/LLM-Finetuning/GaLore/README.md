@@ -13,11 +13,8 @@ conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 pip install galore-torch
-pip install accelerate==0.28.0
-pip install bitsandbytes==0.43.0
-pip install datasets==2.18.0
-pip install transformers==4.39.1
-pip install trl==0.8.1
+pip install transformers==4.45.0 "trl<0.12.0" datasets
+pip install bitsandbytes==0.45.1
 ```
 
 ### 2. GaLore Finetune
