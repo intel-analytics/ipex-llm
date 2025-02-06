@@ -90,9 +90,10 @@ def train(
     model = AutoModelForCausalLM.from_pretrained(
         base_model,
         load_in_low_bit="bf16",
-        optimize_model=True,
+        optimize_model=False,
         torch_dtype=torch.bfloat16,
-        trust_remote_code=True
+        trust_remote_code=True,
+        modules_to_not_convert=["lm_head"],     # avoid optimize lm_head
     )
 
     model = model.to("xpu")
