@@ -160,7 +160,6 @@ class IPEXLLMClass(LLM):
         )
         # Logic to switch between engines is done at runtime instead of import
         # to avoid import order issues
-        # TODO(gc): we will need to override this function
         self.engine_class = self.get_engine_class()
         self.llm_engine = self.engine_class.from_engine_args(
             engine_args, usage_context=UsageContext.LLM_CLASS,
@@ -177,7 +176,6 @@ class IPEXLLMClass(LLM):
         return IPEXLLMLLMEngine
 
 
-# TODO(gc): implement this later...
 class IPEXLLMLLMV1Engine(V1LLMEngine):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -194,9 +192,6 @@ class IPEXLLMLLMV1Engine(V1LLMEngine):
         """Creates an LLM engine from the engine arguments."""
         # Create the engine configs.
 
-        # TODO(gc): delete this later
-        print("IPEXLLM V1 Engine")
-        # This does not work as it is in the seperate process...
         _ipex_llm_convert(load_in_low_bit)
         return super().from_engine_args(engine_args, usage_context, stat_loggers, enable_multiprocessing)
 
@@ -215,8 +210,6 @@ class IPEXLLMLLMEngine(LLMEngine):
     ) -> "LLMEngine":
         """Creates an LLM engine from the engine arguments."""
         # Create the engine configs.
-        # TODO(gc): Delete
-        print("Use vLLM v0 engine")
         _ipex_llm_convert(load_in_low_bit)
         return super().from_engine_args(engine_args, usage_context, stat_loggers)
 
