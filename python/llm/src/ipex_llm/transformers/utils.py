@@ -138,26 +138,39 @@ def fix_key(key):
     return key
 
 
-def get_autocast_dtype(x):
+def is_autocast_enabled(device_type: str):
     if torch.__version__ >= '2.3':
-        if torch.is_autocast_enabled(x.device.type):
-            return torch.get_autocast_dtype(x.device.type)
+        return torch.is_autocast_enabled(device_type)
+    else:
+        if device_type == "xpu":
+            return torch.xpu.is_autocast_xpu_enabled()
+        elif device_type == "cpu":
+            return torch.is_autocast_cpu_enabled()
+        else:
+            invalidInputError(False,
+                              f"Device type {device_type} is not supported.")
+
+
+def get_autocast_dtype(device_type: str):
+    if torch.__version__ >= '2.3':
+        if torch.is_autocast_enabled(device_type):
+            return torch.get_autocast_dtype(device_type)
         else:
             return None
     else:
-        if x.device.type == "xpu":
+        if device_type == "xpu":
             if torch.xpu.is_autocast_xpu_enabled():
                 return torch.xpu.get_autocast_xpu_dtype()
             else:
                 return None
-        elif x.device.type == "cpu":
+        elif device_type == "cpu":
             if torch.is_autocast_cpu_enabled():
                 return torch.get_autocast_cpu_dtype()
             else:
                 return None
         else:
             invalidInputError(False,
-                              f"Device {x.device} is not supported.")
+                              f"Device type {device_type} is not supported.")
 
 
 def get_xpu_device_name(device: torch.device):

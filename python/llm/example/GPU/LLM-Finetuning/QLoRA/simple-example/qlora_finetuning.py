@@ -18,7 +18,7 @@ import torch
 import os
 
 import transformers
-from transformers import LlamaTokenizer
+from transformers import AutoTokenizer
 from peft import LoraConfig
 from transformers import BitsAndBytesConfig
 from ipex_llm.transformers.qlora import get_peft_model, prepare_model_for_kbit_training
@@ -43,13 +43,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     dataset_path = args.dataset
-    tokenizer = LlamaTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
     if dataset_path.endswith(".json") or dataset_path.endswith(".jsonl"):
         data = load_dataset("json", data_files=dataset_path)
     else:
         data = load_dataset(dataset_path)
-    
+
     # For illustration purpose, only use part of data to train
     data = data["train"].train_test_split(train_size=0.1, shuffle=False)
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     prompter = Prompter("alpaca")
     train_data, _ = get_train_val_data(data, tokenizer, prompter, train_on_inputs=True,
                                        add_eos_token=False, cutoff_len=256, val_set_size=0, seed=42)
-    
+
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_use_double_quant=False,
@@ -79,11 +79,11 @@ if __name__ == "__main__":
     # model.gradient_checkpointing_enable()
     model = prepare_model_for_kbit_training(model)
     config = LoraConfig(
-        r=8, 
-        lora_alpha=32, 
-        target_modules=["q_proj", "k_proj", "v_proj"], 
-        lora_dropout=0.05, 
-        bias="none", 
+        r=8,
+        lora_alpha=32,
+        target_modules=["q_proj", "k_proj", "v_proj"],
+        lora_dropout=0.05,
+        bias="none",
         task_type="CAUSAL_LM",
     )
     model = get_peft_model(model, config)
