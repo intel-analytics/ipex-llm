@@ -18,8 +18,9 @@
 import torch
 import numpy as np
 import os
-from .common import update_names_of_IR_and_export_blob, LLMEmbedding, LowBitLLMLMHead, \
-    obtain_weight_from_single_layer, obtain_qkv_bias_from_single_layer
+from .common import update_names_of_IR_and_export_blob, LowBitLLMLMHead, \
+    obtain_weight_from_single_layer, obtain_qkv_bias_from_single_layer, \
+    obtain_embedding_from_model
 from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 
 
@@ -107,63 +108,10 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
         bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
         weight.tofile(bin_file)
 
-    if hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached"):
-        embedding_layer = model.model.embed_tokens
-        new_embedding = LLMEmbedding(
-            vocab_size=model.config.vocab_size,
-            embedding_dim=model.config.hidden_size,
-            embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
-            padding_idx=model.config.pad_token_id,
-            dtype=np.float16,
-            input_length=1,
-        )
-        if convert_model:
-            bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
-            embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
-            first_blob_path = True
-        else:
-            first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
-                                                                 temp_dir, keep_ir=keep_ir,
-                                                                 compile_blob=compile_blob)
-            os.remove(os.path.join(temp_dir, "embedding.bin"))
-    else:
-        # transformers >= 4.45.0
-        from .llama import Llama32Embedding, Llama32PostEmbedding
-        embedding_layer = model.model.embed_tokens
-        new_embedding = Llama32Embedding(
-            vocab_size=model.config.vocab_size,
-            embedding_dim=model.config.hidden_size,
-            embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
-            padding_idx=model.config.pad_token_id,
-            inv_freq=model.model.rotary_emb.inv_freq.to(torch.float16),
-            attention_scaling=model.model.rotary_emb.attention_scaling,
-            dtype=np.float16,
-        )
-        if convert_model:
-            bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
-            embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
-            first_blob_path = None
-            # save embedding post module
-            inv_freq = model.model.rotary_emb.inv_freq.to(torch.float16)
-            attention_scaling = model.model.rotary_emb.attention_scaling
-            embedding_post = Llama32PostEmbedding(inv_freq=inv_freq,
-                                                  attention_scaling=attention_scaling,
-                                                  input_len=1)
-            update_names_of_IR_and_export_blob(embedding_post, "embedding_post",
-                                               temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
-            embedding_post_prefill = Llama32PostEmbedding(inv_freq=inv_freq,
-                                                          attention_scaling=attention_scaling,
-                                                          input_len=max_prompt_len)
-            update_names_of_IR_and_export_blob(embedding_post_prefill,
-                                               "embedding_post_prefill",
-                                               temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
-            os.remove(os.path.join(temp_dir, "embedding_post.bin"))
-            os.remove(os.path.join(temp_dir, "embedding_post_prefill.bin"))
-        else:
-            first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
-                                                                 temp_dir, keep_ir=keep_ir,
-                                                                 compile_blob=compile_blob)
-            os.remove(os.path.join(temp_dir, "embedding.bin"))
+    first_blob_path = obtain_embedding_from_model(model, convert_model,
+                                                  temp_dir, weight_dir,
+                                                  max_prompt_len,
+                                                  keep_ir, compile_blob)
     return first_blob_path, last_blob_path
 
 
