@@ -324,7 +324,7 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
-        
+
         if not const_parameter:
             input_layer_norm_weights = None
             post_attn_layernorm_weights = None
