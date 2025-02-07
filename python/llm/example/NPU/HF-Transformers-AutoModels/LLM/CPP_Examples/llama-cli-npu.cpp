@@ -34,6 +34,7 @@ const std::string llama2_template = "<s>[INST] <<SYS>>\n\n<</SYS>>\n\n%s [/INST]
 const std::string llama3_template = "<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n%s<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n";
 const std::string minicpm_template = "<用户>%s<AI>";
 const std::string qwen2_template = "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\n%s<|im_end|>\n<|im_start|>assistant\n";
+const std::string qwen2_deepseek_template = "<｜begin▁of▁sentence｜><｜begin▁of▁sentence｜>You are a helpful assistant.<｜User｜>%s<｜Assistant｜>";
 
 
 std::string add_chat_history(npu_model_params model_params,
@@ -63,6 +64,20 @@ std::string add_chat_history(npu_model_params model_params,
             }
             else{
                 std::string res_template = "%s<|start_header_id|>assistant<|end_header_id|>\n\n%s<|eot_id|>";
+                sprintf_s(prompt, res_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+        }
+    } else if (model_params.model_type == std::string("qwen2") && model_params.max_position_embeddings == 131072) {
+        // For DeepSeek-R1
+        if (chat_history == ""){
+            sprintf_s(prompt, qwen2_deepseek_template.c_str(), new_prompt.c_str());
+        }else{
+            if (is_input){
+                std::string input_template = "%s%s<｜Assistant｜>";
+                sprintf_s(prompt, input_template.c_str(), chat_history.c_str(), new_prompt.c_str());
+            }
+            else{
+                std::string res_template = "%s%s<｜User｜>";
                 sprintf_s(prompt, res_template.c_str(), chat_history.c_str(), new_prompt.c_str());
             }
         }

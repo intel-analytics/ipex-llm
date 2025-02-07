@@ -11,6 +11,7 @@ In this directory, you will find a C++ example on how to run LLM models on Intel
 | Qwen2 | [Qwen/Qwen2-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2-1.5B-Instruct), [Qwen/Qwen2-7B-Instruct](https://huggingface.co/Qwen/Qwen2-7B-Instruct) |
 | Qwen2.5 | [Qwen/Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct), [Qwen/Qwen2.5-7B-Instruct](https://huggingface.co/Qwen/Qwen2.5-7B-Instruct) |
 | MiniCPM | [openbmb/MiniCPM-1B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-1B-sft-bf16), [openbmb/MiniCPM-2B-sft-bf16](https://huggingface.co/openbmb/MiniCPM-2B-sft-bf16) |
+| DeepSeek-R1 | [DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B), [DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) |
 
 Please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#c-api) for details about verified platforms.
 
@@ -72,6 +73,12 @@ python convert.py --repo-id-or-model-path openbmb/MiniCPM-1B-sft-bf16 --save-di
 
 :: to convert MiniCPM-2B-sft-bf16
 python convert.py --repo-id-or-model-path openbmb/MiniCPM-2B-sft-bf16 --save-directory <converted_model_path>
+
+:: to convert DeepSeek-R1-Distill-Qwen-1.5B
+python convert.py --repo-id-or-model-path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B  --save-directory <converted_model_path>
+
+:: to convert DeepSeek-R1-Distill-Qwen-7B
+python convert.py --repo-id-or-model-path deepseek-ai/DeepSeek-R1-Distill-Qwen-7B  --save-directory <converted_model_path>
 ```
 
 Arguments info:
