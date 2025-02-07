@@ -24,7 +24,7 @@ from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 
 
 def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
-                                  convert_model=False, group_size=0,
+                                  convert_model=False, group_size=0, max_prompt_len=1,
                                   keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     head_dim = model.model.layers[0].self_attn.head_dim
@@ -107,24 +107,63 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
         bin_file = os.path.join(weight_dir, f"model_lm_head_input_{1+idx}.bin")
         weight.tofile(bin_file)
 
-    embedding_layer = model.model.embed_tokens
-    new_embedding = LLMEmbedding(
-        vocab_size=model.config.vocab_size,
-        embedding_dim=model.config.hidden_size,
-        embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
-        padding_idx=model.config.pad_token_id,
-        dtype=np.float16,
-        input_length=1,
-    )
-    if convert_model:
-        bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
-        embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
-        first_blob_path = True
+    if hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached"):
+        embedding_layer = model.model.embed_tokens
+        new_embedding = LLMEmbedding(
+            vocab_size=model.config.vocab_size,
+            embedding_dim=model.config.hidden_size,
+            embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
+            padding_idx=model.config.pad_token_id,
+            dtype=np.float16,
+            input_length=1,
+        )
+        if convert_model:
+            bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
+            embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
+            first_blob_path = True
+        else:
+            first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
+                                                                temp_dir, keep_ir=keep_ir,
+                                                                compile_blob=compile_blob)
+            os.remove(os.path.join(temp_dir, "embedding.bin"))
     else:
-        first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
-                                                             temp_dir, keep_ir=keep_ir,
-                                                             compile_blob=compile_blob)
-        os.remove(os.path.join(temp_dir, "embedding.bin"))
+        # transformers >= 4.45.0
+        from .llama import Llama32Embedding, Llama32PostEmbedding
+        embedding_layer = model.model.embed_tokens
+        new_embedding = Llama32Embedding(
+            vocab_size=model.config.vocab_size,
+            embedding_dim=model.config.hidden_size,
+            embedding_weight=embedding_layer.weight.to(torch.float16).detach().numpy(),
+            padding_idx=model.config.pad_token_id,
+            inv_freq=model.model.rotary_emb.inv_freq.to(torch.float16),
+            attention_scaling=model.model.rotary_emb.attention_scaling,
+            dtype=np.float16,
+        )
+        if convert_model:
+            bin_file = os.path.join(weight_dir, f"model_embedding_input_0.bin")
+            embedding_layer.weight.to(torch.float16).detach().numpy().tofile(bin_file)
+            first_blob_path = None
+            # save embedding post module
+            inv_freq = model.model.rotary_emb.inv_freq.to(torch.float16)
+            attention_scaling = model.model.rotary_emb.attention_scaling
+            embedding_post = Llama32PostEmbedding(inv_freq=inv_freq,
+                                                  attention_scaling=attention_scaling,
+                                                  input_len=1)
+            update_names_of_IR_and_export_blob(embedding_post, "embedding_post",
+                                               temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
+            embedding_post_prefill = Llama32PostEmbedding(inv_freq=inv_freq,
+                                                          attention_scaling=attention_scaling,
+                                                          input_len=max_prompt_len)
+            update_names_of_IR_and_export_blob(embedding_post_prefill,
+                                               "embedding_post_prefill",
+                                               temp_dir, keep_ir=keep_ir, compile_blob=compile_blob)
+            os.remove(os.path.join(temp_dir, "embedding_post.bin"))
+            os.remove(os.path.join(temp_dir, "embedding_post_prefill.bin"))
+        else:
+            first_blob_path = update_names_of_IR_and_export_blob(new_embedding, "embedding",
+                                                                 temp_dir, keep_ir=keep_ir,
+                                                                 compile_blob=compile_blob)
+            os.remove(os.path.join(temp_dir, "embedding.bin"))
     return first_blob_path, last_blob_path
 
 
@@ -145,8 +184,13 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     mlp_layer = curr_layer.mlp
     weights = obtain_weight_from_single_layer(attn_layer, mlp_layer)
     q_bias, k_bias, v_bias = obtain_qkv_bias_from_single_layer(attn_layer)
-    cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
-    cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+    if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
+        cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
+        cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+    else:
+        # transformers >= 4.45.0
+        cached_cos = None
+        cached_sin = None
     layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
     layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
@@ -158,10 +202,12 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     if mode == "decode":
         input_len = 1
         decoder_name = f"decoder_layer_{layer_idx}"
+        keep_position_ids = True
         npu_dpu_groups = None
     else:
         input_len = kv_len
         decoder_name = "decoder_layer_prefill"
+        keep_position_ids = False
         npu_dpu_groups = 6
 
     single_decoder = LowBitQwenMultiDecoderlayer(
@@ -185,6 +231,8 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
         n_splits_linear=n_splits_linear,
         n_splits_down_proj=n_splits_down_proj,
         group_size=group_size,
+        cos_len=input_len,
+        keep_position_ids=keep_position_ids,
         asym=asym
     )
     rest_blob_path = update_names_of_IR_and_export_blob(single_decoder,
@@ -196,14 +244,25 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
 
     # 0, 1, 2 are input_embed/attention_mask/position_id
     if mode == "decode":
-        if layernorm_const:
-            st_idx = 3
+        if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
+            if layernorm_const:
+                st_idx = 3
+            else:
+                input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
+                post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
+                layer_norm_0.data.numpy().tofile(input_lm_bin_file)
+                layer_norm_1.data.numpy().tofile(post_lm_bin_file)
+                st_idx = 5
         else:
-            input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
-            post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
-            layer_norm_0.data.numpy().tofile(input_lm_bin_file)
-            layer_norm_1.data.numpy().tofile(post_lm_bin_file)
-            st_idx = 5
+            # transformers >= 4.45.0
+            if layernorm_const:
+                st_idx = 4
+            else:
+                input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
+                post_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_5.bin")
+                layer_norm_0.data.numpy().tofile(input_lm_bin_file)
+                layer_norm_1.data.numpy().tofile(post_lm_bin_file)
+                st_idx = 6
         q_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx}.bin")
         k_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+1}.bin")
         v_bias_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_{st_idx+2}.bin")
@@ -261,8 +320,13 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             attn_layer = curr_layer.self_attn
             mlp_layer = curr_layer.mlp
             weights = obtain_weight_from_single_layer(attn_layer, mlp_layer)
-            cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
-            cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+            if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
+                cached_cos = curr_layer.self_attn.rotary_emb.cos_cached.to(torch.float16)
+                cached_sin = curr_layer.self_attn.rotary_emb.sin_cached.to(torch.float16)
+            else:
+                # transformers >= 4.45.0
+                cached_cos = None
+                cached_sin = None
             layer_norm_0 = curr_layer.input_layernorm.weight.to(torch.float16)
             layer_norm_1 = curr_layer.post_attention_layernorm.weight.to(torch.float16)
 
