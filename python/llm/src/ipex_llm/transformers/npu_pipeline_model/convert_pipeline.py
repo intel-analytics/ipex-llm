@@ -31,7 +31,6 @@ import tempfile
 import numpy as np
 from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 from multiprocessing import Pool
-import transformers
 
 
 def generate(
@@ -201,7 +200,7 @@ def convert_llm(model: torch.nn.Module,
                 keep_ir: bool=False,
                 compile_blob: bool=True):
     # whether to set layernorm weight as const
-    layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
+    const_parameter = os.environ.get("IPEX_LLM_NPU_CONST_PARAMETER", "1") == "1"
     if group_size == 0:
         n_splits_linear = 1
         if qtype in ["sym_int8_rtn", "asym_int4_rtn"]:
@@ -240,7 +239,7 @@ def convert_llm(model: torch.nn.Module,
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
                                    temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                                   layernorm_const))
+                                   const_parameter))
             with Pool() as pool:
                 result = pool.starmap(convert_llama_layer, param_list)
 
@@ -267,7 +266,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline(model_type, kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
+                                      os.path.join(temp_dir, "decoder_layer"), const_parameter)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
@@ -284,7 +283,7 @@ def convert_llm(model: torch.nn.Module,
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                                  layernorm_const))
+                                  const_parameter))
             with Pool() as pool:
                 result = pool.starmap(convert_baichuan_layer, param_list)
 
@@ -308,7 +307,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("baichuan", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
+                                      os.path.join(temp_dir, "decoder_layer"), const_parameter)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
@@ -325,7 +324,7 @@ def convert_llm(model: torch.nn.Module,
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
                                    temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                                   layernorm_const))
+                                   const_parameter))
             with Pool() as pool:
                 result = pool.starmap(convert_minicpm_layer, param_list)
 
@@ -348,12 +347,12 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("minicpm", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
+                                      os.path.join(temp_dir, "decoder_layer"), const_parameter)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
     elif model.config.model_type == "qwen2":
-        layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "0") == "1"
+        const_parameter = os.environ.get("IPEX_LLM_NPU_const_parameter", "0") == "1"
         with tempfile.TemporaryDirectory() as temp_dir:
             if save_directory is not None:
                 temp_dir = save_directory
@@ -371,7 +370,7 @@ def convert_llm(model: torch.nn.Module,
             for layer_idx in range(0, layer_num):
                 param_list.append((model, layer_idx, n_splits_linear, n_splits_down_proj,
                                   temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                                  layernorm_const))
+                                  const_parameter))
             with Pool() as pool:
                 result = pool.starmap(convert_qwen_layer, param_list)
 
@@ -396,7 +395,7 @@ def convert_llm(model: torch.nn.Module,
                                "head_dim": model.head_dim,
                                "transpose_value_cache": transpose_value_cache,
                                "max_prompt_len": max_prompt_len,
-                               "layernorm_const": layernorm_const,
+                               "const_parameter": const_parameter,
                                "group_size":  group_size}
                 model.config.update(update_dict)
                 model.config.save_pretrained(save_directory)
@@ -405,7 +404,7 @@ def convert_llm(model: torch.nn.Module,
                 res = InitLLMPipeline("qwen", kv_len, model.num_head, model.head_dim, layer_num,
                                       model.vocab_size, weight_dir, "model",
                                       first_blob_path, last_blob_path,
-                                      os.path.join(temp_dir, "decoder_layer"), layernorm_const)
+                                      os.path.join(temp_dir, "decoder_layer"), const_parameter)
             except:
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
@@ -459,8 +458,6 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         custom_object_save(model, save_directory, config=model.config)
 
     if model.config.model_type == "qwen2":
-        cos_sin_input = not hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached")
-        embedding_post = not hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached")
         if group_size == 0:
             if model.config.hidden_size == 1536:
                 # Qwen2-1.5B-Instruct
@@ -474,15 +471,13 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
                        "transpose_value_cache": transpose_value_cache,
                        "max_prompt_len": max_prompt_len,
-                       "layernorm_const": const_parameter,
+                       "const_parameter": const_parameter,
                        "group_size":  group_size,
                        "fused_layers": fused_layers,
                        "qkv_bias": True,
                        "use_prefill_sdp": False,
                        "weight_num": 7,
                        "weight_idx": 8,
-                       "embedding_post": embedding_post,
-                       "cos_sin_input": cos_sin_input,
                        "n_splits_linear": n_splits_linear,
                        "n_splits_down_proj": n_splits_down_proj,
                        "lm_head_low_bit": lm_head_low_bit}
@@ -500,8 +495,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            group_size, const_parameter, "prefill",
                            keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of lmhead and bin of embedding
-        convert_lm_head_and_embedding(model, save_directory, weight_dir, convert_model=True,
-                                      group_size=group_size, max_prompt_len=max_prompt_len,
+        convert_lm_head_and_embedding(model, save_directory, weight_dir,
+                                      convert_model=True, group_size=group_size,
                                       keep_ir=keep_ir, compile_blob=compile_blob)
     elif model.config.model_type == "llama":
         embedding_post = False
@@ -537,7 +532,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
                        "transpose_value_cache": transpose_value_cache,
                        "max_prompt_len": max_prompt_len,
-                       "layernorm_const": const_parameter,
+                       "const_parameter": const_parameter,
                        "group_size":  group_size,
                        "fused_layers": fused_layers,
                        "qkv_bias": False,
@@ -578,7 +573,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
                        "transpose_value_cache": transpose_value_cache,
                        "max_prompt_len": max_prompt_len,
-                       "layernorm_const": const_parameter,
+                       "const_parameter": const_parameter,
                        "group_size":  group_size,
                        "fused_layers": fused_layers,
                        "qkv_bias": False,
