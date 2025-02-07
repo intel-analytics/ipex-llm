@@ -441,9 +441,9 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     weight_dir = os.path.join(save_directory, "model_weights")
     if not os.path.exists(weight_dir):
         os.mkdir(weight_dir)
-    layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
+    const_parameter = os.environ.get("IPEX_LLM_NPU_CONST_PARAMETER", "1") == "1"
     if keep_ir:
-        layernorm_const = False
+        const_parameter = False
 
     lm_head_low_bit = getattr(model.config, "bigdl_transformers_low_bit", "sym_int4_rtn")
     if hasattr(model, "lm_head") and not isinstance(model.lm_head, SlicedLMHead):
@@ -474,7 +474,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
                        "transpose_value_cache": transpose_value_cache,
                        "max_prompt_len": max_prompt_len,
-                       "layernorm_const": layernorm_const,
+                       "layernorm_const": const_parameter,
                        "group_size":  group_size,
                        "fused_layers": fused_layers,
                        "qkv_bias": True,
@@ -492,12 +492,12 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         # save fused_layers blobs of fused decoder layers
         convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                                  save_directory, weight_dir, transpose_value_cache, kv_len,
-                                 group_size, layernorm_const, "decode",
+                                 group_size, const_parameter, "decode",
                                  keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of single prefill layer
         convert_qwen_layer(model, 0, n_splits_linear, n_splits_down_proj,
                            save_directory, weight_dir, transpose_value_cache, max_prompt_len,
-                           group_size, layernorm_const, "prefill",
+                           group_size, const_parameter, "prefill",
                            keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of lmhead and bin of embedding
         convert_lm_head_and_embedding(model, save_directory, weight_dir, convert_model=True,
@@ -537,7 +537,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
                        "transpose_value_cache": transpose_value_cache,
                        "max_prompt_len": max_prompt_len,
-                       "layernorm_const": layernorm_const,
+                       "layernorm_const": const_parameter,
                        "group_size":  group_size,
                        "fused_layers": fused_layers,
                        "qkv_bias": False,
@@ -561,12 +561,12 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         # save fused_layers blobs of fused decoder layers
         convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                                   save_directory, weight_dir, transpose_value_cache, kv_len,
-                                  group_size, layernorm_const, "decode",
+                                  group_size, const_parameter, "decode",
                                   keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of single prefill layer
         convert_llama_layer(model, 0, n_splits_linear, n_splits_down_proj,
                             save_directory, weight_dir, transpose_value_cache, max_prompt_len,
-                            group_size, layernorm_const, "prefill",
+                            group_size, const_parameter, "prefill",
                             keep_ir=keep_ir, compile_blob=compile_blob)
     elif model.config.model_type == "minicpm":
         if group_size == 0:
@@ -578,7 +578,7 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "head_dim": model.model.layers[0].self_attn.head_dim,
                        "transpose_value_cache": transpose_value_cache,
                        "max_prompt_len": max_prompt_len,
-                       "layernorm_const": layernorm_const,
+                       "layernorm_const": const_parameter,
                        "group_size":  group_size,
                        "fused_layers": fused_layers,
                        "qkv_bias": False,
@@ -596,12 +596,12 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         # save fused_layers blobs of fused decoder layers
         convert_fused_minicpm_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                                     save_directory, weight_dir, transpose_value_cache, kv_len,
-                                    group_size, layernorm_const, "decode",
+                                    group_size, const_parameter, "decode",
                                     keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of single prefill layer
         convert_minicpm_layer(model, 0, n_splits_linear, n_splits_down_proj,
                               save_directory, weight_dir, transpose_value_cache, max_prompt_len,
-                              group_size, layernorm_const, "prefill",
+                              group_size, const_parameter, "prefill",
                               keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of lmhead and bin of embedding and embedding_post
         convert_lm_head_and_embedding(model, n_splits_linear,

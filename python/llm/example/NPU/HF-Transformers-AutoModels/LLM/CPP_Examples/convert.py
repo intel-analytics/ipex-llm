@@ -58,6 +58,16 @@ if __name__ == "__main__":
     model_path = args.repo_id_or_model_path
     save_dir = args.save_directory
 
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
+    trans_version = transformers.__version__
+    if version.parse(trans_version) >= version.parse("4.45.0"):
+        tokenizer_json = os.path.join(model_path, "tokenizer.json")
+        dst_path = os.path.join(save_dir, "tokenizer.json")
+        shutil.copy(tokenizer_json, dst_path)
+    else:
+        tokenizer.save_pretrained(save_dir)
+
     t0 = time.perf_counter()
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  optimize_model=True,
@@ -73,15 +83,6 @@ if __name__ == "__main__":
                                                  compile_blob=not args.disable_compile_blob)
     t1 = time.perf_counter()
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-
-    trans_version = transformers.__version__
-    if version.parse(trans_version) >= version.parse("4.45.0"):
-        tokenizer_json = os.path.join(model_path, "tokenizer.json")
-        dst_path = os.path.join(save_dir, "tokenizer.json")
-        shutil.copy(tokenizer_json, dst_path)
-    else:
-        tokenizer.save_pretrained(save_dir)
 
     print("-" * 80)
     print(f"Convert model cost {t1 - t0}s.")
