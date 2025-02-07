@@ -29,7 +29,8 @@ from typing_extensions import assert_never
 import vllm.envs as envs
 from vllm.config import ModelConfig
 from vllm.engine.arg_utils import AsyncEngineArgs
-from vllm.engine.async_llm_engine import AsyncLLMEngine  # type: ignore
+# from vllm.engine.async_llm_engine import AsyncLLMEngine  # type: ignore
+from ipex_llm.vllm.cpu.engine import IPEXLLMAsyncLLMEngine as AsyncLLMEngine
 from vllm.engine.multiprocessing.client import MQLLMEngineClient
 from ipex_llm.vllm.cpu.engine import run_mp_engine
 from vllm.engine.protocol import EngineClient
