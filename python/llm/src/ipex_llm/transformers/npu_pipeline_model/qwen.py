@@ -123,8 +123,8 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
             first_blob_path = True
         else:
             first_blob_path = update_names_of_IR_and_export_blob(new_embedding, f"embedding",
-                                                                temp_dir, keep_ir=keep_ir,
-                                                                compile_blob=compile_blob)
+                                                                 temp_dir, keep_ir=keep_ir,
+                                                                 compile_blob=compile_blob)
             os.remove(os.path.join(temp_dir, "embedding.bin"))
     else:
         # transformers >= 4.45.0
