@@ -353,7 +353,7 @@ def convert_llm(model: torch.nn.Module,
                 invalidInputError(False,
                                   "False to InitLLMPipeline.")
     elif model.config.model_type == "qwen2":
-        const_parameter = os.environ.get("IPEX_LLM_NPU_const_parameter", "0") == "1"
+        const_parameter = os.environ.get("IPEX_LLM_NPU_CONST_PARAMETER", "0") == "1"
         with tempfile.TemporaryDirectory() as temp_dir:
             if save_directory is not None:
                 temp_dir = save_directory
@@ -500,8 +500,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            group_size, const_parameter, "prefill",
                            keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of lmhead and bin of embedding
-        convert_lm_head_and_embedding(model, save_directory, weight_dir,
-                                      convert_model=True, group_size=group_size,
+        convert_lm_head_and_embedding(model, save_directory, weight_dir, convert_model=True,
+                                      group_size=group_size, max_prompt_len=max_prompt_len,
                                       keep_ir=keep_ir, compile_blob=compile_blob)
     elif model.config.model_type == "llama":
         embedding_post = False
