@@ -98,6 +98,8 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         n_splits_linear: int = 1,
         n_splits_down_proj: int = 1,
         group_size: int = 0,
+        cos_len: int = 1,
+        keep_position_ids=True,
         asym: bool = False,
     ):
         super().__init__(max_seq_len=max_seq_len,
@@ -114,17 +116,12 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         self.dtype = dtype
         self.cached_cos = cached_cos
         self.cached_sin = cached_sin
+        self.cos_len = cos_len
         self.batch_size, self.seq_len, self.hidden_size = hidden_shape
         self.mode = mode
         self.rms_norm_eps = rms_norm_eps
         self.transpose_value = transpose_value
         self.num_layers = num_layers
-
-        cos = self.constant(self.cached_cos)
-        self.cos = self.unsqueeze(cos, axis=0)
-
-        sin = self.constant(self.cached_sin)
-        self.sin = self.unsqueeze(sin, axis=0)
 
         if mode == "decode":
             self.kv_seq_len = self.max_seq_len + 1
@@ -148,7 +145,21 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
             attention_mask = self.create_input_op(
                 (self.batch_size, 1, self.seq_len, self.seq_len), dtype=np.float16)
 
-        position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
+        if self.cached_cos is None:
+            if mode == "prefill" and keep_position_ids:
+                position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
+            cos = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
+                                       dtype=np.float32)
+            self.cos = self.convert_to_fp16(cos)
+            sin = self.create_input_op((self.batch_size, self.cos_len, self.head_dim),
+                                       dtype=np.float32)
+            self.sin = self.convert_to_fp16(sin)
+        else:
+            position_ids = self.create_input_op((self.batch_size, self.seq_len), dtype=np.int64)
+            cos = self.constant(self.cached_cos)
+            self.cos = self.unsqueeze(cos, axis=0)
+            sin = self.constant(self.cached_sin)
+            self.sin = self.unsqueeze(sin, axis=0)
 
         if input_layernorm_weights is None:
             input_layernorm_weights = []
@@ -211,11 +222,12 @@ class LowBitQwenMultiDecoderlayer(LLMBaseNNFactory):
         hidden_states = input
 
         curr_key_values = []
+        cos_condition = cached_cos is not None or (mode == "prefill" and keep_position_ids)
         for i in range(num_layers):
             hidden_states, new_key_states, new_value_states = self.build_decoder(
                 hidden_states=hidden_states,
                 attention_mask=attention_mask,
-                position_ids=position_ids,
+                position_ids=position_ids if cos_condition else None,
                 input_layernorm_weight=input_layernorm_weights[i],
                 post_attention_layernorm_weight=post_attn_layernorm_weights[i],
                 q_bias=q_biases[i],

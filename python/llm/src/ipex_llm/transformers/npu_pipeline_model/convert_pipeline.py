@@ -31,6 +31,7 @@ import tempfile
 import numpy as np
 from ipex_llm.transformers.npu_models.lm_head import SlicedLMHead
 from multiprocessing import Pool
+import transformers
 
 
 def generate(
@@ -456,6 +457,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
         custom_object_save(model, save_directory, config=model.config)
 
     if model.config.model_type == "qwen2":
+        cos_sin_input = not hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached")
+        embedding_post = not hasattr(model.model.layers[0].self_attn.rotary_emb, "cos_cached")
         if group_size == 0:
             if model.config.hidden_size == 1536:
                 # Qwen2-1.5B-Instruct
@@ -476,6 +479,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                        "use_prefill_sdp": False,
                        "weight_num": 7,
                        "weight_idx": 8,
+                       "embedding_post": embedding_post,
+                       "cos_sin_input": cos_sin_input,
                        "n_splits_linear": n_splits_linear,
                        "n_splits_down_proj": n_splits_down_proj,
                        "lm_head_low_bit": lm_head_low_bit}
@@ -493,8 +498,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
                            group_size, layernorm_const, "prefill",
                            keep_ir=keep_ir, compile_blob=compile_blob)
         # save blob of lmhead and bin of embedding
-        convert_lm_head_and_embedding(model, save_directory, weight_dir,
-                                      convert_model=True, group_size=group_size,
+        convert_lm_head_and_embedding(model, save_directory, weight_dir, convert_model=True,
+                                      group_size=group_size, max_prompt_len=max_prompt_len,
                                       keep_ir=keep_ir, compile_blob=compile_blob)
     elif model.config.model_type == "llama":
         embedding_post = False
