@@ -280,8 +280,7 @@ def setup_package():
 
     oneapi_2024_0_requires = ["dpcpp-cpp-rt==2024.0.2;platform_system=='Windows'",
                               "mkl-dpcpp==2024.0.0;platform_system=='Windows'"]
-    oneapi_2024_2_requires = ["dpcpp-cpp-rt==2024.2.1;platform_system=='Windows'",
-                              "mkl-dpcpp==2024.2.1;platform_system=='Windows'"]
+
     # Linux install with --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
     xpu_21_requires = copy.deepcopy(all_requires)
     for exclude_require in cpu_torch_version:
@@ -326,16 +325,11 @@ def setup_package():
                         "dpcpp-cpp-rt==2025.0.2"]
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
-                    "onednn-devel==2024.2.1;platform_system=='Windows'",
-                    "onednn==2024.2.1;platform_system=='Windows'"]
-    cpp_requires += oneapi_2024_2_requires
+                    "onednn-devel==2025.0.1;platform_system=='Windows'",
+                    "onednn==2025.0.1;platform_system=='Windows'",
+                    "dpcpp-cpp-rt==2025.0.2;platform_system=='Windows'",
+                    "mkl-dpcpp==2025.0.1;platform_system=='Windows'"]
     cpp_requires += COMMON_DEP
-
-    cpp_arl_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
-                        "onednn-devel==2024.1.1;platform_system=='Windows'",
-                        "onednn==2024.1.1;platform_system=='Windows'"]
-    cpp_arl_requires += oneapi_2024_2_requires
-    cpp_arl_requires += COMMON_DEP
 
     serving_requires = ['py-cpuinfo']
     serving_requires += SERVING_DEP
@@ -378,7 +372,6 @@ def setup_package():
                         "xpu-2-6": xpu_26_requires,
                         "serving": serving_requires,
                         "cpp": cpp_requires,
-                        "cpp-arl": cpp_arl_requires,
                         "llama-index": llama_index_requires}, # for internal usage when upstreaming for llama-index
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
