@@ -324,6 +324,13 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
+        
+        if not layernorm_const:
+            input_layer_norm_weights = None
+            post_attn_layernorm_weights = None
+            q_biases = None
+            k_biases = None
+            v_biases = None
 
         fused_decoder = LowBitQwenMultiDecoderlayer(
             [1, 1, num_heads * head_dim],

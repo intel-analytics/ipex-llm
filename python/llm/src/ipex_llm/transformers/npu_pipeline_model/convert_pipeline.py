@@ -442,6 +442,8 @@ def convert_llm_for_deploy(model: torch.nn.Module,
     if not os.path.exists(weight_dir):
         os.mkdir(weight_dir)
     layernorm_const = os.environ.get("IPEX_LLM_NPU_LAYERNORM_CONST", "1") == "1"
+    if keep_ir:
+        layernorm_const = False
 
     lm_head_low_bit = getattr(model.config, "bigdl_transformers_low_bit", "sym_int4_rtn")
     if hasattr(model, "lm_head") and not isinstance(model.lm_head, SlicedLMHead):
