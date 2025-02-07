@@ -325,10 +325,10 @@ def setup_package():
                         "dpcpp-cpp-rt==2025.0.2"]
 
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
-                    "onednn-devel==2025.0.1",
-                    "onednn==2025.0.1",
-                    "dpcpp-cpp-rt==2025.0.2",
-                    "mkl-dpcpp==2025.0.1"]
+                    "onednn-devel==2025.0.1;platform_system=='Windows'",
+                    "onednn==2025.0.1;platform_system=='Windows'",
+                    "dpcpp-cpp-rt==2025.0.2;platform_system=='Windows'",
+                    "mkl-dpcpp==2025.0.1;platform_system=='Windows'"]
     cpp_requires += COMMON_DEP
 
     serving_requires = ['py-cpuinfo']
