@@ -12,10 +12,10 @@ conda create -n llm python=3.11
 conda activate llm
 # below command will install intel_extension_for_pytorch==2.1.10+xpu as default
 pip install --pre --upgrade ipex-llm[xpu] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
-pip install transformers==4.36.0 datasets
+pip install transformers==4.45.0 "trl<0.12.0" datasets
 pip install fire peft==0.10.0
+pip install bitsandbytes==0.45.1 scipy
 pip install oneccl_bind_pt==2.1.100 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ # necessary to run distributed finetuning
-pip install bitsandbytes scipy
 ```
 
 ### 2. Configures OneAPI environment variables
@@ -63,14 +63,14 @@ python ./alpaca_relora_finetuning.py \
 
 ### 5. Sample Output
 ```log
-{'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}                                                                                                                            
-{'loss': 1.8622, 'learning_rate': 2.9999781468531096e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.9043, 'learning_rate': 2.9999508305687345e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.8967, 'learning_rate': 2.999912588049185e-05, 'epoch': 0.01}                                                                                                                            
-{'loss': 1.9658, 'learning_rate': 2.9998634195730358e-05, 'epoch': 0.01}                                                                                                                           
-{'loss': 1.8386, 'learning_rate': 2.9998033254984483e-05, 'epoch': 0.02}                                                                                                                           
-{'loss': 1.809, 'learning_rate': 2.999732306263172e-05, 'epoch': 0.02}                                                                                                                             
-{'loss': 1.8552, 'learning_rate': 2.9996503623845395e-05, 'epoch': 0.02}                                                                                                                           
+{'loss': 1.9231, 'learning_rate': 2.9999945367033285e-05, 'epoch': 0.0}
+{'loss': 1.8622, 'learning_rate': 2.9999781468531096e-05, 'epoch': 0.01}
+{'loss': 1.9043, 'learning_rate': 2.9999508305687345e-05, 'epoch': 0.01}
+{'loss': 1.8967, 'learning_rate': 2.999912588049185e-05, 'epoch': 0.01}
+{'loss': 1.9658, 'learning_rate': 2.9998634195730358e-05, 'epoch': 0.01}
+{'loss': 1.8386, 'learning_rate': 2.9998033254984483e-05, 'epoch': 0.02}
+{'loss': 1.809, 'learning_rate': 2.999732306263172e-05, 'epoch': 0.02}
+{'loss': 1.8552, 'learning_rate': 2.9996503623845395e-05, 'epoch': 0.02}
   1%|█                                                                                                                                                         | 8/1164 [xx:xx<xx:xx:xx, xx s/it]
 ```
 
