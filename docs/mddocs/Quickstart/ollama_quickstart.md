@@ -173,10 +173,12 @@ Ollama supports importing GGUF models in the Modelfile, for example, suppose you
 ```bash
 FROM ./mistral-7b-instruct-v0.1.Q4_K_M.gguf
 TEMPLATE [INST] {{ .Prompt }} [/INST]
-PARAMETER num_predict 64
+PARAMETER num_predict 1024
 ```
 
 Then you can create the model in Ollama by `ollama create example -f Modelfile` and use `ollama run` to run the model directly on console.
+> [!NOTE]  
+> If you get an incomplete response, consider adjusting the `num_predict` parameter to a higher number such as 2048 or 4096.
 
 - For **Linux users**:
   
