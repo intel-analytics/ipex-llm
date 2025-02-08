@@ -48,7 +48,7 @@ import logging
 import importlib
 from typing import Any, Dict, Generator, List, Optional
 
-from pydantic import Field, root_validator
+from langchain_core.pydantic_v1 import Field, root_validator
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM

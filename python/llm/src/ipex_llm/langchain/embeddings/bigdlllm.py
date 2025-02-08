@@ -49,7 +49,7 @@ import logging
 import importlib
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Extra, Field, root_validator
+from langchain_core.pydantic_v1 import BaseModel, Extra, Field, root_validator
 
 from langchain.embeddings.base import Embeddings
 from .transformersembeddings import TransformersEmbeddings
