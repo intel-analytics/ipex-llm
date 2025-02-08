@@ -46,7 +46,9 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 IPEX_LLM_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(IPEX_LLM_PYTHON_HOME,
                './llm/version.txt'), 'r').read().strip()
-CORE_XE_VERSION = VERSION.replace("2.2.0", "2.6.0")
+# CORE_XE_VERSION = VERSION.replace("2.2.0", "2.6.0")
+# temp change
+CORE_XE_VERSION = "2.6.0b20250207"
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
@@ -327,7 +329,7 @@ def setup_package():
     cpp_requires = ["bigdl-core-cpp==" + CORE_XE_VERSION,
                     "onednn-devel==2025.0.1;platform_system=='Windows'",
                     "onednn==2025.0.1;platform_system=='Windows'",
-                    "dpcpp-cpp-rt==2025.0.2;platform_system=='Windows'",
+                    "dpcpp-cpp-rt==2025.0.4;platform_system=='Windows'",
                     "mkl-dpcpp==2025.0.1;platform_system=='Windows'"]
     cpp_requires += COMMON_DEP
 
