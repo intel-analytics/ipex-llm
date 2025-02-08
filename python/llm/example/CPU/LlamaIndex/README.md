@@ -30,6 +30,7 @@ The RAG example ([rag.py](./rag.py)) is adapted from the [Official llama index R
         ```bash
         sudo apt-get install postgresql-client
         sudo apt-get install postgresql
+        sudo pgxn install vector
         ```
     * Initialization:
 
