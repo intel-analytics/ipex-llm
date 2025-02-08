@@ -107,7 +107,7 @@ def convert_lm_head_and_embedding(model, n_splits_linear, temp_dir, weight_dir,
 
 def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                         temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                        layernorm_const, mode="decode",
+                        const_parameter, mode="decode",
                         keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
@@ -145,14 +145,14 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     else:
         input_len = kv_len
         decoder_name = "decoder_layer_prefill"
-        layernorm_const = False
+        const_parameter = False
         keep_position_ids = False
         npu_dpu_groups = 6
 
     single_decoder = LowBitLlamaMultiDecoderlayer(
         [1, input_len, num_heads * head_dim],
-        input_layernorm_weights=[layer_norm_0] if layernorm_const else None,
-        post_attn_layernorm_weights=[layer_norm_1] if layernorm_const else None,
+        input_layernorm_weights=[layer_norm_0] if const_parameter else None,
+        post_attn_layernorm_weights=[layer_norm_1] if const_parameter else None,
         cached_cos=cached_cos,
         cached_sin=cached_sin,
         num_heads=num_heads,
@@ -182,7 +182,7 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     if mode == "decode":
         if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
             # llama-2-7B & llama-3-8B
-            if layernorm_const:
+            if const_parameter:
                 st_idx = 5
             else:
                 input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
@@ -192,7 +192,7 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                 st_idx = 7
         else:
             # llama-3.2-3B & llama-3.2-1B
-            if layernorm_const:
+            if const_parameter:
                 st_idx = 6
             else:
                 input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
@@ -223,7 +223,7 @@ def convert_llama_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
 
 def convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                               save_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                              layernorm_const, mode="decode",
+                              const_parameter, mode="decode",
                               keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
@@ -293,6 +293,10 @@ def convert_fused_llama_layer(model, fused_layers, n_splits_linear, n_splits_dow
             np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
+
+        if not const_parameter:
+            input_layer_norm_weights = None
+            post_attn_layernorm_weights = None
 
         fused_decoder = LowBitLlamaMultiDecoderlayer(
             [1, 1, num_heads * head_dim],

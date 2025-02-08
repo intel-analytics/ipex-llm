@@ -117,7 +117,7 @@ def convert_lm_head_and_embedding(model, temp_dir, weight_dir,
 
 def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                        temp_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                       layernorm_const, mode="decode",
+                       const_parameter, mode="decode",
                        keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
@@ -193,7 +193,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
     # 0, 1, 2 are input_embed/attention_mask/position_id
     if mode == "decode":
         if hasattr(curr_layer.self_attn.rotary_emb, "cos_cached"):
-            if layernorm_const:
+            if const_parameter:
                 st_idx = 3
             else:
                 input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_3.bin")
@@ -203,7 +203,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
                 st_idx = 5
         else:
             # transformers >= 4.45.0
-            if layernorm_const:
+            if const_parameter:
                 st_idx = 4
             else:
                 input_lm_bin_file = os.path.join(weight_dir, f"model_{layer_idx}_input_4.bin")
@@ -241,7 +241,7 @@ def convert_qwen_layer(model, layer_idx, n_splits_linear, n_splits_down_proj,
 
 def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down_proj,
                              save_dir, weight_dir, transpose_value_cache, kv_len, group_size,
-                             layernorm_const, mode="decode",
+                             const_parameter, mode="decode",
                              keep_ir=False, compile_blob=True):
     num_heads = model.model.layers[0].self_attn.num_heads
     num_key_value_heads = model.model.layers[0].self_attn.num_key_value_heads
@@ -324,6 +324,13 @@ def convert_fused_qwen_layer(model, fused_layers, n_splits_linear, n_splits_down
             np_dtype = np.int8 if weights[0][0].dtype == torch.int8 else np.uint8
         else:  # FP16 Linear
             np_dtype = np.float16
+
+        if not const_parameter:
+            input_layer_norm_weights = None
+            post_attn_layernorm_weights = None
+            q_biases = None
+            k_biases = None
+            v_biases = None
 
         fused_decoder = LowBitQwenMultiDecoderlayer(
             [1, 1, num_heads * head_dim],
