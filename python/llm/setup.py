@@ -54,8 +54,8 @@ libs_dir = os.path.join(llm_home, "ipex_llm", "libs")
 COMMON_DEP = ["setuptools"]
 cpu_torch_version = ["torch==2.1.2+cpu;platform_system=='Linux'", "torch==2.1.2;platform_system=='Windows'"]
 CONVERT_DEP = ['numpy == 1.26.4', # lastet 2.0.0b1 will cause error
-               'transformers == 4.37.0', 'sentencepiece', 'tokenizers == 0.15.2',
-               'accelerate == 0.23.0', 'tabulate'] + cpu_torch_version
+               'transformers == 4.41.2', 'sentencepiece', 'tokenizers == 0.19.1',
+               'accelerate == 0.23.0', 'tabulate', 'trl'] + cpu_torch_version
 
 SERVING_DEP = ['fschat[model_worker, webui] == 0.2.36', 'protobuf']
 windows_binarys = [
@@ -336,7 +336,7 @@ def setup_package():
     serving_requires += COMMON_DEP
 
     npu_requires = copy.deepcopy(all_requires)
-    cpu_transformers_version = ['transformers == 4.37.0', 'tokenizers == 0.15.2']
+    cpu_transformers_version = ['transformers == 4.41.2', 'tokenizers == 0.19.1']
     for exclude_require in cpu_transformers_version:
         npu_requires.remove(exclude_require)
     npu_requires += ["transformers==4.40.0",

@@ -96,7 +96,7 @@ class Test_Langchain_Transformers_API(TestCase):
 
         #get relavant texts
         docs = docsearch.get_relevant_documents(query)
-        bigdl_llm = TransformersLLM.from_model_id(model_id=self.auto_model_path, model_kwargs={'trust_remote_code': True})
+        bigdl_llm = TransformersLLM.from_model_id(model_id=self.auto_model_path, model_kwargs={'trust_remote_code': True, 'max_length': 512})
         doc_chain = load_qa_chain(bigdl_llm, chain_type="stuff", prompt=QA_PROMPT)
         output = doc_chain.run(input_documents=docs, question=query)
         res = "AI" in output
