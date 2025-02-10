@@ -30,7 +30,7 @@ class LoRAParserAction(argparse.Action):
         if values is None:
             values = []
         if isinstance(values, str):
-            raise TypeError("Expected values to be a list")
+            raise TypeError("Expected values to be a list")  # noqa
 
         lora_list: List[LoRAModulePath] = []
         for item in values:
@@ -66,7 +66,7 @@ class PromptAdapterParserAction(argparse.Action):
         if values is None:
             values = []
         if isinstance(values, str):
-            raise TypeError("Expected values to be a list")
+            raise TypeError("Expected values to be a list")  # noqa
 
         adapter_list: List[PromptAdapterPath] = []
         for item in values:
@@ -205,8 +205,7 @@ def make_arg_parser(parser: FlexibleArgumentParser) -> FlexibleArgumentParser:
         "--enable-auto-tool-choice",
         action="store_true",
         default=False,
-        help=
-        "Enable auto tool choice for supported models. Use --tool-call-parser"
+        help="Enable auto tool choice for supported models. Use --tool-call-parser"
         " to specify which parser to use")
 
     valid_tool_parsers = ToolParserManager.tool_parsers.keys()
@@ -216,8 +215,7 @@ def make_arg_parser(parser: FlexibleArgumentParser) -> FlexibleArgumentParser:
         metavar="{" + ",".join(valid_tool_parsers) + "} or name registered in "
         "--tool-parser-plugin",
         default=None,
-        help=
-        "Select the tool call parser depending on the model that you're using."
+        help="Select the tool call parser depending on the model that you're using."
         " This is used to parse the model-generated tool call into OpenAI API "
         "format. Required for --enable-auto-tool-choice.")
 
@@ -225,8 +223,7 @@ def make_arg_parser(parser: FlexibleArgumentParser) -> FlexibleArgumentParser:
         "--tool-parser-plugin",
         type=str,
         default="",
-        help=
-        "Special the tool parser plugin write to parse the model-generated tool"
+        help="Special the tool parser plugin write to parse the model-generated tool"
         " into OpenAI API format, the name register in this plugin can be used "
         "in --tool-call-parser.")
 
@@ -261,7 +258,7 @@ def make_arg_parser(parser: FlexibleArgumentParser) -> FlexibleArgumentParser:
 
 
 def validate_parsed_serve_args(args: argparse.Namespace):
-    """Quick checks for model serve args that raise prior to loading."""
+    """Quick checks for model serve args that raise prior to loading."""  # noqa
     if hasattr(args, "subparser") and args.subparser != "serve":
         return
 
@@ -270,7 +267,7 @@ def validate_parsed_serve_args(args: argparse.Namespace):
 
     # Enable auto tool needs a tool call parser to be valid
     if args.enable_auto_tool_choice and not args.tool_call_parser:
-        raise TypeError("Error: --enable-auto-tool-choice requires "
+        raise TypeError("Error: --enable-auto-tool-choice requires "  # noqa
                         "--tool-call-parser")
 
 

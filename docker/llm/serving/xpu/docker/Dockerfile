@@ -44,8 +44,6 @@ RUN apt-get update && \
     wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/intel-opencl-icd_24.52.32224.5_amd64.deb && \
     wget https://github.com/intel/compute-runtime/releases/download/24.52.32224.5/libigdgmm12_22.5.5_amd64.deb && \
     dpkg -i *.deb && \
-    # Install ipex-llm for xpu
-    # TODO: later change this...
     pip install --pre --upgrade ipex-llm[xpu_2.6] --extra-index-url https://download.pytorch.org/whl/test/xpu && \
     mkdir /build && \
     cd /build && \
@@ -62,7 +60,6 @@ RUN apt-get update && \
 
 FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04
 
-# TODO: copy from build for oneccl build
 COPY --from=build /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl /opt/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl
 
 ARG http_proxy
@@ -79,13 +76,6 @@ ARG PIP_NO_CACHE_DIR=false
 # ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
 # ADD ./oneccl-binding.patch /tmp/oneccl-binding.patch
 
-# RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \
-#     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " | tee /etc/apt/sources.list.d/oneAPI.list && \
-#     chmod 644 /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
-#     rm /etc/apt/sources.list.d/intel-graphics.list && \
-#     wget -O- https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor | tee /usr/share/keyrings/intel-graphics.gpg > /dev/null && \
-#     echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc" | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \
-#     chmod 644 /usr/share/keyrings/intel-graphics.gpg && \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl wget git libunwind8-dev vim less && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
@@ -130,9 +120,10 @@ RUN apt-get update && \
     # Install torch-ccl
     pip install /opt/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl && \
     # pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
-    # TODO: install Internal oneccl
-    # wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.6.5-release/oneccl_wks_installer_2024.0.0.6.5.sh && \
-    # bash oneccl_wks_installer_2024.0.0.6.5.sh && \
+    # install Internal oneccl
+    cd /opt && \
+    wget https://sourceforge.net/projects/oneccl-wks/files/2025.0.0.6.6-release/oneccl_wks_installer_2025.0.0.6.6.sh && \
+    bash oneccl_wks_installer_2025.0.0.6.6.sh && \
     # git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
     # cd torch-ccl && \
     # patch -p1 < /tmp/oneccl-binding.patch && \

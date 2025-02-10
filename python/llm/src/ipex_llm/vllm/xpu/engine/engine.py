@@ -36,6 +36,7 @@ import os
 
 logger = init_logger(__name__)
 
+
 class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -61,7 +62,6 @@ class IPEXLLMAsyncLLMEngine(AsyncLLMEngine):
 class IPEXLLMAsyncV1Engine(AsyncLLM):
 
     def __init__(self, *args, **kwargs):
-        print("IPEX-LLM V1 engine get started...")
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -72,13 +72,12 @@ class IPEXLLMAsyncV1Engine(AsyncLLM):
         start_engine_loop: bool = True,
         usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
         load_in_low_bit: str = "sym_int4",
-        stat_loggers: Optional[Dict[str, StatLoggerBase]] = None,
+        stat_loggers: Optional[Dict[str, StatLoggerBase]]=None,  # noqa
     ) -> "AsyncLLM":
         _ipex_llm_convert(load_in_low_bit)
         return super().from_engine_args(engine_args=engine_args, engine_config=engine_config,
                                         start_engine_loop=start_engine_loop,
                                         usage_context=usage_context, stat_loggers=stat_loggers)
-
 
 
 class IPEXLLMClass(LLM):
@@ -104,11 +103,11 @@ class IPEXLLMClass(LLM):
         disable_custom_all_reduce: bool = False,
         disable_async_output_proc: bool = True,
         hf_overrides: Optional[HfOverrides] = None,
-        mm_processor_kwargs: Optional[Dict[str, Any]] = None,
+        mm_processor_kwargs: Optional[Dict[str, Any]]=None,
         # After positional args are removed, move this right below `model`
         task: TaskOption = "auto",
         override_pooler_config: Optional[PoolerConfig] = None,
-        compilation_config: Optional[Union[int, Dict[str, Any]]] = None,
+        compilation_config: Optional[Union[int, Dict[str, Any]]]=None,
         load_in_low_bit: str = "sym_int4",
         **kwargs,
     ) -> None:
@@ -170,9 +169,7 @@ class IPEXLLMClass(LLM):
     @staticmethod
     def get_engine_class() -> Type[LLMEngine]:
         if envs.VLLM_USE_V1:
-            # Lazy import: the v1 package isn't distributed
-            # from vllm.v1.engine.llm_engine import LLMEngine as V1LLMEngine
-            return IPEXLLMLLMV1Engine# type: ignore
+            return IPEXLLMLLMV1Engine
         return IPEXLLMLLMEngine
 
 
@@ -185,7 +182,7 @@ class IPEXLLMLLMV1Engine(V1LLMEngine):
         cls,
         engine_args: EngineArgs,
         usage_context: UsageContext = UsageContext.ENGINE_CONTEXT,
-        stat_loggers: Optional[Dict[str, StatLoggerBase]] = None,
+        stat_loggers: Optional[Dict[str, StatLoggerBase]]=None,
         enable_multiprocessing: bool = False,
         load_in_low_bit: str = "sym_int4",
     ) -> "LLMEngine":
@@ -193,7 +190,10 @@ class IPEXLLMLLMV1Engine(V1LLMEngine):
         # Create the engine configs.
 
         _ipex_llm_convert(load_in_low_bit)
-        return super().from_engine_args(engine_args, usage_context, stat_loggers, enable_multiprocessing)
+        return super().from_engine_args(engine_args,
+                                        usage_context,
+                                        stat_loggers,
+                                        enable_multiprocessing)
 
 
 class IPEXLLMLLMEngine(LLMEngine):
@@ -233,14 +233,14 @@ def run_mp_engine(engine_args: AsyncEngineArgs, usage_context: UsageContext,
         signal.signal(signal.SIGTERM, signal_handler)
 
         engine = IPEXLLMMQLLMEngine.from_engine_args(engine_args=engine_args,
-                                                    usage_context=usage_context,
-                                                    ipc_path=ipc_path,
-                                                    load_in_low_bit=load_in_low_bit)
+                                                     usage_context=usage_context,
+                                                     ipc_path=ipc_path,
+                                                     load_in_low_bit=load_in_low_bit)
         engine.start()
     except BaseException as e:
         logger.exception(e)
         engine_alive.value = False
-        raise e
+        raise e  # noqa
 
 if os.getenv("VLLM_USE_V1"):
     IPEXLLMAsyncLLMEngine = IPEXLLMAsyncV1Engine
