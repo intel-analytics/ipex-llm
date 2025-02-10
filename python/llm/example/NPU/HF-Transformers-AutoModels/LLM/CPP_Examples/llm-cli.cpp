@@ -19,7 +19,7 @@
 #include <string>
 #include <chrono>
 
-#include "common.h"
+#include "npu_common.h"
 #include "npu_llm.h"
 
 
