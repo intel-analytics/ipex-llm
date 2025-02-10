@@ -45,6 +45,8 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     # Install opencl-related repos
     apt-get update && \
     # apt-get install -y --no-install-recommends intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
+    # Remove breaks install packages
+    RUN apt-get remove -y libze-dev libze-intel-gpu1 && \
     mkdir -p /tmp/gpu && \
     cd /tmp/gpu && \
     # wget https://github.com/oneapi-src/level-zero/releases/download/v1.18.5/level-zero_1.18.5+u22.04_amd64.deb && \
