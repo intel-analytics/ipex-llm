@@ -57,6 +57,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     save_dir = args.save_directory
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
