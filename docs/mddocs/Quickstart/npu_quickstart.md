@@ -38,7 +38,7 @@ To update driver for Intel NPU:
    - Choose **Browse my computer for drivers**, navigate to the folder where you extracted the driver zip file, and select **Next**
    - Wait for the installation finished
 
-3. [Optional] Uninstall and update the driver
+3. (Optional) Uninstall and update the driver
 
    Please skip this if you have successfully installed. This is required when the driver to be installed is lower than current version.
 
