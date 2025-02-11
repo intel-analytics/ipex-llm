@@ -1062,6 +1062,11 @@ def _optimize_pre(model, qtype=None):
         from ipex_llm.transformers.models.glm import merge_qkv, split_mlp
         model.apply(merge_qkv)
         model.apply(split_mlp)
+    elif model.config.model_type == "baichuan_m1":
+        from ipex_llm.transformers.models.baichuan_m1 import pre_register_inv_freq
+        model.apply(pre_register_inv_freq)
+    elif model.config.model_type == "multi_modality":
+        pass
 
     return model
 
@@ -1994,5 +1999,21 @@ def _optimize_post(model):
         model.llm.config.rope_scaling = {"rope_type": "default"}
         _optimize_post(model.llm)
         model.llm.config.model_type = "megrezo"
+    elif model.config.model_type == "baichuan_m1":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.baichuan_m1 import model_forward
+        from ipex_llm.transformers.models.baichuan_m1 import eager_attention_forward
+        convert_forward(model, module.BaichuanModel, model_forward)
+        convert_forward(model, module.BaichuanRMSNorm, rms_norm_forward)
+        convert_forward(model, module.BaichuanAttention, eager_attention_forward)
+    elif model.config.model_type == "multi_modality":
+        # vision
+        vpm_modeling_module_name = model.vision_model.vision_tower.__class__.__module__
+        vpm_module = importlib.import_module(vpm_modeling_module_name)
+
+        from ipex_llm.transformers.models.janus import vision_attention_forward
+        convert_forward(model.vision_model, vpm_module.Attention, vision_attention_forward)
 
     return model
