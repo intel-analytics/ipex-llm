@@ -22,13 +22,13 @@ This guide demonstrates:
 ### Update NPU Driver
 
 > [!IMPORTANT]
-> If you have NPU driver version lower than `32.0.100.3104`, it is highly recommended to update your NPU driver to the latest.
+> It is highly recommended to update your NPU driver to `32.0.100.3104`, which has been thoroughly verified.
 
 To update driver for Intel NPU:
 
-1. Download the latest NPU driver
+1. Download the NPU driver
 
-   - Visit the [official Intel NPU driver page for Windows](https://www.intel.com/content/www/us/en/download/794734/intel-npu-driver-windows.html) and download the latest driver zip file.
+   - Visit the [official Intel NPU driver page for Windows](https://www.intel.com/content/www/us/en/download/794734/838895/intel-npu-driver-windows.html) and download the driver zip file.
    - Extract the driver zip file
 
 2. Install the driver
@@ -37,6 +37,16 @@ To update driver for Intel NPU:
    - Right-click on **Intel(R) AI Boost** and select **Update driver**
    - Choose **Browse my computer for drivers**, navigate to the folder where you extracted the driver zip file, and select **Next**
    - Wait for the installation finished
+
+3. Uninstall and Install the driver [Optional]
+
+   Please skip this if you have successfully installed. This is required when the driver to be installed is lower than current version.
+
+   - Open **Device Manager** and locate **Neural processors** -> **Intel(R) AI Boost** in the device list
+   - Right-click on **Intel(R) AI Boost** and select **Uninstall driver**
+   - Choose **Attempt to remove the driver for this device** and select **Uninstall**
+   - Locate and click **Add Drivers** in the toolbar, choose the folder where you extracted the driver zip file, and select **Next**
+   - Wait for the installation finished, locate and click **Scan for hardware changes** in the toolbar
 
 A system reboot is necessary to apply the changes after the installation is complete.
 
