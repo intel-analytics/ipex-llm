@@ -699,7 +699,7 @@ class LowBitLinear(nn.Linear):
                 if is_server() and (not is_spr()) and \
                         self.qtype == SYM_INT4 and x_2d.shape[0] >= TORCH_LINEAR_THRESHOLD:
                     x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-                    result = F.linear(x, x0_fp32)
+                    result = F.linear(x.to(dtype=x0_fp32.dtype), x0_fp32)
                 else:
                     # Weight does not need a convert
                     result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
