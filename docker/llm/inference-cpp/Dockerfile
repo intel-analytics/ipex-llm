@@ -1,4 +1,4 @@
-FROM intel/oneapi-basekit:2025.0.2-0-devel-ubuntu24.04
+FROM intel/oneapi-basekit:2025.0.2-0-devel-ubuntu22.04
 
 ARG http_proxy
 ARG https_proxy
