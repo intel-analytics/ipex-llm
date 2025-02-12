@@ -31,7 +31,6 @@ def vision_attention_forward(self, x: torch.Tensor) -> torch.Tensor:
     q, k, v = qkv.unbind(0)
     q, k = self.q_norm(q), self.k_norm(k)
 
-
     if self.fused_attn:
         # ipex-llm opt: sdpa
         x = scaled_dot_product_attention(
