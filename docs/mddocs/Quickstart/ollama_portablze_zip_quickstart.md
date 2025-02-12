@@ -1,6 +1,6 @@
-# Run Ollama Portable Zip with IPEX-LLM on Intel GPU
+# Run Ollama Portable Zip on Intel GPU with IPEX-LLM
 
-This guide demonstrates how to use IPEX-LLM Ollama portable zip to seamlessly run LLMs on Intel GPUs, with no Python dependencies or coding required.
+This guide demonstrates how to use **Ollama portable zip** to directly run Ollama on Intel GPU with ipex-llm (without the need of manual installations).
 
 > [!NOTE]
 > Currently, IPEX-LLM only provides Ollama portable zip on Windows.
@@ -21,7 +21,7 @@ Check your GPU driver version, and update it if needed:
 
 ## Step 1: Download and Unzip
 
-Download IPEX-LLM Ollama portable zip from: https://github.com/intel/ipex-llm/releases/download/v2.2.0-rc/ollama-ipex-llm-0.5.4-20250211.zip
+Download IPEX-LLM Ollama portable zip from the [link](https://github.com/intel/ipex-llm/releases/download/v2.2.0-rc/ollama-ipex-llm-0.5.4-20250211.zip).
 
 Then, extract the zip file to a folder.
 
