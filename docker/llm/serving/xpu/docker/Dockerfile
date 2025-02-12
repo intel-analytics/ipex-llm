@@ -93,23 +93,14 @@ RUN apt-get update && \
     pip install transformers_stream_generator einops tiktoken && \
     pip install --upgrade colorama && \
     # TODO: remove this code segment...
-    git clone -b upgrade-vllm-0.6.6 https://github.com/gc-fu/BigDL.git ./ipex-llm && \
-    # The following comment segment is used when building from source...
-    cd ipex-llm && \
-    # git fetch origin pull/12338/head:local_pr && \
-    # git checkout local_pr && \
-    pip uninstall -y ipex-llm && \
-    cd python/llm && \
-    python setup.py install && \
-    cd ../../../ && \
+    git clone https://github.com/intel/ipex-llm.git && \
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     cp -r ./ipex-llm/python/llm/example/GPU/HuggingFace/LLM ./examples && \
     cp -r ./ipex-llm/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
+    rm -rf ./ipex-llm && \
     # Install vllm dependencies
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
-    # TODO: uncomment this...
-    # rm -rf ./ipex-llm && \
     # Install torch-ccl
     pip install /opt/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl && \
     # install Internal oneccl
