@@ -11,7 +11,7 @@ ARG PIP_NO_CACHE_DIR=false
 
 ADD ./ccl_torch.patch /tmp/
 
-# TODO: decide if we need oneccl-binding.patch later
+# TODO: decide if we want to patch torch-ccl
 
 # Install python
 RUN apt-get update && \
@@ -33,7 +33,7 @@ RUN apt-get update && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
-    # apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
+    # If we do not install this compute-runtime, we will fail the build later
     mkdir -p /tmp/neo && \
     cd /tmp/neo && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.5.6/intel-igc-core-2_2.5.6+18417_amd64.deb && \
@@ -53,8 +53,6 @@ RUN apt-get update && \
     git submodule sync && \
     git submodule update --init --recursive && \
     git apply /tmp/ccl_torch.patch && \
-    # This will fail for no reasons...
-    # Ok... Now this works..., of course no...
     USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py bdist_wheel
     # File path: /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl
 
@@ -73,8 +71,8 @@ ENV VLLM_RPC_TIMEOUT=100000
 
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
-# ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
-# ADD ./oneccl-binding.patch /tmp/oneccl-binding.patch
+
+ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl wget git libunwind8-dev vim less && \
@@ -90,14 +88,12 @@ RUN apt-get update && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     apt-get install -y --no-install-recommends python3-pip python3.11-dev python3-wheel python3.11-distutils && \
     wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py && \
-    # Install FastChat from source requires PEP 660 support
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
     pip install --pre --upgrade ipex-llm[xpu_2.6] --extra-index-url https://download.pytorch.org/whl/test/xpu && \
     pip install transformers_stream_generator einops tiktoken && \
     pip install --upgrade colorama && \
-    # Download all-in-one benchmark and examples
     # TODO: remove this code segment...
     git clone -b upgrade-vllm-0.6.6 https://github.com/gc-fu/BigDL.git ./ipex-llm && \
     # The following comment segment is used when building from source...
@@ -110,27 +106,21 @@ RUN apt-get update && \
     cd ../../../ && \
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     cp -r ./ipex-llm/python/llm/example/GPU/HuggingFace/LLM ./examples && \
+    cp -r ./ipex-llm/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
     # Install vllm dependencies
     pip install --upgrade fastapi && \
     pip install --upgrade "uvicorn[standard]" && \
-    # Download vLLM-Serving
-    cp -r ./ipex-llm/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
     # TODO: uncomment this...
     # rm -rf ./ipex-llm && \
     # Install torch-ccl
     pip install /opt/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl && \
-    # pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     # install Internal oneccl
     cd /opt && \
     wget https://sourceforge.net/projects/oneccl-wks/files/2025.0.0.6.6-release/oneccl_wks_installer_2025.0.0.6.6.sh && \
     bash oneccl_wks_installer_2025.0.0.6.6.sh && \
-    # git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
-    # cd torch-ccl && \
-    # patch -p1 < /tmp/oneccl-binding.patch && \
-    # USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py install && \
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
-    # apt-get install -y intel-opencl-icd intel-level-zero-gpu=1.3.26241.33-647~22.04 level-zero level-zero-dev --allow-downgrades && \
+    # Install compute runtime
     mkdir -p /tmp/neo && \
     cd /tmp/neo && \
     wget https://github.com/intel/intel-graphics-compiler/releases/download/v2.5.6/intel-igc-core-2_2.5.6+18417_amd64.deb && \
@@ -150,24 +140,21 @@ RUN apt-get update && \
     pip install setuptools-scm && \
     pip install --upgrade cmake && \
     VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v /llm/vllm && \
-    # pip install -r /llm/vllm/requirements-xpu.txt && \
-    # VLLM_TARGET_DEVICE=xpu python setup.py install && \
     pip install mpi4py fastapi uvicorn openai && \
     pip install gradio==4.43.0 && \
-    # pip install transformers==4.44.2 && \
-    # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
+    patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
     pip install ray
-    # patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch
 
-COPY ./vllm_online_benchmark.py        /llm/
-COPY ./vllm_offline_inference.py       /llm/
+# TODO: check whether these files works or not...
+COPY ./vllm_online_benchmark.py                   /llm/
+COPY ./vllm_offline_inference.py                  /llm/
 COPY ./vllm_offline_inference_vision_language.py  /llm/
-COPY ./payload-1024.lua                /llm/
-COPY ./start-vllm-service.sh           /llm/
-COPY ./benchmark_vllm_throughput.py   /llm/
-COPY ./benchmark_vllm_latency.py       /llm/
-COPY ./start-fastchat-service.sh       /llm/
-COPY ./start-pp_serving-service.sh       /llm/
+COPY ./payload-1024.lua                           /llm/
+COPY ./start-vllm-service.sh                      /llm/
+COPY ./benchmark_vllm_throughput.py               /llm/
+COPY ./benchmark_vllm_latency.py                  /llm/
+COPY ./start-fastchat-service.sh                  /llm/
+COPY ./start-pp_serving-service.sh                /llm/
 COPY ./start-lightweight_serving-service.sh       /llm/
 
 # ENV LD_LIBRARY_PATH /usr/local/lib/python3.11/dist-packages/intel_extension_for_pytorch/lib/:/opt/intel/oneapi/tbb/2021.12/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mpi/2021.12/opt/mpi/libfabric/lib:/opt/intel/oneapi/mpi/2021.12/lib:/opt/intel/oneapi/mkl/2024.1/lib:/opt/intel/oneapi/ippcp/2021.11/lib/:/opt/intel/oneapi/ipp/2021.11/lib:/opt/intel/oneapi/dpl/2022.5/lib:/opt/intel/oneapi/dnnl/2024.1/lib:/opt/intel/oneapi/debugger/2024.1/opt/debugger/lib:/opt/intel/oneapi/dal/2024.2/lib:/opt/intel/oneapi/compiler/2024.1/opt/oclfpga/host/linux64/lib:/opt/intel/oneapi/compiler/2024.1/opt/compiler/lib:/opt/intel/oneapi/compiler/2024.1/lib:/opt/intel/oneapi/ccl/2021.12/lib/
