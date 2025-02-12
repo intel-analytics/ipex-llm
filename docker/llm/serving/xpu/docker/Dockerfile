@@ -1,4 +1,4 @@
-# We will need to build the oneccl from ONEAPI 2025 environment...
+# First stage: build oneccl
 FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04 AS build
 
 ARG http_proxy
@@ -11,9 +11,6 @@ ARG PIP_NO_CACHE_DIR=false
 
 ADD ./ccl_torch.patch /tmp/
 
-# TODO: decide if we want to patch torch-ccl
-
-# Install python
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl wget git libunwind8-dev vim less && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
@@ -52,6 +49,7 @@ RUN apt-get update && \
     git checkout ccl_torch2.5.0+xpu && \
     git submodule sync && \
     git submodule update --init --recursive && \
+    # This patch will enable build torch-ccl with pytorch 2.6 environment
     git apply /tmp/ccl_torch.patch && \
     USE_SYSTEM_ONECCL=ON COMPUTE_BACKEND=dpcpp python setup.py bdist_wheel
     # File path: /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl
@@ -76,7 +74,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends curl wget git libunwind8-dev vim less && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    # add-apt-repository requires gnupg, gpg-agent, software-properties-common
     apt-get install -y --no-install-recommends gnupg gpg-agent software-properties-common kmod && \
     # Add Python 3.11 PPA repository
     add-apt-repository ppa:deadsnakes/ppa -y && \
@@ -92,7 +89,6 @@ RUN apt-get update && \
     pip install --pre --upgrade ipex-llm[xpu_2.6] --extra-index-url https://download.pytorch.org/whl/test/xpu && \
     pip install transformers_stream_generator einops tiktoken && \
     pip install --upgrade colorama && \
-    # TODO: remove this code segment...
     git clone https://github.com/intel/ipex-llm.git && \
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     cp -r ./ipex-llm/python/llm/example/GPU/HuggingFace/LLM ./examples && \
@@ -133,7 +129,6 @@ RUN apt-get update && \
     pip install gradio==4.43.0 && \
     pip install ray
 
-# TODO: check whether these files works or not...
 COPY ./vllm_online_benchmark.py                   /llm/
 COPY ./vllm_offline_inference.py                  /llm/
 COPY ./vllm_offline_inference_vision_language.py  /llm/
