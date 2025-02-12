@@ -72,8 +72,6 @@ ENV VLLM_RPC_TIMEOUT=100000
 # Disable pip's cache behavior
 ARG PIP_NO_CACHE_DIR=false
 
-ADD ./gradio_web_server.patch  /tmp/gradio_web_server.patch
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl wget git libunwind8-dev vim less && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
@@ -142,7 +140,6 @@ RUN apt-get update && \
     VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v /llm/vllm && \
     pip install mpi4py fastapi uvicorn openai && \
     pip install gradio==4.43.0 && \
-    patch /usr/local/lib/python3.11/dist-packages/fastchat/serve/gradio_web_server.py < /tmp/gradio_web_server.patch && \
     pip install ray
 
 # TODO: check whether these files works or not...
