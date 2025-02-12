@@ -1066,7 +1066,7 @@ def _optimize_pre(model, qtype=None):
         from ipex_llm.transformers.models.baichuan_m1 import pre_register_inv_freq
         model.apply(pre_register_inv_freq)
     elif model.config.model_type == "multi_modality":
-        pass
+        _optimize_pre(model.language_model)
 
     return model
 
@@ -2012,8 +2012,10 @@ def _optimize_post(model):
         # vision
         vpm_modeling_module_name = model.vision_model.vision_tower.__class__.__module__
         vpm_module = importlib.import_module(vpm_modeling_module_name)
-
         from ipex_llm.transformers.models.janus import vision_attention_forward
         convert_forward(model.vision_model, vpm_module.Attention, vision_attention_forward)
+
+        # llm
+        _optimize_post(model.language_model)
 
     return model
