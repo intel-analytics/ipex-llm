@@ -46,7 +46,7 @@ RUN set -eux && \
     pip install --pre --upgrade ipex-llm[cpp] && \
     pip install transformers==4.36.2 transformers_stream_generator einops tiktoken && \
     \
-    # Fix Trivy CVE issues
+    # Remove breaks install packages
     apt-get remove -y libze-dev libze-intel-gpu1 && \
     \
     # Install Intel GPU OpenCL Driver and Compute Runtime
