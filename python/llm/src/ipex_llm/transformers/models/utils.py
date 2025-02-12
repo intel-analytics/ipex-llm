@@ -86,7 +86,7 @@ def use_quantize_kv_cache(linear: torch.nn.Module, x: torch.Tensor,
         return os.environ["IPEX_LLM_QUANTIZE_KV_CACHE"] == "1"
     elif os.environ.get("IPEX_LLM_LOW_MEM", None) is not None:
         return os.environ["IPEX_LLM_LOW_MEM"] == "1"
-    elif linear.qtype in [ggml_tensor_qtype["fp16"], ggml_tensor_qtype["bf16"]]:
+    elif linear.weight.dtype != torch.uint8:    # unquantized
         return False
     else:
         device_name = get_xpu_device_name(x.device)
