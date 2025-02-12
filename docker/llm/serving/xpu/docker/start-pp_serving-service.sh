@@ -1,3 +1,5 @@
+# update transformers version first
+# pip install transformers==4.37.0
 source /opt/intel/oneapi/setvars.sh --force
 export IPEX_LLM_NOT_USE_VLLM=True
 export no_proxy=localhost
