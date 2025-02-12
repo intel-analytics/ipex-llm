@@ -6,7 +6,10 @@ This guide demonstrates how to use IPEX-LLM Ollama portable zip to seamlessly ru
 > Currently, IPEX-LLM only provides Ollama portable zip on Windows.
 
 ## Table of Contents
-
+- [Prerequisites](#prerequisitesa)
+- [Step 1: Download and Unzip](#step-1-download-and-unzip)
+- [Step 2: Start Ollama Serve](#step-2-start-ollama-serve)
+- [Step 3: Run Ollama](#step-3-run-ollama)
 
 ## Prerequisites
 
@@ -24,9 +27,11 @@ Then, extract the zip file to a folder.
 
 ## Step 2: Start Ollama Serve
 
-Double-click "start-ollama.bat" in the extracted folder to start the Ollama service. A window will then pop up as shown below:
+Double-click `start-ollama.bat` in the extracted folder to start the Ollama service. A window will then pop up as shown below:
 
-<img src=https://llm-assets.readthedocs.io/en/latest/_images/start_ollama.png>
+<div align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/start_ollama.png"  width=80%/>
+</div>
 
 
 ## Step 3: Run Ollama
