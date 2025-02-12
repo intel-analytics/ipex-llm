@@ -49,14 +49,14 @@ Currently, we provide two different serving engines in the image, which are Fast
 
 To run Lightweight serving on one intel gpu using `IPEX-LLM` as backend, you can refer to this [readme](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Lightweight-Serving).
 
-For convenience, we have included a file `/llm/start-lightweight_serving-service` in the image. And need to install the appropriate transformers version first.
+For convenience, we have included a file `/llm/start-lightweight_serving-service` in the image. And need to install the appropriate transformers version first, like `pip install transformers==4.37.0`.
 
 
 #### Pipeline parallel serving engine
 
 To run Pipeline parallel serving using `IPEX-LLM` as backend, you can refer to this [readme](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/example/GPU/Pipeline-Parallel-FastAPI).
 
-For convenience, we have included a file `/llm/start-pp_serving-service.sh` in the image. And need to install the appropriate transformers version first.
+For convenience, we have included a file `/llm/start-pp_serving-service.sh` in the image. And need to install the appropriate transformers version first, like `pip install transformers==4.37.0`.
 
 
 #### vLLM serving engine
