@@ -1,6 +1,6 @@
 # Run Ollama Portable Zip on Intel GPU with IPEX-LLM
 
-This guide demonstrates how to use **Ollama portable zip** to directly run Ollama on Intel GPU with ipex-llm (without the need of manual installations).
+This guide demonstrates how to use **Ollama portable zip** to directly run Ollama on Intel GPU with `ipex-llm` (without the need of manual installations).
 
 > [!NOTE]
 > Currently, IPEX-LLM only provides Ollama portable zip on Windows.
