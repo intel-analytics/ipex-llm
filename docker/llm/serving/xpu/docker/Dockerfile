@@ -35,11 +35,6 @@ RUN set -eux && \
     # Install pip and essential Python packages
     wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py && \
     python3 get-pip.py && rm get-pip.py && \
-    pip install --upgrade requests argparse urllib3 && \
-    pip install transformers==4.36.2 transformers_stream_generator einops tiktoken && \
-    # 
-    # Remove breaks install packages
-    apt-get remove -y libze-dev libze-intel-gpu1 && \
     #
     # Install Intel GPU OpenCL Driver and Compute Runtime
     mkdir -p /tmp/neo && \
@@ -136,6 +131,9 @@ RUN set -eux && \
     bash oneccl_wks_installer_2025.0.0.6.6.sh && \
     apt-get update && \
     apt-get install -y --no-install-recommends libfabric-dev wrk libaio-dev numactl && \
+    # 
+    # Remove breaks install packages
+    apt-get remove -y libze-dev libze-intel-gpu1 && \
     #
     # Install compute runtime
     mkdir -p /tmp/neo && \
