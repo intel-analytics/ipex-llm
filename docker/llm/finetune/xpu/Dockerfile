@@ -11,12 +11,13 @@ RUN set -eux && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     #
     # Retrieve Intel OneAPI and GPU repository keys
-    wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor > /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list && \
-    #
-    wget -qO- https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor > /usr/share/keyrings/intel-graphics.gpg && \
-    echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc" > /etc/apt/sources.list.d/intel.gpu.jammy.list && \
-    chmod 644 /usr/share/keyrings/*.gpg && \
+    wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/intel-oneapi-archive-keyring.gpg > /dev/null && \	    # Set timezone
+    echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main " | tee /etc/apt/sources.list.d/oneAPI.list && \	
+    chmod 644 /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \	
+    rm /etc/apt/sources.list.d/intel-graphics.list && \	
+    wget -O- https://repositories.intel.com/graphics/intel-graphics.key | gpg --dearmor | tee /usr/share/keyrings/intel-graphics.gpg > /dev/null && \	
+    echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/graphics/ubuntu jammy arc" | tee /etc/apt/sources.list.d/intel.gpu.jammy.list && \	
+    chmod 644 /usr/share/keyrings/intel-graphics.gpg && \
     #
     # Update package lists and install dependencies
     apt-get update && \
