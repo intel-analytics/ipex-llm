@@ -21,7 +21,7 @@ Check your GPU driver version, and update it if needed:
 
 ## Step 1: Download and Unzip
 
-Download IPEX-LLM Ollama portable zip from the [link](https://github.com/intel/ipex-llm/releases/download/v2.2.0-rc/ollama-ipex-llm-0.5.4-20250211.zip).
+Download IPEX-LLM Ollama portable zip from the [link](https://github.com/intel/ipex-llm/releases/download/v2.2.0-nightly/ollama-0.5.4-ipex-llm-2.2.0b20250211.zip).
 
 Then, extract the zip file to a folder.
 
