@@ -30,7 +30,7 @@ Then, extract the zip file to a folder.
 Double-click `start-ollama.bat` in the extracted folder to start the Ollama service. A window will then pop up as shown below:
 
 <div align="center">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/start_ollama.png"  width=80%/>
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama.png"  width=80%/>
 </div>
 
 
@@ -40,3 +40,7 @@ You could then use Ollama to run LLMs on Intel GPUs as follows:
 
 - Open "Command Prompt" (cmd), and enter the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
 - Run `ollama run deepseek-r1:7b` in the "Command Prompt" (you may use any other model)
+
+<div align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
+</div>
