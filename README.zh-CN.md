@@ -9,7 +9,7 @@
 > - ***70+** 模型已经在 `ipex-llm` 上得到优化和验证（如 Llama, Phi, Mistral, Mixtral, Whisper, DeepSeek, Qwen, ChatGLM, MiniCPM, Qwen-VL, MiniCPM-V 等), 以获得先进的 **大模型算法优化**, **XPU 加速** 以及 **低比特（FP8FP8/FP6/FP4/INT4) 支持**；更多模型信息请参阅[这里](#模型验证)。*
 
 ## 最新更新 🔥 
-- [2025/02] 新增 [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md) 在 Intel GPU 上直接**免安装运行 Ollama**.
+- [2025/02] 新增 [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.zh-CN.md) 在 Intel GPU 上直接**免安装运行 Ollama**.
 - [2025/01] 新增在 Intel Arc [B580](docs/mddocs/Quickstart/bmg_quickstart.md) GPU 上运行 `ipex-llm` 的指南。
 - [2025/01] 新增在 Intel GPU 上运行 [Ollama 0.5.4](docs/mddocs/Quickstart/ollama_quickstart.zh-CN.md) 的支持。
 - [2024/12] 增加了对 Intel Core Ultra [NPU](docs/mddocs/Quickstart/npu_quickstart.md)（包括 100H，200V，200K 和 200H 系列）的 **Python** 和 **C++** 支持。
