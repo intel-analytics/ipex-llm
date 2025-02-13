@@ -23,6 +23,7 @@ ENV TZ=Asia/Shanghai \
 
 # Install dependencies and configure the environment
 RUN set -eux && \
+    #
     # Ensure scripts are executable
     chmod +x /llm/scripts/*.sh && \
     # 
@@ -85,4 +86,4 @@ RUN set -eux && \
     # 
     # Clean up unnecessary dependencies to reduce image size
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
-    rm -rf /root/.cache/Cypress && \
+    rm -rf /root/.cache/Cypress
