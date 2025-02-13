@@ -24,7 +24,7 @@
 
 ## 步骤 1：下载和解压
 
-从此[连接](https://github.com/intel/ipex-llm/releases/download/v2.2.0-nightly/ollama-0.5.4-ipex-llm-2.2.0b20250211.zip)下载 IPEX-LLM Ollama portable zip。
+从此[链接](https://github.com/intel/ipex-llm/releases/download/v2.2.0-nightly/ollama-0.5.4-ipex-llm-2.2.0b20250211.zip)下载 IPEX-LLM Ollama portable zip。
 
 然后，将 zip 文件解压到一个文件夹中。
 
