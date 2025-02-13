@@ -126,7 +126,7 @@ RUN apt-get update && \
     cd /llm && \
     rm -rf /tmp/neo && \
     # Install vllm
-    git clone -b 0.6.6-pre https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    git clone -b 0.6.6 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
     cd /llm/vllm && \
     pip install setuptools-scm && \
     pip install --upgrade cmake && \
