@@ -1,9 +1,12 @@
+# update transformers version first
+# pip install transformers==4.37.0
 source /opt/intel/oneapi/setvars.sh --force
+export IPEX_LLM_NOT_USE_VLLM=True
 export no_proxy=localhost
 export FI_PROVIDER=tcp
 export OMP_NUM_THREADS=32
 
-export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
+#export LD_PRELOAD=${LD_PRELOAD}:${CONDA_PREFIX}/lib/libtcmalloc.so
 basekit_root=/opt/intel/oneapi
 source $basekit_root/setvars.sh --force
 # source $basekit_root/ccl/latest/env/vars.sh --force

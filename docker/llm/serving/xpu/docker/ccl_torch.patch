@@ -1,0 +1,47 @@
+diff --git a/setup.py b/setup.py
+index 67016cb..305be5c 100644
+--- a/setup.py
++++ b/setup.py
+@@ -118,8 +118,8 @@ class BuildCMakeExt(BuildExtension):
+         if compute_backend == 'dpcpp':
+             runtime = 'dpcpp'
+             build_options['COMPUTE_BACKEND'] = compute_backend
+-            import intel_extension_for_pytorch
+-            build_options['CMAKE_PREFIX_PATH'] += ";" + intel_extension_for_pytorch.cmake_prefix_path
++            # import intel_extension_for_pytorch
++            # build_options['CMAKE_PREFIX_PATH'] += ";" + intel_extension_for_pytorch.cmake_prefix_path
+             if "DPCPP_GCC_INSTALL_DIR" in my_env:
+                 exist_cflags = "CFLAGS" in my_env
+                 cflags = ""
+diff --git a/src/gpu/CMakeLists.txt b/src/gpu/CMakeLists.txt
+index 5628f31..d1589c4 100644
+--- a/src/gpu/CMakeLists.txt
++++ b/src/gpu/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-find_package(IPEX REQUIRED)
++# find_package(IPEX REQUIRED)
+
+ set(CCL_DPCPP_SRCS dpcpp_ccl.cpp ze_exception.hpp allreduce.h sycl_misc.hpp runtime.hpp cxxopts.hpp)
+
+@@ -9,7 +9,7 @@ add_library(oneccl_bindings_for_pytorch_xpu SHARED ${CCL_DPCPP_SRCS})
+
+ target_link_libraries(oneccl_bindings_for_pytorch_xpu PUBLIC ${DEPENDS_LIB})
+ target_link_libraries(oneccl_bindings_for_pytorch_xpu PUBLIC oneccl_bindings_for_pytorch)
+-target_link_libraries(oneccl_bindings_for_pytorch_xpu PUBLIC intel-ext-pt-gpu)
++# target_link_libraries(oneccl_bindings_for_pytorch_xpu PUBLIC intel-ext-pt-gpu)
+
+ foreach(RPATH ${CMAKE_INSTALL_RPATH})
+     set_target_properties(oneccl_bindings_for_pytorch_xpu PROPERTIES LINK_FLAGS "-Wl,-rpath,${RPATH}")
+diff --git a/src/gpu/dpcpp_ccl.cpp b/src/gpu/dpcpp_ccl.cpp
+index 1631b85..0945031 100644
+--- a/src/gpu/dpcpp_ccl.cpp
++++ b/src/gpu/dpcpp_ccl.cpp
+@@ -32,7 +32,7 @@
+ #include <ATen/record_function.h>
+ #include <ProcessGroupCCL.hpp>
+ #include <dispatch_stub.h>
+-#include <ipex.h>
++// #include <ipex.h>
+
+ #include <sycl/sycl.hpp>
+ //#include "allreduce.h"

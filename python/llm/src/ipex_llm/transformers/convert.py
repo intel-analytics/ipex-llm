@@ -70,8 +70,9 @@ def is_auto_awq_available():
 
 def is_vllm_available():
     global _IS_VLLM_AVAILABLE
+    _IS_VLLM_AVAILABLE = os.getenv("IPEX_LLM_NOT_USE_VLLM", None)
     if _IS_VLLM_AVAILABLE is not None:
-        return _IS_VLLM_AVAILABLE
+        return False
     import sys
     original_path = sys.path
     # Temporally remove current directory
@@ -666,7 +667,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             in_features,
                             out_features,
                             mp_group,
-                            None,
                             None,
                             optimize_lm_head,
                             None
