@@ -93,6 +93,12 @@ RUN apt-get update && \
     cp -r ./ipex-llm/python/llm/dev/benchmark/ ./benchmark && \
     cp -r ./ipex-llm/python/llm/example/GPU/HuggingFace/LLM ./examples && \
     cp -r ./ipex-llm/python/llm/example/GPU/vLLM-Serving/ ./vLLM-Serving && \
+    # Download pp_serving
+    mkdir -p /llm/pp_serving && \
+    cp ./ipex-llm/python/llm/example/GPU/Pipeline-Parallel-Serving/*.py /llm/pp_serving/ && \
+    # Download lightweight_serving
+    mkdir -p /llm/lightweight_serving && \
+    cp ./ipex-llm/python/llm/example/GPU/Lightweight-Serving/*.py /llm/lightweight_serving/ && \
     rm -rf ./ipex-llm && \
     # Install vllm dependencies
     pip install --upgrade fastapi && \
@@ -120,7 +126,7 @@ RUN apt-get update && \
     cd /llm && \
     rm -rf /tmp/neo && \
     # Install vllm
-    git clone -b 0.6.6-pre https://github.com/analytics-zoo/vllm.git /llm/vllm && \
+    git clone -b 0.6.6 https://github.com/analytics-zoo/vllm.git /llm/vllm && \
     cd /llm/vllm && \
     pip install setuptools-scm && \
     pip install --upgrade cmake && \
