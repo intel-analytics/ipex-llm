@@ -10,14 +10,15 @@
 
 ## Latest Update 🔥 
 - [2025/02] We added support of [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md) to directly run Ollama on Intel GPU (***without the need of manual installations***).
+- [2024/11] We added support for running [vLLM 0.6.6](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 - [2025/01] We added the guide for running `ipex-llm` on Intel Arc [B580](docs/mddocs/Quickstart/bmg_quickstart.md) GPU.
 - [2025/01] We added support for running [Ollama 0.5.4](docs/mddocs/Quickstart/ollama_quickstart.md) on Intel GPU.
 - [2024/12] We added both ***Python*** and ***C++*** support for Intel Core Ultra [NPU](docs/mddocs/Quickstart/npu_quickstart.md) (including 100H, 200V, 200K and 200H series).
-- [2024/11] We added support for running [vLLM 0.6.2](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 
 <details><summary>More updates</summary>
 <br/>
 
+- [2024/11] We added support for running [vLLM 0.6.2](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 - [2024/07] We added support for running Microsoft's **GraphRAG** using local LLM on Intel GPU; see the quickstart guide [here](docs/mddocs/Quickstart/graphrag_quickstart.md).
 - [2024/07] We added extensive support for Large Multimodal Models, including [StableDiffusion](python/llm/example/GPU/HuggingFace/Multimodal/StableDiffusion), [Phi-3-Vision](python/llm/example/GPU/HuggingFace/Multimodal/phi-3-vision), [Qwen-VL](python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl), and [more](python/llm/example/GPU/HuggingFace/Multimodal).
 - [2024/07] We added **FP6** support on Intel [GPU](python/llm/example/GPU/HuggingFace/More-Data-Types). 
@@ -176,7 +177,7 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 ## `ipex-llm` Quickstart
 
 ### Use
-- [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md): running Ollama on Intel GPU ***without the need of manual installations***
+- [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md): running **Ollama** on Intel GPU ***without the need of manual installations***
 - [Arc B580](docs/mddocs/Quickstart/bmg_quickstart.md): running `ipex-llm` on Intel Arc **B580** GPU for Ollama, llama.cpp, PyTorch, HuggingFace, etc.
 - [NPU](docs/mddocs/Quickstart/npu_quickstart.md): running `ipex-llm` on Intel **NPU** in both Python and C++
 - [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md): running **ollama** (*using C++ interface of `ipex-llm`*) on Intel GPU
