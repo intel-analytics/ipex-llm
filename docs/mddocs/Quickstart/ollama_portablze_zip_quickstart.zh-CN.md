@@ -18,9 +18,9 @@
 
 检查你的 GPU 驱动程序版本，并根据需要进行更新：
 
-- 对于 Intel Core Ultra processors（系列 2）或 Intel Arc B系列 GPU，建议将 GPU 驱动程序更新至[最新版本](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
+- 对于 Intel Core Ultra processors (Series 2) 或者 Intel Arc B-Series GPU，我们推荐将你的 GPU 驱动版本升级到[最新版本](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
-- 对于其他 Intel iGPU/dGPU，建议使用 GPU 驱动程序的版本是[32.0.101.6078](https://www.intel.com/content/www/us/en/download/785597/834050/intel-arc-iris-xe-graphics-windows.html)
+- 对于其他的 Intel 核显和独显，我们推荐使用 GPU 驱动版本 [32.0.101.6078](https://www.intel.com/content/www/us/en/download/785597/834050/intel-arc-iris-xe-graphics-windows.html)
 
 ## 步骤 1：下载和解压
 
@@ -30,7 +30,7 @@
 
 ## 步骤 2：启动 Ollama Serve
 
-在解压后的文件夹中双击 `start-ollama.bat`，启动 Ollama Serve，会弹出如下图所示的窗口：
+在解压后的文件夹中双击 `start-ollama.bat` 即可启动 Ollama Serve。随后会弹出一个窗口，如下所示：
 
 <div align="center">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama.png"  width=80%/>
@@ -40,8 +40,8 @@
 
 在 Intel GPUs 上使用 Ollama 运行 LLMs，如下所示：
 
-- 打开 "Command Prompt" (cmd)，通过此路径 `cd /d PATH\TO\EXTRACTED\FOLDER` 进入解压后的文件夹
-- 在 "Command Prompt" 中运行 `ollama run deepseek-r1:7（可以将当前模型替换为你需要的模型）
+- 打开命令提示符（cmd），并通过在命令行输入指令 `cd /d PATH\TO\EXTRACTED\FOLDER` 进入解压后的文件夹
+- 在命令提示符中运行 `ollama run deepseek-r1:7（可以将当前模型替换为你需要的模型）
 
 <div align="center">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
