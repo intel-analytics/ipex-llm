@@ -14,7 +14,7 @@
 > [!NOTE]
 > Our current version is consistent with [v0.5.4](https://github.com/ollama/ollama/releases/tag/v0.5.4) of ollama.
 >
-> `ipex-llm[cpp]==2.2.0b20250123` is consistent with [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.5.1) of ollama.
+> `ipex-llm[cpp]==2.2.0b20250123` is consistent with [v0.5.1](https://github.com/ollama/ollama/releases/tag/v0.5.1) of ollama.
 
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
