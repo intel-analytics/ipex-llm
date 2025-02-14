@@ -5,13 +5,16 @@
 
 [ollama/ollama](https://github.com/ollama/ollama) is popular framework designed to build and run language models on a local machine; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `ollama` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
+> [!Important]
+> You may use [Ollama portable zip](./ollama_portablze_zip_quickstart.md) to directly run Ollama on Intel GPU with ipex-llm (***without the need of manual installations***).
+
 > [!NOTE]
 > For installation on Intel Arc B-Series GPU (such as **B580**), please refer to this [guide](./bmg_quickstart.md).
 
 > [!NOTE]
-> Our current version is consistent with [v0.5.1](https://github.com/ollama/ollama/releases/tag/v0.5.1) of ollama.
+> Our current version is consistent with [v0.5.4](https://github.com/ollama/ollama/releases/tag/v0.5.4) of ollama.
 >
-> `ipex-llm[cpp]==2.2.0b20250105` is consistent with [v0.4.6](https://github.com/ollama/ollama/releases/tag/v0.4.6) of ollama.
+> `ipex-llm[cpp]==2.2.0b20250123` is consistent with [v0.5.1](https://github.com/ollama/ollama/releases/tag/v0.5.1) of ollama.
 
 See the demo of running LLaMA2-7B on Intel Arc GPU below.
 
