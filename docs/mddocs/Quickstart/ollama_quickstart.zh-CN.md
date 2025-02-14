@@ -9,7 +9,7 @@
 > 现在可使用 [Ollama Portable Zip](./ollama_portablze_zip_quickstart.md) 在 Intel GPU 上直接***免安装运行 Ollama***.
 
 > [!NOTE]
-> 如果是在 Intel Arc B 系列 GPU 上安装(例，**B580**)，请参阅本[指南](./bmg_quickstart.md)。
+> 如果是在 Intel Arc B 系列 GPU 上安装(例如 **B580**)，请参阅本[指南](./bmg_quickstart.md)。
 
 > [!NOTE]
 >  `ipex-llm[cpp]` 的最新版本与官方 ollama 的 [v0.5.1](https://github.com/ollama/ollama/releases/tag/v0.5.4) 版本保持一致。
