@@ -9,7 +9,7 @@
 > - ***70+ models** have been optimized/verified on `ipex-llm` (e.g., Llama, Phi, Mistral, Mixtral, Whisper, DeepSeek, Qwen, ChatGLM, MiniCPM, Qwen-VL, MiniCPM-V and more), with state-of-art **LLM optimizations**, **XPU acceleration** and **low-bit (FP8/FP6/FP4/INT4) support**; see the complete list [here](#verified-models).*
 
 ## Latest Update 🔥 
-- [2025/02] We added initial support of [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md) to directly run Ollama on Intel GPU (***without the need of manual installations***).
+- [2025/02] We added support of [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md) to directly run Ollama on Intel GPU (***without the need of manual installations***).
 - [2025/01] We added the guide for running `ipex-llm` on Intel Arc [B580](docs/mddocs/Quickstart/bmg_quickstart.md) GPU.
 - [2025/01] We added support for running [Ollama 0.5.4](docs/mddocs/Quickstart/ollama_quickstart.md) on Intel GPU.
 - [2024/12] We added both ***Python*** and ***C++*** support for Intel Core Ultra [NPU](docs/mddocs/Quickstart/npu_quickstart.md) (including 100H, 200V, 200K and 200H series).
@@ -176,10 +176,11 @@ Please see the **Perplexity** result below (tested on Wikitext dataset using the
 ## `ipex-llm` Quickstart
 
 ### Use
+- [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md): running Ollama on Intel GPU ***without the need of manual installations***
 - [Arc B580](docs/mddocs/Quickstart/bmg_quickstart.md): running `ipex-llm` on Intel Arc **B580** GPU for Ollama, llama.cpp, PyTorch, HuggingFace, etc.
 - [NPU](docs/mddocs/Quickstart/npu_quickstart.md): running `ipex-llm` on Intel **NPU** in both Python and C++
-- [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): running **llama.cpp** (*using C++ interface of `ipex-llm`*) on Intel GPU
 - [Ollama](docs/mddocs/Quickstart/ollama_quickstart.md): running **ollama** (*using C++ interface of `ipex-llm`*) on Intel GPU
+- [llama.cpp](docs/mddocs/Quickstart/llama_cpp_quickstart.md): running **llama.cpp** (*using C++ interface of `ipex-llm`*) on Intel GPU
 - [PyTorch/HuggingFace](docs/mddocs/Quickstart/install_windows_gpu.md): running **PyTorch**, **HuggingFace**, **LangChain**, **LlamaIndex**, etc. (*using Python interface of `ipex-llm`*) on Intel GPU for [Windows](docs/mddocs/Quickstart/install_windows_gpu.md) and [Linux](docs/mddocs/Quickstart/install_linux_gpu.md)
 - [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md): running `ipex-llm` in **vLLM** on both Intel [GPU](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) and [CPU](docs/mddocs/DockerGuides/vllm_cpu_docker_quickstart.md)
 - [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md): running `ipex-llm` in **FastChat** serving on on both Intel GPU and CPU
