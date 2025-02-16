@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Add Python 3.11 PPA repository
     add-apt-repository ppa:deadsnakes/ppa -y && \
     # Install Python 3.11 and related packages
-    apt-get update && apt-get install -y --no-install-recommends python3.11 python3-pip python3.11-dev python3-wheel python3.11-distutils \
+    apt-get update && apt-get install -y --no-install-recommends python3.11 python3-pip python3.11-dev python3-wheel python3.11-distutils && \
     # Remove the original /usr/bin/python3 symbolic link
     rm /usr/bin/python3 && \
     # Create a symbolic link pointing to Python 3.11 at /usr/bin/python3
