@@ -5,9 +5,9 @@ This document provides instructions for building and using the `IPEX-LLM-serving
 
 ---
 
-## 1. Build the Image
+## 1. Build the Image  
 
-To build the `ipex-llm-serving-cpu` Docker image, run the following command:
+To build the `ipex-llm-serving-cpu` Docker image, run the following command:  
 
 ```bash
 docker build \
@@ -19,131 +19,136 @@ docker build \
 
 ---
 
-## 2. Using `chat.py` for Inference
+## 2. Run the Container  
 
-The `chat.py` script is used for model inference. It is located under the `/llm` directory inside the container.
+Before running `chat.py` or using serving functionalities, start the container using the following command.  
 
-### Steps:
-1. **Download the model** to your host machine and bind the model directory to the container when starting it.
+### **Step 1: Download the Model (Optional)**  
 
-#### Example command to run the container:
-```bash
-export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.2.0-SNAPSHOT
-export MODEL_PATH=/home/llm/models
-
-sudo docker run -itd \
-        --net=host \
-        --cpuset-cpus="0-47" \
-        --cpuset-mems="0" \
-        --memory="32G" \
-        --name=CONTAINER_NAME \
-        --shm-size="16g" \
-        -v $MODEL_PATH:/llm/models/ \
-        $DOCKER_IMAGE
-```
-
-2. **Run `chat.py` for inference** inside the container:
-After entering the container, run the following command to start the inference:
+If using a local model, download it to your host machine and bind the directory to the container when launching it.  
 
 ```bash
-cd /llm
-python chat.py --model-path /llm/models/MODEL_NAME
+export MODEL_PATH=/home/llm/models  # Change this to your model directory
 ```
 
-Replace `MODEL_NAME` with the name of your model.
+This ensures the container has access to the necessary models.  
 
 ---
 
-## 3. CPU Serving with `IPEX-LLM`
+### **Step 2: Start the Container**  
 
-To run CPU-side serving with `IPEX-LLM`, follow these steps:
-
-### Start the container:
-Use the following bash script to start the container. Please be noted that the CPU config is specified for Xeon CPUs, change it accordingly if you are not using a Xeon CPU.
+Use the following command to start the container:  
 
 ```bash
-#/bin/bash
 export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-cpu:2.2.0-SNAPSHOT
 
 sudo docker run -itd \
-        --net=host \
-        --cpuset-cpus="0-47" \
-        --cpuset-mems="0" \
-        --memory="32G" \
+        --net=host \  # Use host networking for performance
+        --cpuset-cpus="0-47" \  # Limit the container to specific CPU cores
+        --cpuset-mems="0" \  # Bind the container to NUMA node 0 for memory locality
+        --memory="32G" \  # Limit memory usage to 32GB
+        --shm-size="16g" \  # Set shared memory size to 16GB (useful for large models)
         --name=CONTAINER_NAME \
-        --shm-size="16g" \
+        -v $MODEL_PATH:/llm/models/ \  # Mount the model directory
         $DOCKER_IMAGE
 ```
 
-Once the container is started, you can access it using `docker exec`.
+### **Step 3: Access the Running Container**  
+
+Once the container is started, you can access it using:  
+
+```bash
+sudo docker exec -it CONTAINER_NAME bash
+```
 
 ---
 
-## 4. Serving with FastChat Engine
+## 3. Using `chat.py` for Inference  
 
-To run FastChat-serving using `IPEX-LLM` as backend, you can refer to this [document](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat).
+The `chat.py` script is used for model inference. It is located under the `/llm` directory inside the container.  
 
----
+### Steps:  
 
-## 5. Serving with vLLM Engine
+1. **Run `chat.py` for inference** inside the container:  
 
-To use **vLLM** with `IPEX-LLM` as the backend, refer to the [vLLM Serving Guide](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md).
+   ```bash
+   cd /llm
+   python chat.py --model-path /llm/models/MODEL_NAME
+   ```
 
-We have included the following example files in the `/llm/` directory inside the container:
-
-- `vllm_offline_inference.py`: Used for vLLM offline inference example.
-- `benchmark_vllm_throughput.py`: Used for throughput benchmarking.
-- `payload-1024.lua`: Used for testing requests per second with a 1k-128 request pattern.
-- `start-vllm-service.sh`: Template script for starting the vLLM service.
+   Replace `MODEL_NAME` with the name of your model.  
 
 ---
 
-## 6. Benchmarks
+## 4. Serving with IPEX-LLM  
 
-### 6.1 Online Benchmark through API Server
+The container supports multiple serving engines.  
 
-To benchmark the API Server and estimate transactions per second (TPS). To do so, you need to start the service first according to the instructions in this [section](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md#service). Then follow these steps:
+### 4.1 Serving with FastChat Engine  
 
-1. **Modify the `payload-1024.lua` file** to ensure that the "model" attribute is correctly set. By default, it uses a prompt that is approximately 1024 tokens long, which can be adjusted if needed.
-2. **Run the benchmark using `wrk`**:
-   Execute the following script to run the benchmark:
+To run FastChat-serving using `IPEX-LLM` as the backend, refer to this [document](https://github.com/intel-analytics/ipex-llm/tree/main/python/llm/src/ipex_llm/serving/fastchat).  
 
-```bash
-cd /llm
-# You can adjust -t and -c to control concurrency.
-# By default, we use 12 connections for the benchmark.
-wrk -t4 -c4 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
-```
+---
 
-### 6.2 Offline Benchmark through `benchmark_vllm_throughput.py`
+### 4.2 Serving with vLLM Engine  
 
-We have included the vLLM throughput benchmark script in `/llm/benchmark_vllm_throughput.py`. To use the script, download the test dataset first:
+To use **vLLM** with `IPEX-LLM` as the backend, refer to the [vLLM Serving Guide](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md).  
 
-```bash
-wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
-```
+The following example files are included in the `/llm/` directory inside the container:  
 
-Then, run the benchmark script:
+- `vllm_offline_inference.py`: Used for vLLM offline inference example.  
+- `benchmark_vllm_throughput.py`: Used for throughput benchmarking.  
+- `payload-1024.lua`: Used for testing requests per second with a 1k-128 request pattern.  
+- `start-vllm-service.sh`: Template script for starting the vLLM service.  
 
-```bash
-cd /llm/
+---
 
-wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
+## 5. Benchmarks  
 
-export MODEL="YOUR_MODEL"
+### 5.1 Online Benchmark through API Server  
 
-# You can change load-in-low-bit from values in [sym_int4, fp8, fp16]
-python3 /llm/benchmark_vllm_throughput.py \
-    --backend vllm \
-    --dataset /llm/ShareGPT_V3_unfiltered_cleaned_split.json \
-    --model $MODEL \
-    --num-prompts 1000 \
-    --seed 42 \
-    --trust-remote-code \
-    --enforce-eager \
-    --dtype bfloat16 \
-    --device cpu \
-    --load-in-low-bit sym_int4
-```
+To benchmark the API Server and estimate transactions per second (TPS), first start the service as per the instructions in the [vLLM Serving Guide](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/vLLM-Serving/README.md#service).  
+
+Then, follow these steps:  
+
+1. **Modify the `payload-1024.lua` file** to ensure the `"model"` attribute is correctly set.  
+2. **Run the benchmark using `wrk`**:  
+
+   ```bash
+   cd /llm
+   # You can adjust -t and -c to control concurrency.
+   wrk -t4 -c4 -d15m -s payload-1024.lua http://localhost:8000/v1/completions --timeout 1h
+   ```
+
+---
+
+### 5.2 Offline Benchmark through `benchmark_vllm_throughput.py`  
+
+1. **Download the test dataset**:  
+
+   ```bash
+   wget https://huggingface.co/datasets/anon8231489123/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V3_unfiltered_cleaned_split.json
+   ```
+
+2. **Run the benchmark script**:  
+
+   ```bash
+   cd /llm/
+
+   export MODEL="YOUR_MODEL"
+
+   # You can change load-in-low-bit from values in [sym_int4, fp8, fp16]
+   python3 /llm/benchmark_vllm_throughput.py \
+       --backend vllm \
+       --dataset /llm/ShareGPT_V3_unfiltered_cleaned_split.json \
+       --model $MODEL \
+       --num-prompts 1000 \
+       --seed 42 \
+       --trust-remote-code \
+       --enforce-eager \
+       --dtype bfloat16 \
+       --device cpu \
+       --load-in-low-bit sym_int4
+   ```
 
 ---
