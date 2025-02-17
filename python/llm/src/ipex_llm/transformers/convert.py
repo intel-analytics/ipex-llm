@@ -667,7 +667,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             out_features,
                             mp_group,
                             None,
-                            None,
                             optimize_lm_head,
                             None
                         )
@@ -692,7 +691,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             in_features,
                             out_features,
                             mp_group,
-                            None,
                             None,
                             optimize_lm_head,
                             None
