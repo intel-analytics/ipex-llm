@@ -69,10 +69,9 @@ We have several docker images available for running LLMs on Intel GPUs. The foll
 
 | Image Name | Description | Use Case |
 |------------|-------------|----------|
-| intelanalytics/ipex-llm-cpu:latest | CPU Inference |For development and running LLMs using llama.cpp, Ollama and Python|
-| intelanalytics/ipex-llm-xpu:latest | GPU Inference |For development and running LLMs using llama.cpp, Ollama and Python|
-| intelanalytics/ipex-llm-serving-cpu:latest | CPU Serving|For serving multiple users/requests through REST APIs using vLLM/FastChat|
-| intelanalytics/ipex-llm-serving-xpu:latest | GPU Serving|For serving multiple users/requests through REST APIs using vLLM/FastChat|
+| intelanalytics/ipex-llm-inference-cpp-xpu:latest | Run llama.cpp/Ollama/Open-WebUI on GPU via Docker|
+| intelanalytics/ipex-llm-serving-cpu:latest | CPU Inference & Serving|For inference or serving multiple users/requests through REST APIs using vLLM/FastChat|
+| intelanalytics/ipex-llm-serving-xpu:latest | GPU Inference & Serving|For inference or serving multiple users/requests through REST APIs using vLLM/FastChat|
 | intelanalytics/ipex-llm-finetune-qlora-cpu-standalone:latest | CPU Finetuning via Docker|For fine-tuning LLMs using QLora/Lora, etc. |
 |intelanalytics/ipex-llm-finetune-qlora-cpu-k8s:latest|CPU Finetuning via Kubernetes|For fine-tuning LLMs using QLora/Lora, etc. |
 | intelanalytics/ipex-llm-finetune-qlora-xpu:latest| GPU Finetuning|For fine-tuning LLMs using QLora/Lora, etc.|

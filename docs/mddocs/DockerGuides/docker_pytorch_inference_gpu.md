@@ -11,9 +11,9 @@ Follow the [Docker installation Guide](./docker_windows_gpu.md#install-docker) t
 
 ## Launch Docker
 
-Prepare ipex-llm-xpu Docker Image:
+Prepare ipex-llm-serving-xpu Docker Image:
 ```bash
-docker pull intelanalytics/ipex-llm-xpu:latest
+docker pull intelanalytics/ipex-llm-serving-xpu:latest
 ```
 
 Start ipex-llm-xpu Docker Container. Choose one of the following commands to start the container:
@@ -21,7 +21,7 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
 - For **Linux users**:
 
   ```bash
-  export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
+  export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
   export CONTAINER_NAME=my_container
   export MODEL_PATH=/llm/models[change to your model path]
 
@@ -39,7 +39,7 @@ Start ipex-llm-xpu Docker Container. Choose one of the following commands to sta
 
   ```bash
   #/bin/bash
-  export DOCKER_IMAGE=intelanalytics/ipex-llm-xpu:latest
+  export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
   export CONTAINER_NAME=my_container
   export MODEL_PATH=/llm/models[change to your model path]
 
