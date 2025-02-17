@@ -187,8 +187,9 @@ Refer to the following table for examples of verified models:
 IPEX-LLM supports running a community GGUF model on Intel NPU.
 
 Refer to the following table for verified models:
+
 | Model | Model link | Verified Platforms |
-|:--|:--|:--|:--|
+|:--|:--|:--|
 | LLaMA 3.2 | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | Meteor Lake, Lunar Lake, Arrow Lake |
 | DeepSeek-R1 | [deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B), [deepseek-ai/DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | Meteor Lake, Lunar Lake, Arrow Lake |
 
