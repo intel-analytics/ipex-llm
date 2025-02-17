@@ -1180,6 +1180,16 @@ def convert_forward(m, target_m, new_forward):
         convert_forward(sub_m, target_m, new_forward)
 
 
+def convert_hybrid_forward(m, target_m, new_forward, new_device=None):
+    if m.__class__ == target_m:
+        bound_method = new_forward.__get__(m, m.__class__)
+        setattr(m, "forward", bound_method)
+        if new_device is not None:
+            m = m.to(device=new_device)
+    for _, sub_m in m.named_children():
+        convert_hybrid_forward(sub_m, target_m, new_forward, new_device)
+
+
 def replace_RotaryEmbed(m, target_m,  replace_embed):
     for attr_name, sub_m in m.named_children():
         if isinstance(sub_m, target_m):
@@ -1994,5 +2004,11 @@ def _optimize_post(model):
         model.llm.config.rope_scaling = {"rope_type": "default"}
         _optimize_post(model.llm)
         model.llm.config.model_type = "megrezo"
+    elif model.config.model_type == "deepseek_v3":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.deepseek_v3 import hybrid_DeepseekV3Attention_forward
+
+        convert_hybrid_forward(model, module.DeepseekV3Attention, hybrid_DeepseekV3Attention_forward, "xpu")
 
     return model
