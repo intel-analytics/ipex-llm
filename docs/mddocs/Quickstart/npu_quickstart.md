@@ -15,6 +15,7 @@ This guide demonstrates:
 - [Runtime Configurations](#runtime-configurations)
 - [Python API](#python-api)
 - [C++ API](#c-api)
+- [llama.cpp Support](#llamacpp-support)
 - [Accuracy Tuning](#accuracy-tuning)
 
 ## Install Prerequisites
@@ -180,6 +181,37 @@ Refer to the following table for examples of verified models:
 
 > [!TIP]
 > You could refer to [here](../../../python/llm/example/NPU/HF-Transformers-AutoModels) for full IPEX-LLM examples on Intel NPU.
+
+## llama.cpp Support
+
+IPEX-LLM supports running a community GGUF model on Intel NPU.
+
+Refer to the following table for verified models:
+| Model | Model link | Verified Platforms |
+|:--|:--|:--|:--|
+| LLaMA 3.2 | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | Meteor Lake, Lunar Lake, Arrow Lake |
+| DeepSeek-R1 | [deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B), [deepseek-ai/DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | Meteor Lake, Lunar Lake, Arrow Lake |
+
+#### Model Download
+
+Before running, you should download or copy community GGUF model. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf` of [DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/tree/main).
+
+### Run the quantized model
+
+Please run the following command in Miniforge Prompt and don't forget to replace below <CONDA_ENV_DIR> with your own path.
+
+```cmd
+:: please replace below conda env dir with your own path
+set CONDA_ENV_DIR=C:\Users\arda\miniforge3\envs\llm-npu\Lib\site-packages
+cd %CONDA_ENV_DIR%\bigdl-core-npu
+set PATH=%PATH%;%CONDA_ENV_DIR%\intel_npu_acceleration_library\lib\Release
+llama-cli-npu.exe -m DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf -n 32 --prompt "What is AI?"
+```
+
+> **Note**:
+>
+> For more details about meaning of each parameter, you can use `llama-cli-npu.exe -h`.
+
 
 ## Accuracy Tuning
 
