@@ -193,7 +193,7 @@ Refer to the following table for verified models:
 | LLaMA 3.2 | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | Meteor Lake, Lunar Lake, Arrow Lake |
 | DeepSeek-R1 | [deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B), [deepseek-ai/DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | Meteor Lake, Lunar Lake, Arrow Lake |
 
-#### Model Download
+### Model Download
 
 Before running, you should download or copy community GGUF model. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf` of [DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/tree/main).
 
