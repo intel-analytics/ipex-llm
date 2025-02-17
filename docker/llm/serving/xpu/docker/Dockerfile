@@ -39,7 +39,12 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     python3 get-pip.py && \
     rm get-pip.py && \
     pip install --upgrade requests argparse urllib3 && \
-    pip install --pre --upgrade ipex-llm[xpu,serving] --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
+    # Pin torch-related packages versions
+    pip install --pre --upgrade ipex-llm[xpu,serving]=="2.2.0b20250120" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
+    pip install intel_extension_for_pytorch=="2.1.30.post0" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
+    pip install torch=="2.1.0.post2+cxx11.abi" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
+    pip install torchaudio=="2.1.0.post2+cxx11.abi" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
+    pip install torchvision=="0.16.0.post2+cxx11.abi" --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     pip install transformers_stream_generator einops tiktoken && \
     pip install --upgrade colorama && \
     # Download all-in-one benchmark and examples
@@ -64,8 +69,8 @@ RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRO
     cd /tmp/ && \
     pip install torch==2.1.0.post2 torchvision==0.16.0.post2 torchaudio==2.1.0.post2 intel-extension-for-pytorch==2.1.30.post0 --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/cn/ && \
     # Internal oneccl
-    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.6.5-release/oneccl_wks_installer_2024.0.0.6.5.sh && \
-    bash oneccl_wks_installer_2024.0.0.6.5.sh && \
+    wget https://sourceforge.net/projects/oneccl-wks/files/2024.0.0.6.5-usm-release/oneccl_wks_installer_2024.0.0.6.5_usm.sh && \
+    bash oneccl_wks_installer_2024.0.0.6.5_usm.sh && \
     git clone https://github.com/intel/torch-ccl -b v2.1.300+xpu && \
     cd torch-ccl && \
     patch -p1 < /tmp/oneccl-binding.patch && \
