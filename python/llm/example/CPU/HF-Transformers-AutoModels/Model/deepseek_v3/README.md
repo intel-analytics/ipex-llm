@@ -44,9 +44,7 @@ Arguments info:
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
 
-> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
->
-> Please select the appropriate size of the Deepseek model based on the capabilities of your machine.
+> **Note**: When loading the model in 4-bit, IPEX-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference. For 671B model, ~1.3 TB memory is needed during the load procedure.
 
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
