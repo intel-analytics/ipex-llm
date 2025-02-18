@@ -16,6 +16,7 @@
 
 from typing import List, Optional, Tuple, Union
 import warnings
+import os
 
 import torch
 from torch import nn
@@ -24,19 +25,18 @@ import argparse
 import ipex_llm
 
 from ipex_llm.transformers import AutoModelForCausalLM
+from ipex_llm.utils import BenchmarkWrapper
 from transformers import AutoTokenizer, GenerationConfig
 from transformers.cache_utils import Cache, DynamicCache
 
 
 deepseek_prompt = """
-A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question: If \( a > 1 \), then the sum of the real solutions of \( \sqrt{a} - \sqrt{a + x} = x \) is equal to:. Assistant:
-
-Question: If \( a > 1 \), then the sum of the real solutions of \( \sqrt{a} - \sqrt{a + x} = x \) is equal to:
+A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question: If \( a > 1 \), then the sum of the real solutions of \( \sqrt{a} - \sqrt{a + x} = x \) is equal to:. Assistant: <think>
 """
 
 # from modeling_deepseek import DeepseekV3MLP
 def convert_forward(m, target_m, new_forward):
-    print(m.__class__.__name__)
+    # print(m.__class__.__name__)
     if m.__class__.__name__ == target_m:
         bound_method = new_forward.__get__(m, m.__class__)
         setattr(m, "forward", bound_method)
@@ -108,11 +108,11 @@ def hybrid_DeepseekV3Attention_forward(
                 "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
             )
         # ipex-llm modify: to xpu
-        hidden_states = hidden_states.to(device="xpu", dtype=torch.bfloat16)
-        attention_mask = attention_mask.to(device="xpu", dtype=torch.bfloat16)
+        hidden_states = hidden_states.to(device="xpu", dtype=torch.float16)
+        attention_mask = attention_mask.to(device="xpu", dtype=torch.float16)
         position_ids = position_ids.to(device="xpu")
         if past_key_value is not None:
-            past_key_value = past_key_value.to(device="xpu", dtype=torch.bfloat16)
+            past_key_value = past_key_value.to(device="xpu", dtype=torch.float16)
         # end of ipex-llm modify
         
         bsz, q_len, _ = hidden_states.size()
@@ -227,28 +227,32 @@ if __name__ == '__main__':
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
+    parser.add_argument('--load-path', type=str, default=None,
+                        help='The path to load the low-bit model.')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # Load model in 4 bit,
-    # which convert the relevant layers in the model into INT4 format
-    # When running LLMs on Intel iGPUs for Windows users, we recommend setting `cpu_embedding=True` in the from_pretrained function.
-    # This will allow the memory-intensive embedding layer to utilize the CPU instead of iGPU.
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 optimize_model=True,
-                                                 trust_remote_code=True,
-                                                 use_cache=True)
-    model = model.bfloat16()
+    load_path = args.load_path
+    if load_path:
+        model = AutoModelForCausalLM.load_low_bit(load_path, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(load_path,
+                                              trust_remote_code=True)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(model_path,
+                                                    load_in_4bit=True,
+                                                    optimize_model=True,
+                                                    trust_remote_code=True,
+                                                    use_cache=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path,
+                                              trust_remote_code=True)
     
+    model = model.bfloat16()
     convert_forward(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
     print(model)
 
-    # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path,
-                                              trust_remote_code=True)
-
+    print("load completed")
+    # model = BenchmarkWrapper(model, do_print=True)
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = deepseek_prompt
@@ -274,3 +278,11 @@ if __name__ == '__main__':
         print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)
+
+        # print('-'*20, 'Performance', '-'*20)
+        # e2e_time = end - st
+        # prefill_time = model.first_token_time
+        # rest_cost_mean = (e2e_time - model.first_token_time)/(model.n_token_generated - 1)
+        # print(f"End-to-end time: {e2e_time} s")
+        # print(f"Prefill time: {prefill_time} s")
+        # print(f"Rest cost mean: {rest_cost_mean} s")
