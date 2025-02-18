@@ -42,10 +42,10 @@ from ipex_llm.transformers.models.utils import apply_rotary_pos_emb
 from ipex_llm.utils.common import invalidInputError
 
 
-def hybrid_MLP_forward(self, x):
-    x = x.to("xpu")
+def hybrid_DeepseekV3MLP_forward(self, x):
+    x = x.to(device="xpu", dtype=torch.float16)
     down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
-    return down_proj.to("cpu")
+    return down_proj.to(device="cpu", dtype=torch.bfloat16)
 
 
 # Copied from transformers.models.llama.modeling_llama.rotate_half
@@ -212,11 +212,11 @@ def hybrid_DeepseekV3Attention_forward(
         xpu_device: str = "xpu",
         **kwargs,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-        hidden_states = hidden_states.to(device=xpu_device, dtype=torch.bfloat16)
-        attention_mask = attention_mask.to(device=xpu_device, dtype=torch.bfloat16)
-        position_ids = position_ids.to(device=xpu_device)
+        hidden_states = hidden_states.to(device="xpu", dtype=torch.float16)
+        attention_mask = attention_mask.to(device="xpu", dtype=torch.float16)
+        position_ids = position_ids.to(device="xpu")
         if past_key_value is not None:
-            past_key_value = past_key_value.to(device=xpu_device, dtype=torch.bfloat16)
+            past_key_value = past_key_value.to(device="xpu", dtype=torch.float16)
 
         attn_output, attn_weights, past_key_value = DeepseekV3Attention_forward(
             hidden_states, attention_mask, position_ids, past_key_value, output_attentions, use_cache, **kwargs
@@ -228,4 +228,6 @@ def hybrid_DeepseekV3Attention_forward(
             attn_weights = attn_weights.to(device="cpu", dtype=torch.bfloat16)
         if past_key_value is not None:
             past_key_value = past_key_value.to(device="cpu", dtype=torch.bfloat16)
+        torch.xpu.empty_cache()
+
         return attn_output, attn_weights, past_key_value
