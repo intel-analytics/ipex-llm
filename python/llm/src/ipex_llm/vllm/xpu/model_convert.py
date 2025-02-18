@@ -89,7 +89,6 @@ def get_load_function(low_bit):
             self.model = get_model(
                 vllm_config=new_vllm_config
             )
-            # TODO: decide whether we need to apply padding_mlp again...
             if self.vllm_config.model_config.low_bit_model_path is None:
                 # We are loading an low-bit model, where all the optimizations should have been
                 # applied...
