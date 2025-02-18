@@ -25,7 +25,6 @@ import argparse
 import ipex_llm
 
 from ipex_llm.transformers import AutoModelForCausalLM
-from ipex_llm.utils import BenchmarkWrapper
 from transformers import AutoTokenizer, GenerationConfig
 from transformers.cache_utils import Cache, DynamicCache
 
@@ -34,7 +33,6 @@ deepseek_prompt = """
 A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question: If \( a > 1 \), then the sum of the real solutions of \( \sqrt{a} - \sqrt{a + x} = x \) is equal to:. Assistant: <think>
 """
 
-# from modeling_deepseek import DeepseekV3MLP
 def convert_forward(m, target_m, new_forward):
     # print(m.__class__.__name__)
     if m.__class__.__name__ == target_m:
@@ -214,6 +212,7 @@ def hybrid_DeepseekV3Attention_forward(
             attn_weights = attn_weights.to(device="cpu", dtype=torch.bfloat16)
         if past_key_value is not None:
             past_key_value = past_key_value.to(device="cpu", dtype=torch.bfloat16)
+        torch.xpu.empty_cache()
         # end of ipex-llm modify
         return attn_output, attn_weights, past_key_value
 
@@ -247,8 +246,9 @@ if __name__ == '__main__':
         tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     
-    model = model.bfloat16()
+    #model = model.bfloat16()
     convert_forward(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
+    convert_forward(model.model.layers[:3], "DeepseekV3MLP", hybrid_MLP_forward)
     print(model)
 
     print("load completed")
@@ -263,10 +263,6 @@ if __name__ == '__main__':
 
         # start inference
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with IPEX-LLM INT4 optimizations
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         torch.xpu.synchronize()
@@ -278,11 +274,3 @@ if __name__ == '__main__':
         print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)
-
-        # print('-'*20, 'Performance', '-'*20)
-        # e2e_time = end - st
-        # prefill_time = model.first_token_time
-        # rest_cost_mean = (e2e_time - model.first_token_time)/(model.n_token_generated - 1)
-        # print(f"End-to-end time: {e2e_time} s")
-        # print(f"Prefill time: {prefill_time} s")
-        # print(f"Rest cost mean: {rest_cost_mean} s")
