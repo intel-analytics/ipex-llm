@@ -70,8 +70,9 @@ def is_auto_awq_available():
 
 def is_vllm_available():
     global _IS_VLLM_AVAILABLE
+    _IS_VLLM_AVAILABLE = os.getenv("IPEX_LLM_NOT_USE_VLLM", None)
     if _IS_VLLM_AVAILABLE is not None:
-        return _IS_VLLM_AVAILABLE
+        return False
     import sys
     original_path = sys.path
     # Temporally remove current directory
@@ -667,7 +668,6 @@ def _replace_with_low_bit_linear(model, qtype, modules_to_not_convert=None,
                             out_features,
                             mp_group,
                             None,
-                            None,
                             optimize_lm_head,
                             None
                         )
@@ -1032,6 +1032,9 @@ def _optimize_pre(model, qtype=None):
         if hasattr(model, "vpm"):
             from ipex_llm.transformers.models.minicpmv import merge_qkv
             model.vpm.apply(merge_qkv)
+        # tts opt
+        if hasattr(model, "tts"):
+            _optimize_pre(model.tts.model, qtype=qtype)
         # llm opt
         model.llm.config.model_type = "qwen2"
         _optimize_pre(model.llm, qtype=qtype)
@@ -1062,6 +1065,11 @@ def _optimize_pre(model, qtype=None):
         from ipex_llm.transformers.models.glm import merge_qkv, split_mlp
         model.apply(merge_qkv)
         model.apply(split_mlp)
+    elif model.config.model_type == "baichuan_m1":
+        from ipex_llm.transformers.models.baichuan_m1 import pre_register_inv_freq
+        model.apply(pre_register_inv_freq)
+    elif model.config.model_type == "multi_modality":
+        _optimize_pre(model.language_model)
 
     return model
 
@@ -1976,6 +1984,9 @@ def _optimize_post(model):
             from transformers.models.whisper.modeling_whisper import WhisperSdpaAttention
             from ipex_llm.transformers.models.whisper import whisper_attention_forward
             convert_forward(model.apm, WhisperSdpaAttention, whisper_attention_forward)
+        # tts opt
+        if hasattr(model, "tts"):
+            _optimize_post(model.tts.model)
         # llm opt
         model.llm.config.model_type = "qwen2"
         _optimize_post(model.llm)
@@ -2010,5 +2021,23 @@ def _optimize_post(model):
         from ipex_llm.transformers.models.deepseek_v3 import hybrid_DeepseekV3Attention_forward
 
         convert_hybrid_forward(model, module.DeepseekV3Attention, hybrid_DeepseekV3Attention_forward, "xpu")
+    elif model.config.model_type == "baichuan_m1":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.baichuan_m1 import model_forward
+        from ipex_llm.transformers.models.baichuan_m1 import eager_attention_forward
+        convert_forward(model, module.BaichuanModel, model_forward)
+        convert_forward(model, module.BaichuanRMSNorm, rms_norm_forward)
+        convert_forward(model, module.BaichuanAttention, eager_attention_forward)
+    elif model.config.model_type == "multi_modality":
+        # vision
+        vpm_modeling_module_name = model.vision_model.vision_tower.__class__.__module__
+        vpm_module = importlib.import_module(vpm_modeling_module_name)
+        from ipex_llm.transformers.models.janus import vision_attention_forward
+        convert_forward(model.vision_model, vpm_module.Attention, vision_attention_forward)
+
+        # llm
+        _optimize_post(model.language_model)
 
     return model
