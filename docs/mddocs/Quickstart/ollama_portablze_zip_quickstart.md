@@ -56,7 +56,7 @@ IPEX-LLM provides several environment variables settings to customize the Ollama
 
 By default, Ollama runs model with a context window of 2048 tokens. That is, the model can "remember" at most 2048 tokens of context.
 
-To increase the context windows, you could set environment variable `IPEX_LLM_NUM_CTX` before [starting Ollama serve](#sta), as shwon below:
+To increase the context window, you could set environment variable `IPEX_LLM_NUM_CTX` before [starting Ollama serve](#sta), as shwon below:
 
 - Open "Command Prompt" (cmd), and navigate to the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
 - Set `IPEX_LLM_NUM_CTX` in the "Command Prompt, e.g. `set IPEX_LLM_NUM_CTX=16384`
@@ -69,7 +69,7 @@ To increase the context windows, you could set environment variable `IPEX_LLM_NU
 
 Ollama by default downloads model from [Ollama library](https://ollama.com/library). By setting the environment variable `IPEX_LLM_MODEL_SOURCE` to `modelscope`/`ollama` before [run Ollama](#step-3-run-ollama), you could switch the source from which the model is downloaded first.
 
-For example, if you would like to run `deepseek-r1:7b` but the download speed from Ollama library is quite slow, you could use [model source](https://www.modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF) from [ModelScope](https://www.modelscope.cn/models) instead, through:
+For example, if you would like to run `deepseek-r1:7b` but the download speed from Ollama library is quite slow, you could use [its model source](https://www.modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF) from [ModelScope](https://www.modelscope.cn/models) instead, through:
 
 - Open "Command Prompt" (cmd), and navigate to the extracted folder by `cd /d PATH\TO\EXTRACTED\FOLDER`
 - Run `set IPEX_LLM_MODEL_SOURCE=modelscope` in "Command Prompt"
