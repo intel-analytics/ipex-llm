@@ -2023,8 +2023,10 @@ def _optimize_post(model):
             hybrid_DeepseekV3MLP_forward,
         )
 
-        convert_forward_to_xpu(model, module.DeepseekV3Attention, hybrid_DeepseekV3Attention_forward)
-        convert_forward_to_xpu(model.model.layers[:3], module.DeepseekV3MLP, hybrid_DeepseekV3MLP_forward)
+        convert_forward_to_xpu(model, module.DeepseekV3Attention,
+                               hybrid_DeepseekV3Attention_forward)
+        convert_forward_to_xpu(model.model.layers[:3], module.DeepseekV3MLP,
+                               hybrid_DeepseekV3MLP_forward)
 
     elif model.config.model_type == "baichuan_m1":
         modeling_module_name = model.__class__.__module__

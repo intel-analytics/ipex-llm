@@ -52,7 +52,7 @@ def hybrid_DeepseekV3MLP_forward(self, x):
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
     x1 = x[..., : x.shape[-1] // 2]
-    x2 = x[..., x.shape[-1] // 2 :]
+    x2 = x[..., x.shape[-1] // 2:]
     return torch.cat((-x2, x1), dim=-1)
 
 
@@ -66,7 +66,7 @@ def apply_rotary_pos_emb(q, k, cos, sin, position_ids, unsqueeze_dim=1):
         sin (`torch.Tensor`): The sine part of the rotary embedding.
         position_ids (`torch.Tensor`):
             The position indices of the tokens corresponding to the query and key tensors. For example, this can be
-            used to pass offsetted position ids when working with a KV-cache.
+            used to pass offsetted position ids when working with a KV-cache.  # noqa
         unsqueeze_dim (`int`, *optional*, defaults to 1):
             The 'unsqueeze_dim' argument specifies the dimension along which to unsqueeze cos[position_ids] and
             sin[position_ids] so that they can be properly broadcasted to the dimensions of q and k. For example, note
@@ -104,7 +104,7 @@ def DeepseekV3Attention_forward(
 ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
     if "padding_mask" in kwargs:
         warnings.warn(
-            "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"
+            "Passing `padding_mask` is deprecated and will be removed in v4.37. Please make sure use `attention_mask` instead.`"  # noqa
         )
     bsz, q_len, _ = hidden_states.size()
 
@@ -134,9 +134,9 @@ def DeepseekV3Attention_forward(
     kv_seq_len = value_states.shape[-2]
     if past_key_value is not None:
         if self.layer_idx is None:
-            raise ValueError(
-                f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "
-                "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "
+            raise ValueError(  # noqa
+                f"The cache structure has changed since version v4.36. If you are using {self.__class__.__name__} "  # noqa
+                "for auto-regressive decoding with k/v caching, please make sure to initialize the attention class "  # noqa
                 "with a layer index."
             )
         kv_seq_len += past_key_value.get_usable_length(kv_seq_len, self.layer_idx)
@@ -146,11 +146,11 @@ def DeepseekV3Attention_forward(
 
     query_states = k_pe.new_empty(bsz, self.num_heads, q_len, self.q_head_dim)
     query_states[:, :, :, : self.qk_nope_head_dim] = q_nope
-    query_states[:, :, :, self.qk_nope_head_dim :] = q_pe
+    query_states[:, :, :, self.qk_nope_head_dim:] = q_pe
 
     key_states = k_pe.new_empty(bsz, self.num_heads, q_len, self.q_head_dim)
     key_states[:, :, :, : self.qk_nope_head_dim] = k_nope
-    key_states[:, :, :, self.qk_nope_head_dim :] = k_pe
+    key_states[:, :, :, self.qk_nope_head_dim:] = k_pe
     if past_key_value is not None:
         cache_kwargs = {"sin": sin, "cos": cos}  # Specific to RoPE models
         key_states, value_states = past_key_value.update(
@@ -162,15 +162,15 @@ def DeepseekV3Attention_forward(
     )
 
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
-        raise ValueError(
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"
+        raise ValueError(  # noqa
+            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, but is"  # noqa
             f" {attn_weights.size()}"
         )
-    assert attention_mask is not None
+    assert attention_mask is not None  # noqa
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
-            raise ValueError(
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"
+            raise ValueError(  # noqa
+                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, but is {attention_mask.size()}"  # noqa
             )
         attn_weights = attn_weights + attention_mask
 
@@ -184,8 +184,8 @@ def DeepseekV3Attention_forward(
     attn_output = torch.matmul(attn_weights, value_states)
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.v_head_dim):
-        raise ValueError(
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.v_head_dim)}, but is"
+        raise ValueError(  # noqa
+            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.v_head_dim)}, but is"  # noqa
             f" {attn_output.size()}"
         )
 
@@ -202,32 +202,32 @@ def DeepseekV3Attention_forward(
 
 
 def hybrid_DeepseekV3Attention_forward(
-        self,
-        hidden_states: torch.Tensor,
-        attention_mask: Optional[torch.Tensor] = None,
-        position_ids: Optional[torch.LongTensor] = None,
-        past_key_value: Optional[Cache] = None,
-        output_attentions: bool = False,
-        use_cache: bool = False,
-        xpu_device: str = "xpu",
-        **kwargs,
-    ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-        hidden_states = hidden_states.to(device="xpu", dtype=torch.float16)
-        attention_mask = attention_mask.to(device="xpu", dtype=torch.float16)
-        position_ids = position_ids.to(device="xpu")
-        if past_key_value is not None:
-            past_key_value = past_key_value.to(device="xpu", dtype=torch.float16)
+    self,
+    hidden_states: torch.Tensor,
+    attention_mask: Optional[torch.Tensor] = None,
+    position_ids: Optional[torch.LongTensor] = None,
+    past_key_value: Optional[Cache] = None,
+    output_attentions: bool = False,
+    use_cache: bool = False,
+    xpu_device: str = "xpu",
+    **kwargs,
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
+    hidden_states = hidden_states.to(device="xpu", dtype=torch.float16)
+    attention_mask = attention_mask.to(device="xpu", dtype=torch.float16)
+    position_ids = position_ids.to(device="xpu")
+    if past_key_value is not None:
+        past_key_value = past_key_value.to(device="xpu", dtype=torch.float16)
 
-        attn_output, attn_weights, past_key_value = DeepseekV3Attention_forward(
-            hidden_states, attention_mask, position_ids, past_key_value, output_attentions, use_cache, **kwargs
-        )
+    attn_output, attn_weights, past_key_value = DeepseekV3Attention_forward(
+        hidden_states, attention_mask, position_ids, past_key_value, output_attentions, use_cache, **kwargs  # noqa
+    )
 
-        if attn_output is not None:
-            attn_output = attn_output.to(device="cpu", dtype=torch.bfloat16)
-        if attn_weights is not None:
-            attn_weights = attn_weights.to(device="cpu", dtype=torch.bfloat16)
-        if past_key_value is not None:
-            past_key_value = past_key_value.to(device="cpu", dtype=torch.bfloat16)
-        torch.xpu.empty_cache()
+    if attn_output is not None:
+        attn_output = attn_output.to(device="cpu", dtype=torch.bfloat16)
+    if attn_weights is not None:
+        attn_weights = attn_weights.to(device="cpu", dtype=torch.bfloat16)
+    if past_key_value is not None:
+        past_key_value = past_key_value.to(device="cpu", dtype=torch.bfloat16)
+    torch.xpu.empty_cache()
 
-        return attn_output, attn_weights, past_key_value
+    return attn_output, attn_weights, past_key_value
