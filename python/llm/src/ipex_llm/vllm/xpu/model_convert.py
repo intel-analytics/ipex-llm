@@ -120,11 +120,14 @@ def get_load_function(low_bit):
                                low_bit=low_bit,
                                torch_dtype=self.vllm_config.model_config.dtype,
                                modules_to_not_convert=modules)
+                local_rank = os.environ["LOCAL_RANK"]
             # Guancheng: We have to save the model before moving it to the XPU device.
             # The `to` method will convert the underlying data.
             # Saving it before will help to avoid converting two times.
             if self.vllm_config.model_config.low_bit_save_path is not None:
-                self.model.save_low_bit(self.vllm_config.model_config.low_bit_save_path)
+                saved_path = os.path.join(self.vllm_config.model_config.low_bit_save_path,
+                                          str(local_rank))
+                self.model.save_low_bit(saved_path)
 
             self.model = self.model.to(device=self.vllm_config.device_config.device,
                                        dtype=self.vllm_config.model_config.dtype)
