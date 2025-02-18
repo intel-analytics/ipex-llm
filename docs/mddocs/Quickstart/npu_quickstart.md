@@ -193,19 +193,30 @@ Refer to the following table for verified models:
 | LLaMA 3.2 | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | Meteor Lake, Lunar Lake, Arrow Lake |
 | DeepSeek-R1 | [deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B), [deepseek-ai/DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | Meteor Lake, Lunar Lake, Arrow Lake |
 
+### Setup for running llama.cpp
+
+First, you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp` directory and enter it.
+
+```cmd
+mkdir llama-cpp-npu
+cd llama-cpp-npu
+```
+
+Then, please run the following command with **administrator privilege in Miniforge Prompt** to initialize `llama.cpp` with IPEX-LLM:
+
+```cmd
+init-llama-cpp.bat
+```
+
 ### Model Download
 
-Before running, you should download or copy community GGUF model. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf` of [DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/tree/main).
+Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf` of [DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/tree/main).
 
 ### Run the quantized model
 
-Please run the following command in Miniforge Prompt and don't forget to replace below <CONDA_ENV_DIR> with your own path.
+Please refer to [Runtime Configurations](#runtime-configurations) before running the following command in Miniforge Prompt.
 
 ```cmd
-:: please replace below conda env dir with your own path
-set CONDA_ENV_DIR=C:\Users\arda\miniforge3\envs\llm-npu\Lib\site-packages
-cd %CONDA_ENV_DIR%\bigdl-core-npu
-set PATH=%PATH%;%CONDA_ENV_DIR%\intel_npu_acceleration_library\lib\Release
 llama-cli-npu.exe -m DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf -n 32 --prompt "What is AI?"
 ```
 
