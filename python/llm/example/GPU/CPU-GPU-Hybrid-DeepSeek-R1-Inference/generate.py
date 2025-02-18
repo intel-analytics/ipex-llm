@@ -33,19 +33,19 @@ deepseek_prompt = """
 A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question: If \( a > 1 \), then the sum of the real solutions of \( \sqrt{a} - \sqrt{a + x} = x \) is equal to:. Assistant: <think>
 """
 
-def convert_forward(m, target_m, new_forward):
+def convert_forward_to_xpu(m, target_m, new_forward):
     # print(m.__class__.__name__)
     if m.__class__.__name__ == target_m:
         bound_method = new_forward.__get__(m, m.__class__)
         setattr(m, "forward", bound_method)
-        m = m.to(device="xpu")
+        m = m.to(device="xpu", dtype=torch.float16)
     for _, sub_m in m.named_children():
-        convert_forward(sub_m, target_m, new_forward)
+        convert_forward_to_xpu(sub_m, target_m, new_forward)
                 
 def hybrid_MLP_forward(self, x):
-    x = x.to("xpu")
+    x = x.to(device="xpu", dtype=torch.float16)
     down_proj = self.down_proj(self.act_fn(self.gate_proj(x)) * self.up_proj(x))
-    return down_proj.to("cpu")
+    return down_proj.to(device="cpu", dtype=torch.bfloat16)
 
 # Copied from transformers.models.llama.modeling_llama.rotate_half
 def rotate_half(x):
@@ -247,8 +247,8 @@ if __name__ == '__main__':
                                               trust_remote_code=True)
     
     #model = model.bfloat16()
-    convert_forward(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
-    convert_forward(model.model.layers[:3], "DeepseekV3MLP", hybrid_MLP_forward)
+    convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
+    convert_forward_to_xpu(model.model.layers[:3], "DeepseekV3MLP", hybrid_MLP_forward)
     print(model)
 
     print("load completed")
