@@ -184,7 +184,7 @@ Refer to the following table for examples of verified models:
 
 ## llama.cpp Support
 
-IPEX-LLM supports running a community GGUF model on Intel NPU.
+IPEX-LLM provides `llama.cpp` compatible API for running GGUF models on Intel NPU.
 
 Refer to the following table for verified models:
 
@@ -211,7 +211,8 @@ llama-cli-npu.exe -m DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf -n 32 --prompt "What 
 
 > **Note**:
 >
-> For more details about meaning of each parameter, you can use `llama-cli-npu.exe -h`.
+> - **Warmup for optimial performance on first run**: When running GGUF models on NPU for the first time, you might notice delays up to several minutes before the first token is generated. This delay occurs because the blob compilation. To achieve optimal and consistent performance, we recommend a one-time warm-up.
+> - For more details about meaning of each parameter, you can use `llama-cli-npu.exe -h`.
 
 
 ## Accuracy Tuning
