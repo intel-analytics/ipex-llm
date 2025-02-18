@@ -195,7 +195,7 @@ Refer to the following table for verified models:
 
 ### Setup for running llama.cpp
 
-First, you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp` directory and enter it.
+First, you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp-npu` directory and enter it.
 
 ```cmd
 mkdir llama-cpp-npu
@@ -222,7 +222,7 @@ llama-cli-npu.exe -m DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf -n 32 --prompt "What 
 
 > **Note**:
 >
-> - **Warmup for optimial performance on first run**: When running GGUF models on NPU for the first time, you might notice delays up to several minutes before the first token is generated. This delay occurs because the blob compilation. To achieve optimal and consistent performance, we recommend a one-time warm-up.
+> - **Warmup on first run**: When running GGUF models on NPU for the first time, you might notice delays up to several minutes before the first token is generated. This delay occurs because the blob compilation.
 > - For more details about meaning of each parameter, you can use `llama-cli-npu.exe -h`.
 
 
