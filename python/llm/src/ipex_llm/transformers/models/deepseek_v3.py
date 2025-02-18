@@ -219,7 +219,7 @@ def hybrid_DeepseekV3Attention_forward(
         past_key_value = past_key_value.to(device="xpu", dtype=torch.float16)
 
     attn_output, attn_weights, past_key_value = DeepseekV3Attention_forward(
-        hidden_states, attention_mask, position_ids, past_key_value, output_attentions, use_cache, **kwargs  # noqa
+        self, hidden_states, attention_mask, position_ids, past_key_value, output_attentions, use_cache, **kwargs  # noqa
     )
 
     if attn_output is not None:
