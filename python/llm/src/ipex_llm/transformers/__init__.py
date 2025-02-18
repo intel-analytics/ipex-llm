@@ -15,7 +15,7 @@
 #
 
 
-from .convert import ggml_convert_low_bit, get_enable_ipex
+from .convert import ggml_convert_low_bit, get_enable_ipex, convert_model_hybrid
 from .model import AutoModelForCausalLM, AutoModel, AutoModelForSeq2SeqLM, \
         AutoModelForSpeechSeq2Seq, AutoModelForQuestionAnswering, \
         AutoModelForSequenceClassification, AutoModelForMaskedLM, \

@@ -24,7 +24,7 @@ import time
 import argparse
 import ipex_llm
 
-from ipex_llm import optimize_model
+from ipex_llm.transformers import convert_model_hybrid
 from ipex_llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer, GenerationConfig
 from transformers.cache_utils import Cache, DynamicCache
@@ -66,7 +66,7 @@ if __name__ == '__main__':
                                               trust_remote_code=True)
     
     #model = model.bfloat16()
-    model = optimize_model(model)
+    model = convert_model_hybrid(model)
     print(model)
 
     # Generate predicted tokens
