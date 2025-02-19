@@ -144,8 +144,10 @@ IPEX-LLM 现在已支持在 Linux 和 Windows 系统上运行 `Ollama`。
   | DeepScaleR | `ollama run deepscaler` | [deepscaler](https://ollama.com/library/deepscaler) |
   | Phi-4 | `ollama run phi4` | [phi4](https://ollama.com/library/phi4) |
   | Dolphin 3.0 | `ollama run dolphin3` | [dolphin3](https://ollama.com/library/dolphin3) |
+  | Smallthinker | `ollama run smallthinker` | [smallthinker](https://ollama.com/library/smallthinker) |
   | Granite3.1-Dense |  `ollama run granite3-dense` | [granite3.1-dense](https://ollama.com/library/granite3.1-dense) |
   | Granite3.1-Moe-3B | `ollama run granite3-moe` | [granite3.1-moe](https://ollama.com/library/granite3.1-moe) |
+
 
 ### 5. 使用 Ollama
 
