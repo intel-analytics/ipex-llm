@@ -17,6 +17,8 @@
   - [步骤 1：下载和解压](#步骤-1下载和解压-1)
   - [步骤 2：启动 Ollama Serve](#步骤-2启动-ollama-serve-1)
   - [步骤 3：运行 Ollama](#步骤-3运行-ollama-1)
+- [提示和故障排除](#提示和故障排除)
+- [更多信息](ollama_quickstart.zh-CN.md)
 
 ## Windows用户指南
 
