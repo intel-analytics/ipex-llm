@@ -15,7 +15,7 @@ This guide demonstrates:
 - [Runtime Configurations](#runtime-configurations)
 - [Python API](#python-api)
 - [C++ API](#c-api)
-- [llama.cpp Support](#llamacpp-support)
+- [llama.cpp Support](#experimental-llamacpp-support)
 - [Accuracy Tuning](#accuracy-tuning)
 
 ## Install Prerequisites
@@ -182,7 +182,7 @@ Refer to the following table for examples of verified models:
 > [!TIP]
 > You could refer to [here](../../../python/llm/example/NPU/HF-Transformers-AutoModels) for full IPEX-LLM examples on Intel NPU.
 
-## llama.cpp Support
+## (Experimental) llama.cpp Support
 
 IPEX-LLM provides `llama.cpp` compatible API for running GGUF models on Intel NPU.
 
