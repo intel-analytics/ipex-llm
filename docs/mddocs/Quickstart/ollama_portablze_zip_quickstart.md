@@ -57,9 +57,7 @@ You could then use Ollama to run LLMs on Intel GPUs as follows:
 
 ### Prerequisites
 
-Check your GPU driver version, and update it if needed:
-
-- For client GPU, like A-series, B-series and integrated GPU, we recommend following [Intel client GPU driver installing guide](https://dgpu-docs.intel.com/driver/client/overview.html) to install your GPU driver.
+Check your GPU driver version, and update it if needed; we recommend following [Intel client GPU driver installation guide](https://dgpu-docs.intel.com/driver/client/overview.html) to install your GPU driver.
 
 ### Step 1: Download and Extract
 
