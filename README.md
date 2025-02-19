@@ -9,7 +9,7 @@
 > - ***70+ models** have been optimized/verified on `ipex-llm` (e.g., Llama, Phi, Mistral, Mixtral, Whisper, DeepSeek, Qwen, ChatGLM, MiniCPM, Qwen-VL, MiniCPM-V and more), with state-of-art **LLM optimizations**, **XPU acceleration** and **low-bit (FP8/FP6/FP4/INT4) support**; see the complete list [here](#verified-models).*
 
 ## Latest Update 🔥 
-- [2025/02] We added support of [Ollama Portable Zip](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md) to directly run Ollama on Intel GPU (***without the need of manual installations***).
+- [2025/02] We added support of [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run Ollama on Intel GPU for both [Windows](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md#windows-quickstart) and [Linux](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md#linux-quickstart) (***without the need of manual installations***)
 - [2025/02] We added support for running [vLLM 0.6.6](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 - [2025/01] We added the guide for running `ipex-llm` on Intel Arc [B580](docs/mddocs/Quickstart/bmg_quickstart.md) GPU.
 - [2025/01] We added support for running [Ollama 0.5.4](docs/mddocs/Quickstart/ollama_quickstart.md) on Intel GPU.
