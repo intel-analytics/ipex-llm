@@ -71,7 +71,7 @@ if __name__ == '__main__':
         tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     
-    #model = model.bfloat16()
+    model = model.bfloat16()
     model = convert_model_hybrid(model)
     print(model)
 
