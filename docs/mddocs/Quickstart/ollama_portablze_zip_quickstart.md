@@ -17,6 +17,10 @@ This guide demonstrates how to use [Ollama portable zip](https://github.com/inte
   - [Step 2: Start Ollama Serve](#step-2-start-ollama-serve-1)
   - [Step 3: Run Ollama](#step-3-run-ollama-1)
 - [Tips & Troubleshooting](#tips--troubleshooting)
+  - [Speed up model download using alternative sources](#speed-up-model-download-using-alternative-sources)
+  - [Increase context length in Ollama](#increase-context-length-in-ollama)
+  - [Select specific GPU to run Ollama when multiple ones are available](#select-specific-gpu-to-run-ollama-when-multiple-ones-are-available)
+  - [Additional models supported after Ollama v0.5.4](#additional-models-supported-after-ollama-v054)
 - [More details](ollama_quickstart.md)
 
 ## Windows Quickstart
