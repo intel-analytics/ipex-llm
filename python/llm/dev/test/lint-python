@@ -21,7 +21,7 @@ SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 PYTHON_ROOT_DIR="$SCRIPT_DIR/.."
 echo $PYTHON_ROOT_DIR
 PATHS_TO_CHECK="$SCRIPT_DIR/../../src"
-PATTERNS_TO_EXCLUDE="__init__.py,log4Error.py,$SCRIPT_DIR/../../src/ipex_llm/langchain/*,$SCRIPT_DIR/../../src/ipex_llm/transformers/gguf/models/model_implement/yuan2/*,benchmark_util_4_29.py,benchmark_util_4_42.py,benchmark_util_4_43.py,benchmark_util_4_44.py,benchmark_util_4_45.py,benchmark_util_4_47.py,tgi_api_server.py,api_server.py"
+PATTERNS_TO_EXCLUDE="__init__.py,log4Error.py,$SCRIPT_DIR/../../src/ipex_llm/langchain/*,$SCRIPT_DIR/../../src/ipex_llm/transformers/gguf/models/model_implement/yuan2/*,benchmark_util_4_29.py,benchmark_util_4_42.py,benchmark_util_4_43.py,benchmark_util_4_44.py,benchmark_util_4_45.py,benchmark_util_4_47.py,benchmark_util_deepseek.py,tgi_api_server.py,api_server.py"
 PEP8_REPORT_PATH="$PYTHON_ROOT_DIR/test/pep8-report.txt"
 PYLINT_REPORT_PATH="$PYTHON_ROOT_DIR/test/pylint-report.txt"
 PYLINT_INSTALL_INFO="$PYTHON_ROOT_DIR/test/pylint-info.txt"
