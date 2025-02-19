@@ -1,5 +1,5 @@
-# (Experimental) llama.cpp Example of running GGUF models on Intel NPU using IPEX-LLM
-In this directory, you will find a simple C++ example on how to run GGUF models on Intel NPUs using `llama.cpp` compatible API. See the table blow for verified models.
+# (Experimental) Example of running GGUF model using llama.cpp C++ API on NPU
+In this directory, you will find a simple C++ example on how to run GGUF models on Intel NPUs using `llama.cpp` C++ API. See the table blow for verified models.
 
 ## Verified Models
 
