@@ -13,7 +13,7 @@ This guide demonstrates how to use [Ollama portable zip](https://github.com/inte
 - [Step 1: Download and Unzip](#step-1-download-and-unzip)
 - [Step 2: Start Ollama Serve](#step-2-start-ollama-serve)
 - [Step 3: Run Ollama](#step-3-run-ollama)
-- [Runtime Configurations](#runtime-configurations)
+- [Tips & Troubleshooting](#tips--troubleshootings)
 
 ## Prerequisites
 
@@ -48,24 +48,9 @@ You could then use Ollama to run LLMs on Intel GPUs as follows:
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
 </div>
 
-## Runtime Configurations
+## Tips & Troubleshooting
 
-IPEX-LLM provides several environment variables settings to customize the Ollama runtime experience on Intel GPU:
-
-### `IPEX_LLM_NUM_CTX`
-
-By default, Ollama runs model with a context window of 2048 tokens. That is, the model can "remember" at most 2048 tokens of context.
-
-To increase the context window, you could set environment variable `IPEX_LLM_NUM_CTX` before [starting Ollama serve](#sta), as shwon below:
-
-- Open "Command Prompt" (cmd), and navigate to the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
-- Set `IPEX_LLM_NUM_CTX` in the "Command Prompt, e.g. `set IPEX_LLM_NUM_CTX=16384`
-- Start Ollama serve through `start-ollama.bat`
-
-> [!TIP]
-> `IPEX_LLM_NUM_CTX` has a higher priority than the `num_ctx` settings in a models' `Modelfile`.
-
-### `IPEX_LLM_MODEL_SOURCE`
+### Speed up model download using alternative sources
 
 Ollama by default downloads model from [Ollama library](https://ollama.com/library). By setting the environment variable `IPEX_LLM_MODEL_SOURCE` to `modelscope`/`ollama` before [run Ollama](#step-3-run-ollama), you could switch the source from which the model is downloaded first.
 
@@ -82,3 +67,16 @@ For example, if you would like to run `deepseek-r1:7b` but the download speed fr
 > modelscope.cn/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M    f482d5af6aec    4.7 GB    About a minute ago
 > ```
 > Except for `ollama run` and `ollama pull`, the model should be identified through its actual id, e.g. `ollama rm modelscope.cn/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M`
+
+### Increase context length in Ollama
+
+By default, Ollama runs model with a context window of 2048 tokens. That is, the model can "remember" at most 2048 tokens of context.
+
+To increase the context length, you could set environment variable `IPEX_LLM_NUM_CTX` before [starting Ollama serve](#sta), as shwon below:
+
+- Open "Command Prompt" (cmd), and navigate to the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
+- Set `IPEX_LLM_NUM_CTX` in the "Command Prompt, e.g. `set IPEX_LLM_NUM_CTX=16384`
+- Start Ollama serve through `start-ollama.bat`
+
+> [!TIP]
+> `IPEX_LLM_NUM_CTX` has a higher priority than the `num_ctx` settings in a models' `Modelfile`.
