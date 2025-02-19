@@ -24,8 +24,9 @@ import time
 import argparse
 import ipex_llm
 
-from ipex_llm.transformers import convert_model_hybrid
-from ipex_llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers import AutoModelForCausalLM, convert_model_hybrid
+from ipex_llm.utils.benchmark_util_deepseek import BenchmarkWrapper
+
 from transformers import AutoTokenizer, GenerationConfig
 from transformers.cache_utils import Cache, DynamicCache
 
@@ -69,6 +70,8 @@ if __name__ == '__main__':
     model = convert_model_hybrid(model)
     print(model)
 
+    model = BenchmarkWrapper(model)
+
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = PROMPT_FORMAT.format(prompt=args.prompt)
@@ -90,3 +93,11 @@ if __name__ == '__main__':
         print(prompt)
         print('-'*20, 'Output', '-'*20)
         print(output_str)
+
+        print('-'*20, 'Performance', '-'*20)
+        e2e_time = end - st
+        prefill_time = model.first_token_time
+        rest_cost_mean = (e2e_time - model.first_token_time)/(model.n_token_generated - 1)
+        print(f"End-to-end time: {e2e_time} s")
+        print(f"Prefill time: {prefill_time} s")
+        print(f"Rest cost mean: {rest_cost_mean * 1000} ms")
