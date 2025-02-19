@@ -105,9 +105,9 @@ You could then use Ollama to run LLMs on Intel GPUs as follows:
 
 ### Speed up model download using alternative sources
 
-Ollama by default downloads model from [Ollama library](https://ollama.com/library). By setting the environment variable `IPEX_LLM_MODEL_SOURCE` to `modelscope`/`ollama` **before Run Ollama**, you could switch the source from which the model is downloaded first.
+Ollama by default downloads model from the Ollama library. By setting the environment variable `IPEX_LLM_MODEL_SOURCE` to `modelscope` or `ollama` **before running Ollama**, you could switch the source where the model is downloaded.
 
-For example, if you would like to run `deepseek-r1:7b` but the download speed from Ollama library is quite slow, you could use [its model source](https://www.modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF) from [ModelScope](https://www.modelscope.cn/models) instead, through:
+For example, if you would like to run `deepseek-r1:7b` but the download speed from the Ollama library is slow, you could download the model from [ModelScope](https://www.modelscope.cn/models) as follows:
 
 - For **Windows** users:
 
