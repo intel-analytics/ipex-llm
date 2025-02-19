@@ -11,7 +11,7 @@ In this directory, you will find a simple C++ example on how to run GGUF models 
 Please refer to [Quickstart](../../../../../docs/mddocs/Quickstart/npu_quickstart.md#experimental-llamacpp-support) for details about verified platforms.
 
 ## 0. Prerequisites
-For `ipex-llm` NPU support, please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
+For `ipex-llm` NPU support, please refer to [Quickstart](../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for details about the required preparations.
 
 ## 1. Install & Runtime Configurations
 ### 1.1 Installation on Windows
@@ -27,10 +27,10 @@ pip install cmake
 pip install --pre --upgrade ipex-llm[npu]
 ```
 
-Please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
+Please refer to [Quickstart](../../../../../docs/mddocs/Quickstart/npu_quickstart.md#install-prerequisites) for more details about `ipex-llm` installation on Intel NPU.
 
 ### 1.2 Runtime Configurations
-Please refer to [Quickstart](../../../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
+Please refer to [Quickstart](../../../../../docs/mddocs/Quickstart/npu_quickstart.md#runtime-configurations) for environment variables setting based on your device.
 
 ## 2. Build C++ Example `simple`
 
