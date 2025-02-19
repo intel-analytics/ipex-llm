@@ -75,7 +75,7 @@ By default, Ollama runs model with a context window of 2048 tokens. That is, the
 To increase the context length, you could set environment variable `IPEX_LLM_NUM_CTX` before [starting Ollama serve](#step-2-start-ollama-serve), as shwon below:
 
 - Open "Command Prompt" (cmd), and navigate to the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
-- Set `IPEX_LLM_NUM_CTX` in the "Command Prompt, e.g. `set IPEX_LLM_NUM_CTX=16384`
+- Set `IPEX_LLM_NUM_CTX` to the desired length in the "Command Prompt, e.g. `set IPEX_LLM_NUM_CTX=16384`
 - Start Ollama serve through `start-ollama.bat`
 
 > [!TIP]
