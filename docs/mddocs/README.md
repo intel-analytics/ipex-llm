@@ -6,14 +6,16 @@
 **`IPEX-LLM`** is an LLM acceleration library for Intel [GPU](Quickstart/install_windows_gpu.md) *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*, [NPU](Quickstart/npu_quickstart.md) and CPU [^1].
 
 ## Latest Update 🔥 
+- [2025/02] We added support of [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run Ollama on Intel GPU for both [Windows](Quickstart/ollama_portablze_zip_quickstart.md#windows-quickstart) and [Linux](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md#linux-quickstart) (***without the need of manual installations***).
+- [2025/02] We added support for running [vLLM 0.6.6](DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 - [2025/01] We added the guide for running `ipex-llm` on Intel Arc [B580](Quickstart/bmg_quickstart.md) GPU
-- [2024/12] We added support for running [Ollama 0.4.6](Quickstart/ollama_quickstart.md) on Intel GPU.
+- [2024/01] We added support for running [Ollama 0.5.4](Quickstart/ollama_quickstart.md) on Intel GPU.
 - [2024/12] We added both ***Python*** and ***C++*** support for Intel Core Ultra [NPU](Quickstart/npu_quickstart.md) (including 100H, 200V and 200K series).
-- [2024/11] We added support for running [vLLM 0.6.2](DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 
 <details><summary>More updates</summary>
 <br/>
 
+- [2024/11] We added support for running [vLLM 0.6.2](DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 - [2024/07] We added support for running Microsoft's **GraphRAG** using local LLM on Intel GPU; see the quickstart guide [here](Quickstart/graphrag_quickstart.md).
 - [2024/07] We added extensive support for Large Multimodal Models, including [StableDiffusion](../../python/llm/example/GPU/HuggingFace/Multimodal/StableDiffusion), [Phi-3-Vision](../../python/llm/example/GPU/HuggingFace/Multimodal/phi-3-vision), [Qwen-VL](../../python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl), and [more](../../python/llm/example/GPU/HuggingFace/Multimodal).
 - [2024/07] We added **FP6** support on Intel [GPU](../../python/llm/example/GPU/HuggingFace/More-Data-Types). 
