@@ -59,7 +59,7 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library)下载模型。在[运�
 - 在 “命令提示符” 中运行 `set IPEX_LLM_MODEL_SOURCE=modelscope`
 - 运行 `o`llama run deepseek-r1:7b`
 
-> [!提示]
+> [!Tip]
 > 使用 `set IPEX_LLM_MODEL_SOURCE=modelscope` 下载的模型，在执行 `ollama list` 时仍会显示实际的模型 ID，例如：
 > ```
 > NAME                                                             ID              SIZE      MODIFIED
@@ -77,7 +77,7 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library)下载模型。在[运�
 - 在 “命令提示符” 中将 `IPEX_LLM_NUM_CTX` 设置为所需长度，例如：`set IPEX_LLM_NUM_CTX=16384`
 - 通过运行 `start-ollama.bat` 启动 Ollama serve
 
-> [!提示]
+> [!Tip]
 > `IPEX_LLM_NUM_CTX` 的优先级高于模型 `Modelfile` 中设置的 `num_ctx`。
 
 ### Ollama v0.5.4 之后支持的其他模型
