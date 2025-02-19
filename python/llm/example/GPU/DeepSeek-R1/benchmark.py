@@ -23,8 +23,10 @@ from torch import nn
 import time
 import argparse
 import ipex_llm
+import numpy as np
 
 from ipex_llm.transformers import AutoModelForCausalLM, convert_model_hybrid
+from ipex_llm.utils.benchmark_util_deepseek import BenchmarkWrapper
 
 from transformers import AutoTokenizer, GenerationConfig
 from transformers.cache_utils import Cache, DynamicCache
@@ -47,6 +49,10 @@ if __name__ == '__main__':
                         help='Max tokens to predict')
     parser.add_argument('--load-path', type=str, default=None,
                         help='The path to load the low-bit model.')
+    parser.add_argument('--warm-up', type=int, default=1,
+                        help='Num of warm-up trials.')
+    parser.add_argument('--num-trials', type=int, default=1,
+                        help='Num of trials to run.')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -69,24 +75,35 @@ if __name__ == '__main__':
     model = convert_model_hybrid(model)
     print(model)
 
+    model = BenchmarkWrapper(model)
+    e2e_time_list = []
+    prefill_time_list = []
+    rest_cost_mean_list = []
+
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         # ipex_llm model needs a warmup, then inference time can be accurate
-        output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict)
+        for i in range(args.warm_up):
+            output = model.generate(input_ids,
+                                    max_new_tokens=args.n_predict,
+                                    min_new_tokens=args.n_predict)
 
         # start inference
-        st = time.time()
-        output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict)
-        torch.xpu.synchronize()
-        end = time.time()
-        output = output.cpu()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        print(f'Inference time: {end-st} s')
-        print('-'*20, 'Prompt', '-'*20)
-        print(prompt)
-        print('-'*20, 'Output', '-'*20)
-        print(output_str)
+        for i in range(args.num_trials):
+            st = time.time()
+            output = model.generate(input_ids,
+                                    max_new_tokens=args.n_predict,
+                                    min_new_tokens=args.n_predict)
+            torch.xpu.synchronize()
+            end = time.time()
+            output = output.cpu()
+            e2e_time_list.append(end - st)
+            prefill_time_list.append(model.first_cost)
+            rest_cost_mean_list.append(model.rest_cost_mean)
+
+        print('-'*20, 'Performance', '-'*20)
+        print(f"End-to-end time: {np.mean(e2e_time_list)} s")
+        print(f"Prefill time: {np.mean(prefill_time_list)} s")
+        print(f"Rest cost mean: {np.mean(rest_cost_mean_list) * 1000} ms")
