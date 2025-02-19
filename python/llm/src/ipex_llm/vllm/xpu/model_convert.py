@@ -82,35 +82,49 @@ def get_load_function(low_bit):
         # from vllm.utils import measure_device_memory
         from vllm.utils import DeviceMemoryProfiler
         with DeviceMemoryProfiler() as m:
+            import os
             from dataclasses import replace
             new_device_config = DeviceConfig("cpu")
             new_vllm_config = replace(self.vllm_config, device_config=new_device_config)
+            # We are loading an low-bit model, where all the optimizations should have been
+            # applied...
+            # We can skip the following optimizations
             self.model = get_model(
                 vllm_config=new_vllm_config
             )
-            if "qwen" in self.vllm_config.model_config.model.lower() or \
-                    "baichuan" in self.vllm_config.model_config.model.lower() or \
-                    "codegeex4-all" in self.vllm_config.model_config.model.lower() or \
-                    "chatglm" in self.vllm_config.model_config.model.lower():
-                self.model.apply(padding_mlp)
-            from ipex_llm import optimize_model
-            import os
-            not_convert_last_mlp = os.getenv("IPEX_LLM_NOT_CONVERT_LAST_MLP", None)
-            if not_convert_last_mlp is not None:
-                # only use to avoid nan value in last mlp forward running glm4-9b-chat
-                modules = ["35.mlp", "36.mlp", "37.mlp", "38.mlp", "39.mlp"]
-            else:
-                modules = None
-            if "minicpm" in self.vllm_config.model_config.model.lower():
-                modules = ["vpm", "resampler"]
-            if "internvl2" in self.vllm_config.model_config.model.lower():
-                modules = ["vision_model", "mlp1"]
-            if "deepseek-v2" in self.vllm_config.model_config.model.lower():
-                modules = ["down_proj"]
-            optimize_model(self.model,
-                           low_bit=low_bit,
-                           torch_dtype=self.vllm_config.model_config.dtype,
-                           modules_to_not_convert=modules)
+            if self.vllm_config.model_config.low_bit_model_path is None:
+                if "qwen" in self.vllm_config.model_config.model.lower() or \
+                        "baichuan" in self.vllm_config.model_config.model.lower() or \
+                        "codegeex4-all" in self.vllm_config.model_config.model.lower() or \
+                        "chatglm" in self.vllm_config.model_config.model.lower():
+                    self.model.apply(padding_mlp)
+                from ipex_llm import optimize_model
+                not_convert_last_mlp = os.getenv("IPEX_LLM_NOT_CONVERT_LAST_MLP", None)
+                if not_convert_last_mlp is not None:
+                    # only use to avoid nan value in last mlp forward running glm4-9b-chat
+                    modules = ["35.mlp", "36.mlp", "37.mlp", "38.mlp", "39.mlp"]
+                else:
+                    modules = None
+                if "minicpm" in self.vllm_config.model_config.model.lower():
+                    modules = ["vpm", "resampler"]
+                if "internvl2" in self.vllm_config.model_config.model.lower():
+                    modules = ["vision_model", "mlp1"]
+                if "deepseek-v2" in self.vllm_config.model_config.model.lower():
+                    modules = ["down_proj"]
+                optimize_model(self.model,
+                               low_bit=low_bit,
+                               torch_dtype=self.vllm_config.model_config.dtype,
+                               modules_to_not_convert=modules)
+            # Guancheng: We have to save the model before moving it to the XPU device.
+            # The `to` method will convert the underlying data.
+            # Saving it before will help to avoid converting two times.
+            if self.vllm_config.model_config.low_bit_save_path is not None:
+                # The local_rank is used for loading models with tensor parallel settings.
+                local_rank = os.environ["LOCAL_RANK"]
+                saved_path = os.path.join(self.vllm_config.model_config.low_bit_save_path,
+                                          str(local_rank))
+                self.model.save_low_bit(saved_path)
+
             self.model = self.model.to(device=self.vllm_config.device_config.device,
                                        dtype=self.vllm_config.model_config.dtype)
 
