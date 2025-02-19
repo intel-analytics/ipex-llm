@@ -147,7 +147,7 @@ To increase the context length, you could set environment variable `IPEX_LLM_NUM
 > [!TIP]
 > `IPEX_LLM_NUM_CTX` has a higher priority than the `num_ctx` settings in a models' `Modelfile`.
 
-### Select Intel GPU for running Ollama when multiple Intel GPUs are available
+### Select specific GPU to run Ollama when multiple ones are available
 
 If your machine has multiple Intel GPUs, Ollama will by default runs on all of them.
 
