@@ -17,6 +17,11 @@ This guide demonstrates how to use [Ollama portable zip](https://github.com/inte
   - [Step 2: Start Ollama Serve](#step-2-start-ollama-serve-1)
   - [Step 3: Run Ollama](#step-3-run-ollama-1)
 - [Tips & Troubleshooting](#tips--troubleshooting)
+  - [Speed up model download using alternative sources](#speed-up-model-download-using-alternative-sources)
+  - [Increase context length in Ollama](#increase-context-length-in-ollama)
+  - [Select specific GPU to run Ollama when multiple ones are available](#select-specific-gpu-to-run-ollama-when-multiple-ones-are-available)
+  - [Additional models supported after Ollama v0.5.4](#additional-models-supported-after-ollama-v054)
+- [More details](ollama_quickstart.md)
 
 ## Windows Quickstart
 
@@ -57,9 +62,7 @@ You could then use Ollama to run LLMs on Intel GPUs as follows:
 
 ### Prerequisites
 
-Check your GPU driver version, and update it if needed:
-
-- For client GPU, like A-series, B-series and integrated GPU, we recommend following [Intel client GPU driver installing guide](https://dgpu-docs.intel.com/driver/client/overview.html) to install your GPU driver.
+Check your GPU driver version, and update it if needed; we recommend following [Intel client GPU driver installation guide](https://dgpu-docs.intel.com/driver/client/overview.html) to install your GPU driver.
 
 ### Step 1: Download and Extract
 
@@ -102,9 +105,9 @@ You could then use Ollama to run LLMs on Intel GPUs as follows:
 
 ### Speed up model download using alternative sources
 
-Ollama by default downloads model from [Ollama library](https://ollama.com/library). By setting the environment variable `IPEX_LLM_MODEL_SOURCE` to `modelscope`/`ollama` **before Run Ollama**, you could switch the source from which the model is downloaded first.
+Ollama by default downloads model from the Ollama library. By setting the environment variable `IPEX_LLM_MODEL_SOURCE` to `modelscope` or `ollama` **before running Ollama**, you could switch the source where the model is downloaded.
 
-For example, if you would like to run `deepseek-r1:7b` but the download speed from Ollama library is quite slow, you could use [its model source](https://www.modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF) from [ModelScope](https://www.modelscope.cn/models) instead, through:
+For example, if you would like to run `deepseek-r1:7b` but the download speed from the Ollama library is slow, you could download the model from [ModelScope](https://www.modelscope.cn/models) as follows:
 
 - For **Windows** users:
 
