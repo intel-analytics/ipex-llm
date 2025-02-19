@@ -156,7 +156,7 @@ To specify which Intel GPU you would like Ollama to use, you could set environme
 - Identify the id (e.g. 0, 1, etc.) for your multiple GPUs. You could find them in the logs of Ollama serve when loading any models, e.g.:
 
   <div align="center">
-    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama_multi_gpus.pn"  width=80%/>
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_multi_gpus.png"  width=80%/>
   </div>
 
 - For **Windows** users:
