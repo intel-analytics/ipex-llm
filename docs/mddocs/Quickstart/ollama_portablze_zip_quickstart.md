@@ -175,13 +175,13 @@ To specify which Intel GPU you would like Ollama to use, you could set environme
 
 The currently Ollama Portable Zip is based on Ollama v0.5.4; in addition, the following new models have also been supported in the Ollama Portable Zip:
 
-  | Model  | Download | Model Link |
+  | Model  | Download (Windows) | Download (Linux) | Model Link |
   | - | - | - |
-  | DeepSeek-R1 | `ollama run deepseek-r1` | [deepseek-r1](https://ollama.com/library/deepseek-r1) |
-  | Openthinker | `ollama run openthinker` | [openthinker](https://ollama.com/library/openthinker) |
-  | DeepScaleR | `ollama run deepscaler` | [deepscaler](https://ollama.com/library/deepscaler) |
-  | Phi-4 | `ollama run phi4` | [phi4](https://ollama.com/library/phi4) |
-  | Dolphin 3.0 | `ollama run dolphin3` | [dolphin3](https://ollama.com/library/dolphin3) |
-  | Smallthinker | `ollama run smallthinker` | [smallthinker](https://ollama.com/library/smallthinker) |
-  | Granite3.1-Dense |  `ollama run granite3-dense` | [granite3.1-dense](https://ollama.com/library/granite3.1-dense) |
-  | Granite3.1-Moe-3B | `ollama run granite3-moe` | [granite3.1-moe](https://ollama.com/library/granite3.1-moe) |
+  | DeepSeek-R1 | `ollama run deepseek-r1` | `./ollama run deepseek-r1` | [deepseek-r1](https://ollama.com/library/deepseek-r1) |
+  | Openthinker | `ollama run openthinker` | `./ollama run openthinker` | [openthinker](https://ollama.com/library/openthinker) |
+  | DeepScaleR | `ollama run deepscaler` | `./ollama run deepscaler` | [deepscaler](https://ollama.com/library/deepscaler) |
+  | Phi-4 | `ollama run phi4` | `./ollama run phi4` | [phi4](https://ollama.com/library/phi4) |
+  | Dolphin 3.0 | `ollama run dolphin3` | `./ollama run dolphin3` | [dolphin3](https://ollama.com/library/dolphin3) |
+  | Smallthinker | `ollama run smallthinker` |`./ollama run smallthinker` | [smallthinker](https://ollama.com/library/smallthinker) |
+  | Granite3.1-Dense |  `ollama run granite3-dense` | `./ollama run granite3-dense` | [granite3.1-dense](https://ollama.com/library/granite3.1-dense) |
+  | Granite3.1-Moe-3B | `ollama run granite3-moe` | `./ollama run granite3-moe` | [granite3.1-moe](https://ollama.com/library/granite3.1-moe) |
