@@ -13,10 +13,10 @@ This guide demonstrates how to use [Ollama portable zip](https://github.com/inte
 - [Step 3: Run Ollama](#step-3-run-ollama)
 - [Tips & Troubleshooting](#tips--troubleshootings)
 ### Linux Quickstart
-- [Prerequisites](#prerequisites)
+- [Prerequisites](#prerequisites-1)
 - [Step 1: Download and Extract](#step-1-download-and-extract)
-- [Step 2: Start Ollama Serve](#step-2-start-ollama-serve)
-- [Step 3: Run Ollama](#step-3-run-ollama)
+- [Step 2: Start Ollama Serve](#step-2-start-ollama-serve-1)
+- [Step 3: Run Ollama](#step-3-run-ollama-1)
 
 ## Windows Quickstart
 
