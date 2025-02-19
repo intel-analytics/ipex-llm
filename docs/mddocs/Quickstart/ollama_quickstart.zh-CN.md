@@ -12,7 +12,7 @@
 > 如果是在 Intel Arc B 系列 GPU 上安装(例如 **B580**)，请参阅本[指南](./bmg_quickstart.md)。
 
 > [!NOTE]
->  `ipex-llm[cpp]` 的最新版本与官方 ollama 的 [v0.5.1](https://github.com/ollama/ollama/releases/tag/v0.5.4) 版本保持一致。
+>  `ipex-llm[cpp]` 的最新版本与官方 ollama 的 [v0.5.4](https://github.com/ollama/ollama/releases/tag/v0.5.4) 版本保持一致。
 >
 > `ipex-llm[cpp]==2.2.0b20250123` 与官方 ollama 的 [v0.5.1](https://github.com/ollama/ollama/releases/tag/v0.5.1) 版本保持一致。
 
@@ -28,9 +28,9 @@
 </table>
 
 > [!NOTE]
-> 从 `ipex-llm[cpp]==2.2.0b20240912` 版本开始，Windows 上 `ipex-llm[cpp]` 依赖的 oneAPI 版本已从 `2024.0.0` 更新到 `2024.2.1`。
+> 从 `ipex-llm[cpp]==2.2.0b20250207` 版本开始，Windows 上 `ipex-llm[cpp]` 依赖的 oneAPI 版本已从 `2024.2.1` 更新到 `2025.0.1`。
 > 
-> 如果要将 `ipex-llm[cpp]` 升级到 `2.2.0b20240912` 或更高版本，在Windows环境下，你需要新建一个干净的 conda 环境来安装新版本。如果直接在旧的 conda 环境中卸载旧版本并升级，可能会遇到 `找不到 sycl7.dll` 的错误。
+> 如果要将 `ipex-llm[cpp]` 升级到 `2.2.0b20250207` 或更高版本，在Windows环境下，你需要新建一个干净的 conda 环境来安装新版本。如果直接在旧的 conda 环境中卸载旧版本并升级，可能会遇到 `找不到 sycl8.dll` 的错误。
 
 ## 目录
 - [安装 IPEX-LLM 来使用 Ollama](./ollama_quickstart.zh-CN.md#1-安装-ipex-llm-来使用-Ollama)
