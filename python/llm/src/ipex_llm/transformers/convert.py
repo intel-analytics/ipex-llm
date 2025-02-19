@@ -2046,8 +2046,9 @@ def convert_model_hybrid(model):
             hybrid_DeepseekV3MLP_forward,
         )
 
+        first_k_dense_replace = model.config.first_k_dense_replace
         convert_forward_to_xpu(model, module.DeepseekV3Attention,
                                hybrid_DeepseekV3Attention_forward)
-        convert_forward_to_xpu(model.model.layers[:3], module.DeepseekV3MLP,
+        convert_forward_to_xpu(model.model.layers[:first_k_dense_replace], module.DeepseekV3MLP,
                                hybrid_DeepseekV3MLP_forward)
     return model

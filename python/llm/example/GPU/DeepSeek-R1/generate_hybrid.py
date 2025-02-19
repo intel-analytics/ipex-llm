@@ -41,7 +41,7 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="If \( a > 1 \), then the sum of the real solutions of \( \sqrt{a} - \sqrt{a + x} = x \) is equal to:",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
