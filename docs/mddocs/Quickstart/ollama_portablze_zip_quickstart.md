@@ -108,7 +108,6 @@ The currently Ollama Portable Zip is based on Ollama v0.5.4; in addition, the fo
 Check your GPU driver version, and update it if needed:
 
 - For client GPU, like A-series, B-series and integrated GPU, we recommend following [Intel client GPU driver installing guide](https://dgpu-docs.intel.com/driver/client/overview.html) to install your GPU driver.
-- For Data Center GPU, like Max series and FLEX series, we recommend following [Intel Data Center GPU driver installing guide](https://dgpu-docs.intel.com/driver/installation.html) to install your GPU driver.
 
 ### Step 1: Download and Extract
 

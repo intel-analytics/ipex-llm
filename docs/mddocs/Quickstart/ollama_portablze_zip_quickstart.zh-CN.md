@@ -109,7 +109,6 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。在 [�
 检查你的 GPU 驱动程序版本，并根据需要进行更新：
 
 - 对于消费级显卡用户，如A系列，B系列和集成显卡，我们推荐按照[消费级显卡驱动安装指南](https://dgpu-docs.intel.com/driver/client/overview.html)来安装您的显卡驱动。
-- 对于数据中心级显卡用户，如Max系列和Flex系列，我们推荐按照[数据中心级显卡驱动安装指南](https://dgpu-docs.intel.com/driver/client/overview.html)来安装您的显卡驱动。
 
 
 ### 步骤 1：下载和解压
