@@ -86,13 +86,13 @@ def get_load_function(low_bit):
             from dataclasses import replace
             new_device_config = DeviceConfig("cpu")
             new_vllm_config = replace(self.vllm_config, device_config=new_device_config)
+            # We are loading an low-bit model, where all the optimizations should have been
+            # applied...
+            # We can skip the following optimizations
             self.model = get_model(
                 vllm_config=new_vllm_config
             )
             if self.vllm_config.model_config.low_bit_model_path is None:
-                # We are loading an low-bit model, where all the optimizations should have been
-                # applied...
-                # We can skip the following optimizations
                 if "qwen" in self.vllm_config.model_config.model.lower() or \
                         "baichuan" in self.vllm_config.model_config.model.lower() or \
                         "codegeex4-all" in self.vllm_config.model_config.model.lower() or \
@@ -124,6 +124,7 @@ def get_load_function(low_bit):
             # The `to` method will convert the underlying data.
             # Saving it before will help to avoid converting two times.
             if self.vllm_config.model_config.low_bit_save_path is not None:
+                # The local_rank is used for loading models with tensor parallel settings.
                 saved_path = os.path.join(self.vllm_config.model_config.low_bit_save_path,
                                           str(local_rank))
                 self.model.save_low_bit(saved_path)
