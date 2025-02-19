@@ -193,7 +193,8 @@ Refer to the following table for verified models:
 | LLaMA 3.2 | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | Meteor Lake, Lunar Lake, Arrow Lake |
 | DeepSeek-R1 | [deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B), [deepseek-ai/DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | Meteor Lake, Lunar Lake, Arrow Lake |
 
-### Setup for running llama.cpp
+### Run GGUF model using CLI tool
+#### Setup for running llama.cpp
 
 First, you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp-npu` directory and enter it.
 
@@ -208,11 +209,11 @@ Then, please run the following command with **administrator privilege in Minifor
 init-llama-cpp.bat
 ```
 
-### Model Download
+#### Model Download
 
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf` of [DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/tree/main).
 
-### Run the quantized model
+#### Run the quantized model
 
 Please refer to [Runtime Configurations](#runtime-configurations) before running the following command in Miniforge Prompt.
 
@@ -220,13 +221,15 @@ Please refer to [Runtime Configurations](#runtime-configurations) before running
 llama-cli-npu.exe -m DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf -n 32 --prompt "What is AI?"
 ```
 
+And you could use `llama-cli-npu.exe -h` for more details about meaning of each parameter.
+
+### Run GGUF model using llama.cpp C++ API
+
+IPEX-LLM also supports `llama.cpp` C++ API for running GGUF models on Intel NPU. Refer to [Simple Example](../../../python/llm/example/NPU/llama.cpp/) for usage in details.
+
 > **Note**:
 >
 > - **Warmup on first run**: When running specific GGUF models on NPU for the first time, you might notice delays up to several minutes before the first token is generated. This delay occurs because the blob compilation.
-> - For more details about meaning of each parameter, you can use `llama-cli-npu.exe -h`.
-
-> [!TIP]
-> You could refer to [here](../../../python/llm/example/NPU/llama.cpp/) for usage of `llama.cpp` compatible API.
 
 ## Accuracy Tuning
 
