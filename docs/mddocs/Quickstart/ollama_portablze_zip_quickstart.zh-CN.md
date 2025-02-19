@@ -105,9 +105,9 @@ tar xvf [Downloaded tgz file]
 
 ### 通过切换源提升模型下载速度
 
-Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。通过在 [运行 Ollama](#步骤-3运行-ollama) 之前设置环境变量 `IPEX_LLM_MODEL_SOURCE` 为 `modelscope/ollama`，你可以切换模型的首选下载源。
+Ollama 默认从 Ollama 库下载模型。通过在运行 Ollama 之前设置环境变量 `IPEX_LLM_MODEL_SOURCE` 为 `modelscope`或`ollama`，你可以切换模型的首选下载源。
 
-例如，如果你想运行 `deepseek-r1:7b` 但从 Ollama 库的下载速度较慢，可以通过如下方式改用 [ModelScope](https://www.modelscope.cn/models) 上的 [模型源](https://www.modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF)：
+例如，如果你想运行 `deepseek-r1:7b` 但从 Ollama 库的下载速度较慢，可以通过如下方式改用 ModelScope 上的模型源：
 
 - 打开命令提示符（cmd），并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
 - 在命令提示符中运行 `set IPEX_LLM_MODEL_SOURCE=modelscope`
