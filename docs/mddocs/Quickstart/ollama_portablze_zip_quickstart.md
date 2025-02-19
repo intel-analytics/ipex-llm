@@ -5,17 +5,22 @@
 
 This guide demonstrates how to use [Ollama portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run Ollama on Intel GPU with `ipex-llm` (without the need of manual installations).
 
-> [!NOTE]
-> Currently, IPEX-LLM only provides Ollama portable zip on Windows.
-
 ## Table of Contents
-- [Prerequisites](#prerequisitesa)
-- [Step 1: Download and Unzip](#step-1-download-and-unzip)
-- [Step 2: Start Ollama Serve](#step-2-start-ollama-serve)
-- [Step 3: Run Ollama](#step-3-run-ollama)
+### Windows Quickstart
+- [Windows Prerequisites](#windows-prerequisites)
+- [Step 1: Download and Unzip](#windows-step-1-download-and-unzip)
+- [Step 2: Start Ollama Serve](#windows-step-2-start-ollama-serve)
+- [Step 3: Run Ollama](#windows-step-3-run-ollama)
 - [Tips & Troubleshooting](#tips--troubleshootings)
+### Linux Quickstart
+- [Linux Prerequisites](#linux-prerequisites)
+- [Step 1: Download and Extract](#linux-step-1-download-and-extract)
+- [Step 2: Start Ollama Serve](#linux-step-2-start-ollama-serve)
+- [Step 3: Run Ollama](#linux-step-3-run-ollama)
 
-## Prerequisites
+## Windows Quickstart
+
+### Windows Prerequisites
 
 Check your GPU driver version, and update it if needed:
 
@@ -23,13 +28,13 @@ Check your GPU driver version, and update it if needed:
 
 - For other Intel iGPU/dGPU, we recommend using GPU driver version [32.0.101.6078](https://www.intel.com/content/www/us/en/download/785597/834050/intel-arc-iris-xe-graphics-windows.html)
 
-## Step 1: Download and Unzip
+### Windows Step 1: Download and Unzip
 
 Download IPEX-LLM Ollama portable zip from the [link](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly).
 
 Then, extract the zip file to a folder.
 
-## Step 2: Start Ollama Serve
+### Windows Step 2: Start Ollama Serve
 
 Double-click `start-ollama.bat` in the extracted folder to start the Ollama service. A window will then pop up as shown below:
 
@@ -37,7 +42,7 @@ Double-click `start-ollama.bat` in the extracted folder to start the Ollama serv
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama.png"  width=80%/>
 </div>
 
-## Step 3: Run Ollama
+### Windows Step 3: Run Ollama
 
 You could then use Ollama to run LLMs on Intel GPUs as follows:
 
@@ -48,9 +53,9 @@ You could then use Ollama to run LLMs on Intel GPUs as follows:
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
 </div>
 
-## Tips & Troubleshooting
+### Tips & Troubleshooting
 
-### Speed up model download using alternative sources
+#### Speed up model download using alternative sources
 
 Ollama by default downloads model from [Ollama library](https://ollama.com/library). By setting the environment variable `IPEX_LLM_MODEL_SOURCE` to `modelscope`/`ollama` before [run Ollama](#step-3-run-ollama), you could switch the source from which the model is downloaded first.
 
@@ -68,7 +73,7 @@ For example, if you would like to run `deepseek-r1:7b` but the download speed fr
 > ```
 > Except for `ollama run` and `ollama pull`, the model should be identified through its actual id, e.g. `ollama rm modelscope.cn/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M`
 
-### Increase context length in Ollama
+#### Increase context length in Ollama
 
 By default, Ollama runs model with a context window of 2048 tokens. That is, the model can "remember" at most 2048 tokens of context.
 
@@ -95,3 +100,48 @@ The currently Ollama Portable Zip is based on Ollama v0.5.4; in addition, the fo
   | Smallthinker | `ollama run smallthinker` | [smallthinker](https://ollama.com/library/smallthinker) |
   | Granite3.1-Dense |  `ollama run granite3-dense` | [granite3.1-dense](https://ollama.com/library/granite3.1-dense) |
   | Granite3.1-Moe-3B | `ollama run granite3-moe` | [granite3.1-moe](https://ollama.com/library/granite3.1-moe) |
+
+## Linux Quickstart
+
+### Linux Prerequisites
+
+Check your GPU driver version, and update it if needed:
+
+- For client GPU, like A-series, B-series and integrated GPU, we recommend following https://dgpu-docs.intel.com/driver/client/overview.html to install your GPU driver.
+- For Data Center GPU, like Max series and FLEX series, we recommend following https://dgpu-docs.intel.com/driver/installation.html to install your GPU driver.
+
+### Linux Step 1: Download and Extract
+
+Download IPEX-LLM Ollama portable tgz from the [link](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly).
+
+Then open a terminal, extract the tgz file to a folder.
+```
+tar xf [Download tgz file]
+```
+
+### Linux Step 2: Start Ollama Serve
+
+Enter the extracted folder, and run `start-ollama.sh` to start Ollama service.  
+
+[Optional]For multi-gpus user, please edit `start-ollama.sh` in the extracted folder and change `ONEAPI_DEVICE_SELECTOR` according to your configuration. By default, it will use the first card only.
+
+```
+./start-ollama.sh
+```
+
+<div align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama_ubuntu.png"  width=80%/>
+</div>
+
+
+### Linux Step 3: Run Ollama
+
+You could then use Ollama to run LLMs on Intel GPUs as follows:
+
+- Open another ternimal, and enter the extracted folder through `cd PATH/TO/EXTRACTED/FOLDER`
+- Run `./ollama run deepseek-r1:1.5b` in the "Command Prompt" (you may use any other model)
+
+<div align="center">
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama_ubuntu.png"  width=80%/>
+</div>
+
