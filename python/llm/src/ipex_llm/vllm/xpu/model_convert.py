@@ -103,10 +103,6 @@ def get_load_function(low_bit):
                 modules = None
             if "minicpm" in self.vllm_config.model_config.model.lower():
                 modules = ["vpm", "resampler"]
-            # only for minicpm_2_6
-            if "minicpm-v" in self.vllm_config.model_config.model.lower():
-                from ipex_llm.transformers.models.minicpmv import merge_qkv
-                self.model.vpm.apply(merge_qkv)
             if "internvl2" in self.vllm_config.model_config.model.lower():
                 modules = ["vision_model", "mlp1"]
             if "deepseek-v2" in self.vllm_config.model_config.model.lower():
