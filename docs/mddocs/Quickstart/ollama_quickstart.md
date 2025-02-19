@@ -137,6 +137,17 @@ Keep the Ollama service on and open another terminal and run `./ollama pull <mod
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_pull.png" width=100%; />
 </a>
 
+Here are the latest models we have supported after **IPEX-LLM Ollama v0.5.4**:
+
+  | Model  | Download | Link |
+  | - | - | - |
+  | DeepSeek-R1 | `ollama run deepseek-r1` | [deepseek-r1](https://ollama.com/library/deepseek-r1) |
+  | Openthinker | `ollama run openthinker` | [openthinker](https://ollama.com/library/openthinker) |
+  | DeepScaleR | `ollama run deepscaler` | [deepscaler](https://ollama.com/library/deepscaler) |
+  | Phi-4 | `ollama run phi4` | [phi4](https://ollama.com/library/phi4) |
+  | Granite3.1-Dense |  `ollama run granite3-dense` | [granite3.1-dense](https://ollama.com/library/granite3.1-dense) |
+  | Granite3.1-Moe-3B | `ollama run granite3-moe` | [granite3.1-moe](https://ollama.com/library/granite3.1-moe) |
+
 
 ### 5. Using Ollama
 
@@ -205,6 +216,7 @@ An example process of interacting with model with `ollama run example` looks lik
 <a href="https://llm-assets.readthedocs.io/en/latest/_images/ollama_gguf_demo_image.png" target="_blank">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_gguf_demo_image.png" width=100%; />
 </a>
+
 
 ### Troubleshooting
 #### 1. Unable to run the initialization script
