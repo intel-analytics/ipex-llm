@@ -53,9 +53,9 @@
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
 </div>
 
-## 提示和故障排除
+### 提示和故障排除
 
-### 通过切换源提升模型下载速度
+#### 通过切换源提升模型下载速度
 
 Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。通过在 [运行 Ollama](#步骤-3运行-ollama) 之前设置环境变量 `IPEX_LLM_MODEL_SOURCE` 为 `modelscope/ollama`，你可以切换模型的首选下载源。
 
@@ -73,7 +73,7 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。通过�
 > ```
 > 除了 `ollama run` 和 `ollama pull`，其他操作中模型应通过其实际 ID 进行识别，例如： `ollama rm modelscope.cn/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF:Q4_K_M`
 
-### 在 Ollama 中增加上下文长度
+#### 在 Ollama 中增加上下文长度
 
 默认情况下，Ollama 使用 2048 个 token 的上下文窗口运行模型。也就是说，模型最多能 “记住” 2048 个 token 的上下文。
 
@@ -86,7 +86,7 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。通过�
 > [!Tip]
 > `IPEX_LLM_NUM_CTX` 的优先级高于模型 `Modelfile` 中设置的 `num_ctx`。
 
-### Ollama v0.5.4 之后支持的其他模型
+#### Ollama v0.5.4 之后支持的其他模型
 
 当前的 Ollama Portable Zip 基于 Ollama v0.5.4；此外，以下新模型也已在 Ollama Portable Zip 中得到支持：
 
