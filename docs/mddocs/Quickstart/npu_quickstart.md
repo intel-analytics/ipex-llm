@@ -202,7 +202,7 @@ mkdir llama-cpp-npu
 cd llama-cpp-npu
 ```
 
-Then, please run the following command with **administrator privilege in Miniforge Prompt** to initialize `llama.cpp` with IPEX-LLM:
+Then, please run the following command with **administrator privilege in Miniforge Prompt** to initialize `llama.cpp` for NPU:
 
 ```cmd
 init-llama-cpp.bat
@@ -222,7 +222,7 @@ llama-cli-npu.exe -m DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf -n 32 --prompt "What 
 
 > **Note**:
 >
-> - **Warmup on first run**: When running GGUF models on NPU for the first time, you might notice delays up to several minutes before the first token is generated. This delay occurs because the blob compilation.
+> - **Warmup on first run**: When running specific GGUF models on NPU for the first time, you might notice delays up to several minutes before the first token is generated. This delay occurs because the blob compilation.
 > - For more details about meaning of each parameter, you can use `llama-cli-npu.exe -h`.
 
 
