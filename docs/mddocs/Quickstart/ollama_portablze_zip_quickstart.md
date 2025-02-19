@@ -53,21 +53,6 @@ You could then use Ollama to run LLMs on Intel GPUs as follows:
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
 </div>
 
-### Additional models supported after Ollama v0.5.4
-
-The currently Ollama Portable Zip is based on Ollama v0.5.4; in addition, the following new models have also been supported in the Ollama Portable Zip:
-
-  | Model  | Download | Model Link |
-  | - | - | - |
-  | DeepSeek-R1 | `ollama run deepseek-r1` | [deepseek-r1](https://ollama.com/library/deepseek-r1) |
-  | Openthinker | `ollama run openthinker` | [openthinker](https://ollama.com/library/openthinker) |
-  | DeepScaleR | `ollama run deepscaler` | [deepscaler](https://ollama.com/library/deepscaler) |
-  | Phi-4 | `ollama run phi4` | [phi4](https://ollama.com/library/phi4) |
-  | Dolphin 3.0 | `ollama run dolphin3` | [dolphin3](https://ollama.com/library/dolphin3) |
-  | Smallthinker | `ollama run smallthinker` | [smallthinker](https://ollama.com/library/smallthinker) |
-  | Granite3.1-Dense |  `ollama run granite3-dense` | [granite3.1-dense](https://ollama.com/library/granite3.1-dense) |
-  | Granite3.1-Moe-3B | `ollama run granite3-moe` | [granite3.1-moe](https://ollama.com/library/granite3.1-moe) |
-
 ## Linux Quickstart
 
 ### Prerequisites
@@ -185,3 +170,18 @@ To specify which Intel GPU you would like Ollama to use, you could set environme
   - In a terminal, navigate to the extracted folder by `cd PATH\TO\EXTRACTED\FOLDER`
   - Set `ONEAPI_DEVICE_SELECTOR` to define the Intel GPU you want to use, e.g. `export ONEAPI_DEVICE_SELECTOR=level_zero:0`, in which `0` should be changed to your desired GPU id
   - Start Ollama serve through `./start-ollama.sh`
+
+### Additional models supported after Ollama v0.5.4
+
+The currently Ollama Portable Zip is based on Ollama v0.5.4; in addition, the following new models have also been supported in the Ollama Portable Zip:
+
+  | Model  | Download | Model Link |
+  | - | - | - |
+  | DeepSeek-R1 | `ollama run deepseek-r1` | [deepseek-r1](https://ollama.com/library/deepseek-r1) |
+  | Openthinker | `ollama run openthinker` | [openthinker](https://ollama.com/library/openthinker) |
+  | DeepScaleR | `ollama run deepscaler` | [deepscaler](https://ollama.com/library/deepscaler) |
+  | Phi-4 | `ollama run phi4` | [phi4](https://ollama.com/library/phi4) |
+  | Dolphin 3.0 | `ollama run dolphin3` | [dolphin3](https://ollama.com/library/dolphin3) |
+  | Smallthinker | `ollama run smallthinker` | [smallthinker](https://ollama.com/library/smallthinker) |
+  | Granite3.1-Dense |  `ollama run granite3-dense` | [granite3.1-dense](https://ollama.com/library/granite3.1-dense) |
+  | Granite3.1-Moe-3B | `ollama run granite3-moe` | [granite3.1-moe](https://ollama.com/library/granite3.1-moe) |

@@ -6,19 +6,19 @@
 本指南演示如何使用 [Ollama portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 通过 `ipex-llm` 在 Intel GPU 上直接免安装运行 Ollama。
 
 ## 目录
-### Windows用户指南
-- [系统环境安装](#系统环境准备)
-- [步骤 1：下载和解压](#步骤-1下载和解压)
-- [步骤 2：启动 Ollama Serve](#步骤-2启动-ollama-serve)
-- [步骤 3：运行 Ollama](#步骤-3运行-ollama)
-- [提示和故障排除](#提示和故障排除)
-### Linux用户指南
-- [系统环境安装](#系统环境准备-1)
-- [步骤 1：下载和解压](#步骤-1下载和解压-1)
-- [步骤 2：启动 Ollama Serve](#步骤-2启动-ollama-serve-1)
-- [步骤 3：运行 Ollama](#步骤-3运行-ollama-1)
+- [Windows用户指南](#windows用户指南)
+  - [系统环境安装](#系统环境准备)
+  - [步骤 1：下载和解压](#步骤-1下载和解压)
+  - [步骤 2：启动 Ollama Serve](#步骤-2启动-ollama-serve)
+  - [步骤 3：运行 Ollama](#步骤-3运行-ollama)
+  - [提示和故障排除](#提示和故障排除)
+- [Linux用户指南](#linux用户指南)
+  - [系统环境安装](#系统环境准备-1)
+  - [步骤 1：下载和解压](#步骤-1下载和解压-1)
+  - [步骤 2：启动 Ollama Serve](#步骤-2启动-ollama-serve-1)
+  - [步骤 3：运行 Ollama](#步骤-3运行-ollama-1)
 
-## 用户指南
+## Windows用户指南
 
 ### 系统环境准备
 
@@ -57,12 +57,12 @@
 
 ### 通过切换源提升模型下载速度
 
-Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。在 [运行 Ollama](#步骤-3运行-ollama) 之前设置环境变量 `IPEX_LLM_MODEL_SOURCE` 为 `modelscope/ollama`，你可以切换模型的首选下载源。
+Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。通过在 [运行 Ollama](#步骤-3运行-ollama) 之前设置环境变量 `IPEX_LLM_MODEL_SOURCE` 为 `modelscope/ollama`，你可以切换模型的首选下载源。
 
-例如，如果你想运行 `deepseek-r1:7b` 但从 Ollama 库的下载速度较慢，可以通过如下方式改用 [ModelScope](https://www.modelscope.cn/models) 的 [模型源](https://www.modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF)：
+例如，如果你想运行 `deepseek-r1:7b` 但从 Ollama 库的下载速度较慢，可以通过如下方式改用 [ModelScope](https://www.modelscope.cn/models) 上的 [模型源](https://www.modelscope.cn/models/unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF)：
 
-- 打开 “命令提示符”（cmd），并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
-- 在 “命令提示符” 中运行 `set IPEX_LLM_MODEL_SOURCE=modelscope`
+- 打开命令提示符（cmd），并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
+- 在命令提示符中运行 `set IPEX_LLM_MODEL_SOURCE=modelscope`
 - 运行 `ollama run deepseek-r1:7b`
 
 > [!Tip]
@@ -79,8 +79,8 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。在 [�
 
 要增加上下文长度，可以在 [启动 Ollama serve](#步骤-2启动-ollama-serve) 之前设置环境变量 `IPEX_LLM_NUM_CTX`，步骤如下：
 
-- 打开 “命令提示符”（cmd），并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
-- 在 “命令提示符” 中将 `IPEX_LLM_NUM_CTX` 设置为所需长度，例如：`set IPEX_LLM_NUM_CTX=16384`
+- 打开命令提示符（cmd），并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
+- 在命令提示符中将 `IPEX_LLM_NUM_CTX` 设置为所需长度，例如：`set IPEX_LLM_NUM_CTX=16384`
 - 通过运行 `start-ollama.bat` 启动 Ollama serve
 
 > [!Tip]
@@ -100,7 +100,7 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。在 [�
   | Smallthinker | `ollama run smallthinker` | [smallthinker](https://ollama.com/library/smallthinker) |
   | Granite3.1-Dense |  `ollama run granite3-dense` | [granite3.1-dense](https://ollama.com/library/granite3.1-dense) |
   | Granite3.1-Moe-3B | `ollama run granite3-moe` | [granite3.1-moe](https://ollama.com/library/granite3.1-moe) |
-----------------------------------------
+
 
 ## Linux用户指南
 
@@ -113,19 +113,19 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。在 [�
 
 ### 步骤 1：下载和解压
 
-从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM Ollama的tgz压缩包。
+从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM Ollama portable tgz。
 
 然后，开启一个终端，输入如下命令将 tgz 文件解压到一个文件夹中。
 ```bash
-cd tgz所在的文件夹
-tar xvf [tgz文件]
+cd PATH/TO/DOWNLOADED/TGZ
+tar xvf [Downloaded tgz file]
 ```
 
 ### 步骤 2：启动 Ollama Serve
 
-进入解压后的文件夹，执行`./start-ollama.sh`启动Ollama服务： 
+进入解压后的文件夹，执行`./start-ollama.sh`启动 Ollama Serve： 
 
-[可选操作]多卡用户需要编辑start-ollama.sh来启用多张显卡，根据您机器的配置更改ONEAPI_DEVICE_SELECTOR，默认使用所有卡。
+[可选操作] 对于有多块显卡的用户，请编辑解压后文件夹中的 start-ollama.sh，并根据机器配置修改 ONEAPI_DEVICE_SELECTOR。默认情况下，Ollama 会使用所有显卡。
 ```bash
  cd PATH/TO/EXTRACTED/FOLDER
 ./start-ollama.sh
