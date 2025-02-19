@@ -7,20 +7,20 @@
 
 ## 目录
 ### Windows用户指南
-- [Windows系统环境安装](#windows系统环境准备)
-- [步骤 1：下载和解压](#windows步骤-1下载和解压)
-- [步骤 2：启动 Ollama Serve](#windows步骤-2启动-ollama-serve)
-- [步骤 3：运行 Ollama](#windows步骤-3运行-ollama)
+- [系统环境安装](#系统环境准备)
+- [步骤 1：下载和解压](#步骤-1下载和解压)
+- [步骤 2：启动 Ollama Serve](#步骤-2启动-ollama-serve)
+- [步骤 3：运行 Ollama](#步骤-3运行-ollama)
 - [提示和故障排除](#提示和故障排除)
 ### Linux用户指南
-- [Linux系统环境安装](#linux系统环境准备)
-- [步骤 1：下载和解压](#linux步骤-1下载和解压)
-- [步骤 2：启动 Ollama Serve](#linux步骤-2启动-ollama-serve)
-- [步骤 3：运行 Ollama](#linux步骤-3运行-ollama)
+- [系统环境安装](#系统环境准备)
+- [步骤 1：下载和解压](#步骤-1下载和解压)
+- [步骤 2：启动 Ollama Serve](#步骤-2启动-ollama-serve)
+- [步骤 3：运行 Ollama](#步骤-3运行-ollama)
 
-## Windows用户指南
+## 用户指南
 
-### Windows系统环境准备
+### 系统环境准备
 
 检查你的 GPU 驱动程序版本，并根据需要进行更新：
 
@@ -28,13 +28,13 @@
 
 - 对于其他的 Intel 核显和独显，我们推荐使用 GPU 驱动版本 [32.0.101.6078](https://www.intel.com/content/www/us/en/download/785597/834050/intel-arc-iris-xe-graphics-windows.html)
 
-### Windows步骤 1：下载和解压
+### 步骤 1：下载和解压
 
 从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM Ollama portable zip。
 
 然后，将 zip 文件解压到一个文件夹中。
 
-### Windows步骤 2：启动 Ollama Serve
+### 步骤 2：启动 Ollama Serve
 
 在解压后的文件夹中双击 `start-ollama.bat` 即可启动 Ollama Serve。随后会弹出一个窗口，如下所示：
 
@@ -42,7 +42,7 @@
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama.png"  width=80%/>
 </div>
 
-### Windows步骤 3：运行 Ollama
+### 步骤 3：运行 Ollama
 
 在 Intel GPUs 上使用 Ollama 运行 LLMs，如下所示：
 
@@ -104,7 +104,7 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。在 [�
 
 ## Linux用户指南
 
-### Linux系统环境准备
+### 系统环境准备
 
 检查你的 GPU 驱动程序版本，并根据需要进行更新：
 
@@ -112,21 +112,23 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。在 [�
 - 对于数据中心级显卡用户，如Max系列和Flex系列，我们推荐按照[数据中心级显卡驱动安装指南](https://dgpu-docs.intel.com/driver/client/overview.html)来安装您的显卡驱动。
 
 
-### Linux步骤 1：下载和解压
+### 步骤 1：下载和解压
 
 从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM Ollama的tgz压缩包。
 
 然后，开启一个终端，输入如下命令将 tgz 文件解压到一个文件夹中。
-```
-tar xf [Download tgz file]
+```bash
+cd tgz所在的文件夹
+tar xvf [tgz文件]
 ```
 
-### Linux步骤 2：启动 Ollama Serve
+### 步骤 2：启动 Ollama Serve
 
-进入解压后的文件夹，执行`start-ollama.sh`启动Ollama服务： 
+进入解压后的文件夹，执行`./start-ollama.sh`启动Ollama服务： 
 
 [可选操作]多卡用户需要编辑start-ollama.sh来启用多张显卡，根据您机器的配置更改ONEAPI_DEVICE_SELECTOR，默认配置仅使用第一张卡。
-```
+```bash
+ cd PATH/TO/EXTRACTED/FOLDER
 ./start-ollama.sh
 ```
 
@@ -134,12 +136,12 @@ tar xf [Download tgz file]
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama_ubuntu.png"  width=80%/>
 </div>
 
-### Linux步骤 3：运行 Ollama
+### 步骤 3：运行 Ollama
 
 在 Intel GPUs 上使用 Ollama 运行大语言模型，如下所示：
 
-- 打开另外一个终端，并通过在命令行输入指令 `cd PATH/TO/EXTRACTED/FOLDER` 进入解压后的文件夹
-- 在命令提示符中运行 `./ollama run deepseek-r1:1.5b`（可以将当前模型替换为你需要的模型）
+- 打开另外一个终端，并输入指令 `cd PATH/TO/EXTRACTED/FOLDER` 进入解压后的文件夹
+- 在终端中运行 `./ollama run deepseek-r1:7b`（可以将当前模型替换为你需要的模型）
 
 <div align="center">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama_ubuntu.png"  width=80%/>
