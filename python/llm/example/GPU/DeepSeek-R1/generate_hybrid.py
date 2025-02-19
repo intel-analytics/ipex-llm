@@ -96,8 +96,8 @@ if __name__ == '__main__':
 
         print('-'*20, 'Performance', '-'*20)
         e2e_time = end - st
-        prefill_time = model.first_token_time
-        rest_cost_mean = (e2e_time - model.first_token_time)/(model.n_token_generated - 1)
+        prefill_time = model.first_cost
+        rest_cost_mean = model.rest_cost_mean
         print(f"End-to-end time: {e2e_time} s")
         print(f"Prefill time: {prefill_time} s")
         print(f"Rest cost mean: {rest_cost_mean * 1000} ms")
