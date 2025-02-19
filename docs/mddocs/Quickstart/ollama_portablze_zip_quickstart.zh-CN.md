@@ -17,6 +17,9 @@
   - [步骤 2：启动 Ollama Serve](#步骤-2启动-ollama-serve-1)
   - [步骤 3：运行 Ollama](#步骤-3运行-ollama-1)
 - [提示和故障排除](#提示和故障排除)
+  - [通过切换源提升模型下载速度](#通过切换源提升模型下载速度)
+  - [在 Ollama 中增加上下文长度](#在-ollama-中增加上下文长度)
+  - [Ollama v0.5.4 之后新增模型支持](#ollama-v054-之后新增模型支持)
 - [更多信息](ollama_quickstart.zh-CN.md)
 
 ## Windows用户指南
@@ -131,7 +134,7 @@ Ollama 默认从 [Ollama 库](https://ollama.com/library) 下载模型。通过�
 > [!Tip]
 > `IPEX_LLM_NUM_CTX` 的优先级高于模型 `Modelfile` 中设置的 `num_ctx`。
 
-### Ollama v0.5.4 之后支持的其他模型
+### Ollama v0.5.4 之后新增模型支持
 
 当前的 Ollama Portable Zip 基于 Ollama v0.5.4；此外，以下新模型也已在 Ollama Portable Zip 中得到支持：
 
