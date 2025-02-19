@@ -223,7 +223,6 @@ from vllm import SamplingParams
 from ipex_llm.vllm.xpu.engine import IPEXLLMClass as LLM
 
 # Create an LLM.
-# llm = LLM(model="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
 llm = LLM(model="DeepSeek-R1-Distill-Qwen-7B", # Unquantized model path on disk
           device="xpu",
           dtype="float16",
