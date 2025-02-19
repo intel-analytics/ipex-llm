@@ -123,7 +123,7 @@ tar xvf [Downloaded tgz file]
 
 Enter the extracted folder, and run `start-ollama.sh` to start Ollama service.  
 
-[Optional]For multi-gpus user, please edit `start-ollama.sh` in the extracted folder and change `ONEAPI_DEVICE_SELECTOR` according to your configuration.
+[Optional]For multi-gpus user, please edit `start-ollama.sh` in the extracted folder and change `ONEAPI_DEVICE_SELECTOR` according to your configuration. By default, ollama will use all the GPUs.
 
 ```bash
  cd PATH/TO/EXTRACTED/FOLDER

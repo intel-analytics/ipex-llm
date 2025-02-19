@@ -125,7 +125,7 @@ tar xvf [tgz文件]
 
 进入解压后的文件夹，执行`./start-ollama.sh`启动Ollama服务： 
 
-[可选操作]多卡用户需要编辑start-ollama.sh来启用多张显卡，根据您机器的配置更改ONEAPI_DEVICE_SELECTOR，默认配置仅使用第一张卡。
+[可选操作]多卡用户需要编辑start-ollama.sh来启用多张显卡，根据您机器的配置更改ONEAPI_DEVICE_SELECTOR，默认使用所有卡。
 ```bash
  cd PATH/TO/EXTRACTED/FOLDER
 ./start-ollama.sh
