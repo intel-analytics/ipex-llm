@@ -4,14 +4,16 @@
 </p>
 
 ## 最新更新 🔥 
+- [2025/02] 新增 [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel GPU 上直接**免安装运行 Ollama** (包括 [Windows](Quickstart/ollama_portablze_zip_quickstart.zh-CN.md#windows用户指南) 和 [Linux](Quickstart/ollama_portablze_zip_quickstart.zh-CN.md#linux用户指南))。
+- [2025/02] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.6](DockerGuides/vllm_docker_quickstart.md) 的支持。
 - [2025/01] 新增在 Intel Arc [B580](Quickstart/bmg_quickstart.md) GPU 上运行 `ipex-llm` 的指南。
-- [2024/12] 新增在 Intel GPU 上运行 [Ollama 0.4.6](Quickstart/ollama_quickstart.zh-CN.md) 的支持。
+- [2025/01] 新增在 Intel GPU 上运行 [Ollama 0.5.4](Quickstart/ollama_quickstart.zh-CN.md) 的支持。
 - [2024/12] 增加了对 Intel Core Ultra [NPU](Quickstart/npu_quickstart.md)（包括 100H，200V 和 200K 系列）的 **Python** 和 **C++** 支持。
-- [2024/11] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.2](DockerGuides/vllm_docker_quickstart.md) 的支持。
 
 <details><summary>更多更新</summary>
 <br/>
 
+- [2024/11] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.2](DockerGuides/vllm_docker_quickstart.md) 的支持。
 - [2024/07] 新增 Microsoft **GraphRAG** 的支持（使用运行在本地 Intel GPU 上的 LLM），详情参考[快速入门指南](Quickstart/graphrag_quickstart.md)。
 - [2024/07] 全面增强了对多模态大模型的支持，包括 [StableDiffusion](../../python/llm/example/GPU/HuggingFace/Multimodal/StableDiffusion), [Phi-3-Vision](../../python/llm/example/GPU/HuggingFace/Multimodal/phi-3-vision), [Qwen-VL](../../python/llm/example/GPU/HuggingFace/Multimodal/qwen-vl)，更多详情请点击[这里](../../python/llm/example/GPU/HuggingFace/Multimodal)。
 - [2024/07] 新增 Intel GPU 上 **FP6** 的支持，详情参考[更多数据类型样例](../../python/llm/example/GPU/HuggingFace/More-Data-Types)。 
@@ -48,6 +50,7 @@
 ## `ipex-llm` 快速入门
 
 ### 使用
+- [Ollama Portable Zip](Quickstart/ollama_portablze_zip_quickstart.zh-CN.md): 在 Intel GPU 上直接**免安装运行 Ollama**。
 - [Arc B580](Quickstart/bmg_quickstart.md): 在 Intel Arc **B580** GPU 上运行 `ipex-llm`（包括 Ollama, llama.cpp, PyTorch, HuggingFace 等）
 - [NPU](Quickstart/npu_quickstart.md): 在 Intel **NPU** 上运行 `ipex-llm`（支持 Python 和 C++）
 - [llama.cpp](Quickstart/llama_cpp_quickstart.zh-CN.md): 在 Intel GPU 上运行 **llama.cpp** (*使用 `ipex-llm` 的 C++ 接口*) 
