@@ -15,6 +15,7 @@ This guide demonstrates:
 - [Runtime Configurations](#runtime-configurations)
 - [Python API](#python-api)
 - [C++ API](#c-api)
+- [llama.cpp Support](#experimental-llamacpp-support)
 - [Accuracy Tuning](#accuracy-tuning)
 
 ## Install Prerequisites
@@ -180,6 +181,50 @@ Refer to the following table for examples of verified models:
 
 > [!TIP]
 > You could refer to [here](../../../python/llm/example/NPU/HF-Transformers-AutoModels) for full IPEX-LLM examples on Intel NPU.
+
+## (Experimental) llama.cpp Support
+
+IPEX-LLM provides `llama.cpp` compatible API for running GGUF models on Intel NPU.
+
+Refer to the following table for verified models:
+
+| Model | Model link | Verified Platforms |
+|:--|:--|:--|
+| LLaMA 3.2 | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | Meteor Lake, Lunar Lake, Arrow Lake |
+| DeepSeek-R1 | [deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B), [deepseek-ai/DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | Meteor Lake, Lunar Lake, Arrow Lake |
+
+### Setup for running llama.cpp
+
+First, you should create a directory to use `llama.cpp`, for instance, use following command to create a `llama-cpp-npu` directory and enter it.
+
+```cmd
+mkdir llama-cpp-npu
+cd llama-cpp-npu
+```
+
+Then, please run the following command with **administrator privilege in Miniforge Prompt** to initialize `llama.cpp` for NPU:
+
+```cmd
+init-llama-cpp.bat
+```
+
+### Model Download
+
+Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf` of [DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-7B-GGUF/tree/main).
+
+### Run the quantized model
+
+Please refer to [Runtime Configurations](#runtime-configurations) before running the following command in Miniforge Prompt.
+
+```cmd
+llama-cli-npu.exe -m DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf -n 32 --prompt "What is AI?"
+```
+
+> **Note**:
+>
+> - **Warmup on first run**: When running specific GGUF models on NPU for the first time, you might notice delays up to several minutes before the first token is generated. This delay occurs because the blob compilation.
+> - For more details about meaning of each parameter, you can use `llama-cli-npu.exe -h`.
+
 
 ## Accuracy Tuning
 

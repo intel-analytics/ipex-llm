@@ -107,10 +107,6 @@ def get_load_function(low_bit):
                     modules = None
                 if "minicpm" in self.vllm_config.model_config.model.lower():
                     modules = ["vpm", "resampler"]
-                # only for minicpm_2_6
-                if "minicpm-v" in self.vllm_config.model_config.model.lower():
-                    from ipex_llm.transformers.models.minicpmv import merge_qkv
-                    self.model.vpm.apply(merge_qkv)
                 if "internvl2" in self.vllm_config.model_config.model.lower():
                     modules = ["vision_model", "mlp1"]
                 if "deepseek-v2" in self.vllm_config.model_config.model.lower():
@@ -119,12 +115,12 @@ def get_load_function(low_bit):
                                low_bit=low_bit,
                                torch_dtype=self.vllm_config.model_config.dtype,
                                modules_to_not_convert=modules)
-                local_rank = os.environ["LOCAL_RANK"]
             # Guancheng: We have to save the model before moving it to the XPU device.
             # The `to` method will convert the underlying data.
             # Saving it before will help to avoid converting two times.
             if self.vllm_config.model_config.low_bit_save_path is not None:
                 # The local_rank is used for loading models with tensor parallel settings.
+                local_rank = os.environ["LOCAL_RANK"]
                 saved_path = os.path.join(self.vllm_config.model_config.low_bit_save_path,
                                           str(local_rank))
                 self.model.save_low_bit(saved_path)

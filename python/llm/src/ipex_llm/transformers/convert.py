@@ -1032,6 +1032,9 @@ def _optimize_pre(model, qtype=None):
         if hasattr(model, "vpm"):
             from ipex_llm.transformers.models.minicpmv import merge_qkv
             model.vpm.apply(merge_qkv)
+        # tts opt
+        if hasattr(model, "tts"):
+            _optimize_pre(model.tts.model, qtype=qtype)
         # llm opt
         model.llm.config.model_type = "qwen2"
         _optimize_pre(model.llm, qtype=qtype)
@@ -1971,6 +1974,9 @@ def _optimize_post(model):
             from transformers.models.whisper.modeling_whisper import WhisperSdpaAttention
             from ipex_llm.transformers.models.whisper import whisper_attention_forward
             convert_forward(model.apm, WhisperSdpaAttention, whisper_attention_forward)
+        # tts opt
+        if hasattr(model, "tts"):
+            _optimize_post(model.tts.model)
         # llm opt
         model.llm.config.model_type = "qwen2"
         _optimize_post(model.llm)
@@ -2018,4 +2024,31 @@ def _optimize_post(model):
         # llm
         _optimize_post(model.language_model)
 
+    return model
+
+
+def convert_forward_to_xpu(m, target_m, new_forward):
+    # print(m.__class__.__name__)
+    if m.__class__ == target_m:
+        bound_method = new_forward.__get__(m, m.__class__)
+        setattr(m, "forward", bound_method)
+        m = m.to(device="xpu", dtype=torch.float16)
+    for _, sub_m in m.named_children():
+        convert_forward_to_xpu(sub_m, target_m, new_forward)
+
+
+def convert_model_hybrid(model):
+    if model.config.model_type == "deepseek_v3":
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.deepseek_v3 import (
+            hybrid_DeepseekV3Attention_forward,
+            hybrid_DeepseekV3MLP_forward,
+        )
+
+        first_k_dense_replace = model.config.first_k_dense_replace
+        convert_forward_to_xpu(model, module.DeepseekV3Attention,
+                               hybrid_DeepseekV3Attention_forward)
+        convert_forward_to_xpu(model.model.layers[:first_k_dense_replace], module.DeepseekV3MLP,
+                               hybrid_DeepseekV3MLP_forward)
     return model
