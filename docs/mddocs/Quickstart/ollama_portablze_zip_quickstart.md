@@ -72,7 +72,7 @@ For example, if you would like to run `deepseek-r1:7b` but the download speed fr
 
 By default, Ollama runs model with a context window of 2048 tokens. That is, the model can "remember" at most 2048 tokens of context.
 
-To increase the context length, you could set environment variable `IPEX_LLM_NUM_CTX` before [starting Ollama serve](#sta), as shwon below:
+To increase the context length, you could set environment variable `IPEX_LLM_NUM_CTX` before [starting Ollama serve](#step-2-start-ollama-serve), as shwon below:
 
 - Open "Command Prompt" (cmd), and navigate to the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
 - Set `IPEX_LLM_NUM_CTX` in the "Command Prompt, e.g. `set IPEX_LLM_NUM_CTX=16384`
