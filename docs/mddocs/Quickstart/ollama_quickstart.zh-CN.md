@@ -28,9 +28,9 @@
 </table>
 
 > [!NOTE]
-> 从 `ipex-llm[cpp]==2.2.0b20240912` 版本开始，Windows 上 `ipex-llm[cpp]` 依赖的 oneAPI 版本已从 `2024.0.0` 更新到 `2024.2.1`。
+> 从 `ipex-llm[cpp]==2.2.0b20250207` 版本开始，Windows 上 `ipex-llm[cpp]` 依赖的 oneAPI 版本已从 `2024.2.1` 更新到 `2025.0.1`。
 > 
-> 如果要将 `ipex-llm[cpp]` 升级到 `2.2.0b20240912` 或更高版本，在Windows环境下，你需要新建一个干净的 conda 环境来安装新版本。如果直接在旧的 conda 环境中卸载旧版本并升级，可能会遇到 `找不到 sycl7.dll` 的错误。
+> 如果要将 `ipex-llm[cpp]` 升级到 `2.2.0b20250207` 或更高版本，在Windows环境下，你需要新建一个干净的 conda 环境来安装新版本。如果直接在旧的 conda 环境中卸载旧版本并升级，可能会遇到 `找不到 sycl8.dll` 的错误。
 
 ## 目录
 - [安装 IPEX-LLM 来使用 Ollama](./ollama_quickstart.zh-CN.md#1-安装-ipex-llm-来使用-Ollama)
@@ -137,7 +137,7 @@ IPEX-LLM 现在已支持在 Linux 和 Windows 系统上运行 `Ollama`。
 
 这些是 **IPEX-LLM Ollama v0.5.4** 之后支持的最新模型：
 
-  | 模型  | 下载命令 | 链接 |
+  | 模型  | 下载命令 | 模型链接 |
   | - | - | - |
   | DeepSeek-R1 | `ollama run deepseek-r1` | [deepseek-r1](https://ollama.com/library/deepseek-r1) |
   | Openthinker | `ollama run openthinker` | [openthinker](https://ollama.com/library/openthinker) |

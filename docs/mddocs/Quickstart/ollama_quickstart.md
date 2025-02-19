@@ -28,9 +28,9 @@ See the demo of running LLaMA2-7B on Intel Arc GPU below.
 </table>
 
 > [!NOTE]
-> Starting from `ipex-llm[cpp]==2.2.0b20240912`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.0.0` to `2024.2.1` .
+> Starting from `ipex-llm[cpp]==2.2.0b20250207`, oneAPI dependency of `ipex-llm[cpp]` on Windows will switch from `2024.2.1` to `2025.0.1` .
 > 
-> For this update, it's necessary to create a new conda environment to install the latest version on Windows. If you directly upgrade to `ipex-llm[cpp]>=2.2.0b20240912` in the previous cpp conda environment, you may encounter the error `Can't find sycl7.dll`.
+> For this update, it's necessary to create a new conda environment to install the latest version on Windows. If you directly upgrade to `ipex-llm[cpp]>=2.2.0b20250207` in the previous cpp conda environment, you may encounter the error `Can't find sycl8.dll`.
 
 ## Table of Contents
 - [Install IPEX-LLM for Ollama](./ollama_quickstart.md#1-install-ipex-llm-for-ollama)
@@ -139,7 +139,7 @@ Keep the Ollama service on and open another terminal and run `./ollama pull <mod
 
 Here are the latest models we have supported after **IPEX-LLM Ollama v0.5.4**:
 
-  | Model  | Download | Link |
+  | Model  | Download | Model Link |
   | - | - | - |
   | DeepSeek-R1 | `ollama run deepseek-r1` | [deepseek-r1](https://ollama.com/library/deepseek-r1) |
   | Openthinker | `ollama run openthinker` | [openthinker](https://ollama.com/library/openthinker) |
