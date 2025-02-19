@@ -17,6 +17,7 @@ This guide demonstrates how to use [Ollama portable zip](https://github.com/inte
   - [Step 2: Start Ollama Serve](#step-2-start-ollama-serve-1)
   - [Step 3: Run Ollama](#step-3-run-ollama-1)
 - [Tips & Troubleshooting](#tips--troubleshooting)
+- [More details](ollama_quickstart.md)
 
 ## Windows Quickstart
 
