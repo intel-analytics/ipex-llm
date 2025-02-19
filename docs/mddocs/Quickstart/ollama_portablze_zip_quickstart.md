@@ -176,7 +176,7 @@ To specify which Intel GPU you would like Ollama to use, you could set environme
 The currently Ollama Portable Zip is based on Ollama v0.5.4; in addition, the following new models have also been supported in the Ollama Portable Zip:
 
   | Model  | Download (Windows) | Download (Linux) | Model Link |
-  | - | - | - |
+  | - | - | - | - |
   | DeepSeek-R1 | `ollama run deepseek-r1` | `./ollama run deepseek-r1` | [deepseek-r1](https://ollama.com/library/deepseek-r1) |
   | Openthinker | `ollama run openthinker` | `./ollama run openthinker` | [openthinker](https://ollama.com/library/openthinker) |
   | DeepScaleR | `ollama run deepscaler` | `./ollama run deepscaler` | [deepscaler](https://ollama.com/library/deepscaler) |
