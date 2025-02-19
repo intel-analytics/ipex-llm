@@ -9,7 +9,7 @@
 - [2025/02] We added support of [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run Ollama on Intel GPU for both [Windows](Quickstart/ollama_portablze_zip_quickstart.md#windows-quickstart) and [Linux](docs/mddocs/Quickstart/ollama_portablze_zip_quickstart.md#linux-quickstart) (***without the need of manual installations***).
 - [2025/02] We added support for running [vLLM 0.6.6](DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 - [2025/01] We added the guide for running `ipex-llm` on Intel Arc [B580](Quickstart/bmg_quickstart.md) GPU
-- [2024/01] We added support for running [Ollama 0.5.4](Quickstart/ollama_quickstart.md) on Intel GPU.
+- [2025/01] We added support for running [Ollama 0.5.4](Quickstart/ollama_quickstart.md) on Intel GPU.
 - [2024/12] We added both ***Python*** and ***C++*** support for Intel Core Ultra [NPU](Quickstart/npu_quickstart.md) (including 100H, 200V and 200K series).
 
 <details><summary>More updates</summary>
@@ -52,6 +52,7 @@
 ## `ipex-llm` Quickstart
 
 ### Use
+- [Ollama Portable Zip](Quickstart/ollama_portablze_zip_quickstart.md): running **Ollama** on Intel GPU ***without the need of manual installations***
 - [Arc B580](Quickstart/bmg_quickstart.md): running `ipex-llm` on Intel Arc **B580** GPU for Ollama, llama.cpp, PyTorch, HuggingFace, etc.
 - [NPU](Quickstart/npu_quickstart.md): running `ipex-llm` on Intel **NPU** in both Python and C++
 - [llama.cpp](Quickstart/llama_cpp_quickstart.md): running **llama.cpp** (*using C++ interface of `ipex-llm`*) on Intel GPU
