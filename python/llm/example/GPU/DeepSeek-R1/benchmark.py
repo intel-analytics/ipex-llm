@@ -106,4 +106,4 @@ if __name__ == '__main__':
         print('-'*20, 'Performance', '-'*20)
         print(f"End-to-end time: {np.mean(e2e_time_list)} s")
         print(f"Prefill time: {np.mean(prefill_time_list)} s")
-        print(f"Rest cost mean: {np.mean(rest_cost_mean_list)} ms")
+        print(f"Rest cost mean: {np.mean(rest_cost_mean_list) * 1000} ms")
