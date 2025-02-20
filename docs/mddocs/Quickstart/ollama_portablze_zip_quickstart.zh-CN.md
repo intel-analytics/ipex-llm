@@ -81,7 +81,7 @@ tar -xvf [Downloaded tgz file path]
 
 [可选操作] 对于有多块显卡的用户，请编辑解压后文件夹中的 start-ollama.sh，并根据机器配置修改 ONEAPI_DEVICE_SELECTOR。默认情况下，Ollama 会使用所有显卡。
 ```bash
- cd PATH/TO/EXTRACTED/FOLDER
+cd PATH/TO/EXTRACTED/FOLDER
 ./start-ollama.sh
 ```
 
