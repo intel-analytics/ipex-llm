@@ -133,7 +133,7 @@ For example, if you would like to run `deepseek-r1:7b` but the download speed fr
 
 By default, Ollama runs model with a context window of 2048 tokens. That is, the model can "remember" at most 2048 tokens of context.
 
-To increase the context length, you could set environment variable `IPEX_LLM_NUM_CTX` **before Start Ollama Serve**, as shwon below (if Ollama serve is already running, please make sure to stop it first):
+To increase the context length, you could set environment variable `IPEX_LLM_NUM_CTX` **before staring Ollama Serve**, as shwon below (if Ollama serve is already running, please make sure to stop it first):
 
 - For **Windows** users:
 
@@ -154,7 +154,7 @@ To increase the context length, you could set environment variable `IPEX_LLM_NUM
 
 If your machine has multiple Intel GPUs, Ollama will by default runs on all of them.
 
-To specify which Intel GPU you would like Ollama to use, you could set environment variable `ONEAPI_DEVICE_SELECTOR` **before Start Ollama Serve**, as follows (if Ollama serve is already running, please make sure to stop it first):
+To specify which Intel GPU you would like Ollama to use, you could set environment variable `ONEAPI_DEVICE_SELECTOR` **before starting Ollama Serve**, as follows (if Ollama serve is already running, please make sure to stop it first):
 
 - Identify the id (e.g. 0, 1, etc.) for your multiple GPUs. You could find them in the logs of Ollama serve when loading any models, e.g.:
 
