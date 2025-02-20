@@ -17,16 +17,21 @@
 from typing import List, Optional, Tuple, Union
 import warnings
 import os
+import numpy as np
 
 import torch
 from torch import nn
 import torch.nn.functional as F
 import time
 import argparse
-import ipex_llm
 
 from ipex_llm.transformers import AutoModelForCausalLM
+from ipex_llm.transformers.convert import convert_forward
 from ipex_llm.transformers.models.common import scaled_dot_product_attention
+from ipex_llm.transformers.models.common import rms_norm_forward
+from ipex_llm.transformers.models.common import mlp_silu_forward
+from ipex_llm.utils.benchmark_util_deepseek import BenchmarkWrapper
+
 from transformers import AutoTokenizer, GenerationConfig
 from transformers.cache_utils import Cache, DynamicCache
 from torch.nn import CrossEntropyLoss
@@ -36,18 +41,12 @@ from transformers.pytorch_utils import is_torch_greater_or_equal_than_1_13
 from transformers.utils.import_utils import is_torch_fx_available
 
 
-# This makes `_prepare_4d_causal_attention_mask` a leaf function in the FX graph.
-# It means that the function will not be traced through and simply appear as a node in the graph.
-if is_torch_fx_available():
-    if not is_torch_greater_or_equal_than_1_13:
-        import torch.fx
-
-    _prepare_4d_causal_attention_mask = torch.fx.wrap(_prepare_4d_causal_attention_mask)
-
-
-deepseek_prompt = """
-A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question: If \( a > 1 \), then the sum of the real solutions of \( \sqrt{a} - \sqrt{a + x} = x \) is equal to:. Assistant: <think>
+PROMPT_FORMAT = """
+A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>.
+User: {prompt}.
+Assistant: <think>
 """
+
 
 def convert_forward_to_xpu(m, target_m, new_forward):
     # print(m.__class__.__name__)
@@ -224,11 +223,11 @@ def hybrid_DeepseekV3Attention_forward(
     # )
     # attn_output = torch.matmul(attn_weights, value_states)
 
-    if attn_output.size() != (bsz, self.num_heads, q_len, self.v_head_dim):
-        raise ValueError(
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.v_head_dim)}, but is"
-            f" {attn_output.size()}"
-        )
+    # if attn_output.size() != (bsz, self.num_heads, q_len, self.v_head_dim):
+    #     raise ValueError(
+    #         f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.v_head_dim)}, but is"
+    #         f" {attn_output.size()}"
+    #     )
 
     attn_output = attn_output.transpose(1, 2).contiguous()
 
@@ -247,12 +246,16 @@ if __name__ == '__main__':
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
                         help='The huggingface repo id for the Llama2 (e.g. `meta-llama/Llama-2-7b-chat-hf` and `meta-llama/Llama-2-13b-chat-hf`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="If \( a > 1 \), then the sum of the real solutions of \( \sqrt{a} - \sqrt{a + x} = x \) is equal to:",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
     parser.add_argument('--load-path', type=str, default=None,
                         help='The path to load the low-bit model.')
+    parser.add_argument('--warm-up', type=int, default=1,
+                        help='Num of warm-up trials.')
+    parser.add_argument('--num-trials', type=int, default=1,
+                        help='Num of trials to run.')
 
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -274,7 +277,7 @@ if __name__ == '__main__':
     # model = model.bfloat16()
     print(model)
     convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
-    convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
+    # convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
     for i in range(0, model.config.num_hidden_layers):
         model.model.layers[i].input_layernorm = model.model.layers[i].input_layernorm.to(device="xpu")#, dtype=torch.float16)
         model.model.layers[i].self_attn = model.model.layers[i].self_attn.to(device="xpu")#, dtype=torch.float16)
@@ -287,31 +290,39 @@ if __name__ == '__main__':
     model.model.embed_tokens = model.model.embed_tokens.to(device="xpu")#, dtype=torch.float16)
     model.model.norm = model.model.norm.to(device="xpu")#, dtype=torch.float16)
     model.lm_head = model.lm_head.to(device="xpu")#, dtype=torch.float16)
-    from ipex_llm.transformers.models.common import rms_norm_forward
-    from ipex_llm.transformers.models.common import mlp_silu_forward
     convert_forward_to_xpu(model, "DeepseekV3RMSNorm", rms_norm_forward)
     convert_forward_to_xpu(model, "DeepseekV3MLP", mlp_silu_forward)
 
     print("load completed")
-    # model = BenchmarkWrapper(model, do_print=True)
+    model = BenchmarkWrapper(model)
+    e2e_time_list = []
+    prefill_time_list = []
+    rest_cost_mean_list = []
+
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = deepseek_prompt
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to('xpu')
+        prompt = PROMPT_FORMAT.format(prompt=args.prompt)
+        input_ids = tokenizer.encode(prompt, return_tensors="pt").to("xpu")
         # ipex_llm model needs a warmup, then inference time can be accurate
-        output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict)
+        for i in range(args.warm_up):
+            output = model.generate(input_ids,
+                                    max_new_tokens=args.n_predict,
+                                    min_new_tokens=args.n_predict)
 
         # start inference
-        st = time.time()
-        output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict)
-        torch.xpu.synchronize()
-        end = time.time()
-        output = output.cpu()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
-        print(f'Inference time: {end-st} s')
-        print('-'*20, 'Prompt', '-'*20)
-        print(prompt)
-        print('-'*20, 'Output', '-'*20)
-        print(output_str)
+        for i in range(args.num_trials):
+            st = time.time()
+            output = model.generate(input_ids,
+                                    max_new_tokens=args.n_predict,
+                                    min_new_tokens=args.n_predict)
+            torch.xpu.synchronize()
+            end = time.time()
+            output = output.cpu()
+            e2e_time_list.append(end - st)
+            prefill_time_list.append(model.first_cost)
+            rest_cost_mean_list.append(model.rest_cost_mean)
+
+        print('-' * 20, 'Performance', '-' * 20)
+        print(f"End-to-end time: {np.mean(e2e_time_list)} s")
+        print(f"Prefill time: {np.mean(prefill_time_list)} s")
+        print(f"Rest cost mean: {np.mean(rest_cost_mean_list) * 1000} ms")
