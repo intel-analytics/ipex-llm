@@ -71,8 +71,7 @@ Download IPEX-LLM Ollama portable tgz for Ubuntu users from the [link](https://g
 Then open a terminal, extract the tgz file to a folder.
 
 ```bash
-cd PATH/TO/DOWNLOADED/TGZ
-tar xvf [Downloaded tgz file]
+tar -xvf [Downloaded tgz file path]
 ```
 
 ### Step 2: Start Ollama Serve
