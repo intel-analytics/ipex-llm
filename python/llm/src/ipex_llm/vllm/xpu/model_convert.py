@@ -93,9 +93,9 @@ def get_load_function(low_bit):
                 vllm_config=new_vllm_config
             )
             if self.vllm_config.model_config.low_bit_model_path is None:
-                if ("qwen" in self.vllm_config.model_config.model.lower() or \
-                        "baichuan" in self.vllm_config.model_config.model.lower() or \
-                        "codegeex4-all" in self.vllm_config.model_config.model.lower() or \
+                if ("qwen" in self.vllm_config.model_config.model.lower() or
+                        "baichuan" in self.vllm_config.model_config.model.lower() or
+                        "codegeex4-all" in self.vllm_config.model_config.model.lower() or
                         "chatglm" in self.vllm_config.model_config.model.lower()) and \
                         "gptq" not in self.model_config.model.lower() and \
                         "awq" not in self.model_config.model.lower():
