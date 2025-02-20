@@ -72,8 +72,7 @@
 
 然后，开启一个终端，输入如下命令将 tgz 文件解压到一个文件夹中。
 ```bash
-cd PATH/TO/DOWNLOADED/TGZ
-tar xvf [Downloaded tgz file]
+tar -xvf [Downloaded tgz file path]
 ```
 
 ### 步骤 2：启动 Ollama Serve
