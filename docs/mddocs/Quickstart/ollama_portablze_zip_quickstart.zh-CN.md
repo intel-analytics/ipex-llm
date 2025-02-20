@@ -150,11 +150,15 @@ Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设�
 
 ### 在多块 GPU 可用时选择特定的 GPU 来运行 Ollama
 
-如果你的机器上有多块 GPU，Ollama 默认会在所有 GPU上运行。
+如果你的机器上有多块 GPU，Ollama 默认会在所有 GPU 上运行。
 
-你可以通过在**启动 Ollama serve 之前**设置环境变量 `ONEAPI_DEVICE_SELECTOR` 来在特定的 Intel GPU 上运行 Ollama，步骤如下（如果 Ollama serve 已经在运行，请确保先将其停止）：
+你可以通过在**启动 Ollama serve 之前**设置环境变量 `ONEAPI_DEVICE_SELECTOR` 来指定在特定的 Intel GPU 上运行 Ollama，步骤如下（如果 Ollama serve 已经在运行，请确保先将其停止）：
 
-- 确认多块 GPU 对应的 id (例如0，1等)。你可以通过在加载任何模型时查看 Ollama serve 的日志来找到它们。
+- 确认多块 GPU 对应的 id (例如0，1等)。你可以通过在加载任何模型时查看 Ollama serve 的日志来找到它们，例如：
+
+  <div align="center">
+    <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_multi_gpus.png"  width=80%/>
+  </div>
 
 - 对于 **Windows** 用户：
 
