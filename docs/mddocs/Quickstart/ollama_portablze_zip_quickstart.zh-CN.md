@@ -54,7 +54,7 @@
 - 在命令提示符中运行 "start-ollama.bat" 即可启动 Ollama Serve。随后会弹出一个窗口，如下所示：
 
 <div align="center">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama.png"  width=80%/>
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama_new.png"  width=80%/>
 </div>
 
 ### 步骤 3：运行 Ollama
@@ -63,7 +63,7 @@
 
 
 <div align="center">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama_new.png"  width=80%/>
 </div>
 
 ## Linux用户指南

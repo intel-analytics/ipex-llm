@@ -54,7 +54,7 @@ Start Ollama serve as follows:
 - Run `start-ollama.bat` in the "Command Prompt. A window will then pop up as shown below:
 
 <div align="center">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama.png"  width=80%/>
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama_new.png"  width=80%/>
 </div>
 
 ### Step 3: Run Ollama
@@ -62,7 +62,7 @@ Start Ollama serve as follows:
 You could then use Ollama to run LLMs on Intel GPUs through running `ollama run deepseek-r1:7b` in the same "Command Prompt" (not the pop-up window). You may use any other model.
 
 <div align="center">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama_new.png"  width=80%/>
 </div>
 
 ## Linux Quickstart
