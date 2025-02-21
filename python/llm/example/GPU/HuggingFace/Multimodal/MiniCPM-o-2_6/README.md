@@ -58,12 +58,12 @@ pip install moviepy
 > [!NOTE]
 > We will update for runtime configuration on more Intel GPU platforms.
 
-### 1. Example: Chat in Omni Mode
+## 1. Example: Chat in Omni Mode
 In [omni.py](./omni.py), we show a use case for a MiniCPM-V-2_6 model to chat in omni mode with IPEX-LLM INT4 optimizations on Intel GPUs. In this example, the model will take a video as input, and conduct inference based on the images and audio of this video.
 
 For example, the video input shows a clip of an athlete swimming, with background audio asking "What the athlete is doing?". Then the model in omni mode should inference based on the images of the video and the question in audio.
 
-#### 1.1 Running example
+### 1.1 Running example
 
 ```bash
 python omni.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --video-path VIDEO_PATH
@@ -80,10 +80,10 @@ Arguments info:
 > [!TIP]
 > You could just ignore the warning regarding `Some weights of the model checkpoint at xxx were not used when initializing MiniCPMO`.
 
-### 2. Example: Chat with text/audio/image input
+## 2. Example: Chat with text/audio/image input
 In [chat.py](./chat.py), we show a use case for a MiniCPM-V-2_6 model to chat based on text/audio/image, or a combination of two of them, with IPEX-LLM INT4 optimizations on Intel GPUs.
 
-#### 2.1 Running example
+### 2.1 Running example
 
 - Chat with text input
   ```bash
@@ -126,9 +126,9 @@ Arguments info:
 > [!TIP]
 > You could just ignore the warning regarding `Some weights of the model checkpoint at xxx were not used when initializing MiniCPMO`.
 
-#### 2.2 Sample Outputs
+### 2.2 Sample Outputs
 
-##### [openbmb/MiniCPM-o-2_6](https://huggingface.co/openbmb/MiniCPM-o-2_6)
+#### [openbmb/MiniCPM-o-2_6](https://huggingface.co/openbmb/MiniCPM-o-2_6)
 
 The sample input image is (which is fetched from [COCO dataset](https://cocodataset.org/#explore?id=264959)):
 
