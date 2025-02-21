@@ -5,6 +5,13 @@
 
 本指南演示如何使用 [Ollama portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 通过 `ipex-llm` 在 Intel GPU 上直接免安装运行 Ollama。
 
+> [!NOTE]
+> Ollama portable zip 在如下设备上进行了验证:
+> - Intel Core Ultra processors
+> - Intel Core 11th - 14th gen processors
+> - Intel Arc A-Series GPU
+> - Intel Arc B-Series GPU
+
 ## 目录
 - [Windows用户指南](#windows用户指南)
   - [系统环境安装](#系统环境准备)
@@ -41,21 +48,22 @@
 
 ### 步骤 2：启动 Ollama Serve
 
-在解压后的文件夹中双击 `start-ollama.bat` 即可启动 Ollama Serve。随后会弹出一个窗口，如下所示：
+根据如下步骤启动 Ollama serve:
+
+- 打开命令提示符（cmd），并通过在命令行输入指令 "cd /d PATH\TO\EXTRACTED\FOLDER" 进入解压缩后的文件夹
+- 在命令提示符中运行 "start-ollama.bat" 即可启动 Ollama Serve。随后会弹出一个窗口，如下所示：
 
 <div align="center">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama.png"  width=80%/>
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama_new.png"  width=80%/>
 </div>
 
 ### 步骤 3：运行 Ollama
 
-在 Intel GPUs 上使用 Ollama 运行 LLMs，如下所示：
+接下来通过在相同的命令提示符（非弹出的窗口）中运行 `ollama run deepseek-r1:7b`（可以将当前模型替换为你需要的模型），即可在 Intel GPUs 上使用 Ollama 运行 LLMs：
 
-- 打开命令提示符（cmd），并通过在命令行输入指令 `cd /d PATH\TO\EXTRACTED\FOLDER` 进入解压后的文件夹
-- 在命令提示符中运行 `ollama run deepseek-r1:7b`（可以将当前模型替换为你需要的模型）
 
 <div align="center">
-  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
+  <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama_new.png"  width=80%/>
 </div>
 
 ## Linux用户指南
@@ -108,7 +116,7 @@ Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设�
 
 - 对于 **Windows** 用户：
 
-  - 打开命令提示符（cmd），并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
+  - 打开命令提示符通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
   - 在命令提示符中运行 `set IPEX_LLM_MODEL_SOURCE=modelscope`
   - 运行 `ollama run deepseek-r1:7b`
 
@@ -134,7 +142,7 @@ Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设�
 
 - 对于 **Windows** 用户：
 
-  - 打开命令提示符（cmd），并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
+  - 打开命令提示符，并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
   - 在命令提示符中将 `IPEX_LLM_NUM_CTX` 设置为所需长度，例如：`set IPEX_LLM_NUM_CTX=16384`
   - 通过运行 `start-ollama.bat` 启动 Ollama serve
 
@@ -161,7 +169,7 @@ Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设�
 
 - 对于 **Windows** 用户：
 
-  - 打开命令提示符（cmd），并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
+  - 打开命令提示符，并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
   - 在命令提示符中设置 `ONEAPI_DEVICE_SELECTOR` 来定义你想使用的 Intel GPU，例如 `set ONEAPI_DEVICE_SELECTOR=level_zero:0`，其中`0`应该替换成你期望的 GPU id
   - 通过运行 `start-ollama.bat` 启动 Ollama serve
 
