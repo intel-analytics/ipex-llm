@@ -51,7 +51,7 @@ cd Release
 
 ## 3. Run `simple`
 
-With built `simple`, you can run the quantized model
+With built `simple`, you can run the GGUF model
 
 ```cmd
 # Run simple text completion
