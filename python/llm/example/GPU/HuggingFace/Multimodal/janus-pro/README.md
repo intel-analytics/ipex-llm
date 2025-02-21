@@ -31,7 +31,7 @@ To run these examples with IPEX-LLM on Intel GPUs, we have some recommended requ
 
 ###  0.2 Install Required Pacakges for Janus-Pro
 
-First, you need to clone `deepseek-ai/Janus` from github.
+First, you need to clone `deepseek-ai/Janus` from GitHub.
 
 ```bash
 git clone https://github.com/deepseek-ai/Janus.git
