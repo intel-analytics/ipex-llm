@@ -5,6 +5,13 @@
 
 This guide demonstrates how to use [Ollama portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run Ollama on Intel GPU with `ipex-llm` (without the need of manual installations).
 
+> [!NOTE]
+> Ollama portable zip has been verified on:
+> - Intel Core Ultra processors
+> - Intel Core 11th - 14th gen processors
+> - Intel Arc A-Series GPU
+> - Intel Arc B-Series GPU
+
 ## Table of Contents
 - [Windows Quickstart](#windows-quickstart)
   - [Prerequisites](#prerequisites)
@@ -41,7 +48,10 @@ Then, extract the zip file to a folder.
 
 ### Step 2: Start Ollama Serve
 
-Double-click `start-ollama.bat` in the extracted folder to start the Ollama service. A window will then pop up as shown below:
+Start Ollama serve as follows:
+
+- Open "Command Prompt" (cmd), and enter the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
+- Run `start-ollama.bat` in the "Command Prompt. A window will then pop up as shown below:
 
 <div align="center">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama.png"  width=80%/>
@@ -49,10 +59,7 @@ Double-click `start-ollama.bat` in the extracted folder to start the Ollama serv
 
 ### Step 3: Run Ollama
 
-You could then use Ollama to run LLMs on Intel GPUs as follows:
-
-- Open "Command Prompt" (cmd), and enter the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
-- Run `ollama run deepseek-r1:7b` in the "Command Prompt" (you may use any other model)
+You could then use Ollama to run LLMs on Intel GPUs through running `ollama run deepseek-r1:7b` in the same "Command Prompt" (not the pop-up window). You may use any other model.
 
 <div align="center">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_run_ollama.png"  width=80%/>
@@ -110,7 +117,7 @@ For example, if you would like to run `deepseek-r1:7b` but the download speed fr
 
 - For **Windows** users:
 
-  - Open "Command Prompt", and navigate to the extracted folder by `cd /d PATH\TO\EXTRACTED\FOLDER`
+  - In the "Command Prompt", navigate to the extracted folder by `cd /d PATH\TO\EXTRACTED\FOLDER`
   - Run `set IPEX_LLM_MODEL_SOURCE=modelscope` in "Command Prompt"
   - Run `ollama run deepseek-r1:7b`
 
