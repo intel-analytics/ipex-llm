@@ -40,7 +40,7 @@ IPEX-LLM's support for `llama.cpp` now is available for Linux system and Windows
 #### Linux
 For Linux system, we recommend Ubuntu 20.04 or later (Ubuntu 22.04 is preferred).
 
-Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md), follow [Install Intel GPU Driver](./install_linux_gpu.md#install-gpu-driver) and [Install oneAPI](./install_linux_gpu.md#install-oneapi) to install GPU driver and Intel® oneAPI Base Toolkit 2024.0.
+Visit the [Install IPEX-LLM on Linux with Intel GPU](./install_linux_gpu.md), follow [Install Intel GPU Driver](./install_linux_gpu.md#install-gpu-driver) to install GPU driver. And follow the guide [here](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html?packages=oneapi-toolkit&oneapi-toolkit-os=linux&oneapi-lin=offline) to Intel® oneAPI Base Toolkit 2025.0.
 
 #### Windows (Optional)
 
