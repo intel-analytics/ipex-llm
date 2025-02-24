@@ -241,3 +241,10 @@ llm = LLM(model="DeepSeek-R1-Distill-Qwen-7B", # Unquantized model path on disk
 When finish executing, the low-bit model has been saved at `/llm/fp8-model-path`.
 
 Later we can use the option `--low-bit-model-path /llm/fp8-model-path` to use the low-bit model.
+
+
+### 5. Known issues
+
+#### Runtime memory
+
+If runtime memory is a concern, you can set --swap-space 0.5 to reduce memory consumption during execution. The default value for --swap-space is 4, which means that by default, the system reserves 4GB of memory for use when GPU memory is insufficient.
