@@ -157,12 +157,12 @@ def hybrid_DeepseekV3Attention_forward(
     k_pe = k_pe.view(bsz, q_len, 1, self.qk_rope_head_dim).transpose(1, 2)
     kv = (
         self.kv_b_proj(self.kv_a_layernorm(compressed_kv))
-        .view(bsz, q_len, self.num_heads, self.qk_nope_head_dim + self.q_head_dim)
+        .view(bsz, q_len, self.num_heads, self.qk_nope_head_dim + self.v_head_dim)
         .transpose(1, 2)
     )
 
     k_nope, value_states = torch.split(
-        kv, [self.qk_nope_head_dim, self.q_head_dim], dim=-1
+        kv, [self.qk_nope_head_dim, self.v_head_dim], dim=-1
     )
     kv_seq_len = value_states.shape[-2]
     if past_key_value is not None:
@@ -186,8 +186,11 @@ def hybrid_DeepseekV3Attention_forward(
     key_states[:, :, :, self.qk_nope_head_dim :] = k_pe
     if past_key_value is not None:
         cache_kwargs = {"sin": sin, "cos": cos}  # Specific to RoPE models
+        padded_value_states = torch.zeros([value_states.shape[0], value_states.shape[1], value_states.shape[2], key_states.shape[-1]],
+                                          dtype=value_states.dtype, device=value_states.device)
+        padded_value_states[:, :, :, :value_states.shape[-1]] = value_states
         key_states, value_states = past_key_value.update(
-            key_states, value_states, self.layer_idx, cache_kwargs
+            key_states, padded_value_states, self.layer_idx, cache_kwargs
         )
 
     attn_weights = None

@@ -24,7 +24,7 @@ def pre_compute_inv_freq(module: torch.nn.Module):
 
 
 def padding_v_head_dim(module: torch.nn.Module):
-    if module.__class__.__name__ == "MiniCPMAttention" or module.__class__.__name__ == "DeepseekV3Attention":
+    if module.__class__.__name__ == "MiniCPMAttention":
         k_head_dim = module.q_head_dim
         v_head_dim = module.v_head_dim
         invalidInputError(k_head_dim >= v_head_dim,
