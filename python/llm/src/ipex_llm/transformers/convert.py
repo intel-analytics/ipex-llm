@@ -1070,7 +1070,9 @@ def _optimize_pre(model, qtype=None):
         model.apply(pre_register_inv_freq)
     elif model.config.model_type == "multi_modality":
         _optimize_pre(model.language_model)
-
+    elif model.config.model_type == "deepseek_v3" and model.config.hidden_size == 2048:
+        from ipex_llm.transformers.models.deepseek import padding_mla_v_hd
+        model.apply(padding_mla_v_hd)
     return model
 
 
@@ -2023,6 +2025,15 @@ def _optimize_post(model):
 
         # llm
         _optimize_post(model.language_model)
+    elif model.config.model_type == "deepseek_v3" and model.config.hidden_size == 2048:
+        modeling_module_name = model.__class__.__module__
+        module = importlib.import_module(modeling_module_name)
+        from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.deepseek import deepseek_model_forward
+        from ipex_llm.transformers.models.deepseek import deepseek_attention_forward
+        convert_forward(model, module.DeepseekV3RMSNorm, rms_norm_forward)
+        convert_forward(model, module.DeepseekV3Model, deepseek_model_forward)
+        convert_forward(model, module.DeepseekV3Attention, deepseek_attention_forward)
 
     return model
 
