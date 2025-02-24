@@ -157,12 +157,12 @@ def hybrid_DeepseekV3Attention_forward(
     k_pe = k_pe.view(bsz, q_len, 1, self.qk_rope_head_dim).transpose(1, 2)
     kv = (
         self.kv_b_proj(self.kv_a_layernorm(compressed_kv))
-        .view(bsz, q_len, self.num_heads, self.qk_nope_head_dim + self.v_head_dim)
+        .view(bsz, q_len, self.num_heads, self.qk_nope_head_dim + self.q_head_dim)
         .transpose(1, 2)
     )
 
     k_nope, value_states = torch.split(
-        kv, [self.qk_nope_head_dim, self.v_head_dim], dim=-1
+        kv, [self.qk_nope_head_dim, self.q_head_dim], dim=-1
     )
     kv_seq_len = value_states.shape[-2]
     if past_key_value is not None:
@@ -191,11 +191,13 @@ def hybrid_DeepseekV3Attention_forward(
         )
 
     attn_weights = None
-    # TODO: pad value_states [1, 128, 130, 128] to query/key_states [1, 128, 130, 192] for correctness
+    # import pdb
+    # breakpoint()
     attn_output = scaled_dot_product_attention(
         query_states, key_states, value_states,
         attention_mask, q_len == kv_seq_len, scale=self.softmax_scale
     )
+    attn_output = attn_output[:, :, :, :self.v_head_dim]
 
     # attn_weights = (
     #     torch.matmul(query_states, key_states.transpose(2, 3)) * self.softmax_scale
@@ -277,7 +279,7 @@ if __name__ == '__main__':
     # model = model.bfloat16()
     print(model)
     convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
-    # convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
+    convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
     for i in range(0, model.config.num_hidden_layers):
         model.model.layers[i].input_layernorm = model.model.layers[i].input_layernorm.to(device="xpu")#, dtype=torch.float16)
         model.model.layers[i].self_attn = model.model.layers[i].self_attn.to(device="xpu")#, dtype=torch.float16)
