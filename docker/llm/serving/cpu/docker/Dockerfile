@@ -64,8 +64,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pip install --upgrade omegaconf && \
     pip install --upgrade pandas && \
 # Install ipex-llm
-    pip install --pre --upgrade ipex-llm[serving] && \
     pip uninstall -y setuptools && \
+    pip install --pre --upgrade ipex-llm[serving] && \
     # Fix Trivy CVE Issues
     pip install Jinja2==3.1.3 transformers==4.36.2 gradio==4.19.2 cryptography==42.0.4 && \
     # Fix CVE-2024-22195
