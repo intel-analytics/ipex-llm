@@ -17,8 +17,8 @@ permissions:
 on:
   # push:
   #   branches: [ "main" ]
-  schedule:
-    - cron: '24 14 * * 0'
+  # schedule:
+  #   - cron: '24 14 * * 0'
   workflow_dispatch:
 
 jobs:
@@ -101,7 +101,7 @@ jobs:
         token: ${{ secrets.SECURITY_TOKEN }}
         
     - name: GitHub Upload Release Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: report
         path: |
