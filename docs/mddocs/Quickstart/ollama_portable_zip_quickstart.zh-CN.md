@@ -1,6 +1,6 @@
 # 使用 IPEX-LLM 在 Intel GPU 上运行 Ollama Portable Zip
 <p>
-   < <a href='./ollama_portablze_zip_quickstart.md'>English</a> | <b>中文</b> >
+   < <a href='./ollama_portable_zip_quickstart.md'>English</a> | <b>中文</b> >
 </p>
 
 本指南演示如何使用 [Ollama portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 通过 `ipex-llm` 在 Intel GPU 上直接免安装运行 Ollama。
