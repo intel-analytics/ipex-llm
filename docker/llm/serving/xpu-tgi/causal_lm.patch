@@ -1,0 +1,36 @@
+--- causal_lm.py	2024-07-11 17:47:54.027434202 +0800
++++ ../old1/causal_lm.py	2024-07-05 01:45:39.424346873 +0800
+@@ -92,9 +92,6 @@
+             next_token_choosers.append(
+                 NextTokenChooser.from_pb(r.parameters, device, tokenizer)
+             )
+-            import os
+-            ignore_eos_token = os.getenv("ignore_eos_token", "true")
+-            r.stopping_parameters.ignore_eos_token = ignore_eos_token.lower() == "true"
+             stopping_criteria = StoppingCriteria.from_pb(
+                 r.stopping_parameters, tokenizer
+             )
+@@ -511,7 +508,6 @@
+             truncation_side="left",
+             trust_remote_code=trust_remote_code,
+         )
+-        '''
+         model = AutoModelForCausalLM.from_pretrained(
+             model_id,
+             revision=revision,
+@@ -524,15 +520,6 @@
+             load_in_8bit=quantize == "bitsandbytes",
+             trust_remote_code=trust_remote_code,
+         )
+-        '''
+-        import os
+-        low_bit = os.getenv("ipex_llm_low_bit", "sym_int4")
+-        from ipex_llm.transformers import AutoModelForCausalLM
+-        model = AutoModelForCausalLM.from_pretrained(model_id, load_in_low_bit=low_bit, trust_remote_code=trust_remote_code,
+-                                                    use_cache=True, cpu_embedding=False,optimize_model=True,
+-                                                    torch_dtype=torch.float16).eval()
+-        model=model.to('xpu')
+-        device=torch.device("xpu")
+         if (
+             torch.cuda.is_available()
+             and torch.cuda.device_count() == 1
