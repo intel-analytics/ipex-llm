@@ -6,13 +6,10 @@ init-llama-cpp
 # change the model_path to run
 if [[ "$DEVICE" == "Arc" || "$DEVICE" == "ARC" ]]; then
     source ipex-llm-init -g --device Arc
-    python run.py
 elif [[ "$DEVICE" == "Flex" || "$DEVICE" == "FLEX" ]]; then
     source ipex-llm-init -g --device Flex
-    python run.py
 elif [[ "$DEVICE" == "Max" || "$DEVICE" == "MAX" ]]; then
     source ipex-llm-init -g --device Max
-    python run.py
 else
     echo "Invalid DEVICE specified."
 fi
