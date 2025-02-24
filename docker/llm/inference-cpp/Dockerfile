@@ -91,3 +91,5 @@ RUN set -eux && \
     # Clean up unnecessary dependencies to reduce image size
     find /usr/lib/python3/dist-packages/ -name 'blinker*' -exec rm -rf {} + && \
     rm -rf /root/.cache/Cypress
+
+WORKDIR /llm/
