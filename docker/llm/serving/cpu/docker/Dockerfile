@@ -65,6 +65,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pip install --upgrade pandas && \
 # Install ipex-llm
     pip install --pre --upgrade ipex-llm[serving] && \
+    pip uninstall -y setuptools && \
     # Fix Trivy CVE Issues
     pip install Jinja2==3.1.3 transformers==4.36.2 gradio==4.19.2 cryptography==42.0.4 && \
     # Fix CVE-2024-22195
@@ -91,7 +92,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git clone https://github.com/vllm-project/vllm.git && \
     cd ./vllm && \
     git checkout v0.6.6.post1 && \
-    pip uninstall -y setuptools && \
     pip install cmake>=3.26 wheel packaging ninja "setuptools-scm>=8" numpy && \
     pip uninstall -y intel-extension-for-pytorch && \
     pip install -v -r requirements-cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu && \
