@@ -1,3 +1,7 @@
+# Apache v2 license
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 FROM intel/oneapi-basekit:2024.0.1-devel-ubuntu22.04
 
 ARG http_proxy
