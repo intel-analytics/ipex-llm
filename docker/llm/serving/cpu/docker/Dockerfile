@@ -1,3 +1,7 @@
+# Apache v2 license
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 # Stage 1: Build stage to handle file preparation
 FROM ubuntu:22.04 as build
 

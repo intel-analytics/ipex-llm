@@ -1,3 +1,7 @@
+# Apache v2 license
+# Copyright (C) 2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 # First stage: build oneccl
 FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04 AS build
 
