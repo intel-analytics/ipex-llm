@@ -252,20 +252,24 @@ def do_benchmark(layer, num_warmup=3, num_trials=10, device="xpu", **kwargs):
         if device == "xpu":
             torch.xpu.synchronize()
 
-    start_time = time.time()
+    total_time = 0
     for i in range(num_trials):
+        start_time = time.time()
         output = layer(**kwargs)
         if device == "xpu":
             torch.xpu.synchronize()
-    end_time = time.time()
-    average = (end_time-start_time)*1000 / num_trials
+        end_time = time.time()
+        total_time += (end_time - start_time)
+    average = total_time * 1000 / num_trials
     print("{} latency: {} ms".format(layer.__class__.__name__, average))
+    if device == "xpu":  # TODO: need to empty cache after each run?
+        torch.xpu.empty_cache()
     return average
 
 
 # kvcache will increment after each run, can't reuse the same input to run multiple trials
-def do_benchmark_attn(layer, hidden_states, num_warmup=3, num_trials=10, device="xpu"):
-    kv_seq_length = 128 + 1000  # Simulate the last few tokens of 128-1024
+def do_benchmark_attn(layer, hidden_states, num_warmup=3, num_trials=128, device="xpu"):
+    kv_seq_length = 128 - num_warmup  # Simulate the average of 128-128
     past_key = torch.randn(1, 128, kv_seq_length, 192).to(device)
     past_value = torch.randn(1, 128, kv_seq_length, 128).to(device)  # Not padded
     if device == "cpu":
@@ -290,6 +294,8 @@ def do_benchmark_attn(layer, hidden_states, num_warmup=3, num_trials=10, device=
             # print((end_time-start_time)*1000)
     average = total_time * 1000 / num_trials
     print("{} latency: {} ms".format(layer.__class__.__name__, average))
+    if device == "xpu":
+        torch.xpu.empty_cache()
     return average
 
 
@@ -302,7 +308,7 @@ if __name__ == '__main__':
                         help='The path to load the low-bit model.')
     parser.add_argument('--warm-up', type=int, default=3,
                         help='Num of warm-up trials.')
-    parser.add_argument('--num-trials', type=int, default=10,
+    parser.add_argument('--num-trials', type=int, default=128,
                         help='Num of trials to run.')
 
     args = parser.parse_args()
@@ -356,10 +362,10 @@ if __name__ == '__main__':
     embed_time = do_benchmark(embed, args.warm_up, args.num_trials, device, input=input_ids)
 
     dense_decoder = model.model.layers[0]
-    dense_decoder_time = do_benchmark_attn(dense_decoder, hidden_states, args.warm_up, args.num_trials, device)
+    dense_decoder_time = do_benchmark_attn(dense_decoder, hidden_states, args.warm_up, num_trials=128, device=device)
 
     moe_decoder = model.model.layers[1]
-    moe_decoder_time = do_benchmark_attn(moe_decoder, hidden_states, args.warm_up, args.num_trials, device)
+    moe_decoder_time = do_benchmark_attn(moe_decoder, hidden_states, args.warm_up, num_trials=128, device=device)
 
     norm = model.model.norm
     norm_time = do_benchmark(norm, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
@@ -373,7 +379,7 @@ if __name__ == '__main__':
 
     # Breakdown of decoder layer
     self_attn = model.model.layers[0].self_attn
-    do_benchmark_attn(self_attn, hidden_states, args.warm_up, args.num_trials, device)
+    do_benchmark_attn(self_attn, hidden_states, args.warm_up, num_trials=128, device=device)
 
     mlp = model.model.layers[0].mlp
     do_benchmark(mlp, args.warm_up, args.num_trials, device, x=hidden_states)
