@@ -246,13 +246,17 @@ def hybrid_DeepseekV3Attention_forward(
     return attn_output, attn_weights, past_key_value
 
 
-def do_benchmark(layer, input_data, num_warmup=3, num_trials=10):
+def do_benchmark(layer, num_warmup=3, num_trials=10, device="xpu", **kwargs):
     for i in range(num_warmup):
-        layer(input_data)
+        layer(**kwargs)
+        if device == "xpu":
+            torch.xpu.synchronize()
 
     start_time = time.time()
     for i in range(num_trials):
-        output = layer(input_data)
+        output = layer(**kwargs)
+        if device == "xpu":
+            torch.xpu.synchronize()
     end_time = time.time()
     average = (end_time-start_time)*1000 / num_trials
     print("{} latency: {} ms".format(str(layer), average))
@@ -310,11 +314,13 @@ if __name__ == '__main__':
     device = "xpu"
     embed = model.model.embed_tokens
     input_ids = torch.tensor([[1128]]).to(device)
-    do_benchmark(embed, input_ids, args.warm_up, args.num_trials)
+    do_benchmark(embed, args.warm_up, args.num_trials, device, input=input_ids)
 
     norm = model.model.norm
     hidden_states = torch.randn(1, 1, 7168).to(device)
-    do_benchmark(norm, hidden_states, args.warm_up, args.num_trials)
+    do_benchmark(norm, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
 
     lm_head = model.lm_head
-    do_benchmark(lm_head, hidden_states, args.warm_up, args.num_trials)
+    do_benchmark(lm_head, args.warm_up, args.num_trials, device, x=hidden_states)
+
+    # dense_decoder = model.model.layers[0]
