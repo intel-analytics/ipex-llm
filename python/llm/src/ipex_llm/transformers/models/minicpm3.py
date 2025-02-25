@@ -1,3 +1,25 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Some parts of this file is adapted from
+# https://hf-mirror.com/openbmb/MiniCPM3-4B/blob/main/modeling_minicpm.py
+# which is licensed under Apache License 2.0:
+#
+# https://github.com/OpenBMB/MiniCPM/blob/main/LICENSE
+#
+
 import torch
 import warnings
 
@@ -122,9 +144,6 @@ def minicpm3_attention_forward(
 
     q = self.q_b_proj(self.q_a_layernorm(self.q_a_proj(hidden_states)))
     q = q.view(bsz, q_len, self.num_heads, self.q_head_dim).transpose(1, 2)
-    q_nope, q_pe = torch.split(
-        q, [self.qk_nope_head_dim, self.qk_rope_head_dim], dim=-1
-    )
 
     compressed_kv = self.kv_a_proj_with_mqa(hidden_states)
     compressed_kv, k_pe = torch.split(
@@ -169,6 +188,9 @@ def minicpm3_attention_forward(
         else:
             invalidInputError(f"unknown rope method: {self.rotary_emb.__class__.__name__}")
     else:
+        q_nope, q_pe = torch.split(
+            q, [self.qk_nope_head_dim, self.qk_rope_head_dim], dim=-1
+        )
         cos, sin = self.rotary_emb(value_states, seq_len=kv_seq_len)
         q_pe, k_pe = apply_rotary_pos_emb(q_pe, k_pe, cos, sin, position_ids)
 

@@ -95,6 +95,33 @@ def padding_attention_hd_base(module: torch.nn.Module, attention_class,
         module.old_head_dim = old_head_dim
 
 
+def padding_mla_v_hd_base(module: torch.nn.Module, attention_class):
+    if (
+        isinstance(attention_class, str) and module.__class__.__name__ == attention_class
+        or not isinstance(attention_class, str) and isinstance(module, attention_class)
+    ):
+        k_head_dim = module.q_head_dim
+        v_head_dim = module.v_head_dim
+        if v_head_dim < k_head_dim:
+            kv_b_proj = module.kv_b_proj
+            w = kv_b_proj.weight.data.view(module.num_heads,
+                                           module.qk_nope_head_dim + module.v_head_dim,
+                                           module.kv_lora_rank)
+            k_w, v_w = w.split([module.qk_nope_head_dim, module.v_head_dim], dim=1)
+            new_v_w = torch.zeros([module.num_heads, k_head_dim, module.kv_lora_rank],
+                                  dtype=v_w.dtype, device=v_w.device)
+            new_v_w[:, :v_head_dim, :] = v_w
+            new_w = torch.cat([k_w, new_v_w], dim=1).view(-1, module.kv_lora_rank)
+
+            new_kv_b_proj = torch.nn.Linear(0, 0, bias=False,
+                                            dtype=new_w.dtype, device=new_w.device)
+            new_kv_b_proj.in_features = new_w.size(1)
+            new_kv_b_proj.out_features = new_w.size(0)
+            new_kv_b_proj.weight = torch.nn.Parameter(new_w, False)
+
+            module.kv_b_proj = new_kv_b_proj
+
+
 def padding_states_hd(states: torch.Tensor, old_head_dim: int, new_head_dim: int):
     bsz, num_heads, seq_len, head_dim = states.size()
     if head_dim == old_head_dim and old_head_dim < new_head_dim:
