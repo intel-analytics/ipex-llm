@@ -259,7 +259,32 @@ def do_benchmark(layer, num_warmup=3, num_trials=10, device="xpu", **kwargs):
             torch.xpu.synchronize()
     end_time = time.time()
     average = (end_time-start_time)*1000 / num_trials
-    print("{} latency: {} ms".format(str(layer), average))
+    print("{} latency: {} ms".format(layer.__class__.__name__, average))
+
+
+# kvcache will increment after each run, can't reuse the same input to run multiple trials
+def do_benchmark_attn(layer, num_warmup=3, num_trials=10, device="xpu"):
+    hidden_states = torch.randn(1, 1, 7168).to(device)
+    kv_seq_length = 128 + 1000  # Simulate the last few tokens of 128-1024
+    past_key = torch.randn(1, 128, kv_seq_length, 192).to(device)
+    past_value = torch.randn(1, 128, kv_seq_length, 128).to(device)  # Not padded
+    past_key_values = DynamicCache.from_legacy_cache([(past_key, past_value)])
+    total_time = 0
+    for i in range(num_warmup+num_trials):
+        position_ids = torch.tensor([[kv_seq_length]]).to(device)
+        attention_mask = torch.zeros([1, 1, 1, kv_seq_length + 1]).to(device)
+        start_time = time.time()
+        output = layer(hidden_states=hidden_states, attention_mask=attention_mask, position_ids=position_ids,
+                       past_key_value=past_key_values, use_cache=True)
+        if device == "xpu":
+            torch.xpu.synchronize()
+        end_time = time.time()
+        kv_seq_length += 1
+        if i >= num_warmup:
+            total_time += (end_time-start_time)
+            # print((end_time-start_time)*1000)
+    average = total_time * 1000 / num_trials
+    print("{} latency: {} ms".format(layer.__class__.__name__, average))
 
 
 if __name__ == '__main__':
@@ -294,7 +319,7 @@ if __name__ == '__main__':
     # model = model.bfloat16()
     print(model)
     convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
-    convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
+    # convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
     for i in range(0, model.config.num_hidden_layers):
         model.model.layers[i].input_layernorm = model.model.layers[i].input_layernorm.to(device="xpu")#, dtype=torch.float16)
         model.model.layers[i].self_attn = model.model.layers[i].self_attn.to(device="xpu")#, dtype=torch.float16)
@@ -323,4 +348,19 @@ if __name__ == '__main__':
     lm_head = model.lm_head
     do_benchmark(lm_head, args.warm_up, args.num_trials, device, x=hidden_states)
 
-    # dense_decoder = model.model.layers[0]
+    dense_decoder = model.model.layers[0]
+    do_benchmark_attn(dense_decoder, args.warm_up, args.num_trials, device)
+    self_attn = model.model.layers[0].self_attn
+    do_benchmark_attn(self_attn, args.warm_up, args.num_trials, device)
+
+    mlp = model.model.layers[0].mlp
+    do_benchmark(mlp, args.warm_up, args.num_trials, device, x=hidden_states)
+    input_norm = model.model.layers[0].input_layernorm
+    do_benchmark(input_norm, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
+    post_norm = model.model.layers[0].post_attention_layernorm
+    do_benchmark(post_norm, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
+
+    moe_decoder = model.model.layers[1]
+    do_benchmark_attn(moe_decoder, args.warm_up, args.num_trials, device)
+    moe = model.model.layers[1].mlp
+    do_benchmark(moe, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
