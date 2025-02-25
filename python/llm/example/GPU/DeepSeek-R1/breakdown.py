@@ -260,19 +260,24 @@ def do_benchmark(layer, num_warmup=3, num_trials=10, device="xpu", **kwargs):
     end_time = time.time()
     average = (end_time-start_time)*1000 / num_trials
     print("{} latency: {} ms".format(layer.__class__.__name__, average))
+    return average
 
 
 # kvcache will increment after each run, can't reuse the same input to run multiple trials
-def do_benchmark_attn(layer, num_warmup=3, num_trials=10, device="xpu"):
-    hidden_states = torch.randn(1, 1, 7168).to(device)
+def do_benchmark_attn(layer, hidden_states, num_warmup=3, num_trials=10, device="xpu"):
     kv_seq_length = 128 + 1000  # Simulate the last few tokens of 128-1024
     past_key = torch.randn(1, 128, kv_seq_length, 192).to(device)
     past_value = torch.randn(1, 128, kv_seq_length, 128).to(device)  # Not padded
+    if device == "cpu":
+        past_key = past_key.bfloat16()
+        past_value = past_value.bfloat16()
     past_key_values = DynamicCache.from_legacy_cache([(past_key, past_value), (past_key, past_value)])  # kv for 2 layers
     total_time = 0
     for i in range(num_warmup+num_trials):
         position_ids = torch.tensor([[kv_seq_length]]).to(device)
         attention_mask = torch.zeros([1, 1, 1, kv_seq_length + 1]).to(device)
+        if device == "cpu":
+            attention_mask = attention_mask.bfloat16()
         start_time = time.time()
         output = layer(hidden_states=hidden_states, attention_mask=attention_mask, position_ids=position_ids,
                        past_key_value=past_key_values, use_cache=True)
@@ -285,6 +290,7 @@ def do_benchmark_attn(layer, num_warmup=3, num_trials=10, device="xpu"):
             # print((end_time-start_time)*1000)
     average = total_time * 1000 / num_trials
     print("{} latency: {} ms".format(layer.__class__.__name__, average))
+    return average
 
 
 if __name__ == '__main__':
@@ -316,51 +322,67 @@ if __name__ == '__main__':
         tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
 
-    # model = model.bfloat16()
     print(model)
-    convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
-    # convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
-    for i in range(0, model.config.num_hidden_layers):
-        model.model.layers[i].input_layernorm = model.model.layers[i].input_layernorm.to(device="xpu")#, dtype=torch.float16)
-        model.model.layers[i].self_attn = model.model.layers[i].self_attn.to(device="xpu")#, dtype=torch.float16)
-        model.model.layers[i].post_attention_layernorm = model.model.layers[i].post_attention_layernorm.to(device="xpu")#, dtype=torch.float16)
-        if i < model.config.first_k_dense_replace:
-            model.model.layers[i].mlp = model.model.layers[i].mlp.to(device="xpu")#, dtype=torch.float16)
-        # else:
-            # model.model.layers[i].mlp.gate = model.model.layers[i].mlp.gate.to(device="xpu", dtype=torch.float16)
-            # model.model.layers[i].mlp.shared_experts = model.model.layers[i].mlp.shared_experts.to(device="xpu", dtype=torch.float16)
-    model.model.embed_tokens = model.model.embed_tokens.to(device="xpu")#, dtype=torch.float16)
-    model.model.norm = model.model.norm.to(device="xpu")#, dtype=torch.float16)
-    model.lm_head = model.lm_head.to(device="xpu")#, dtype=torch.float16)
-    convert_forward_to_xpu(model, "DeepseekV3RMSNorm", rms_norm_forward)
-    convert_forward_to_xpu(model, "DeepseekV3MLP", mlp_silu_forward)
 
     # device = "cpu"
     device = "xpu"
+    input_ids = torch.tensor([[1128]])
+    hidden_states = torch.randn(1, 1, 7168)
+    if device == "xpu":
+        convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
+        # convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
+        for i in range(0, model.config.num_hidden_layers):
+            model.model.layers[i].input_layernorm = model.model.layers[i].input_layernorm.to(device="xpu")#, dtype=torch.float16)
+            model.model.layers[i].self_attn = model.model.layers[i].self_attn.to(device="xpu")#, dtype=torch.float16)
+            model.model.layers[i].post_attention_layernorm = model.model.layers[i].post_attention_layernorm.to(device="xpu")#, dtype=torch.float16)
+            if i < model.config.first_k_dense_replace:
+                model.model.layers[i].mlp = model.model.layers[i].mlp.to(device="xpu")#, dtype=torch.float16)
+            # else:
+                # model.model.layers[i].mlp.gate = model.model.layers[i].mlp.gate.to(device="xpu", dtype=torch.float16)
+                # model.model.layers[i].mlp.shared_experts = model.model.layers[i].mlp.shared_experts.to(device="xpu", dtype=torch.float16)
+        model.model.embed_tokens = model.model.embed_tokens.to(device="xpu")#, dtype=torch.float16)
+        model.model.norm = model.model.norm.to(device="xpu")#, dtype=torch.float16)
+        model.lm_head = model.lm_head.to(device="xpu")#, dtype=torch.float16)
+        convert_forward_to_xpu(model, "DeepseekV3RMSNorm", rms_norm_forward)
+        convert_forward_to_xpu(model, "DeepseekV3MLP", mlp_silu_forward)
+    else:  # cpu
+        model = model.bfloat16()
+        hidden_states = hidden_states.bfloat16()
+    input_ids = input_ids.to(device)
+    hidden_states = hidden_states.to(device)
+
+    # Breakdown of e2e
     embed = model.model.embed_tokens
-    input_ids = torch.tensor([[1128]]).to(device)
-    do_benchmark(embed, args.warm_up, args.num_trials, device, input=input_ids)
-
-    norm = model.model.norm
-    hidden_states = torch.randn(1, 1, 7168).to(device)
-    do_benchmark(norm, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
-
-    lm_head = model.lm_head
-    do_benchmark(lm_head, args.warm_up, args.num_trials, device, x=hidden_states)
+    embed_time = do_benchmark(embed, args.warm_up, args.num_trials, device, input=input_ids)
 
     dense_decoder = model.model.layers[0]
-    do_benchmark_attn(dense_decoder, args.warm_up, args.num_trials, device)
+    dense_decoder_time = do_benchmark_attn(dense_decoder, hidden_states, args.warm_up, args.num_trials, device)
+
+    moe_decoder = model.model.layers[1]
+    moe_decoder_time = do_benchmark_attn(moe_decoder, hidden_states, args.warm_up, args.num_trials, device)
+
+    norm = model.model.norm
+    norm_time = do_benchmark(norm, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
+
+    lm_head = model.lm_head
+    lm_head_time = do_benchmark(lm_head, args.warm_up, args.num_trials, device, x=hidden_states)
+
+    total_time = embed_time + dense_decoder_time + moe_decoder_time +norm_time + lm_head_time
+    print("Overall latency: {} ms".format(total_time))
+    print("==================")
+
+    # Breakdown of decoder layer
     self_attn = model.model.layers[0].self_attn
-    do_benchmark_attn(self_attn, args.warm_up, args.num_trials, device)
+    do_benchmark_attn(self_attn, hidden_states, args.warm_up, args.num_trials, device)
 
     mlp = model.model.layers[0].mlp
     do_benchmark(mlp, args.warm_up, args.num_trials, device, x=hidden_states)
+
     input_norm = model.model.layers[0].input_layernorm
     do_benchmark(input_norm, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
+
     post_norm = model.model.layers[0].post_attention_layernorm
     do_benchmark(post_norm, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
 
-    moe_decoder = model.model.layers[1]
-    do_benchmark_attn(moe_decoder, args.warm_up, args.num_trials, device)
     moe = model.model.layers[1].mlp  # including cpu/xpu data conversion
     do_benchmark(moe, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
