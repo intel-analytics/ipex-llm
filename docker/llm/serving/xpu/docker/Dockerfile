@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # First stage: build oneccl
-FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04 AS build
+FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu24.04 AS build
 
 ARG http_proxy
 ARG https_proxy
@@ -69,7 +69,7 @@ RUN set -eux && \
     # File path: /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl
 
 # Second stage: Final runtime image
-FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu22.04
+FROM intel/oneapi-basekit:2025.0.1-0-devel-ubuntu24.04
 
 # Copy the built torch-ccl package from the build stage
 COPY --from=build /build/torch-ccl/dist/oneccl_bind_pt-2.5.0+xpu-cp311-cp311-linux_x86_64.whl /opt/
