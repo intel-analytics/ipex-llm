@@ -268,7 +268,7 @@ def do_benchmark_attn(layer, num_warmup=3, num_trials=10, device="xpu"):
     kv_seq_length = 128 + 1000  # Simulate the last few tokens of 128-1024
     past_key = torch.randn(1, 128, kv_seq_length, 192).to(device)
     past_value = torch.randn(1, 128, kv_seq_length, 128).to(device)  # Not padded
-    past_key_values = DynamicCache.from_legacy_cache([(past_key, past_value)])
+    past_key_values = DynamicCache.from_legacy_cache([(past_key, past_value), (past_key, past_value)])  # kv for 2 layers
     total_time = 0
     for i in range(num_warmup+num_trials):
         position_ids = torch.tensor([[kv_seq_length]]).to(device)
@@ -362,5 +362,5 @@ if __name__ == '__main__':
 
     moe_decoder = model.model.layers[1]
     do_benchmark_attn(moe_decoder, args.warm_up, args.num_trials, device)
-    moe = model.model.layers[1].mlp
+    moe = model.model.layers[1].mlp  # including cpu/xpu data conversion
     do_benchmark(moe, args.warm_up, args.num_trials, device, hidden_states=hidden_states)
