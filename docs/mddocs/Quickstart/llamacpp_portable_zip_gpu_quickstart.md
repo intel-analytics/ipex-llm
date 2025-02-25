@@ -11,13 +11,14 @@ This guide demonstrates how to use [llama.cpp portable zip](https://github.com/i
 > - Intel Core 11th - 14th gen processors
 > - Intel Arc A-Series GPU
 > - Intel Arc B-Series GPU
+> Currently, IPEX-LLM only provides llama.cpp portable zip on Windows. 
 
 ## Table of Contents
 - [Windows Quickstart](#windows-quickstart)
   - [Prerequisites](#prerequisites)
   - [Step 1: Download and Unzip](#step-1-download-and-unzip)
-  - [Step 3: Runtime Configuration](#step-2-start-ollama-serve)
-  - [Step 3: Run GGUF models](#step-3-run-ollama)
+  - [Step 3: Runtime Configuration](#step-2-runtime-configuration)
+  - [Step 3: Run GGUF models](#step-3-run-llama.cpp)
 - [Tips & Troubleshooting](#tips--troubleshooting)
   - [Select specific GPU to run Llama.cpp when multiple ones are available](#select-specific-gpu-to-run-ollama-when-multiple-ones-are-available)
 - [More details](ollama_quickstart.md)
@@ -41,11 +42,25 @@ Then, extract the zip file to a folder.
 ### Step 2: Runtime Configuration
 
 - Open "Command Prompt" (cmd), and enter the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
-- Run `start-ollama.bat` in the "Command Prompt. A window will then pop up as shown below:
+- To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
+```cmd
+set SYCL_CACHE_PERSISTENT=1
+rem under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
+set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
+```
+- For multi-GPUs user, go to Tips for how to select specific GPU.
 
-### Step 3: Run llama.cpp
+### Step 3: Running community GGUF models with IPEX-LLM
 
-You could then use llama.cpp to run LLMs on Intel GPUs through running `ollama run deepseek-r1:7b` in the same "Command Prompt" (not the pop-up window). You may use any other model.
+Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
+
+- Model Download
+Before running, you should download or copy community GGUF model to your current directory. For instance,  `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main).
+
+#### Run the quantized model
+  ```bash
+  ./llama-cli -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -c 1024 -t 8 -e -ngl 99 --color
+  ```
 
 <div align="center">
   <img src=""  width=80%/>
