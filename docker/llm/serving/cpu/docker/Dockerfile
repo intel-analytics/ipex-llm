@@ -100,7 +100,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pip uninstall -y intel-extension-for-pytorch && \
     pip install -v -r requirements-cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu && \
     VLLM_TARGET_DEVICE=cpu python3 setup.py install && \
-    pip install ray && \
+    pip install ray triton==3.1.0 && \
 # Clean up unnecessary files to reduce image size
     rm -rf /var/lib/apt/lists/*
 
