@@ -30,6 +30,7 @@ from ipex_llm.transformers.convert import convert_forward
 from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.common import rms_norm_forward
 from ipex_llm.transformers.models.common import mlp_silu_forward
+from ipex_llm.transformers.kv import DynamicNormalCache
 from ipex_llm.utils.benchmark_util_deepseek import BenchmarkWrapper
 
 from transformers import AutoTokenizer, GenerationConfig
@@ -272,6 +273,9 @@ def do_benchmark_attn(layer, hidden_states, num_warmup=3, num_trials=128, device
     kv_seq_length = 128 - num_warmup  # Simulate the average of 128-128
     past_key = torch.randn(1, 128, kv_seq_length, 192, dtype=hidden_states.dtype).to(device)
     past_value = torch.randn(1, 128, kv_seq_length, 128, dtype=hidden_states.dtype).to(device)  # Not padded
+    # past_key_values = DynamicNormalCache()
+    # past_key_values.update(past_key, past_value, 0)
+    # past_key_values.update(past_key, past_value, 1)
     past_key_values = DynamicCache.from_legacy_cache([(past_key, past_value), (past_key, past_value)])  # kv for 2 layers
     total_time = 0
     for i in range(num_warmup+num_trials):
