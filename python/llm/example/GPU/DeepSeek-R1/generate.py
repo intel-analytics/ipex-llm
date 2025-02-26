@@ -18,6 +18,7 @@ from typing import List, Optional, Tuple, Union
 import warnings
 import os
 import numpy as np
+import importlib.util
 
 import torch
 from torch import nn
@@ -30,6 +31,7 @@ from ipex_llm.transformers.convert import convert_forward
 from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.common import rms_norm_forward
 from ipex_llm.transformers.models.common import mlp_silu_forward
+from ipex_llm.transformers.kv import DynamicNormalCache
 from ipex_llm.utils.benchmark_util_deepseek import BenchmarkWrapper
 
 from transformers import AutoTokenizer, GenerationConfig
@@ -246,6 +248,38 @@ def hybrid_DeepseekV3Attention_forward(
     return attn_output, attn_weights, past_key_value
 
 
+def deepseek_model_forward_wrapper(origin_forward):
+    def deepseek_model_forward(
+        self,
+        input_ids: torch.LongTensor = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        position_ids: Optional[torch.LongTensor] = None,
+        past_key_values: Optional[List[torch.FloatTensor]] = None,
+        inputs_embeds: Optional[torch.FloatTensor] = None,
+        use_cache: Optional[bool] = None,
+        output_attentions: Optional[bool] = None,
+        output_hidden_states: Optional[bool] = None,
+        return_dict: Optional[bool] = None,
+    ) -> Union[Tuple, BaseModelOutputWithPast]:
+        # IPEX-LLM OPT: kv cache
+        past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
+
+        return origin_forward(
+            self=self,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            past_key_values=past_key_values,
+            inputs_embeds=inputs_embeds,
+            use_cache=use_cache,
+            output_attentions=output_attentions,
+            output_hidden_states=output_hidden_states,
+            return_dict=return_dict,
+        )
+
+    return deepseek_model_forward
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Llama2 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="meta-llama/Llama-2-7b-chat-hf",
@@ -279,24 +313,34 @@ if __name__ == '__main__':
         tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
 
-    # model = model.bfloat16()
     print(model)
-    convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
-    # convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
-    for i in range(0, model.config.num_hidden_layers):
-        model.model.layers[i].input_layernorm = model.model.layers[i].input_layernorm.to(device="xpu")#, dtype=torch.float16)
-        model.model.layers[i].self_attn = model.model.layers[i].self_attn.to(device="xpu")#, dtype=torch.float16)
-        model.model.layers[i].post_attention_layernorm = model.model.layers[i].post_attention_layernorm.to(device="xpu")#, dtype=torch.float16)
-        if i < model.config.first_k_dense_replace:
-            model.model.layers[i].mlp = model.model.layers[i].mlp.to(device="xpu")#, dtype=torch.float16)
-        # else:
-            # model.model.layers[i].mlp.gate = model.model.layers[i].mlp.gate.to(device="xpu", dtype=torch.float16)
-            # model.model.layers[i].mlp.shared_experts = model.model.layers[i].mlp.shared_experts.to(device="xpu", dtype=torch.float16)
-    model.model.embed_tokens = model.model.embed_tokens.to(device="xpu")#, dtype=torch.float16)
-    model.model.norm = model.model.norm.to(device="xpu")#, dtype=torch.float16)
-    model.lm_head = model.lm_head.to(device="xpu")#, dtype=torch.float16)
-    convert_forward_to_xpu(model, "DeepseekV3RMSNorm", rms_norm_forward)
-    convert_forward_to_xpu(model, "DeepseekV3MLP", mlp_silu_forward)
+
+    # device = "cpu"
+    device = "xpu"
+
+    # modeling_module_name = model.__class__.__module__
+    # module = importlib.import_module(modeling_module_name)
+    # deepseek_model_forward = deepseek_model_forward_wrapper(module.DeepseekV3Model.forward)
+    # convert_forward(model, module.DeepseekV3Model, deepseek_model_forward)
+    if device == "xpu":
+        convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
+        # convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)
+        for i in range(0, model.config.num_hidden_layers):
+            model.model.layers[i].input_layernorm = model.model.layers[i].input_layernorm.to(device="xpu")#, dtype=torch.float16)
+            model.model.layers[i].self_attn = model.model.layers[i].self_attn.to(device="xpu")#, dtype=torch.float16)
+            model.model.layers[i].post_attention_layernorm = model.model.layers[i].post_attention_layernorm.to(device="xpu")#, dtype=torch.float16)
+            if i < model.config.first_k_dense_replace:
+                model.model.layers[i].mlp = model.model.layers[i].mlp.to(device="xpu")#, dtype=torch.float16)
+            # else:
+                # model.model.layers[i].mlp.gate = model.model.layers[i].mlp.gate.to(device="xpu", dtype=torch.float16)
+                # model.model.layers[i].mlp.shared_experts = model.model.layers[i].mlp.shared_experts.to(device="xpu", dtype=torch.float16)
+        model.model.embed_tokens = model.model.embed_tokens.to(device="xpu")#, dtype=torch.float16)
+        model.model.norm = model.model.norm.to(device="xpu")#, dtype=torch.float16)
+        model.lm_head = model.lm_head.to(device="xpu")#, dtype=torch.float16)
+        convert_forward_to_xpu(model, "DeepseekV3RMSNorm", rms_norm_forward)
+        convert_forward_to_xpu(model, "DeepseekV3MLP", mlp_silu_forward)
+    else:
+        model = model.bfloat16()
 
     print("load completed")
     model = BenchmarkWrapper(model)
@@ -307,7 +351,9 @@ if __name__ == '__main__':
     # Generate predicted tokens
     with torch.inference_mode():
         prompt = PROMPT_FORMAT.format(prompt=args.prompt)
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to("xpu")
+        input_ids = tokenizer.encode(prompt, return_tensors="pt")
+        if device == "xpu":
+            input_ids = input_ids.to("xpu")
         # ipex_llm model needs a warmup, then inference time can be accurate
         for i in range(args.warm_up):
             output = model.generate(input_ids,
@@ -320,7 +366,8 @@ if __name__ == '__main__':
             output = model.generate(input_ids,
                                     max_new_tokens=args.n_predict,
                                     min_new_tokens=args.n_predict)
-            torch.xpu.synchronize()
+            if device == "xpu":
+                torch.xpu.synchronize()
             end = time.time()
             output = output.cpu()
             e2e_time_list.append(end - st)
@@ -331,3 +378,8 @@ if __name__ == '__main__':
         print(f"End-to-end time: {np.mean(e2e_time_list)} s")
         print(f"Prefill time: {np.mean(prefill_time_list)} s")
         print(f"Rest cost mean: {np.mean(rest_cost_mean_list) * 1000} ms")
+        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+        print('-'*20, 'Prompt', '-'*20)
+        print(prompt)
+        print('-'*20, 'Output', '-'*20)
+        print(output_str)
