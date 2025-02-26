@@ -262,7 +262,8 @@ def deepseek_model_forward_wrapper(origin_forward):
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, BaseModelOutputWithPast]:
         # IPEX-LLM OPT: kv cache
-        past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
+        if use_cache and not isinstance(past_key_values, DynamicNormalCache):
+            past_key_values = DynamicNormalCache.from_legacy_cache(past_key_values)
 
         return origin_forward(
             self=self,
@@ -322,6 +323,7 @@ if __name__ == '__main__':
     # module = importlib.import_module(modeling_module_name)
     # deepseek_model_forward = deepseek_model_forward_wrapper(module.DeepseekV3Model.forward)
     # convert_forward(model, module.DeepseekV3Model, deepseek_model_forward)
+    # model = model.bfloat16()
     if device == "xpu":
         convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
         # convert_forward_to_xpu(model.model, "DeepseekV3Attention", hybrid_DeepseekV3Attention_forward)

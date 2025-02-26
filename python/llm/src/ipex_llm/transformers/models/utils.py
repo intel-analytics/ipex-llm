@@ -41,7 +41,7 @@ def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, d
                                     max_length, head_dim,
                                     dtype=dtype, device=device)
     value_cache_storage = torch.empty(batch_size, num_heads,
-                                      max_length, head_dim,
+                                      max_length, 128,
                                       dtype=dtype, device=device)
 
     key_cache = key_cache_storage.as_strided((batch_size, num_heads,
@@ -49,7 +49,7 @@ def init_kv_cache(batch_size, num_heads, head_dim, current_length, max_length, d
                                              key_cache_storage.stride(),
                                              storage_offset=0)
     value_cache = value_cache_storage.as_strided((batch_size, num_heads,
-                                                  current_length, head_dim),
+                                                  current_length, 128),
                                                  value_cache_storage.stride(),
                                                  storage_offset=0)
     return key_cache, value_cache
@@ -63,14 +63,18 @@ def extend_kv_cache(batch_size, num_heads, head_dim, current_length, max_length,
 
 
 def append_kv_cache(cache_k, cache_v, key_states, value_states):
-    new_size = (cache_k.size(0),
-                cache_k.size(1),
-                cache_k.size(2) + key_states.size(2),
-                cache_k.size(3))
-    new_cache_k = cache_k.as_strided(new_size, cache_k.stride(), storage_offset=0)
+    new_k_size = (cache_k.size(0),
+                  cache_k.size(1),
+                  cache_k.size(2) + key_states.size(2),
+                  cache_k.size(3))
+    new_v_size = (cache_v.size(0),
+                  cache_v.size(1),
+                  cache_v.size(2) + value_states.size(2),
+                  cache_v.size(3))
+    new_cache_k = cache_k.as_strided(new_k_size, cache_k.stride(), storage_offset=0)
     new_cache_k[:, :, cache_k.size(2):cache_k.size(2) + key_states.size(2), :] = key_states
-    new_cache_v = cache_v.as_strided(new_size, cache_v.stride(), storage_offset=0)
-    new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + key_states.size(2), :] = value_states
+    new_cache_v = cache_v.as_strided(new_v_size, cache_v.stride(), storage_offset=0)
+    new_cache_v[:, :, cache_v.size(2):cache_v.size(2) + value_states.size(2), :] = value_states
     return new_cache_k, new_cache_v
 
 
