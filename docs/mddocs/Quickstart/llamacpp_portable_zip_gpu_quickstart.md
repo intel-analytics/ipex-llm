@@ -18,9 +18,9 @@ This guide demonstrates how to use [llama.cpp portable zip](https://github.com/i
   - [Prerequisites](#prerequisites)
   - [Step 1: Download and Unzip](#step-1-download-and-unzip)
   - [Step 3: Runtime Configuration](#step-2-runtime-configuration)
-  - [Step 3: Run GGUF models](#step-3-running-community-gguf-models-with-ipex-llm)
+  - [Step 3: Run GGUF models](#step-3-run-gguf-models)
 - [Tips & Troubleshooting](#tips--troubleshooting)
-  - [Select specific GPU to run Llama.cpp when multiple ones are available](#select-specific-gpu-to-run-llamacpp-when-multiple-ones-are-available)
+  - [Multi-GPUs usage](#multi-gpus-usage)
 
 ## Windows Quickstart
 
@@ -44,20 +44,18 @@ Then, extract the zip file to a folder.
 - To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
 ```cmd
 set SYCL_CACHE_PERSISTENT=1
-rem under most circumstances, the following environment variable may improve performance, but sometimes this may also cause performance degradation
-set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 ```
-- For multi-GPUs user, go to Tips for how to select specific GPU.
+- For multi-GPUs user, go to [Tips](#select-specific-gpu-to-run-llamacpp-when-multiple-ones-are-available) for how to select specific GPU.
 
-### Step 3: Running community GGUF models with IPEX-LLM
+### Step 3: Run GGUF models
 
 Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 
 #### Model Download
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf` of [bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf).
 
-#### Run the quantized model
-  ```bash
+#### Run GGUF model
+  ```cmd
   llama-cli -m DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -c 1024 -t 8 -e -ngl 99 --color
   ```
 
@@ -68,20 +66,26 @@ Before running, you should download or copy community GGUF model to your current
 
 ## Tips & Troubleshooting
 
-### Select specific GPU to run llama.cpp when multiple ones are available
+### Multi-GPUs usage
 
-If your machine has multiple Intel GPUs, llama.cpp will by default runs on all of them.
+If your machine has multiple Intel GPUs, llama.cpp will by default runs on all of them. If you are not clear about your hardware configuration, you can get the configuration when you run a GGUF model. Like:
+```
+Found 3 SYCL devices:
+|  |                   |                                       |       |Max    |        |Max  |Global |                     |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
+|ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
+|--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
+| 0| [level_zero:gpu:0]|                Intel Arc A770 Graphics|  12.55|    512|    1024|   32| 16225M|     1.6.31907.700000|
+| 1| [level_zero:gpu:1]|                Intel Arc A770 Graphics|  12.55|    512|    1024|   32| 16225M|     1.6.31907.700000|
+```
 
 To specify which Intel GPU you would like llama.cpp to use, you could set environment variable `ONEAPI_DEVICE_SELECTOR` **before starting llama.cpp command**, as follows:
 
-- Identify the id (e.g. 0, 1, etc.) for your multiple GPUs. You could find them in the logs of llama.cpp, e.g.:
-
-  <div align="center">
-    <img src=""  width=80%/>
-  </div>
-
 - For **Windows** users:
-
-  - Open "Command Prompt", and navigate to the extracted folder by `cd /d PATH\TO\EXTRACTED\FOLDER`
-  - In the "Command Prompt", set `ONEAPI_DEVICE_SELECTOR` to define the Intel GPU you want to use, e.g. `set ONEAPI_DEVICE_SELECTOR=level_zero:0`, in which `0` should be changed to your desired GPU id
+  ```cmd
+  set ONEAPI_DEVICE_SELECTOR=level_zero:0 (If you want to run on one GPU, llama.cpp will use the first GPU.) 
+  set ONEAPI_DEVICE_SELECTOR="level_zero:0;level_zero:1" (If you want to run on two GPUs, llama.cpp will use the first and second GPUs.)
+  ```
+ 
+### Performance Environment
 
