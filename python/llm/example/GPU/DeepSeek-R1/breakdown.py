@@ -344,6 +344,7 @@ if __name__ == '__main__':
         model.model.embed_tokens = model.model.embed_tokens.to(device="xpu")#, dtype=torch.float16)
         model.model.norm = model.model.norm.to(device="xpu")#, dtype=torch.float16)
         model.lm_head = model.lm_head.to(device="xpu")#, dtype=torch.float16)
+        # hidden_states = hidden_states.half()
         convert_forward_to_xpu(model, "DeepseekV3RMSNorm", rms_norm_forward)
         convert_forward_to_xpu(model, "DeepseekV3MLP", mlp_silu_forward)
     else:  # cpu, bf16
