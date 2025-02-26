@@ -270,21 +270,16 @@ def do_benchmark(layer, num_warmup=3, num_trials=10, device="xpu", **kwargs):
 # kvcache will increment after each run, can't reuse the same input to run multiple trials
 def do_benchmark_attn(layer, hidden_states, num_warmup=3, num_trials=128, device="xpu"):
     kv_seq_length = 128 - num_warmup  # Simulate the average of 128-128
-    past_key = torch.randn(1, 128, kv_seq_length, 192).to(device)
-    past_value = torch.randn(1, 128, kv_seq_length, 128).to(device)  # Not padded
-    if device == "cpu":
-        past_key = past_key.bfloat16()
-        past_value = past_value.bfloat16()
+    past_key = torch.randn(1, 128, kv_seq_length, 192, dtype=hidden_states.dtype).to(device)
+    past_value = torch.randn(1, 128, kv_seq_length, 128, dtype=hidden_states.dtype).to(device)  # Not padded
     past_key_values = DynamicCache.from_legacy_cache([(past_key, past_value), (past_key, past_value)])  # kv for 2 layers
     total_time = 0
     for i in range(num_warmup+num_trials):
         position_ids = torch.tensor([[kv_seq_length]]).to(device)
-        attention_mask = torch.zeros([1, 1, 1, kv_seq_length + 1]).to(device)
-        if device == "cpu":
-            attention_mask = attention_mask.bfloat16()
+        attention_mask = torch.zeros([1, 1, 1, kv_seq_length + 1], dtype=hidden_states.dtype).to(device)
         start_time = time.time()
         output = layer(hidden_states=hidden_states, attention_mask=attention_mask, position_ids=position_ids,
-                       past_key_value=past_key_values, use_cache=True)
+                       past_key_value=past_key_values, output_attention=False, use_cache=True)
         if device == "xpu":
             torch.xpu.synchronize()
         end_time = time.time()
@@ -332,7 +327,7 @@ if __name__ == '__main__':
 
     # device = "cpu"
     device = "xpu"
-    input_ids = torch.tensor([[1128]])
+    input_ids = torch.tensor([[1128]]).to(device)
     hidden_states = torch.randn(1, 1, 7168)
     if device == "xpu":
         convert_forward_to_xpu(model.model, "DeepseekV3MoE", hybrid_DeepseekV3MoE_forward)
@@ -351,10 +346,9 @@ if __name__ == '__main__':
         model.lm_head = model.lm_head.to(device="xpu")#, dtype=torch.float16)
         convert_forward_to_xpu(model, "DeepseekV3RMSNorm", rms_norm_forward)
         convert_forward_to_xpu(model, "DeepseekV3MLP", mlp_silu_forward)
-    else:  # cpu
+    else:  # cpu, bf16
         model = model.bfloat16()
         hidden_states = hidden_states.bfloat16()
-    input_ids = input_ids.to(device)
     hidden_states = hidden_states.to(device)
 
     # Breakdown of e2e
