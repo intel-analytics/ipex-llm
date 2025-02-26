@@ -18,10 +18,9 @@ This guide demonstrates how to use [llama.cpp portable zip](https://github.com/i
   - [Prerequisites](#prerequisites)
   - [Step 1: Download and Unzip](#step-1-download-and-unzip)
   - [Step 3: Runtime Configuration](#step-2-runtime-configuration)
-  - [Step 3: Run GGUF models](#step-3-run-llama.cpp)
+  - [Step 3: Run GGUF models](#step-3-running-community-gguf-models-with-ipex-llm)
 - [Tips & Troubleshooting](#tips--troubleshooting)
-  - [Select specific GPU to run Llama.cpp when multiple ones are available](#select-specific-gpu-to-run-ollama-when-multiple-ones-are-available)
-- [More details](ollama_quickstart.md)
+  - [Select specific GPU to run Llama.cpp when multiple ones are available](#select-specific-gpu-to-run-llamacpp-when-multiple-ones-are-available)
 
 ## Windows Quickstart
 
@@ -54,12 +53,12 @@ set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1
 
 Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
 
-- Model Download
-Before running, you should download or copy community GGUF model to your current directory. For instance,  `mistral-7b-instruct-v0.1.Q4_K_M.gguf` of [Mistral-7B-Instruct-v0.1-GGUF](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/tree/main).
+#### Model Download
+Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf` of [bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf).
 
 #### Run the quantized model
   ```bash
-  ./llama-cli -m mistral-7b-instruct-v0.1.Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -c 1024 -t 8 -e -ngl 99 --color
+  llama-cli -m DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -c 1024 -t 8 -e -ngl 99 --color
   ```
 
 <div align="center">
