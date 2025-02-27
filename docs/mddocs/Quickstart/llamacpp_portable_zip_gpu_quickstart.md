@@ -58,13 +58,35 @@ Before running, you should download or copy community GGUF model to your current
   ```cmd
   llama-cli -m DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -n 32 --prompt "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun" -c 1024 -t 8 -e -ngl 99 --color
   ```
+Outputs:
+  ```
 
-<div align="center">
-  <img src=""  width=80%/>
-</div>
+  ```
 
 
 ## Tips & Troubleshooting
+
+### Error: Detected different sycl devices
+
+You will meet error log like below:
+```
+Found 3 SYCL devices:
+|  |                   |                                       |       |Max    |        |Max  |Global |                     |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
+|ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
+|--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
+| 0| [level_zero:gpu:0]|                Intel Arc A770 Graphics|  12.55|    512|    1024|   32| 16225M|     1.6.31907.700000|
+| 1| [level_zero:gpu:1]|                Intel Arc A770 Graphics|  12.55|    512|    1024|   32| 16225M|     1.6.31907.700000|
+| 2| [level_zero:gpu:2]|                 Intel UHD Graphics 770|   12.2|     32|     512|   32| 63218M|     1.6.31907.700000|
+Error: Detected different sycl devices, the performance will limit to the slowest device. 
+If you want to disable this checking and use all of them, please set environment SYCL_DEVICE_CHECK=0, and try again.
+If you just want to use one of the devices, please set environment like ONEAPI_DEVICE_SELECTOR=level_zero:0 or ONEAPI_DEVICE_SELECTOR=level_zero:1 to choose your devices.
+If you want to use two or more deivces, please set environment like ONEAPI_DEVICE_SELECTOR="level_zero:0;level_zero:1"
+See https://github.com/intel/ipex-llm/blob/main/docs/mddocs/Overview/KeyFeatures/multi_gpus_selection.md for details. Exiting.
+```
+Because the GPUs are not the same, the jobs will be allocated according to device's memory. Upon example, the iGPU(Intel UHD Graphics 770) will get 2/3 of the computing tasks. The performance will be quit bad.
+So disable the iGPU will can get the best performance. Visit [Multi-GPUs usage](#multi-gpus-usage) for defaults.
+If you still want to disable this check, you can run `set SYCL_DEVICE_CHECK=0`(Windows user) or `export SYCL_DEVICE_CHECK=0`(Linux user).
 
 ### Multi-GPUs usage
 
@@ -88,4 +110,8 @@ To specify which Intel GPU you would like llama.cpp to use, you could set enviro
   ```
  
 ### Performance Environment
+- SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS 
+The environment variable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
+To enable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS, you can run `set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`(Windows user) or `export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`(Linux user).
+
 
