@@ -1,6 +1,11 @@
 #!/bin/bash
-model="YOUR_MODEL_PATH"
-served_model_name="YOUR_MODEL_NAME"
+MODEL_PATH=${MODEL_PATH:-"default_model_path"}
+SERVED_MODEL_NAME=${SERVED_MODEL_NAME:-"default_model_name"}
+TENSOR_PARALLEL_SIZE=${TENSOR_PARALLEL_SIZE:-1}  # Default to 1 if not set
+
+echo "Starting service with model: $MODEL_PATH"
+echo "Served model name: $SERVED_MODEL_NAME"
+echo "Tensor parallel size: $TENSOR_PARALLEL_SIZE"
 
 export CCL_WORKER_COUNT=2
 export SYCL_CACHE_PERSISTENT=1
@@ -19,9 +24,9 @@ export CCL_BLOCKING_WAIT=0
 source /opt/intel/1ccl-wks/setvars.sh
 
 python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
-  --served-model-name $served_model_name \
+  --served-model-name $SERVED_MODEL_NAME \
   --port 8000 \
-  --model $model \
+  --model $MODEL_PATH \
   --trust-remote-code \
   --block-size 8 \
   --gpu-memory-utilization 0.95 \
@@ -29,9 +34,9 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --dtype float16 \
   --enforce-eager \
   --load-in-low-bit fp8 \
-  --max-model-len 2048 \
-  --max-num-batched-tokens 4000 \
+  --max-model-len 2000 \
+  --max-num-batched-tokens 3000 \
   --max-num-seqs 256 \
-  --tensor-parallel-size 1 \
+  --tensor-parallel-size $TENSOR_PARALLEL_SIZE \
   --disable-async-output-proc \
   --distributed-executor-backend ray
