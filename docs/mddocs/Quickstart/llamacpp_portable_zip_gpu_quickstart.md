@@ -44,10 +44,10 @@ Then, extract the zip file to a folder.
 
 - Open "Command Prompt" (cmd), and enter the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
 - To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
-```cmd
-set SYCL_CACHE_PERSISTENT=1
-```
-- For multi-GPUs user, go to [Tips](#select-specific-gpu-to-run-llamacpp-when-multiple-ones-are-available) for how to select specific GPU.
+  ```cmd
+  set SYCL_CACHE_PERSISTENT=1
+  ```
+- For multi-GPUs user, go to [Tips](#multi-gpus-usage) for how to select specific GPU.
 
 ### Step 3: Run GGUF models
 
@@ -61,129 +61,8 @@ Before running, you should download or copy community GGUF model to your current
   llama-cli.exe -m D:\llm-models\gguf\DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -p "A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question:The product of the ages of three teenagers is 4590. How old is the oldest? a. 18 b. 19 c. 15 d. 17 Assistant: <think>" -n 2048  -t
 8 -e -ngl 99 --color -c 2500 --temp 0
   ```
-Outputs:
+Part of outputs:
   ```
-main: llama backend init
-main: load the model and apply lora adapter, if any
-llama_load_model_from_file: using device SYCL0 (Intel(R) Arc(TM) Graphics) - 12949 MiB free
-llama_model_loader: loaded meta data with 30 key-value pairs and 339 tensors from D:\llm-models\gguf\DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf (version GGUF V3 (latest))
-llama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.
-llama_model_loader: - kv   0:                       general.architecture str              = qwen2
-llama_model_loader: - kv   1:                               general.type str              = model
-llama_model_loader: - kv   2:                               general.name str              = DeepSeek R1 Distill Qwen 7B
-llama_model_loader: - kv   3:                           general.basename str              = DeepSeek-R1-Distill-Qwen
-llama_model_loader: - kv   4:                         general.size_label str              = 7B
-llama_model_loader: - kv   5:                          qwen2.block_count u32              = 28
-llama_model_loader: - kv   6:                       qwen2.context_length u32              = 131072
-llama_model_loader: - kv   7:                     qwen2.embedding_length u32              = 3584
-llama_model_loader: - kv   8:                  qwen2.feed_forward_length u32              = 18944
-llama_model_loader: - kv   9:                 qwen2.attention.head_count u32              = 28
-llama_model_loader: - kv  10:              qwen2.attention.head_count_kv u32              = 4
-llama_model_loader: - kv  11:                       qwen2.rope.freq_base f32              = 10000.000000
-llama_model_loader: - kv  12:     qwen2.attention.layer_norm_rms_epsilon f32              = 0.000001
-llama_model_loader: - kv  13:                       tokenizer.ggml.model str              = gpt2
-llama_model_loader: - kv  14:                         tokenizer.ggml.pre str              = deepseek-r1-qwen
-llama_model_loader: - kv  15:                      tokenizer.ggml.tokens arr[str,152064]  = ["!", "\"", "#", "$", "%", "&", "'", ...
-llama_model_loader: - kv  16:                  tokenizer.ggml.token_type arr[i32,152064]  = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
-llama_model_loader: - kv  17:                      tokenizer.ggml.merges arr[str,151387]  = ["Ġ Ġ", "ĠĠ ĠĠ", "i n", "Ġ t",...
-llama_model_loader: - kv  18:                tokenizer.ggml.bos_token_id u32              = 151646
-llama_model_loader: - kv  19:                tokenizer.ggml.eos_token_id u32              = 151643
-llama_model_loader: - kv  20:            tokenizer.ggml.padding_token_id u32              = 151643
-llama_model_loader: - kv  21:               tokenizer.ggml.add_bos_token bool             = true
-llama_model_loader: - kv  22:               tokenizer.ggml.add_eos_token bool             = false
-llama_model_loader: - kv  23:                    tokenizer.chat_template str              = {% if not add_generation_prompt is de...
-llama_model_loader: - kv  24:               general.quantization_version u32              = 2
-llama_model_loader: - kv  25:                          general.file_type u32              = 15
-llama_model_loader: - kv  26:                      quantize.imatrix.file str              = /models_out/DeepSeek-R1-Distill-Qwen-...
-llama_model_loader: - kv  27:                   quantize.imatrix.dataset str              = /training_dir/calibration_datav3.txt
-llama_model_loader: - kv  28:             quantize.imatrix.entries_count i32              = 196
-llama_model_loader: - kv  29:              quantize.imatrix.chunks_count i32              = 128
-llama_model_loader: - type  f32:  141 tensors
-llama_model_loader: - type q4_K:  169 tensors
-llama_model_loader: - type q6_K:   29 tensors
-llm_load_vocab: special_eos_id is not in special_eog_ids - the tokenizer config may be incorrect
-llm_load_vocab: special tokens cache size = 22
-llm_load_vocab: token to piece cache size = 0.9310 MB
-llm_load_print_meta: format           = GGUF V3 (latest)
-llm_load_print_meta: arch             = qwen2
-llm_load_print_meta: vocab type       = BPE
-get_memory_info: [warning] ext_intel_free_memory is not supported (export/set ZES_ENABLE_SYSMAN=1 to support), use total memory as free memory
-llm_load_print_meta: n_vocab          = 152064
-llm_load_print_meta: n_merges         = 151387
-llm_load_print_meta: vocab_only       = 0
-llm_load_print_meta: n_ctx_train      = 131072
-llm_load_print_meta: n_embd           = 3584
-llm_load_print_meta: n_layer          = 28
-llm_load_print_meta: n_head           = 28
-llm_load_print_meta: n_head_kv        = 4
-llm_load_print_meta: n_rot            = 128
-llm_load_print_meta: n_swa            = 0
-llm_load_print_meta: n_embd_head_k    = 128
-llm_load_print_meta: n_embd_head_v    = 128
-llm_load_print_meta: n_gqa            = 7
-llm_load_print_meta: n_embd_k_gqa     = 512
-llm_load_print_meta: n_embd_v_gqa     = 512
-llm_load_print_meta: f_norm_eps       = 0.0e+00
-llm_load_print_meta: f_norm_rms_eps   = 1.0e-06
-llm_load_print_meta: f_clamp_kqv      = 0.0e+00
-llm_load_print_meta: f_max_alibi_bias = 0.0e+00
-llm_load_print_meta: f_logit_scale    = 0.0e+00
-llm_load_print_meta: n_ff             = 18944
-llm_load_print_meta: n_expert         = 0
-llm_load_print_meta: n_expert_used    = 0
-llm_load_print_meta: causal attn      = 1
-llm_load_print_meta: pooling type     = 0
-llm_load_print_meta: rope type        = 2
-llm_load_print_meta: rope scaling     = linear
-llm_load_print_meta: freq_base_train  = 10000.0
-llm_load_print_meta: freq_scale_train = 1
-llm_load_print_meta: n_ctx_orig_yarn  = 131072
-llm_load_print_meta: rope_finetuned   = unknown
-llm_load_print_meta: ssm_d_conv       = 0
-llm_load_print_meta: ssm_d_inner      = 0
-llm_load_print_meta: ssm_d_state      = 0
-llm_load_print_meta: ssm_dt_rank      = 0
-llm_load_print_meta: ssm_dt_b_c_rms   = 0
-llm_load_print_meta: model type       = 7B
-llm_load_print_meta: model ftype      = Q4_K - Medium
-llm_load_print_meta: model params     = 7.62 B
-llm_load_print_meta: model size       = 4.36 GiB (4.91 BPW)
-llm_load_print_meta: general.name     = DeepSeek R1 Distill Qwen 7B
-llm_load_print_meta: BOS token        = 151646 '<｜begin▁of▁sentence｜>'
-llm_load_print_meta: EOS token        = 151643 '<｜end▁of▁sentence｜>'
-llm_load_print_meta: EOT token        = 151643 '<｜end▁of▁sentence｜>'
-llm_load_print_meta: PAD token        = 151643 '<｜end▁of▁sentence｜>'
-llm_load_print_meta: LF token         = 148848 'ÄĬ'
-llm_load_print_meta: FIM PRE token    = 151659 '<|fim_prefix|>'
-llm_load_print_meta: FIM SUF token    = 151661 '<|fim_suffix|>'
-llm_load_print_meta: FIM MID token    = 151660 '<|fim_middle|>'
-llm_load_print_meta: FIM PAD token    = 151662 '<|fim_pad|>'
-llm_load_print_meta: FIM REP token    = 151663 '<|repo_name|>'
-llm_load_print_meta: FIM SEP token    = 151664 '<|file_sep|>'
-llm_load_print_meta: EOG token        = 151643 '<｜end▁of▁sentence｜>'
-llm_load_print_meta: EOG token        = 151662 '<|fim_pad|>'
-llm_load_print_meta: EOG token        = 151663 '<|repo_name|>'
-llm_load_print_meta: EOG token        = 151664 '<|file_sep|>'
-llm_load_print_meta: max token length = 256
-get_memory_info: [warning] ext_intel_free_memory is not supported (export/set ZES_ENABLE_SYSMAN=1 to support), use total memory as free memory
-llm_load_tensors: offloading 28 repeating layers to GPU
-llm_load_tensors: offloading output layer to GPU
-llm_load_tensors: offloaded 29/29 layers to GPU
-llm_load_tensors:        SYCL0 model buffer size =  4168.09 MiB
-llm_load_tensors:   CPU_Mapped model buffer size =   292.36 MiB
-..................................................................................
-llama_new_context_with_model: n_seq_max     = 1
-llama_new_context_with_model: n_ctx         = 2528
-llama_new_context_with_model: n_ctx_per_seq = 2528
-llama_new_context_with_model: n_batch       = 2528
-llama_new_context_with_model: n_ubatch      = 2528
-llama_new_context_with_model: flash_attn    = 0
-llama_new_context_with_model: freq_base     = 10000.0
-llama_new_context_with_model: freq_scale    = 1
-llama_new_context_with_model: n_ctx_per_seq (2528) < n_ctx_train (131072) -- the full capacity of the model will not be utilized
-[SYCL] call ggml_check_sycl
-ggml_check_sycl: GGML_SYCL_DEBUG: 0
-ggml_check_sycl: GGML_SYCL_F16: no
 Found 1 SYCL devices:
 |  |                   |                                       |       |Max    |        |Max  |Global |
     |
@@ -279,7 +158,7 @@ See https://github.com/intel/ipex-llm/blob/main/docs/mddocs/Overview/KeyFeatures
 ```
 Because the GPUs are not the same, the jobs will be allocated according to device's memory. Upon example, the iGPU(Intel UHD Graphics 770) will get 2/3 of the computing tasks. The performance will be quit bad.  
 So disable the iGPU will can get the best performance. Visit [Multi-GPUs usage](#multi-gpus-usage) for details.  
-If you still want to disable this check, you can run `set SYCL_DEVICE_CHECK=0`(Windows user) or `export SYCL_DEVICE_CHECK=0`(Linux user).  
+If you still want to disable this check, you can run `set SYCL_DEVICE_CHECK=0`.  
 
 ### Multi-GPUs usage
 
@@ -304,10 +183,7 @@ To specify which Intel GPU you would like llama.cpp to use, you could set enviro
  
 ### Performance Environment
 #### SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
-To enable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS, you can run  
-`set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`(Windows user)   
-or  
-`export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`(Linux user)
+To enable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS, you can run  `set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`.   
 > [!NOTE]
 > The environment variable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).  
 
