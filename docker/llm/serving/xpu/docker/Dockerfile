@@ -13,7 +13,7 @@ ARG PIP_NO_CACHE_DIR=false
 ENV TZ=Asia/Shanghai PYTHONUNBUFFERED=1
 
 # Copy patch file and benchmark scripts
-ADD ./ccl_torch.patch /tmp/
+COPY ./ccl_torch.patch /tmp/
 COPY ./vllm_online_benchmark.py ./vllm_offline_inference.py ./vllm_offline_inference_vision_language.py \
      ./payload-1024.lua ./start-vllm-service.sh ./benchmark_vllm_throughput.py ./benchmark_vllm_latency.py \
      ./start-pp_serving-service.sh /llm/
@@ -165,3 +165,4 @@ RUN set -eux && \
     pip install ray
 
 WORKDIR /llm/
+ENTRYPOINT ["bash", "/llm/start-vllm-service.sh"]
