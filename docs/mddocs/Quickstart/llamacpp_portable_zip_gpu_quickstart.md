@@ -49,7 +49,7 @@ set SYCL_CACHE_PERSISTENT=1
 
 ### Step 3: Run GGUF models
 
-Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.
+Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.  
 
 #### Model Download
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf` of [bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf).
@@ -84,9 +84,9 @@ If you just want to use one of the devices, please set environment like ONEAPI_D
 If you want to use two or more deivces, please set environment like ONEAPI_DEVICE_SELECTOR="level_zero:0;level_zero:1"
 See https://github.com/intel/ipex-llm/blob/main/docs/mddocs/Overview/KeyFeatures/multi_gpus_selection.md for details. Exiting.
 ```
-Because the GPUs are not the same, the jobs will be allocated according to device's memory. Upon example, the iGPU(Intel UHD Graphics 770) will get 2/3 of the computing tasks. The performance will be quit bad.
-So disable the iGPU will can get the best performance. Visit [Multi-GPUs usage](#multi-gpus-usage) for defaults.
-If you still want to disable this check, you can run `set SYCL_DEVICE_CHECK=0`(Windows user) or `export SYCL_DEVICE_CHECK=0`(Linux user).
+Because the GPUs are not the same, the jobs will be allocated according to device's memory. Upon example, the iGPU(Intel UHD Graphics 770) will get 2/3 of the computing tasks. The performance will be quit bad.  
+So disable the iGPU will can get the best performance. Visit [Multi-GPUs usage](#multi-gpus-usage) for defaults.  
+If you still want to disable this check, you can run `set SYCL_DEVICE_CHECK=0`(Windows user) or `export SYCL_DEVICE_CHECK=0`(Linux user).  
 
 ### Multi-GPUs usage
 
@@ -101,7 +101,7 @@ Found 3 SYCL devices:
 | 1| [level_zero:gpu:1]|                Intel Arc A770 Graphics|  12.55|    512|    1024|   32| 16225M|     1.6.31907.700000|
 ```
 
-To specify which Intel GPU you would like llama.cpp to use, you could set environment variable `ONEAPI_DEVICE_SELECTOR` **before starting llama.cpp command**, as follows:
+To specify which Intel GPU you would like llama.cpp to use, you could set environment variable `ONEAPI_DEVICE_SELECTOR` **before starting llama.cpp command**, as follows:  
 
 - For **Windows** users:
   ```cmd
@@ -111,7 +111,7 @@ To specify which Intel GPU you would like llama.cpp to use, you could set enviro
  
 ### Performance Environment
 - SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS 
-The environment variable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).
+The environment variable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).  
 To enable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS, you can run `set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`(Windows user) or `export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`(Linux user).
 
 
