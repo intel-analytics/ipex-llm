@@ -1,9 +1,11 @@
 #!/bin/bash
 MODEL_PATH=${MODEL_PATH:-"default_model_path"}
 SERVED_MODEL_NAME=${SERVED_MODEL_NAME:-"default_model_name"}
+TENSOR_PARALLEL_SIZE=${TENSOR_PARALLEL_SIZE:-1}  # Default to 1 if not set
 
 echo "Starting service with model: $MODEL_PATH"
 echo "Served model name: $SERVED_MODEL_NAME"
+echo "Tensor parallel size: $TENSOR_PARALLEL_SIZE"
 
 export CCL_WORKER_COUNT=2
 export SYCL_CACHE_PERSISTENT=1
@@ -35,6 +37,6 @@ python -m ipex_llm.vllm.xpu.entrypoints.openai.api_server \
   --max-model-len 2000 \
   --max-num-batched-tokens 3000 \
   --max-num-seqs 256 \
-  --tensor-parallel-size 1 \
+  --tensor-parallel-size $TENSOR_PARALLEL_SIZE \
   --disable-async-output-proc \
   --distributed-executor-backend ray
