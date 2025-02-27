@@ -193,6 +193,10 @@ Refer to the following table for verified models:
 | LLaMA 3.2 | [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) | Meteor Lake, Lunar Lake, Arrow Lake |
 | DeepSeek-R1 | [deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B), [deepseek-ai/DeepSeek-R1-Distill-Qwen-7B](https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-7B) | Meteor Lake, Lunar Lake, Arrow Lake |
 
+> [!Important]
+>
+> You may use [llama.cpp portable zip](./llama_cpp_npu_portable_zip_quickstart.md) to directly run GGUF models on Intel NPU with ipex-llm (***without the need of manual installations***).
+
 ### Run GGUF model using CLI tool
 #### Setup for running llama.cpp
 
