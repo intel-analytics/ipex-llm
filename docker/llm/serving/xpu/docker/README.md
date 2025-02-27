@@ -65,7 +65,7 @@ To run XPU serving, you need to map the XPU into the container by specifying `--
 
 ### 3.1 **Start the Container and Automatically Launch the Service**
 
-By default, the container is configured to automatically start the service when it is run. You can also specify the model path and model name using environment variables (`MODEL_PATH` and `SERVED_MODEL_NAME`). This allows the service to start with the specific model you want to use. Additionally, make sure to mount the model directory into the container using the `-v` option.
+By default, the container is configured to automatically start the service when it is run. You can also specify the model path, model name, and tensor parallel size using environment variables (MODEL_PATH, SERVED_MODEL_NAME, and TENSOR_PARALLEL_SIZE). This allows the service to start with the specific model and tensor parallel configuration you want to use. Additionally, make sure to mount the model directory into the container using the `-v` option.
 
 ### Example:
 
@@ -81,11 +81,13 @@ sudo docker run -itd \
         --shm-size="16g" \
         -e MODEL_PATH="/llm/models" \
         -e SERVED_MODEL_NAME="my_model" \
+        -e TENSOR_PARALLEL_SIZE=4 \
         -v /home/intel/LLM/:/llm/models/ \
         $DOCKER_IMAGE
 ```
 
-- This command will start the container and automatically launch the service with the specified model path (`/llm/models`) and model name (`my_model`).
+- This command will start the container and automatically launch the service with the specified model path (`/llm/models`), model name (`my_model`), and tensor parallel size (`4`).
+- The `-e TENSOR_PARALLEL_SIZE=4` option specifies the number of GPUs (or cards) on which the service will run. You can adjust this value based on your parallelism needs.
 - The `-v /home/intel/LLM/:/llm/models/` option mounts the model directory from the host (`/home/intel/LLM/`) to the container (`/llm/models/`).
 
 Once the container is running, the service will be launched automatically based on the provided model or the default settings.
