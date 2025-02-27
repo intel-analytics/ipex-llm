@@ -1,6 +1,7 @@
 # IPEX-LLM-serving XPU Image: Build and Usage Guide
 
 This document outlines the steps to build and use the `IPEX-LLM-serving-xpu` Docker image, including inference, serving, and benchmarking functionalities for XPU.
+
 ---
 
 ## 1. Build the Image
