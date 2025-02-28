@@ -265,22 +265,18 @@ def visual_attention_forward(self, x: "tensor(B, L, D)") -> "tensor(B, L, D)":
     q, k, v = qkv[0], qkv[1], qkv[2]
 
     bsz, q_len, kv_seq_len, head_dim = q.shape
-    if use_sdp(q_len, kv_seq_len, head_dim, q):
-        import xe_addons
-        out = xe_addons.sdp(q, k, v, None)
-    else:
-         q, k, v= padding_qkv_hd(
-            q, k, v,
-            head_dim, 128
-        )
+    q, k, v= padding_qkv_hd(
+        q, k, v,
+        head_dim, 128
+    )
 
-        attn_weights = None
-        attn_output = scaled_dot_product_attention(
-            q, k.contiguous(), v.contiguous(),
-            None, False, 1 / math.sqrt(head_dim)
-        )
+    attn_weights = None
+    attn_output = scaled_dot_product_attention(
+        q, k.contiguous(), v.contiguous(),
+        None, False, 1 / math.sqrt(head_dim)
+    )
 
-        out = attn_output[:, :, :, :head_dim]
+    out = attn_output[:, :, :, :head_dim]
     output = self.dense(out.transpose(1, 2).reshape(B, L, -1))
     output = self.output_dropout(output)
     return output
