@@ -3,10 +3,6 @@
   <b>< English</b> | <a href='./ollama_portable_zip_quickstart.zh-CN.md'>中文</a> >
 </p>
 
-TODO in Tips:
-- multiple GPUs
-- SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
-
 This guide demonstrates how to use [Ollama portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run Ollama on Intel GPU with `ipex-llm` (without the need of manual installations).
 
 > [!NOTE]
@@ -31,7 +27,7 @@ This guide demonstrates how to use [Ollama portable zip](https://github.com/inte
   - [Speed up model download using alternative sources](#speed-up-model-download-using-alternative-sources)
   - [Increase context length in Ollama](#increase-context-length-in-ollama)
   - [Select specific GPU(s) to run Ollama when multiple ones are available](#select-specific-gpus-to-run-ollama-when-multiple-ones-are-available)
-  - [Tune performance](#)
+  - [Tune performance](#tune-performance)
   - [Additional models supported after Ollama v0.5.4](#additional-models-supported-after-ollama-v054)
 - [More details](ollama_quickstart.md)
 
