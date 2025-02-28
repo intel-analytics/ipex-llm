@@ -265,7 +265,7 @@ def visual_attention_forward(self, x: "tensor(B, L, D)") -> "tensor(B, L, D)":
     q, k, v = qkv[0], qkv[1], qkv[2]
 
     bsz, q_len, kv_seq_len, head_dim = q.shape
-    q, k, v= padding_qkv_hd(
+    q, k, v = padding_qkv_hd(
         q, k, v,
         head_dim, 128
     )
