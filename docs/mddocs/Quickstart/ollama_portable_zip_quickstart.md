@@ -26,7 +26,8 @@ This guide demonstrates how to use [Ollama portable zip](https://github.com/inte
 - [Tips & Troubleshooting](#tips--troubleshooting)
   - [Speed up model download using alternative sources](#speed-up-model-download-using-alternative-sources)
   - [Increase context length in Ollama](#increase-context-length-in-ollama)
-  - [Select specific GPU to run Ollama when multiple ones are available](#select-specific-gpu-to-run-ollama-when-multiple-ones-are-available)
+  - [Select specific GPU(s) to run Ollama when multiple ones are available](#select-specific-gpus-to-run-ollama-when-multiple-ones-are-available)
+  - [Tune performance](#tune-performance)
   - [Additional models supported after Ollama v0.5.4](#additional-models-supported-after-ollama-v054)
 - [More details](ollama_quickstart.md)
 
@@ -156,11 +157,11 @@ To increase the context length, you could set environment variable `IPEX_LLM_NUM
 > [!TIP]
 > `IPEX_LLM_NUM_CTX` has a higher priority than the `num_ctx` settings in a models' `Modelfile`.
 
-### Select specific GPU to run Ollama when multiple ones are available
+### Select specific GPU(s) to run Ollama when multiple ones are available
 
 If your machine has multiple Intel GPUs, Ollama will by default runs on all of them.
 
-To specify which Intel GPU you would like Ollama to use, you could set environment variable `ONEAPI_DEVICE_SELECTOR` **before starting Ollama Serve**, as follows (if Ollama serve is already running, please make sure to stop it first):
+To specify which Intel GPU(s) you would like Ollama to use, you could set environment variable `ONEAPI_DEVICE_SELECTOR` **before starting Ollama Serve**, as follows (if Ollama serve is already running, please make sure to stop it first):
 
 - Identify the id (e.g. 0, 1, etc.) for your multiple GPUs. You could find them in the logs of Ollama serve when loading any models, e.g.:
 
@@ -171,14 +172,39 @@ To specify which Intel GPU you would like Ollama to use, you could set environme
 - For **Windows** users:
 
   - Open "Command Prompt", and navigate to the extracted folder by `cd /d PATH\TO\EXTRACTED\FOLDER`
-  - In the "Command Prompt", set `ONEAPI_DEVICE_SELECTOR` to define the Intel GPU you want to use, e.g. `set ONEAPI_DEVICE_SELECTOR=level_zero:0`, in which `0` should be changed to your desired GPU id
+  - In the "Command Prompt", set `ONEAPI_DEVICE_SELECTOR` to define the Intel GPU(s) you want to use, e.g. `set ONEAPI_DEVICE_SELECTOR=level_zero:0` (on single Intel GPU), or `set ONEAPI_DEVICE_SELECTOR=level_zero:0;level_zero:1` (on multiple Intel GPUs), in which `0`, `1` should be changed to your desired GPU id
   - Start Ollama serve through `start-ollama.bat`
 
 - For **Linux** users:
 
   - In a terminal, navigate to the extracted folder by `cd PATH\TO\EXTRACTED\FOLDER`
-  - Set `ONEAPI_DEVICE_SELECTOR` to define the Intel GPU you want to use, e.g. `export ONEAPI_DEVICE_SELECTOR=level_zero:0`, in which `0` should be changed to your desired GPU id
+  - Set `ONEAPI_DEVICE_SELECTOR` to define the Intel GPU(s) you want to use, e.g. `export ONEAPI_DEVICE_SELECTOR=level_zero:0` (on single Intel GPU), or `export ONEAPI_DEVICE_SELECTOR="level_zero:0;level_zero:1"` (on multiple Intel GPUs), in which `0`, `1` should be changed to your desired GPU id
   - Start Ollama serve through `./start-ollama.sh`
+
+### Tune performance
+
+Here are some settings you could try to tune the performance:
+
+#### Environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS`
+
+The environment variable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` determines the usage of immediate command lists for task submission to the GPU. You could experiment with `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1` or `0` for best performance.
+
+To enable `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS`, set it **before starting Ollama Serve**, as shown below (if Ollama serve is already running, please make sure to stop it first):
+
+- For **Windows** users:
+
+  - Open "Command Prompt", and navigate to the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
+  - Run `set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1` in "Command Prompt"
+  - Start Ollama serve through `start-ollama.bat`
+
+- For **Linux** users:
+
+  - In a terminal, navigate to the extracted folder through `cd PATH\TO\EXTRACTED\FOLDER`
+  - Run `export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1` in the terminal
+  - Start Ollama serve through `./start-ollama.sh`
+
+> [!TIP]
+> You could refer to [here](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html) regarding more information about Level Zero Immediate Command Lists.
 
 ### Additional models supported after Ollama v0.5.4
 
