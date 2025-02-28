@@ -5,7 +5,7 @@
 
 IPEX-LLM 提供了 llama.cpp 的相关支持以在 Intel NPU 上运行 GGUF 模型。本指南演示如何使用 [llama.cpp NPU portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel NPU 上直接免安装运行。
 
-> [!重要]
+> [!IMPORTANT]
 > 
 > - IPEX-LLM 在 Intel NPU 上暂时只支持 Windows。
 > - 目前支持的模型有 `meta-llama/Llama-3.2-3B-Instruct`, `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B` 和 `deepseek-ai/DeepSeek-R1-Distill-Qwen-7B`。
