@@ -19,7 +19,7 @@
 
 import torch
 from typing import Optional, Tuple, Union
-from ipex_llm.transformers.models.common import merge_qkv_base
+from ipex_llm.transformers.models.common import merge_qkv_base, padding_qkv_hd
 from ipex_llm.transformers.models.common import scaled_dot_product_attention
 from ipex_llm.transformers.models.utils import update_past_key_value
 from ipex_llm.transformers.models.utils import use_quantize_kv_cache, use_sdp
@@ -265,26 +265,18 @@ def visual_attention_forward(self, x: "tensor(B, L, D)") -> "tensor(B, L, D)":
     q, k, v = qkv[0], qkv[1], qkv[2]
 
     bsz, q_len, kv_seq_len, head_dim = q.shape
-    if use_sdp(q_len, kv_seq_len, head_dim, q):
-        import xe_addons
-        out = xe_addons.sdp(q, k, v, None)
-    elif q.device.type == "cpu":
-        out = torch.nn.functional.scaled_dot_product_attention(q, k, v,
-                                                               attn_mask=None,
-                                                               dropout_p=0.,
-                                                               is_causal=False)
-    else:
-        attn_weights = torch.matmul(q / math.sqrt(head_dim),
-                                    k.transpose(2, 3)).to(v.dtype)
-        if kv_seq_len >= 2048 or bsz >= 64:
-            # for memory considerations, do not upcast attention to fp32
-            # for long sequences or large batches
-            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1)
-        else:
-            # upcast attention to fp32
-            attn_weights = torch.nn.functional.softmax(attn_weights, dim=-1,
-                                                       dtype=torch.float32).to(v.dtype)
-        out = torch.matmul(attn_weights, v)
+    q, k, v = padding_qkv_hd(
+        q, k, v,
+        head_dim, 128
+    )
+
+    attn_weights = None
+    attn_output = scaled_dot_product_attention(
+        q, k.contiguous(), v.contiguous(),
+        None, False, 1 / math.sqrt(head_dim)
+    )
+
+    out = attn_output[:, :, :, :head_dim]
     output = self.dense(out.transpose(1, 2).reshape(B, L, -1))
     output = self.output_dropout(output)
     return output

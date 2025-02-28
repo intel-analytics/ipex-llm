@@ -61,7 +61,7 @@ if __name__ == '__main__':
                                                  trust_remote_code=True,
                                                  use_cache=True,
                                                  model_hub=model_hub)
-    model = model.half().to('xpu')
+    model = model.to('xpu')
     
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
