@@ -76,9 +76,9 @@ In [generate.py](./generate.py), we show a use case for a Janus-Pro model to pre
 - Generate with text input
   - [deepseek-ai/Janus-Pro-7B](https://huggingface.co/deepseek-ai/Janus-Pro-7B)
     ```bash
-    python generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
+    python generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --low-bit "sym_int8" --prompt PROMPT --n-predict N_PREDICT
     ```
-  - [deepseek-ai/Janus-Pro-1B](https://huggingface.co/deepseek-ai/Janus-Pro-7B)
+  - [deepseek-ai/Janus-Pro-1B](https://huggingface.co/deepseek-ai/Janus-Pro-1B)
     ```bash
     python generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --low-bit "sym_int8" --prompt PROMPT --n-predict N_PREDICT
     ```
@@ -86,15 +86,15 @@ In [generate.py](./generate.py), we show a use case for a Janus-Pro model to pre
 - Generate with text + image inputs
   - [deepseek-ai/Janus-Pro-7B](https://huggingface.co/deepseek-ai/Janus-Pro-7B)
     ```bash
-    python generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --image-path IMAGE_PATH --n-predict N_PREDICT
+    python generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --low-bit "sym_int8" --prompt PROMPT --image-path IMAGE_PATH --n-predict N_PREDICT
     ```
-  - [deepseek-ai/Janus-Pro-1B](https://huggingface.co/deepseek-ai/Janus-Pro-7B)
+  - [deepseek-ai/Janus-Pro-1B](https://huggingface.co/deepseek-ai/Janus-Pro-1B)
     ```bash
     python generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --low-bit "sym_int8" --prompt PROMPT --image-path IMAGE_PATH --n-predict N_PREDICT
     ```
 
 > [!NOTE]
-> For `deepseek-ai/Janus-Pro-1B`, we recommand IPEX-LLM INT8 (`sym_int8`) optimizations.
+> We recommand IPEX-LLM INT8 (`sym_int8`) optimizations for `deepseek-ai/Janus-Pro-1B` and `deepseek-ai/Janus-Pro-7B` to enhance output quality.
 
 Arguments info:
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for Janus-Pro model (e.g. `deepseek-ai/Janus-Pro-7B` or `deepseek-ai/Janus-Pro-1B`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'deepseek-ai/Janus-Pro-7B'`.
