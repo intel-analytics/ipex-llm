@@ -2029,10 +2029,12 @@ def _optimize_post(model):
         modeling_module_name = model.__class__.__module__
         module = importlib.import_module(modeling_module_name)
         from ipex_llm.transformers.models.common import rms_norm_forward
+        from ipex_llm.transformers.models.common import mlp_silu_forward
         from ipex_llm.transformers.models.deepseek import deepseek_model_forward
         from ipex_llm.transformers.models.deepseek import deepseek_attention_forward
         from ipex_llm.transformers.models.deepseek import deepseek_moe_forward
         convert_forward(model, module.DeepseekV3RMSNorm, rms_norm_forward)
+        convert_forward(model, module.DeepseekV3MLP, mlp_silu_forward)
         convert_forward(model, module.DeepseekV3Model, deepseek_model_forward)
         convert_forward(model, module.DeepseekV3Attention, deepseek_attention_forward)
         convert_forward(model, module.DeepseekV3MoE, deepseek_moe_forward)
