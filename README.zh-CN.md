@@ -9,7 +9,7 @@
 > - ***70+** 模型已经在 `ipex-llm` 上得到优化和验证（如 Llama, Phi, Mistral, Mixtral, Whisper, DeepSeek, Qwen, ChatGLM, MiniCPM, Qwen-VL, MiniCPM-V 等）, 以获得先进的 **大模型算法优化**, **XPU 加速** 以及 **低比特（FP8FP8/FP6/FP4/INT4）支持**；更多模型信息请参阅[这里](#模型验证)。*
 
 ## 最新更新 🔥 
-- [2025/02] 新增 [llama.cpp Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel [GPU](docs/mddocs/Quickstart/llama_cpp_portable_zip_quickstart.md) 和 [NPU](docs/mddocs/Quickstart/llama_cpp_npu_portable_zip_quickstart.zh-CN.md) 上直接**免安装运行 llama.cpp**。
+- [2025/02] 新增 [llama.cpp Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel [GPU](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.md) 和 [NPU](docs/mddocs/Quickstart/llama_cpp_npu_portable_zip_quickstart.zh-CN.md) 上直接**免安装运行 llama.cpp**。
 - [2025/02] 新增 [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel GPU 上直接**免安装运行 Ollama** (包括 [Windows](docs/mddocs/Quickstart/ollama_portable_zip_quickstart.zh-CN.md#windows用户指南) 和 [Linux](docs/mddocs/Quickstart/ollama_portable_zip_quickstart.zh-CN.md#linux用户指南))。
 - [2025/02] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.6](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 的支持。
 - [2025/01] 新增在 Intel Arc [B580](docs/mddocs/Quickstart/bmg_quickstart.md) GPU 上运行 `ipex-llm` 的指南。
