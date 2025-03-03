@@ -1,6 +1,6 @@
 # Intel® LLM Library for PyTorch*
 <p>
-  < <a href='./README.md'>English</a> | <b>中文 ></b> 
+  < <a href='./README.md'>English</a> | <b>中文</b>  | <a href='./README.ja-JP.md'>日本語</a> >
 </p>
 
 **`ipex-llm`** 是一个将大语言模型高效地运行于 Intel [GPU](docs/mddocs/Quickstart/install_windows_gpu.md) *(如搭载集成显卡的个人电脑，Arc 独立显卡、Flex 及 Max 数据中心 GPU 等)*、[NPU](docs/mddocs/Quickstart/npu_quickstart.md) 和 CPU 上的大模型 XPU 加速库[^1]。 
