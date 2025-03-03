@@ -1012,6 +1012,9 @@ def _optimize_pre(model, qtype=None):
         model.apply(pre_compute_inv_freq)
         from ipex_llm.transformers.models.minicpm3 import padding_v_head_dim
         model.apply(padding_v_head_dim)
+    # elif model.config.model_type == "deepseek_v3":
+    #     from ipex_llm.transformers.models.minicpm3 import padding_v_head_dim
+    #     model.apply(padding_v_head_dim)
     elif model.config.model_type == "minicpmv":
         from ipex_llm.transformers.models.minicpmv import merge_qkv
         model.vpm.apply(merge_qkv)
