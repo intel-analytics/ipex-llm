@@ -165,7 +165,7 @@ RUN set -eux && \
     #
     # Install compute runtime for BMG 24G
     # Install igc
-    apt-get install bison flex python3-mako && \
+    apt-get install -y --no-install-recommends bison flex python3-mako && \
     mkdir -p /tmp/igc && \
     cd /tmp/igc && \
     git clone https://github.com/intel/vc-intrinsics vc-intrinsics && \
@@ -178,33 +178,26 @@ RUN set -eux && \
     git config --global user.email "bigdl@intel.com" &&\
     git config --global user.name "IPEX-LLM" && \
     cd igc && \
-    mkdir build && \
-    cd build && \
+    mkdir build && cd build && \
     cmake ../ && \
-    make -j32 && \
-    make install -j32 && \
-    rm -rf /tmp/igc && \
+    make -j32 && make install -j32 && \
+    cd /tmp && rm -rf /tmp/igc && \
     #
-    apt-get install libigdgmm-dev libigdgmm12 unzip clinfo pciutils && \
+    apt-get install -y --no-install-recommends libigdgmm-dev libigdgmm12 unzip clinfo pciutils && \
     # Install gmmlib
-    cd /tmp && \
     git clone https://github.com/intel/gmmlib.git && \
-    mkdir build && \
-    cd build && \
+    cd gmmlib && \
+    mkdir build && cd build && \
     cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && \
-    make -j32 && \
-    make install && \
-    cd /tmp && \
-    rm -rf /tmp/gmmlib && \
+    make -j32 && make install && \
+    cd /tmp && rm -rf /tmp/gmmlib && \
     # Install level-zero
-    cd /tmp && \
     git clone https://github.com/oneapi-src/level-zero.git && \
     cd level-zero && \
     mkdir build &&  cd build && \
     cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && \
     make -j32 &&  make install && \
-    cd /tmp && \
-    rm -rf /tmp/level-zero && \
+    cd /tmp && rm -rf /tmp/level-zero && \
     # Install compute-runtime
     wget https://github.com/intel/compute-runtime/archive/refs/tags/24.52.32224.5.zip && \
     unzip 24.52.32224.5.zip && \
@@ -218,5 +211,8 @@ RUN set -eux && \
     mkdir build &&  cd build && \
     cmake ../ -DSKIP_UNIT_TESTS=ON && \
     make -j32 && make install && \
+    cd /llm && \
+    rm -rf /tmp/compute-runtime-24.52.32224.5 && \
+    rm -rf /tmp/24.52.32224.5.zip
 WORKDIR /llm/
 ENTRYPOINT ["bash", "/llm/start-vllm-service.sh"]
