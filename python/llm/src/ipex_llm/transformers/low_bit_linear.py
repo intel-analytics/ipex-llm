@@ -642,6 +642,14 @@ class LowBitLinear(nn.Linear):
         x_2d = x.contiguous().view(-1, x.shape[-1])
 
         if self.weight.device.type == "xpu":
+            if x_2d.size(0) == 1 and self.out_len % 4 == 0:
+                import xe_linear
+                result = xe_linear.linear_forward_vec(x_2d, self.weight.data,
+                                                      self.in_len, self.out_len, self.qtype)
+                if self.bias is not None:
+                    result += self.bias
+                return result.view(new_shape)
+
             if is_training and x_2d.requires_grad:
                 result = MatMulLowBit.apply(x_2d, self.weight, self.out_len)
             else:
