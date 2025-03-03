@@ -70,14 +70,6 @@ root@arda-arc12:/# sycl-ls
 [ext_oneapi_level_zero:gpu:0] Intel(R) Level-Zero, Intel(R) Arc(TM) A770 Graphics 1.3 [1.3.26241]
 ```
 
-> [!TIP]
-> You can run the Env-Check script to verify your ipex-llm installation and runtime environment.
->
-> ```bash
-> cd /ipex-llm/python/llm/scripts
-> bash env-check.sh
-> ```
-
 > [!NOTE]
 > For optimal performance, it is recommended to set several environment variables according to your hardware environment.
 > 
