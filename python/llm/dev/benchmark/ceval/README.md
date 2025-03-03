@@ -55,8 +55,8 @@ python eval.py \
 2. **Start Docker Container**:
    ```bash
    docker run -td \
-         --privileged \
          --net=host \
+         --group-add video \
          --device=/dev/dri \
          --name=$CONTAINER_NAME \
          -v /home/intel/LLM:/llm/models/ \
