@@ -27,6 +27,7 @@
   - [通过切换源提升模型下载速度](#通过切换源提升模型下载速度)
   - [在 Ollama 中增加上下文长度](#在-ollama-中增加上下文长度)
   - [在多块 GPU 可用时选择特定的 GPU 来运行 Ollama](#在多块-gpu-可用时选择特定的-gpu-来运行-ollama)
+  - [性能调优](#性能调优)
   - [Ollama v0.5.4 之后新增模型支持](#ollama-v054-之后新增模型支持)
 - [更多信息](ollama_quickstart.zh-CN.md)
 
@@ -50,8 +51,8 @@
 
 根据如下步骤启动 Ollama serve:
 
-- 打开命令提示符（cmd），并通过在命令行输入指令 "cd /d PATH\TO\EXTRACTED\FOLDER" 进入解压缩后的文件夹
-- 在命令提示符中运行 "start-ollama.bat" 即可启动 Ollama Serve。随后会弹出一个窗口，如下所示：
+- 打开命令提示符（cmd），并通过在命令行输入指令 `cd /d PATH\TO\EXTRACTED\FOLDER` 进入解压缩后的文件夹
+- 在命令提示符中运行 `start-ollama.bat` 即可启动 Ollama Serve。随后会弹出一个窗口，如下所示：
 
 <div align="center">
   <img src="https://llm-assets.readthedocs.io/en/latest/_images/ollama_portable_start_ollama_new.png"  width=80%/>
@@ -170,14 +171,39 @@ Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设�
 - 对于 **Windows** 用户：
 
   - 打开命令提示符，并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
-  - 在命令提示符中设置 `ONEAPI_DEVICE_SELECTOR` 来定义你想使用的 Intel GPU，例如 `set ONEAPI_DEVICE_SELECTOR=level_zero:0`，其中`0`应该替换成你期望的 GPU id
+  - 在命令提示符中设置 `ONEAPI_DEVICE_SELECTOR` 来定义你想使用的 Intel GPU，例如 `set ONEAPI_DEVICE_SELECTOR=level_zero:0`（使用单块 GPU）或 `set ONEAPI_DEVICE_SELECTOR=level_zero:0;level_zero:1`（使用多块 GPU），其中 `0`、`1` 应该替换成你期望的 GPU id
   - 通过运行 `start-ollama.bat` 启动 Ollama serve
 
 - 对于 **Linux** 用户：
 
   - 在终端中输入指令 `cd PATH/TO/EXTRACTED/FOLDER` 进入解压后的文件夹
-  - 在终端中设置 `ONEAPI_DEVICE_SELECTOR` 来定义你想使用的 Intel GPU，例如 `export ONEAPI_DEVICE_SELECTOR=level_zero:0`，其中`0`应该替换成你期望的 GPU id
+  - 在终端中设置 `ONEAPI_DEVICE_SELECTOR` 来定义你想使用的 Intel GPU，例如 `export ONEAPI_DEVICE_SELECTOR=level_zero:0`（使用单块 GPU）或 `export ONEAPI_DEVICE_SELECTOR="level_zero:0;level_zero:1"`（使用多块 GPU），其中 `0`、`1` 应该替换成你期望的 GPU id
   - 通过运行 `./start-ollama.sh` 启动 Ollama serve
+
+### 性能调优
+
+你可以尝试如下设置来进行性能调优：
+
+#### 环境变量 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS`
+
+环境变量 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` 用于控制是否使用 immediate command lists 将任务提交到 GPU。你可以尝试将 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` 设为 `1` 或 `0` 以达到最佳的性能。
+
+你可以通过如下步骤，在**启动 Ollama serve 之前**启用 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS`（如果 Ollama serve 已经在运行，请确保先将其停止）：
+
+- 对于 **Windows** 用户：
+
+  - 打开命令提示符，并通过 `cd /d PATH\TO\EXTRACTED\FOLDER` 命令进入解压后的文件夹
+  - 在命令提示符中设置 `set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`
+  - 通过运行 `start-ollama.bat` 启动 Ollama serve
+
+- 对于 **Linux** 用户：
+
+  - 在终端中输入指令 `cd PATH/TO/EXTRACTED/FOLDER` 进入解压后的文件夹
+  - 在终端中设置 `export SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`
+  - 通过运行 `./start-ollama.sh` 启动 Ollama serve
+
+> [!TIP]
+> 参考[此处文档](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html)以获取更多 Level Zero Immediate Command Lists 相关信息。
 
 ### Ollama v0.5.4 之后新增模型支持
 
