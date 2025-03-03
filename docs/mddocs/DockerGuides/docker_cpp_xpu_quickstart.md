@@ -207,7 +207,6 @@ docker rm -f $CONTAINER_NAME
 docker run -itd \
             -v open-webui:/app/backend/data \
             -e PORT=8080 \
-            --privileged \
             --network=host \
             --name $CONTAINER_NAME \
             --restart always $DOCKER_IMAGE

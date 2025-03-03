@@ -24,8 +24,8 @@ docker pull intelanalytics/ipex-llm-serving-xpu:latest
 export DOCKER_IMAGE=intelanalytics/ipex-llm-serving-xpu:latest
 export CONTAINER_NAME=ipex-llm-serving-xpu-container
 sudo docker run -itd \
-        --privileged \
         --net=host \
+        --group-add video \
         --device=/dev/dri \
         -v /path/to/models:/llm/models \
         -e no_proxy=localhost,127.0.0.1 \

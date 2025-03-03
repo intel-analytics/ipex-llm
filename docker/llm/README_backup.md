@@ -42,7 +42,6 @@ export CONTAINER_NAME=my_container
 export MODEL_PATH=/llm/models[change to your model path]
 
 docker run -itd \
-    --privileged \
     -p 12345:12345 \
     --cpuset-cpus="0-47" \
     --cpuset-mems="0" \
