@@ -230,21 +230,23 @@ class IPEXLLMMQLLMEngine(MQLLMEngine):
         return super().from_engine_args(engine_args, usage_context, ipc_path)
 
 
+def signal_handler(*_) -> None:
+    raise KeyboardInterrupt("MQLLMEngine terminated")  # noqa
+
+
 def run_mp_engine(engine_args: AsyncEngineArgs, usage_context: UsageContext,
                   ipc_path: str, load_in_low_bit: str, engine_alive):
 
-    def signal_handler(*_) -> None:
-        # Interrupt server on sigterm
-        raise KeyboardInterrupt("MQLLMEngine terminated")  # noqa
-
     try:
-        signal.signal(signal.SIGTERM, signal_handler)
-
         engine = IPEXLLMMQLLMEngine.from_engine_args(engine_args=engine_args,
                                                      usage_context=usage_context,
                                                      ipc_path=ipc_path,
                                                      load_in_low_bit=load_in_low_bit)
+
+        signal.signal(signal.SIGTERM, signal_handler)
+
         engine.start()
+
     except BaseException as e:
         logger.exception(e)
         engine_alive.value = False

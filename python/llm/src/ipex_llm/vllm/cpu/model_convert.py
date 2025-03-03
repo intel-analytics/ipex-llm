@@ -48,7 +48,7 @@ def _sample_get_logits(
         logits = lm_head(hidden_states)
         if embedding_bias is not None:
             logits += embedding_bias
-    if self.use_gather:
+    if not self.use_all_gather:
         logits = tensor_model_parallel_gather(logits)
     else:
         logits = tensor_model_parallel_all_gather(logits)
@@ -65,12 +65,9 @@ def _model_sample_convert():
 def _ipex_llm_convert(load_in_low_bit):
     from vllm.worker.cpu_model_runner import CPUModelRunner
     from ipex_llm.vllm.cpu.ipex_llm_wrapper import get_ipex_llm_wrapper
-    from ipex_llm.vllm.cpu.ipex_llm_v1_wrapper import get_ipex_llm_v1_wrapper
-    import vllm.executor.ray_utils as ray_utils_v0
-    import vllm.v1.executor.ray_utils as ray_utils_v1
+    import vllm.executor.ray_utils as ray_utils
     setattr(CPUModelRunner, "load_model", get_load_function(load_in_low_bit))
-    setattr(ray_utils_v0, "RayWorkerWrapper", get_ipex_llm_wrapper(load_in_low_bit))
-    setattr(ray_utils_v1, "RayWorkerWrapper", get_ipex_llm_v1_wrapper(load_in_low_bit))
+    setattr(ray_utils, "RayWorkerWrapper", get_ipex_llm_wrapper(load_in_low_bit))
 
 
 def get_load_function(low_bit):
