@@ -189,7 +189,7 @@ Ollama 默认从 Ollama 库下载模型。通过在**运行 Ollama 之前**设�
 
 #### 环境变量 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS`
 
-环境变量 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` 用于控制是否使用 immediate command lists 将任务提交到 GPU。你可以尝试将 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` 设为 `1` 或 `0` 以达到最佳的性能。
+环境变量 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` 用于控制是否使用 immediate command lists 将任务提交到 GPU。你可以尝试将 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` 设为 `1` 或 `0` 以找到最佳性能配置。
 
 你可以通过如下步骤，在**启动 Ollama serve 之前**启用 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS`（如果 Ollama serve 已经在运行，请确保先将其停止）：
 
