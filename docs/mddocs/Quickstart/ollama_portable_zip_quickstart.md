@@ -33,6 +33,9 @@ This guide demonstrates how to use [Ollama portable zip](https://github.com/inte
 
 ## Windows Quickstart
 
+> [!NOTE]
+> We recommand using Windows 11 for Windows users.
+
 ### Prerequisites
 
 Check your GPU driver version, and update it if needed:
