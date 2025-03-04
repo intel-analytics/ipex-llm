@@ -93,7 +93,7 @@ Arguments info:
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-What is AI?
+Is 123 a prime?
 -------------------- Output --------------------
-<|im_system|>system<|im_middle|>You are a helpful assistant provided by Moonshot-AI.<|im_end|><|im_user|>user<|im_middle|>What is AI?<|im_end|><|im_assistant|>assistant<|im_middle|>AI, or Artificial Intelligence, refers to the simulation of human intelligence in machines that are programmed to think and learn like humans. These systems can perform tasks that typically
+<|im_system|>system<|im_middle|>You are a helpful assistant provided by Moonshot-AI.<|im_end|><|im_user|>user<|im_middle|>Is 123 a prime?<|im_end|><|im_assistant|>assistant<|im_middle|>No, 123 is not a prime number. A prime number is a number greater than 1 that has no positive divisors other than 1 and itself
 ```
