@@ -88,7 +88,7 @@ See demos of running local LLMs *on Intel Core Ultra iGPU, Intel Core Ultra NPU,
   </tr>
   <tr>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/ollama_portable_zip_quickstart.md.md">Ollama <br> (Mistral-7B, Q4_K) </a>
+      <a href="docs/mddocs/Quickstart/ollama_portable_zip_quickstart.md">Ollama <br> (Mistral-7B, Q4_K) </a>
     </td>
     <td align="center" width="25%">
       <a href="docs/mddocs/Quickstart/npu_quickstart.md">HuggingFace <br> (Llama3.2-3B, SYM_INT4)</a>
