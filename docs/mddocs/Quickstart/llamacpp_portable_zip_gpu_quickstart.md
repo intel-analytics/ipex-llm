@@ -185,7 +185,7 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 <answer>XXXX</answer> [end of text]
 ```
 
-### FlashMoe for DeeSeek V3/R1
+### FlashMoE for DeeSeek V3/R1
 
 FlashMoE is a command-line tool built on llama.cpp, optimized for mixture-of-experts (MoE) models such as DeepSeek V3/R1. Now, it's available for Linux platforms.
 
