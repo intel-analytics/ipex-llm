@@ -23,7 +23,7 @@ This guide demonstrates how to use [llama.cpp portable zip](https://github.com/i
   - [(New) FlashMoE for Moe Models (e.g., DeeSeek V3/R1)](#flashmoe-for-moe-models)
 - [Tips & Troubleshooting](#tips--troubleshooting)
   - [Error: Detected different sycl devices](#error-detected-different-sycl-devices)
-  - [Multi-GPUs usage][def]
+  - [Multi-GPUs usage](#multi-gpus-usage)
   - [Performance Environment](#performance-environment)
 
 ## Windows Quickstart
