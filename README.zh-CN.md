@@ -5,11 +5,11 @@
 
 **`ipex-llm`** 是一个将大语言模型高效地运行于 Intel [GPU](docs/mddocs/Quickstart/install_windows_gpu.md) *(如搭载集成显卡的个人电脑，Arc 独立显卡、Flex 及 Max 数据中心 GPU 等)*、[NPU](docs/mddocs/Quickstart/npu_quickstart.md) 和 CPU 上的大模型 XPU 加速库[^1]。 
 > [!NOTE]
-> - *`ipex-llm`可以与  [llama.cpp](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.md), [Ollama](docs/mddocs/Quickstart/ollama_portable_zip_quickstart.zh-CN.md), [HuggingFace transformers](python/llm/example/GPU/HuggingFace), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models) 等无缝衔接。* 
+> - *`ipex-llm`可以与  [llama.cpp](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.zh-CN.md), [Ollama](docs/mddocs/Quickstart/ollama_portable_zip_quickstart.zh-CN.md), [HuggingFace transformers](python/llm/example/GPU/HuggingFace), [LangChain](python/llm/example/GPU/LangChain), [LlamaIndex](python/llm/example/GPU/LlamaIndex), [vLLM](docs/mddocs/Quickstart/vLLM_quickstart.md), [Text-Generation-WebUI](docs/mddocs/Quickstart/webui_quickstart.md), [DeepSpeed-AutoTP](python/llm/example/GPU/Deepspeed-AutoTP), [FastChat](docs/mddocs/Quickstart/fastchat_quickstart.md), [Axolotl](docs/mddocs/Quickstart/axolotl_quickstart.md), [HuggingFace PEFT](python/llm/example/GPU/LLM-Finetuning), [HuggingFace TRL](python/llm/example/GPU/LLM-Finetuning/DPO), [AutoGen](python/llm/example/CPU/Applications/autogen), [ModeScope](python/llm/example/GPU/ModelScope-Models) 等无缝衔接。* 
 > - ***70+** 模型已经在 `ipex-llm` 上得到优化和验证（如 Llama, Phi, Mistral, Mixtral, Whisper, DeepSeek, Qwen, ChatGLM, MiniCPM, Qwen-VL, MiniCPM-V 等）, 以获得先进的 **大模型算法优化**, **XPU 加速** 以及 **低比特（FP8FP8/FP6/FP4/INT4）支持**；更多模型信息请参阅[这里](#模型验证)。*
 
 ## 最新更新 🔥 
-- [2025/02] 新增 [llama.cpp Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel **GPU** (包括 [Windows](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.md#windows-quickstart) 和 [Linux](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.md#linux-quickstart)) 和 **NPU** (仅 [Windows](docs/mddocs/Quickstart/llama_cpp_npu_portable_zip_quickstart.zh-CN.md)) 上直接**免安装运行 llama.cpp**。
+- [2025/02] 新增 [llama.cpp Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel **GPU** (包括 [Windows](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.zh-CN.md#windows-用户指南) 和 [Linux](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.zh-CN.md#linux-用户指南)) 和 **NPU** (仅 [Windows](docs/mddocs/Quickstart/llama_cpp_npu_portable_zip_quickstart.zh-CN.md)) 上直接**免安装运行 llama.cpp**。
 - [2025/02] 新增 [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel **GPU** 上直接**免安装运行 Ollama** (包括 [Windows](docs/mddocs/Quickstart/ollama_portable_zip_quickstart.zh-CN.md#windows用户指南) 和 [Linux](docs/mddocs/Quickstart/ollama_portable_zip_quickstart.zh-CN.md#linux用户指南))。
 - [2025/02] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.6](docs/mddocs/DockerGuides/vllm_docker_quickstart.md) 的支持。
 - [2025/01] 新增在 Intel Arc [B580](docs/mddocs/Quickstart/bmg_quickstart.md) GPU 上运行 `ipex-llm` 的指南。
@@ -97,7 +97,7 @@
       <a href="docs/mddocs/Quickstart/webui_quickstart.md">TextGeneration-WebUI <br> (Llama3-8B, FP8) </a>
     </td>
     <td align="center" width="25%">
-      <a href="docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.md">llama.cpp <br> (DeepSeek-R1-Distill-Qwen-32B, Q4_K)</a>
+      <a href="docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.zh-CN.md">llama.cpp <br> (DeepSeek-R1-Distill-Qwen-32B, Q4_K)</a>
     </td>  </tr>
 </table>
 
@@ -179,7 +179,7 @@ See the demo of running [*Text-Generation-WebUI*](https://ipex-llm.readthedocs.i
 
 ### 使用
 - [Ollama](docs/mddocs/Quickstart/ollama_portable_zip_quickstart.zh-CN.md): 在 Intel GPU 上直接**免安装运行 Ollama**
-- [llama.cpp](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.md): 在 Intel GPU 上直接**免安装运行llama.cpp**
+- [llama.cpp](docs/mddocs/Quickstart/llamacpp_portable_zip_gpu_quickstart.zh-CN.md): 在 Intel GPU 上直接**免安装运行llama.cpp**
 - [Arc B580](docs/mddocs/Quickstart/bmg_quickstart.md): 在 Intel Arc **B580** GPU 上运行 `ipex-llm`（包括 Ollama, llama.cpp, PyTorch, HuggingFace 等）
 - [NPU](docs/mddocs/Quickstart/npu_quickstart.md): 在 Intel **NPU** 上运行 `ipex-llm`（支持 Python/C++ 及 [llama.cpp](docs/mddocs/Quickstart/llama_cpp_npu_portable_zip_quickstart.zh-CN.md) API）
 - [PyTorch/HuggingFace](docs/mddocs/Quickstart/install_windows_gpu.zh-CN.md): 使用 [Windows](docs/mddocs/Quickstart/install_windows_gpu.zh-CN.md) 和 [Linux](docs/mddocs/Quickstart/install_linux_gpu.zh-CN.md) 在 Intel GPU 上运行 **PyTorch**、**HuggingFace**、**LangChain**、**LlamaIndex** 等 (*使用 `ipex-llm` 的 Python 接口*) 

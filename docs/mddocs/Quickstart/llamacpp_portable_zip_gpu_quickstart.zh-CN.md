@@ -1,79 +1,80 @@
-# Run llama.cpp Portable Zip on Intel GPU with IPEX-LLM
+#  使用 IPEX-LLM 在 Intel GPU 运行 llama.cpp Portable Zip 
 <p>
-   < <b>English</b> | <a href='./llamacpp_portable_zip_gpu_quickstart.zh-CN.md'>中文</a> >
+   < <a href='./llamacpp_portable_zip_gpu_quickstart.md'>English</a> | <b>中文</b> >
 </p>
-
-This guide demonstrates how to use [llama.cpp portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run llama.cpp on Intel GPU with `ipex-llm` (without the need of manual installations).
+     
+本指南演示如何使用 [llama.cpp portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 通过 `ipex-llm` 在 Intel GPU 上直接免安装运行。
 
 > [!NOTE]
-> llama.cpp portable zip has been verified on:
+> llama.cpp portable zip 在如下设备上进行了验证：
 > - Intel Core Ultra processors
 > - Intel Core 11th - 14th gen processors
 > - Intel Arc A-Series GPU
 > - Intel Arc B-Series GPU
 
-## Table of Contents
-- [Windows Quickstart](#windows-quickstart)
-  - [Prerequisites](#prerequisites)
-  - [Step 1: Download and Unzip](#step-1-download-and-unzip)
-  - [Step 3: Runtime Configuration](#step-2-runtime-configuration)
-  - [Step 3: Run GGUF models](#step-3-run-gguf-models)
-- [Linux Quickstart](#linux-quickstart)
-  - [Prerequisites](#prerequisites-1)
-  - [Step 1: Download and Extract](#step-1-download-and-extract)
-  - [Step 2: Runtime Configuration](#step-2-runtime-configuration-1)
-  - [Step 3: Run GGUF models](#step-3-run-gguf-models-1)
-  - [(New) FlashMoE for Moe Models (e.g., DeeSeek V3/R1) using llama.cpp](#flashmoe-for-deeseek-v3r1)
-- [Tips & Troubleshooting](#tips--troubleshooting)
-  - [Error: Detected different sycl devices](#error-detected-different-sycl-devices)
-  - [Multi-GPUs usage](#multi-gpus-usage)
-  - [Performance Environment](#performance-environment)
-- [More Details](llama_cpp_quickstart.md)
+## 目录
+- [Windows 用户指南](#windows-用户指南)
+  - [系统环境安装](#系统环境安装)
+  - [步骤 1：下载与解压](#步骤-1下载与解压)
+  - [步骤 2：运行时配置](#步骤-2运行时配置)
+  - [步骤 3：运行 GGUF 模型](#步骤-3运行-gguf-模型)
+- [Linux 用户指南](#linux-用户指南)
+  - [系统环境安装](#系统环境安装-1)
+  - [步骤 1：下载与解压](#步骤-1下载与解压-1)
+  - [步骤 2：运行时配置](#步骤-2运行时配置-1)
+  - [步骤 3：运行 GGUF 模型](#步骤-3运行-gguf-模型-1)
+  - [(新功能) FlashMoE 运行 DeepSeek V3/R1](#flashmoe-运行-deepseek-v3r1)
+- [提示与故障排除](#提示与故障排除)
+  - [错误：检测到不同的 sycl 设备](#错误检测到不同的-sycl-设备)
+  - [多 GPU 配置](#多-gpu-配置)
+  - [性能环境](#性能环境)
 
-## Windows Quickstart
+## Windows 用户指南
 
-### Prerequisites
+### 系统环境安装
 
-Check your GPU driver version, and update it if needed:
+检查你的 GPU 驱动程序版本，并根据需要进行更新：
 
-- For Intel Core Ultra processors (Series 2) or Intel Arc B-Series GPU, we recommend updating your GPU driver to the [latest](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
+- 对于 Intel Core Ultra processors (Series 2) 或 Intel Arc B-Series GPU，我们推荐将你的 GPU 驱动版本升级到[最新版本](https://www.intel.com/content/www/us/en/download/785597/intel-arc-iris-xe-graphics-windows.html)
 
-- For other Intel iGPU/dGPU, we recommend using GPU driver version [32.0.101.6078](https://www.intel.com/content/www/us/en/download/785597/834050/intel-arc-iris-xe-graphics-windows.html)
+- 对于其他 Intel 核显和独显，我们推荐使用 GPU 驱动版本[32.0.101.6078](https://www.intel.com/content/www/us/en/download/785597/834050/intel-arc-iris-xe-graphics-windows.html)
 
-### Step 1: Download and Unzip
+### 步骤 1：下载与解压
 
-Download IPEX-LLM llama.cpp portable zip for Windows users from the [link](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly).
+对于 Windows 用户，请从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM llama.cpp portable zip。
 
-Then, extract the zip file to a folder.
+然后，将 zip 文件解压到一个文件夹中。
 
-### Step 2: Runtime Configuration
+### 步骤 2：运行时配置
 
-- Open "Command Prompt" (cmd), and enter the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
-- To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
+- 打开命令提示符（cmd），并通过在命令行输入指令 `cd /d PATH\TO\EXTRACTED\FOLDER` 进入解压缩后的文件夹。
+- 要使用 GPU 加速，在运行 `llama.cpp` 之前，建议设置如下环境变量。
   ```cmd
   set SYCL_CACHE_PERSISTENT=1
   ```
-- For multi-GPUs user, go to [Tips](#multi-gpus-usage) for how to select specific GPU.
+- 对于多 GPU 用户，请转至[提示](#多-gpu-配置)了解如何选择特定的 GPU。
 
-### Step 3: Run GGUF models
+### 步骤 3：运行 GGUF 模型
 
-Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.  
+这里我们提供了一个简单的示例来展示如何使用 IPEX-LLM 运行社区 GGUF 模型。
 
-#### Model Download
-Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf` of [bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf).
+#### 模型下载
+运行之前，你需要下载或复制社区的 GGUF 模型到你的当前目录。例如，[bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf) 的 `DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf`。
 
-#### Run GGUF model
+#### 运行 GGUF 模型
 
 ```cmd
 llama-cli.exe -m D:\llm-models\gguf\DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -p "A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question:The product of the ages of three teenagers is 4590. How old is the oldest? a. 18 b. 19 c. 15 d. 17 Assistant: <think>" -n 2048  -t 8 -e -ngl 99 --color -c 2500 --temp 0
 ```
 
-Part of outputs:
+部分输出：
 
 ```
 Found 1 SYCL devices:
-|  |                   |                                       |       |Max    |        |Max  |Global |                     |
-|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
+|  |                   |                                       |       |Max    |        |Max  |Global |
+    |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |
+    |
 |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
 |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
 | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 13578M|            1.3.27504|
@@ -113,46 +114,48 @@ llama_perf_context_print:        eval time =   xxxxx.xx ms /  1256 runs   (   xx
 llama_perf_context_print:       total time =   xxxxx.xx ms /  1385 tokens
 ```
 
-## Linux Quickstart
+## Linux 用户指南
 
-### Prerequisites
+### 系统环境安装
 
-Check your GPU driver version, and update it if needed; we recommend following [Intel client GPU driver installation guide](https://dgpu-docs.intel.com/driver/client/overview.html) to install your GPU driver.
+检查你的 GPU 驱动程序版本，并根据需要进行更新；我们推荐用户按照 [消费级显卡驱动安装指南](https://dgpu-docs.intel.com/driver/client/overview.html)来安装 GPU 驱动。
 
-### Step 1: Download and Extract
+### 步骤 1：下载与解压
 
-Download IPEX-LLM llama.cpp portable tgz for Linux users from the [link](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly).
+对于 Linux 用户，从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM llama.cpp portable tgz。
 
-Then, extract the tgz file to a folder.
+然后，将 tgz 文件解压到一个文件夹中。
 
-### Step 2: Runtime Configuration
+### 步骤 2：运行时配置
 
-- Open a "Terminal", and enter the extracted folder through `cd /PATH/TO/EXTRACTED/FOLDER`
-- To use GPU acceleration, several environment variables are required or recommended before running `llama.cpp`.
+- 开启一个终端，输入命令 `cd /PATH/TO/EXTRACTED/FOLDER` 进入解压缩后的文件夹。
+- 要使用 GPU 加速，在运行 `llama.cpp` 之前，建议设置如下环境变量。
   ```bash
   export SYCL_CACHE_PERSISTENT=1
   ```
-- For multi-GPUs user, go to [Tips](#multi-gpus-usage) for how to select specific GPU.
+- 对于多 GPU 用户，请转至[提示](#多-gpu-配置)了解如何选择特定的 GPU。
 
-### Step 3: Run GGUF models
+### 步骤 3：运行 GGUF 模型
 
-Here we provide a simple example to show how to run a community GGUF model with IPEX-LLM.  
+这里我们提供了一个简单的示例来展示如何使用 IPEX-LLM 运行社区 GGUF 模型。  
 
-#### Model Download
-Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf` of [bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf).
+#### 模型下载
+运行之前，你需要下载或复制社区的 GGUF 模型到你的当前目录。例如，[bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-7B-GGUF/blob/main/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf) 的 `DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf`。
 
-#### Run GGUF model
+#### 运行 GGUF 模型
 
 ```bash
-llama-cli -m D:\llm-models\gguf\DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -p "A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question:The product of the ages of three teenagers is 4590. How old is the oldest? a. 18 b. 19 c. 15 d. 17 Assistant: <think>" -n 2048  -t 8 -e -ngl 99 --color -c 2500 --temp 0
+llama-cli -m /llm-models/gguf/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -p "A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question:The product of the ages of three teenagers is 4590. How old is the oldest? a. 18 b. 19 c. 15 d. 17 Assistant: <think>" -n 2048  -t 8 -e -ngl 99 --color -c 2500 --temp 0
 ```
 
-Part of outputs:
+部分输出：
 
 ```bash
 Found 1 SYCL devices:
-|  |                   |                                       |       |Max    |        |Max  |Global |                     |
-|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
+|  |                   |                                       |       |Max    |        |Max  |Global |
+    |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |
+    |
 |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
 |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
 | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 13578M|            1.3.27504|
@@ -185,36 +188,34 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 <answer>XXXX</answer> [end of text]
 ```
 
-### FlashMoE for DeeSeek V3/R1
+### FlashMoE 运行 DeepSeek V3/R1
 
-FlashMoE is a command-line tool built on llama.cpp, optimized for mixture-of-experts (MoE) models such as DeepSeek V3/R1. Now, it's available for Linux platforms.
+FlashMoE 是一款基于 llama.cpp 构建的命令行工具，针对 DeepSeek V3/R1 等混合专家模型（MoE）模型进行了优化。现在，它可用于 Linux 平台。
 
-Tested MoE GGUF Models (other MoE GGUF models are also supported):
+经过测试的 MoE GGUF 模型（也支持其他 MoE GGUF 模型）：
 - [DeepSeek-V3-Q4_K_M](https://huggingface.co/unsloth/DeepSeek-V3-GGUF/tree/main/DeepSeek-V3-Q4_K_M)
 - [DeepSeek-V3-Q6_K](https://huggingface.co/unsloth/DeepSeek-V3-GGUF/tree/main/DeepSeek-V3-Q6_K)
 - [DeepSeek-R1-Q4_K_M.gguf](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q4_K_M)
 - [DeepSeek-R1-Q6_K](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q6_K)
 
-#### Run DeepSeek V3/R1 with FlashMoE
+硬件要求： 
+- 380 GB 内存
+- 1-8块 ARC A770
+- 500GB 硬盘空间
 
-Requirements: 
-- 380GB CPU Memory
-- 1-8 ARC A770
-- 500GB Disk
+提示： 
+- 更大的模型和其他精度可能需要更多的资源。
+- 对于 1 块 ARC A770 的平台，请减少上下文长度（例如 1024），以避免 OOM（内存溢出）。请在以下命令的末尾添加选项 `-c 1024`。
 
-Note: 
-- Larger models and other precisions may require more resources.
-- For 1 ARC A770 platform, please reduce context length (e.g., 1024) to avoid OOM. Add this option `-c 1024` at the end of below command.
+运行之前，你需要下载或复制社区的 GGUF 模型到你的当前目录。例如，[DeepSeek-R1-Q4_K_M.gguf](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q4_K_M) 的 `DeepSeek-R1-Q4_K_M.gguf`。
 
-Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Q4_K_M.gguf` of [DeepSeek-R1-Q4_K_M.gguf](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q4_K_M).
-
-Run `DeepSeek-R1-Q4_K_M.gguf`
+运行 `DeepSeek-R1-Q4_K_M.gguf`
 
 ```bash
 flash-moe -m DeepSeek-R1-Q4_K_M-00001-of-00009.gguf --prompt "What's AI?"
 ```
 
-Part of outputs
+部分输出：
 
 ```bash
 llama_kv_cache_init:      SYCL0 KV buffer size =  1280.00 MiB
@@ -261,11 +262,11 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 
-## Tips & Troubleshooting
+## 提示与故障排除
 
-### Error: Detected different sycl devices
+### 错误：检测到不同的 sycl 设备
 
-You will meet error log like below:
+你将会看到如下的错误日志：
 ```
 Found 3 SYCL devices:
 |  |                   |                                       |       |Max    |        |Max  |Global |                     |
@@ -281,13 +282,14 @@ If you just want to use one of the devices, please set environment like ONEAPI_D
 If you want to use two or more deivces, please set environment like ONEAPI_DEVICE_SELECTOR="level_zero:0;level_zero:1"
 See https://github.com/intel/ipex-llm/blob/main/docs/mddocs/Overview/KeyFeatures/multi_gpus_selection.md for details. Exiting.
 ```
-Because the GPUs are not the same, the jobs will be allocated according to device's memory. Upon example, the iGPU(Intel UHD Graphics 770) will get 2/3 of the computing tasks. The performance will be quit bad.  
-So disable the iGPU will can get the best performance. Visit [Multi-GPUs usage](#multi-gpus-usage) for details.  
-If you still want to disable this check, you can run `set SYCL_DEVICE_CHECK=0`.  
+由于 GPU 规格不同，任务将根据设备的显存进行分配。例如，iGPU（Intel UHD Graphics 770） 将承担 2/3 的计算任务，导致性能表现较差。
+因此，禁用 iGPU 可以获得最佳性能。 更多详情可以访问 [多 GPU 配置](#多-gpu-配置)  
+如果仍然希望禁用此检查，可以运行 `set SYCL_DEVICE_CHECK=0`。
 
-### Multi-GPUs usage
+### 多 GPU 配置
 
-If your machine has multiple Intel GPUs, llama.cpp will by default runs on all of them. If you are not clear about your hardware configuration, you can get the configuration when you run a GGUF model. Like:
+如果你的机器配有多个 Intel GPU，llama.cpp 默认会在所有 GPU 上运行。如果你不清楚硬件配置，可以在运行 GGUF 模型时获取相关配置信息。例如： 
+
 ```
 Found 3 SYCL devices:
 |  |                   |                                       |       |Max    |        |Max  |Global |                     |
@@ -298,16 +300,16 @@ Found 3 SYCL devices:
 | 1| [level_zero:gpu:1]|                Intel Arc A770 Graphics|  12.55|    512|    1024|   32| 16225M|     1.6.31907.700000|
 ```
 
-To specify which Intel GPU you would like llama.cpp to use, you could set environment variable `ONEAPI_DEVICE_SELECTOR` **before starting llama.cpp command**, as follows:  
+要指定 llama.cpp 使用的 Intel GPU，可以**在启动 llama.cpp 命令**之前设置环境变量 `ONEAPI_DEVICE_SELECTOR`，如下所示：  
 
-- For **Windows** users:
+- **Windows** 用户：
   ```cmd
   set ONEAPI_DEVICE_SELECTOR=level_zero:0 (If you want to run on one GPU, llama.cpp will use the first GPU.) 
   set ONEAPI_DEVICE_SELECTOR="level_zero:0;level_zero:1" (If you want to run on two GPUs, llama.cpp will use the first and second GPUs.)
   ```
  
-### Performance Environment
+### 性能环境
 #### SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS
-To enable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS, you can run  `set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`.   
+要启用 SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS，你可以运行 `set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`。  
 > [!NOTE]
-> The environment variable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).  
+> 环境变量 `SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS` 用于控制是否使用即时命令列表将任务提交到 GPU。启动此变量通常可以提高性能，但也有例外情况。因此，建议你在启用和禁用该环境变量的情况下进行测试，以找到最佳的性能设置。更多相关细节请参考[此处文章](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html)。  
