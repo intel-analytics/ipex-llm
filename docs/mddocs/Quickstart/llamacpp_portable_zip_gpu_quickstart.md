@@ -25,6 +25,7 @@ This guide demonstrates how to use [llama.cpp portable zip](https://github.com/i
   - [Error: Detected different sycl devices](#error-detected-different-sycl-devices)
   - [Multi-GPUs usage](#multi-gpus-usage)
   - [Performance Environment](#performance-environment)
+- [More Details](llama_cpp_quickstart.md)
 
 ## Windows Quickstart
 
