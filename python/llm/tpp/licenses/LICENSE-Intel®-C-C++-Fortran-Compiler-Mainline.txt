@@ -1,0 +1,235 @@
+IMPORTANT NOTICE – PLEASE READ AND AGREE BEFORE DOWNLOADING, INSTALLING, COPYING OR USING
+
+ 
+
+This Agreement is between you, or the company or other legal entity that you represent and warrant you have the legal authority to bind, (each, “You” or “Your”) and Intel Corporation and its subsidiaries (collectively, “Intel”) regarding Your use of the Materials. By downloading, installing, copying or using the Materials, You agree to be bound by the terms of this Agreement. If You do not agree to the terms of this Agreement, or do not have legal authority or required age to agree to them, do not download, install, copy or use the Materials.
+
+ 
+
+1. LICENSE DEFINITIONS.
+
+ 
+
+A. “AI” means computer or machine technology that functions to simulate human intelligence, cognition, and problem-solving capabilities.
+
+ 
+
+B. “Cloud Provider” means a third party service provider offering a cloud-based platform, infrastructure, application or storage services, such as Microsoft Azure, Google Cloud or Amazon Web Services, which You may only utilize to host the Materials subject to the restrictions set forth in Section 2.3 B.
+
+ 
+
+C. “Derivative Work” means a derivative work, as defined in 17 U.S.C. § 101, of the Materials in Source Code.
+
+ 
+
+D. “Executable Code” means software in binary form suitable for machine execution by a processor without the intervening steps of interpretation or compilation.
+
+ 
+
+E. “GAI” means AI that functions to generate content based on inputs.
+
+ 
+
+F. "Materials" mean the software, documentation, and other collateral, including any updates, made available to You by Intel under this Agreement. Materials include Executable Code, Source Code, Sample Source Code, and Redistributables, and Pre-Release Materials, but do not include Third Party Software.
+
+ 
+
+G. “Pre-Release Materials” mean the Materials that are identified (in the product release notes, on Intel’s download website for the Materials or elsewhere) or labeled as pre-release, prototype, alpha or beta software (i) which may not be fully functional or tested and may contain bugs or errors; (ii) which Intel may substantially modify in its development of a production version; or (iii) for which Intel makes no assurances that it will ever develop or make a production version generally available. Pre-Release Materials are subject to the terms of Section 3.2 and not Section 2.1.
+
+ 
+
+H. “Reciprocal Open Source Software” means any software that is subject to a license which requires that (i) it must be distributed in Source Code form; (ii) it must be licensed under the same open source license terms; and (iii) its derivative works must be licensed under the same open source license terms. Examples of this type of license are the GNU General Public License or the Mozilla Public License.
+
+ 
+
+I. "Redistributables" mean the files (if any) listed in the “redist.txt,” “redist-rt.txt” or similarly-named text files that may be included in the Materials. Redistributables include Sample Source Code.
+
+ 
+
+J. “Sample Source Code” means the software portion of the Materials that are provided in Source Code and are identified as sample code or example code. Sample Source Code may not have been tested or validated by Intel and is provided purely as a programming example.
+
+ 
+
+K. “Source Code” means software in human readable format.
+
+ 
+
+L. “Third Party Software” mean the files (if any) listed in the “third-party-software.txt” or other similarly-named text file that may be included in the Materials for the applicable software. Third Party Software is subject to the terms of Section 2.2.
+
+ 
+
+M. “Your Product” means one or more applications, products or projects developed by or for You using the Materials.
+
+ 
+
+2. LICENSE GRANTS.
+
+ 
+
+2.1 License to the Materials. Subject to the terms and conditions of this Agreement, Intel grants You a non-exclusive, worldwide, non-assignable, non-sublicensable, limited right and license under its copyrights, to:
+
+ 
+
+A.   reproduce internally a reasonable number of copies of the Materials for Your personal or business use;
+
+ 
+
+B.   use the Materials solely for Your personal or business use to develop Your Product, in accordance with the documentation included as part of the Materials;
+
+ 
+
+C.   modify or create Derivative Works of the Redistributables provided to You in Source Code;
+
+ 
+
+D.   distribute (directly and through Your distributors, resellers, and other channel partners, if applicable), the Redistributables, including any modifications to or Derivative Works of the Redistributables made pursuant to Section 2.1.C, subject to the following conditions:
+
+ 
+
+(1)  Any distribution of the Redistributables must only be as part of Your Product; 
+
+ 
+
+ 
+
+(2)  Any Redistributables provided to You by Intel in Executable Code can only be distributed (i) in Executable Code, and (ii) subject to a license agreement that prohibits reverse engineering, decompiling or disassembly of those Redistributables;
+
+ 
+
+(3)  This distribution right includes a limited right to sublicense only the Intel copyrights in the Redistributables and only to the extent necessary to perform, display, and distribute the Redistributables (including Your modifications and Derivative Works of the Redistributables provided in Source Code) solely as incorporated in Your Product; and
+
+ 
+
+(4) You: (i) will be solely responsible to Your customers for any update, support obligation or other obligation or liability which may arise from the distribution of Your Product, (ii) will not make any statement that Your Product is "certified" or that its performance is guaranteed by Intel or its suppliers, (iii) will not use Intel's or its suppliers’ names or trademarks to market Your Product, (iv) will comply with any additional restrictions which are included in the text files with the Redistributables and in Section 3 below, (v) will indemnify, hold harmless, and defend Intel and its suppliers from and against any claims or lawsuits, costs, damages, and expenses, including attorney fees, that arise or result from (a) Your modifications or Derivative Works of the Materials or (b) Your distribution of Your Product.
+
+ 
+
+ 
+
+2.2 Third Party Software.  Third Party Software, even if included with the distribution of the Materials, may be governed by separate license terms, including without limitation, third party license terms, open source software notices and terms, and/or other Intel software license terms. These separate license terms solely govern Your use of the Third Party Software.  
+
+ 
+
+2.3 Third Party Use.   
+
+A. If You are an entity, Your contractors may use the Materials under the license specified in Section 2, provided: (i) their use of the Materials is solely on behalf of and in support of Your business, (ii) they agree to the terms and conditions of this Agreement, and (iii) You are solely responsible for their use, misuse or disclosure of the Materials.
+
+ 
+
+B. You may utilize a Cloud Provider to host the Materials for You, provided: (i) the Cloud Provider may only host the Materials for Your exclusive use and may not use the Materials for any other purpose whatsoever, including the restriction set forth in Section 3.1(xi); (ii) the Cloud Provider’s use of the Materials must be solely on behalf of and in support of Your Product, and (iii) You will indemnify, hold harmless, and defend Intel and its suppliers from and against any claims or lawsuits, costs, damages, and expenses, including attorneys’ fees, that arise or result from Your Cloud Provider’s use, misuse or disclosure of the Materials.
+
+ 
+
+3. LICENSE CONDITIONS.
+
+ 
+
+3.1 Restrictions. Except as expressly provided in this Agreement, You may NOT: (i) use, reproduce, disclose, distribute, or publicly display the Materials; (ii) share, publish, rent or lease the Materials to any third party; (iii) assign this Agreement or transfer the Materials; (iv) modify, adapt, alter, or translate the Materials in whole or in part, including during execution; (v) reverse engineer, decompile, or disassemble the Materials, or otherwise attempt to derive the Source Code or operation of the Materials; (vi) work around any technical limitations in the Materials; (vii) distribute, sublicense or transfer any Materials in Source Code, or modifications or Derivative Works of any Materials in Source Code, to any third party; (viii) remove, minimize, block or modify any notices of Intel or its suppliers in the Materials; (ix) include the Redistributables in malicious, deceptive, or unlawful programs or products or use the Materials in any way that is against the law; (x) modify, create a Derivative Work, link, or distribute the Materials so that any part of it becomes Reciprocal Open Source Software; (xi) use the Materials directly or indirectly for SaaS services or service bureau purposes (i.e., a service that allows use of or access to the Materials by a third party as part of that service, such as the salesforce.com service business model).
+
+ 
+
+3.2 Pre-Release Materials. If You receive Pre-Release Materials, You may reproduce a reasonable number of copies and use the Pre-Release Materials for evaluation and testing purposes only. You may NOT (i) modify or incorporate the Pre-Release Materials into Your Product; (ii) continue to use the Pre-Release Materials once a production version is released; or (iii) disclose to any third party any benchmarks, performance results, or other information relating to the Pre-Release Materials. Intel may waive these restrictions in writing at its sole discretion; however, if You decide to use the Pre-Release Materials in Your Product (even with Intel’s waiver), You acknowledge and agree that You are fully responsible for any and all issues that result from such use. 
+
+ 
+
+3.3 Safety-Critical, and Life-Saving Applications; Indemnity. The Materials may provide information relevant to safety-critical applications (“Safety-Critical Applications”) to allow compliance with functional safety standards or requirements. You acknowledge and agree that safety is Your responsibility. To the extent You use the Materials to create, or as part of, products used in Safety-Critical Applications, it is Your responsibility to design, manage, and ensure that there are system-level safeguards to anticipate, monitor, and control system failures, and You agree that You are solely responsible for all applicable regulatory standards and safety-related requirements concerning Your use of the Materials in Safety Critical Applications. 
+
+ 
+
+Should You use the Materials for Safety-Critical Applications or in any type of a system or application in which the failure of the Materials could create a situation where personal injury or death may occur (e.g., medical systems, life-sustaining or life-saving systems) (“Life-Saving Applications”), You agree to indemnify, defend, and hold Intel and its representatives harmless against any claims or lawsuits, costs, damages, and expenses, including reasonable attorney fees, arising in any way out of Your use of the Materials in Safety-Critical Applications or Life-Saving Applications and claims of product liability, personal injury or death associated with those applications; even if such claims allege that Intel was negligent or strictly liable regarding the design or manufacture of the Materials or its failure to warn regarding the Materials.
+
+ 
+
+3.4  Media Format Codecs and Digital Rights Management. You acknowledge and agree that Your use of the Materials or distribution of the Redistributables with Your Product as permitted by this Agreement may require You to procure license(s) from third parties that may hold intellectual property rights applicable to any media decoding, encoding or transcoding technology (e.g.,  the use of an audio or video codec) and/or digital rights management capabilities of the Materials, if any. Should any such additional licenses be required, You are solely responsible for obtaining any such licenses and agree to obtain any such licenses at Your own expense.
+
+ 
+
+3.5 Use of GAI and AI.
+
+A. Use of GAI in Developing the Materials. Some Materials may have been developed using GAI. Intel’s use of GAI, if any, in the development of Materials complied with the then-current industry practices and laws applicable to the use of GAI at the time of development.
+
+B. AI Features in the Materials. Some Materials may include or implement components, features, or functionality of AI technologies (“AI Features”). You can find more information about included AI Features in documentation accompanying the Materials. While Intel strives to ensure the quality, accuracy, and reliability of included AI Features, due to the nature of AI, such features and their output may contain inaccuracies, biases, and omissions. You are solely responsible for determining the fitness of the AI Features and their output for Your use cases, and for evaluating the accuracy and completeness of the output. Intel makes no warranty or representation as to the completeness, accuracy, or reliability of the AI Features, their output, or their suitability for any purpose.
+
+C. Using the Materials to Develop Your AI Applications. You may not use the Materials to develop an AI application (“Your AI Application”) if the documentation accompanying the Materials prohibits such use. You can only use the Materials to develop Your AI Application in the absence of such prohibition and in accordance with standard industry practice and all applicable laws and regulations, and Your AI Application must not violate, or contribute to, the violation of an internationally recognized human right.
+
+D. GAI and AI Features in Third Party Software.  Some Third Party Software may have been developed using GAI or may include or implement components, features, or functionality of AI Features. Intel does not take any responsibility for Third Party Software, how it may have been developed using GAI or any AI Features therein.  You can find more information about Third Party Software use of GAI and AI Features in the documentation accompanying the Third Party Software.  
+
+ 
+
+4. DATA COLLECTION AND PRIVACY.
+
+ 
+
+4.1 Data Collection. The Materials may collect anonymous data and/or optional data (which may include other anonymous and/or non-anonymous data) about the Materials and/or Your development environment and transmit that data to Intel; however, optional data will not be transmitted to Intel without Your permission. All data collection by Intel is performed pursuant to relevant privacy laws, including notice and consent requirements.
+
+ 
+
+4.2 Intel’s Privacy Notice. Intel is committed to respecting Your privacy. To learn more about Intel’s privacy practices, please visit http://www.intel.com/privacy.
+
+ 
+
+5.   OWNERSHIP. Title to the Materials and all copies remain with Intel or its suppliers. The Materials are protected by intellectual property rights, including without limitation, United States copyright laws and international treaty provisions. You will not remove any copyright or other proprietary notices from the Materials. Except as expressly provided herein, no license or right is granted to You directly or by implication, inducement, estoppel or otherwise; specifically, Intel does not grant any express or implied right to You under Intel patents, copyrights, trademarks, or trade secrets.
+
+ 
+
+6. NO WARRANTY AND NO SUPPORT. 
+
+ 
+
+6.1 No Warranty. Disclaimer. Intel disclaims all warranties of any kind and the terms and remedies provided in this Agreement are instead of any other warranty or condition, express, implied or statutory, including those regarding merchantability, fitness for any particular purpose, non-infringement or any warranty arising out of any course of dealing, usage of trade, proposal, specification or sample. Intel does not assume (and does not authorize any person to assume on its behalf) any liability.
+
+ 
+
+6.2 No Support; Priority Support. Intel may make changes to the Materials, or to items referenced therein, at any time without notice, but is not obligated to support, update or provide training for the Materials under the terms of this Agreement. Intel offers free community and paid priority support options. More information on these support options can be found at: https://www.intel.com/content/www/us/en/developer/get-help/priority-support.html.
+
+ 
+
+7. LIMITATION OF LIABILITY. 
+
+ 
+
+7.1 Intel will not be liable for any of the following losses or damages (whether such losses or damages were foreseen, foreseeable, known or otherwise):  (i) loss of revenue; (ii) loss of actual or anticipated profits; (iii) loss of the use of money; (iv) loss of anticipated savings; (v) loss of business; (vi) loss of opportunity; (vii) loss of goodwill; (viii) loss of use of the Materials; (ix) loss of reputation; (x) loss of, damage to, or corruption of data; or (xi) any indirect, incidental, special or consequential loss of damage however caused (including loss or damage of the type specified in this Section 7).
+
+ 
+
+7.2 Intel’s total cumulative liability to You, including for direct damages for claims relating to this Agreement, and whether for breach of contract, negligence, or for any other reason, will not exceed $100.
+
+ 
+
+7.3 You acknowledge that the limitations of liability provided in this Section 7 are an essential part of this Agreement. You agree that the limitations of liability provided in this Agreement with respect to Intel will be conveyed to and made binding upon any customer of Yours that acquires the Redistributables.
+
+ 
+
+8. USER SUBMISSIONS. Should you provide Intel with comments, modifications, corrections, enhancements or other input (“Feedback”) related to the Materials, Intel will be free to use, disclose, reproduce, license or otherwise distribute or exploit the Feedback in its sole discretion without any obligations or restrictions of any kind, including without limitation, intellectual property rights or licensing obligations. If You wish to provide Intel with information that You intend to be treated as confidential information, Intel requires that such confidential information be provided pursuant to a non-disclosure agreement (“NDA”); please contact Your Intel representative to ensure the proper NDA is in place.
+
+ 
+
+9. NON-DISCLOSURE. Information provided by Intel to You may include information marked as confidential. You must treat such information as confidential under the terms of the applicable NDA between Intel and You. If You have not entered into an NDA with Intel, You must not disclose, distribute or make use of any information marked as confidential, except as expressly authorized in writing by Intel. Intel retains all rights in and to its confidential information specifications, designs, engineering details, discoveries, inventions, patents, copyrights, trademarks, trade secrets, and other proprietary rights relating to the Materials.  Any breach by You of the confidentiality obligations provided for in this Section 9 will cause irreparable injury to Intel for which money damages may be inadequate to compensate Intel for losses arising from such a breach. Intel may obtain equitable relief, including injunctive relief, if You breach or threaten to breach Your confidentiality obligations.
+
+ 
+
+10. TERM AND TERMINATION. This Agreement becomes effective on the date You accept this Agreement and will continue until terminated as provided for in this Agreement. This Agreement will terminate immediately if You are in breach of any of its terms and conditions. The term for Pre-Release Materials terminates immediately upon release of a production version or at any time upon notice from Intel.  Upon termination, You will promptly destroy the Materials and all copies. In the event of termination of this Agreement, Your license to any Redistributables distributed by You in accordance with the terms and conditions of this Agreement, prior to the effective date of such termination, will survive any such termination of this Agreement. Sections 1, 2.1.D(4)(v), 2.2, 2.3.A(iii), 2.3.B(iii), 3.3, 3.5.B (last sentence), 5, 6, 7, 8, 9, 10 (with respect to these survival provisions in the last sentence), and 12 will survive expiration or termination of this Agreement.
+
+ 
+
+11. U.S. GOVERNMENT RESTRICTED RIGHTS. The technical data and computer software covered by this license is a “Commercial Item,” as such term is defined by the FAR 2.101 (48 C.F.R. 2.101) and is “commercial computer software” and “commercial computer software documentation” as specified under FAR 12.212 (48 C.F.R. 12.212) or DFARS 227.7202 (48 C.F.R. 227.7202), as applicable. This commercial computer software and related documentation is provided to end users for use by and on behalf of the U.S. Government with only those rights as are granted to all other end users pursuant to the terms and conditions of this Agreement.
+
+ 
+
+12. GENERAL PROVISIONS.
+
+ 
+
+12.1 ENTIRE AGREEMENT. This Agreement contains the complete and exclusive agreement and understanding between the parties concerning the subject matter of this Agreement, and supersedes all prior and contemporaneous proposals, agreements, understanding, negotiations, representations, warranties, conditions, and communications, oral or written, between the parties relating to the same subject matter. Each party acknowledges and agrees that in entering into this Agreement it has not relied on, and will not be entitled to rely on, any oral or written representations, warranties, conditions, understanding, or communications between the parties that are not expressly set forth in this Agreement. The express provisions of this Agreement control over any course of performance, course of dealing, or usage of the trade inconsistent with any of the provisions of this Agreement. The provisions of this Agreement will prevail notwithstanding any different, conflicting, or additional provisions that may appear on any purchase order, acknowledgement, invoice, or other writing issued by either party in connection with this Agreement. No modification or amendment to this Agreement will be effective unless in writing and signed by authorized representatives of each party, and must specifically identify this Agreement by its title and version (e.g., “Intel End User License Agreement for Developer Tools (Version August 2024)”). If You received a copy of this Agreement translated into another language, the English language version of this Agreement will prevail in the event of any conflict between versions. 
+
+ 
+
+12.2 TRADE COMPLIANCE. You must comply with all applicable laws and regulations of the U.S. and other countries governing the export, re-export, import, transfer, distribution, use, and servicing (“Export”) of the Materials and all related materials provided by Intel. In particular, but without limitation, You must not, without first obtaining all authorizations required by all applicable laws and regulations, Export Materials or any related materials (a) to any prohibited or restricted entity or country; or (b) for the development, design, manufacture, or production of nuclear, missile, chemical, or biological weapons, or for any other purpose prohibited by all applicable governments. Upon Intel’s request, You will provide export classifications for all Materials and technical data. Intel will not be obligated to perform any of its obligations under this Agreement if performance would result in violation of any applicable trade or sanctions controls or restrictions. No failure or delay on the part of Intel to exercise any right under this clause will operate as a waiver of this clause.
+
+ 
+
+12.3 GOVERNING LAW, JURISDICTION, AND VENUE. All disputes arising out of or related to this Agreement, whether based on contract, tort, or any other legal or equitable theory, will in all respects be governed by, and construed and interpreted under, the laws of the United States of America and the State of Delaware, without reference to conflict of laws principles. The parties agree that the United Nations Convention on Contracts for the International Sale of Goods (1980) is specifically excluded from and will not apply to this Agreement. All disputes arising out of or related to this Agreement, whether based on contract, tort, or any other legal or equitable theory, will be subject to the exclusive jurisdiction of the courts of the State of Delaware or of the Federal courts sitting in that State. Each party submits to the personal jurisdiction of those courts and waives all objections to that jurisdiction and venue for those disputes.
+
+ 
+
+12.4 SEVERABILITY. The parties intend that if a court holds that any provision or part of this Agreement is invalid or unenforceable under applicable law, the court will modify the provision to the minimum extent necessary to make it valid and enforceable, or if it cannot be made valid and enforceable, the parties intend that the court will sever and delete the provision or part from this Agreement. Any change to or deletion of a provision or part of this Agreement under this Section will not affect the validity or enforceability of the remainder of this Agreement, which will continue in full force and effect.
