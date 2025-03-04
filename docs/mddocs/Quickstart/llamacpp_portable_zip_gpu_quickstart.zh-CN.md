@@ -16,17 +16,17 @@
 - [Windows 用户指南](#windows-用户指南)
   - [系统环境安装](#系统环境安装)
   - [步骤 1：下载与解压](#步骤-1下载与解压)
-  - [步骤 2：运行与配置](#步骤-2运行与配置)
+  - [步骤 2：运行时配置](#步骤-2运行时配置)
   - [步骤 3：运行 GGUF 模型](#步骤-3运行-gguf-模型)
 - [Linux 用户指南](#linux-用户指南)
   - [系统环境安装](#系统环境安装-1)
   - [步骤 1：下载与解压](#步骤-1下载与解压-1)
-  - [步骤 2：运行与配置](#步骤-2运行与配置-1)
+  - [步骤 2：运行时配置](#步骤-2运行时配置-1)
   - [步骤 3：运行 GGUF 模型](#步骤-3运行-gguf-模型-1)
-  - [(新) 使用 llama.cpp 用于 Moe 模型的 FlashMoE (例如，DeeSeek V3/R1)](#用于-deeseek-v3r1-的-flashmoe)
+  - [(新功能) FlashMoE 运行 DeepSeek V3/R1](#flashmoe-运行-deepseek-v3r1)
 - [提示与故障排除](#提示与故障排除)
   - [错误：检测到不同的 sycl 设备](#错误检测到不同的-sycl-设备)
-  - [多块 GPU 使用](#多块-gpu-使用)
+  - [多 GPU 配置](#多-gpu-配置)
   - [性能环境](#性能环境)
 
 ## Windows 用户指南
@@ -41,18 +41,18 @@
 
 ### 步骤 1：下载与解压
 
-对于 Windows 用户，请从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM llama.cpp portable zip
+对于 Windows 用户，请从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM llama.cpp portable zip。
 
 然后，将 zip 文件解压到一个文件夹中。
 
-### 步骤 2：运行与配置
+### 步骤 2：运行时配置
 
 - 打开命令提示符（cmd），并通过在命令行输入指令 `cd /d PATH\TO\EXTRACTED\FOLDER` 进入解压缩后的文件夹。
-- 要使用 GPU 加速，在运行 `llama.cpp` 之前，建议先设置几个环境变量。
+- 要使用 GPU 加速，在运行 `llama.cpp` 之前，建议设置如下环境变量。
   ```cmd
   set SYCL_CACHE_PERSISTENT=1
   ```
-- 对于多 GPU 用户，请转至[提示](#多块-gpu-使用)了解如何选择特定的 GPU。
+- 对于多 GPU 用户，请转至[提示](#多-gpu-配置)了解如何选择特定的 GPU。
 
 ### 步骤 3：运行 GGUF 模型
 
@@ -118,21 +118,22 @@ llama_perf_context_print:       total time =   xxxxx.xx ms /  1385 tokens
 
 ### 系统环境安装
 
-检查你的 GPU 驱动程序版本，并根据需要进行更新；我们推荐用户按照 [Intel client GPU 驱动安装只能拿](https://dgpu-docs.intel.com/driver/client/overview.html)来安装 GPU 驱动。
+检查你的 GPU 驱动程序版本，并根据需要进行更新；我们推荐用户按照 [消费级显卡驱动安装指南](https://dgpu-docs.intel.com/driver/client/overview.html)来安装 GPU 驱动。
 
 ### 步骤 1：下载与解压
 
 对于 Linux 用户，从此[链接](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly)下载 IPEX-LLM llama.cpp portable tgz。
+
 然后，将 tgz 文件解压到一个文件夹中。
 
-### 步骤 2：运行与配置
+### 步骤 2：运行时配置
 
 - 开启一个终端，输入命令 `cd /PATH/TO/EXTRACTED/FOLDER` 进入解压缩后的文件夹。
-- 要使用 GPU 加速，在运行 `llama.cpp` 之前，建议先设置几个环境变量。
+- 要使用 GPU 加速，在运行 `llama.cpp` 之前，建议设置如下环境变量。
   ```bash
   export SYCL_CACHE_PERSISTENT=1
   ```
-- 对于多 GPU 用户，请转至[提示](#多块-gpu-使用)了解如何选择特定的 GPU。
+- 对于多 GPU 用户，请转至[提示](#多-gpu-配置)了解如何选择特定的 GPU。
 
 ### 步骤 3：运行 GGUF 模型
 
@@ -144,7 +145,7 @@ llama_perf_context_print:       total time =   xxxxx.xx ms /  1385 tokens
 #### 运行 GGUF 模型
 
 ```bash
-llama-cli -m D:\llm-models\gguf\DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -p "A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question:The product of the ages of three teenagers is 4590. How old is the oldest? a. 18 b. 19 c. 15 d. 17 Assistant: <think>" -n 2048  -t 8 -e -ngl 99 --color -c 2500 --temp 0
+llama-cli -m /llm-models/gguf/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf -p "A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant first thinks about the reasoning process in the mind and then provides the user with the answer. The reasoning process and answer are enclosed within <think> </think> and <answer> </answer> tags, respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>. User: Question:The product of the ages of three teenagers is 4590. How old is the oldest? a. 18 b. 19 c. 15 d. 17 Assistant: <think>" -n 2048  -t 8 -e -ngl 99 --color -c 2500 --temp 0
 ```
 
 部分输出：
@@ -187,9 +188,9 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 <answer>XXXX</answer> [end of text]
 ```
 
-### 用于 DeeSeek V3/R1 的 FlashMoe
+### FlashMoE 运行 DeepSeek V3/R1
 
-FlashMoE 是一款基于 llama.cpp 构建的命令行工具，针对 DeepSeek V3/R1 等 mixture-of-experts(MoE) 模型进行了优化。现在，它可用于 Linux 平台。
+FlashMoE 是一款基于 llama.cpp 构建的命令行工具，针对 DeepSeek V3/R1 等混合专家模型（MoE）模型进行了优化。现在，它可用于 Linux 平台。
 
 经过测试的 MoE GGUF 模型（也支持其他 MoE GGUF 模型）：
 - [DeepSeek-V3-Q4_K_M](https://huggingface.co/unsloth/DeepSeek-V3-GGUF/tree/main/DeepSeek-V3-Q4_K_M)
@@ -197,11 +198,9 @@ FlashMoE 是一款基于 llama.cpp 构建的命令行工具，针对 DeepSeek V3
 - [DeepSeek-R1-Q4_K_M.gguf](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q4_K_M)
 - [DeepSeek-R1-Q6_K](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q6_K)
 
-#### 使用 FlashMoE 运行 DeepSeek V3/R1
-
 硬件要求： 
 - 380 GB 内存
-- 1-8 ARC A770
+- 1-8块 ARC A770
 - 500GB 硬盘空间
 
 提示： 
@@ -284,10 +283,10 @@ If you want to use two or more deivces, please set environment like ONEAPI_DEVIC
 See https://github.com/intel/ipex-llm/blob/main/docs/mddocs/Overview/KeyFeatures/multi_gpus_selection.md for details. Exiting.
 ```
 由于 GPU 规格不同，任务将根据设备的显存进行分配。例如，iGPU（Intel UHD Graphics 770） 将承担 2/3 的计算任务，导致性能表现较差。
-因此，禁用 iGPU 可以获得最佳性能。 更多详情可以访问 [多块 GPU 使用](#多块-gpu-使用)  
+因此，禁用 iGPU 可以获得最佳性能。 更多详情可以访问 [多 GPU 配置](#多-gpu-配置)  
 如果仍然希望禁用此检查，可以运行 `set SYCL_DEVICE_CHECK=0`。
 
-### 多块 GPU 使用
+### 多 GPU 配置
 
 如果你的机器配有多个 Intel GPU，llama.cpp 默认会在所有 GPU 上运行。如果你不清楚硬件配置，可以在运行 GGUF 模型时获取相关配置信息。例如： 
 
