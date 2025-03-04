@@ -296,7 +296,7 @@ If you want to use two or more deivces, please set environment like ONEAPI_DEVIC
 See https://github.com/intel/ipex-llm/blob/main/docs/mddocs/Overview/KeyFeatures/multi_gpus_selection.md for details. Exiting.
 ```
 Because the GPUs are not the same, the jobs will be allocated according to device's memory. Upon example, the iGPU(Intel UHD Graphics 770) will get 2/3 of the computing tasks. The performance will be quit bad.  
-So disable the iGPU will can get the best performance. Visit [Multi-GPUs usage][def] for details.  
+So disable the iGPU will can get the best performance. Visit [Multi-GPUs usage](#multi-gpus-usage) for details.  
 If you still want to disable this check, you can run `set SYCL_DEVICE_CHECK=0`.  
 
 ### Multi-GPUs usage
@@ -325,8 +325,3 @@ To specify which Intel GPU you would like llama.cpp to use, you could set enviro
 To enable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS, you can run  `set SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS=1`.   
 > [!NOTE]
 > The environment variable SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS determines the usage of immediate command lists for task submission to the GPU. While this mode typically enhances performance, exceptions may occur. Please consider experimenting with and without this environment variable for best performance. For more details, you can refer to [this article](https://www.intel.com/content/www/us/en/developer/articles/guide/level-zero-immediate-command-lists.html).  
-
-
-
-
-[def]: #multi-gpus-usage
