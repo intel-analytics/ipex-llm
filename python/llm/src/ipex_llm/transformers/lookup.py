@@ -265,9 +265,7 @@ class PromptLookupCandidateGenerator():
         elif num_matches == self.num_output_tokens:
             self.num_output_tokens = min(self.num_output_tokens + 1, self.max_candidates)
         elif candidate_num > num_matches:
-            ran = random.random() + 0.1 * (candidate_num - num_matches)
-            if ran > accept_rate:
-                self.num_output_tokens = max(self.num_output_tokens - 1, self.min_candidates)
+            self.num_output_tokens = max(self.num_output_tokens - 1, self.min_candidates)
 
 
 @torch.no_grad()
