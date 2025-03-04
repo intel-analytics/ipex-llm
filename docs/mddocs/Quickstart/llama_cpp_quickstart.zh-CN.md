@@ -6,7 +6,7 @@
 [ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) 是一个使用纯C++实现的、支持多种硬件平台的高效大语言模型推理库。现在，借助 [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) 的 C++ 接口作为其加速后端，你可以在 Intel **GPU**  *(如配有集成显卡，以及 Arc，Flex 和 Max 等独立显卡的本地 PC)* 上，轻松部署并运行 `llama.cpp` 。
 
 > [!Important]
-> 现在可使用 [llama.cpp Portable Zip](./llamacpp_portable_zip_gpu_quickstart.md) 在 Intel GPU 上直接***免安装运行 llama.cpp***.
+> 现在可使用 [llama.cpp Portable Zip](./llamacpp_portable_zip_gpu_quickstart.zh-CN.md) 在 Intel GPU 上直接***免安装运行 llama.cpp***.
 
 > [!NOTE]
 > 如果是在 Intel Arc B 系列 GPU 上安装(例，**B580**)，请参阅本[指南](./bmg_quickstart.md)。
