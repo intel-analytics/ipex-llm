@@ -6,7 +6,7 @@
 [ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) prvoides fast LLM inference in pure C++ across a variety of hardware; you can now use the C++ interface of [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) as an accelerated backend for `llama.cpp` running on Intel **GPU** *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*.
 
 > [!Important]
-> You may use [llama.cpp portable zip](./llamacpp_portable_zip_gpu_quickstart.md) to directly run Ollama on Intel GPU with ipex-llm (***without the need of manual installations***).
+> You may use [llama.cpp portable zip](./llamacpp_portable_zip_gpu_quickstart.md) to directly run llama.cpp on Intel GPU with ipex-llm (***without the need of manual installations***).
 
 > [!NOTE]
 > For installation on Intel Arc B-Series GPU (such as **B580**), please refer to this [guide](./bmg_quickstart.md).
