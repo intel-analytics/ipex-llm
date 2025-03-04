@@ -21,6 +21,7 @@
 
 from .bigdlllm import *
 from .transformersembeddings import TransformersEmbeddings, TransformersBgeEmbeddings
+from .openclip import OpenCLIPEmbeddings
 
 __all__ = [
     "BigdlNativeEmbeddings",
@@ -29,5 +30,6 @@ __all__ = [
     "GptneoxEmbeddings",
     "StarcoderEmbeddings",
     "TransformersEmbeddings",
-    "TransformersBgeEmbeddings"
+    "TransformersBgeEmbeddings",
+    "OpenCLIPEmbeddings"
 ]
