@@ -68,10 +68,8 @@ Part of outputs:
 
 ```
 Found 1 SYCL devices:
-|  |                   |                                       |       |Max    |        |Max  |Global |
-    |
-|  |                   |                                       |       |compute|Max work|sub  |mem    |
-    |
+|  |                   |                                       |       |Max    |        |Max  |Global |                     |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
 |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
 |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
 | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 13578M|            1.3.27504|
@@ -149,10 +147,8 @@ Part of outputs:
 
 ```bash
 Found 1 SYCL devices:
-|  |                   |                                       |       |Max    |        |Max  |Global |
-    |
-|  |                   |                                       |       |compute|Max work|sub  |mem    |
-    |
+|  |                   |                                       |       |Max    |        |Max  |Global |                     |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
 |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
 |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
 | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 13578M|            1.3.27504|
