@@ -1,4 +1,7 @@
 # Run llama.cpp Portable Zip on Intel GPU with IPEX-LLM
+<p>
+   < <b>English</b> | <a href='./llamacpp_portable_zip_gpu_quickstart.zh-CN.md'>中文</a> >
+</p>
 
 This guide demonstrates how to use [llama.cpp portable zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run llama.cpp on Intel GPU with `ipex-llm` (without the need of manual installations).
 
