@@ -20,7 +20,7 @@ This guide demonstrates how to use [llama.cpp portable zip](https://github.com/i
   - [Step 1: Download and Extract](#step-1-download-and-extract)
   - [Step 2: Runtime Configuration](#step-2-runtime-configuration-1)
   - [Step 3: Run GGUF models](#step-3-run-gguf-models-1)
-  - [(New) FlashMoE for Moe Models (e.g., DeeSeek V3/R1)](#flashmoe-for-moe-models)
+  - [(New) FlashMoE for Moe Models (e.g., DeeSeek V3/R1) using llama.cpp](#flashmoe-for-deeseek-v3r1)
 - [Tips & Troubleshooting](#tips--troubleshooting)
   - [Error: Detected different sycl devices](#error-detected-different-sycl-devices)
   - [Multi-GPUs usage](#multi-gpus-usage)
@@ -143,11 +143,13 @@ llama_perf_context_print:       total time =   xxxxx.xx ms /  1385 tokens
 
 ### Prerequisites
 
+Check your GPU driver version, and update it if needed; we recommend following [Intel client GPU driver installation guide](https://dgpu-docs.intel.com/driver/client/overview.html) to install your GPU driver.
+
 ### Step 1: Download and Extract
 
 Download IPEX-LLM llama.cpp portable tgz for Linux users from the [link](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly).
 
-Then, extract the zip file to a folder.
+Then, extract the tgz file to a folder.
 
 ### Step 2: Runtime Configuration
 
@@ -205,7 +207,7 @@ sampler chain: logits -> logit-bias -> penalties -> dry -> top-k -> typical -> t
 generate: n_ctx = 2528, n_batch = 4096, n_predict = 2048, n_keep = 1
 ```
 
-### FlashMoe for MoE Models
+### FlashMoe for DeeSeek V3/R1
 
 FlashMoE is a command-line tool built on llama.cpp, optimized for mixture-of-experts (MoE) models such as DeepSeek V3/R1. Now, it's available for Linux platforms.
 
@@ -222,7 +224,9 @@ Requirements:
 - 1-8 ARC A770
 - 500GB Disk
 
-Note: larger models and other types may require more resources. For 1 ARC A770 platform, please reduce context length (e.g., 1024) to avoid OOM. Add this option `-c 1024` at the end of previous command.
+Note: 
+- Larger models and other types may require more resources.
+- For 1 ARC A770 platform, please reduce context length (e.g., 1024) to avoid OOM. Add this option `-c 1024` at the end of below command.
 
 Before running, you should download or copy community GGUF model to your current directory. For instance,  `DeepSeek-R1-Q4_K_M.gguf` of [DeepSeek-R1-Q4_K_M.gguf](https://huggingface.co/unsloth/DeepSeek-R1-GGUF/tree/main/DeepSeek-R1-Q4_K_M).
 
