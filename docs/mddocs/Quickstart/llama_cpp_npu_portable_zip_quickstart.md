@@ -17,6 +17,7 @@ IPEX-LLM provides llama.cpp support for running GGUF models on Intel NPU. This g
 - [Step 2: Setup](#step-2-setup)
 - [Step 3: Run GGUF Model](#step-3-run-gguf-model)
 - [More details](npu_quickstart.md)
+- [Troubleshooting](#troubleshooting)
 
 
 ## Prerequisites
@@ -34,7 +35,7 @@ Then, extract the zip file to a folder.
 
 ## Step 2: Setup
 
-- Open "Command Prompt" (cmd), and enter the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
+- Open **"Command Prompt" (cmd)**, and enter the extracted folder through `cd /d PATH\TO\EXTRACTED\FOLDER`
 - Runtime configuration based on your device:
   - For **Intel Core™ Ultra Processors (Series 2) with processor number 2xxV (code name Lunar Lake)**:
 
@@ -63,3 +64,9 @@ You could then use cli tool to run GGUF models on Intel NPU through running `lla
 ```cmd
 llama-cli-npu.exe -m DeepSeek-R1-Distill-Qwen-7B-Q6_K.gguf -n 32 --prompt "What is AI?"
 ```
+
+## Troubleshooting
+
+### `L0 pfnCreate2 result: ZE_RESULT_ERROR_INVALID_ARGUMENT, code 0x78000004` error
+
+First, verify that your NPU driver version meets the requirement. Then, check the runtime configuration based on your device. And please attention the difference between **Command Prompt** and **Windows PowerShell**. Take Arrow Lake for example, you need to use `set IPEX_LLM_NPU_ARL=1` in **Command Prompt** while `$env:IPEX_LLM_NPU_ARL = "1"` in **Windows PowerShell**.
