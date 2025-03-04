@@ -199,10 +199,10 @@ FlashMoE 是一款基于 llama.cpp 构建的命令行工具，针对 DeepSeek V3
 
 #### 使用 FlashMoE 运行 DeepSeek V3/R1
 
-要求： 
-- 380GB CPU Memory
+硬件要求： 
+- 380 GB 内存
 - 1-8 ARC A770
-- 500GB Disk
+- 500GB 硬盘空间
 
 提示： 
 - 更大的模型和其他精度可能需要更多的资源。
