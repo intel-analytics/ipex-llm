@@ -161,7 +161,58 @@ RUN set -eux && \
     VLLM_TARGET_DEVICE=xpu pip install --no-build-isolation -v /llm/vllm && \
     pip install mpi4py fastapi uvicorn openai && \
     pip install gradio==4.43.0 && \
-    pip install ray
-
+    pip install ray && \
+    #
+    # Install compute runtime for BMG 24G
+    # Install igc
+    apt-get install -y --no-install-recommends bison flex python3-mako && \
+    mkdir -p /tmp/igc && \
+    cd /tmp/igc && \
+    git clone https://github.com/intel/vc-intrinsics vc-intrinsics && \
+    git clone -b llvmorg-14.0.5 https://github.com/llvm/llvm-project llvm-project && \
+    git clone -b ocl-open-140 https://github.com/intel/opencl-clang llvm-project/llvm/projects/opencl-clang && \
+    git clone -b llvm_release_140 https://github.com/KhronosGroup/SPIRV-LLVM-Translator llvm-project/llvm/projects/llvm-spirv && \
+    git clone https://github.com/KhronosGroup/SPIRV-Tools.git SPIRV-Tools && \
+    git clone https://github.com/KhronosGroup/SPIRV-Headers.git SPIRV-Headers && \
+    git clone https://github.com/intel/intel-graphics-compiler igc && \
+    git config --global user.email "bigdl@intel.com" &&\
+    git config --global user.name "IPEX-LLM" && \
+    cd igc && \
+    mkdir build && cd build && \
+    cmake ../ && \
+    make -j32 && make install -j32 && \
+    cd /tmp && rm -rf /tmp/igc && \
+    #
+    apt-get install -y --no-install-recommends libigdgmm-dev libigdgmm12 unzip clinfo pciutils && \
+    # Install gmmlib
+    git clone https://github.com/intel/gmmlib.git && \
+    cd gmmlib && \
+    mkdir build && cd build && \
+    cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && \
+    make -j32 && make install && \
+    cd /tmp && rm -rf /tmp/gmmlib && \
+    # Install level-zero
+    git clone https://github.com/oneapi-src/level-zero.git && \
+    cd level-zero && \
+    mkdir build &&  cd build && \
+    cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && \
+    make -j32 &&  make install && \
+    cd /tmp && rm -rf /tmp/level-zero && \
+    # Install compute-runtime
+    wget https://github.com/intel/compute-runtime/archive/refs/tags/24.52.32224.5.zip && \
+    unzip 24.52.32224.5.zip && \
+    cd compute-runtime-24.52.32224.5 && \
+    sed -i '13a \
+    DEVICE(0xE210, BmgHwConfig) \
+    DEVICE(0xE212, BmgHwConfig) \
+    DEVICE(0xE215, BmgHwConfig) \
+    DEVICE(0xE216, BmgHwConfig)' ./shared/source/dll/devices/devices_base.inl && \
+    sed -i '13s/\(bmgG21DeviceIds{[^}]*\)}/\1, 0xE210, 0xE212, 0xE215, 0xE216}/' ./shared/source/xe2_hpg_core/bmg/definitions/device_ids_configs_bmg.h && \
+    mkdir build &&  cd build && \
+    cmake ../ -DSKIP_UNIT_TESTS=ON && \
+    make -j32 && make install && \
+    cd /llm && \
+    rm -rf /tmp/compute-runtime-24.52.32224.5 && \
+    rm -rf /tmp/24.52.32224.5.zip
 WORKDIR /llm/
 ENTRYPOINT ["bash", "/llm/start-vllm-service.sh"]
