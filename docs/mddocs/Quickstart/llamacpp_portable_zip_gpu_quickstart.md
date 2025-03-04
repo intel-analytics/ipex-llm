@@ -49,7 +49,7 @@ Then, extract the zip file to a folder.
   ```cmd
   set SYCL_CACHE_PERSISTENT=1
   ```
-- For multi-GPUs user, go to [Tips][def] for how to select specific GPU.
+- For multi-GPUs user, go to [Tips](#multi-gpus-usage) for how to select specific GPU.
 
 ### Step 3: Run GGUF models
 
@@ -156,7 +156,7 @@ Then, extract the zip file to a folder.
   ```bash
   export SYCL_CACHE_PERSISTENT=1
   ```
-- For multi-GPUs user, go to [Tips][def] for how to select specific GPU.
+- For multi-GPUs user, go to [Tips](#multi-gpus-usage) for how to select specific GPU.
 
 ### Step 3: Run GGUF models
 
