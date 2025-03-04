@@ -25,6 +25,7 @@ This guide demonstrates how to use [llama.cpp portable zip](https://github.com/i
   - [Error: Detected different sycl devices](#error-detected-different-sycl-devices)
   - [Multi-GPUs usage](#multi-gpus-usage)
   - [Performance Environment](#performance-environment)
+- [More Details](llama_cpp_quickstart.md)
 
 ## Windows Quickstart
 
@@ -68,10 +69,8 @@ Part of outputs:
 
 ```
 Found 1 SYCL devices:
-|  |                   |                                       |       |Max    |        |Max  |Global |
-    |
-|  |                   |                                       |       |compute|Max work|sub  |mem    |
-    |
+|  |                   |                                       |       |Max    |        |Max  |Global |                     |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
 |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
 |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
 | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 13578M|            1.3.27504|
@@ -149,10 +148,8 @@ Part of outputs:
 
 ```bash
 Found 1 SYCL devices:
-|  |                   |                                       |       |Max    |        |Max  |Global |
-    |
-|  |                   |                                       |       |compute|Max work|sub  |mem    |
-    |
+|  |                   |                                       |       |Max    |        |Max  |Global |                     |
+|  |                   |                                       |       |compute|Max work|sub  |mem    |                     |
 |ID|        Device Type|                                   Name|Version|units  |group   |group|size   |       Driver version|
 |--|-------------------|---------------------------------------|-------|-------|--------|-----|-------|---------------------|
 | 0| [level_zero:gpu:0]|                     Intel Arc Graphics|  12.71|    128|    1024|   32| 13578M|            1.3.27504|
@@ -185,7 +182,7 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 <answer>XXXX</answer> [end of text]
 ```
 
-### FlashMoe for DeeSeek V3/R1
+### FlashMoE for DeeSeek V3/R1
 
 FlashMoE is a command-line tool built on llama.cpp, optimized for mixture-of-experts (MoE) models such as DeepSeek V3/R1. Now, it's available for Linux platforms.
 

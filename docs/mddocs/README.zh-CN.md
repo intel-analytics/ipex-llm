@@ -4,7 +4,8 @@
 </p>
 
 ## 最新更新 🔥 
-- [2025/02] 新增 [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel GPU 上直接**免安装运行 Ollama** (包括 [Windows](Quickstart/ollama_portable_zip_quickstart.zh-CN.md#windows用户指南) 和 [Linux](Quickstart/ollama_portable_zip_quickstart.zh-CN.md#linux用户指南))。
+- [2025/02] 新增 [llama.cpp Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel **GPU** (包括 [Windows](Quickstart/llamacpp_portable_zip_gpu_quickstart.md#windows-quickstart) 和 [Linux](Quickstart/llamacpp_portable_zip_gpu_quickstart.md#linux-quickstart)) 和 **NPU** (仅 [Windows](Quickstart/llama_cpp_npu_portable_zip_quickstart.zh-CN.md)) 上直接**免安装运行 llama.cpp**。
+- [2025/02] 新增 [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) 在 Intel **GPU** 上直接**免安装运行 Ollama** (包括 [Windows](Quickstart/ollama_portable_zip_quickstart.zh-CN.md#windows用户指南) 和 [Linux](Quickstart/ollama_portable_zip_quickstart.zh-CN.md#linux用户指南))。
 - [2025/02] 新增在 Intel Arc GPUs 上运行 [vLLM 0.6.6](DockerGuides/vllm_docker_quickstart.md) 的支持。
 - [2025/01] 新增在 Intel Arc [B580](Quickstart/bmg_quickstart.md) GPU 上运行 `ipex-llm` 的指南。
 - [2025/01] 新增在 Intel GPU 上运行 [Ollama 0.5.4](Quickstart/ollama_quickstart.zh-CN.md) 的支持。
