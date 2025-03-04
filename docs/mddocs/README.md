@@ -6,7 +6,8 @@
 **`IPEX-LLM`** is an LLM acceleration library for Intel [GPU](Quickstart/install_windows_gpu.md) *(e.g., local PC with iGPU, discrete GPU such as Arc, Flex and Max)*, [NPU](Quickstart/npu_quickstart.md) and CPU [^1].
 
 ## Latest Update 🔥 
-- [2025/02] We added support of [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run Ollama on Intel GPU for both [Windows](Quickstart/ollama_portable_zip_quickstart.md#windows-quickstart) and [Linux](docs/mddocs/Quickstart/ollama_portable_zip_quickstart.md#linux-quickstart) (***without the need of manual installations***).
+- [2025/02] We added support of [llama.cpp Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) for Intel **GPU** (both [Windows](Quickstart/llamacpp_portable_zip_gpu_quickstart.md#windows-quickstart) and [Linux](Quickstart/llamacpp_portable_zip_gpu_quickstart.md#linux-quickstart)) and **NPU** ([Windows](Quickstart/llama_cpp_npu_portable_zip_quickstart.md) only).
+- [2025/02] We added support of [Ollama Portable Zip](https://github.com/intel/ipex-llm/releases/tag/v2.2.0-nightly) to directly run Ollama on Intel **GPU** for both [Windows](Quickstart/ollama_portable_zip_quickstart.md#windows-quickstart) and [Linux](Quickstart/ollama_portable_zip_quickstart.md#linux-quickstart) (***without the need of manual installations***).
 - [2025/02] We added support for running [vLLM 0.6.6](DockerGuides/vllm_docker_quickstart.md) on Intel Arc GPUs.
 - [2025/01] We added the guide for running `ipex-llm` on Intel Arc [B580](Quickstart/bmg_quickstart.md) GPU
 - [2025/01] We added support for running [Ollama 0.5.4](Quickstart/ollama_quickstart.md) on Intel GPU.
