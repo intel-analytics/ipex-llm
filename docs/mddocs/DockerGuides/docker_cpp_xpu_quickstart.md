@@ -14,7 +14,8 @@
 
 #### Setting Docker on windows
 
-Need to enable `--net=host`,follow [this guide](https://docs.docker.com/network/drivers/host/#docker-desktop) so that you can easily access the service running on the docker. The [v6.1x kernel version wsl]( https://learn.microsoft.com/en-us/community/content/wsl-user-msft-kernel-v6#1---building-the-microsoft-linux-kernel-v61x) is recommended to use.Otherwise, you may encounter the blocking issue before loading the model to GPU.
+- Need to enable `--net=host`,follow [this guide](https://docs.docker.com/network/drivers/host/#docker-desktop) so that you can easily access the service running on the docker.
+- The [v6.1.y kernel version wsl](https://github.com/MicrosoftDocs/community-content/blob/7de886f8b9d7c4ccb77dabc124c3f24b6f341191/community-content/content/wsl-user-msft-kernel-v6.md) is recommended for use(i.e. replace the Microsoft WSL guide's branch with `linux-msft-wsl-6.1.y`). Otherwise, you may encounter the blocking issue before loading the model to GPU.
 
 ### Pull the latest image
 ```bash
