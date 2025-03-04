@@ -278,12 +278,12 @@ If you just want to use one of the devices, please set environment like ONEAPI_D
 If you want to use two or more deivces, please set environment like ONEAPI_DEVICE_SELECTOR="level_zero:0;level_zero:1"
 See https://github.com/intel/ipex-llm/blob/main/docs/mddocs/Overview/KeyFeatures/multi_gpus_selection.md for details. Exiting.
 ```
-Because the GPUs are not the same, the jobs will be allocated according to device's memory. Upon example, the iGPU(Intel UHD Graphics 770) will get 2/3 of the computing tasks. The performance will be quit bad.  
-So disable the iGPU will can get the best performance. Visit [Multi-GPUs usage](#multi-gpus-usage) for details.  
-If you still want to disable this check, you can run below command:  
-`set SYCL_DEVICE_CHECK=0`(Windows user)   
-or  
-`set SYCL_DEVICE_CHECK=0`(Linux user)
+Because the GPUs are not the same, the jobs will be allocated according to device's memory. Upon example, the iGPU(Intel UHD Graphics 770) will get 2/3 of the computing tasks. The performance will be quit bad. So you have below two choice: 
+- 1. Disable the iGPU will can get the best performance. Visit [Multi-GPUs usage](#multi-gpus-usage) for details.  
+- 2. Disable this check and use all of them, you can run below command:  
+  `set SYCL_DEVICE_CHECK=0`(Windows user)   
+  or  
+  `set SYCL_DEVICE_CHECK=0`(Linux user)
 
 ### Multi-GPUs usage
 
